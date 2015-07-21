@@ -26,7 +26,7 @@ object SotaBuild extends Build {
     settings = commonSettings ++ Seq(
       libraryDependencies ++= Dependencies.Rest
     )
-  ) enablePlugins(BuildInfoPlugin)
+  ) enablePlugins (BuildInfoPlugin)
 
 
   lazy val core = Project(id = "core", base = file("core"),
@@ -35,8 +35,8 @@ object SotaBuild extends Build {
     )
   )
 
-  lazy val sota = Project(id = "sota", base = file("."), settings = commonSettings)
-    .aggregate( core, externalResolver )
+  lazy val sota = Project(id = "sota", base = file("."),
+    settings = commonSettings ++ Versioning.settings ).aggregate(core, externalResolver).enablePlugins(Versioning.Plugin)
 }
 
 object Dependencies {
