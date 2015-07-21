@@ -4,27 +4,59 @@
  */
 package org.genivi.sota.core
 
-import akka.actor.ActorSystem
-import akka.event.Logging
+import akka.actor.{ActorLogging, ActorSystem}
+import akka.event.LoggingAdapter
+import akka.event.{BusLogging, Logging}
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.stream.ActorMaterializer
-import org.joda.time.DateTime
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
+import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.model.StatusCodes._
+import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.ExceptionHandler
+import akka.stream.ActorMaterializer
 import db._
+import scala.concurrent.{ExecutionContext, Future}
+import spray.json.{JsObject, JsString}
 
 trait Protocols extends DateTimeJsonProtocol {
-  implicit val installRequestFormat = jsonFormat5(InstallRequest.apply)
+  implicit val installCampaignFormat = jsonFormat5(InstallCampaign.apply)
 }
 
-class WebService(implicit system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext) extends Directives with Protocols {
+class WebService(implicit system: ActorSystem,
+                 mat: ActorMaterializer,
+                 exec: ExecutionContext,
+                 log: LoggingAdapter) extends Directives with Protocols {
 
-  val route = reject
+  val resolverHost = system.settings.config.getString("resolver.host")
+  val resolverPort = system.settings.config.getInt("resolver.port")
+  val resolver = new Resolver(resolverHost, resolverPort)
 
+  val exceptionHandler = ExceptionHandler {
+    case e: Throwable =>
+      extractUri { uri =>
+        log.error(s"Request to $uri errored: $e")
+        val entity = JsObject("error" -> JsString(e.getMessage()))
+        complete(HttpResponse(InternalServerError, entity = entity.toString()))
+      }
+  }
+
+  val route =
+    handleExceptions(exceptionHandler) {
+      path("install_campaigns") {
+        (post & entity(as[InstallCampaign])) { campaign =>
+          complete {
+            for {
+              dependencyMap     <- resolver.resolve(campaign.packageId)
+              persistedCampaign <- InstallCampaigns.create(campaign)
+              _   <- InstallRequests.create(
+                InstallRequest.from(dependencyMap, persistedCampaign.id.head).toSeq
+              )
+            } yield persistedCampaign
+          }
+        }
+      }
+    }
 }
 
 object Boot extends App {

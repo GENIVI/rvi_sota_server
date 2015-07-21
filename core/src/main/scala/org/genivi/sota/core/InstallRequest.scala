@@ -1,11 +1,18 @@
 package org.genivi.sota.core
 
-import org.joda.time.DateTime
-
 case class InstallRequest(
   id: Option[Long],
+  installCampaignId: Long,
   packageId: Long,
-  priority: Int,
-  startAfter: DateTime,
-  endBefore: DateTime
+  vin: String,
+  statusCode: Char,
+  errorMessage: Option[String]
 )
+
+object InstallRequest {
+  def from(dependencyMap: Map[Vin, Set[Long]], campaignId: Long): Set[InstallRequest] = {
+    dependencyMap.flatMap { case (vin, packageIds) =>
+      packageIds.map(InstallRequest(None, campaignId, _, vin.vin, '0', None))
+    }.toSet
+  }
+}
