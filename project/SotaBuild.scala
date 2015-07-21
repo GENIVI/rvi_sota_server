@@ -3,6 +3,7 @@ import sbt._
 import sbt.Keys._
 import sbtbuildinfo.{BuildInfoPlugin, BuildInfoKey}
 import sbtbuildinfo.BuildInfoKeys._
+import spray.revolver.RevolverPlugin._
 
 object SotaBuild extends Build {
 
@@ -16,7 +17,7 @@ object SotaBuild extends Build {
     )
   )
 
-  lazy val commonSettings = basicSettings ++ Seq(
+  lazy val commonSettings = basicSettings ++ Packaging.settings ++ Revolver.settings ++ Seq(
     scalacOptions in Compile ++= Seq("-encoding", "UTF-8", "-target:jvm-1.6", "-deprecation", "-feature", "-unchecked", "-Xlog-reflective-calls", "-Xlint"),
     javacOptions in compile ++= Seq("-encoding", "UTF-8", "-source", "1.6", "-target", "1.6", "-Xlint:unchecked", "-Xlint:deprecation"),
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
@@ -27,7 +28,7 @@ object SotaBuild extends Build {
     settings = commonSettings ++ Seq(
       libraryDependencies ++= Dependencies.Rest
     )
-  ) enablePlugins (BuildInfoPlugin)
+  ) enablePlugins (Packaging.plugins :+ BuildInfoPlugin :_*)
 
 
   lazy val core = Project(id = "core", base = file("core"),
@@ -37,10 +38,14 @@ object SotaBuild extends Build {
       flywayUser := "sota",
       flywayPassword := "s0ta"
     )
-  )
+  ).enablePlugins(Packaging.plugins: _*)
 
   lazy val sota = Project(id = "sota", base = file("."),
-    settings = commonSettings ++ Versioning.settings ).aggregate(core, externalResolver).enablePlugins(Versioning.Plugin)
+    settings = basicSettings ++ Versioning.settings
+  )
+    .aggregate(core, externalResolver)
+    .enablePlugins(Versioning.Plugin)
+
 }
 
 object Dependencies {
