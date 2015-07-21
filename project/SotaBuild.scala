@@ -1,3 +1,4 @@
+import org.flywaydb.sbt.FlywayPlugin._
 import sbt._
 import sbt.Keys._
 import sbtbuildinfo.{BuildInfoPlugin, BuildInfoKey}
@@ -30,8 +31,11 @@ object SotaBuild extends Build {
 
 
   lazy val core = Project(id = "core", base = file("core"),
-    settings = commonSettings ++ Seq(
-      libraryDependencies ++= Dependencies.Rest :+ Dependencies.NscalaTime
+    settings = commonSettings ++ Migrations.settings ++ Seq(
+      libraryDependencies ++= Dependencies.Rest :+ Dependencies.NscalaTime,
+      flywayUrl := "jdbc:mysql://localhost:3306/sota",
+      flywayUser := "sota",
+      flywayPassword := "s0ta"
     )
   )
 

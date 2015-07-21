@@ -30,4 +30,12 @@ project/plugins/project/
 .scala_dependencies
 .worksheet
 
+# vim temporary files
+.*.swp
+
+# patch backup files
+*.orig
+
+# IntelliJ IDEA
+/.idea
 
