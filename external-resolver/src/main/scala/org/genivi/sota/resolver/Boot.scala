@@ -9,7 +9,6 @@ import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCodes._
 import akka.stream.ActorMaterializer
-import slick.driver.PostgresDriver.api._
 
 
 object Boot extends App {
@@ -17,7 +16,6 @@ object Boot extends App {
   implicit val materializer = ActorMaterializer()
   implicit val exec = system.dispatcher
   implicit val log = Logging(system, "boot")
-  implicit val db = Database.forConfig("postgres")
 
   import akka.http.scaladsl.server.Directives._
 
@@ -35,5 +33,4 @@ object Boot extends App {
   val bindingFuture = Http().bindAndHandle(route, "localhost", 8081)
 
   log.info("Server online at http://localhost:8081/")
-  log.info("Database works: " + db.toString())
 }
