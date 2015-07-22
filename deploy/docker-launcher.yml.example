@@ -1,0 +1,16 @@
+---
+reboot_strategy: 'best-effort'
+registry:
+  user: atsjenkins
+  email: jenkins@advancedtelematic.com
+ec2:
+  key: tauron
+  image: ami-07fd8270
+  region: eu-west-1
+
+vars:
+  mariadb_version: "10.0.20"
+  db_root_password: sota-test
+  db_user: sota
+  db_user_password: sota-test
+  db_database_name: sota
