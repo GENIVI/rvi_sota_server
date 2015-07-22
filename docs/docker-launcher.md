@@ -17,3 +17,25 @@ To stop the running system run
 ```sh
 docker-launcher --teardown -c docker-launcher.yml deploy-sota-local.yml
 ```
+
+## CI/Staging remote system
+
+For deploying a remote system for staging and CI, with a docker daemon
+accessible from a single IP run
+
+```sh
+cd deploy/sota-docker-hub
+ansible-playbook -i inventory launch-docker-hub.yml
+```
+
+You'll get prompted for the IP you want to allow to connect to the docker daemon.
+
+**NOTE:** This depends on a properly configured `docker-launcher.yml`, even if
+it is not using Docker Launcher.
+
+To connect to the remote instance, find its IP from AWS Console and prepend your
+docker commands with `-H <Address-of-staging-system>:2375` like this
+
+```sh
+docker -H <Address-of-staging-system>:2375 build -t something .
+```
