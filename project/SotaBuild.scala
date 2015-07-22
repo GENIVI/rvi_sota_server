@@ -66,7 +66,7 @@ object Dependencies {
   lazy val Slick = Seq(
     "com.typesafe.slick" %% "slick" % "3.0.0",
     "com.zaxxer" % "HikariCP" % "2.3.8",
-    "mysql" % "mysql-connector-java" % "5.1.12"
+    "org.mariadb.jdbc" % "mariadb-java-client" % "1.2.0"
   )
 
   lazy val NscalaTime = "com.github.nscala-time" %% "nscala-time" % "2.0.0"
