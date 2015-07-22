@@ -42,3 +42,8 @@ project/plugins/project/
 # Ensime
 .ensime
 .ensime_cache
+
+# Docker Launcher
+deploy/tmp-*
+deploy/docker-launcher.yml
+deploy/roles
