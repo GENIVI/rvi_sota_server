@@ -1,4 +1,4 @@
-package controllers
+package org.genivi.webserver.controllers
 
 import play.api._
 import play.api.mvc._
