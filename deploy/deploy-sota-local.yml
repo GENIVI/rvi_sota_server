@@ -1,0 +1,15 @@
+---
+services:
+  - name: mysql
+    version: "{{ mariadb_version }}"
+    repo: mariadb
+    ports:
+      - 3306
+    wait:
+      port: 3306
+      delay: 30
+    env:
+      MYSQL_ROOT_PASSWORD: "{{ db_root_password }}"
+      MYSQL_USER: "{{ db_user }}"
+      MYSQL_PASSWORD: "{{ db_user_password }}"
+      MYSQL_DATABASE: "{{ db_database_name }}"
