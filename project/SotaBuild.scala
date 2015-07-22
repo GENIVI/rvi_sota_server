@@ -1,4 +1,7 @@
 import org.flywaydb.sbt.FlywayPlugin._
+import play.routes.compiler.InjectedRoutesGenerator
+import play.sbt.routes.RoutesKeys
+import play.sbt.{PlaySettings, PlayScala}
 import sbt._
 import sbt.Keys._
 import sbtbuildinfo.{BuildInfoPlugin, BuildInfoKey}
@@ -40,10 +43,18 @@ object SotaBuild extends Build {
     )
   ).enablePlugins(Packaging.plugins: _*)
 
+  import play.sbt.Play.autoImport._
+  lazy val webServer = Project(id = "webserver", base = file("web-server"),
+    settings = commonSettings ++ PlaySettings.defaultScalaSettings ++ Seq(
+      RoutesKeys.routesGenerator := InjectedRoutesGenerator,
+      resolvers += "scalaz-bintray"  at "http://dl.bintray.com/scalaz/releases",
+      libraryDependencies += specs2 % Test
+    )).enablePlugins( PlayScala )
+
   lazy val sota = Project(id = "sota", base = file("."),
     settings = basicSettings ++ Versioning.settings
   )
-    .aggregate(core, externalResolver)
+    .aggregate(core, externalResolver, webServer)
     .enablePlugins(Versioning.Plugin)
 
 }
