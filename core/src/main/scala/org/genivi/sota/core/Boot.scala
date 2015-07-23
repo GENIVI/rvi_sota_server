@@ -24,6 +24,8 @@ import spray.json.{JsObject, JsString}
 
 trait Protocols extends DateTimeJsonProtocol {
   implicit val installCampaignFormat = jsonFormat5(InstallCampaign.apply)
+  implicit val vinFormat = jsonFormat(Vin, "vin")
+  implicit val pkgFormat = jsonFormat5(Package.apply)
 }
 
 class WebService(implicit system: ActorSystem,
@@ -57,6 +59,22 @@ class WebService(implicit system: ActorSystem,
               )
             } yield persistedCampaign
           }
+        }
+      } ~
+      path("vins") {
+        (post & entity(as[Vin])) { vin =>
+          complete(Vins.create(vin))
+        }
+      } ~
+      path("packages") {
+        get {
+          complete {
+            NoContent
+            //Packages.list
+          }
+        } ~
+        (post & entity(as[Package])) { newPackage =>
+          complete(Packages.create(newPackage))
         }
       }
     }
