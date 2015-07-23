@@ -46,3 +46,12 @@ docker -H tcp://<Address-of-staging-system>:2375 build -t something .
 export DOCKER_HOST=tcp://<Address-of-staging-system>:2375
 docker-launcher -c deploy/docker-launcher.yml deploy/deploy-sota-local.yml
 ```
+
+For migrations you need to tell flyway the connection details like so:
+
+```sh
+CORE_DB_USER=<user> CORE_DB_PASSWORD=<password> CORE_DB_URL=jdbc:mysql://<host>:3306/sota sbt core/flywayMigrate
+```
+
+With `<user>`, `<password>` and `<host>` replaced with suitable values.
+
