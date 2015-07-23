@@ -1,3 +1,4 @@
+import com.typesafe.sbt.packager.docker.DockerPlugin
 import org.flywaydb.sbt.FlywayPlugin._
 import play.routes.compiler.InjectedRoutesGenerator
 import play.sbt.routes.RoutesKeys
@@ -31,23 +32,23 @@ object SotaBuild extends Build {
     buildInfoPackage := organization.value + ".sota." + name.value
   )
 
-  lazy val externalResolver = Project(id = "resolver", base = file("external-resolver"),
-    settings = commonSettings ++ Seq(
+  lazy val externalResolver = Project(id = "resolver", base = file("external-resolver"))
+    .settings( commonSettings ++ Seq(
       libraryDependencies ++= Dependencies.Rest :+ Dependencies.Scalaz,
       dockerExposedPorts := Seq(8081)
-    )
-  ) enablePlugins (Packaging.plugins :+ BuildInfoPlugin :_*)
+    ))
+    .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
 
 
-  lazy val core = Project(id = "core", base = file("core"),
-    settings = commonSettings ++ Migrations.settings ++ Seq(
+  lazy val core = Project(id = "core", base = file("core"))
+    .settings( commonSettings ++ Migrations.settings ++ Seq(
       libraryDependencies ++= Dependencies.Rest :+ Dependencies.NscalaTime,
       dockerExposedPorts := Seq(8080),
       flywayUrl := sys.env.get("CORE_DB_URL").orElse( sys.props.get("core.db.url") ).getOrElse("jdbc:mysql://localhost:3306/sota"),
       flywayUser := sys.env.get("CORE_DB_USER").orElse( sys.props.get("core.db.user") ).getOrElse("sota"),
       flywayPassword := sys.env.get("CORE_DB_PASSWORD").orElse( sys.props.get("core.db.password")).getOrElse("s0ta")
-    )
-  ).enablePlugins(Packaging.plugins: _*)
+    ))
+    .enablePlugins(Packaging.plugins: _*)
 
   import play.sbt.Play.autoImport._
   lazy val webServer = Project(id = "webserver", base = file("web-server"),
@@ -58,9 +59,10 @@ object SotaBuild extends Build {
       dockerExposedPorts := Seq(9000)
     )).enablePlugins( PlayScala )
 
-  lazy val sota = Project(id = "sota", base = file("."),
-    settings = basicSettings ++ Versioning.settings
-  )
+  lazy val sota = Project(id = "sota", base = file("."))
+    .settings( basicSettings )
+    .settings( Versioning.settings )
+    .settings( Release.settings )
     .aggregate(core, externalResolver, webServer)
     .enablePlugins(Versioning.Plugin)
 
