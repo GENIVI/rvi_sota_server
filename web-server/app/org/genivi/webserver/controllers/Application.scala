@@ -37,4 +37,14 @@ class Application @Inject() (ws: WSClient) extends Controller {
     RequestResponse
   }
 
+  def installCampaign = Action.async(parse.json) { request =>
+    ws.url(protocol + coreHost + ":" + corePort + request.path).post(request.body).map { response =>
+      if(response.status == Results.Ok) {
+        Ok(response.body)
+      } else {
+        BadRequest(toJson(Map("errorMsg" -> response.body)))
+      }
+    }
+  }
+
 }
