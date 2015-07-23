@@ -2,14 +2,14 @@
 services:
   - name: mysql
     version: "{{ mariadb_version }}"
-    repo: mariadb
+    repo: advancedtelematic/mariadb
     ports:
       - 3306
     env:
       MYSQL_ROOT_PASSWORD: "{{ db_root_password }}"
       MYSQL_USER: "{{ db_user }}"
       MYSQL_PASSWORD: "{{ db_user_password }}"
-      MYSQL_DATABASE: "{{ db_database_name }}"
+      MYSQL_DATABASES: "{{ db_resolver_name }} {{ db_core_name }}"
 
   - name: rvi_server
     version: server
@@ -46,7 +46,7 @@ services:
       - mysql
     env:
       HOST: 0.0.0.0
-      RESOLVER_DB_URL: "jdbc:mysql://mysql:3306/sota_resolver"
+      RESOLVER_DB_URL: "jdbc:mysql://mysql:3306/{{ db_resolver_name }}"
 
   - name: core
     repo: sota-core
@@ -60,7 +60,7 @@ services:
       - resolver
     env:
       HOST: 0.0.0.0
-      CORE_DB_URL: "jdbc:mysql://mysql:3306/sota_core"
+      CORE_DB_URL: "jdbc:mysql://mysql:3306/{{ db_core_name }}"
       RESOLVER_PORT: "8080"
       RESOLVER_HOST: "resolver"
 
