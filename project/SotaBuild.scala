@@ -55,8 +55,11 @@ object SotaBuild extends Build {
     settings = commonSettings ++ PlaySettings.defaultScalaSettings ++ Seq(
       RoutesKeys.routesGenerator := InjectedRoutesGenerator,
       resolvers += "scalaz-bintray"  at "http://dl.bintray.com/scalaz/releases",
-      libraryDependencies += specs2 % Test,
-      dockerExposedPorts := Seq(9000)
+      dockerExposedPorts := Seq(9000),
+      libraryDependencies ++= Seq (
+        specs2 % Test,
+        ws
+      )
     )).enablePlugins( PlayScala )
 
   lazy val sota = Project(id = "sota", base = file("."))
