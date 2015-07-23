@@ -49,7 +49,7 @@ object SotaBuild extends Build {
       RoutesKeys.routesGenerator := InjectedRoutesGenerator,
       resolvers += "scalaz-bintray"  at "http://dl.bintray.com/scalaz/releases",
       libraryDependencies += specs2 % Test
-    )).enablePlugins( PlayScala )
+    )).enablePlugins(Packaging.plugins :+ PlayScala :_* )
 
   lazy val sota = Project(id = "sota", base = file("."),
     settings = basicSettings ++ Versioning.settings

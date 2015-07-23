@@ -5,9 +5,6 @@ services:
     repo: mariadb
     ports:
       - 3306
-    wait:
-      port: 3306
-      delay: 30
     env:
       MYSQL_ROOT_PASSWORD: "{{ db_root_password }}"
       MYSQL_USER: "{{ db_user }}"
@@ -16,7 +13,7 @@ services:
 
   - name: rvi_server
     version: server
-    repo: advancedtelematic/rvi:server
+    repo: advancedtelematic/rvi
     ports:
       - 8801
       - 8802
@@ -25,14 +22,11 @@ services:
       - 8805
       - 8806
       - 8807
-    wait:
-      port: 8801
-      delay: 5
     attach: true
 
   - name: rvi_client
     version: client
-    repo: advancedtelematic/rvi:client
+    repo: advancedtelematic/rvi
     ports:
       - 8901
       - 8907
@@ -40,3 +34,30 @@ services:
     links:
       - rvi_server
     attach: true
+
+  - name: resolver
+    repo: sota-resolver
+    ports:
+      - 8081
+    expose:
+      - "8081"
+    links:
+      - mysql
+    env:
+      HOST: 0.0.0.0
+      DB_URL: "jdbc:mysql://mysql:3306/sota"
+
+  - name: core
+    repo: sota-core
+    ports:
+      - 8080
+    expose:
+      - "8080"
+    links:
+      - mysql
+      - resolver
+    env:
+      HOST: 0.0.0.0
+      DB_URL: "jdbc:mysql://mysql:3306/sota"
+      RESOLVER_PORT: "8080"
+      RESOLVER_HOST: "resolver"

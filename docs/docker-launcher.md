@@ -34,8 +34,15 @@ You'll get prompted for the IP you want to allow to connect to the docker daemon
 it is not using Docker Launcher.
 
 To connect to the remote instance, find its IP from AWS Console and prepend your
-docker commands with `-H <Address-of-staging-system>:2375` like this
+docker commands with `-H tcp://<Address-of-staging-system>:2375` like this
 
 ```sh
-docker -H <Address-of-staging-system>:2375 build -t something .
+docker -H tcp://<Address-of-staging-system>:2375 build -t something .
+```
+
+## Deploying against the staging system
+
+```sh
+export DOCKER_HOST=tcp://<Address-of-staging-system>:2375
+docker-launcher -c deploy/docker-launcher.yml deploy/deploy-sota-local.yml
 ```
