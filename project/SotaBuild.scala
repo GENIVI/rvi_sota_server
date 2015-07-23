@@ -33,7 +33,7 @@ object SotaBuild extends Build {
 
   lazy val externalResolver = Project(id = "resolver", base = file("external-resolver"),
     settings = commonSettings ++ Seq(
-      libraryDependencies ++= Dependencies.Rest,
+      libraryDependencies ++= Dependencies.Rest :+ Dependencies.Scalaz,
       dockerExposedPorts := Seq(8081)
     )
   ) enablePlugins (Packaging.plugins :+ BuildInfoPlugin :_*)
