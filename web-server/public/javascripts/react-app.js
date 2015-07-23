@@ -47,12 +47,14 @@
       $.each(this.refs.form.getDOMNode().elements, function(i,el) { vals.push($(el).val())});
       var package = {
         name: vals[0],
-        version: vals[1]
+        version: vals[1],
+        description: vals[2],
+        vendor: vals[3]
       };
       $.ajax({
         type: "POST",
         url: this.props.url,
-        data: JSON.stringify({ package: package }),
+        data: JSON.stringify(package),
         dataType: 'json',
         contentType: "application/json"
       })
@@ -81,6 +83,14 @@
             <label htmlFor="version">Version</label>
             <input type="text" className="form-control" id="version" ref="version" placeholder="10"/>
           </div>
+          <div className="form-group">
+            <label htmlFor="description">Description</label>
+            <input type="text" className="form-control" id="description" ref="description" placeholder="Description text"/>
+          </div>
+          <div className="form-group">
+            <label htmlFor="verdor">Verdor</label>
+            <input type="text" className="form-control" id="vendor" ref="vendor" placeholder="Vendor name"/>
+          </div>
           <button type="submit" className="btn btn-primary">Add PACKAGE</button>
           {this.state.packagePostStatus}
         </form>
@@ -92,16 +102,16 @@
       e.preventDefault();
       var timestamp = new Date();
       var payload = {
-        id: this.props.data.id,
+        packageId: this.props.data.id,
         priority: 10,
-        start: timestamp,
-        end: new Date(timestamp.getTime() + 10*60000)
+        startAfter: timestamp,
+        endBefore: new Date(timestamp.getTime() + 10*60000)
       }
       $.ajax({
         type: "POST",
         dataType: 'json',
         url: this.props.url,
-        data: JSON.stringify({ package: payload }),
+        data: JSON.stringify(payload),
         contentType: "application/json"
       })
         .done(function(data) {
