@@ -46,7 +46,7 @@ services:
       - mysql
     env:
       HOST: 0.0.0.0
-      DB_URL: "jdbc:mysql://mysql:3306/sota"
+      RESOLVER_DB_URL: "jdbc:mysql://mysql:3306/sota_resolver"
 
   - name: core
     repo: sota-core
@@ -60,7 +60,7 @@ services:
       - resolver
     env:
       HOST: 0.0.0.0
-      DB_URL: "jdbc:mysql://mysql:3306/sota"
+      CORE_DB_URL: "jdbc:mysql://mysql:3306/sota_core"
       RESOLVER_PORT: "8080"
       RESOLVER_HOST: "resolver"
 
