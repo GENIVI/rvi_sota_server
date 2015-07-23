@@ -20,7 +20,7 @@
           React.findDOMNode(this.refs.vin).value = '';
         }.bind(this))
         .fail(function(data) {
-          var res = JSON.parse(data.responseText)
+          var res = JSON.parse(data.responseText);
           this.setState({vinPostStatus: res.errorMsg});
         }.bind(this));
     },
@@ -39,5 +39,75 @@
       );}
   });
 
-  React.render(<AddVin url="/addVin" />, document.getElementById('app'));
+  var AddPackage = React.createClass({
+    handleSubmit: function(e) {
+      e.preventDefault();
+      var packageText = React.findDOMNode(this.refs.package).value.trim();
+      $.ajax({
+        type: "POST",
+        url: this.props.url,
+        data: JSON.stringify({ "package": packageText }),
+        contentType: "application/json"
+      })
+        .done(function(data) {
+          this.setState({packagePostStatus: "Added PACKAGE \"" + packageText + "\" successfully"});
+          React.findDOMNode(this.refs.package).value = '';
+        }.bind(this))
+        .fail(function(data) {
+          var res = JSON.parse(data.responseText)
+          this.setState({packagePostStatus: res.errorMsg});
+        }.bind(this));
+      React.render(<UpdatePackage url="/api/v1/install_campaigns" val={ packageText } />, document.getElementById('updatePackage'));
+    },
+    getInitialState: function() {
+      return {packagePostStatus : ""};
+    },
+    render: function() { return (
+        <form onSubmit={this.handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="package">PACKAGE</label>
+            <input type="text" className="form-control" id="package" ref="package" placeholder="PACKAGE"/>
+          </div>
+          <button type="submit" className="btn btn-primary">Add PACKAGE</button>
+          {this.state.packagePostStatus}
+        </form>
+      );}
+  });
+
+  var UpdatePackage = React.createClass({
+    handleSubmit: function(e) {
+      e.preventDefault();
+      var packageText = React.findDOMNode(this.refs.package).value.trim();
+      $.ajax({
+        type: "POST",
+        url: this.props.url,
+        data: JSON.stringify({ "package": packageText }),
+        contentType: "application/json"
+      })
+        .done(function(data) {
+          this.setState({packagePostStatus: "Updated PACKAGE \"" + packageText + "\" successfully"});
+          React.findDOMNode(this.refs.package).value = '';
+        }.bind(this))
+        .fail(function(data) {
+          var res = JSON.parse(data.responseText)
+          this.setState({packagePostStatus: res.errorMsg});
+        }.bind(this));
+    },
+    getInitialState: function() {
+      return {packagePostStatus : ""};
+    },
+    render: function() { return (
+        <form onSubmit={this.handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="package">{ this.props.val }</label>
+            <input type="hidden" className="form-control" id="package" ref="package" value={ this.props.val }/>
+          </div>
+          <button type="submit" className="btn btn-primary">Update</button>
+          {this.state.packagePostStatus}
+        </form>
+    );}
+  });
+
+  React.render(<AddVin url="/api/v1/vins" />, document.getElementById('app'));
+  React.render(<AddPackage url="/api/v1/packages"/>, document.getElementById('package'));
 })();
