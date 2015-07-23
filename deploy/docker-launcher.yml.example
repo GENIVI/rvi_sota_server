@@ -10,7 +10,8 @@ ec2:
 
 vars:
   mariadb_version: "10.0.20"
-  db_root_password: sota-test
-  db_user: sota
-  db_user_password: sota-test
-  db_database_name: sota
+  db_root_password: "sota-test"
+  db_user: "sota"
+  db_user_password: "s0ta"
+  db_resolver_name: "sota_resolver"
+  db_core_name: "sota_core"
