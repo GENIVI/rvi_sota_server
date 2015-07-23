@@ -6,9 +6,6 @@ import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.model.Uri
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.Flow
-import akka.stream.scaladsl.Sink
-import akka.stream.scaladsl.Source
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
@@ -23,6 +20,7 @@ class Resolver(host: String, port: Int)(implicit system : ActorSystem,
     Uri().
       withScheme("http").
       withAuthority(host, port)
+
 
   def resolve(packageId: Long): Future[Map[Vin, Set[Long]]] =
     request(packageId)

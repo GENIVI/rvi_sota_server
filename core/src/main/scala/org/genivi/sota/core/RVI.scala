@@ -4,7 +4,6 @@ import akka.actor.Actor
 import akka.actor.ActorLogging
 import akka.actor.Props
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.Uri.Path.SlashOrEmpty
 import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
 import org.genivi.sota.core.db.InstallRequests
