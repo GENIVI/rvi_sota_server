@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.core
 
+import akka.actor.Props
 import akka.actor.{ActorLogging, ActorSystem}
 import akka.event.LoggingAdapter
 import akka.event.{BusLogging, Logging}
@@ -16,6 +17,8 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.ExceptionHandler
 import akka.stream.ActorMaterializer
 import db._
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
 import spray.json.{JsObject, JsString}
 
@@ -65,11 +68,22 @@ object Boot extends App {
   implicit val materializer = ActorMaterializer()
   implicit val exec = system.dispatcher
   implicit val log = Logging(system, "boot")
+  val config = system.settings.config
 
   val service = new WebService()
 
-  val host = system.settings.config.getString("server.host")
-  val port = system.settings.config.getInt("server.port")
+  val rviHost = config.getString("rvi.host")
+  val rviPort = config.getInt("rvi.port")
+  val rviActor = system.actorOf(RviActor.props(rviHost, rviPort))
+
+  import scala.concurrent.duration._
+  val cancellable = system.scheduler.schedule(50.millis,
+                                              1.second,
+                                              rviActor,
+                                              RviActor.Trigger)
+
+  val host = config.getString("server.host")
+  val port = config.getInt("server.port")
 
   val bindingFuture = Http().bindAndHandle(service.route, host, port)
 
