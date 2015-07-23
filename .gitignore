@@ -47,3 +47,6 @@ project/plugins/project/
 deploy/tmp-*
 deploy/docker-launcher.yml
 deploy/roles
+
+# Generated files in docs/
+/docs/**/*.pdf
