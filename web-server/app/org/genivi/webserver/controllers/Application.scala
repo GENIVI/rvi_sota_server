@@ -1,9 +1,7 @@
 package org.genivi.webserver.controllers
 
-import play.api._
-import play.api.mvc._
-
 import play.api.libs.json.Json._
+import play.api.mvc._
 
 class Application extends Controller {
 
