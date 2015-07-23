@@ -2,21 +2,16 @@
 
 Welcome to the GENIVI SOTA wiki! This is the hub for documentation of all the components of the GENIVI SOTA project.
 
-The project is comprised of four sub-projects--three for the SOTA server, and one for the client.
-
- - [core](https://github.com/advancedtelematic/sota-server/tree/master/core) - The central component of the SOTA server that implements package queuing and distribution
- - [external-resolver](https://github.com/advancedtelematic/sota-server/tree/master/external-resolver) - An implementation of a package resolution server, which maps VINs to a list of software components to be installed on a vehicle
- - [web-server](https://github.com/advancedtelematic/sota-server/tree/master/web-server) - The web interface to the SOTA server, allowing administration of vehicles and software components
- - [sota_client](https://github.com/advancedtelematic/sota_client) - The vehicle-resident SOTA download client
+In this repository you will find all the code for the SOTA Server, comprised of Core, Web Server and External Resolver modules.
 
 This project also houses common resources for the sub-projects including:
 
- - Architectural documentation
- - Style Guides
- - Development process documentation
- - Installation / deployment documentation and scripts
+ - Complete [Architectural documentation](Architecture)
+ - A [Style Guide](Scala-Styleguide)
+ - [Development process documentation](#process)
+ - [Installation / deployment documentation and scripts](#install_deploy)
 
-## Deployment / Installation
+## <a name="install_deploy">Deployment / Installation</a>
 
 The [sota_client](https://github.com/advancedtelematic/sota_client) project builds an RPM that can be installed on a target system, and includes Yocto recipes to allow it to be built into a GENIVI Demo Platform or AGL Reference Platform image.
 
@@ -30,17 +25,17 @@ This project is developed entirely in the open, on public mailing lists and with
 
 All code contributed to this project must be licensed under the MPL v2 license, a copy of which you can find in this repository. Documentation must be licensed under the CC 4.0 license.
 
-### Coding Style
+### <a name="style">Coding Style</a>
 
-You can find documentation of the expected Scala code style in the *docs* folder of this project.
+You can find documentation of the expected <a href="Scala-Styleguide">Scala code style on the Wiki</a>.
 
-### Development Process
+### <a name="process">Development Process</a>
 
 This project is developed with a special focus on secure engineering. In the *docs* folder you will find details of the security architecture and threat model.
 
 During development, any interaction between components must be documented and included in the security modelling. To this end, each project includes a list of implemented requirements and permitted interactions.
 
-Developers must only implement functionality for which there is an associated requirement, described in the project JIRA. When implementing functionality, developers must update the list of implemented requirements (*docs/requirements.md*). Developers must only implement interactions that are permitted or whitelisted according to the associated JIRA ticket. The list of [permitted interactions](https://github.com/advancedtelematic/wiki/permitted-interactions) should be updated when new functionality is implemented, and reviewers should ensure that the code only implements permitted interactions.
+Developers must only implement functionality for which there is an associated requirement, described in the project JIRA. When implementing functionality, developers must update the list of implemented requirements (*docs/requirements.md*). Developers must only implement interactions that are permitted or whitelisted according to the associated JIRA ticket. The list of [Whitelisted Interactions](Whitelisted-Interactions) should be updated when new functionality is implemented, and reviewers should ensure that the code only implements permitted interactions.
 
 ## Database setup
 
@@ -163,6 +158,4 @@ To stop the running system run
 ```sh
 docker-launcher --teardown -c docker-launcher.yml deploy-sota-aws.yml
 ```
-
-# Architecture Documents
 
