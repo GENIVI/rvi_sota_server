@@ -13,7 +13,7 @@ services:
 
   - name: rvi_server
     version: server
-    repo: advancedtelematic/rvi
+    repo: advancedtelematic/rvi:server
     ports:
       - 8801
       - 8802
@@ -26,7 +26,7 @@ services:
 
   - name: rvi_client
     version: client
-    repo: advancedtelematic/rvi
+    repo: advancedtelematic/rvi:client
     ports:
       - 8901
       - 8907
@@ -37,6 +37,7 @@ services:
 
   - name: resolver
     repo: sota-resolver
+    pull: false
     ports:
       - 8081
     expose:
@@ -49,6 +50,7 @@ services:
 
   - name: core
     repo: sota-core
+    pull: false
     ports:
       - 8080
     expose:
@@ -61,3 +63,9 @@ services:
       DB_URL: "jdbc:mysql://mysql:3306/sota"
       RESOLVER_PORT: "8080"
       RESOLVER_HOST: "resolver"
+
+  - name: webserver
+    repo: sota-webserver
+    pull: false
+    ports:
+      - 80:9000
