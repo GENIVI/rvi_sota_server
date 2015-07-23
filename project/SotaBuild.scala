@@ -7,6 +7,7 @@ import sbt.Keys._
 import sbtbuildinfo.{BuildInfoPlugin, BuildInfoKey}
 import sbtbuildinfo.BuildInfoKeys._
 import spray.revolver.RevolverPlugin._
+import com.typesafe.sbt.packager.Keys.dockerExposedPorts
 
 object SotaBuild extends Build {
 
@@ -16,7 +17,10 @@ object SotaBuild extends Build {
 
     dependencyOverrides ++= Set(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-      "org.scala-lang.modules" %% "scala-xml" % "1.0.4"
+      "org.scala-lang" % "scala-library" % scalaVersion.value,
+      "org.scala-lang.modules" %% "scala-xml" % "1.0.4",
+      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
+      "com.google.guava"  % "guava" % "18.0"
     )
   )
 
@@ -29,7 +33,8 @@ object SotaBuild extends Build {
 
   lazy val externalResolver = Project(id = "resolver", base = file("external-resolver"),
     settings = commonSettings ++ Seq(
-      libraryDependencies ++= Dependencies.Rest
+      libraryDependencies ++= Dependencies.Rest,
+      dockerExposedPorts := Seq(8081)
     )
   ) enablePlugins (Packaging.plugins :+ BuildInfoPlugin :_*)
 
@@ -37,9 +42,10 @@ object SotaBuild extends Build {
   lazy val core = Project(id = "core", base = file("core"),
     settings = commonSettings ++ Migrations.settings ++ Seq(
       libraryDependencies ++= Dependencies.Rest :+ Dependencies.NscalaTime,
-      flywayUrl := "jdbc:mysql://localhost:3306/sota",
-      flywayUser := "sota",
-      flywayPassword := "s0ta"
+      dockerExposedPorts := Seq(8080),
+      flywayUrl := sys.env.get("CORE_DB_URL").orElse( sys.props.get("core.db.url") ).getOrElse("jdbc:mysql://localhost:3306/sota"),
+      flywayUser := sys.env.get("CORE_DB_USER").orElse( sys.props.get("core.db.user") ).getOrElse("sota"),
+      flywayPassword := sys.env.get("CORE_DB_PASSWORD").orElse( sys.props.get("core.db.password")).getOrElse("s0ta")
     )
   ).enablePlugins(Packaging.plugins: _*)
 
@@ -48,8 +54,9 @@ object SotaBuild extends Build {
     settings = commonSettings ++ PlaySettings.defaultScalaSettings ++ Seq(
       RoutesKeys.routesGenerator := InjectedRoutesGenerator,
       resolvers += "scalaz-bintray"  at "http://dl.bintray.com/scalaz/releases",
-      libraryDependencies += specs2 % Test
-    )).enablePlugins(Packaging.plugins :+ PlayScala :_* )
+      libraryDependencies += specs2 % Test,
+      dockerExposedPorts := Seq(9000)
+    )).enablePlugins( PlayScala )
 
   lazy val sota = Project(id = "sota", base = file("."),
     settings = basicSettings ++ Versioning.settings
