@@ -41,7 +41,7 @@ class WebService(implicit system: ActorSystem,
       }
   }
 
-  val route =
+  val route = pathPrefix("api" / "v1") {
     handleExceptions(exceptionHandler) {
       path("install_campaigns") {
         (post & entity(as[InstallCampaign])) { campaign =>
@@ -57,6 +57,7 @@ class WebService(implicit system: ActorSystem,
         }
       }
     }
+  }
 }
 
 object Boot extends App {
