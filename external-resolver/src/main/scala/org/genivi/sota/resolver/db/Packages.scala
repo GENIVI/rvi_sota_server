@@ -3,10 +3,9 @@ package org.genivi.sota.resolver.db
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import slick.driver.MySQLDriver.api._
-import org.genivi.sota.resolver.db.DatabaseConfig
 import org.genivi.sota.resolver.Package
 
-object Packages extends DatabaseConfig {
+object Packages {
 
   class PackageTable(tag: Tag) extends Table[Package](tag, "Package") {
 
@@ -22,8 +21,7 @@ object Packages extends DatabaseConfig {
 
   val packages = TableQuery[PackageTable]
 
-  def list: Future[Seq[Package]] = db.run(packages.result)
+  def list() = packages.result
 
-  def create(newPackage: Package)(implicit ec: ExecutionContext): Future[Package] =
-    db.run(packages += newPackage).map(_ => newPackage)
+  def create(newPackage: Package) = packages += newPackage
 }
