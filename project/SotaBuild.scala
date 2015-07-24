@@ -16,6 +16,8 @@ object SotaBuild extends Build {
     organization := "org.genivi",
     scalaVersion := "2.11.7",
 
+    libraryDependencies ++= Dependencies.TestFrameworks, 
+
     dependencyOverrides ++= Set(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       "org.scala-lang" % "scala-library" % scalaVersion.value,
@@ -81,10 +83,18 @@ object Dependencies {
     "com.typesafe.akka" % "akka-http-core-experimental_2.11" % AkkaHttpVersion,
     "com.typesafe.akka" % "akka-http-experimental_2.11" % AkkaHttpVersion,
     "com.typesafe.akka" %% "akka-http-spray-json-experimental" % AkkaHttpVersion,
-    "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion
+    "com.typesafe.akka" %% "akka-http-testkit-experimental" % AkkaHttpVersion % Test,
+    "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion,
+    "ch.qos.logback" % "logback-classic" % "1.0.13"
   )
 
   lazy val Scalaz = "org.scalaz" %% "scalaz-core" % "7.1.3"
+
+  lazy val ScalaTest = "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test"
+
+  lazy val ScalaCheck = "org.scalacheck" %% "scalacheck" % "1.12.4" % "test"
+
+  lazy val TestFrameworks = Seq( ScalaTest, ScalaCheck )
 
   lazy val Slick = Seq(
     "com.typesafe.slick" %% "slick" % "3.0.0",
