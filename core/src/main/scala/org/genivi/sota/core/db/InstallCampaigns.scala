@@ -5,7 +5,9 @@ import scala.concurrent.Future
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.core.InstallCampaign
 
-object InstallCampaigns extends DatabaseConfig {
+object InstallCampaigns {
+
+  import Mappings._
 
   class InstallCampaignTable(tag: Tag) extends Table[InstallCampaign](tag, "InstallCampaign") {
 
@@ -21,12 +23,11 @@ object InstallCampaigns extends DatabaseConfig {
 
   val installCampaigns = TableQuery[InstallCampaignTable]
 
-  def list: Future[Seq[InstallCampaign]] = db.run(installCampaigns.result)
+  def list() = installCampaigns.result
 
-  def create(installCampaign: InstallCampaign): Future[InstallCampaign] = {
-    val insertion = (installCampaigns
-      returning installCampaigns.map(_.id)
+  def create(installCampaign: InstallCampaign) = {
+    val insertion = (installCampaigns returning installCampaigns.map(_.id)
       into ((request, id) => request.copy(id = Some(id)))) += installCampaign
-    db.run(insertion)
+    insertion
   }
 }

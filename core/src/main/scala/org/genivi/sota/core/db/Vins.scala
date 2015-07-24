@@ -5,7 +5,7 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import slick.driver.MySQLDriver.api._
 
-object Vins extends DatabaseConfig {
+object Vins {
 
   class VinTable(tag: Tag) extends Table[Vin](tag, "Vin") {
     def vin = column[String]("vin", O.PrimaryKey)
@@ -14,7 +14,7 @@ object Vins extends DatabaseConfig {
 
   val vins = TableQuery[VinTable]
 
-  def list: Future[Seq[Vin]] = db.run(vins.result)
+  def list() = vins.result
 
-  def create(vin: Vin)(implicit ec: ExecutionContext): Future[Vin] = db.run(vins += vin).map(_ => vin)
+  def create(vin: Vin) : DBIOAction[Int, NoStream, Effect.Write] = vins += vin
 }

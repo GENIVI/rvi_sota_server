@@ -8,6 +8,7 @@ import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
 import org.genivi.sota.core.db.InstallRequests
 import org.joda.time.DateTime
+import slick.jdbc.JdbcBackend.DatabaseDef
 import scala.concurrent.Future
 import scala.util.Random
 import spray.json.DefaultJsonProtocol
@@ -68,8 +69,8 @@ object RviRequest {
     implicit val jsonRpcFormat = jsonFormat4(JsonRpc.apply)
   }
 }
-
-class RviActor(host: String, port: Int)
+import slick.driver.MySQLDriver.api.Database
+class RviActor(host: String, port: Int, db : Database )
               (implicit mat: ActorMaterializer)
     extends Actor
     with ActorLogging
@@ -93,9 +94,9 @@ class RviActor(host: String, port: Int)
 
   private def runCurrentCampaigns(): Future[Unit] =
     for {
-      requestsWithPackages <- InstallRequests.currentAt(DateTime.now)
+      requestsWithPackages <- db.run(InstallRequests.currentAt(DateTime.now))
       _ <- Future.sequence(requestsWithPackages.map { case (req, pack) => rpc(req.vin, pack) })
-      _ <- InstallRequests.updateNotified(requestsWithPackages.map(_._1))
+      _ <- db.run( InstallRequests.updateNotified(requestsWithPackages.map(_._1)) )
     } yield ()
 
   private def rpc(vin: String, pack: Package): Future[HttpResponse] = {
@@ -110,6 +111,6 @@ class RviActor(host: String, port: Int)
 object RviActor {
   val Trigger = "tick"
 
-  def props(host: String, port: Int)(implicit mat: ActorMaterializer): Props =
-    Props(new RviActor(host, port))
+  def props(host: String, port: Int, db : Database)(implicit mat: ActorMaterializer): Props =
+    Props(new RviActor(host, port, db))
 }

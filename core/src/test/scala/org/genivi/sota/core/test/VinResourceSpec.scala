@@ -15,7 +15,10 @@ class VinResourceSpec extends WordSpec with Matchers with ScalatestRouteTest {
   import org.genivi.sota.core.JsonProtocols._
   import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 
-  lazy val service = new org.genivi.sota.core.WebService 
+  import slick.driver.MySQLDriver.api._
+  val db = Database.forConfig("database")
+
+  lazy val service = new org.genivi.sota.core.WebService (db)
 
   val BasePath = Path("/api") / "v1"
 
