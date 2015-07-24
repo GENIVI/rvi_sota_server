@@ -14,7 +14,7 @@ import org.genivi.sota.resolver.db.Packages
 import org.genivi.sota.resolver.db.Vins
 
 
-object Boot extends App with Protocols {
+object Boot extends App with Protocols with org.genivi.sota.resolver.db.DatabaseConfig {
   implicit val system = ActorSystem("sota-external-resolver")
   implicit val materializer = ActorMaterializer()
   implicit val exec = system.dispatcher
@@ -28,7 +28,7 @@ object Boot extends App with Protocols {
 
     path("vins") {
       (post & entity(as[Vin])) { vin =>
-        complete(Vins.create(vin))
+        complete( db.run( Vins.create(vin) ).map( _ => vin) )
       }
     } ~
     path("packages") {
@@ -39,19 +39,12 @@ object Boot extends App with Protocols {
         }
       } ~
       (post & entity(as[Package])) { newPackage =>
-        complete(Packages.create(newPackage))
+        complete( db.run( Packages.create(newPackage) ).map( nid => newPackage.copy( id = Some(nid))) )
       }
     } ~
     path("resolve" / LongNumber) { pkgId =>
       complete {
-        for {
-          vins: Seq[Vin] <- Vins.list
-
-          res : Map[String, List[Long]]
-              = vins.map(vin => Map(vin.vin -> List(pkgId)))
-              . foldRight(Map[String,List[Long]]()) { (m, ih) =>  m ++ ih }
-
-        } yield res
+        db.run( Vins.list ).map( _.map(vin => Map(vin.vin -> List(pkgId))) . foldRight(Map[String,List[Long]]()) { (m, ih) =>  m ++ ih } )
       }
     }
   }
