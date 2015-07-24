@@ -7,7 +7,9 @@ import slick.driver.MySQLDriver.api._
 import org.genivi.sota.core.InstallRequest
 import org.genivi.sota.core.Package
 
-object InstallRequests extends DatabaseConfig {
+object InstallRequests {
+
+  import Mappings._
 
   class InstallRequestTable(tag: Tag) extends Table[InstallRequest](tag, "InstallRequest") {
 
@@ -24,9 +26,9 @@ object InstallRequests extends DatabaseConfig {
 
   val installRequests = TableQuery[InstallRequestTable]
 
-  def list: Future[Seq[InstallRequest]] = db.run(installRequests.result)
+  def list() = installRequests.result
 
-  def currentAt(instant: DateTime): Future[Seq[(InstallRequest, Package)]] = {
+  def currentAt(instant: DateTime) = {
     val installCampaigns = InstallCampaigns.installCampaigns
     val packages = Packages.packages
     val q = for {
@@ -34,27 +36,21 @@ object InstallRequests extends DatabaseConfig {
       r <- installRequests if r.statusCode === '0' && r.installCampaignId === c.id
       p <- packages if r.packageId === p.id
     } yield (r,p)
-    db.run(q.result)
+    q.result
   }
 
-  def updateNotified(reqs: Seq[InstallRequest])(implicit ec: ExecutionContext): Future[Int] = {
+  def updateNotified(reqs: Seq[InstallRequest]) = {
     val reqIds = reqs.map(_.id.get)
     val updateInstallRequests = for {
       r <- installRequests if r.id inSetBind(reqIds)
     } yield r.statusCode
-    db.run(updateInstallRequests.update('1'))
+    updateInstallRequests.update('1')
   }
 
-  def create(installRequest: InstallRequest)(implicit ec: ExecutionContext): Future[InstallRequest] =
-    create(List(installRequest)).map(_.head)
+  def create(installRequest: InstallRequest) =
+    (installRequests returning installRequests.map(_.id)
+      into ((request, id) => request.copy(id = Some(id)))) += installRequest
 
-  def create(reqs: Seq[InstallRequest]): Future[Seq[InstallRequest]] = {
-    val insertions = reqs.map { installRequest =>
-      (installRequests
-         returning installRequests.map(_.id)
-         into ((request, id) => request.copy(id = Some(id)))) += installRequest
-    }
-
-    db.run(DBIO.sequence(insertions))
-  }
+  def createRequests(reqs: Seq[InstallRequest]) = DBIO.sequence( reqs.map( create ) )
+  
 }

@@ -1,12 +1,9 @@
 package org.genivi.sota.core.db
 
-import org.joda.time.DateTime
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.core.Package
 
-object Packages extends DatabaseConfig {
+object Packages {
 
   class PackageTable(tag: Tag) extends Table[Package](tag, "Package") {
 
@@ -22,18 +19,14 @@ object Packages extends DatabaseConfig {
 
   val packages = TableQuery[PackageTable]
 
-  def list: Future[Seq[Package]] = db.run(packages.result)
+  def list = packages.result
 
-  def create(pkg: Package)(implicit ec: ExecutionContext): Future[Package] =
-    create(List(pkg)).map(_.head)
+  def create(pkg: Package) =
+    (packages
+      returning packages.map(_.id)
+      into ((pkg, id) => pkg.copy(id = Some(id)))) += pkg
 
-  def create(reqs: Seq[Package]): Future[Seq[Package]] = {
-    val insertions = reqs.map { pkg =>
-      (packages
-         returning packages.map(_.id)
-         into ((pkg, id) => pkg.copy(id = Some(id)))) += pkg
-    }
-
-    db.run(DBIO.sequence(insertions))
+  def createPackages(reqs: Seq[Package]) = {
+    DBIO.sequence( reqs.map( create ) )
   }
 }
