@@ -35,7 +35,7 @@ This project is developed with a special focus on secure engineering. In the *do
 
 During development, any interaction between components must be documented and included in the security modelling. To this end, each project includes a list of implemented requirements and permitted interactions.
 
-Developers must only implement functionality for which there is an associated requirement, described in the project JIRA. When implementing functionality, developers must update the list of implemented requirements (*docs/requirements.md*). Developers must only implement interactions that are permitted or whitelisted according to the associated JIRA ticket. The list of [Whitelisted Interactions](Whitelisted-Interactions) should be updated when new functionality is implemented, and reviewers should ensure that the code only implements permitted interactions.
+Developers must only implement functionality for which there is an associated requirement, described in the project JIRA. When implementing functionality, developers must update the list of [implemented requirements](Requirements). Developers must only implement interactions that are permitted or whitelisted according to the associated JIRA ticket. The list of [Whitelisted Interactions](Whitelisted-Interactions) should be updated when new functionality is implemented, and reviewers should ensure that the code only implements permitted interactions.
 
 ## Database setup
 
