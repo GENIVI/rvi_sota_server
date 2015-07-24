@@ -16,3 +16,11 @@ The data model for the system is illustrated here:
 <a href="images/Data-Model-large.png" border="0">
 ![Data Model Diagram](images/Data-Model.png)
 </a>
+
+## Requirements
+
+You can find a complete list of the [software requirements here](Requirements) 
+
+## Dependencies
+
+You can find a complete list of [software dependencies here](Dependencies)
