@@ -16,7 +16,7 @@ object Mappings {
 
 trait DatabaseConfig {
 
-  def db = Database.forConfig("database")
+  val db = Database.forConfig("database")
 
   implicit val session: Session = db.createSession()
 }
