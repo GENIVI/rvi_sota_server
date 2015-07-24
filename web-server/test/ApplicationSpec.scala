@@ -25,29 +25,5 @@ class ApplicationSpec extends Specification {
       status(home) must equalTo(OK)
       contentType(home) must beSome.which(_ == "text/html")
     }
-
-    "allow adding a new, valid vin" in new WithApplication{
-      val addVin = route(FakeRequest(POST, "/addVin",
-        FakeHeaders(List(("Content-Type", "application/json"))),
-        """ {"vin": "TESTVIN0123456789"} """ )).get
-
-      status(addVin) must equalTo(OK)
-    }
-
-    "reject vins with incorrect length" in new WithApplication{
-      val addVin = route(FakeRequest(POST, "/addVin",
-        FakeHeaders(List(("Content-Type", "application/json"))),
-        """ {"vin": "TESTVIN012345678"} """ )).get
-
-      status(addVin) must equalTo(BAD_REQUEST)
-    }
-
-    "reject vins with invalid chars" in new WithApplication{
-      val addVin = route(FakeRequest(POST, "/addVin",
-        FakeHeaders(List(("Content-Type", "application/json"))),
-        """ {"vin": "TESTvIN0123456789"} """ )).get
-
-      status(addVin) must equalTo(BAD_REQUEST)
-    }
   }
 }
