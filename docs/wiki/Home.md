@@ -13,11 +13,12 @@ This project also houses common resources for the sub-projects including:
 
 ## <a name="install_deploy">Deployment / Installation</a>
 
-The [sota_client](https://github.com/advancedtelematic/sota_client) project builds an RPM that can be installed on a target system, and includes Yocto recipes to allow it to be built into a GENIVI Demo Platform or AGL Reference Platform image.
+<!--- The [sota_client](https://github.com/advancedtelematic/sota-client) project builds an RPM that can be installed on a target system, and includes Yocto recipes to allow it to be built into a GENIVI Demo Platform or AGL Reference Platform image.
+-->
 
-For the server-side components, this project includes a [docker_laucher](https://github.com/advancedtelematic/docker_launcher) configuration file to allow the cluster of components to be deployed conveniently to a developer machine or IaaS cloud (e.g. AWS)
+For the server-side components, this project includes a [docker-laucher](https://github.com/advancedtelematic/docker-launcher) configuration file to allow the cluster of components to be deployed conveniently to a developer machine. In future versions, it will also include docker-launcher configuration files to deploy to an IaaS cloud (e.g. AWS).
 
-See [docs/docker-launcher.md](https://github.com/advancedtelematic/sota-server/master/docs/docker-launcher.md) for deploying developement or production systems with Docker Launcher
+See [Deployment with Docker Launcher](Deployment-with-Docker-Launcher) for deploying development or production systems with Docker Launcher.
 
 ## Building Locally
 
@@ -35,8 +36,9 @@ To check the version of java installed, run:
     Java(TM) SE Runtime Environment (build 1.8.0_45-b14)
     Java HotSpot(TM) 64-Bit Server VM (build 25.45-b02, mixed mode)
 
-For development, a local MariaDB install is required. Create a two databases called 'sota_core' and 'sota_resolver':
+For development, a local MariaDB install is required. (Note that this is **not** required for deployment.) Create two databases called 'sota_core' and 'sota_resolver':
 
+```sql
     mysql -u root -p
     CREATE DATABASE sota_core;
     CREATE DATABASE sota_resolver;
@@ -44,6 +46,7 @@ For development, a local MariaDB install is required. Create a two databases cal
     GRANT ALL PRIVILEGES ON sota_core . * TO 'sota'@'localhost';
     GRANT ALL PRIVILEGES ON sota_resolver . * TO 'sota'@'localhost';
     FLUSH PRIVILEGES;
+```
 
 To update the database schema, run:
 
@@ -85,7 +88,7 @@ Now open [localhost:9000](http://localhost:9000/) in a browser.
 
 This project is developed entirely in the open, on public mailing lists and with public code reviews. To participate in development discussions, please subscribe to the [automotive-eg-rvi](https://lists.linuxfoundation.org/mailman/listinfo/automotive-eg-rvi) mailing list, or join the #automotive channel on Freenode. Code is reviewed on [gerrit](https://gerrithub.io). Development is planned and issues are tracked in [JIRA](https://www.atlassian.com/software/jira).
 
-All code contributed to this project must be licensed under the MPL v2 license, a copy of which you can find in this repository. Documentation must be licensed under the CC 4.0 license.
+All code contributed to this project must be licensed under the [MPL v2 license](https://www.mozilla.org/MPL/2.0/), a copy of which you can find in this repository. Documentation must be licensed under the [CC BY 4.0 license](https://creativecommons.org/licenses/by/4.0/).
 
 ### <a name="style">Coding Style</a>
 
@@ -101,8 +104,7 @@ Developers must only implement functionality for which there is an associated re
 
 ## Database Migrations
 
-Never make changes to migrations that already exist. Add columns by creating a new migration with an
-'ALTER TABLE' statement.
+Never make changes to migrations that already exist. Add columns by creating a new migration with an 'ALTER TABLE' statement.
 
 If someone else has added a migration, run `sbt core/flywayMigrate` to update your local database.
 
@@ -111,11 +113,9 @@ If someone else has added a migration, run `sbt core/flywayMigrate` to update yo
 
 ### Table names are UpperCamelCase Singular.
 
-Table names should be the same as the Scala domain object that represents them (if it exists). By using the same
-casing rules as Scala, the domain object and SQL table names can match exactly.
+Table names should be the same as the Scala domain object that represents them (if it exists). By using the same casing rules as Scala, the domain object and SQL table names can match exactly.
 
-For more arguments on the singular/plural naming, see
-http://stackoverflow.com/questions/338156/table-naming-dilemma-singular-vs-plural-names
+For more arguments on the singular/plural naming, see http://stackoverflow.com/questions/338156/table-naming-dilemma-singular-vs-plural-names
 
 ### Column names are lowerCamelCase
 
@@ -125,32 +125,35 @@ Lower camel case column names should match scala property names.
 
 For example:
 
+```sql
     -- Good
     CREATE TABLE Person (
       id int PRIMARY KEY,
       ...
     );
+```
 
 rather than:
 
+```sql
     -- BAD
     CREATE TABLE Person (
       personId int PRIMARY KEY, -- BAD: should be 'id'
       ...
     );
-                                                                                                                                                                             105,1         Bot
+```
+
+<!---
 
 # Build Instructions
 
 ## Client
 
+
+
 ## Server
 
-### Core
-
-### Web Server
-
-### External Resolver
+The sota-server project, including the Core, External Resolver, and Web Server, should build simply using `sbt`.
 
 # Test Configuration and Execution
 
@@ -170,8 +173,7 @@ For the server-side components, this project includes a [Docker Launcher](https:
 
 ### Local
 
-For deploying a development system to your local machine, make sure you have
-Docker Launcher and Docker installed and configured to your liking.
+For deploying a development system to your local machine, make sure you have Docker Launcher and Docker installed and configured to your liking.
 
 Then copy `docker-launcher.yml.example` to `docker-launcher.yml` and edit it to
 match your preferences. You can then deploy a development system with
@@ -203,4 +205,4 @@ To stop the running system run
 ```sh
 docker-launcher --teardown -c docker-launcher.yml deploy-sota-aws.yml
 ```
-
+-->
