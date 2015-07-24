@@ -1,7 +1,6 @@
 ---
 services:
   - name: mysql
-    version: "{{ mariadb_version }}"
     repo: advancedtelematic/mariadb
     ports:
       - 3306
