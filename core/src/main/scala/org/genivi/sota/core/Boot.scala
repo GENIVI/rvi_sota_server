@@ -13,7 +13,6 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Directives
-import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.ExceptionHandler
 import akka.stream.ActorMaterializer
 import db._
@@ -22,20 +21,19 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
 import spray.json.{JsObject, JsString}
 
-trait Protocols extends DateTimeJsonProtocol {
+object JsonProtocols extends DateTimeJsonProtocol {
   implicit val installCampaignFormat = jsonFormat5(InstallCampaign.apply)
   implicit val vinFormat = jsonFormat(Vin, "vin")
   implicit val pkgFormat = jsonFormat5(Package.apply)
 }
 
-class WebService(implicit system: ActorSystem,
-                 mat: ActorMaterializer,
-                 exec: ExecutionContext,
-                 log: LoggingAdapter) extends Directives with Protocols {
+class WebService(implicit system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext) extends Directives {
+  import JsonProtocols._
 
   val resolverHost = system.settings.config.getString("resolver.host")
   val resolverPort = system.settings.config.getInt("resolver.port")
   val resolver = new Resolver(resolverHost, resolverPort)
+  val log = Logging(system, "webservice")
 
   val exceptionHandler = ExceptionHandler {
     case e: Throwable =>
