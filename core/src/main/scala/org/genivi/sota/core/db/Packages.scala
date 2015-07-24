@@ -11,7 +11,7 @@ object Packages {
     def name = column[String]("name")
     def version = column[String]("version")
     def description = column[String]("description")
-    def vendor = column[String]("description")
+    def vendor = column[String]("vendor")
 
     def * = (id.?, name, version, description.?, vendor.?) <>
       ((Package.apply _).tupled, Package.unapply)
