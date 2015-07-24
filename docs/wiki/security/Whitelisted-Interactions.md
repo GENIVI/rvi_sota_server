@@ -7,8 +7,8 @@
     - [WL-4](#wl-4) Web Browser sends new VIN to Web Server
     - [WL-5](#wl-5) Web Server sends new package data to SOTA Core
     - [WL-6](#wl-6) Web Server sends new VIN to SOTA Core
-    - [WL-7](#wl-7) Web Server sends new package data to SOTA Core
-    - [WL-8](#wl-8) Web Server sends new package data to External Resolver
+    - [WL-7](#wl-7) Web Server sends new package data to External Resolver
+    - [WL-8](#wl-8) Web Server sends new VIN to External Resolver
     - [WL-9](#wl-9) Web Server sends new VIN to External Resolver
     - [WL-10](#wl-10) External Resolver persists new VIN to External Resolver Database
     - [WL-11](#wl-11) External Resolver persists new package data to External Resolver Database
@@ -101,14 +101,14 @@ The Web Server can send the VINs data to the SOTA Core using JSON over HTTP on p
    * Upon the Web Server's request, SOTA Core can start a new VIN insertion process and if a new database entry is created, it will respond with a 'Row Inserted' message in the response body and a 200 status code.
    * Upon the Web Server's request, SOTA Core can start a new VIN insertion process and if a database entry already exists, it will respond with a 'VIN already exists' message in the response body and a 409 status code.
 
-### <a name="wl-7">[WL-7](https://github.com/advancedtelematic/sota-server/wiki/permitted-interactions#wl-7) Web Server sends new package data to SOTA Core</a>
+### <a name="wl-7">[WL-7](https://github.com/advancedtelematic/sota-server/wiki/permitted-interactions#wl-7) Web Server sends new package data to External Resolver</a>
 
 The Web Server can send new Package data to the External Resolver using JSON over HTTP on port 80.
 
    * Upon the Web Server's request, the External Resolver can start a new Package insertion process and if a new database entry is created, it will respond with a 'Row Inserted' message in the response body and a 200 status code.
    * Upon the Web Server's request, the External Resolver can start a new Package insertion process and if a database entry already exists, it will respond with a 'VIN already exists' message in the response body and a 409 status code.
 
-### <a name="wl-8">[WL-8](https://github.com/advancedtelematic/sota-server/wiki/permitted-interactions#wl-8) Web Server sends new package data to External Resolver</a>
+### <a name="wl-8">[WL-8](https://github.com/advancedtelematic/sota-server/wiki/permitted-interactions#wl-8) Web Server sends new vins to External Resolver</a>
 
 The Web Server can send new VINs to the External Resolver using JSON over HTTP on port 80.
 
