@@ -1,103 +1,102 @@
 (function () {
+  var HandleFailMixin = {
+    getInitialState: function() {
+      return {postStatus : ""};
+    },
+    sendPostRequest: function(url, data) {
+      return $.ajax({
+        type: "POST",
+        url: url,
+        dataType: 'json',
+        data: JSON.stringify(data),
+        contentType: "application/json"
+      });
+    },
+    sendRequest: function(url, data) {
+      this.sendPostRequest(url, data)
+        .success(this.onSuccess.bind(this))
+        .fail(this.onFail.bind(this));
+    },
+    onFail: function(data) {
+      var res = JSON.parse(data.responseText);
+      this.setState({postStatus: res.errorMsg});
+    }
+  };
+
   var AddVin = React.createClass({
+    mixins: [HandleFailMixin],
     handleSubmit: function(e) {
       e.preventDefault();
-      this.setState({vinPostStatus: ""});
-      var vinText = React.findDOMNode(this.refs.vin).value.trim();
-      if(!vinText || vinText.length !== 17 || !/^[A-Z0-9]+$/.test(vinText)) {
-        this.setState({vinPostStatus: "VINs must consist of numbers and uppercase letters only."});
+      this.setState({postStatus: ""});
+
+      payload = serializeForm(this.refs.form);
+      if (this.validate(payload.vin) === false) {
+        this.setState({postStatus: "VINs must consist of numbers and uppercase letters only."});
         return;
       }
-
-      $.ajax({
-        type: "POST",
-        url: this.props.url,
-        dataType: 'json',
-        data: JSON.stringify({ "vin": vinText }),
-        contentType: "application/json"
-      })
-        .done(function(data) {
-          this.setState({vinPostStatus: "Added VIN \"" + vinText + "\" successfully"});
-          React.findDOMNode(this.refs.vin).value = '';
-        }.bind(this))
-        .fail(function(data) {
-          var res = JSON.parse(data.responseText);
-          this.setState({vinPostStatus: res.errorMsg});
-        }.bind(this));
+      this.sendRequest(this.props.url, payload);
     },
-    getInitialState: function() {
-      return {vinPostStatus : ""};
+    onSuccess: function(data) {
+      this.setState({postStatus: "Added VIN \"" + vinText + "\" successfully"});
+      React.findDOMNode(this.refs.vin).value = '';
+    },
+    validate: function(vinText) {
+      if (!vinText || vinText.length !== 17 || !/^[A-Z0-9]+$/.test(vinText)) {
+        this.setState({postStatus: "VINs must consist of numbers and uppercase letters only."});
+        return false;
+      }
+      return true;
     },
     render: function() { return (
-        <form onSubmit={this.handleSubmit}>
+        <form ref='form' onSubmit={this.handleSubmit}>
           <div className="form-group">
             <label htmlFor="vin">VIN</label>
-            <input type="text" className="form-control" id="vin" ref="vin" placeholder="VIN"/>
+            <input type="text" className="form-control" id="vin" ref="vin" name="vin" placeholder="VIN"/>
           </div>
           <button type="submit" className="btn btn-primary">Add VIN</button>
-          {this.state.vinPostStatus}
+          {this.state.postStatus}
         </form>
       );}
   });
 
   var AddPackage = React.createClass({
+    mixins: [HandleFailMixin],
     handleSubmit: function(e) {
       e.preventDefault();
-      var vals = [];
-      $.each(this.refs.form.getDOMNode().elements, function(i,el) { vals.push($(el).val())});
-      var package = {
-        name: vals[0],
-        version: vals[1],
-        description: vals[2],
-        vendor: vals[3]
-      };
-      $.ajax({
-        type: "POST",
-        url: this.props.url,
-        data: JSON.stringify(package),
-        dataType: 'json',
-        contentType: "application/json"
-      })
-        .done(function(data) {
-          this.setState({packagePostStatus: "Added PACKAGE \"" + package.name + "\" successfully"});
-          React.findDOMNode(this.refs.package).value = '';
-          React.render(<UpdatePackage url="/api/v1/install_campaigns" val={ package.name } data={ data }/>, document.getElementById('updatePackage'));
-        }.bind(this))
-        .fail(function(data) {
-          this.setState({packagePostStatus: ""});
-          console.log("error", data.responseText);
-          var data = { id: 123 };
-          React.render(<UpdatePackage url="/api/v1/install_campaigns" val={ package.name } data={ data }/>, document.getElementById('updatePackage'));
-        }.bind(this));
+
+      payload = serializeForm(this.refs.form);
+      this.sendRequest(this.props.url, payload);
     },
-    getInitialState: function() {
-      return {packagePostStatus : ""};
+    onSuccess: function(data) {
+      this.setState({postStatus: "Added PACKAGE \"" + payload.name + "\" successfully"});
+      React.render(<UpdatePackage url="/api/v1/install_campaigns" val={ payload.name } data={ data }/>, $('#updatePackage')[0]);
     },
     render: function() { return (
         <form ref='form' onSubmit={this.handleSubmit}>
           <div className="form-group">
             <label htmlFor="name">Package Name</label>
-            <input type="text" className="form-control" id="name" ref="name" placeholder="PACKAGE NAME"/>
+            <input type="text" className="form-control" name="name" ref="name" placeholder="PACKAGE NAME"/>
           </div>
           <div className="form-group">
             <label htmlFor="version">Version</label>
-            <input type="text" className="form-control" id="version" ref="version" placeholder="10"/>
+            <input type="text" className="form-control" name="version" ref="version" placeholder="10"/>
           </div>
           <div className="form-group">
             <label htmlFor="description">Description</label>
-            <input type="text" className="form-control" id="description" ref="description" placeholder="Description text"/>
+            <input type="text" className="form-control" name="description" ref="description" placeholder="Description text"/>
           </div>
           <div className="form-group">
             <label htmlFor="verdor">Verdor</label>
-            <input type="text" className="form-control" id="vendor" ref="vendor" placeholder="Vendor name"/>
+            <input type="text" className="form-control" name="vendor" ref="vendor" placeholder="Vendor name"/>
           </div>
           <button type="submit" className="btn btn-primary">Add PACKAGE</button>
-          {this.state.packagePostStatus}
+          {this.state.postStatus}
         </form>
       );}
   });
 
   var UpdatePackage = React.createClass({
+    mixins: [HandleFailMixin],
     handleSubmit: function(e) {
       e.preventDefault();
       var timestamp = new Date();
@@ -107,24 +106,10 @@
         startAfter: timestamp,
         endBefore: new Date(timestamp.getTime() + 10*60000)
       }
-      $.ajax({
-        type: "POST",
-        dataType: 'json',
-        url: this.props.url,
-        data: JSON.stringify(payload),
-        contentType: "application/json"
-      })
-        .done(function(data) {
-          this.setState({packagePostStatus: "Updated PACKAGE \"" + this.props.val + "\" successfully"});
-          React.findDOMNode(this.refs.package).value = '';
-        }.bind(this))
-        .fail(function(data) {
-          var res = JSON.parse(data.responseText)
-          this.setState({packagePostStatus: res.errorMsg});
-        }.bind(this));
+      this.sendRequest(this.props.url, payload);
     },
-    getInitialState: function() {
-      return {packagePostStatus : ""};
+    onSuccess: function(data) {
+      this.setState({postStatus: "Updated PACKAGE \"" + this.props.val + "\" successfully"});
     },
     render: function() { return (
         <form onSubmit={this.handleSubmit}>
@@ -133,10 +118,32 @@
             <input type="hidden" className="form-control" id="package" ref="package" value={ this.props.val }/>
           </div>
           <button type="submit" className="btn btn-primary">Update</button>
-          {this.state.packagePostStatus}
+          {this.state.postStatus}
         </form>
     );}
   });
+
+  $.fn.serializeObject = function()
+  {
+      var o = {};
+      var a = this.serializeArray();
+      $.each(a, function() {
+          if (o[this.name] !== undefined) {
+              if (!o[this.name].push) {
+                  o[this.name] = [o[this.name]];
+              }
+              o[this.name].push(this.value || '');
+          } else {
+              o[this.name] = this.value || '';
+          }
+      });
+      return o;
+  };
+
+  var serializeForm = function(formRef) {
+    return $(formRef.getDOMNode()).serializeObject();
+  };
+
 
   React.render(<AddVin url="/api/v1/vins" />, document.getElementById('app'));
   React.render(<AddPackage url="/api/v1/packages"/>, document.getElementById('package'));
