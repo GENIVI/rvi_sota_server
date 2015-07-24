@@ -1,4 +1,4 @@
-package org.genivi.sota.core.db
+package org.genivi.sota.resolver.db
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
