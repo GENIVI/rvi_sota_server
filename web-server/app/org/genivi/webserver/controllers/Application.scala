@@ -9,6 +9,7 @@ import javax.inject.Inject
 import play.api.mvc._
 import play.api.libs.ws._
 import scala.concurrent.Future
+import play.api.http.Status
 
 class Application @Inject() (ws: WSClient) extends Controller {
 
@@ -26,11 +27,16 @@ class Application @Inject() (ws: WSClient) extends Controller {
   def apiProxy (path: String) = Action.async(parse.json) { request =>
     val RequestResponse: Future[Result] = for {
       responseOne <- ws.url(protocol + coreHost + ":" + corePort + request.path).post(request.body)
-      responseTwo <- ws.url(protocol + resolverHost + ":" + resolverPort + request.path).post(request.body)
+      responseTwo <- ws.url(protocol + resolverHost + ":" + resolverPort + request.path)
+        .post(request.body)
     } yield
 
-    if(responseTwo.status == Results.Ok) {
-      Ok(responseTwo.body)
+    if(isSuccessfulStatusCode(responseTwo.status)) {
+      if(isSuccessfulStatusCode(responseOne.status)) {
+        Ok(responseOne.body)
+      } else {
+        BadRequest(toJson(Map("errorMsg" -> responseOne.body)))
+      }
     } else {
       BadRequest(toJson(Map("errorMsg" -> responseTwo.body)))
     }
@@ -39,12 +45,17 @@ class Application @Inject() (ws: WSClient) extends Controller {
 
   def installCampaign = Action.async(parse.json) { request =>
     ws.url(protocol + coreHost + ":" + corePort + request.path).post(request.body).map { response =>
-      if(response.status == Results.Ok) {
+      if(isSuccessfulStatusCode(response.status)) {
         Ok(response.body)
       } else {
         BadRequest(toJson(Map("errorMsg" -> response.body)))
       }
     }
+  }
+
+  def isSuccessfulStatusCode (code : Int) : Boolean = {
+    //checks if status code is in range 200-299
+    code >= http.Status.OK && code < http.Status.MULTIPLE_CHOICES
   }
 
 }
