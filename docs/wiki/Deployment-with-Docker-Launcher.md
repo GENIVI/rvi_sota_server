@@ -1,20 +1,35 @@
 # Docker Launcher
 
-Docker Launcher launches projects using Docker and Ansible. It is a prerequisite for deploying the SOTA server, and can be installed from [its GitHub repository.](https://github.com/advancedtelematic/docker-launcher)
+Docker Launcher launches projects using Docker and Ansible. It is a prerequisite for deploying the SOTA server, and can be installed from [its GitHub repository.](https://github.com/advancedtelematic/docker-launcher) **Please ensure you are using the latest version of Docker Launcher. Older versions may not correctly deploy the SOTA Server.**
 
 # Deploying with Docker Launcher
 
 ## Development System
 
-For deploying a development system to your local machine, make sure you have
-Docker Launcher and Docker installed and configured to your liking.
+As a prerequisite to deploying a local development system, you must run
 
-Then copy `docker-launcher.yml.example` to `docker-launcher.yml` and edit it to
-match your preferences. You can then deploy a development system with
+```sh
+./sbt docker:publishLocal
+```
+
+Once this completes successfully, you may deploy with [Docker Launcher.](https://github.com/advancedtelematic/docker-launcher)
+For deploying a development system to your local machine, make sure you have
+Docker Launcher and Docker installed and configured to your liking. Docker Launcher currently requires Docker >= v.1.6.1 and Ansible v.1.9.2. Ansible 2.x has not yet been tested, and is not guaranteed to work.
+
+First, enter the `deploy` directory, and copy the example Docker Launcher configuration file, then edit it to match your preferences. The only values you should need to change are the `user` and `email` fields in `docker-launcher.yml`. These should be a valid username and associated email address for Docker Hub.
+
+```sh
+cd deploy
+cp docker-launcher.yml.example docker-launcher.yml
+```
+
+You can then deploy a development system with
 
 ```sh
 docker-launcher -c docker-launcher.yml deploy-sota-local.yml
 ```
+
+For a local deployment, a Docker Hub password is not actually required. When prompted for one, you can just press enter to continue.
 
 To stop the running system run
 

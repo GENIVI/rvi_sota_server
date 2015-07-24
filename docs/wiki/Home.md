@@ -36,7 +36,7 @@ To check the version of java installed, run:
     Java(TM) SE Runtime Environment (build 1.8.0_45-b14)
     Java HotSpot(TM) 64-Bit Server VM (build 25.45-b02, mixed mode)
 
-For development, a local MariaDB install is required. Create a two databases called 'sota_core' and 'sota_resolver':
+For development, a local MariaDB install is required. (Note that this is **not** required for deployment.) Create two databases called 'sota_core' and 'sota_resolver':
 
 ```sql
     mysql -u root -p
