@@ -103,13 +103,29 @@
       var payload = {
         packageId: this.props.data.id,
         priority: 10,
-        startAfter: timestamp,
-        endBefore: new Date(timestamp.getTime() + 10*60000)
+        startAfter: this.formatDatetime(timestamp),
+        endBefore: this.formatDatetime(new Date(timestamp.getTime() + 10*60000))
       }
       this.sendRequest(this.props.url, payload);
     },
     onSuccess: function(data) {
       this.setState({postStatus: "Updated PACKAGE \"" + this.props.val + "\" successfully"});
+    },
+    formatDatetime: function(now) {
+        tzo = -now.getTimezoneOffset(),
+        dif = tzo >= 0 ? '+' : '-',
+        pad = function(num) {
+            var norm = Math.abs(Math.floor(num));
+            return (norm < 10 ? '0' : '') + norm;
+        };
+      return now.getFullYear()
+        + '-' + pad(now.getMonth()+1)
+        + '-' + pad(now.getDate())
+        + 'T' + pad(now.getHours())
+        + ':' + pad(now.getMinutes())
+        + ':' + pad(now.getSeconds())
+        + dif + pad(tzo / 60)
+        + ':' + pad(tzo % 60);
     },
     render: function() { return (
         <form onSubmit={this.handleSubmit}>
