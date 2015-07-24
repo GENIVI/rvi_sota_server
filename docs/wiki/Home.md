@@ -19,6 +19,68 @@ For the server-side components, this project includes a [docker_laucher](https:/
 
 See [docs/docker-launcher.md](https://github.com/advancedtelematic/sota-server/master/docs/docker-launcher.md) for deploying developement or production systems with Docker Launcher
 
+## Building Locally
+
+For local development, the following prerequisites are required:
+
+1) Java 8
+2) mysql (with appropriate databases created)
+
+The other dependencies are managed using Scala's `sbt`. If you have sbt installed then use it, otherwise the `./sbt` script in the root of the project will bootstrap everything you need beyond Java 8.
+
+To check the version of java installed, run:
+
+    # java -version
+    java version "1.8.0_45"
+    Java(TM) SE Runtime Environment (build 1.8.0_45-b14)
+    Java HotSpot(TM) 64-Bit Server VM (build 25.45-b02, mixed mode)
+
+For development, a local MariaDB install is required. Create a two databases called 'sota_core' and 'sota_resolver':
+
+    mysql -u root -p
+    CREATE DATABASE sota_core;
+    CREATE DATABASE sota_resolver;
+    CREATE USER 'sota'@'localhost' IDENTIFIED BY 's0ta';
+    GRANT ALL PRIVILEGES ON sota_core . * TO 'sota'@'localhost';
+    GRANT ALL PRIVILEGES ON sota_resolver . * TO 'sota'@'localhost';
+    FLUSH PRIVILEGES;
+
+To update the database schema, run:
+
+    CORE_DB_URL=jdbc:mysql://localhost:3306/sota_core sbt core/flywayMigrate
+    CORE_DB_URL=jdbc:mysql://localhost:3306/sota_resolver sbt core/flywayMigrate
+
+This will apply any new migrations in src/main/resources/db/migration, and keep your existing data.
+
+If you are using an encrypted home directory, you may get the following error when attempting a build. This is because scala/sbt tends to create long file names, and these get expanded even further by ecryptfs.
+
+    [error] File name too long
+    [error] one error found
+    [error] (core/compile:compileIncremental) Compilation failed
+    [error] Total time: 9 s, completed Jul 24, 2015 9:10:13 AM
+
+The solution is to point the build directories to somewhere outside ecryptfs:
+
+    sudo mkdir /var/sota-build
+    sudo chown `whoami` /var/sota-build/
+    mkdir /var/sota-build/core-target
+    mkdir /var/sota-build/resolver-target
+    mkdir /var/sota-build/webserver-target
+    rm -r core/target/
+    rm -r external-resolver/target
+    rm -r web-server/target
+    ln -s /var/sota-build/core-target/ core/target
+    ln -s /var/sota-build/resolver-target external-resolver/target
+    ln -s /var/sota-build/webserver-target/ web-server/target
+
+Once flywayMigrate has run, open three consoles and run:
+
+    sbt core/run
+    sbt resolver/run
+    CORE_HOST=localhost RESOLVER_HOST=localhost sbt webserver/run
+
+Now open [localhost:9000](http://localhost:9000/) in a browser.
+
 ## Contributing
 
 This project is developed entirely in the open, on public mailing lists and with public code reviews. To participate in development discussions, please subscribe to the [automotive-eg-rvi](https://lists.linuxfoundation.org/mailman/listinfo/automotive-eg-rvi) mailing list, or join the #automotive channel on Freenode. Code is reviewed on [gerrit](https://gerrithub.io). Development is planned and issues are tracked in [JIRA](https://www.atlassian.com/software/jira).
@@ -36,23 +98,6 @@ This project is developed with a special focus on secure engineering. In the *do
 During development, any interaction between components must be documented and included in the security modelling. To this end, each project includes a list of implemented requirements and permitted interactions.
 
 Developers must only implement functionality for which there is an associated requirement, described in the project JIRA. When implementing functionality, developers must update the list of implemented requirements (*docs/requirements.md*). Developers must only implement interactions that are permitted or whitelisted according to the associated JIRA ticket. The list of [Whitelisted Interactions](Whitelisted-Interactions) should be updated when new functionality is implemented, and reviewers should ensure that the code only implements permitted interactions.
-
-## Database setup
-
-For development, a local MariaDB install is required. Create a new database called 'sota':
-
-    mysql -u root -p
-    CREATE DATABASE sota;
-    CREATE USER 'sota'@'localhost' IDENTIFIED BY 's0ta';
-    GRANT ALL PRIVILEGES ON sota . * TO 'sota'@'localhost';
-    FLUSH PRIVILEGES;
-
-To update the database schema, run:
-
-    sbt core/flywayMigrate
-
-This will apply any new migrations in src/main/resources/db/migration, and keep your existing data.
-
 
 ## Database Migrations
 
