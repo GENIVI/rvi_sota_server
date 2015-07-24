@@ -24,8 +24,8 @@ See [Deployment with Docker Launcher](Deployment-with-Docker-Launcher) for deplo
 
 For local development, the following prerequisites are required:
 
-1) Java 8
-2) mysql (with appropriate databases created)
+1. Java 8
+2. mysql (with appropriate databases created)
 
 The other dependencies are managed using Scala's `sbt`. If you have sbt installed then use it, otherwise the `./sbt` script in the root of the project will bootstrap everything you need beyond Java 8.
 
@@ -36,7 +36,7 @@ To check the version of java installed, run:
     Java(TM) SE Runtime Environment (build 1.8.0_45-b14)
     Java HotSpot(TM) 64-Bit Server VM (build 25.45-b02, mixed mode)
 
-For development, a local MariaDB install is required. (Note that this is **not** required for deployment.) Create two databases called 'sota_core' and 'sota_resolver':
+For development, a local MariaDB install is required. (Note that this is **not** required for deployment, as Docker Launcher will handle the creation of the database. If a Docker Launcher local deployment is attempted on a machine already running a database instance, there may be conflicts.) Create two databases called 'sota_core' and 'sota_resolver':
 
 ```sql
     mysql -u root -p
@@ -143,66 +143,3 @@ rather than:
     );
 ```
 
-<!---
-
-# Build Instructions
-
-## Client
-
-
-
-## Server
-
-The sota-server project, including the Core, External Resolver, and Web Server, should build simply using `sbt`.
-
-# Test Configuration and Execution
-
-## Client
-
-## Server
-
-# System Deployment
-
-## Client
-
-The *sota-client* project builds an RPM that can be installed on a target system, and includes Yocto recipes to allow it to be built into a GENIVI Demo Platform or AGL Reference Platform image.
-
-## Server
-
-For the server-side components, this project includes a [Docker Launcher](https://github.com/advancedtelematic/sota-server/wiki/Docker-Launcher) configuration file to allow the cluster of components to be deployed conveniently to a developer machine or IaaS cloud (e.g. AWS).
-
-### Local
-
-For deploying a development system to your local machine, make sure you have Docker Launcher and Docker installed and configured to your liking.
-
-Then copy `docker-launcher.yml.example` to `docker-launcher.yml` and edit it to
-match your preferences. You can then deploy a development system with
-
-```sh
-docker-launcher -c docker-launcher.yml deploy-sota-local.yml
-```
-
-To stop the running system run
-
-```sh
-docker-launcher --teardown -c docker-launcher.yml deploy-sota-local.yml
-```
-
-### AWS
-
-For deploying a development system to AWS, make sure you have
-Docker Launcher and Docker installed and configured to your liking.
-
-Then copy `docker-launcher.yml.example` to `docker-launcher.yml` and edit it to
-match your preferences. You can then deploy a development system with
-
-```sh
-docker-launcher -c docker-launcher.yml deploy-sota-aws.yml
-```
-
-To stop the running system run
-
-```sh
-docker-launcher --teardown -c docker-launcher.yml deploy-sota-aws.yml
-```
--->
