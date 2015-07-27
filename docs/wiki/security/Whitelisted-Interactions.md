@@ -56,6 +56,17 @@
     - [WL-49](#wl-49) SOTA Client sends Install Report to RVI Node Client
     - [WL-50](#wl-50) RVI Node Client sends Install Report to RVI Node Server
     - [WL-51](#wl-51) RVI Node Server sends Install Report to SOTA Core
+1. [SOTA-46](#sota-46) Log in to Admin GUI
+    - [WL-52](#wl-52) Web Server sends login page and assets to Web Browser
+    - [WL-53](#wl-53) Web Browser sends login credentials to Web Server
+    - [WL-54](#wl-54) Web Server sends session cookie to Web Browser
+    - [WL-55](#wl-55) Web Browser sends session cookie to Web Server
+    - [WL-56](#wl-56) Web Server sends redirect to login page for unauthenticated user
+    - [WL-57](#wl-57) Web Server sends redirect back to original request page for logged-in user
+1. [SOTA-47](#sota-47) Navigate Admin GUI
+    - [WL-58](#wl-58) Web Browser sends request for Admin GUI resource to Web Server, submitting session cookie
+    - [WL-59](#wl-59) Web Server sends Admin GUI resource HTML and associated assets to Web Browser
+    - [WL-56](#wl-56) Web Server sends redirect to login page for unauthenticated user
 
 
 ## <a name="sota-1">[SOTA-1](https://advancedtelematic.atlassian.net/browse/SOTA-1) Add VIN and Package</a>
@@ -438,3 +449,46 @@ RVI Node Server can send an Install Report to the SOTA Core using JSON on port 8
    * Upon the RVI Node Server's request, SOTA Core can accept the Install Report and if the installation was finished without errors, it will respond with '*Package ID* success' in the response body and a 200 status code.
    * Upon the RVI Node Server's request, SOTA Core can accept the Install Report and if the VIN is already marked as complete, it will respond with '*Package ID* failed' in the response body and a 409 status code.
    * Upon the RVI Node Server's request, SOTA Core can accept the Install Report and if the VIN is already marked as failed, it will respond with '*Package ID* failed' in the response body and a 409 status code.
+
+## <a name="sota-46">[SOTA-46](https://advancedtelematic.atlassian.net/browse/SOTA-46) Log in to Admin GUI</a>
+
+### <a name="wl-52">[WL-52](https://github.com/advancedtelematic/sota-server/wiki/Whitelisted-Interactions#wl-52) Web Server sends login page and assets to Web Browser</a>
+
+   * Upon receiving unauthenticated request from Web Browser, Web Server sends login page HTML and assets over HTTPS (port 443) to Web Browser.
+
+### <a name="wl-53">[WL-53](https://github.com/advancedtelematic/sota-server/wiki/Whitelisted-Interactions#wl-53) Web Browser sends login credentials to Web Server</a>
+
+   * When user enters and submit credentials in Web Browser, Web Browser sends the credentials to Web Server over HTTPS POST (port 443),
+   * If the credentials are valid, Web Server sends Admin GUI page content and session cookie to Web Browser over HTTPS (port 443)
+   * If the credentials are invalid, Web Server sends Access Denied (HTTP 401) to Web Browser over HTTPS (port 443)
+
+### <a name="wl-54">[WL-54](https://github.com/advancedtelematic/sota-server/wiki/Whitelisted-Interactions#wl-54) Web Server sends session cookie to Web Browser</a>
+
+   * In response to a request from a Web Browser, Web Server may include an HTTP Cookie to establish a session
+
+### <a name="wl-55">[WL-55](https://github.com/advancedtelematic/sota-server/wiki/Whitelisted-Interactions#wl-55) Web Browser sends session cookie to Web Server</a>
+
+   * When requesting resources from Web Server, Web Browser may include any locally stored HTTP Cookie associated with the Admin GUI domain
+
+### <a name="wl-56">[WL-56](https://github.com/advancedtelematic/sota-server/wiki/Whitelisted-Interactions#wl-56) Web Server sends redirect to login page for unauthenticated user</a>
+
+   * In response to HTTPS (port 443) requests from a Web Browser, the Web Server may send HTTPS 301 redirect responses to unauthenticated clients
+
+### <a name="wl-57">[WL-57](https://github.com/advancedtelematic/sota-server/wiki/Whitelisted-Interactions#wl-57) Web Server sends redirect back to original request page for logged-in user</a>
+
+   * In response to HTTPS (port 443) requests from a Web Browser that include valid login credentials, the Web Server may send an HTTPS 301 response to authenticated clients for protected resources.
+
+## <a name="sota-47">[SOTA-47](https://advancedtelematic.atlassian.net/browser/SOTA-47) Navigate Admin GUI
+
+### <a name="wl-58">[WL-58](https://github.com/advancedtelematic/sota-server/wiki/Whitelisted-Interactions#wl-58) Web Browser sends request for Admin GUI resource to Web Server, submitting session cookie</a>
+
+   * Web Browser may send HTTPS (port 443) requests to Web Server on behalf of user for protected Admin GUI resources
+   * Requests may include any locally stored Cookies associated with the Admin GUI Domain
+
+### <a name="wl-59">[WL-59](https://github.com/advancedtelematic/sota-server/wiki/Whitelisted-Interactions#wl-59) Web Server sends Admin GUI resource HTML and associated assets to Web Browser</a>
+
+   * In response to authenticated HTTPS (port 443) requests from Web Browser for protected Admin GUI resources, Web Server may send back associated HTML and resources to render resource details and necessary hyperlinks, JavaScript code, assets, etc. to Web Browser.
+
+### <a name="wl-56">[WL-56](https://github.com/advancedtelematic/sota-server/wiki/Whitelisted-Interactions#wl-56) Web Server sends redirect to login page for unauthenticated user</a>
+
+   * In response to unauthenticated HTTPS (port 443) requests from Web Browser, Web Server may send an HTTPS 301 response to direct Web Browser to login page
