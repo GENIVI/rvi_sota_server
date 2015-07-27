@@ -14,11 +14,9 @@ import play.api.test.Helpers._
 class ApplicationSpec extends Specification {
 
   "Application" should {
-
     "send 404 on a bad request" in new WithApplication{
       route(FakeRequest(GET, "/invalid")) must beSome.which (status(_) == NOT_FOUND)
     }
-
     "render the index page" in new WithApplication{
       val home = route(FakeRequest(GET, "/")).get
 

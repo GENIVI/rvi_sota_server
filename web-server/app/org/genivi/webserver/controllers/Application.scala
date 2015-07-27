@@ -9,7 +9,8 @@ import javax.inject.Inject
 import play.api.mvc._
 import play.api.libs.ws._
 import scala.concurrent.Future
-import play.api.http.Status
+
+import org.genivi.webserver.requesthelpers.RequestHelper._
 
 class Application @Inject() (ws: WSClient) extends Controller {
 
@@ -51,11 +52,6 @@ class Application @Inject() (ws: WSClient) extends Controller {
         BadRequest(toJson(Map("errorMsg" -> response.body)))
       }
     }
-  }
-
-  def isSuccessfulStatusCode (code : Int) : Boolean = {
-    //checks if status code is in range 200-299
-    code >= http.Status.OK && code < http.Status.MULTIPLE_CHOICES
   }
 
 }

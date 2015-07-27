@@ -59,6 +59,7 @@ object SotaBuild extends Build {
       resolvers += "scalaz-bintray"  at "http://dl.bintray.com/scalaz/releases",
       dockerExposedPorts := Seq(9000),
       libraryDependencies ++= Seq (
+        "org.scalatestplus" %% "play" % "1.4.0-M3" % "test",
         specs2 % Test,
         ws
       )
