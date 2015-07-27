@@ -1,11 +1,11 @@
 package org.genivi.sota.resolver.db
 
-import org.genivi.sota.resolver.Vin
+import org.genivi.sota.resolver.types.Vin
 import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import slick.driver.MySQLDriver.api._
 
 object Vins {
+
+  import slick.driver.MySQLDriver.api._
 
   class VinTable(tag: Tag) extends Table[Vin](tag, "Vin") {
     def vin = column[String]("vin", O.PrimaryKey)
@@ -14,7 +14,13 @@ object Vins {
 
   val vins = TableQuery[VinTable]
 
-  def list() = vins.result
+  def add(vin: Vin.ValidVin)(implicit ec: ExecutionContext): DBIO[Vin] = {
+    (vins += vin).map(_ => vin)
+  }
 
-  def create(vin: Vin) = vins += vin
+  def list: DBIO[Seq[Vin]] =
+    vins.result
+
+  def create: DBIO[Unit] =
+    vins.schema.create
 }

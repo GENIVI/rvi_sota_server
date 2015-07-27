@@ -20,6 +20,7 @@ import org.genivi.sota.core.db._
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 import spray.json.{JsObject, JsString}
 
 object JsonProtocols extends DateTimeJsonProtocol {
@@ -108,5 +109,10 @@ object Boot extends App with DatabaseConfig {
 
   val bindingFuture = Http().bindAndHandle(service.route, host, port)
 
-  log.info(s"Server online at http://$host:$port/\nPress RETURN to stop...")
+  log.info(s"Server online at http://$host:$port")
+
+  sys.addShutdownHook {
+    Try( db.close()  )
+    Try( system.shutdown() )
+  }
 }
