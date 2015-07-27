@@ -86,7 +86,7 @@
             <input type="text" className="form-control" name="description" ref="description" placeholder="Description text"/>
           </div>
           <div className="form-group">
-            <label htmlFor="verdor">Verdor</label>
+            <label htmlFor="vendor">Vendor</label>
             <input type="text" className="form-control" name="vendor" ref="vendor" placeholder="Vendor name"/>
           </div>
           <button type="submit" className="btn btn-primary">Add PACKAGE</button>
