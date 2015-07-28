@@ -13,8 +13,8 @@ object InstallCampaigns {
 
   import Mappings._
 
+  // scalastyle:off
   class InstallCampaignTable(tag: Tag) extends Table[InstallCampaign](tag, "InstallCampaign") {
-
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def packageId = column[Long]("packageId")
     def priority = column[Int]("priority")
@@ -24,14 +24,13 @@ object InstallCampaigns {
     def * = (id.?, packageId, priority, startAfter, endBefore) <>
       ((InstallCampaign.apply _).tupled, InstallCampaign.unapply)
   }
+  // scalastyle:on
 
   val installCampaigns = TableQuery[InstallCampaignTable]
 
-  def list() = installCampaigns.result
+  def list(): DBIO[Seq[InstallCampaign]] = installCampaigns.result
 
-  def create(installCampaign: InstallCampaign) = {
-    val insertion = (installCampaigns returning installCampaigns.map(_.id)
+  def create(installCampaign: InstallCampaign): DBIO[InstallCampaign] =
+    (installCampaigns returning installCampaigns.map(_.id)
       into ((request, id) => request.copy(id = Some(id)))) += installCampaign
-    insertion
-  }
 }

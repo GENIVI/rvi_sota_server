@@ -7,6 +7,7 @@ package org.genivi.webserver.controllers
 import org.genivi.webserver.requesthelpers.{RightResponse, LeftResponse, ErrorResponse}
 import play.api._
 import play.api.libs.iteratee.Enumerator
+import play.api.libs.json.JsValue
 import play.api.mvc._
 
 import play.api.libs.json.Json._
@@ -27,11 +28,11 @@ class Application @Inject() (ws: WSClient) extends Controller {
   val protocol = "http://"
   implicit val context = play.api.libs.concurrent.Execution.Implicits.defaultContext
 
-  def index = Action {
+  def index: Action[AnyContent] = Action {
     Ok(views.html.main())
   }
 
-  def apiProxy (path: String) = Action.async(parse.json) { request =>
+  def apiProxy(path: String): Action[JsValue] = Action.async(parse.json) { request =>
     val RequestResponse: Future[Result] = for {
       responseOne <- ws.url(protocol + coreHost + ":" + corePort + request.path).post(request.body)
       responseTwo <- ws.url(protocol + resolverHost + ":" + resolverPort + request.path)
@@ -46,7 +47,7 @@ class Application @Inject() (ws: WSClient) extends Controller {
     RequestResponse
   }
 
-  def installCampaign = Action.async(parse.json) { request =>
+  def installCampaign: Action[JsValue] = Action.async(parse.json) { request =>
     ws.url(protocol + coreHost + ":" + corePort + request.path).post(request.body).map { response =>
       resultFromWsResponse(response)
     }

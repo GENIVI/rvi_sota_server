@@ -53,7 +53,7 @@ object SotaBuild extends Build {
 
   lazy val core = Project(id = "core", base = file("core"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
-      libraryDependencies ++= Dependencies.Rest :+ Dependencies.NscalaTime,
+      libraryDependencies ++= Dependencies.Rest :+ Dependencies.NscalaTime :+ Dependencies.Scalaz,
       dockerExposedPorts := Seq(8080),
       flywayUrl := sys.env.get("CORE_DB_URL").orElse( sys.props.get("core.db.url") ).getOrElse("jdbc:mysql://localhost:3306/sota_core"),
       flywayUser := sys.env.get("CORE_DB_USER").orElse( sys.props.get("core.db.user") ).getOrElse("sota"),

@@ -4,23 +4,19 @@
  */
 package org.genivi.sota.core
 
-import akka.actor.Props
 import akka.actor.{ActorLogging, ActorSystem}
-import akka.event.LoggingAdapter
-import akka.event.{BusLogging, Logging}
+import akka.event.{BusLogging, Logging, LoggingAdapter}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.server.Directives
-import akka.http.scaladsl.server.ExceptionHandler
+import akka.http.scaladsl.server.{Directives, ExceptionHandler}
 import akka.stream.ActorMaterializer
-import java.util.concurrent.TimeUnit
 import org.genivi.sota.core.db._
-
-import scala.concurrent.duration.Duration
+import org.genivi.sota.core.rvi._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
+import slick.driver.MySQLDriver.api.Database
 import spray.json.{JsObject, JsString}
 
 object JsonProtocols extends DateTimeJsonProtocol {
@@ -29,7 +25,6 @@ object JsonProtocols extends DateTimeJsonProtocol {
   implicit val pkgFormat = jsonFormat5(Package.apply)
 }
 
-import slick.driver.MySQLDriver.api.Database
 class WebService(db : Database)(implicit system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext) extends Directives {
   import JsonProtocols._
 
@@ -47,15 +42,15 @@ class WebService(db : Database)(implicit system: ActorSystem, mat: ActorMaterial
       }
   }
 
-  def createCompain( campaign : InstallCampaign ) : Future[InstallCampaign] = {
-    def persistCompain( dependencies : Map[Vin, Set[Long]] ) = for {
+  def createCampaign( campaign : InstallCampaign ) : Future[InstallCampaign] = {
+    def persistCampaign( dependencies : Map[Vin, Set[Long]] ) = for {
       persistedCampaign <- InstallCampaigns.create(campaign)
       _   <- InstallRequests.createRequests( InstallRequest.from(dependencies, persistedCampaign.id.head).toSeq )
     } yield persistedCampaign
 
     for {
       dependencyMap     <- resolver.resolve(campaign.packageId)
-      persistedCampaign  <- db.run( persistCompain( dependencyMap)  ) 
+      persistedCampaign <- db.run(persistCampaign( dependencyMap))
     } yield persistedCampaign
   }
 
@@ -64,7 +59,7 @@ class WebService(db : Database)(implicit system: ActorSystem, mat: ActorMaterial
       path("install_campaigns") {
         (post & entity(as[InstallCampaign])) { campaign =>
           complete {
-            createCompain( campaign )
+            createCampaign( campaign )
           }
         }
       } ~
@@ -95,17 +90,22 @@ object Boot extends App with DatabaseConfig {
   implicit val log = Logging(system, "boot")
   val config = system.settings.config
 
-  val service = new WebService( db )
-
   val rviHost = config.getString("rvi.host")
   val rviPort = config.getInt("rvi.port")
-  val rviActor = system.actorOf(RviActor.props(rviHost, rviPort, db))
+
+  val rviInterface = new JsonRpcRviInterface(rviHost, rviPort)
+  val deviceCommunication = new DeviceCommunication(db, rviInterface, e => log.error(e, e.getMessage()))
+
+  val service = new WebService( db )
 
   import scala.concurrent.duration._
-  val cancellable = system.scheduler.schedule(50.millis, 1.second, rviActor, RviActor.Trigger)
+  val cancellable = system.scheduler.schedule(50.millis, 1.second) { deviceCommunication.runCurrentCampaigns }
 
   val host = config.getString("server.host")
   val port = config.getInt("server.port")
+
+  import Directives._
+  val routes = service.route ~ rvi.WebService.route(deviceCommunication)
 
   val bindingFuture = Http().bindAndHandle(service.route, host, port)
 

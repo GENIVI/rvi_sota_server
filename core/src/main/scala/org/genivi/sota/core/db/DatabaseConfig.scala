@@ -11,7 +11,6 @@ import slick.driver.MySQLDriver.api._
 
 object Mappings {
   implicit val jodaDateTimeMapping = {
-    
     MappedColumnType.base[DateTime, Timestamp](
       dt => new Timestamp(dt.getMillis),
       ts => new DateTime(ts))
@@ -19,7 +18,6 @@ object Mappings {
 }
 
 trait DatabaseConfig {
-
   val db = Database.forConfig("database")
 
   implicit val session: Session = db.createSession()

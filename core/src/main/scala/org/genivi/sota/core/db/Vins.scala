@@ -20,7 +20,7 @@ object Vins {
 
   val vins = TableQuery[VinTable]
 
-  def list() = vins.result
+  def list(): DBIO[Seq[Vin]] = vins.result
 
-  def create(vin: Vin) : DBIOAction[Int, NoStream, Effect.Write] = vins += vin
+  def create(vin: Vin) : DBIO[Int] = vins += vin
 }

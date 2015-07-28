@@ -9,8 +9,8 @@ import org.genivi.sota.core.Package
 
 object Packages {
 
+  // scalastyle:off
   class PackageTable(tag: Tag) extends Table[Package](tag, "Package") {
-
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def name = column[String]("name")
     def version = column[String]("version")
@@ -20,17 +20,18 @@ object Packages {
     def * = (id.?, name, version, description.?, vendor.?) <>
       ((Package.apply _).tupled, Package.unapply)
   }
+  // scalastyle:on
 
   val packages = TableQuery[PackageTable]
 
-  def list = packages.result
+  def list: DBIO[Seq[Package]] = packages.result
 
-  def create(pkg: Package) =
+  def create(pkg: Package): DBIO[Package] =
     (packages
       returning packages.map(_.id)
       into ((pkg, id) => pkg.copy(id = Some(id)))) += pkg
 
-  def createPackages(reqs: Seq[Package]) = {
+  def createPackages(reqs: Seq[Package]): DBIO[Seq[Package]] = {
     DBIO.sequence( reqs.map( create ) )
   }
 }

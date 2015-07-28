@@ -2,23 +2,29 @@
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.core.test
+package org.genivi.sota.core
 
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import org.genivi.sota.core.Vin
+import org.scalatest.BeforeAndAfterAll
 import org.scalatest.{WordSpec, Matchers}
 
-class VinResourceSpec extends WordSpec with Matchers with ScalatestRouteTest {
+class VinResourceSpec extends WordSpec
+    with TestDatabase
+    with Matchers
+    with ScalatestRouteTest
+    with BeforeAndAfterAll {
+
   import org.genivi.sota.core.JsonProtocols._
   import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 
-  import slick.driver.MySQLDriver.api._
-  val db = Database.forConfig("database")
+  lazy val service = new WebService (db)
 
-  lazy val service = new org.genivi.sota.core.WebService (db)
+  override def beforeAll {
+    resetDatabase
+  }
 
   val BasePath = Path("/api") / "v1"
 

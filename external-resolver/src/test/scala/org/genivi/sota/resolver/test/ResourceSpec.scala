@@ -6,21 +6,9 @@ package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.zaxxer.hikari.util.DriverDataSource
-import org.flywaydb.core.Flyway
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{WordSpec, PropSpec, Matchers}
-
-object Migrations {
-  def run(url: String, user: String, password: String) = {
-    val flyway = new Flyway
-
-    flyway.setDataSource(url, user, password)
-    flyway.setLocations("classpath:db.migration")
-    flyway.clean()
-    flyway.migrate()
-  }
-}
 
 trait ResourceSpec extends Matchers with ScalatestRouteTest { self: org.scalatest.Suite =>
 
@@ -46,8 +34,7 @@ trait ResourceSpec extends Matchers with ScalatestRouteTest { self: org.scalates
   val db = Database.forConfig("test-database")
 
   override def beforeAll() = {
-    val conf = system.settings.config.getConfig("test-database")
-    Migrations.run( conf.getString("url"), conf.getString("properties.user"), conf.getString("properties.password") )
+    TestDatabase.reset
   }
 
   override def afterAll() {

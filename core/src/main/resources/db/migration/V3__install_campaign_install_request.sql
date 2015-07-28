@@ -18,7 +18,7 @@ CREATE TABLE InstallRequest (
     -- The package to actually install
     packageId BIGINT NOT NULL,
     vin VARCHAR(64) NOT NULL,
-    statusCode CHAR(1) NOT NULL,
+    statusCode INT NOT NULL,
     errorMessage TEXT,
 
     PRIMARY KEY (id),
