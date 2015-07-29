@@ -1238,6 +1238,30 @@ Disconnect a server session
 
        * X1 - Network connection lost before disconnect is received by device. Triggered by E1. [DEV-CONNECT](#DEV-CONNECT) is executed X times in order to reconnet to the server.
 
+### <a name="UPDATE-NOTIFICATION">[UPDATE-NOTIFICATION](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#UPDATE-NOTIFICATION) Send any queued Installation Requests ([QUEUE-GET-NEXT-SOFTWARE-UPDATE](#QUEUE-GET-NEXT-SOFTWARE-UPDATE)) to Device</a>
+
+Send a notification of available software updates to vehicle
+
+   - Actors
+
+       * Device
+       * SOTA Server 
+
+   - Preconditions
+
+       * [DEV-CONNECT](#DEV-CONNECT) has been executed to setup and authenicate a SOTA Server - Device connection.
+
+   - Steps
+
+       * E1 - Use case [QUEUE-GET-NEXT-SOFTWARE-UPDATE](#QUEUE-GET-NEXT-SOFTWARE-UPDATE) is executed to retrieve the next pending or in-flight update to transfer / continue.
+       * E2 - A SOFTWARE-UPDATE-AVAILABLE command is sent by SOTA Server to Device with the Package IDs included in the download, size, a download index and a descriptive string
+       * E3 - Device forwards the update information to the Software Loading Manager. The Software Loading Manager will either wait for a user confirmation, or automatically initiate the download.
+       * E4 - Use case transitions to [TRIGGER-TRANSFER-START](#TRIGGER-TRANSFER-START)
+
+   - Exceptions
+
+       * X1 - Network connection lost before update is received by device. Triggered by E2. [DEV-CONNECT](#DEV-CONNECT) is executed X times in order to reconnet to the server.
+
 ### <a name="TRIGGER-TRANSFER-START">[TRIGGER-TRANSFER-START](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#TRIGGER-TRANSFER-START) Software Loading Manager requests download from SOTA Server via SOTA Client</a>
 
 Send a request to start the transfer from
