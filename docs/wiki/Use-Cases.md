@@ -856,8 +856,7 @@ Retrieves all VINs with a specific Package installed on them
        * E1 - A SEARCH-PACKAGE-BY-VIN command is sent from Web Server to External Resolver 
        * E2 - Package is retrieved from External Resolver Database
        * E3 - All VINs with Package installed are retrieved from External Resolver Database
-       * E4 - For each retrieved VIN with the Package installed, the Component in the VIN with the Package installed is retrieved
-       * E6 - A success code is sent back to Web Server with the VIN-Component pair for all VINs that have the Package installed
+       * E4 - A success code is sent back to Web Server with all VINs that have the Package installed
 
    - Exceptions
 
