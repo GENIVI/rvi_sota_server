@@ -367,19 +367,194 @@ Add traffic information to the active Billing Cycle under the Data Plan associat
 
 ### <a name="FILTER-ADD">[FILTER-ADD](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#FILTER-ADD) Add a new Filter</a>
 
+Add a filter
+
+   - Actors
+
+       * Web Server
+       * External Resolver
+
+   - Preconditions
+
+       * None
+
+   - Steps
+
+       * E1 - A FILTER-ADD command is sent from Web Server to External Resolver with the filter expression and a filter label.
+       * E2 - The filter expression is validated for semantic and syntactic correctness.
+       * E3 - The fitler is stored in the External Resolver Database.
+       * E4 - A success code is returned by External Resolver to Web Server.
+
+   - Exceptions
+
+       * X1 - Filter Label already exists. Triggered by E1.
+       * X2 - Filter Expression validation fails. Triggered by E2.
+
 ### <a name="FILTER-SEARCH">[FILTER-SEARCH](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#FILTER-SEARCH) Search for a Filter</a>
+
+Search for an existing filter
+
+   - Actors
+
+       * Web Server
+       * External Resolver
+
+   - Preconditions
+
+       * None
+
+   - Steps
+
+       * E1 - A FILTER-SEARCH command is sent from Web Server to External Resolver with a regular expression describing zero or more filter labels.
+       * E2 - The filters with matching filter labels are retrieved from the External Resolver Database.
+       * E3 - A success code is returned by External Resolver to Web Server, with all matching filter labels and their filter expression.
+
+   - Exceptions
+
+       * None
 
 ### <a name="FILTER-VALIDATE">[FILTER-VALIDATE](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#FILTER-VALIDATE) Test validity of a Filter Expression</a>
 
+Validate filter syntax and semantics
+
+   - Actors
+
+       * Web Server
+       * External Resolver
+
+   - Preconditions
+
+       * None
+
+   - Steps
+
+       * E1 - A FILTER-VALIDATE command is sent from Web Server to External Resolver with a filter expression.
+       * E2 - The filter expression is validated for semantic and syntactic correctness.
+       * E4 - If the filter expression is valid, a success code is returned to Web Server
+       * E5 - If the filter expression is not valid, an error code is returned together with an error message describing the problem with the filter expression.
+
+   - Exceptions
+
+       * None
+
 ### <a name="FILTER-DELETE">[FILTER-DELETE](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#FILTER-DELETE) Delete a Filter</a>
+
+Delete an existing filter
+
+   - Actors
+
+       * Web Server
+       * External Resolver
+
+   - Preconditions
+
+       * Filter has been added to External Resolver Database using [FILTER-ADD](#FILTER-ADD) 
+
+   - Steps
+
+       * E1 - A DELETE-FILTER command is sent from Web Server to External Resolver with a filter label.
+       * E2 - The filter is deleted from the External Resolver Database.
+       * E3 - A success code is returned by External Resolver to Web Server.
+
+   - Exceptions
+
+       * X1 - Filter label does not exist. Triggered by E2. 
 
 ### <a name="FILTER-PACKAGE-ADD">[FILTER-PACKAGE-ADD](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#FILTER-PACKAGE-ADD) Associate a Package with a Filter</a>
 
+Associate an existing filter with an existing Package.
+
+   - Actors
+
+       * Web Server
+       * External Resolver
+
+   - Preconditions
+
+       * Filter has been added to External Resolver Database using [FILTER-ADD](#FILTER-ADD)
+       * Package has been added to External Resolver Database using [PACKAGE-ADD](#PACKAGE-ADD)
+
+   - Steps
+
+       * E1 - A FILTER-PACKAGE-ADD command is sent from Web Server to External Resolver with a filter label and a Package ID.
+       * E2 - The filter is retrieved from External Resolver Database.
+       * E3 - The Package is retrieved from External Resolver Database.
+       * E4 - A reference is added to External Resolver Database that the filter should be applied to all VINs when the Package is to be resolved in [QUEUE-REQUEST-ADD](#QUEUE-REQUEST-ADD).
+       * E3 - A success code is returned by External Resolver to Web Server.
+
+   - Exceptions
+
+       * X1 - Filter label does not exist. Triggered by E2.
+       * X2 - Package ID does not exist. Triggered by E3.
+
 ### <a name="FILTER-PACKAGE-DELETE">[FILTER-PACKAGE-DELETE](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#FILTER-PACKAGE-DELETE) Remove a Package from a Filter</a>
+
+Remove an association between an existing Package and an existing Filter
+
+   - Actors
+
+       * Web Server
+       * External Resolver
+
+   - Preconditions
+
+       * Filter-Package association has been added to External Resolver Database using [FILTER-PACKAGE-ADD](#FILTER-PACKAGE-ADD)
+
+   - Steps
+
+       * E1 - A FILTER-PACKAGE-DELETE command is sent from Web Server to External Resolver with a filter label and a Package ID.
+       * E2 - The reference that the given Filter should be applied to the specific Package ID is removed from the External Resolver Database.
+       * E3 - A success code is returned by External Resolver to Web Server.
+
+   - Exceptions
+
+       * X1 - Filter-Package association does not exist. Triggered by E2.
 
 ### <a name="FILTER-SEARCH-PACKAGE-BY-FILTER">[FILTER-SEARCH-PACKAGE-BY-FILTER](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#FILTER-SEARCH-PACKAGE-BY-FILTER) Get list of Packages by Filter</a>
 
+Retrieve all Packages associated with a Filter.
+
+   - Actors
+
+       * Web Server
+       * External Resolver
+
+   - Preconditions
+
+       * None
+
+   - Steps
+
+       * E1 - A FILTER-SEARCH-PACKAGE-BY-FILTER command is sent from Web Server to External Resolver with a filter label.
+       * E2 - The External Resolver Database is searched for all Packages associated with the given Filter.
+       * E3 - A success code is returned by External Resolver to Web Server, with all retrieved Package IDs.
+
+   - Exceptions
+
+       * X1 - Filter label does not exist. Triggered by E2.
+
 ### <a name="FILTER-SEARCH-FILTER-BY-PACKAGE">[FILTER-SEARCH-FILTER-BY-PACKAGE](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#FILTER-SEARCH-FILTER-BY-PACKAGE) Get list of Filters by Package</a>
+
+Retrieve all Filters associated with a Package.
+
+   - Actors
+
+       * Web Server
+       * External Resolver
+
+   - Preconditions
+
+       * None
+
+   - Steps
+
+       * E1 - A FILTER-SEARCH-FILTER-BY-PACKAGE command is sent from Web Server to External Resolver with a Package ID.
+       * E2 - The External Resolver Database is searched for all Filters assocaited with the given Package.
+       * E3 - A success code is returned by External Resolver to Web Server, with all retrieved Filter Labels.
+
+   - Exceptions
+
+       * X1 - Package does not exist. Triggered by E2.
 
 ### <a name="COMP-ADD">[COMP-ADD](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#COMP-ADD) Add a Component</a>
 
