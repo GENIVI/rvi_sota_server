@@ -1,0 +1,11 @@
+# Potential Security Threats
+
+```{.table file="csv/SOTA_mitigation_list.csv" header=yes inlinemarkdown=yes
+     caption="my **caption**" delimiter="," quotechar="\"" }
+```
+
+# Mitigations
+
+```{.table file="csv/SOTA_threat_list.csv" header=yes inlinemarkdown=yes
+     delimiter="," quotechar="\"" }
+```
