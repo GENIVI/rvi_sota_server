@@ -40,6 +40,7 @@
     - [QUEUE-REQUEST-CANCEL](#QUEUE-REQUEST-CANCEL) Cancel a previous Installation Request
     - [QUEUE-GET-STATUS](#QUEUE-GET-STATUS) Get status for an Installation Request
     - [QUEUE-GET-COMPLETED-VINS](#QUEUE-GET-COMPLETED-VINS) List VINs for which installation is complete for Installation Request
+    - [QUEUE-GET-PENDING-VINS](#QUEUE-GET-PENDING-VINS) List VINs for which installation is pending for Installation Request
     - [QUEUE-GET-IN-FLIGHT-VINS](#QUEUE-GET-IN-FLIGHT-VINS) List VINs for which installation is ongoing for Installation Request
     - [QUEUE-GET-FAILED-VINS](#QUEUE-GET-FAILED-VINS) List VINs for which installation failed for Installation Request
     - [QUEUE-GET-NEXT-SOFTWARE-UPDATE](#QUEUE-GET-NEXT-SOFTWARE-UPDATE) Get current or next queued Installation Request for VIN
@@ -694,7 +695,6 @@ Search for one or more components based on a regexp search pattern
 
        * None
 
-
 ### <a name="VIN-SEARCH-BY-COMP">[VIN-SEARCH-BY-COMP](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#VIN-SEARCH-BY-COMP) Find VINs by Component</a>
 
 Find and return all VINs that have been associated with a specific Component
@@ -867,47 +867,569 @@ Retrieves all VINs with a specific Package installed on them
 
 ### <a name="QUEUE-REQUEST-ADD">[QUEUE-REQUEST-ADD](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE-REQUEST-ADD) Queue a package for installation on VINs matching Filter</a>
 
+Queues a package for distribution to all VINs that match a provided boolean algebra filter
+
+   - Actors
+
+       * Web Server
+       * External Resolver 
+       * SOTA Server
+
+   - Preconditions
+
+       * Package added with [PACKAGE-ADD](#PACKAGE-ADD)
+
+   - Steps
+
+       * E1	- A QUEUE-PACKAGE request is sent from Web Server to SOTA Server with a Package ID, a Priority, and a Date/time Interval in which the install must happen
+       * E2	- The database is searched for the Package ID
+       * E3	- A Resolve VIN command is sent from SOTAServer to Resolver
+       * E4	- External Resolver searches its database for all Filters associated with Package
+       * E5	- All VINs are consecutively run through all Filters
+       * E6	- External Resolver returns the subset of VINs passing all Filters to SOTA Server, where each VIN has a list of dependent-on Packages that need to be bundled with the update for the install to succeed on that VIN
+       * E7	- SOTA Server creates a software update generated for each VIN returned by External Resolver, containing the package IDs of main and dependent-on packages to install, the date/time interval provided in E1, the priority provided in E1, and a creation date/time stamp set to the current time.
+       * E8	-  A unique Install Request ID, used in all future references to the Install Request, is returned by SOTA Server to Web Server
+
+   - Exceptions
+
+       * X1 - Package ID does not exist. Triggered by E2
+       * A1.1 - Resolver returns all provisioned VINs to SOTA Server. Triggered by E4. Continue execution at E7.
+
 ### <a name="QUEUE-REQUEST-CANCEL">[QUEUE-REQUEST-CANCEL](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE-REQUEST-CANCEL) Cancel a previous Installation Request</a>
+
+Cancels a previously added install request.
+
+   - Actors
+
+       * Web Server
+       * SOTA Server 
+
+   - Preconditions
+
+       * [QUEUE-REQUEST-ADD](#QUEUE-REQUEST-ADD) called to setup the Install Request that is to be cancelled
+
+   - Steps
+
+       * E1	- A CANCEL-PACKAGE request is sent from Web Server to SOTA Server with an Install Request ID
+       * E2	- SOTA Server database is searched for the Install Request ID
+       * E3	- Each VIN that has an update generated from the Install Request is retrieved from SOTA Server database
+       * E4	- Each VIN that is still marked as pending is removed, and is marked as canceled.
+       * E5	- Each VIN that is marked as being in flight is ignored. (If the update is currently being transmitted to its target VIN, it is allowed to complete.)
+       * E6	- Each VIN that is marked as completd is ignored.
+       * E7	- A success code is returend by SOTA Server to Web Server
+
+   - Exceptions
+
+       * X1 - Install Request ID does not exist. Triggered by E2
 
 ### <a name="QUEUE-GET-STATUS">[QUEUE-GET-STATUS](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE-GET-STATUS) Get status for an Installation Request</a>
 
+Retrieve status for an install request previously setup with [QUEUE-REQUEST-ADD](#QUEUE-REQUEST-ADD)
+
+   - Actors
+
+       * Web Server
+       * SOTA Server 
+
+   - Preconditions
+
+       * [QUEUE-REQUEST-ADD](#QUEUE-REQUEST-ADD) called to setup the Install Request that is to be queried
+
+   - Steps
+
+       * E1	- A GET-INSTALL-REQUEST-STATUS request is sent from Web Server to SOTA Server with an Install Request ID
+       * E2	- SOTA Server database is searched for the Install Request ID
+       * E3	- The number of VINs where the Install Request has completed is calculated
+       * E4	- The number of VINs where the Install Request is still pending is calculated
+       * E5	- The number of VINs where the Install Request has failed is calculated
+       * E6	- A success code is returned by SOTA Server to Web Server together with the number of completed, in-flight, pending and failed updates
+
+   - Exceptions
+
+       * X1 - Install Request ID does not exist. Triggered by E2
+
+
 ### <a name="QUEUE-GET-COMPLETED-VINS">[QUEUE-GET-COMPLETED-VINS](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE-GET-COMPLETED-VINS) List VINs for which installation is complete for Installation Request</a>
+
+Retrieve all completed VINs for a given Install Request ID
+
+   - Actors
+
+       * Web Server
+       * SOTA Server 
+
+   - Preconditions
+
+       * None
+
+   - Steps
+
+       * E1	- A GET-INSTALL-REQUEST-COMPLETED request is sent from Web Server to SOTA Server with an Install Request ID
+       * E2	- SOTA Server database is searched for the Install Request ID
+       * E3	- Each VIN that has successfully completed the Install Request is retrieved, together with the timestamp of completion, from the database
+       * E4	- A success code is returned by SOTA Server to Web Server together with all retrieved VINs 
+
+   - Exceptions
+
+       * X1 - Install Request ID does not exist. Triggered by E2
+
+### <a name="QUEUE-GET-PENDING-VINS">[QUEUE-GET-PENDING-VINS](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE-GET-PENDING-VINS) List VINs for which installation is pending for Installation Request</a>
+
+Retrieve all pending VINs for a given Install Request ID
+
+   - Actors
+
+       * Web Server
+       * SOTA Server 
+
+   - Preconditions
+
+       * [QUEUE-REQUEST-ADD](#QUEUE-REQUEST-ADD) called to setup the Install Request that is to be queried
+
+   - Steps
+
+       * E1	- A GET-INSTALL-REQUEST-COMPLETED request is sent from Web Server to SOTA Server with an Install Request ID
+       * E2	- SOTA Server database is searched for the Install Request ID
+       * E3	- Each VIN that is still pending to receive the software update as part of the specified Install Request is retrieved from the database
+       * E4	- A success code is returned by SOTA Server to Web Server together with all retrieved VINs 
+
+   - Exceptions
+
+       * X1 - Install Request ID does not exist. Triggered by E2
 
 ### <a name="QUEUE-GET-IN-FLIGHT-VINS">[QUEUE-GET-IN-FLIGHT-VINS](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE-GET-IN-FLIGHT-VINS) List VINs for which installation is ongoing for Installation Request</a>
 
+Retrieve install requests for a given Install Request ID, which have initiated their transfers to their target VINs, but have yet to complete the transmission and be installed
+
+   - Actors
+
+       * Web Server
+       * SOTA Server 
+
+   - Preconditions
+
+       * [QUEUE-REQUEST-ADD](#QUEUE-REQUEST-ADD) called to setup the Install Request that is to be queried
+
+   - Steps
+
+       * E1	- A GET-INSTALL-REQUEST-COMPLETED request is sent from Web Server to SOTA Server with an Install Request ID
+       * E2	- SOTA Server database is searched for the Install Request ID
+       * E3	- Each VIN that has successfully completed the Install Request is retrieved, together with the timestamp of completion, from the database
+       * E4	- A success code is returned by SOTA Server to Web Server together with all retrieved VINs 
+
+   - Exceptions
+
+       * X1 - Install Request ID does not exist. Triggered by E2
+
 ### <a name="QUEUE-GET-FAILED-VINS">[QUEUE-GET-FAILED-VINS](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE-GET-FAILED-VINS) List VINs for which installation failed for Installation Request</a>
+
+Retrieve install requests for a given Install Request ID which have failed
+
+   - Actors
+
+       * Web Server
+       * SOTA Server 
+
+   - Preconditions
+
+       * [QUEUE-REQUEST-ADD](#QUEUE-REQUEST-ADD) called to setup the Install Request that is to be queried
+
+   - Steps
+
+       * E1	- A GET-INSTALL-REQUEST-COMPLETED request is sent from Web Server to SOTA Server with an Install Request ID
+       * E2	- SOTA Server database is searched for the Install Request ID
+       * E3	- All VINs that have failed to receive a software update as a part of the specified Request ID are retrieved, together with an error code and a time stamp, from the database
+       * E4	- A success code is returned by SOTA Server to Web Server together with all retrieved VINS and their error codes and time stamps.
+
+   - Exceptions
+
+       * X1 - Install Request ID does not exist. Triggered by E2
 
 ### <a name="QUEUE-GET-NEXT-SOFTWARE-UPDATE">[QUEUE-GET-NEXT-SOFTWARE-UPDATE](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE-GET-NEXT-SOFTWARE-UPDATE) Get current or next queued Installation Request for VIN</a>
 
-### <a name="DEV-WAKEUP">[DEV-WAKEUP](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#DEV-WAKEUP) for sleeping VINs with queued Installation Requests</a>
+Sub use case used by [QUEUE-INITIATE-XMIT](#QUEUE-INITIATE-XMIT) and [TRANSFER-START](#TRANSFER-START) to determine which software update to transmit next to a specific VIN
+
+   - Actors
+
+       * External Resolver
+       * SOTA Server 
+
+   - Preconditions
+
+       * Invoked by [QUEUE-INITIATE-XMIT](#QUEUE-INITIATE-XMIT) or [TRANSFER-START](#TRANSFER-START)
+
+   - Steps
+
+       * E1	- SOTA Server checks if there is a software update marked as in-flight for the targeted VIN
+       * E2	- If an in-flight update was found, it is returned to the invoker of this use case. End of use case
+       * E3	- SOTA Server retrieves all currently pending software updates for the target VIN from the database
+       * E4	- All retrieved software updates are sorted by the priority provided to QUEUE-REQUEST-ADD when the updates were created
+       * E5	- All software updates with the same priority are sorted by their creation date/time stamp.
+       * E6	- The software update at the top of the priority- and date/time stamp-sorted list is retrieved for transfer, including all its dependent-upon packages
+       * E7	- The size of the software update is verified to be less than the remaining bytes of the active billing cycle of the data plan used by the target VIN
+
+   - Exceptions
+
+       * A1 - No packages are pending for the VIN. Use case returns with a nothing-to-do answer. Triggered by E3
+       * A2 - No data plan has been set by VIN. Use case returns successfully with the given software update. Triggered by E7
+       * A3 - Software update size is greater than remaining size of current billing cycle. Use case returns an over size error. Triggered by E7
+
+### <a name="QUEUE-INITIATE-XMIT">[QUEUE-INITIATE-XMIT](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE-INITIATE-XMIT) </a>
+
+Periodically go through all queued software updates targeting VINs and initiate the transmission of those ready to send
+
+   - Actors
+
+       * Web Server
+       * SOTA Server 
+
+   - Preconditions
+
+       * High-level scheduler triggers this use case periodically
+
+   - Steps
+
+       * E1	- All VINs with pending software or in-flight updates are retrieved. (Failed, completed, and in-flight updates are ignored.)
+       * E2	- Each VIN is traversed in a non-specified order
+       * E3	- If the currently traversed VIN's Device is connected to SOTA Server, the VIN is skipped. (Ignore VINs that are currently being communicated with.)
+       * E4	- If the currently traversed VIN has had DEV-WAKEUP, or DEV-DISCONNECT executed within the number of seconds specified by the VIN's reconnect interval provided to VIN-ADD, the VIN is skipped. (Ignore VINs that we've tried to communicate with during the last number of seconds specified by the reconnect interval. Avoids continuous reconnect attempts.)
+       * E5	- Use case [QUEUE-GET-NEXT-SOFTWARE-UPDATE](#QUEUE-GET-NEXT-SOFTWARE-UPDATE) is executed to retrieve the next in-flight or pending software to (continue to) send to the VIN
+       * E6	- Send a wakeup signal to trigger DEV-WAKEUP on the currently traversed VIN. (Wakeup/shoulder tap SMS)
+       * E7	- A success code is returned together with the number VINs that have been sent a wakeup signal
+
+   - Exceptions
+
+       * A1 - [QUEUE-GET-NEXT-SOFTWARE-UPDATE](#QUEUE-GET-NEXT-SOFTWARE-UPDATE) returns 'nothing-to-do'. Use case continues at E3 with the next VIN from the list retrieved in E1. Triggered by E5
+       * A2 - [QUEUE-GET-NEXT-SOFTWARE-UPDATE](#QUEUE-GET-NEXT-SOFTWARE-UPDATE) returns oversize error. Use case continues at E3 with the next VIN from the list retrieved in E1. (Will leave the oversized update as pending until the next billing cycle for the data plan used by the VIN becomes active.) Triggered by E5
+
 
 ### <a name="QUEUE-PURGE">[QUEUE-PURGE](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE-PURGE) Purge failing or expired Installation Requests from Queue</a>
 
+Periodically go through all pending software updates that are not complete, failed, or in flight and remove those whose date/time install interval has expired.
+
+   - Actors
+
+       * SOTA Server 
+
+   - Preconditions
+
+       * High-level scheduler triggers this use case periodically
+
+   - Steps
+
+       * E1	- All pending software updates are retrieved from the database.
+       * E2	- Each pending software update has its date/time Install Interval compared with the current date and time.
+       * E3	- If the current date/time is before or inside of the software update's Install Interval, it will not be touched, and the next software pending software update is examined
+       * E4	- If the current date/time is after the software update's Install Interval, it will be marked as failed. (The software update will be returned in future calls to [QUEUE-GET-FAILED-VINS](#QUEUE-GET-FAILED-VINS))
+       * E5	- The failed update will have an error code set as "expired"
+       * E6	- The failed update will have a failure date/time stamp set to the current time.
+       * E7	- A success code is returned together with the number of purged updates.
+
+   - Exceptions
+
+       * None
+
 ### <a name="QUEUE-REQUEST-GET-ALL-PACKAGES">[QUEUE-REQUEST-GET-ALL-PACKAGES](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE-REQUEST-GET-ALL-PACKAGES) Get list of Packages queued for a VIN</a>
+
+A request to retrieve a list of all installed packages is queued for a specific VIN
+
+   - Actors
+
+       * Web Server
+       * SOTA Server 
+
+   - Preconditions
+
+       * VIN added with [VIN_ADD](#VIN-ADD)
+
+   - Steps
+
+       * E1	- A GET-ALL-PACKAGES request is sent from Web Server to SOTA Server with a VIN to retrieve the installed software list
+           - The date/time interval specifies an earliest and latest install date and time stamp within which the install must be initiated
+       * E2	- The database is searched for the VIN
+       * E3	- SOTA Server creates a GET-ALL-PACKAGES request containing the VIN, a default date/time interval, a default priority, and a creation date/time stamp set to the current time.
+       * E4	- A unique Request ID, used in all future references to the installation request, is returned by SOTA Server to Web Server
+
+   - Exceptions
+
+       * X1 - The VIN does not exist. An error code is sent back to Web Server
 
 
 ## <a name="device-interaction">Device Interaction</a>
 
 ### <a name="DEV-WAKEUP">[DEV-WAKEUP](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#DEV-WAKEUP) Send Wake-up event to VIN, triggering [DEV-CONNECT](#DEV-CONNECT)</a>
 
+A Device receives a wakeup notification sent by a [QUEUE-INITIATE-XMIT](#QUEUE-INITIATE-XMIT) use case and will start the download and install software update process.
+
+   - Actors
+
+       * Device
+
+   - Preconditions
+
+       * None
+
+   - Steps
+
+       * E1 - The Device receives a wakeup notification via a mobile or other network trigger mechanism.
+       * E2 - The Device uses PKI-based signatures to validate that the wakeup notification is from SOTA Server
+       * E3 - The [DEV-CONNECT](#DEV-CONNECT) use cases is executed.
+
+   - Exceptions
+
+       * X1 - PKI validation failed. The message is ignored and the use cases is terminated. Triggered by E2
+
 ### <a name="DEV-CONNECT">[DEV-CONNECT](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#DEV-CONNECT) Device connects to SOTA Server to process or resume Installation Request</a>
+
+The device connects to SOTA Server in order to start or continue a download of a software update targeting the VIN of the device.
+
+   - Actors
+
+       * Device
+       * SOTA Server 
+
+   - Preconditions
+
+       * [DEV-WAKEUP](#DEV-WAKEUP) executed, or periodic server connect occurs. 
+
+   - Steps
+
+       * E1 - The Device sets up a network connection
+       * E2 - The Device connects to the predefined SOTA Server
+       * E3 - The Device authenticates itself to the SOTA Server
+       * E4 - The SOTA Server authenticates itself to the Device
+       * E5 - Use case transitions to [UPDATE-NOTIFICATION](#UPDATE-NOTIFICATION)
+
+   - Exceptions
+
+       * X1 - Network connection failed. Triggered by E1.
+
+           - If this is the N:th time that [DEV-CONNECT](#DEV-CONNECT) has failed to connect, the use case is terminated
+           - A preconfigured incremental waiting period is setup
+           - The [DEV-CONNECT](#DEV-CONNECT) use case is executed again
+
+       * X2 - Device Authentication fails. Use case transitions to [DEV-DISCONNECT](#DEV-DISCONNECT). Triggered by E3
+       * X3 - SOTA Server Authentication fails. Use case transitions to [DEV-DISCONNECT](#DEV-DISCONNECT). Triggered by E4
+       * A1 - [TRIGGER-TRANSFER-START](#TRIGGER-TRANSFER-START) is waiting to have its message sent to SOTA Server. The use case transitions to [TRIGGER-TRANSFER-START](#TRIGGER-TRANSFER-START)-E2. Triggered by E5.
+       * A2 - [TRANSFER-START](#TRANSFER-START) is waiting to have its message sent to Device. The use case transitions to [TRANSFER-START](#TRANSFER-START)-E2. Triggered by E5.
+       * A3 - [TRANSFER-CHUNK](#TRANSFER-CHUNK) is waiting to have its message sent to Device. The use case transitions to [TRANSFER-CHUNK](#TRANSFER-CHUNK)-E2. Triggered by E5.
+       * A4 - [TRANSFER-COMPLETE](#TRANSFER-COMPLETE) is waiting to have its message sent to Device. The use case transitions to [TRANSFER-COMPLETE](#TRANSFER-COMPLETE)-E1. Triggered by E5.
 
 ### <a name="DEV-DISCONNECT">[DEV-DISCONNECT](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#DEV-DISCONNECT) SOTA Server instructs Device to disconnect</a>
 
-### <a name="QUEUE-GET-NEXT-SOFTWARE-UPDATE">[QUEUE-GET-NEXT-SOFTWARE-UPDATE](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE-GET-NEXT-SOFTWARE-UPDATE) to Device</a>
+Disconnect a server session
+
+   - Actors
+
+       * Device
+       * SOTA Server 
+
+   - Preconditions
+
+       * Multiple 
+
+   - Steps
+
+       * E1 - SOTA Server sends Disconnect command to Device
+       * E2 - Device terminates network connection
+       * E3 - Device schedules next time to execute [DEV-CONNECT](#DEV-CONNECT)
+
+   - Exceptions
+
+       * X1 - Network connection lost before disconnect is received by device. Triggered by E1. [DEV-CONNECT](#DEV-CONNECT) is executed X times in order to reconnet to the server.
 
 ### <a name="TRIGGER-TRANSFER-START">[TRIGGER-TRANSFER-START](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#TRIGGER-TRANSFER-START) Software Loading Manager requests download from SOTA Server via SOTA Client</a>
 
+Send a request to start the transfer from
+
+   - Actors
+
+       * Device
+       * SOTA Server 
+
+   - Preconditions
+
+       * [UPDATE-NOTIFICATION](#UPDATE-NOTIFICATION) has been executed. Connection is up.
+
+   - Steps
+
+       * E1 - An INITIATE-SOFTWARE-DOWNLOAD command is sent by Software Loading Manager to SOTA Client on Device
+       * E2 - An INITIATE-SOFTWARE-DOWNLOAD command is forwarded by Device to SOTA Server together with the download index provided by [UPDATE-NOTIFICATION](#UPDATE-NOTIFICATION)
+       * E3 - Use case transitions to [TRANSFER-START](#TRANSFER-START)
+
+   - Exceptions
+
+       * A1 - Software Loading Manager cancels download instead of starting it. Triggered by E1.
+
+           - A CANCEL-SOFTWARE-DOWNLOAD is forwarded by Device to SOTA Server together with the update notification
+           - Use case transitions to [DEV-DISCONNECT](#DEV-DISCONNECT)
+
+       * X1 - Network connection lost before Initiate / Cancel Software Download is sent. Triggered by E2. Use case transitions to [DEV-CONNECT](#DEV-CONNECT).
+
 ### <a name="TRANSFER-START">[TRANSFER-START](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#TRANSFER-START) SOTA Server sends Download metadata to Device</a>
+
+Start transfer of an update.
+
+   - Actors
+
+       * Device
+       * SOTA Server 
+
+   - Preconditions
+
+       * [DEV-CONNECT](#DEV-CONNECT) has been executed to setup and authenticate a SOTA Server - Device connection *OR*
+       * [INSTALL-REPORT](#INSTALL-REPORT) has been executed to signal the success or failure of a previous install
+
+   - Steps
+
+       * E1 - An INITIATE-SOFTWARE-DOWNLOAD command is received by SOTA Server from Device.
+       * E2 - An START-DOWNLOAD command is sent by SOTA Server to Device with the Package IDs to be installed and the total size of the transfer.
+       * E3 - Device verifies that it has the resources to receive the package from SOTA Server.
+       * E4 - Use case transitions to [TRANSFER-CHUNK](#TRANSFER-CHUNK)
+
+   - Exceptions
+
+       * A1.1 - CANCEL-SOFTWARE-DOWNLOAD received. Triggered by E1. Use case transitions to [INSTALL-REPORT](#INSTALL-REPORT) with a CANCELLED result code. (Software update was cancelled by Software Loading Manager, possibly after the user pressed "no" in a confirmation dialog).
+       * A1 - Network connection was lost before START-DOWNLOAD command was sent. Triggered by E1. Use case transitions to [DEV-DISCONNECT](#DEV-DISCONNECT). (No packages available for transfer since they were cancelled between [QUEUE-INITIATE-XMIT](#QUEUE-INITIATE-XMIT) and this use case)
+       * A2 - Software update is marked as in-flight. Use case transitions to [TRANSFER-CHUNK](#TRANSFER-CHUNK). (We are picking up a previously interrupted software update transfer and want to move on to the next chunk of the update)
+       * A3 - Next element in queue is a GET-ALL-PACKAGES request. Use case transitions to [GET-ALL-PACKAGES](#GET-ALL-PACKAGES)
 
 ### <a name="TRANSFER-CHUNK">[TRANSFER-CHUNK](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#TRANSFER-CHUNK) SOTA Server sends next Download chunk to Device</a>
 
+Transfer a chunk of data for an update
+
+   - Actors
+
+       * Device
+       * SOTA Server 
+
+   - Preconditions
+
+       * [TRANSFER-START](#TRANSFER-START) has been executed.
+       * Device is connected to SOTA Server
+
+   - Steps
+
+       * E1 - SOTA Server retrieves the lowest numbered chunk (data block) that has yet to be transferred to Device
+       * E2 - SOTA Server transmits chunk to Device
+       * E3 - Device receives chunk
+       * E4 - Device stores chunk at its correct position in the package being built up
+       * E5 - Device sense acknowledgement of successful chunk receipt to SOTA Server
+       * E6 - SOTA Server marks chunk as successfully transmitted
+       * E7 - Use case restarts at E1 with next untransmitted chunk
+
+   - Exceptions
+
+       * A1 - No more chunks to transmit. Triggered by E1. Use case transitions to [TRANSFER-COMPLETE](#TRANSFER-COMPLETE)
+       * X1 - Network connection is lost before chunk is received by Device. Triggered by E2. [DEV-CONNECT](#DEV-CONNECT) is executed X times in order to reconned to the server. After X times, we rely on [QUEUE-INITIATE-XMIT](#QUEUE-INITIATE-XMIT) for future retries.
+       * A2 - Chunk has already been received. Triggered by E4. (Retransmit of chunks are allowed in case the ack in E5 is lost).
+
+           - A2.1 - New chunk is dropped
+           - A2.2 - Use case continues at E5
+
+       * X2 - Network connection lost before acknowledgement is received by SOTA Server. Triggered by E5. [DEV-CONNECT](#DEV-CONNECT) is executed X times in order to reconnect to the server. Chunk will be retransmitted, and E4.A1 will handle the case. After X time, we rely on [QUEUE-INITIATE-XMIT](#QUEUE-INITIATE-XMIT) for future retries.
+
 ### <a name="TRANSFER-COMPLETE">[TRANSFER-COMPLETE](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#TRANSFER-COMPLETE) SOTA Server sends Finalize Download to Device</a>
+
+Finalize an update transfer
+
+   - Actors
+
+       * Device
+       * SOTA Server 
+
+   - Preconditions
+
+       * Called by [TRANSFER-CHUNK](#TRANSFER-CHUNK)-A1.
+
+   - Steps
+
+       * E1 - SOTA Server sends FINALIZE-DOWNLOAD command to Device
+       * E2 - Device validates that all chunks have been received
+       * E3 - SOTA Server marks software update as in-flight with 0 bytes left to transmit.
+       * E4 - Use case transitions to [INSTALL-SOFTWARE-UPDATE](#INSTALL-SOFTWARE-UPDATE)
+
+   - Exceptions
+
+       * X1 - Network connection lost before FINALIZE-DOWNLOAD command is received by Device. Triggered by E1. [DEV-CONNECT](#DEV-CONNECT) is executed X times in order to reconnect to the server. After X times we rely on [QUEUE-INITIATE-XMIT](#QUEUE-INITIATE-XMIT) for future retries.
+       * X2.1 - Chunks are missing on Device, even if SOTA Server believes all have been transmitted. Triggered by E2. Use case transitions to [INSTALL-SOFTWARE-UPDATE](#INSTALL-SOFTWARE-UPDATE) with an INCOMPLETE-DOWNLOAD result code.
 
 ### <a name="INSTALL-SOFTWARE-UPDATE">[INSTALL-SOFTWARE-UPDATE](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#INSTALL-SOFTWARE-UPDATE) Device installs all received Packages </a>
 
+Validate and install all packages received in a software update from SOTA Server.
+
+   - Actors
+
+       * Device
+
+   - Preconditions
+
+       * [TRANSFER-COMPLETE](#TRANSFER-COMPLETE) executed.
+
+   - Steps
+
+       * E1 - Device verifies signature and integrity of software updates.
+       * E2 - Device sends an INSTALL command to the Software Loading Manager.
+       * E3 - Software Loading Manager returns an installation result code and descriptive text.
+       * E4 - The installation result is forwarded to the [INSTALL-REPORT](#INSTALL-REPORT) use case.
+
+   - Exceptions
+
+       * X1 - Package validation fails. Triggered by E1. Use case transitions to [INSTALL-REPORT](#INSTALL-REPORT) with a VALIDATION-FAIL result code.
+
 ### <a name="INSTALL-REPORT">[INSTALL-REPORT](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#INSTALL-REPORT) Device reports Installation Result to SOTA Server</a>
 
+Report installation success or failure
+
+   - Actors
+
+       * Device
+       * SOTA Server 
+       * External Resolver
+
+   - Preconditions
+
+       * [INSTALL-SOFTWARE-UPDATE](#INSTALL-SOFTWARE-UPDATE) executed.
+
+   - Steps
+
+       * E1 - Device sends report with provided result code to SOTA Server
+       * E2 - If result code is SUCCESS, the software update for the VIN is marked as completed.
+       * E3 - If result code is not SUCCESS, the software update for the VIN is marked as failed together with provided result code.
+       * E4 - If result code is SUCCESS, the [VIN-ADD-PACKAGE](#VIN-ADD-PACKAGE) use case is executed to update the installed package list of the External Resolver Database.
+       * E5 - Use case transitions to [TRANSFER-START](#TRANSFER-START) to start the transmission of the next software update for the VIN.
+
+   - Exceptions
+
+       * X1 - Network connection lost before report is received by SOTA Server. Triggered by E1. [DEV-CONNECT](#DEV-CONNECT) is executed X times in order to reconnect to the server.
+       * A1 - VIN is already marked as completed. Triggered by E2. Use case transitions to [TRANSFER-START](#TRANSFER-START).
+       * A2 - VIN is already marked as failed. Triggered by E3. Use case transitions to [TRANSFER-START](#TRANSFER-START).
+
 ### <a name="GET-ALL-PACKAGES">[GET-ALL-PACKAGES](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#GET-ALL-PACKAGES) Get list of Packages installed on a VIN (from the Device)</a>
+
+Retrieve all packages currently installed on a device
+
+   - Actors
+
+       * Device
+       * SOTA Server 
+
+   - Preconditions
+
+       * [DEV-CONNECT](#DEV-CONNECT) has been executed to setup and authenticate a SOTA Server - Device connection *OR*
+       * [INSTALL-REPORT](#INSTALL-REPORT) has been executed to signal the success or failure of a previous install.
+
+   - Steps
+
+       * E1 - Use case [QUEUE-GET-NEXT-SOFTWARE-UPDATE](#QUEUE-GET-NEXT-SOFTWARE-UPDATE) is executed to retrieve the next pending or in-flight update to transfer / continue, yielding instead a queued GET-ALL-PACKAGES request.
+       * E2 - A GET-ALL-PACKAGES command is sent by SOTA Server to Device.
+       * E3 - Device uses local package manager to retrieve a list of all installed packages
+       * E4 - Device returns all installed packages to SOTA Server.
+       * E4.1 - SOTA Server uses [VIN-PACKAGE-ADD](#VIN-PACKAGE-ADD) and [VIN-PACKAGE-DELETE](#VIN-PACKAGE-DELETE) to synchronize External Resolver's installed package list for the given VIN.
+       * E5 - Use case transitions to [TRANSFER-START](#TRANSFER-START) to start.
+
+   - Exceptions
+
+       * X3 - Acknowledgement lost due to network disconnect. Triggered by E4. [DEV-CONNECT](#DEV-CONNECT) is executed X times in order to reconnect to the server. After X times, we rely on [QUEUE-INITIATE-XMIT](#QUEUE-INITIATE-XMIT) for future retries.
 
 
