@@ -143,3 +143,7 @@ rather than:
     );
 ```
 
+## Editing this Wiki 
+
+This wiki constitutes the official documentation for the GENIVI SOTA project. As such, any changes need to be approved via pull request, not via direct edits to the wiki. Unfortunately, GitHub does not support pull requests directly on wikis. The canonical copy of this wiki lies in the main project repository, under `docs/wiki`. **Any changes to documentation that need to be made should be made on the files there, then submitted to the main project as a pull request.** When the pull request is merged, the wiki will get updated.
+
