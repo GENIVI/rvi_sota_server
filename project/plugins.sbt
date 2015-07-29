@@ -24,3 +24,9 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.0.3")
 addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.0")
 
 addSbtPlugin("org.flywaydb" % "flyway-sbt" % "3.2.1")
+
+addSbtPlugin("com.typesafe.sbt" % "sbt-web" % "1.2.2")
+
+addSbtPlugin("com.typesafe.sbt" % "sbt-digest" % "1.1.0")
+
+addSbtPlugin("com.github.ddispaltro" % "sbt-reactjs" % "0.5.2")
