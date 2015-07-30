@@ -25,7 +25,7 @@ ID,Label,STRIDE Attribute,Assets,Interactions,Attack potential vector,Attack pot
 "<a name=""t23_row"">[T23](#t23)</a>",Compromise of sensitive data,Information Disclosure,"User data, VINs, Package information, Vehicle configurations",Anyone -> MariaDB,,,,,0,Level 1 - SOTA Server Context Diagram
 "<a name=""t24_row"">[T24](#t24)</a>",Denial of Service attack,Denial of service,Service Availability,Anyone -> MariaDB,,,,,0,Level 1 - SOTA Server Context Diagram
 "<a name=""t25_row"">[T25](#t25)</a>",Getting admin rights,Elevation of Privilege,"User data, VINs, Package information, Vehicle configurations, data store state",Anyone -> MariaDB,,,,,0,Level 1 - SOTA Server Context Diagram
-"<a name=""t26_row"">[T26](#t26)</a>",Spoofing Internal Resolver,Spoofing,"User data, VINs, Package information, Vehicle configurations",Internal Resolver -> MariaDB,,,,,0,Level 1 - SOTA Server Context Diagram
+"<a name=""t26_row"">[T26](#t26)</a>",Spoofing External Resolver,Spoofing,"User data, VINs, Package information, Vehicle configurations",External Resolver -> MariaDB,,,,,0,Level 1 - SOTA Server Context Diagram
 "<a name=""t27_row"">[T27](#t27)</a>",In-vehicle process spoofing,Spoofing,"VINs, Package information",Anyone -> SOTA Client,,,,,0,Level 1 - SOTA Server Context Diagram
 "<a name=""t28_row"">[T28](#t28)</a>",SOTA Client sniffing,Tampering,"VINs, Package information",In vehicle process -> SOTA Client,,,,,0,Level 1 - SOTA Server Context Diagram
 "<a name=""t29_row"">[T29](#t29)</a>",Denial of Service attack,Denial of service,Service Availability,Anyone -> SOTA Client,,,,,0,Level 1 - SOTA Server Context Diagram
