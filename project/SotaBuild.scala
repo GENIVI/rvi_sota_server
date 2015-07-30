@@ -9,6 +9,7 @@ import sbtbuildinfo.{BuildInfoPlugin, BuildInfoKey}
 import sbtbuildinfo.BuildInfoKeys._
 import spray.revolver.RevolverPlugin._
 import com.typesafe.sbt.packager.Keys.dockerExposedPorts
+import com.typesafe.sbt.web._
 
 object SotaBuild extends Build {
 
@@ -60,10 +61,14 @@ object SotaBuild extends Build {
       dockerExposedPorts := Seq(9000),
       libraryDependencies ++= Seq (
         "org.scalatestplus" %% "play" % "1.4.0-M3" % "test",
+        "org.webjars" %% "webjars-play" % "2.4.0-1",
+        "org.webjars" % "webjars-locator" % "0.27",
+        "org.webjars.bower" % "react" % "0.13.3",
+        "org.webjars" % "bootstrap" % "3.3.4",
         specs2 % Test,
         ws
       )
-    )).enablePlugins( PlayScala )
+    )).enablePlugins(PlayScala, SbtWeb)
 
   lazy val sota = Project(id = "sota", base = file("."))
     .settings( basicSettings )
