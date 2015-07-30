@@ -1,0 +1,149 @@
+# Potential Security Threats
+
+```{.table file="csv/Threats_table.csv" header=yes inlinemarkdown=yes delimiter="," quotechar="\"" }
+```
+
+## [T01](#t01_row)
+
+* **Description:** A malicious person may try to gain administrator-level access to the web server's admin console to gain information about the system's structure.
+* **Rationale:** 
+
+## [T02](#t02_row)
+
+* **Description:** Sniffing software installed on the load balancing node may lead to the leak of the credentials of all clients connecting to the given cluster.
+* **Rationale:** A node sniffer could intercept the credentials of all incoming client connections.
+
+## [T03](#t03_row)
+
+* **Description:** An invalid combination of software packages or versions may be attempted to be installed in order to create exploits or vulnerabilities.
+* **Rationale:** 
+
+## [T04](#t04_row)
+
+* **Description:** A configuration that may create exploits or vulnerabilities on the vehicle's software environment may be injected and a modified web interface may be used to repudiate the traces of the installation of the malicious configuration to a group of vehicles.
+* **Rationale:** Javascript code running on the browser can be modified and a repudiation attack against a group of vehicles may be attempted.
+
+## [T05](#t05_row)
+
+* **Description:** A large amount of false or dummy requests from a malicious group may saturate the load balancer and prevent the service of legitimate clients.
+* **Rationale:** An easy to orchestrate DOS attack may disrupt the system's operations.
+
+## [T06](#t06_row)
+
+* **Description:** A password cracker may break an account and provide access to a malicious, unauthorized user.
+* **Rationale:** Weak passwords may be cracked in a short amount of time with a password cracker.
+
+## [T07](#t07_row)
+
+* **Description:** A malicious person may use a fake external resolver to gain information about the workings of the SOTA server and leak information about VINs and the software packages they have installed.
+* **Rationale:** A fake external resolver may be used to gain information about the SOTA server which may be used in a composite attack vector.
+
+## [T08](#t08_row)
+
+* **Description:** A maliciously compiled dependency tree may include dependencies that open vulnerabilities or provide access to attackers, or it sets package versions known to have bugs or open vulnerabilities.
+* **Rationale:** A package that may open a backdoor, or that functions as a Trojan can be added as a package dependency.
+
+## [T09](#t09_row)
+
+* **Description:** A verbose API may reveal information on which software packages are installed on which vehicle, which is unecessary on a need-to-know basis.
+* **Rationale:** 
+
+## [T10](#t10_row)
+
+* **Description:** An RVI node may be spoofed and become a leaking sink for vehicle and package data.
+* **Rationale:** A spoofed RVI node may crause a huge leak of sensitive information.
+
+## [T11](#t11_row)
+
+* **Description:** A compromised RVI node may send incorrect status reports for package installation in order to skip the installation of bugfixes or exploit fixes, intercept packages, and acquire information about VINs and their software configuration.
+* **Rationale:** Knowing or sending over to a spoofed vehicle software packages may help to analyze them and find potential attack vectors.
+
+## [T12](#t12_row)
+
+* **Description:** A compromised RVI node may block the installation of security-critical software packages and return a false status that they were installed, leaving open security vulnerabilities.
+* **Rationale:** A non-installed package may leave backdoors and exploits open for attackers.
+
+## [T13](#t13_row)
+
+* **Description:** Sniffing software installed on a RVI node can intercept VINs, their configuration, and the latest package configuration for every VIN.
+* **Rationale:** A node sniffer may intercept all VINs and their associated software packages.
+
+## [T14](#t14_row)
+
+* **Description:** A Denial-Of-Service (DOS) attack may  block the installation of software packages or updates.
+* **Rationale:** A DOS attack on the RVI node/s may block the installation of zero-days or other crucial updates and leave vehicles vulnerable for a prolonged period of time. 
+
+## [T15](#t15_row)
+
+* **Description:** An attacker may use a spoofed Logistics API to install trojans or packages with known vulnerabilities.
+* **Rationale:** Responses from a spoofed Logistics API may lead to the installation of malicious or vulnerable packages.
+
+## [T16](#t16_row)
+
+* **Description:** An attacker may assign a valid part number to a malicious package which may provide backdoor or related system vulnerabilities after being installed.
+* **Rationale:** A malicious packaged related with a valid part number will be installed without any warning or any alarm raised.
+
+## [T17](#t17_row)
+
+* **Description:** A malicious person may try to intercept the data exchanged between the SOTA server and the Logistics & Provisioning API.
+* **Rationale:** Information leak may compromise sensitive corporate and vehicle data.
+
+## [T18](#t18_row)
+
+* **Description:** An attacker may used a spoofed Billing API to install updates without being charged or by charging a third person excessively.
+* **Rationale:** Responses from a spoofed Billing API may lead to the installation of updates for no or excessive cost.
+
+## [T19](#t19_row)
+
+* **Description:** A compromised Charging & Billing endpoint may provide false charging information.
+* **Rationale:** 
+
+## [T20](#t20_row)
+
+* **Description:** A malicious person may try to intercept the data exchanged between the SOTA server and the Charging & Billing API.
+* **Rationale:** Information leak may compromise sensitive corporate and vehicle data.
+
+## [T21](#t21_row)
+
+* **Description:** A spoofed SOTA Server may retrieve most of the sensitive data stored in the data store.
+* **Rationale:** A spoofed SOTA Server may retrieve most of the sensitive data stored in the datastore.
+
+## [T22](#t22_row)
+
+* **Description:** A MariaDB client with access to the data store can manipulate the persisted data.
+* **Rationale:** Persisting false data in the datastore may open the door for more pervasive attack vectors.
+
+## [T23](#t23_row)
+
+* **Description:** A MariaDB client with access to the data store can retrieve all of the sensitive data stored in it.
+* **Rationale:** 
+
+## [T24](#t24_row)
+
+* **Description:** An attacker may orchestrate a Denial-Of-Service (DOS) attack to interrupt the system's operation or as part of a phishing attack.
+* **Rationale:** 
+
+## [T25](#t25_row)
+
+* **Description:** A malicious user may pursue elevating his access rights to administrator or superuser, allowing him to perform any arbitrary operation on the data store.
+* **Rationale:** Getting administrator rights can lead to data theft, tampering and complete loss of data.
+
+## [T26](#t26_row)
+
+* **Description:** A spoofed External Resolver may retrieve most of the sensitive data stored in the data store.
+* **Rationale:** A spoofed External Resolver may retrieve most of the data stored in the datastore.
+
+## [T27](#t27_row)
+
+* **Description:** A malicious in-vehicle process can attempt to exchange data with the SOTA Client and intercept information about the vehicle's software state.
+* **Rationale:** A third party process can intercept information about every package installed from an unsecured client.
+
+## [T28](#t28_row)
+
+* **Description:** A malicious in-vehicle process can attempt to intercept the communication between the SOTA Client and the RVI Node and alter the contents of the messages before delivering them to the SOTA Client.
+* **Rationale:** A third party process may attempt to intercept the communication between the SOTA Client and the RVI node and alter the contents of the received data.
+
+## [T29](#t29_row)
+
+* **Description:** An attacker may orchestrate a Denial-Of-Service (DOS) attack to interrupt the system's operation or as part of a phisinh attack.
+* **Rationale:** 
