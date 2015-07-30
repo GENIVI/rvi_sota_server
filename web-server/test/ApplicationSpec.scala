@@ -1,27 +1,23 @@
-import org.specs2.mutable._
-import org.specs2.runner._
-import org.junit.runner._
-
+import org.scalatest._
 import play.api.test._
 import play.api.test.Helpers._
+import org.scalatestplus.play._
+import play.api.libs.ws.WS
 
 /**
  * Add your spec here.
  * You can mock out a whole application including requests, plugins etc.
  * For more information, consult the wiki.
  */
-@RunWith(classOf[JUnitRunner])
-class ApplicationSpec extends Specification {
+class ApplicationSpec extends PlaySpec with OneServerPerSuite {
 
-  "Application" should {
-    "send 404 on a bad request" in new WithApplication{
-      route(FakeRequest(GET, "/invalid")) must beSome.which (status(_) == NOT_FOUND)
-    }
-    "render the index page" in new WithApplication{
-      val home = route(FakeRequest(GET, "/")).get
+  "send 404 on a bad request" in {
+    val response = await(WS.url(s"http://localhost:$port/invalid").get())
+    response.status mustBe (NOT_FOUND)
+  }
 
-      status(home) must equalTo(OK)
-      contentType(home) must beSome.which(_ == "text/html")
-    }
+  "render the index page" in {
+    val response = await(WS.url(s"http://localhost:$port/").get())
+    response.status mustBe (OK)
   }
 }

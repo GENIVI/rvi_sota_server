@@ -65,7 +65,6 @@ object SotaBuild extends Build {
         "org.webjars" % "webjars-locator" % "0.27",
         "org.webjars.bower" % "react" % "0.13.3",
         "org.webjars" % "bootstrap" % "3.3.4",
-        specs2 % Test,
         ws
       )
     )).enablePlugins(PlayScala, SbtWeb)
