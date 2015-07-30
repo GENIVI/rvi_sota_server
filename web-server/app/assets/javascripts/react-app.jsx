@@ -1,4 +1,4 @@
-require(['jquery', 'react', 'components/add-vin', 'components/add-package','./mixins/handle-fail'], function($, React, AddVin, AddPackage, HandleFailMixin) {
+require(['jquery', 'react', 'components/add-vin', 'components/packages-component', 'stores/packages', './sota-dispatcher'], function($, React, AddVin, PackagesComponent, PackageStore, SotaDispatcher) {
 
   var App = React.createClass({
     render: function() {
@@ -7,8 +7,8 @@ require(['jquery', 'react', 'components/add-vin', 'components/add-package','./mi
         <div id="add-vins">
           <AddVin url="/api/v1/vins" />
         </div>
-        <div id="add-package">
-          <AddPackage url="/api/v1/packages"/>
+        <div id="packages">
+          <PackagesComponent PackageStore = { PackageStore }/>
         </div>
       </div>
     );}
