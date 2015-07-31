@@ -1,10 +1,10 @@
 ID,Label,STRIDE Attribute,Assets,Interactions,Attack potential vector,Attack potential rating,Damage potential vector,Damage potential rating,Risk,Diagram
-+++,+++++++++++++++++++++++,,+++++++++++++++++++,+++++++++++++++++++++++++++++,+++++++++++++++++++++++++++++++,+++++,++++++++++++++++++,+++++,+++,+++++++++++++++++++++++++++++++++++++
++++,+++++++++++++++++++++++,++++++++++,+++++++++++++++++++++++,+++++++++++++++++++++++++++++,+++++++++++++++++++++++++++++++,+++++,++++++++++++++++++,+++++,+++,+++++++++++++++++++++++++++++++++++++
 "<a name=""t01_row"">[T01](#t01)</a>",Spoofing of Admin UI,Spoofing,Client credentials,Anyone -> Web API,exp:pro acc:unl tim:day equ:std kno:pub ,4,fin:xxx ope:xxx saf:xxx,0,0,Level 0 - Context Diagram
 "<a name=""t02_row"">[T02](#t02)</a>",Node sniffing,Information Disclosure,Client credentials,Anyone -> Web API,exp:exp acc:unl tim:wee equ:std kno:pub,11,fin:xxx ope:xxx saf:xxx,0,0,Level 0 - Context Diagram
 "<a name=""t03_row"">[T03](#t03)</a>",Invalid package configuration injection,Tampering,Vehicle installed software state,Admin UI -> Web API, ,0, ,0,0,Level 0 - Context Diagram
 "<a name=""t04_row"">[T04](#t04)</a>",Repudiation of vehicle SW configuration ,Repudiation,Vehicle installed software state,Admin UI -> Web API,,,,,0,Level 0 - Context Diagram
-"<a name=""t05_row"">[T05](#t05)</a>",Denial of Service attack,Denial of service,Quality of Service,Anyone -> Web API, ,0, ,0,0,Level 0 - Context Diagram
+"<a name=""t05_row"">[T05](#t05)</a>",Web API Denial of Service attack,Denial of service,Quality of Service,Anyone -> Web API, ,0, ,0,0,Level 0 - Context Diagram
 "<a name=""t06_row"">[T06](#t06)</a>",Brute force password cracking,Elevation of Privilege,"Acces to vehicle data, vehicle installed software state",Admin UI -> Web API,,,,,0,Level 0 - Context Diagram
 "<a name=""t07_row"">[T07](#t07)</a>",Spoofing of External Resolver,Spoofing,Vehicle installed software state,External Resolver -> SOTA Server,,,,,0,Level 0 - Context Diagram
 "<a name=""t08_row"">[T08](#t08)</a>",Tampering of package dependencies,Tampering,"Vehicle installed software state, vehicle software security",External Resolver -> SOTA Server,,,,,0,Level 0 - Context Diagram
@@ -13,7 +13,7 @@ ID,Label,STRIDE Attribute,Assets,Interactions,Attack potential vector,Attack pot
 "<a name=""t11_row"">[T11](#t11)</a>",Retrieving false package installation results,Tampering,"Package information, software configuration per VIN",RVI Node -> SOTA Server,,,,,0,Level 0 - Context Diagram
 "<a name=""t12_row"">[T12](#t12)</a>",Denying the installation of a software package,Repudiation,Vehicle software security,RVI Node -> SOTA Server,,,,,0,Level 0 - Context Diagram
 "<a name=""t13_row"">[T13](#t13)</a>",RVI node sniffing,Information Disclosure,Vehicle installed software state,SOTA Server -> RVI Node,,,,,0,Level 0 - Context Diagram
-"<a name=""t14_row"">[T14](#t14)</a>",Denial of Service attack,Denial of service,Service Availability,Anyone -> RVI Node,,,,,0,Level 0 - Context Diagram
+"<a name=""t14_row"">[T14](#t14)</a>",RVI node Denial of Service attack,Denial of service,Service Availability,Anyone -> RVI Node,,,,,0,Level 0 - Context Diagram
 "<a name=""t15_row"">[T15](#t15)</a>",Logistics & Provisioning API Spoofing,Spoofing,Vehicle software security,Logistics & Provisioning -> SOTA Server,,,,,0,Level 0 - Context Diagram
 "<a name=""t16_row"">[T16](#t16)</a>",Associating a part number with a malicious package,Tampering,Vehicle software security,Logistics & Provisioning -> SOTA Server,,,,,0,Level 0 - Context Diagram
 "<a name=""t17_row"">[T17](#t17)</a>","VIN, part number, configurations compromise",Information Disclosure,"Corporate data, vehicle software configuration, vehicle software security.",Logistics & Provisioning -> SOTA Server,,,,,0,
@@ -23,9 +23,9 @@ ID,Label,STRIDE Attribute,Assets,Interactions,Attack potential vector,Attack pot
 "<a name=""t21_row"">[T21](#t21)</a>",Spoofing SOTA Core Server,Spoofing,"User data, VINs, Package information, Vehicle configurations",SOTA Core Server -> MariaDB,,,,,0,Level 1 - SOTA Server Context Diagram
 "<a name=""t22_row"">[T22](#t22)</a>",Persistence of false data ,Tampering,"User data, VINs, Package information, Vehicle configurations",Anyone -> MariaDB,,,,,0,Level 1 - SOTA Server Context Diagram
 "<a name=""t23_row"">[T23](#t23)</a>",Compromise of sensitive data,Information Disclosure,"User data, VINs, Package information, Vehicle configurations",Anyone -> MariaDB,,,,,0,Level 1 - SOTA Server Context Diagram
-"<a name=""t24_row"">[T24](#t24)</a>",Denial of Service attack,Denial of service,Service Availability,Anyone -> MariaDB,,,,,0,Level 1 - SOTA Server Context Diagram
+"<a name=""t24_row"">[T24](#t24)</a>",MariaDB Denial of Service attack,Denial of service,Service Availability,Anyone -> MariaDB,,,,,0,Level 1 - SOTA Server Context Diagram
 "<a name=""t25_row"">[T25](#t25)</a>",Getting admin rights,Elevation of Privilege,"User data, VINs, Package information, Vehicle configurations, data store state",Anyone -> MariaDB,,,,,0,Level 1 - SOTA Server Context Diagram
 "<a name=""t26_row"">[T26](#t26)</a>",Spoofing External Resolver,Spoofing,"User data, VINs, Package information, Vehicle configurations",External Resolver -> MariaDB,,,,,0,Level 1 - SOTA Server Context Diagram
 "<a name=""t27_row"">[T27](#t27)</a>",In-vehicle process spoofing,Spoofing,"VINs, Package information",Anyone -> SOTA Client,,,,,0,Level 1 - SOTA Server Context Diagram
 "<a name=""t28_row"">[T28](#t28)</a>",SOTA Client sniffing,Tampering,"VINs, Package information",In vehicle process -> SOTA Client,,,,,0,Level 1 - SOTA Server Context Diagram
-"<a name=""t29_row"">[T29](#t29)</a>",Denial of Service attack,Denial of service,Service Availability,Anyone -> SOTA Client,,,,,0,Level 1 - SOTA Server Context Diagram
+"<a name=""t29_row"">[T29](#t29)</a>",SOTA Client Denial of Service attack,Denial of service,Service Availability,Anyone -> SOTA Client,,,,,0,Level 1 - SOTA Server Context Diagram

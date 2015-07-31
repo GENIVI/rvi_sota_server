@@ -2,12 +2,12 @@
 
 | ID                                | Label                                                 | STRIDE Attribute       | Assets                                                                         | Interactions                               | Attack potential vector                 | Attack potential rating | Damage potential vector | Damage potential rating | Risk | Diagram                               |
 |-----------------------------------|-------------------------------------------------------|------------------------|--------------------------------------------------------------------------------|--------------------------------------------|-----------------------------------------|-------------------------|-------------------------|-------------------------|------|---------------------------------------|
-| +++                               | +++++++++++++++++++++++                               |                        | +++++++++++++++++++                                                            | +++++++++++++++++++++++++++++              | +++++++++++++++++++++++++++++++         | +++++                   | ++++++++++++++++++      | +++++                   | +++  | +++++++++++++++++++++++++++++++++++++ |
+| +++                               | +++++++++++++++++++++++                               | ++++++++++             | +++++++++++++++++++++++                                                        | +++++++++++++++++++++++++++++              | +++++++++++++++++++++++++++++++         | +++++                   | ++++++++++++++++++      | +++++                   | +++  | +++++++++++++++++++++++++++++++++++++ |
 | <a name="t01_row">[T01](#t01)</a> | Spoofing of Admin UI                                  | Spoofing               | Client credentials                                                             | Anyone -&gt; Web API                       | exp:pro acc:unl tim:day equ:std kno:pub | 4                       | fin:xxx ope:xxx saf:xxx | 0                       | 0    | Level 0 - Context Diagram             |
 | <a name="t02_row">[T02](#t02)</a> | Node sniffing                                         | Information Disclosure | Client credentials                                                             | Anyone -&gt; Web API                       | exp:exp acc:unl tim:wee equ:std kno:pub | 11                      | fin:xxx ope:xxx saf:xxx | 0                       | 0    | Level 0 - Context Diagram             |
 | <a name="t03_row">[T03](#t03)</a> | Invalid package configuration injection               | Tampering              | Vehicle installed software state                                               | Admin UI -&gt; Web API                     |                                         | 0                       |                         | 0                       | 0    | Level 0 - Context Diagram             |
 | <a name="t04_row">[T04](#t04)</a> | Repudiation of vehicle SW configuration               | Repudiation            | Vehicle installed software state                                               | Admin UI -&gt; Web API                     |                                         |                         |                         |                         | 0    | Level 0 - Context Diagram             |
-| <a name="t05_row">[T05](#t05)</a> | Denial of Service attack                              | Denial of service      | Quality of Service                                                             | Anyone -&gt; Web API                       |                                         | 0                       |                         | 0                       | 0    | Level 0 - Context Diagram             |
+| <a name="t05_row">[T05](#t05)</a> | Web API Denial of Service attack                      | Denial of service      | Quality of Service                                                             | Anyone -&gt; Web API                       |                                         | 0                       |                         | 0                       | 0    | Level 0 - Context Diagram             |
 | <a name="t06_row">[T06](#t06)</a> | Brute force password cracking                         | Elevation of Privilege | Acces to vehicle data, vehicle installed software state                        | Admin UI -&gt; Web API                     |                                         |                         |                         |                         | 0    | Level 0 - Context Diagram             |
 | <a name="t07_row">[T07](#t07)</a> | Spoofing of External Resolver                         | Spoofing               | Vehicle installed software state                                               | External Resolver -&gt; SOTA Server        |                                         |                         |                         |                         | 0    | Level 0 - Context Diagram             |
 | <a name="t08_row">[T08](#t08)</a> | Tampering of package dependencies                     | Tampering              | Vehicle installed software state, vehicle software security                    | External Resolver -&gt; SOTA Server        |                                         |                         |                         |                         | 0    | Level 0 - Context Diagram             |
@@ -16,7 +16,7 @@
 | <a name="t11_row">[T11](#t11)</a> | Retrieving false package installation results         | Tampering              | Package information, software configuration per VIN                            | RVI Node -&gt; SOTA Server                 |                                         |                         |                         |                         | 0    | Level 0 - Context Diagram             |
 | <a name="t12_row">[T12](#t12)</a> | Denying the installation of a software package        | Repudiation            | Vehicle software security                                                      | RVI Node -&gt; SOTA Server                 |                                         |                         |                         |                         | 0    | Level 0 - Context Diagram             |
 | <a name="t13_row">[T13](#t13)</a> | RVI node sniffing                                     | Information Disclosure | Vehicle installed software state                                               | SOTA Server -&gt; RVI Node                 |                                         |                         |                         |                         | 0    | Level 0 - Context Diagram             |
-| <a name="t14_row">[T14](#t14)</a> | Denial of Service attack                              | Denial of service      | Service Availability                                                           | Anyone -&gt; RVI Node                      |                                         |                         |                         |                         | 0    | Level 0 - Context Diagram             |
+| <a name="t14_row">[T14](#t14)</a> | RVI node Denial of Service attack                     | Denial of service      | Service Availability                                                           | Anyone -&gt; RVI Node                      |                                         |                         |                         |                         | 0    | Level 0 - Context Diagram             |
 | <a name="t15_row">[T15](#t15)</a> | Logistics & Provisioning API Spoofing                 | Spoofing               | Vehicle software security                                                      | Logistics & Provisioning -&gt; SOTA Server |                                         |                         |                         |                         | 0    | Level 0 - Context Diagram             |
 | <a name="t16_row">[T16](#t16)</a> | Associating a part number with a malicious package    | Tampering              | Vehicle software security                                                      | Logistics & Provisioning -&gt; SOTA Server |                                         |                         |                         |                         | 0    | Level 0 - Context Diagram             |
 | <a name="t17_row">[T17](#t17)</a> | VIN, part number, configurations compromise           | Information Disclosure | Corporate data, vehicle software configuration, vehicle software security.     | Logistics & Provisioning -&gt; SOTA Server |                                         |                         |                         |                         | 0    |                                       |
@@ -26,12 +26,12 @@
 | <a name="t21_row">[T21](#t21)</a> | Spoofing SOTA Core Server                             | Spoofing               | User data, VINs, Package information, Vehicle configurations                   | SOTA Core Server -&gt; MariaDB             |                                         |                         |                         |                         | 0    | Level 1 - SOTA Server Context Diagram |
 | <a name="t22_row">[T22](#t22)</a> | Persistence of false data                             | Tampering              | User data, VINs, Package information, Vehicle configurations                   | Anyone -&gt; MariaDB                       |                                         |                         |                         |                         | 0    | Level 1 - SOTA Server Context Diagram |
 | <a name="t23_row">[T23](#t23)</a> | Compromise of sensitive data                          | Information Disclosure | User data, VINs, Package information, Vehicle configurations                   | Anyone -&gt; MariaDB                       |                                         |                         |                         |                         | 0    | Level 1 - SOTA Server Context Diagram |
-| <a name="t24_row">[T24](#t24)</a> | Denial of Service attack                              | Denial of service      | Service Availability                                                           | Anyone -&gt; MariaDB                       |                                         |                         |                         |                         | 0    | Level 1 - SOTA Server Context Diagram |
+| <a name="t24_row">[T24](#t24)</a> | MariaDB Denial of Service attack                      | Denial of service      | Service Availability                                                           | Anyone -&gt; MariaDB                       |                                         |                         |                         |                         | 0    | Level 1 - SOTA Server Context Diagram |
 | <a name="t25_row">[T25](#t25)</a> | Getting admin rights                                  | Elevation of Privilege | User data, VINs, Package information, Vehicle configurations, data store state | Anyone -&gt; MariaDB                       |                                         |                         |                         |                         | 0    | Level 1 - SOTA Server Context Diagram |
 | <a name="t26_row">[T26](#t26)</a> | Spoofing External Resolver                            | Spoofing               | User data, VINs, Package information, Vehicle configurations                   | External Resolver -&gt; MariaDB            |                                         |                         |                         |                         | 0    | Level 1 - SOTA Server Context Diagram |
 | <a name="t27_row">[T27](#t27)</a> | In-vehicle process spoofing                           | Spoofing               | VINs, Package information                                                      | Anyone -&gt; SOTA Client                   |                                         |                         |                         |                         | 0    | Level 1 - SOTA Server Context Diagram |
 | <a name="t28_row">[T28](#t28)</a> | SOTA Client sniffing                                  | Tampering              | VINs, Package information                                                      | In vehicle process -&gt; SOTA Client       |                                         |                         |                         |                         | 0    | Level 1 - SOTA Server Context Diagram |
-| <a name="t29_row">[T29](#t29)</a> | Denial of Service attack                              | Denial of service      | Service Availability                                                           | Anyone -&gt; SOTA Client                   |                                         |                         |                         |                         | 0    | Level 1 - SOTA Server Context Diagram |
+| <a name="t29_row">[T29](#t29)</a> | SOTA Client Denial of Service attack                  | Denial of service      | Service Availability                                                           | Anyone -&gt; SOTA Client                   |                                         |                         |                         |                         | 0    | Level 1 - SOTA Server Context Diagram |
 
 ## [T01](#t01_row)
 
@@ -47,9 +47,9 @@
 -   **Description:** Sniffing software installed on the load balancing node may lead to the leak of the credentials of all clients connecting to the given cluster.
 -   **Rationale:** A node sniffer could intercept the credentials of all incoming client connections.
 -   **Mitigations:**
-    -   [C02](#c02) - TLS Transport Integrity, Confidetiality
+    -   [C02](#c02) - TLS Transport Integrity, Confidentiality
     -   [C03](#c03) - Enforce only SSL connections
-    -   [C08](#c08) - Avoid exposing unecessary interfaces to public Internet
+    -   [C08](#c08) - Avoid exposing unnecessary interfaces to public Internet
 
 ## [T03](#t03_row)
 
@@ -59,7 +59,7 @@
     -   [C01](#c01) - Password complexity check
     -   [C07](#c07) - Log VIN and package creations
     -   [C09](#c09) - Verify the VIN/package filter sanity
-    -   [C14](#c14) - SOTA Server-supplIed checksum for every package send, recalculated it and verify it locally
+    -   [C14](#c14) - SOTA Server-supplied checksum for every package send, recalculated it and verify it locally
     -   [C15](#c15) - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download's state as erroneous and update the Server with the information upon the next notification
 
 ## [T04](#t04_row)
@@ -75,7 +75,7 @@
 -   **Rationale:** An easy to orchestrate DOS attack may disrupt the system's operations.
 -   **Mitigations:**
     -   [C05](#c05) - Notify administrators for suspicious traffic patterns
-    -   [C08](#c08) - Avoid exposing unecessary interfaces to public Internet
+    -   [C08](#c08) - Avoid exposing unnecessary interfaces to public Internet
 
 ## [T06](#t06_row)
 
@@ -83,14 +83,14 @@
 -   **Rationale:** Weak passwords may be cracked in a short amount of time with a password cracker.
 -   **Mitigations:**
     -   [C01](#c01) - Password complexity check
-    -   [C08](#c08) - Avoid exposing unecessary interfaces to public Internet
+    -   [C08](#c08) - Avoid exposing unnecessary interfaces to public Internet
 
 ## [T07](#t07_row)
 
 -   **Description:** A malicious person may use a fake external resolver to gain information about the workings of the SOTA server and leak information about VINs and the software packages they have installed.
 -   **Rationale:** A fake external resolver may be used to gain information about the SOTA server which may be used in a composite attack vector.
 -   **Mitigations:**
-    -   [C02](#c02) - TLS Transport Integrity, Confidetiality
+    -   [C02](#c02) - TLS Transport Integrity, Confidentiality
     -   [C04](#c04) - Log transactions to and from SOTA Server
 
 ## [T08](#t08_row)
@@ -98,12 +98,12 @@
 -   **Description:** A maliciously compiled dependency tree may include dependencies that open vulnerabilities or provide access to attackers, or it sets package versions known to have bugs or open vulnerabilities.
 -   **Rationale:** A package that may open a backdoor, or that functions as a Trojan can be added as a package dependency.
 -   **Mitigations:**
-    -   [C14](#c14) - SOTA Server-supplIed checksum for every package send, recalculated it and verify it locally
+    -   [C14](#c14) - SOTA Server-supplied checksum for every package send, recalculated it and verify it locally
     -   [C15](#c15) - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download's state as erroneous and update the Server with the information upon the next notification
 
 ## [T09](#t09_row)
 
--   **Description:** A verbose API may reveal information on which software packages are installed on which vehicle, which is unecessary on a need-to-know basis.
+-   **Description:** A verbose API may reveal information on which software packages are installed on which vehicle, which is unnecessary on a need-to-know basis.
 -   **Rationale:**
 -   **Mitigations:**
     -   [C03](#c03) - Enforce only SSL connections
@@ -111,17 +111,17 @@
 ## [T10](#t10_row)
 
 -   **Description:** An RVI node may be spoofed and become a leaking sink for vehicle and package data.
--   **Rationale:** A spoofed RVI node may crause a huge leak of sensitive information.
+-   **Rationale:** A spoofed RVI node may cause a huge leak of sensitive information.
 -   **Mitigations:**
-    -   [C02](#c02) - TLS Transport Integrity, Confidetiality
-    -   [C08](#c08) - Avoid exposing unecessary interfaces to public Internet
+    -   [C02](#c02) - TLS Transport Integrity, Confidentiality
+    -   [C08](#c08) - Avoid exposing unnecessary interfaces to public Internet
 
 ## [T11](#t11_row)
 
 -   **Description:** A compromised RVI node may send incorrect status reports for package installation in order to skip the installation of bugfixes or exploit fixes, intercept packages, and acquire information about VINs and their software configuration.
 -   **Rationale:** Knowing or sending over to a spoofed vehicle software packages may help to analyze them and find potential attack vectors.
 -   **Mitigations:**
-    -   [C14](#c14) - SOTA Server-supplIed checksum for every package send, recalculated it and verify it locally
+    -   [C14](#c14) - SOTA Server-supplied checksum for every package send, recalculated it and verify it locally
     -   [C15](#c15) - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download's state as erroneous and update the Server with the information upon the next notification
 
 ## [T12](#t12_row)
@@ -143,14 +143,14 @@
 -   **Rationale:** A DOS attack on the RVI node/s may block the installation of zero-days or other crucial updates and leave vehicles vulnerable for a prolonged period of time.
 -   **Mitigations:**
     -   [C05](#c05) - Notify administrators for suspicious traffic patterns
-    -   [C08](#c08) - Avoid exposing unecessary interfaces to public Internet
+    -   [C08](#c08) - Avoid exposing unnecessary interfaces to public Internet
 
 ## [T15](#t15_row)
 
 -   **Description:** An attacker may use a spoofed Logistics API to install trojans or packages with known vulnerabilities.
 -   **Rationale:** Responses from a spoofed Logistics API may lead to the installation of malicious or vulnerable packages.
 -   **Mitigations:**
-    -   [C02](#c02) - TLS Transport Integrity, Confidetiality
+    -   [C02](#c02) - TLS Transport Integrity, Confidentiality
     -   [C04](#c04) - Log transactions to and from SOTA Server
     -   [C06](#c06) - Limit login attempts per session
 
@@ -166,7 +166,7 @@
 -   **Description:** A malicious person may try to intercept the data exchanged between the SOTA server and the Logistics & Provisioning API.
 -   **Rationale:** Information leak may compromise sensitive corporate and vehicle data.
 -   **Mitigations:**
-    -   [C02](#c02) - TLS Transport Integrity, Confidetiality
+    -   [C02](#c02) - TLS Transport Integrity, Confidentiality
     -   [C03](#c03) - Enforce only SSL connections
     -   [C04](#c04) - Log transactions to and from SOTA Server
 
@@ -175,10 +175,10 @@
 -   **Description:** An attacker may used a spoofed Billing API to install updates without being charged or by charging a third person excessively.
 -   **Rationale:** Responses from a spoofed Billing API may lead to the installation of updates for no or excessive cost.
 -   **Mitigations:**
-    -   [C02](#c02) - TLS Transport Integrity, Confidetiality
+    -   [C02](#c02) - TLS Transport Integrity, Confidentiality
     -   [C04](#c04) - Log transactions to and from SOTA Server
     -   [C06](#c06) - Limit login attempts per session
-    -   [C08](#c08) - Avoid exposing unecessary interfaces to public Internet
+    -   [C08](#c08) - Avoid exposing unnecessary interfaces to public Internet
 
 ## [T19](#t19_row)
 
@@ -191,9 +191,9 @@
 -   **Description:** A malicious person may try to intercept the data exchanged between the SOTA server and the Charging & Billing API.
 -   **Rationale:** Information leak may compromise sensitive corporate and vehicle data.
 -   **Mitigations:**
-    -   [C02](#c02) - TLS Transport Integrity, Confidetiality
+    -   [C02](#c02) - TLS Transport Integrity, Confidentiality
     -   [C03](#c03) - Enforce only SSL connections
-    -   [C08](#c08) - Avoid exposing unecessary interfaces to public Internet
+    -   [C08](#c08) - Avoid exposing unnecessary interfaces to public Internet
 
 ## [T21](#t21_row)
 
@@ -207,7 +207,7 @@
 -   **Rationale:** Persisting false data in the datastore may open the door for more pervasive attack vectors.
 -   **Mitigations:**
     -   [C01](#c01) - Password complexity check
-    -   [C08](#c08) - Avoid exposing unecessary interfaces to public Internet
+    -   [C08](#c08) - Avoid exposing unnecessary interfaces to public Internet
     -   [C10](#c10) - Allow only Intranet/VPN connections to MariaDB
     -   [C11](#c11) - Don't use Admin account with MariaDB
 
@@ -217,9 +217,9 @@
 -   **Rationale:**
 -   **Mitigations:**
     -   [C01](#c01) - Password complexity check
-    -   [C02](#c02) - TLS Transport Integrity, Confidetiality
+    -   [C02](#c02) - TLS Transport Integrity, Confidentiality
     -   [C03](#c03) - Enforce only SSL connections
-    -   [C08](#c08) - Avoid exposing unecessary interfaces to public Internet
+    -   [C08](#c08) - Avoid exposing unnecessary interfaces to public Internet
     -   [C10](#c10) - Allow only Intranet/VPN connections to MariaDB
     -   [C11](#c11) - Don't use Admin account with MariaDB
 
@@ -230,7 +230,7 @@
 -   **Mitigations:**
     -   [C01](#c01) - Password complexity check
     -   [C05](#c05) - Notify administrators for suspicious traffic patterns
-    -   [C08](#c08) - Avoid exposing unecessary interfaces to public Internet
+    -   [C08](#c08) - Avoid exposing unnecessary interfaces to public Internet
     -   [C10](#c10) - Allow only Intranet/VPN connections to MariaDB
     -   [C11](#c11) - Don't use Admin account with MariaDB
 
@@ -240,7 +240,7 @@
 -   **Rationale:** Getting administrator rights can lead to data theft, tampering and complete loss of data.
 -   **Mitigations:**
     -   [C01](#c01) - Password complexity check
-    -   [C02](#c02) - TLS Transport Integrity, Confidetiality
+    -   [C02](#c02) - TLS Transport Integrity, Confidentiality
     -   [C10](#c10) - Allow only Intranet/VPN connections to MariaDB
     -   [C11](#c11) - Don't use Admin account with MariaDB
 
@@ -249,8 +249,8 @@
 -   **Description:** A spoofed External Resolver may retrieve most of the sensitive data stored in the data store.
 -   **Rationale:** A spoofed External Resolver may retrieve most of the data stored in the datastore.
 -   **Mitigations:**
-    -   [C02](#c02) - TLS Transport Integrity, Confidetiality
-    -   [C08](#c08) - Avoid exposing unecessary interfaces to public Internet
+    -   [C02](#c02) - TLS Transport Integrity, Confidentiality
+    -   [C08](#c08) - Avoid exposing unnecessary interfaces to public Internet
 
 ## [T27](#t27_row)
 
@@ -267,12 +267,12 @@
 -   **Mitigations:**
     -   [C12](#c12) - SOTA Client should not accept any calls or requests from in-vehicle processes
     -   [C13](#c13) - SOTA Client should authenticate and communicate only with the Software Loading Manager (from in-vehicle software)
-    -   [C14](#c14) - SOTA Server-supplIed checksum for every package send, recalculated it and verify it locally
+    -   [C14](#c14) - SOTA Server-supplied checksum for every package send, recalculated it and verify it locally
     -   [C15](#c15) - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download's state as erroneous and update the Server with the information upon the next notification
 
 ## [T29](#t29_row)
 
--   **Description:** An attacker may orchestrate a Denial-Of-Service (DOS) attack to interrupt the system's operation or as part of a phisinh attack.
+-   **Description:** An attacker may orchestrate a Denial-Of-Service (DOS) attack to interrupt the system's operation or as part of a phishing attack.
 -   **Rationale:**
 -   **Mitigations:**
     -   [C12](#c12) - SOTA Client should not accept any calls or requests from in-vehicle processes
@@ -291,7 +291,7 @@
 -   [T06](#t06) - Brute force password cracking
 -   [T22](#t22) - Persistence of false data
 -   [T23](#t23) - Compromise of sensitive data
--   [T24](#t24) - Denial of Service attack
+-   [T24](#t24) - MariaDB Denial of Service attack
 -   [T25](#t25) - Getting admin rights
 
 ##### Purpose
@@ -304,7 +304,7 @@ deterrence
 
 ## C02
 
-### TLS Transport Integrity, Confidetiality
+### TLS Transport Integrity, Confidentiality
 
 ##### Applicable threats
 
@@ -380,9 +380,9 @@ monitoring
 
 ##### Applicable threats
 
--   [T05](#t05) - Denial of Service attack
--   [T14](#t14) - Denial of Service attack
--   [T24](#t24) - Denial of Service attack
+-   [T05](#t05) - Web API Denial of Service attack
+-   [T14](#t14) - RVI Node Denial of Service attack
+-   [T24](#t24) - MariaDB Denial of Service attack
 
 ##### Purpose
 
@@ -429,20 +429,20 @@ monitoring
 
 ## C08
 
-### Avoid exposing unecessary interfaces to public Internet
+### Avoid exposing unnecessary interfaces to public Internet
 
 ##### Applicable threats
 
 -   [T02](#t02) - Node sniffing
--   [T05](#t05) - Denial of Service attack
+-   [T05](#t05) - Web API Denial of Service attack
 -   [T06](#t06) - Brute force password cracking
 -   [T10](#t10) - RVI node spoofing
--   [T14](#t14) - Denial of Service attack
+-   [T14](#t14) - RVI Node Denial of Service attack
 -   [T18](#t18) - Charging & Billing API Spoofing
 -   [T20](#t20) - VIN, configurations, financial information compromise
 -   [T22](#t22) - Persistence of false data
 -   [T23](#t23) - Compromise of sensitive data
--   [T24](#t24) - Denial of Service attack
+-   [T24](#t24) - MariaDB Denial of Service attack
 -   [T26](#t26) - Spoofing External Resolver
 
 ##### Purpose
@@ -477,7 +477,7 @@ deterrence
 
 -   [T22](#t22) - Persistence of false data
 -   [T23](#t23) - Compromise of sensitive data
--   [T24](#t24) - Denial of Service attack
+-   [T24](#t24) - MariaDB Denial of Service attack
 -   [T25](#t25) - Getting admin rights
 
 ##### Purpose
@@ -496,7 +496,7 @@ deterrence
 
 -   [T22](#t22) - Persistence of false data
 -   [T23](#t23) - Compromise of sensitive data
--   [T24](#t24) - Denial of Service attack
+-   [T24](#t24) - MariaDB Denial of Service attack
 -   [T25](#t25) - Getting admin rights
 
 ##### Purpose
@@ -515,7 +515,7 @@ deterrence
 
 -   [T27](#t27) - In-vehicle process spoofing
 -   [T28](#t28) - SOTA Client sniffing
--   [T29](#t29) - Denial of Service attack
+-   [T29](#t29) - SOTA Client Denial of Service attack
 
 ##### Purpose
 
@@ -544,7 +544,7 @@ prevention
 
 ## C14
 
-### SOTA Server-supplIed checksum for every package send, recalculated it and verify it locally.
+### SOTA Server-supplied checksum for every package send, recalculated it and verify it locally.
 
 ##### Applicable threats
 
