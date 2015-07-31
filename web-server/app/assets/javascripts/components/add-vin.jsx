@@ -1,4 +1,4 @@
-define(['jquery', 'react', '../mixins/handle-fail', '../util'], function($, React, HandleFailMixin, util) {
+define(['jquery', 'react', '../mixins/handle-fail', '../mixins/serialize-form'], function($, React, HandleFailMixin, serializeForm) {
 
   var AddVin = React.createClass({
     mixins: [HandleFailMixin],
@@ -6,7 +6,7 @@ define(['jquery', 'react', '../mixins/handle-fail', '../util'], function($, Reac
       e.preventDefault();
       this.setState({postStatus: ""});
 
-      payload = util.serializeForm(this.refs.form);
+      payload = serializeForm(this.refs.form);
       if (this.validate(payload.vin) === false) {
         this.setState({postStatus: "VINs must consist of numbers and uppercase letters only."});
         return;

@@ -15,11 +15,9 @@ define(['jquery'], function($) {
     return o;
   };
 
-  var util = {
-    serializeForm: function(formRef) {
-      return $(formRef.getDOMNode()).serializeObject();
-    }
+  var serializeForm =  function(formRef) {
+    return $(formRef.getDOMNode()).serializeObject();
   };
 
-  return util;
+  return serializeForm;
 });
