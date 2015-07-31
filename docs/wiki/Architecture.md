@@ -18,6 +18,16 @@ The data model for the system is illustrated here (click to enlarge):
 ![Data Model Diagram](images/Data-Model.png)
 </a>
 
+## Context Diagrams
+
+### Level 0
+
+![Level 0 Context Diagram](images/Level-0-Context-Diagram.png)
+
+### Level 1 SOTA Server
+
+![Level 1 Context Diagram](images/Level-1-SOTA-Server-Context-Diagram.png)
+
 ## Requirements
 
 You can find a complete list of the [software requirements here](Requirements) 
