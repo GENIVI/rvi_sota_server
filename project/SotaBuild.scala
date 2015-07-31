@@ -17,7 +17,7 @@ object SotaBuild extends Build {
     organization := "org.genivi",
     scalaVersion := "2.11.7",
 
-    libraryDependencies ++= Dependencies.TestFrameworks, 
+    libraryDependencies ++= Dependencies.TestFrameworks,
 
     dependencyOverrides ++= Set(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
@@ -37,7 +37,7 @@ object SotaBuild extends Build {
 
   lazy val externalResolver = Project(id = "resolver", base = file("external-resolver"))
     .settings( commonSettings ++ Seq(
-      libraryDependencies ++= Dependencies.Rest :+ Dependencies.Scalaz,
+      libraryDependencies ++= Dependencies.Rest :+ Dependencies.Scalaz :+ Dependencies.Refined,
       dockerExposedPorts := Seq(8081)
     ))
     .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
@@ -93,18 +93,23 @@ object Dependencies {
     "ch.qos.logback" % "logback-classic" % "1.0.13"
   )
 
+  lazy val Refined = "eu.timepit" %% "refined" % "0.2.0"
+
   lazy val Scalaz = "org.scalaz" %% "scalaz-core" % "7.1.3"
 
   lazy val ScalaTest = "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test"
 
   lazy val ScalaCheck = "org.scalacheck" %% "scalacheck" % "1.12.4" % "test"
 
+  lazy val Flyway = "org.flywaydb" % "flyway-core" % "3.2.1" % "test"
+
   lazy val TestFrameworks = Seq( ScalaTest, ScalaCheck )
 
   lazy val Slick = Seq(
     "com.typesafe.slick" %% "slick" % "3.0.0",
     "com.zaxxer" % "HikariCP" % "2.3.8",
-    "org.mariadb.jdbc" % "mariadb-java-client" % "1.2.0"
+    "org.mariadb.jdbc" % "mariadb-java-client" % "1.2.0",
+    Flyway
   )
 
   lazy val NscalaTime = "com.github.nscala-time" %% "nscala-time" % "2.0.0"

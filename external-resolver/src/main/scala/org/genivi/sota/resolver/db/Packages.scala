@@ -1,11 +1,10 @@
 package org.genivi.sota.resolver.db
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
-import slick.driver.MySQLDriver.api._
-import org.genivi.sota.resolver.Package
+import org.genivi.sota.resolver.types.Package
 
 object Packages {
+
+  import slick.driver.MySQLDriver.api._
 
   class PackageTable(tag: Tag) extends Table[Package](tag, "Package") {
 
@@ -21,7 +20,9 @@ object Packages {
 
   val packages = TableQuery[PackageTable]
 
-  def list() = packages.result
+  def add(pkg : Package.ValidPackage): DBIO[Int] =
+    packages += pkg
 
-  def create(newPackage: Package) = packages += newPackage
+  def create: DBIO[Unit] =
+    packages.schema.create
 }
