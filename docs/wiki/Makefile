@@ -1,4 +1,4 @@
-TARGETS = $(shell pwd)/images/Data-Model.png $(shell pwd)/images/System-Architecture-Diagram.png
+TARGETS = $(shell pwd)/images/Data-Model.png $(shell pwd)/images/Level-0-Context-Diagram.png $(shell pwd)/images/Level-1-SOTA-Server-Context-Diagram.png $(shell pwd)/images/System-Architecture-Diagram.png
 LARGE_TARGETS = $(shell pwd)/images/Data-Model-large.png
 
 all: $(TARGETS) $(LARGE_TARGETS)
