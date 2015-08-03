@@ -31,13 +31,15 @@ trait ResourceSpec extends Matchers with ScalatestRouteTest { self: org.scalates
   import slick.jdbc.JdbcBackend.Database
 
   // Paths
-  def resourceUri(pathSuffix: String): Uri = {
-    Uri.Empty.withPath(BasePath / pathSuffix)
+
+  def resourceUri(pathSuffixes: String*): Uri = {
+    Uri.Empty.withPath(pathSuffixes.foldLeft(BasePath)((ih, p) => ih / p))
   }
 
   val BasePath     = Path("/api") / "v1"
   val VinsUri      = resourceUri("vins")
   val PackagesUri  = resourceUri("packages")
+  val ResolveUri   = (i: Long) => resourceUri("resolve", i.toString)
 
   // Database
   val db = Database.forConfig("test-database")
@@ -47,13 +49,13 @@ trait ResourceSpec extends Matchers with ScalatestRouteTest { self: org.scalates
     Migrations.run( conf.getString("url"), conf.getString("properties.user"), conf.getString("properties.password") )
   }
 
-  // Route
-  lazy val route = new org.genivi.sota.resolver.Route(db).route
-
   override def afterAll() {
     system.shutdown()
     db.close()
   }
+
+  // Route
+  lazy val route = new org.genivi.sota.resolver.Route(db).route
 }
 
 trait ResourceWordSpec extends WordSpec with ResourceSpec
