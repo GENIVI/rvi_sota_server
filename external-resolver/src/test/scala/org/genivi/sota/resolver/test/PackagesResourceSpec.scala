@@ -12,6 +12,7 @@ class PackagesResourceSpec extends ResourceWordSpec {
 
   import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
   import org.genivi.sota.resolver.types.Package
+  import org.genivi.sota.resolver.rest.{ErrorRepresentation, ErrorCodes}
 
   "Package resource" should {
 
@@ -23,13 +24,15 @@ class PackagesResourceSpec extends ResourceWordSpec {
 
     "not accept empty package names" in {
       Post( PackagesUri, Package(None, "", "version", Some("description"), Some("vendor")) ) ~> route ~> check {
-        rejection shouldBe a [ValidationRejection]
+        status shouldBe StatusCodes.BadRequest
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
     "not accept empty package version" in {
       Post( PackagesUri, Package(None, "name", "", Some("description"), Some("vendor")) ) ~> route ~> check {
-        rejection shouldBe a [ValidationRejection]
+        status shouldBe StatusCodes.BadRequest
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
