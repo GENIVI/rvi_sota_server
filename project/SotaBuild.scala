@@ -72,6 +72,7 @@ object SotaBuild extends Build {
         "org.webjars" %% "webjars-play" % "2.4.0-1",
         "org.webjars" % "webjars-locator" % "0.27",
         "org.webjars.bower" % "react" % "0.13.3",
+        "org.webjars.bower" % "react-router" % "0.13.3",
         "org.webjars.bower" % "flux" % "2.0.2",
         "org.webjars.bower" % "backbone" % "1.2.1",
         "org.webjars" % "bootstrap" % "3.3.4",
