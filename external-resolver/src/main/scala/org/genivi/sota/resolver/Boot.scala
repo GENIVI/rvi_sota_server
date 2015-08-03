@@ -24,33 +24,36 @@ class Route(db: Database)
   import org.genivi.sota.resolver.types.{Vin, Package}
   import spray.json.DefaultJsonProtocol._
 
-  val route = pathPrefix("api" / "v1") {
+  import org.genivi.sota.resolver.rest.RejectionHandlers._
 
-    path("vins") {
-      get {
-        complete {
-          NoContent
+  val route = pathPrefix("api" / "v1") {
+    handleRejections( rejectionHandler ) {
+      path("vins") {
+        get {
+          complete {
+            NoContent
+          }
+        } ~
+          (post & validated[Vin]) { vin =>
+          complete( db.run( Vins.add(vin) ))
         }
       } ~
-      (post & validated[Vin]) { vin =>
-        complete( db.run( Vins.add(vin) ))
-      }
-    } ~
-    path("packages") {
-      get {
-        complete {
-          NoContent
+      path("packages") {
+        get {
+          complete {
+            NoContent
+          }
+        } ~
+          (post & validated[Package]) { newPackage =>
+          complete( db.run( Packages.add(newPackage) )
+            .map( nid => newPackage.copy( id = Some(nid))) )
         }
       } ~
-      (post & validated[Package]) { newPackage =>
-        complete( db.run( Packages.add(newPackage) )
-          .map( nid => newPackage.copy( id = Some(nid))) )
-      }
-    } ~
-    path("resolve" / LongNumber) { pkgId =>
-      complete {
-        db.run( Vins.list ).map( _.map(vin => Map(vin.vin -> List(pkgId)))
-          .foldRight(Map[String, List[Long]]())(_++_))
+      path("resolve" / LongNumber) { pkgId =>
+        complete {
+          db.run( Vins.list ).map( _.map(vin => Map(vin.vin -> List(pkgId)))
+            .foldRight(Map[String, List[Long]]())(_++_))
+        }
       }
     }
   }

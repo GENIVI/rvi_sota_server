@@ -4,10 +4,13 @@
  */
 package org.genivi.sota.resolver.test
 
+import akka.event.Logging
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.ValidationRejection
 import org.genivi.sota.resolver.types.Vin
+import org.genivi.sota.resolver.rest.{ErrorRepresentation, ErrorCodes}
 
 class VinResourcePropSpec extends ResourcePropSpec {
 
@@ -25,6 +28,7 @@ class VinResourcePropSpec extends ResourcePropSpec {
 }
 
 class VinResourceWordSpec extends ResourceWordSpec {
+  import akka.http.scaladsl.server.Directives._
 
   "Vin resource" should {
 
@@ -36,19 +40,22 @@ class VinResourceWordSpec extends ResourceWordSpec {
 
     "not accept too long Vins" in {
       Post( VinsUri, Vin("VINOOLAM0FAU2DEEP1") ) ~> route ~> check {
-        rejection shouldBe a [ValidationRejection]
+        status shouldBe StatusCodes.BadRequest
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity 
       }
     }
 
     "not accept too short Vins" in {
       Post( VinsUri, Vin("VINOOLAM0FAU2DEE") ) ~> route ~> check {
-        rejection shouldBe a [ValidationRejection]
+        status shouldBe StatusCodes.BadRequest
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
     "not accept Vins which aren't alpha num" in {
       Post( VinsUri, Vin("VINOOLAM0FAU2DEE!") ) ~> route ~> check {
-        rejection shouldBe a [ValidationRejection]
+        status shouldBe StatusCodes.BadRequest
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
