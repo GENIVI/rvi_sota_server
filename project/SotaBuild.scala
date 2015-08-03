@@ -36,9 +36,12 @@ object SotaBuild extends Build {
   )
 
   lazy val externalResolver = Project(id = "resolver", base = file("external-resolver"))
-    .settings( commonSettings ++ Seq(
+    .settings( commonSettings ++ Migrations.settings ++ Seq(
       libraryDependencies ++= Dependencies.Rest :+ Dependencies.Scalaz :+ Dependencies.Refined,
-      dockerExposedPorts := Seq(8081)
+      dockerExposedPorts := Seq(8081),
+      flywayUrl := sys.env.get("RESOLVER_DB_URL").orElse( sys.props.get("resolver.db.url") ).getOrElse("jdbc:mysql://localhost:3306/sota_resolver"),
+      flywayUser := sys.env.get("RESOLVER_DB_USER").orElse( sys.props.get("resolver.db.user") ).getOrElse("sota"),
+      flywayPassword := sys.env.get("RESOLVER_DB_PASSWORD").orElse( sys.props.get("resolver.db.password")).getOrElse("s0ta")
     ))
     .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
 
@@ -47,7 +50,7 @@ object SotaBuild extends Build {
     .settings( commonSettings ++ Migrations.settings ++ Seq(
       libraryDependencies ++= Dependencies.Rest :+ Dependencies.NscalaTime,
       dockerExposedPorts := Seq(8080),
-      flywayUrl := sys.env.get("CORE_DB_URL").orElse( sys.props.get("core.db.url") ).getOrElse("jdbc:mysql://localhost:3306/sota"),
+      flywayUrl := sys.env.get("CORE_DB_URL").orElse( sys.props.get("core.db.url") ).getOrElse("jdbc:mysql://localhost:3306/sota_core"),
       flywayUser := sys.env.get("CORE_DB_USER").orElse( sys.props.get("core.db.user") ).getOrElse("sota"),
       flywayPassword := sys.env.get("CORE_DB_PASSWORD").orElse( sys.props.get("core.db.password")).getOrElse("s0ta")
     ))
