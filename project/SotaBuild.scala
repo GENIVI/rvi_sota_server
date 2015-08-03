@@ -19,6 +19,8 @@ object SotaBuild extends Build {
 
     libraryDependencies ++= Dependencies.TestFrameworks,
 
+    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
+
     dependencyOverrides ++= Set(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       "org.scala-lang" % "scala-library" % scalaVersion.value,
