@@ -10,6 +10,7 @@ object Packages {
 
   import slick.driver.MySQLDriver.api._
 
+  // scalastyle:off
   class PackageTable(tag: Tag) extends Table[Package](tag, "Package") {
 
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
@@ -21,6 +22,7 @@ object Packages {
     def * = (id.?, name, version, description.?, vendor.?) <>
       ((Package.apply _).tupled, Package.unapply)
   }
+  // scalastyle:on
 
   val packages = TableQuery[PackageTable]
 

@@ -10,9 +10,9 @@ object ErrorCode {
   import spray.json.{JsString, JsValue, RootJsonFormat, deserializationError}
 
   implicit object Format extends RootJsonFormat[ErrorCode] {
-    override def write( x : ErrorCode ) = JsString( x.code )
+    override def write( x : ErrorCode ) : JsValue = JsString( x.code )
 
-    override def read(value : JsValue ) = value match {
+    override def read(value : JsValue ) : ErrorCode = value match {
       case JsString(x) => ErrorCode(x)
       case _ => deserializationError("Error code expected")
     }

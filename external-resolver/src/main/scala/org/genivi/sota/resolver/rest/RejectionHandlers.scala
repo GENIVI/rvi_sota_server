@@ -10,7 +10,7 @@ object RejectionHandlers {
   import akka.http.scaladsl.server.Directives._
   import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 
-  implicit def rejectionHandler = RejectionHandler.newBuilder().handle {
+  implicit def rejectionHandler : RejectionHandler = RejectionHandler.newBuilder().handle {
     case ValidationRejection(msg, None) =>
       complete( StatusCodes.BadRequest -> ErrorRepresentation(ErrorCodes.InvalidEntity, msg) )
   }.result().withFallback(RejectionHandler.default)

@@ -11,10 +11,12 @@ import slick.driver.MySQLDriver.api._
 
 object Vins {
 
+  // scalastyle:off
   class VinTable(tag: Tag) extends Table[Vin](tag, "Vin") {
     def vin = column[String]("vin", O.PrimaryKey)
     def * = (vin) <> (Vin.apply, Vin.unapply)
   }
+  // scalastyle:on
 
   val vins = TableQuery[VinTable]
 
