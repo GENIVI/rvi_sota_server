@@ -10,29 +10,34 @@ services:
       MYSQL_PASSWORD: "{{ db_user_password }}"
       MYSQL_DATABASES: "{{ db_resolver_name }} {{ db_core_name }}"
 
-  - name: rvi_server
-    version: server
-    repo: advancedtelematic/rvi:server
+  - name: rvi-server
+    repo: advancedtelematic/rvi
+    attach: true
     ports:
       - 8801
-      - 8802
-      - 8803
-      - 8804
       - 8805
       - 8806
       - 8807
-    attach: true
+      - 8808
+    command: server
 
-  - name: rvi_client
-    version: client
-    repo: advancedtelematic/rvi:client
+  - name: rvi-client
+    repo: advancedtelematic/rvi
+    attach: true
     ports:
       - 8901
+      - 8905
+      - 8906
       - 8907
       - 8908
+    command: client
+
+  - name: sota-client
+    repo: advancedtelematic/sota-client
+    ports:
+      - 9000
     links:
-      - rvi_server
-    attach: true
+      - rvi-client
 
   - name: resolver
     repo: sota-resolver
