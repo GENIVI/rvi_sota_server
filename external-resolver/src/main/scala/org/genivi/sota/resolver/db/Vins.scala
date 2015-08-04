@@ -11,6 +11,7 @@ object Vins {
 
   import slick.driver.MySQLDriver.api._
 
+  // scalastyle:off
   class VinTable(tag: Tag) extends Table[Vin](tag, "Vin") {
     def vin = column[String]("vin")
     def * = (vin) <> (Vin.apply, Vin.unapply)
@@ -18,6 +19,7 @@ object Vins {
                                      // we use O.PrimaryKey in the vin
                                      // column, see Slick issue #966.
   }
+  // scalastyle:on
 
   val vins = TableQuery[VinTable]
 
