@@ -1,6 +1,5 @@
 define(['jquery', 'react', '../mixins/serialize-form', '../mixins/fluxbone', '../mixins/request-status', './package-component', 'sota-dispatcher'], function($, React, serializeForm, Fluxbone, RequestStatus, PackageComponent, SotaDispatcher) {
 
-  console.log(RequestStatus);
   var Packages = React.createClass({
     mixins: [
       Fluxbone.Mixin("PackageStore"),
