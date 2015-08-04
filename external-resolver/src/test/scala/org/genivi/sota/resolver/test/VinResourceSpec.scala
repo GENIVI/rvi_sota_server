@@ -20,7 +20,7 @@ class VinResourcePropSpec extends ResourcePropSpec {
 
   property("Vin resource add") {
     forAll(VinGenerator) { vin =>
-      Post( VinsUri, vin ) ~> route ~> check {
+      Put( VinsUri(vin.vin) ) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
     }
@@ -32,36 +32,36 @@ class VinResourceWordSpec extends ResourceWordSpec {
 
   "Vin resource" should {
 
-    "create a new resource on POST request" in {
-      Post( VinsUri, Vin("VINOOLAM0FAU2DEEP") ) ~> route ~> check {
+    "create a new resource on PUT request" in {
+      Put( VinsUri("VINOOLAM0FAU2DEEP") ) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
     }
 
     "not accept too long Vins" in {
-      Post( VinsUri, Vin("VINOOLAM0FAU2DEEP1") ) ~> route ~> check {
+      Put( VinsUri("VINOOLAM0FAU2DEEP1") ) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
-        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity 
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
     "not accept too short Vins" in {
-      Post( VinsUri, Vin("VINOOLAM0FAU2DEE") ) ~> route ~> check {
+      Put( VinsUri("VINOOLAM0FAU2DEE") ) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
     "not accept Vins which aren't alpha num" in {
-      Post( VinsUri, Vin("VINOOLAM0FAU2DEE!") ) ~> route ~> check {
+      Put( VinsUri("VINOOLAM0FAU2DEE!") ) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
-    "not allow duplicate entries" in {
-      Post( VinsUri, Vin("VINOOLAM0FAU2DEEP") ) ~> route ~> check {
-        status shouldBe StatusCodes.InternalServerError
+    "allow duplicate entries" in {
+      Put( VinsUri("VINOOLAM0FAU2DEEP") ) ~> route ~> check {
+        status shouldBe StatusCodes.OK
       }
     }
 

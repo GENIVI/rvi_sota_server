@@ -23,19 +23,18 @@ class Route(db: Database)
 
   import org.genivi.sota.resolver.types.{Vin, Package}
   import spray.json.DefaultJsonProtocol._
-
   import org.genivi.sota.resolver.rest.RejectionHandlers._
 
   val route = pathPrefix("api" / "v1") {
     handleRejections( rejectionHandler ) {
-      path("vins") {
+      pathPrefix("vins") {
         get {
           complete {
             NoContent
           }
         } ~
-          (post & validated[Vin]) { vin =>
-          complete( db.run( Vins.add(vin) ))
+        (put & validatedPut(Vin.apply)) { vin: Vin.ValidVin =>
+          complete(db.run(Vins.add(vin)))
         }
       } ~
       path("packages") {
@@ -44,7 +43,7 @@ class Route(db: Database)
             NoContent
           }
         } ~
-          (post & validated[Package]) { newPackage =>
+        (post & validated[Package]) { newPackage: Package.ValidPackage =>
           complete( db.run( Packages.add(newPackage) )
             .map( nid => newPackage.copy( id = Some(nid))) )
         }
