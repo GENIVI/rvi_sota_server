@@ -1,27 +1,33 @@
+import org.genivi.webserver.requesthelpers.{ErrorResponse, RightResponse, LeftResponse}
 import org.scalatestplus.play._
 import org.genivi.webserver.requesthelpers.RequestHelper._
 
 class RequestHelpersSpec extends PlaySpec {
 
-  "isSuccessfulStatusCode" must {
-    "return true for status code 200" in {
-      val result = isSuccessfulStatusCode(200)
-      result mustBe true
+  "chooseResponse" must {
+    "Pick the left one if the other is 404" in {
+      val result = chooseResponse(200, 404)
+      result mustBe LeftResponse()
     }
 
-    "return true for status code 299" in {
-      val result = isSuccessfulStatusCode(299)
-      result mustBe true
+    "Pick the right one if the other is 404" in {
+      val result = chooseResponse(404, 200)
+      result mustBe RightResponse()
     }
 
-    "return false for status code 300" in {
-      val result = isSuccessfulStatusCode(300)
-      result mustBe false
+    "Return an error if both succeed" in {
+      val result = chooseResponse(200, 200)
+      result mustBe a[ErrorResponse]
     }
 
-    "return false for status code 199" in {
-      val result = isSuccessfulStatusCode(199)
-      result mustBe false
+    "Return an error if neither are 404" in {
+      val result = chooseResponse(500, 200)
+      result mustBe a[ErrorResponse]
+    }
+
+    "Either is fine for a 204 No Content response" in {
+      val result = chooseResponse(204, 204)
+      result mustBe LeftResponse()
     }
   }
 }

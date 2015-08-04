@@ -34,7 +34,7 @@ class Route(db: Database)
           }
         } ~
         (put & validatedPut(Vin.apply)) { vin: Vin.ValidVin =>
-          complete(db.run(Vins.add(vin)))
+          complete(db.run(Vins.add(vin)).map(_ => NoContent))
         }
       } ~
       path("packages") {

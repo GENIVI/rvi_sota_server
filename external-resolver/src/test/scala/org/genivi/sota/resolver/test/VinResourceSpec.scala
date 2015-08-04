@@ -21,7 +21,7 @@ class VinResourcePropSpec extends ResourcePropSpec {
   property("Vin resource add") {
     forAll(VinGenerator) { vin =>
       Put( VinsUri(vin.vin) ) ~> route ~> check {
-        status shouldBe StatusCodes.OK
+        status shouldBe StatusCodes.NoContent
       }
     }
   }
@@ -34,7 +34,7 @@ class VinResourceWordSpec extends ResourceWordSpec {
 
     "create a new resource on PUT request" in {
       Put( VinsUri("VINOOLAM0FAU2DEEP") ) ~> route ~> check {
-        status shouldBe StatusCodes.OK
+        status shouldBe StatusCodes.NoContent
       }
     }
 
@@ -61,7 +61,7 @@ class VinResourceWordSpec extends ResourceWordSpec {
 
     "allow duplicate entries" in {
       Put( VinsUri("VINOOLAM0FAU2DEEP") ) ~> route ~> check {
-        status shouldBe StatusCodes.OK
+        status shouldBe StatusCodes.NoContent
       }
     }
 
