@@ -8,6 +8,7 @@ object Packaging {
 
   lazy val settings = Seq(
     packageName in Docker := "sota-" + packageName.value,
+    dockerBaseImage := "advancedtelematic/java:openjdk-8-jre",
     version in Docker := git.gitDescribedVersion.value.get,
     dockerUpdateLatest in Docker := true
   )
