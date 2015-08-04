@@ -14,7 +14,7 @@ define(['jquery', 'react', '../mixins/handle-fail', '../mixins/serialize-form'],
       this.sendRequest(this.props.url, payload);
     },
     onSuccess: function(data) {
-      this.setState({postStatus: "Added VIN \"" + vinText + "\" successfully"});
+      this.setState({postStatus: "Added VIN \"" + data.vin + "\" successfully"});
       React.findDOMNode(this.refs.vin).value = '';
     },
     validate: function(vinText) {
