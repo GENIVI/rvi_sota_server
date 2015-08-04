@@ -50,10 +50,14 @@ For development, a local MariaDB install is required. (Note that this is **not**
 
 To update the database schema, run:
 
-    CORE_DB_URL=jdbc:mysql://localhost:3306/sota_core sbt core/flywayMigrate
-    CORE_DB_URL=jdbc:mysql://localhost:3306/sota_resolver sbt core/flywayMigrate
+    sbt core/flywayMigrate
+    sbt resolver/flywayMigrate
 
 This will apply any new migrations in src/main/resources/db/migration, and keep your existing data.
+These commands expect to find the databases on localhost with sota/s0ta for the username/password.
+The URL to the database and login details can be overridden with the `CORE_DB_URL`, `CORE_DB_USER` and `CORE_DB_PASSWORD`
+environment variables for the core and `RESOLVER_DB_URL`, `RESOLVER_DB_USER` and, `RESOLVER_DB_PASSWORD` for the external resolver.
+See `project/SotaBuild.scala` for the implementation.
 
 If you are using an encrypted home directory, you may get the following error when attempting a build. This is because scala/sbt tends to create long file names, and these get expanded even further by ecryptfs.
 
