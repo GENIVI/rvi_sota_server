@@ -29,7 +29,7 @@ define(['backbone', 'underscore'], function(Backbone, _) {
         }, this);
       },
       componentWillUnmount: function() {
-        return this.props[model_name].off('sync error');
+        return this.props[modelName].off('sync error');
       }
     };
     return mixin;
