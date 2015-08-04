@@ -24,7 +24,4 @@ object Vins {
 
   def list: DBIO[Seq[Vin]] =
     vins.result
-
-  def create: DBIO[Unit] =
-    vins.schema.create
 }

@@ -26,7 +26,4 @@ object Packages {
 
   def add(pkg : Package.ValidPackage): DBIO[Int] =
     packages += pkg
-
-  def create: DBIO[Unit] =
-    packages.schema.create
 }
