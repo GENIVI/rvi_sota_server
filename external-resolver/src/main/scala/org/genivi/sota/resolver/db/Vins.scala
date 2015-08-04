@@ -12,15 +12,17 @@ object Vins {
   import slick.driver.MySQLDriver.api._
 
   class VinTable(tag: Tag) extends Table[Vin](tag, "Vin") {
-    def vin = column[String]("vin", O.PrimaryKey)
+    def vin = column[String]("vin")
     def * = (vin) <> (Vin.apply, Vin.unapply)
+    def pk = primaryKey("vin", vin)  // insertOrUpdate doesn't work if
+                                     // we use O.PrimaryKey in the vin
+                                     // column, see Slick issue #966.
   }
 
   val vins = TableQuery[VinTable]
 
-  def add(vin: Vin.ValidVin)(implicit ec: ExecutionContext): DBIO[Vin] = {
-    (vins += vin).map(_ => vin)
-  }
+  def add(vin: Vin.ValidVin)(implicit ec: ExecutionContext): DBIO[Vin] =
+    vins.insertOrUpdate(vin).map(_ => vin)
 
   def list: DBIO[Seq[Vin]] =
     vins.result
