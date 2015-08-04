@@ -42,7 +42,7 @@ object SotaBuild extends Build {
 
   lazy val externalResolver = Project(id = "resolver", base = file("external-resolver"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
-      libraryDependencies ++= Dependencies.Rest :+ Dependencies.Scalaz :+ Dependencies.Refined,
+      libraryDependencies ++= Dependencies.Rest :+ Dependencies.Scalaz :+ Dependencies.Refined :+ Dependencies.ParserCombinators,
       dockerExposedPorts := Seq(8081),
       flywayUrl := sys.env.get("RESOLVER_DB_URL").orElse( sys.props.get("resolver.db.url") ).getOrElse("jdbc:mysql://localhost:3306/sota_resolver"),
       flywayUser := sys.env.get("RESOLVER_DB_USER").orElse( sys.props.get("resolver.db.user") ).getOrElse("sota"),
@@ -123,6 +123,8 @@ object Dependencies {
   )
 
   lazy val NscalaTime = "com.github.nscala-time" %% "nscala-time" % "2.0.0"
+
+  lazy val ParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
 
   lazy val Rest = Akka ++ Slick
 
