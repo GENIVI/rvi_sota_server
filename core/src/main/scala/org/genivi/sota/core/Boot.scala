@@ -70,7 +70,7 @@ class WebService(db : Database)(implicit system: ActorSystem, mat: ActorMaterial
       } ~
       path("vins") {
         (post & entity(as[Vin])) { vin =>
-          complete(db.run( Vins.create(vin) ).map( _ => vin) )
+          complete(db.run( Vins.create(vin) ).map(_ => NoContent))
         }
       } ~
       path("packages") {
