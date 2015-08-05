@@ -16,6 +16,7 @@ object RequestHelper {
       case (_, 404) => LeftResponse()
       case (404, _) => RightResponse()
       case (204, 204) => LeftResponse() // No Content
+      case (200, 200) => LeftResponse() // Temporary, while packages are in core+resolver
       case _ => ErrorResponse("Got " + leftCode + " and " + rightCode + " http responses")
     }
   }
