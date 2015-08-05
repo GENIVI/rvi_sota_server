@@ -21,7 +21,7 @@ import slick.jdbc.JdbcBackend.Database
 class Route(db: Database)
   (implicit system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext) extends Directives {
 
-  import org.genivi.sota.resolver.types.{Vin, Package}
+  import org.genivi.sota.resolver.types.{Vin, Package, Filter}
   import spray.json.DefaultJsonProtocol._
   import org.genivi.sota.resolver.rest.RejectionHandlers._
 
@@ -52,6 +52,12 @@ class Route(db: Database)
         complete {
           db.run( Vins.list ).map( _.map(vin => Map(vin.vin -> List(pkgId)))
             .foldRight(Map[String, List[Long]]())(_++_))
+        }
+      } ~
+      path("filters") {
+        (post & validated[Filter]) { newFilter =>
+          val id = db.run( Filters.add(newFilter))
+          complete(id)
         }
       }
     }

@@ -1,4 +1,4 @@
-require(['react', 'components/add-vin', 'components/packages-component', 'stores/packages', 'react-router'], function(React, AddVin, PackagesComponent, PackageStore, Router) {
+require(['react', 'components/add-vin', 'components/create-filter', 'components/packages-component', 'stores/packages', 'react-router'], function(React, AddVin, CreateFilter, PackagesComponent, PackageStore, Router) {
 
   var Link = Router.Link;
   var Route = Router.Route;
@@ -14,6 +14,9 @@ require(['react', 'components/add-vin', 'components/packages-component', 'stores
           </li>
           <li role="presentation">
             <Link to="packages">Packages</Link>
+          </li>
+          <li role="presentation">
+            <Link to="filters">Filters</Link>
           </li>
         </ul>
         <div>
@@ -35,6 +38,7 @@ require(['react', 'components/add-vin', 'components/packages-component', 'stores
     <Route handler={App} path="/">
       <Route name="packages" handler={wrapComponent(PackagesComponent, {PackageStore:PackageStore})}/>
       <Route name="vins" handler={wrapComponent(AddVin, {url:"/api/v1/vins"})}/>
+      <Route name="filters" handler={wrapComponent(CreateFilter, {url:"/api/v1/filters"})} />
     </Route>
   );
 
