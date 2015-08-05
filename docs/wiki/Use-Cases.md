@@ -6,7 +6,8 @@
     - [VIN-SEARCH](#VIN-SEARCH) Search for VINs
     - [VIN-SET-DATA-PLAN](#VIN-SET-DATA-PLAN) Associate Data Plan with VIN
     - [VIN-GET-UPDATE-HISTORY](#VIN-GET-UPDATE-HISTORY) Get installation history for VIN
-    - [PACKAGE-ADD](#PACKAGE-ADD) Register a new Package with SOTA Server and External Resolver
+    - [PACKAGE-ADD-SOTASERVER](#PACKAGE-ADD-SOTASERVER) Register a new Package with SOTA Server
+    - [PACKAGE-ADD-RESOLVER](#PACKAGE-ADD-RESOLVER) Register a new Package with External Resolver
     - [PACKAGE-SEARCH](#PACKAGE-SEARCH) Search for a Package
     - [PLAN-ADD](#PLAN-ADD) Register a new Data Plan
     - [PLAN-ADD-BILLING-CYCLE](#PLAN-ADD-BILLING-CYCLE) Associate a Billing Cycle with a Data Plan
@@ -195,7 +196,7 @@ All install requests, failed, pending, in-flight or completed are returned.
 
        * X1 - VIN does not exist. Triggered by E2
 
-### <a name="PACKAGE-ADD">[PACKAGE-ADD](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#PACKAGE-ADD) Register a new Package with SOTA Server and External Resolver</a>
+### <a name="PACKAGE-ADD-SOTASERVER">[PACKAGE-ADD-SOTASERVER](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#PACKAGE-ADD-SOTASERVER) Register a new Package with SOTA Server</a>
 
 Add a software Package that can be pushed to a specific Component on a VIN
 
@@ -210,8 +211,32 @@ Add a software Package that can be pushed to a specific Component on a VIN
 
    - Steps
 
-       * E1 - An ADD-SOFTWARE-PACKAGE command is sent from Web Server to SOTA Server, together with an ID string, a version (major.minor.patch), a description, and a vendor
-       * E2 - Software Package is added to SOTA Server Database
+       * E1 - An ADD-SOFTWARE-PACKAGE command is sent from Web Server to SOTA Server together with an ID string, a version (major.minor.patch), a description, and a vendor. The software package binary is sent as part of the command together with a checksum.
+       * E2 - Software package's meta-data is added to SOTA Server database
+       * E3 - The SOTA Server stores the package binary in its storage area and stores the URL to the binary in the database. 
+       * E4 - A success code is sent back to Web Server
+
+   - Exceptions
+
+       * X1 - Software Package with same ID String and Version is already registered with SOTA Server. Triggered by E2
+
+### <a name="PACKAGE-ADD-RESOLVER">[PACKAGE-ADD-RESOLVER](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#PACKAGE-ADD-RESOLVER) Register a new Package with External Resolver</a>
+
+Add a software Package that can be pushed to a specific Component on a VIN
+
+   - Actors
+
+       * Web Server
+       * External Resoler
+
+   - Preconditions
+
+       * Software package does not already exist 
+
+   - Steps
+
+       * E1 - An ADD-SOFTWARE-PACKAGE command is sent from Web Server to the Resolver together with an ID string, a version (major.minor.patch), a description, and a vendor.
+       * E2 - Software package's meta-data is added to the Resolver database
        * E3 - An ADD-SOFTWARE-PACKAGE command is sent from Web Server to External Resolver together with an ID string.
        * E4 - Software Package is added to External Resolver database
        * E5 - A success code is sent back to Web Server
