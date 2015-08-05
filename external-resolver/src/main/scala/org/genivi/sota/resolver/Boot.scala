@@ -33,7 +33,7 @@ class Route(db: Database)
             NoContent
           }
         } ~
-        (put & validatedPut(Vin.apply)) { vin: Vin.ValidVin =>
+        (put & validatedPut(s => Right(Vin(s)))) { vin: Vin.ValidVin =>
           complete(db.run(Vins.add(vin)).map(_ => NoContent))
         }
       } ~

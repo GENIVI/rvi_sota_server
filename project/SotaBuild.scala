@@ -21,7 +21,8 @@ object SotaBuild extends Build {
 
     testOptions in Test ++= Seq(
       Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
-      Tests.Argument(TestFrameworks.ScalaTest, "-o")
+      Tests.Argument(TestFrameworks.ScalaTest, "-o"),
+      Tests.Argument(TestFrameworks.ScalaCheck, "-maxDiscardRatio", "10", "-minSuccessfulTests", "200")
     ),
 
     dependencyOverrides ++= Set(

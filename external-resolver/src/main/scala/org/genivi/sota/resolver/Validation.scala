@@ -18,7 +18,7 @@ object Validation extends Directives {
   def validated[A](implicit um: FromRequestUnmarshaller[A], p: Predicate[Valid, A]): Directive1[A @@ Valid] = {
     entity[A](um).flatMap { a: A =>
       refineT[Valid](a) match {
-        case Left(e)  => reject(ValidationRejection(e, None))
+        case Left(e)  => reject(ValidationRejection(e))
         case Right(b) => provide(b)
       }
     }
@@ -29,14 +29,17 @@ object Validation extends Directives {
   import akka.http.scaladsl.server.PathMatcher.{Matched, Unmatched}
   import akka.http.scaladsl.server.PathMatchers
 
-  def validatedPut[A](f: String => A)(implicit p: Predicate[Valid, A]): Directive1[A @@ Valid] =
+  def validatedPut[A](parser: String => Either[String, A])(implicit p: Predicate[Valid, A]): Directive1[A @@ Valid] =
     extractRequestContext.flatMap[Tuple1[A @@ Valid]] { ctx =>
       import ctx.executionContext
       val pathMatcher = PathMatchers.Slash ~ Segment ~ PathEnd
       pathMatcher(ctx.unmatchedPath) match {
-        case Matched(Path.Empty, Tuple1(str)) => refineT[Valid](f(str)) match {
+        case Matched(Path.Empty, Tuple1(str)) => parser(str) match {
           case Left(e)  => reject(ValidationRejection(e))
-          case Right(b) => provide(b)
+          case Right(a) => refineT[Valid](a) match {
+            case Left(e)  => reject(ValidationRejection(e))
+            case Right(b) => provide(b)
+          }
         }
         case _                                => reject
       }
