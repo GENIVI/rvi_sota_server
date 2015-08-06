@@ -14,15 +14,23 @@ case class Package (
 
 object Package {
   import eu.timepit.refined._
-  import org.genivi.sota.resolver.Validation._
+  import eu.timepit.refined.boolean._
+  import eu.timepit.refined.collection._
   import shapeless.tag.@@
   import spray.json.DefaultJsonProtocol._
 
   implicit val packageFormat = jsonFormat5(Package.apply)
 
+  trait ValidPackageName extends NonEmpty
+
+  trait ValidVersion
+
+  type Valid = ValidPackageName And ValidVersion
+
+  implicit val validPackageName : Predicate[ValidPackageName, Package] = Predicate.instance(p => p.name.nonEmpty, p => "Package name required.")
+
+  implicit val validVersion : Predicate[ValidVersion, Package] = Predicate.instance( _.version.matches( """^\d+\.\d+\.\d+$""" ), _ => "Invalid version format.")
+
   type ValidPackage = Package @@ Valid
 
-  implicit val validPackage: Predicate[Valid, Package] =
-    Predicate.instance(pkg => pkg.name.nonEmpty && pkg.version.nonEmpty,
-                       pkg => s"(${pkg} has no name and/or version)")
 }

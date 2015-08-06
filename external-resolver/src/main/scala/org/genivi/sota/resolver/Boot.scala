@@ -8,11 +8,14 @@ import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.StatusCodes.NoContent
 import akka.http.scaladsl.server.Directives
 import akka.stream.ActorMaterializer
 import org.genivi.sota.resolver.db._
 import org.genivi.sota.resolver.Validation._
+import org.genivi.sota.resolver.rest.ErrorCodes
+import org.genivi.sota.resolver.rest.ErrorRepresentation
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 import slick.jdbc.JdbcBackend.Database
@@ -43,9 +46,13 @@ class Route(db: Database)
             NoContent
           }
         } ~
-        (post & validated[Package]) { newPackage: Package.ValidPackage =>
-          complete( db.run( Packages.add(newPackage) )
-            .map( nid => newPackage.copy( id = Some(nid))) )
+        (post & validated[Package, Package.Valid]) { newPackage: Package.ValidPackage =>
+          completeOrRecoverWith( db.run( Packages.add(newPackage) ).map( nid => newPackage.copy( id = Some(nid))) ) {
+            case err : java.sql.SQLIntegrityConstraintViolationException if err.getErrorCode == 1062 =>
+              complete( StatusCodes.Conflict -> ErrorRepresentation(ErrorCodes.DuplicateEntry, s"Package ${newPackage.name}-${newPackage.version} already exists" ))
+            case t =>
+              failWith(t)
+          }
         }
       } ~
       path("resolve" / LongNumber) { pkgId =>
@@ -55,7 +62,7 @@ class Route(db: Database)
         }
       } ~
       path("filters") {
-        (post & validated[Filter]) { newFilter =>
+        (post & validated[Filter, Valid]) { newFilter =>
           val id = db.run( Filters.add(newFilter))
           complete(id)
         }
