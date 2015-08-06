@@ -11,14 +11,34 @@ object Validation extends Directives {
 
   import akka.http.scaladsl.unmarshalling.FromRequestUnmarshaller
   import eu.timepit.refined.{Predicate, refineT}
+  import eu.timepit.refined.boolean.And
   import shapeless.tag.@@
 
   trait Valid
 
-  def validated[A](implicit um: FromRequestUnmarshaller[A], p: Predicate[Valid, A]): Directive1[A @@ Valid] = {
+  implicit def andPredicate[A, B, T](implicit pa: Predicate[A, T], pb: Predicate[B, T]): Predicate[A And B, T] =
+    new Predicate[A And B, T] {
+      def isValid(t: T): Boolean = pa.isValid(t) && pb.isValid(t)
+      def show(t: T): String = s"(${pa.show(t)} && ${pb.show(t)})"
+
+      override def validate(t: T): Option[String] =
+        (pa.validate(t), pb.validate(t)) match {
+          case (Some(sl), Some(sr)) =>
+            Some(s"$sl, $sr")
+          case (Some(sl), None) =>
+            Some( pa.show(t) )
+          case (None, Some(sr)) =>
+            Some( pb.show(t) )
+          case _ => None
+        }
+
+      override val isConstant: Boolean = pa.isConstant && pb.isConstant
+    }
+
+  def validated[A, B](implicit um: FromRequestUnmarshaller[A], p: Predicate[B, A]): Directive1[A @@ B] = {
     entity[A](um).flatMap { a: A =>
-      refineT[Valid](a) match {
-        case Left(e)  => reject(ValidationRejection(e))
+      refineT[B](a) match {
+        case Left(e)  => reject(ValidationRejection(e, None))
         case Right(b) => provide(b)
       }
     }

@@ -22,6 +22,7 @@ object ErrorCode {
 
 object ErrorCodes {
   val InvalidEntity = new ErrorCode("invalid_entity")
+  val DuplicateEntry = new ErrorCode("duplicate_entry")
 }
 
 case class ErrorRepresentation( code: ErrorCode, description: String )
