@@ -11,8 +11,10 @@ class FiltersResourceSpec extends ResourceWordSpec {
 
   "Filters resource" should {
 
+    val filter = Filter(None, "myfilter", s"""vin_matches "SAJNX5745SC??????"""")
+
     "create a new resource on POST request" in {
-      Post(FiltersUri, Filter(None, "myfilter", s"""vin_matches "SAJNX5745SC??????"""")) ~> route ~> check {
+      Post(FiltersUri, filter) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
     }
@@ -28,6 +30,12 @@ class FiltersResourceSpec extends ResourceWordSpec {
       Post(FiltersUri, Filter(None, "myfilter", s"""vin_matches "SAJNX5745SC??????" AND""")) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
+      }
+    }
+
+    "list available filters on a GET request" in {
+      Get(FiltersUri) ~> route ~> check {
+        responseAs[Seq[Filter]] shouldBe List(filter.copy(id = Some(1)))
       }
     }
 

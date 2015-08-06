@@ -20,6 +20,7 @@ object Filter {
 
 
   implicit val filterFormat = jsonFormat3(Filter.apply)
+  implicit val filterListFormat = seqFormat[Filter]
 
   type ValidFilter = Filter @@ Valid
 

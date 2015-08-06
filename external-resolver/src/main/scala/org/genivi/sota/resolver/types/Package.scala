@@ -4,12 +4,14 @@
  */
 package org.genivi.sota.resolver.types
 
+case class PackageId(id: Long)
+
 case class Package (
-  id: Option[Long],
-  name: String,
-  version: String,
+  id         : Option[PackageId],
+  name       : String,
+  version    : String,
   description: Option[String],
-  vendor: Option[String]
+  vendor     : Option[String]
 )
 
 object Package {
@@ -19,7 +21,8 @@ object Package {
   import shapeless.tag.@@
   import spray.json.DefaultJsonProtocol._
 
-  implicit val packageFormat = jsonFormat5(Package.apply)
+  implicit val packageIdFormat = jsonFormat1(PackageId.apply)
+  implicit val packageFormat   = jsonFormat5(Package.apply)
 
   trait ValidPackageName extends NonEmpty
 

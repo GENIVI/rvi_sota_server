@@ -13,6 +13,7 @@ object Vin {
   import spray.json.DefaultJsonProtocol._
 
   implicit val vinFormat = jsonFormat1(Vin.apply)
+  implicit val vinListFormat = seqFormat[Vin]
 
   type ValidVin = Vin @@ Valid
 

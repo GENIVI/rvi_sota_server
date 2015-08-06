@@ -65,5 +65,11 @@ class VinResourceWordSpec extends ResourceWordSpec {
       }
     }
 
+    "list all Vins on a GET request" in {
+      Get(VinsUri("")) ~> route ~> check {
+        responseAs[Seq[Vin]] shouldBe List(Vin("VINOOLAM0FAU2DEEP"))
+      }
+    }
+
   }
 }
