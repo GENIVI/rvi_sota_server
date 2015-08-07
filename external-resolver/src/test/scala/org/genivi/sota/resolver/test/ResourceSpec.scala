@@ -43,7 +43,7 @@ trait ResourceSpec extends Matchers with ScalatestRouteTest { self: org.scalates
   }
 
   // Route
-  lazy val route = new org.genivi.sota.resolver.Route(db).route
+  lazy val route = new org.genivi.sota.resolver.Routing(db).route
 }
 
 trait ResourceWordSpec extends WordSpec with ResourceSpec

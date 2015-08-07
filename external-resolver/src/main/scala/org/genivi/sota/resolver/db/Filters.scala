@@ -28,4 +28,7 @@ object Filters {
     (filters
       returning filters.map(_.id)
       into ((filter, id) => filter.copy(id = Some(id)))) += filter
+
+  def list: DBIO[Seq[Filter]] =
+    filters.result
 }

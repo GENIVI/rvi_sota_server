@@ -4,17 +4,18 @@
  */
 package org.genivi.sota.resolver
 
-import akka.http.scaladsl.server.{Directives, Directive1, ValidationRejection}
+import akka.http.scaladsl.marshalling.ToResponseMarshallable
+import akka.http.scaladsl.model.Uri._
+import akka.http.scaladsl.server.PathMatcher.{Matched, Unmatched}
+import akka.http.scaladsl.server.{Directives, Directive1, ValidationRejection, PathMatchers, Route}
+import akka.http.scaladsl.unmarshalling.FromRequestUnmarshaller
+import eu.timepit.refined.{Predicate, refineT}
+import eu.timepit.refined.boolean.And
+import org.genivi.sota.resolver.types.Vin
+import shapeless.tag.@@
 
 
 object Validation extends Directives {
-
-  import akka.http.scaladsl.unmarshalling.FromRequestUnmarshaller
-  import eu.timepit.refined.{Predicate, refineT}
-  import eu.timepit.refined.boolean.And
-  import shapeless.tag.@@
-
-  trait Valid
 
   implicit def andPredicate[A, B, T](implicit pa: Predicate[A, T], pb: Predicate[B, T]): Predicate[A And B, T] =
     new Predicate[A And B, T] {
@@ -35,19 +36,19 @@ object Validation extends Directives {
       override val isConstant: Boolean = pa.isConstant && pb.isConstant
     }
 
-  def validated[A, B](implicit um: FromRequestUnmarshaller[A], p: Predicate[B, A]): Directive1[A @@ B] = {
+  trait Valid
+
+  def validatedPost2[A, B](implicit um: FromRequestUnmarshaller[A], p: Predicate[B, A]): Directive1[A @@ B] = {
     entity[A](um).flatMap { a: A =>
       refineT[B](a) match {
-        case Left(e)  => reject(ValidationRejection(e, None))
+        case Left(e)  => reject(ValidationRejection(e))
         case Right(b) => provide(b)
       }
     }
   }
 
-  import akka.http.scaladsl.model.Uri._
-  import org.genivi.sota.resolver.types.Vin
-  import akka.http.scaladsl.server.PathMatcher.{Matched, Unmatched}
-  import akka.http.scaladsl.server.PathMatchers
+  def validatedPost[A](implicit um: FromRequestUnmarshaller[A], p: Predicate[Valid, A]): Directive1[A @@ Valid] =
+    validatedPost2[A, Valid]
 
   def validatedPut[A](parser: String => Either[String, A])(implicit p: Predicate[Valid, A]): Directive1[A @@ Valid] =
     extractRequestContext.flatMap[Tuple1[A @@ Valid]] { ctx =>
@@ -64,4 +65,12 @@ object Validation extends Directives {
         case _                                => reject
       }
     }
+
+  def vpost[A](k: A @@ Valid => ToResponseMarshallable)
+    (implicit um: FromRequestUnmarshaller[A], p: Predicate[Valid, A]): Route =
+      (post & validatedPost[A]) { v => complete(k(v)) }
+
+  def vput[A](parser: String => Either[String, A])(k: A @@ Valid => ToResponseMarshallable)
+    (implicit um: FromRequestUnmarshaller[A], p: Predicate[Valid, A]): Route =
+      (put & validatedPut[A](parser)) { v => complete(k(v)) }
 }
