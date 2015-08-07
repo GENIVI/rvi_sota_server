@@ -18,6 +18,7 @@
 1. [SOTA-2](#sota-2) Add basic filter with package dependency ([JIRA](https://advancedtelematic.atlassian.net/browse/SOTA-2))
     - [WL-15](#wl-15) Web Browser sends new filter data to Web Server
     - [WL-16](#wl-16) Web Server sends new filter data to External Resolver
+    - [WL-16-1](#wl-16-1) Web Server validates new filter expression with External Resolver
     - [WL-17](#wl-17) External Resolver persists new filter data to External Resolver Database
     - [WL-18](#wl-18) Web Browser sends filter-to-package association to Web Server
     - [WL-19](#wl-19) Web Server sends filter-to-package association to External Resolver
@@ -194,6 +195,12 @@ The Web Server can send a new Filter's data to the External Resolver using JSON 
    * Upon the Web Server's request, the External Resolver can start a new Filter insertion process and if a new database entry is created, it will respond with a 'Row Inserted' message in the response body and a 200 status code.
    * Upon the Web Server's request, the External Resolver can start a new Filter insertion process and if a database entry already exists, it will respond with a 'Filter already exists' message in the response body and a 409 status code.
    * Upon the Web Server's request, the External Resolver can start a new Filter insertion process and if the Filter expression fails validation, it will respond with a 'Filter failed validation' message in the response body and a 406 status code.
+
+### <a name="wl-16-1">[WL-16-1](https://github.com/advancedtelematic/sota-server/wiki/Whitelisted-Interactions#wl-16-1) Web Server validates filter expression with External Resolver</a>
+
+The Web Server can validate a new Filter's expression with the External Resolver using JSON over HTTP on port 80.
+
+   * Upon the Web Server's request, the External Resolver will validate a filter expression and return an error code with description if the expression is invalid
 
 ### <a name="wl-17">[WL-17](https://github.com/advancedtelematic/sota-server/wiki/Whitelisted-Interactions#wl-17) External Resolver persists new filter data to External Resolver Database</a>
 
