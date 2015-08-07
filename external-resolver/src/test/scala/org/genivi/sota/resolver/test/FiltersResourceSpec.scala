@@ -1,7 +1,7 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
-import org.genivi.sota.resolver.types.Filter
+import org.genivi.sota.resolver.types.{Filter, FilterId}
 import org.genivi.sota.resolver.rest.{ErrorRepresentation, ErrorCodes}
 
 
@@ -33,9 +33,15 @@ class FiltersResourceSpec extends ResourceWordSpec {
       }
     }
 
+    val filter2 = Filter(None, "myfilter2", s"""vin_matches "TAJNX5745SC??????"""")
+
     "list available filters on a GET request" in {
+      Post(FiltersUri, filter2) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+      }
       Get(FiltersUri) ~> route ~> check {
-        responseAs[Seq[Filter]] shouldBe List(filter.copy(id = Some(1)))
+        responseAs[Seq[Filter]] shouldBe List(filter.copy(id = Some(FilterId(1))),
+          filter2.copy(id = Some(FilterId(2))))
       }
     }
 

@@ -4,9 +4,11 @@
  */
 package org.genivi.sota.resolver.types
 
+case class FilterId(id: Long)
+
 case class Filter (
-  id: Option[Long],
-  name: String,
+  id        : Option[FilterId],
+  name      : String,
   expression: String
 )
 
@@ -19,7 +21,8 @@ object Filter {
   import org.genivi.sota.resolver.types.FilterParser.parseFilter
 
 
-  implicit val filterFormat = jsonFormat3(Filter.apply)
+  implicit val filterIdFormat   = jsonFormat1(FilterId.apply)
+  implicit val filterFormat     = jsonFormat3(Filter.apply)
   implicit val filterListFormat = seqFormat[Filter]
 
   type ValidFilter = Filter @@ Valid

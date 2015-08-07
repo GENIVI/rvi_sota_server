@@ -118,8 +118,8 @@ object Dependencies {
   lazy val TestFrameworks = Seq( ScalaTest, ScalaCheck )
 
   lazy val Slick = Seq(
-    "com.typesafe.slick" %% "slick" % "3.0.1",
-    "com.zaxxer" % "HikariCP" % "2.3.7",
+    "com.typesafe.slick" %% "slick" % "3.0.0",
+    "com.zaxxer" % "HikariCP" % "2.3.8",
     "org.mariadb.jdbc" % "mariadb-java-client" % "1.2.0",
     Flyway
   )
