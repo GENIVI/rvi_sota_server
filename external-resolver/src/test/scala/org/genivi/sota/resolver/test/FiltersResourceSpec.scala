@@ -39,5 +39,12 @@ class FiltersResourceSpec extends ResourceWordSpec {
       }
     }
 
+    "not accept duplicate filter names" in {
+      Post(FiltersUri, filter) ~> route ~> check {
+        status shouldBe StatusCodes.Conflict
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.DuplicateEntry
+      }
+    }
+
   }
 }
