@@ -4,17 +4,23 @@
  */
 package org.genivi.sota.resolver.db
 
-import org.genivi.sota.resolver.types.Filter
-
+import org.genivi.sota.resolver.types.{Filter, FilterId}
 import scala.concurrent.ExecutionContext
+
 
 object Filters {
   import slick.driver.MySQLDriver.api._
 
+  implicit val filterIdColumnType = MappedColumnType.base[FilterId, Long](
+    { _.id },
+    { FilterId.apply }
+  )
+
   // scalastyle:off
   class FiltersTable(tag: Tag) extends Table[Filter](tag, "Filter") {
-    def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
-    def name = column[String]("name")
+
+    def id         = column[FilterId]("id", O.PrimaryKey, O.AutoInc)
+    def name       = column[String]("name")
     def expression = column[String]("expression")
 
     def * = (id.?, name, expression) <>
