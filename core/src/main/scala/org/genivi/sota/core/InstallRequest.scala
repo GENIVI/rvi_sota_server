@@ -9,14 +9,20 @@ case class InstallRequest(
   installCampaignId: Long,
   packageId: Long,
   vin: String,
-  statusCode: Char,
+  statusCode: InstallRequest.Status,
   errorMessage: Option[String]
 )
 
 object InstallRequest {
+  object Status extends Enumeration {
+    val NotProcessed = Value
+    val Notified = Value
+  }
+  type Status = Status.Value
+
   def from(dependencyMap: Map[Vin, Set[Long]], campaignId: Long): Set[InstallRequest] = {
     dependencyMap.flatMap { case (vin, packageIds) =>
-      packageIds.map(InstallRequest(None, campaignId, _, vin.vin, '0', None))
+      packageIds.map(InstallRequest(None, campaignId, _, vin.vin, Status.NotProcessed, None))
     }.toSet
   }
 }

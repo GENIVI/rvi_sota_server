@@ -11,5 +11,5 @@ case class Package(
   description: Option[String],
   vendor: Option[String]
 ) {
-  override def toString: String = s"$name--$version"
+  def fullName: String = s"$name-$version"
 }
