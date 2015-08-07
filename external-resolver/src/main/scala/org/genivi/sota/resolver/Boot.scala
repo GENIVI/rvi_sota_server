@@ -4,6 +4,8 @@
  */
 package org.genivi.sota.resolver
 
+import org.genivi.sota.rest.{Validation, ErrorCodes, ErrorRepresentation}
+
 import Function._
 import akka.actor.ActorSystem
 import akka.event.Logging
@@ -14,10 +16,9 @@ import akka.http.scaladsl.model.StatusCodes.NoContent
 import akka.http.scaladsl.server.ExceptionHandler
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.ActorMaterializer
-import org.genivi.sota.resolver.Validation._
+import Validation._
+import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 import org.genivi.sota.resolver.db._
-import org.genivi.sota.resolver.rest.ErrorCodes
-import org.genivi.sota.resolver.rest.ErrorRepresentation
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 import slick.jdbc.JdbcBackend.Database
@@ -28,7 +29,7 @@ class Routing(db: Database)
 
   import org.genivi.sota.resolver.types.{Vin, Package, Filter}
   import spray.json.DefaultJsonProtocol._
-  import org.genivi.sota.resolver.rest.RejectionHandlers._
+  import org.genivi.sota.rest.RejectionHandlers._
 
   def vinsRoute: Route =
     pathPrefix("vins") {

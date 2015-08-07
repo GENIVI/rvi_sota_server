@@ -1,13 +1,12 @@
-package org.genivi.sota.resolver.test
+package org.genivi.sota.test
 
 import org.genivi.sota.refined.SprayJsonRefined
-import org.scalatest.{WordSpec, Matchers}
+import org.scalatest.{Matchers, WordSpec}
 
 class SprayJsonRefinedSpec extends WordSpec with Matchers {
 
   def provide = afterWord("provide")
 
-  import eu.timepit.refined._
   import shapeless.tag
   import shapeless.tag.@@
   import spray.json._
@@ -16,7 +15,6 @@ class SprayJsonRefinedSpec extends WordSpec with Matchers {
 
   "SprayJsonRefined" should {
     "format strings" in {
-      import eu.timepit.refined.string._
       import eu.timepit.refined.collection._
       val value : String @@ NonEmpty = tag[NonEmpty]("str")
 
@@ -26,8 +24,8 @@ class SprayJsonRefinedSpec extends WordSpec with Matchers {
     }
 
     "format ints" in {
-      import eu.timepit.refined.numeric._
       import eu.timepit.refined.boolean._
+      import eu.timepit.refined.numeric._
       import shapeless.nat._
 
       type GrZeroLessTwo = Greater[_0] And Less[_2]
@@ -38,8 +36,8 @@ class SprayJsonRefinedSpec extends WordSpec with Matchers {
     }
 
     "fail if predicate fails" in {
-      import eu.timepit.refined.numeric._
       import eu.timepit.refined.boolean._
+      import eu.timepit.refined.numeric._
       import shapeless.nat._
 
       type GrZeroLessTwo = Greater[_0] And Less[_2]
@@ -48,9 +46,9 @@ class SprayJsonRefinedSpec extends WordSpec with Matchers {
     }
 
     "format case classes" in {
+      import eu.timepit.refined.boolean._
       import eu.timepit.refined.collection._
       import eu.timepit.refined.numeric._
-      import eu.timepit.refined.boolean._
       import shapeless.nat._
 
       case class Inner( str: String @@ NonEmpty, number: Int @@ Greater[_0] )

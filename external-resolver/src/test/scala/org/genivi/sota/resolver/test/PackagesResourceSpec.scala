@@ -12,7 +12,7 @@ import eu.timepit.refined.internal.Wrapper
 class PackageResourceSpec extends ResourcePropSpec {
 
   import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-  import org.genivi.sota.resolver.rest.{ErrorRepresentation, ErrorCodes}
+  import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
   import org.genivi.sota.resolver.types.Package
   import org.genivi.sota.resolver.types.Package._
   import org.scalacheck._

@@ -34,12 +34,19 @@ object SotaBuild extends Build {
     )
   )
 
-  lazy val commonSettings = basicSettings ++ Packaging.settings ++ Revolver.settings ++ Seq(
+  lazy val compilerSettings = Seq(
     scalacOptions in Compile ++= Seq("-encoding", "UTF-8", "-target:jvm-1.6", "-deprecation", "-feature", "-unchecked", "-Xlog-reflective-calls", "-Xlint", "-language:higherKinds"),
-    javacOptions in compile ++= Seq("-encoding", "UTF-8", "-source", "1.6", "-target", "1.6", "-Xlint:unchecked", "-Xlint:deprecation"),
+    javacOptions in compile ++= Seq("-encoding", "UTF-8", "-source", "1.6", "-target", "1.6", "-Xlint:unchecked", "-Xlint:deprecation")
+  )
+
+  lazy val commonSettings = basicSettings ++ compilerSettings ++ Packaging.settings ++ Revolver.settings ++ Seq(
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
     buildInfoPackage := organization.value + ".sota." + name.value
   )
+
+  lazy val common = Project(id = "common", base = file("common"))
+    .settings(basicSettings ++ compilerSettings)
+    .settings( libraryDependencies ++= Dependencies.Rest :+ Dependencies.Refined )
 
   lazy val externalResolver = Project(id = "resolver", base = file("external-resolver"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
@@ -49,6 +56,7 @@ object SotaBuild extends Build {
       flywayUser := sys.env.get("RESOLVER_DB_USER").orElse( sys.props.get("resolver.db.user") ).getOrElse("sota"),
       flywayPassword := sys.env.get("RESOLVER_DB_PASSWORD").orElse( sys.props.get("resolver.db.password")).getOrElse("s0ta")
     ))
+    .dependsOn(common)
     .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
 
 
@@ -85,7 +93,7 @@ object SotaBuild extends Build {
     .settings( basicSettings )
     .settings( Versioning.settings )
     .settings( Release.settings )
-    .aggregate(core, externalResolver, webServer)
+    .aggregate(common, core, externalResolver, webServer)
     .enablePlugins(Versioning.Plugin)
 
 }

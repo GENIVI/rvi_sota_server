@@ -4,11 +4,13 @@
  */
 package org.genivi.sota.resolver.types
 
+import org.genivi.sota.rest.Validation
+
 case class Vin(vin: String)
 
 object Vin {
   import eu.timepit.refined._
-  import org.genivi.sota.resolver.Validation._
+  import Validation._
   import shapeless.tag.@@
   import spray.json.DefaultJsonProtocol._
 

@@ -4,6 +4,8 @@
  */
 package org.genivi.sota.resolver.types
 
+import org.genivi.sota.rest.Validation
+
 case class FilterId(id: Long)
 
 case class Filter (
@@ -16,7 +18,7 @@ object Filter {
 
   import spray.json.DefaultJsonProtocol._
   import eu.timepit.refined.Predicate
-  import org.genivi.sota.resolver.Validation.Valid
+  import Validation.Valid
   import shapeless.tag._
   import org.genivi.sota.resolver.types.FilterParser.parseFilter
 
