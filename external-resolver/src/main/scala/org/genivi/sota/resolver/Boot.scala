@@ -44,7 +44,7 @@ class Routing(db: Database)
           NoContent
         }
       } ~
-      (post & validatedPost2[Package, Package.Valid]) { pkg: Package.ValidPackage =>
+      (post & entity(as[Package])) { pkg: Package =>
         completeOrRecoverWith(db.run(Packages.add(pkg))) {
           case err: java.sql.SQLIntegrityConstraintViolationException if err.getErrorCode == 1062 =>
             complete(StatusCodes.Conflict ->

@@ -9,6 +9,7 @@ import scala.concurrent.ExecutionContext
 
 object Packages {
 
+  import org.genivi.sota.refined.SlickRefined._
   import slick.driver.MySQLDriver.api._
 
   implicit val packageIdColumnType = MappedColumnType.base[PackageId, Long](
@@ -19,9 +20,9 @@ object Packages {
   // scalastyle:off
   class PackageTable(tag: Tag) extends Table[Package](tag, "Package") {
 
-    def id          = column[PackageId]("id", O.PrimaryKey, O.AutoInc)
-    def name        = column[String]("name")
-    def version     = column[String]("version")
+    def id = column[PackageId]("id", O.PrimaryKey, O.AutoInc)
+    def name = column[Package.PackageName]("name")
+    def version = column[Package.Version]("version")
     def description = column[String]("description")
     def vendor      = column[String]("vendor")
 
@@ -32,7 +33,7 @@ object Packages {
 
   val packages = TableQuery[PackageTable]
 
-  def add(pkg : Package.ValidPackage)(implicit ec: ExecutionContext): DBIO[Package] =
+  def add(pkg : Package)(implicit ec: ExecutionContext): DBIO[Package] =
     ((packages returning packages.map(_.id)) += pkg)
       .map(id => pkg.copy(id = Some(id)))
 }
