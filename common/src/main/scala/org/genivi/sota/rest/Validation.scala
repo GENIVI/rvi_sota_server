@@ -2,16 +2,15 @@
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.resolver
+package org.genivi.sota.rest
 
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import akka.http.scaladsl.model.Uri._
-import akka.http.scaladsl.server.PathMatcher.{Matched, Unmatched}
-import akka.http.scaladsl.server.{Directives, Directive1, ValidationRejection, PathMatchers, Route}
+import akka.http.scaladsl.server.PathMatcher.Matched
+import akka.http.scaladsl.server.{Directive1, Directives, PathMatchers, Route, ValidationRejection}
 import akka.http.scaladsl.unmarshalling.FromRequestUnmarshaller
-import eu.timepit.refined.{Predicate, refineT}
 import eu.timepit.refined.boolean.And
-import org.genivi.sota.resolver.types.Vin
+import eu.timepit.refined.{Predicate, refineT}
 import shapeless.tag.@@
 
 
@@ -52,7 +51,6 @@ object Validation extends Directives {
 
   def validatedPut[A](parser: String => Either[String, A])(implicit p: Predicate[Valid, A]): Directive1[A @@ Valid] =
     extractRequestContext.flatMap[Tuple1[A @@ Valid]] { ctx =>
-      import ctx.executionContext
       val pathMatcher = PathMatchers.Slash ~ Segment ~ PathEnd
       pathMatcher(ctx.unmatchedPath) match {
         case Matched(Path.Empty, Tuple1(str)) => parser(str) match {

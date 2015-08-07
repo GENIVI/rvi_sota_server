@@ -2,7 +2,7 @@ package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
 import org.genivi.sota.resolver.types.{Filter, FilterId}
-import org.genivi.sota.resolver.rest.{ErrorRepresentation, ErrorCodes}
+import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
 
 
 class ValidateResourceSpec extends ResourceWordSpec {

@@ -10,7 +10,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.ValidationRejection
 import org.genivi.sota.resolver.types.Vin
-import org.genivi.sota.resolver.rest.{ErrorRepresentation, ErrorCodes}
+import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
 
 class VinResourcePropSpec extends ResourcePropSpec {
 
