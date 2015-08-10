@@ -9,7 +9,7 @@ import org.scalatest.FlatSpec
 import org.genivi.sota.resolver.types.FilterParser.parseFilter
 import org.genivi.sota.resolver.types.FilterPrinter.ppFilter
 import org.genivi.sota.resolver.types.FilterAST
-import org.genivi.sota.resolver.types.{And, Or, VinMatches}
+import org.genivi.sota.resolver.types.{VinMatches, HasPackage, HasComponent, Not, And, Or}
 
 
 class FilterParserSpec extends FlatSpec {
@@ -24,6 +24,14 @@ class FilterParserSpec extends FlatSpec {
     assert(parseFilter(apaS) == Right(apaF))
   }
 
+  it should "parse has package matches" in {
+    assert(parseFilter(s"""has_package "cepa" "1.2.0"""") == Right(HasPackage("cepa", "1.2.0")))
+  }
+
+  it should "not parse has package matches without a version" in {
+    assert(parseFilter(s"""has_package "cepa" OR $apaS""").isLeft)
+  }
+
   it should "parse conjunctions of filters" in {
     assert(parseFilter(s"$apaS AND $apaS") == Right(And(apaF, apaF)))
   }
@@ -32,9 +40,18 @@ class FilterParserSpec extends FlatSpec {
     assert(parseFilter(s"$apaS OR $apaS") == Right(Or(apaF, apaF)))
   }
 
+  it should "parse negations of filters" in {
+    assert(parseFilter(s"NOT $apaS") == Right(Not(apaF)))
+  }
+
   it should "parse conjunctions with higher precedence than disjunction" in {
     assert(parseFilter(s"$apaS AND $bepaS OR $apaS")
       == Right(Or(And(apaF, bepaF), apaF)))
+  }
+
+  it should "parse negation with higher precedence than conjunction" in {
+    assert(parseFilter(s"NOT $apaS AND $bepaS")
+      == Right(And(Not(apaF), bepaF)))
   }
 
   it should "allow the precedence to be changed by use of parenthesis" in {
@@ -52,17 +69,38 @@ class FilterParserSpec extends FlatSpec {
 
 object FilterParserPropSpec extends Properties("The filter parser") {
 
-  def genFilterHelper(i: Int): Gen[FilterAST] =
+  def genFilterHelper(i: Int): Gen[FilterAST] = {
+
+    def genUnary(n: Int) = for {
+        f     <- genFilterHelper(n / 2)
+        unary <- Gen.oneOf(Not, Not)
+      } yield unary(f)
+
+    def genBinary(n: Int) = for {
+        l      <- genFilterHelper(n / 2)
+        r      <- genFilterHelper(n / 2)
+        binary <- Gen.oneOf(Or, And)
+      } yield binary(l, r)
+
+    def genLeaf = Gen.oneOf(
+        for {
+          s <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaNumChar)
+          leaf <- Gen.oneOf(VinMatches, HasComponent)
+        } yield leaf(s.mkString),
+        for {
+          s <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaNumChar)
+          t <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaNumChar)
+        } yield HasPackage(s.mkString, t.mkString)
+    )
+
     i match {
-      case 0 => for {
-        s <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaNumChar)
-      } yield VinMatches(s.mkString)
-      case n => for {
-        l    <- genFilterHelper(i / 2)
-        r    <- genFilterHelper(i / 2)
-        node <- Gen.oneOf(Or, And)
-      } yield node(l, r)
+      case 0 => genLeaf
+      case n => Gen.frequency(
+        (1, genUnary(n)),
+        (4, genBinary(n))
+      )
     }
+  }
 
   def genFilter: Gen[FilterAST] = Gen.sized(genFilterHelper)
 
