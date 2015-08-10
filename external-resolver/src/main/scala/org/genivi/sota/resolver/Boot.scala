@@ -4,9 +4,6 @@
  */
 package org.genivi.sota.resolver
 
-import akka.http.scaladsl.server.PathMatchers
-import org.genivi.sota.rest.{Validation, ErrorCodes, ErrorRepresentation}
-
 import Function._
 import akka.actor.ActorSystem
 import akka.event.Logging
@@ -14,12 +11,11 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.StatusCodes.NoContent
-import akka.http.scaladsl.server.ExceptionHandler
-import akka.http.scaladsl.server.{Directives, Route}
+import akka.http.scaladsl.server.{Directives, ExceptionHandler, Route, PathMatchers}
 import akka.stream.ActorMaterializer
-import Validation._
-import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 import org.genivi.sota.resolver.db._
+import org.genivi.sota.rest.Validation._
+import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 import slick.jdbc.JdbcBackend.Database
@@ -38,26 +34,23 @@ class Routing(db: Database)
       get {
         complete(db.run(Vehicles.list))
       } ~
-      (put & refined[String, Vehicle.Vin](PathMatchers.Segment)) { vin =>
+      (put & refined[String, Vehicle.Vin](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.PathEnd)) { vin =>
         complete(db.run( Vehicles.add(Vehicle(vin)) ).map(_ => NoContent))
       }
     }
 
   def packagesRoute: Route =
-    path("packages") {
+    pathPrefix("packages") {
       get {
         complete {
           NoContent
         }
       } ~
-      (post & entity(as[Package])) { pkg: Package =>
-        completeOrRecoverWith(db.run(Packages.add(pkg))) {
-          case err: java.sql.SQLIntegrityConstraintViolationException if err.getErrorCode == 1062 =>
-            complete(StatusCodes.Conflict ->
-              ErrorRepresentation(ErrorCodes.DuplicateEntry, s"Package ${pkg.name}-${pkg.version} already exists"))
-          case t =>
-            failWith(t)
-        }
+      (put & refined[String, Package.Required](PathMatchers.Slash ~ PathMatchers.Segment)
+           & refined[String, Package.ValidVersionFormat](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.PathEnd)
+           & entity(as[Package.Metadata]))
+      { (name: Package.PackageName, version: Package.Version, metadata: Package.Metadata) =>
+        complete(db.run(Packages.add(Package(None, name, version, metadata.description, metadata.vendor))))
       }
     }
 
@@ -82,7 +75,7 @@ class Routing(db: Database)
 
   def validateRoute: Route =
     pathPrefix("validate") {
-      path("filter")  (vpost[Filter] (const("OK")))
+      path("filter") (vpost[Filter] (const("OK")))
     }
 
   def exceptionHandler: ExceptionHandler = ExceptionHandler {

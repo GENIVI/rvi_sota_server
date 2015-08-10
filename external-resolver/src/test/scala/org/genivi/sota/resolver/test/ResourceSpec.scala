@@ -26,7 +26,7 @@ trait ResourceSpec extends Matchers with ScalatestRouteTest { self: org.scalates
 
   val BasePath     = Path("/api") / "v1"
   val VinsUri      = (vin: String) => resourceUri("vehicles", vin)
-  val PackagesUri  = resourceUri("packages")
+  val PackagesUri  = (name: String, version: String) => resourceUri("packages", name, version)
   val ResolveUri   = (i: Long) => resourceUri("resolve", i.toString)
   val FiltersUri   = resourceUri("filters")
   val ValidateUri  = (s: String) => resourceUri("validate", s)
