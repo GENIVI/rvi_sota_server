@@ -4,10 +4,10 @@
  */
 package org.genivi.sota.core.db
 
+import org.genivi.sota.core.data.InstallCampaign
 import org.joda.time.DateTime
 import scala.concurrent.Future
 import slick.driver.MySQLDriver.api._
-import org.genivi.sota.core.InstallCampaign
 
 object InstallCampaigns {
 

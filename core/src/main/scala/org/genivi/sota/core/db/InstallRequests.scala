@@ -4,14 +4,13 @@
  */
 package org.genivi.sota.core.db
 
+import org.genivi.sota.core.data.{Package, InstallRequest, Vehicle}
 import org.joda.time.DateTime
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import slick.dbio.DBIO
 import slick.driver.JdbcTypesComponent._
 import slick.driver.MySQLDriver.api._
-import org.genivi.sota.core.InstallRequest
-import org.genivi.sota.core.Package
 
 object InstallRequests {
 
@@ -19,13 +18,14 @@ object InstallRequests {
   import InstallRequest.Status
 
   implicit val statusCodeMapper = MappedColumnType.base[Status, Int](_.value.id, s => Status(s))
+  import org.genivi.sota.refined.SlickRefined._
 
   // scalastyle:off
   class InstallRequestTable(tag: Tag) extends Table[InstallRequest](tag, "InstallRequest") {
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def installCampaignId = column[Long]("installCampaignId")
     def packageId = column[Long]("packageId")
-    def vin = column[String]("vin")
+    def vin = column[Vehicle.IdentificationNumber]("vin")
     def statusCode = column[Status]("statusCode")
     def errorMessage = column[String]("errorMessage")
 

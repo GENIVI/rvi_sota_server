@@ -4,9 +4,12 @@
  */
 package org.genivi.sota.core.rvi
 
+import eu.timepit.refined.internal.Wrapper
+
 import akka.http.scaladsl.model.HttpResponse
 import com.github.nscala_time.time.Imports._
 import org.genivi.sota.core._
+import org.genivi.sota.core.data.{Vehicle, Package, InstallRequest, InstallCampaign}
 import org.genivi.sota.core.db._
 import org.scalacheck._
 import org.scalacheck.Prop._
@@ -17,7 +20,6 @@ import scala.concurrent.{Await, Future}
 import slick.driver.MySQLDriver.api._
 
 class DeviceCommunicationSpec extends PropSpec
-    with TestDatabase
     with Matchers
     with PropertyChecks
     with BeforeAndAfterEach {
@@ -25,14 +27,16 @@ class DeviceCommunicationSpec extends PropSpec
   import org.scalacheck._
 
   import scala.concurrent.ExecutionContext.Implicits.global
+  import org.genivi.sota.core.Generators._
+
+  val databaseName = "test-database"
+  val db = Database.forConfig(databaseName)
 
   override def beforeEach {
-    resetDatabase
+    TestDatabase.resetDatabase(databaseName)
   }
 
-  val vinGen: Gen[Vin] = Gen.listOfN(17, Gen.alphaNumChar).map( xs => Vin(xs.mkString) )
-
-  val packageGen: Gen[Package] = for {
+  val packageGen: Gen[data.Package] = for {
     len <- Gen.choose(5, 10)
     name <- Gen.listOfN(len, Gen.alphaNumChar)
     major <- Gen.choose(0, 10)
@@ -46,14 +50,14 @@ class DeviceCommunicationSpec extends PropSpec
   def campaign(pkgId: Long, priority: Int, startAfter: DateTime, endBefore: DateTime): InstallCampaign =
     InstallCampaign(None, pkgId, priority, startAfter, endBefore)
 
-  def request(pkgId: Long, campaignId: Long, vin: Vin, status: InstallRequest.Status = Status.NotProcessed): InstallRequest =
+  def request(pkgId: Long, campaignId: Long, vin: Vehicle, status: InstallRequest.Status = Status.NotProcessed): InstallRequest =
     InstallRequest(None, campaignId, pkgId, vin.vin, status, None)
 
   case class State(pkg1: Package,
                    pkg2: Package,
-                   vin1: Vin,
-                   vin2: Vin,
-                   vin3: Vin,
+                   vin1: Vehicle,
+                   vin2: Vehicle,
+                   vin3: Vehicle,
                    highPriority: Int,
                    lowPriority: Int,
                    currentInterval: Interval,
@@ -88,7 +92,7 @@ class DeviceCommunicationSpec extends PropSpec
   } yield State(pkg1, pkg2, vin1, vin2, vin3, highPriority, lowPriority, currentInterval, nonCurrentInterval)
 
   def persisted(p: Package): DBIO[(Long, Package)] = Packages.create(p).map { p => (p.id.head, p) }
-  def persisted(v: Vin): DBIO[String] = Vins.create(v).map { _ => v.vin }
+  def persisted(v: Vehicle): DBIO[Vehicle.IdentificationNumber] = Vehicles.create(v).map { _ => v.vin }
   def persisted(r: InstallRequest): DBIO[Long] = InstallRequests.create(r).map(_.id.head)
   def persisted(c: InstallCampaign): DBIO[Long] = InstallCampaigns.create(c).map(_.id.head)
   def persisted(s: State): DBIO[(Package, Package, Long, Long, Long, Long, Long)] = for {
@@ -112,9 +116,9 @@ class DeviceCommunicationSpec extends PropSpec
   } yield (pkg1, pkg2, r1, r2, r3, r4, r5)
 
 
-  class RviMock(worksWhen: ((String, Package)) => Boolean = Function.const(true)) extends RviInterface {
-    val msgs = scala.collection.mutable.Set[(String, Package)]()
-    def notify(s: String, p: Package): Future[HttpResponse] =
+  class RviMock(worksWhen: ((Vehicle.IdentificationNumber, Package)) => Boolean = Function.const(true)) extends RviInterface {
+    val msgs = scala.collection.mutable.Set[(Vehicle.IdentificationNumber, Package)]()
+    def notify(s: Vehicle.IdentificationNumber, p: Package): Future[HttpResponse] =
       if (worksWhen((s, p))) {
         this.synchronized(msgs += ((s,p)))
         Future.successful(HttpResponse())

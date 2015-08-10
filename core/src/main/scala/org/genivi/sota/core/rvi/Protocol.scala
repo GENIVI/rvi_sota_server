@@ -4,11 +4,12 @@
   */
 package org.genivi.sota.core.rvi
 
+import org.genivi.sota.core.data.Package
+
 import scala.util.Random
 import spray.json.DefaultJsonProtocol
 import spray.json.JsonFormat
 import spray.json.RootJsonFormat
-import org.genivi.sota.core.Package
 
 object Protocol {
   sealed trait Action
@@ -82,7 +83,9 @@ object Protocol {
       case Download(_, _, _) => "download"
     }
 
-    def build[A <: Action](vin: String, action: A): JsonRpcRequest[A] =
+    import org.genivi.sota.core.data.Vehicle
+
+    def build[A <: Action](vin: Vehicle.IdentificationNumber, action: A): JsonRpcRequest[A] =
       JsonRpcRequest(
         "2.0",
         JsonRpcParams(
@@ -94,7 +97,7 @@ object Protocol {
         "message"
       )
 
-    def notifyPackage(vin: String, pack: Package): JsonRpcRequest[Notify] =
+    def notifyPackage(vin: Vehicle.IdentificationNumber, pack: Package): JsonRpcRequest[Notify] =
       JsonRpcRequest.build(vin, Notify(Retry, pack.fullName))
   }
 }

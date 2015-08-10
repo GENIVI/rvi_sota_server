@@ -7,10 +7,11 @@ package org.genivi.sota.rest
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import akka.http.scaladsl.model.Uri._
 import akka.http.scaladsl.server.PathMatcher.Matched
-import akka.http.scaladsl.server.{Directive1, Directives, PathMatchers, Route, ValidationRejection}
+import akka.http.scaladsl.server._
 import akka.http.scaladsl.unmarshalling.FromRequestUnmarshaller
 import eu.timepit.refined.boolean.And
-import eu.timepit.refined.{Predicate, refineT}
+import eu.timepit.refined.{Refined, Predicate, refineT, refineV}
+import scala.reflect.ClassTag
 import shapeless.tag.@@
 
 
@@ -49,13 +50,13 @@ object Validation extends Directives {
   def validatedPost[A](implicit um: FromRequestUnmarshaller[A], p: Predicate[Valid, A]): Directive1[A @@ Valid] =
     validatedPost2[A, Valid]
 
-  def validatedPut[A](parser: String => Either[String, A])(implicit p: Predicate[Valid, A]): Directive1[A @@ Valid] =
-    extractRequestContext.flatMap[Tuple1[A @@ Valid]] { ctx =>
+  def taggedSegment[P, A](parser: String => Either[String, A])(implicit p: Predicate[P, A]): Directive1[A @@ P] =
+    extractRequestContext.flatMap[Tuple1[A @@ P]] { ctx =>
       val pathMatcher = PathMatchers.Slash ~ Segment ~ PathEnd
       pathMatcher(ctx.unmatchedPath) match {
         case Matched(Path.Empty, Tuple1(str)) => parser(str) match {
           case Left(e)  => reject(ValidationRejection(e))
-          case Right(a) => refineT[Valid](a) match {
+          case Right(a) => refineT[P](a) match {
             case Left(e)  => reject(ValidationRejection(e))
             case Right(b) => provide(b)
           }
@@ -64,11 +65,24 @@ object Validation extends Directives {
       }
     }
 
+  def refined[T, P](wrapped: PathMatcher1[T])
+                   (implicit p: Predicate[P, T], ev: ClassTag[T]): Directive1[T Refined P] = {
+    extractRequestContext.flatMap[Tuple1[T Refined P]] { ctx =>
+      val pathMatcher = PathMatchers.Slash ~ wrapped ~ PathEnd
+      pathMatcher(ctx.unmatchedPath) match {
+        case Matched(Path.Empty, Tuple1(x: T)) =>
+          refineV[P](x).fold( e => reject(ValidationRejection(e)), a => provide(a))
+        case _                                => reject
+      }
+    }
+
+  }
+
   def vpost[A](k: A @@ Valid => ToResponseMarshallable)
     (implicit um: FromRequestUnmarshaller[A], p: Predicate[Valid, A]): Route =
       (post & validatedPost[A]) { v => complete(k(v)) }
 
   def vput[A](parser: String => Either[String, A])(k: A @@ Valid => ToResponseMarshallable)
     (implicit um: FromRequestUnmarshaller[A], p: Predicate[Valid, A]): Route =
-      (put & validatedPut[A](parser)) { v => complete(k(v)) }
+      (put & taggedSegment[Valid, A](parser)) { v => complete(k(v)) }
 }

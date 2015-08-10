@@ -4,8 +4,8 @@
  */
 package org.genivi.sota.core.db
 
+import org.genivi.sota.core.data.Package
 import slick.driver.MySQLDriver.api._
-import org.genivi.sota.core.Package
 
 object Packages {
 

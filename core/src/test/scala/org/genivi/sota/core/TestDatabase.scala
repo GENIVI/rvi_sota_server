@@ -6,15 +6,10 @@ package org.genivi.sota.core
 
 import com.typesafe.config.ConfigFactory
 import org.flywaydb.core.Flyway
-import slick.driver.MySQLDriver.api._
 
-trait TestDatabase {
-  val databaseName = "test-database"
+object TestDatabase {
 
-  val db = Database.forConfig(databaseName)
-  implicit val session: Session = db.createSession()
-
-  def resetDatabase = {
+  def resetDatabase( databaseName: String ) = {
     val dbConfig = ConfigFactory.load().getConfig(databaseName)
     val url = dbConfig.getString("url")
     val user = dbConfig.getConfig("properties").getString("user")

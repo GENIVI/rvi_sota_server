@@ -11,13 +11,13 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.ContentTypes._
 import akka.http.scaladsl.model.HttpMethods._
 import akka.stream.ActorMaterializer
-import org.genivi.sota.core.Package
+import org.genivi.sota.core.data.{Package, Vehicle}
 import scala.concurrent.Future
 import scala.util.control.NoStackTrace
 
 trait RviInterface {
 
-  def notify(vin: String, pkg: Package): Future[HttpResponse]
+  def notify(vin: Vehicle.IdentificationNumber, pkg: Package): Future[HttpResponse]
 }
 
 object RviInterface {
@@ -36,7 +36,7 @@ class JsonRpcRviInterface(host: String, port: Int)
       withAuthority(host, port).
       withPath(Uri.Path("/"))
 
-  def notify(vin: String, pkg: Package): Future[HttpResponse] = {
+  def notify(vin: Vehicle.IdentificationNumber, pkg: Package): Future[HttpResponse] = {
     val payload = JsonRpcRequest.notifyPackage(vin, pkg)
     val serialized = JsonRpcRequest.format[Notify].write(payload).toString()
     Http().singleRequest(HttpRequest(POST,
