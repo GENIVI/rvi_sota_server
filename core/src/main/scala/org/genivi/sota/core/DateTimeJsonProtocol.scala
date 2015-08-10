@@ -22,3 +22,5 @@ trait DateTimeJsonProtocol extends DefaultJsonProtocol {
     }
   }
 }
+
+object DateTimeJsonProtocol extends DateTimeJsonProtocol

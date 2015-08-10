@@ -68,6 +68,7 @@ object SotaBuild extends Build {
       flywayUser := sys.env.get("CORE_DB_USER").orElse( sys.props.get("core.db.user") ).getOrElse("sota"),
       flywayPassword := sys.env.get("CORE_DB_PASSWORD").orElse( sys.props.get("core.db.password")).getOrElse("s0ta")
     ))
+    .dependsOn(common)
     .enablePlugins(Packaging.plugins: _*)
 
   import play.sbt.Play.autoImport._

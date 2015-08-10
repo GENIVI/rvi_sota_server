@@ -4,7 +4,7 @@
   */
 package org.genivi.sota.core.rvi
 
-import org.genivi.sota.core.{InstallRequest, Package}
+import org.genivi.sota.core.data.{Package, InstallRequest}
 import org.genivi.sota.core.db.InstallRequests
 import org.joda.time.DateTime
 import scala.concurrent.{ExecutionContext, Future}

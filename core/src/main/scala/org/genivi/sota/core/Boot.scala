@@ -10,23 +10,19 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.model.StatusCodes._
+import akka.http.scaladsl.server.PathMatchers
 import akka.http.scaladsl.server.{Directives, ExceptionHandler}
 import akka.stream.ActorMaterializer
+import data._
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.rvi._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 import slick.driver.MySQLDriver.api.Database
 import spray.json.{JsObject, JsString}
-
-object JsonProtocols extends DateTimeJsonProtocol {
-  implicit val installCampaignFormat = jsonFormat5(InstallCampaign.apply)
-  implicit val vinFormat = jsonFormat(Vin, "vin")
-  implicit val pkgFormat = jsonFormat5(Package.apply)
-}
+import org.genivi.sota.rest.Validation._
 
 class WebService(db : Database)(implicit system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext) extends Directives {
-  import JsonProtocols._
 
   val resolverHost = system.settings.config.getString("resolver.host")
   val resolverPort = system.settings.config.getInt("resolver.port")
@@ -43,7 +39,7 @@ class WebService(db : Database)(implicit system: ActorSystem, mat: ActorMaterial
   }
 
   def createCampaign( campaign : InstallCampaign ) : Future[InstallCampaign] = {
-    def persistCampaign( dependencies : Map[Vin, Set[Long]] ) = for {
+    def persistCampaign( dependencies : Map[Vehicle, Set[Long]] ) = for {
       persistedCampaign <- InstallCampaigns.create(campaign)
       _   <- InstallRequests.createRequests( InstallRequest.from(dependencies, persistedCampaign.id.head).toSeq )
     } yield persistedCampaign
@@ -63,9 +59,9 @@ class WebService(db : Database)(implicit system: ActorSystem, mat: ActorMaterial
           }
         }
       } ~
-      path("vins") {
-        (post & entity(as[Vin])) { vin =>
-          complete(db.run( Vins.create(vin) ).map(_ => NoContent))
+      pathPrefix("vehicles") {
+        (put & refined[String, Vehicle.Vin](PathMatchers.Segment)) { vin =>
+          complete(db.run( Vehicles.create(Vehicle(vin)) ).map(_ => NoContent))
         }
       } ~
       path("packages") {
@@ -75,7 +71,7 @@ class WebService(db : Database)(implicit system: ActorSystem, mat: ActorMaterial
             //Packages.list
           }
         } ~
-        (post & entity(as[Package])) { newPackage =>
+        (post & entity(as[data.Package])) { newPackage =>
           complete(db.run( Packages.create(newPackage) ) )
         }
       }
