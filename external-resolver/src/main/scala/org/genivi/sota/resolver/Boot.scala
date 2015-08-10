@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.resolver
 
+import akka.http.scaladsl.server.PathMatchers
 import org.genivi.sota.rest.{Validation, ErrorCodes, ErrorRepresentation}
 
 import Function._
@@ -22,21 +23,24 @@ import org.genivi.sota.resolver.db._
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 import slick.jdbc.JdbcBackend.Database
+import org.genivi.sota.resolver.types.Vehicle
 
 
 class Routing(db: Database)
   (implicit system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext) extends Directives {
 
-  import org.genivi.sota.resolver.types.{Vin, Package, Filter}
+  import org.genivi.sota.resolver.types.{Vehicle$, Package, Filter}
   import spray.json.DefaultJsonProtocol._
   import org.genivi.sota.rest.RejectionHandlers._
 
   def vinsRoute: Route =
-    pathPrefix("vins") {
+    pathPrefix("vehicles") {
       get {
-        complete(db.run(Vins.list))
+        complete(db.run(Vehicles.list))
       } ~
-      vput[Vin](s => Right(Vin(s))) { vin: Vin.ValidVin => db.run(Vins.add(vin)).map(_ => NoContent) }
+      (put & refined[String, Vehicle.Vin](PathMatchers.Segment)) { vin =>
+        complete(db.run( Vehicles.add(Vehicle(vin)) ).map(_ => NoContent))
+      }
     }
 
   def packagesRoute: Route =
@@ -61,8 +65,9 @@ class Routing(db: Database)
     path("resolve" / LongNumber) { pkgId =>
       get {
         complete {
-          db.run( Vins.list ).map( _.map(vin => Map(vin.vin -> List(pkgId)))
-            .foldRight(Map[String, List[Long]]())(_++_))
+          import org.genivi.sota.refined.SprayJsonRefined._
+          db.run( Vehicles.list ).map( _.map(vehicle => Map(vehicle.vin -> List(pkgId)))
+            .foldRight(Map[Vehicle.IdentificationNumber, List[Long]]())(_++_))
         }
       }
     }
@@ -77,8 +82,6 @@ class Routing(db: Database)
 
   def validateRoute: Route =
     pathPrefix("validate") {
-      path("vin")     (vpost[Vin]    (const("OK"))) ~
-      // path("package") (vpost[Package](const("OK"))) ~
       path("filter")  (vpost[Filter] (const("OK")))
     }
 

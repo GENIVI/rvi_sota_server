@@ -4,23 +4,22 @@
  */
 package org.genivi.sota.resolver.test
 
-import akka.event.Logging
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.server.ValidationRejection
-import org.genivi.sota.resolver.types.Vin
-import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
+import eu.timepit.refined.Refined
+import eu.timepit.refined.internal.Wrapper
+import org.genivi.sota.resolver.types.Vehicle
+import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 
 class VinResourcePropSpec extends ResourcePropSpec {
 
   import org.scalacheck._
 
-  val VinGenerator: Gen[Vin] = Gen.listOfN(17, Gen.alphaNumChar).map( xs => Vin(xs.mkString) )
+  val VehicleGenerator: Gen[Vehicle] = Gen.listOfN(17, Gen.alphaNumChar).map( xs => Vehicle(Wrapper.refinedWrapper.wrap(xs.mkString)) )
 
   property("Vin resource add") {
-    forAll(VinGenerator) { vin =>
-      Put( VinsUri(vin.vin) ) ~> route ~> check {
+    forAll(VehicleGenerator) { vehicle =>
+      Put( VinsUri(vehicle.vin.get) ) ~> route ~> check {
         status shouldBe StatusCodes.NoContent
       }
     }
@@ -28,7 +27,6 @@ class VinResourcePropSpec extends ResourcePropSpec {
 }
 
 class VinResourceWordSpec extends ResourceWordSpec {
-  import akka.http.scaladsl.server.Directives._
 
   "Vin resource" should {
 
@@ -67,7 +65,8 @@ class VinResourceWordSpec extends ResourceWordSpec {
 
     "list all Vins on a GET request" in {
       Get(VinsUri("")) ~> route ~> check {
-        responseAs[Seq[Vin]] shouldBe List(Vin("VINOOLAM0FAU2DEEP"))
+        import spray.json.DefaultJsonProtocol._
+        responseAs[Seq[Vehicle]] shouldBe List(Vehicle(Refined("VINOOLAM0FAU2DEEP")))
       }
     }
 

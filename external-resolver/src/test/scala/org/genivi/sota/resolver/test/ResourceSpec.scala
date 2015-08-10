@@ -14,8 +14,8 @@ trait ResourceSpec extends Matchers with ScalatestRouteTest { self: org.scalates
 
   import akka.http.scaladsl.model.Uri
   import akka.http.scaladsl.model.Uri.Path
-  import org.genivi.sota.resolver.db.{Vins, Packages}
-  import org.genivi.sota.resolver.types.{Vin, Package}
+  import org.genivi.sota.resolver.db.{Vehicles, Packages}
+  import org.genivi.sota.resolver.types.{Vehicle$, Package}
   import slick.jdbc.JdbcBackend.Database
 
   // Paths
@@ -25,7 +25,7 @@ trait ResourceSpec extends Matchers with ScalatestRouteTest { self: org.scalates
   }
 
   val BasePath     = Path("/api") / "v1"
-  val VinsUri      = (vin: String) => resourceUri("vins", vin)
+  val VinsUri      = (vin: String) => resourceUri("vehicles", vin)
   val PackagesUri  = resourceUri("packages")
   val ResolveUri   = (i: Long) => resourceUri("resolve", i.toString)
   val FiltersUri   = resourceUri("filters")
