@@ -31,7 +31,7 @@ class Routing(db: Database)
 
   import org.genivi.sota.resolver.types.{Vehicle$, Package, Filter}
   import spray.json.DefaultJsonProtocol._
-  import org.genivi.sota.rest.RejectionHandlers._
+  import org.genivi.sota.rest.Handlers._
 
   def vinsRoute: Route =
     pathPrefix("vehicles") {
@@ -84,12 +84,6 @@ class Routing(db: Database)
     pathPrefix("validate") {
       path("filter")  (vpost[Filter] (const("OK")))
     }
-
-  def exceptionHandler: ExceptionHandler = ExceptionHandler {
-    case err: java.sql.SQLIntegrityConstraintViolationException if err.getErrorCode == 1062 =>
-      complete(StatusCodes.Conflict ->
-        ErrorRepresentation(ErrorCodes.DuplicateEntry, s"Entry already exists"))
-  }
 
   val route: Route = pathPrefix("api" / "v1") {
     handleRejections(rejectionHandler) {
