@@ -4,15 +4,25 @@
   */
 package org.genivi.sota.core.rvi
 
-import org.genivi.sota.core.data.{Package, InstallRequest}
+import org.genivi.sota.core.data.{InstallRequest, Package}
 import org.genivi.sota.core.db.InstallRequests
+import org.genivi.sota.core.files.Types
 import org.joda.time.DateTime
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
 import slick.driver.MySQLDriver.api._
 
-class DeviceCommunication(db : Database, rviNode: RviInterface, logError: Throwable => Unit)
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
+
+object DeviceCommunication {
+  type ErrorLogger = (Throwable => Unit)
+}
+
+class DeviceCommunication(db : Database,
+                          rviNode: RviInterface,
+                          resolveFile: Types.Resolver,
+                          logError: DeviceCommunication.ErrorLogger)
                          (implicit ec: ExecutionContext) {
+
   private def notify(payload: (InstallRequest, Package)): Future[Try[InstallRequest]] = payload match {
     case (req, pack) => rviNode.notify(req.vin, pack)
         .map(_ => Success(req))

@@ -4,30 +4,27 @@
  */
 package org.genivi.sota.core.rvi
 
-import eu.timepit.refined.internal.Wrapper
-
 import akka.http.scaladsl.model.HttpResponse
+import akka.util.ByteString
 import com.github.nscala_time.time.Imports._
 import org.genivi.sota.core._
-import org.genivi.sota.core.data.{Vehicle, Package, InstallRequest, InstallCampaign}
+import org.genivi.sota.core.data.{InstallCampaign, InstallRequest, Package, Vehicle}
 import org.genivi.sota.core.db._
-import org.scalacheck._
-import org.scalacheck.Prop._
-import org.scalatest.BeforeAndAfterEach
+import org.scalatest._
 import org.scalatest.prop.PropertyChecks
-import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
-import scala.concurrent.{Await, Future}
 import slick.driver.MySQLDriver.api._
 
-class DeviceCommunicationSpec extends PropSpec
+import scala.concurrent.{Await, Future}
+
+class RunCampaignsSpec extends PropSpec
     with Matchers
     with PropertyChecks
     with BeforeAndAfterEach {
 
+  import org.genivi.sota.core.Generators._
   import org.scalacheck._
 
   import scala.concurrent.ExecutionContext.Implicits.global
-  import org.genivi.sota.core.Generators._
 
   val databaseName = "test-database"
   val db = Database.forConfig(databaseName)
@@ -123,12 +120,15 @@ class DeviceCommunicationSpec extends PropSpec
         this.synchronized(msgs += ((s,p)))
         Future.successful(HttpResponse())
       } else Future.failed[HttpResponse](new RviInterface.UnexpectedRviResponse(HttpResponse()))
+    def transferStart(transactionId: Long, destination: String, packageIdentifier: String, byteSize: Long, chunkSize: Long, checksum: String): Future[HttpResponse] = ???
+    def transferChunk(transactionId: Long, destination: String, index: Long, data: ByteString): Future[HttpResponse] = ???
+    def transferFinish(transactionId: Long, destination: String): Future[HttpResponse] = ???
   }
 
   property("a DeviceCommunication runs the current campaigns") {
     forAll(states) { state =>
       val rviNode = new RviMock
-      val devComm = new DeviceCommunication(db, rviNode, e => println(e) )
+      val devComm = new DeviceCommunication(db, rviNode, _ => ???, e => println(e) )
 
       val test = for {
         (pkg1, pkg2, rid1, _, rid3, _, rid5) <- db.run(persisted(state))
@@ -160,8 +160,7 @@ class DeviceCommunicationSpec extends PropSpec
     forAll(states) { state =>
       val rviNode = new RviMock({ case (s, p) => s != state.vin1.vin })
       val errors = scala.collection.mutable.Set[Throwable]()
-      val devComm = new DeviceCommunication(db, rviNode, e => { this.synchronized { errors += e } })
-
+      val devComm = new DeviceCommunication(db, rviNode, _ => ???, e => { this.synchronized { errors += e } })
 
       val test = for {
         (pkg1, pkg2, rid1, _, rid3, _, _) <- db.run(persisted(state))
