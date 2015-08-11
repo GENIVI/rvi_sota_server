@@ -10,7 +10,7 @@ require(['react', 'components/add-vin', 'components/create-filter', 'components/
       <div>
         <ul className="nav nav-pills">
           <li role="presentation">
-            <Link to="vins">Vins</Link>
+            <Link to="vins">Vehicles</Link>
           </li>
           <li role="presentation">
             <Link to="packages">Packages</Link>
@@ -37,7 +37,7 @@ require(['react', 'components/add-vin', 'components/create-filter', 'components/
   var routes = (
     <Route handler={App} path="/">
       <Route name="packages" handler={wrapComponent(PackagesComponent, {PackageStore:PackageStore})}/>
-      <Route name="vins" handler={wrapComponent(AddVin, {url:"/api/v1/vins"})}/>
+      <Route name="vins" handler={wrapComponent(AddVin, {url:"/api/v1/vehicles"})}/>
       <Route name="filters" handler={wrapComponent(CreateFilter, {url:"/api/v1/filters"})} />
     </Route>
   );

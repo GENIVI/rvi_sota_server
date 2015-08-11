@@ -10,5 +10,5 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 GET     /webjars/*file              controllers.WebJarAssets.at(file)
 
 POST    /api/v1/install_campaigns   org.genivi.webserver.controllers.Application.installCampaign
-POST    /api/v1/:path               org.genivi.webserver.controllers.Application.apiProxy(path: String)
-
+POST    /api/v1/*path               org.genivi.webserver.controllers.Application.apiProxy(path: String)
+PUT    /api/v1/*path               org.genivi.webserver.controllers.Application.apiProxy(path: String)

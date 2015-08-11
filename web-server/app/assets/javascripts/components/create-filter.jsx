@@ -11,7 +11,7 @@ define(['jquery', 'react', '../mixins/handle-fail', '../mixins/serialize-form'],
                 this.setState({postStatus: "Filter must validate"});
                 return;
             }
-            this.sendRequest(this.props.url, payload);
+            this.sendPostRequest(this.props.url, payload);
         },
         validate: function(name, expression) {
             if (name === '' || expression === '') {
