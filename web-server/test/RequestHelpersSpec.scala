@@ -1,3 +1,7 @@
+/**
+ * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * License: MPL-2.0
+ */
 import org.genivi.webserver.requesthelpers.{ErrorResponse, RightResponse, LeftResponse}
 import org.scalatestplus.play._
 import org.genivi.webserver.requesthelpers.RequestHelper._

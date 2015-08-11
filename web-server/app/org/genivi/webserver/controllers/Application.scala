@@ -6,19 +6,28 @@ package org.genivi.webserver.controllers
 
 import org.genivi.webserver.requesthelpers.{RightResponse, LeftResponse, ErrorResponse}
 import org.slf4j.LoggerFactory
-import play.api._
 import play.api.libs.iteratee.Enumerator
 import play.api.Play.current
-import play.api.libs.json.Json._
-
 import javax.inject.Inject
-import play.api.mvc._
+import jp.t2v.lab.play2.auth.{AuthElement, LoginLogout}
+import org.genivi.webserver.Authentication.{AccountManager, Role}
+import org.genivi.webserver.requesthelpers.RequestHelper._
+import play.api.libs.json.JsValue
+import scala.concurrent.{ExecutionContext}
+import play.api._
+import play.api.data._
+import play.api.data.Forms._
+import play.api.i18n.I18nSupport
+import play.api.libs.json.Json._
 import play.api.libs.ws._
+import play.api.mvc._
+import play.api.i18n.MessagesApi
+import views.html
+
 import scala.concurrent.Future
 
-import org.genivi.webserver.requesthelpers.RequestHelper._
-
-class Application @Inject() (ws: WSClient) extends Controller {
+class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val accountManager: AccountManager)
+  extends Controller with LoginLogout with AuthConfigImpl with I18nSupport with AuthElement {
 
   val coreHost = Play.current.configuration.getString("core.host").get
   val corePort = Play.current.configuration.getString("core.port").get
@@ -28,30 +37,31 @@ class Application @Inject() (ws: WSClient) extends Controller {
   val auditLogger = LoggerFactory.getLogger("audit")
   implicit val context = play.api.libs.concurrent.Execution.Implicits.defaultContext
 
-  def index: Action[AnyContent] = Action {
+  def index = StackAction(AuthorityKey -> Role.USER) { implicit request =>
     Ok(views.html.main())
   }
 
-  def reverseProxy(path: String) = Action.async(parse.raw) { request: Request[RawBuffer] =>
-    val user = "unknown"
+  def reverseProxyNoBody(path: String) = AsyncStack(AuthorityKey -> Role.USER) { implicit request =>
+    val user = loggedIn.name
     // Mitigation for C04 : Log transactions to and from SOTA Server
     auditLogger.info(s"Request: $request from user $user")
 
     val RequestResponse = for {
-      proxyResponseOne <- makeCoreRequest(request)
-      proxyResponseTwo <- makeResolverRequest(request)
+      proxyResponseOne <- makeRequestNoBody(RequestTarget.Core, request)
+      proxyResponseTwo <- makeRequestNoBody(RequestTarget.Resolver, request)
     } yield successfulResponse(proxyResponseOne, proxyResponseTwo)
     RequestResponse
   }
 
-  def coreProxy(path: String) = Action.async(parse.raw) { request: Request[RawBuffer] =>
-    val user = "unknown"
+  def reverseProxy(path: String) = AsyncStack(parse.json, AuthorityKey -> Role.USER) { implicit request =>
+    val user = loggedIn.name
     // Mitigation for C04 : Log transactions to and from SOTA Server
     auditLogger.info(s"Request: $request from user $user")
 
     val RequestResponse = for {
-      response <- makeCoreRequest(request)
-    } yield resultFromWsResponse(response)
+      proxyResponseOne <- makeRequestJson(RequestTarget.Core, request)
+      proxyResponseTwo <- makeRequestJson(RequestTarget.Resolver, request)
+    } yield successfulResponse(proxyResponseOne, proxyResponseTwo)
     RequestResponse
   }
 
@@ -61,13 +71,45 @@ class Application @Inject() (ws: WSClient) extends Controller {
     auditLogger.info(s"Request: $request from user $user")
 
     val RequestResponse = for {
-      response <- makeResolverRequest(request)
+      response <- makeRequestRaw(RequestTarget.Resolver, request)
     } yield resultFromWsResponse(response)
     RequestResponse
   }
 
-  def makeRequest(request: Request[RawBuffer], url: String): Future[WSResponse] = {
-    WS.url(url + request.path)
+  def coreProxy(path: String) = AsyncStack(parse.raw, AuthorityKey -> Role.USER) { implicit request =>
+    val user = "unknown"
+    // Mitigation for C04 : Log transactions to and from SOTA Server
+    auditLogger.info(s"Request: $request from user $user")
+
+    val RequestResponse = for {
+      response <- makeRequestRaw(RequestTarget.Core, request)
+    } yield resultFromWsResponse(response)
+    RequestResponse
+  }
+
+  def makeRequestNoBody(requestTarget: RequestTarget.RequestTarget,
+                      request: Request[_]): Future[WSResponse] = {
+    WS.url(getURL(requestTarget) + request.path)
+      .withFollowRedirects(false)
+      .withMethod(request.method)
+      .withHeaders(parseHeaders(request.headers).toSeq: _*)
+      .withQueryString(request.queryString.mapValues(_.head).toSeq: _*)
+      .execute
+  }
+
+  def makeRequestJson(requestTarget: RequestTarget.RequestTarget,
+                      request: Request[JsValue]): Future[WSResponse] = {
+    WS.url(getURL(requestTarget) + request.path)
+      .withFollowRedirects(false)
+      .withMethod(request.method)
+      .withHeaders(parseHeaders(request.headers).toSeq: _*)
+      .withQueryString(request.queryString.mapValues(_.head).toSeq: _*)
+      .withBody(request.body).execute
+  }
+
+  def makeRequestRaw(requestTarget: RequestTarget.RequestTarget,
+                     request: Request[RawBuffer]): Future[WSResponse] = {
+    WS.url(getURL(requestTarget) + request.path)
       .withFollowRedirects(false)
       .withMethod(request.method)
       .withHeaders(parseHeaders(request.headers).toSeq: _*)
@@ -75,12 +117,11 @@ class Application @Inject() (ws: WSClient) extends Controller {
       .withBody(request.body.asBytes().get).execute
   }
 
-  def makeCoreRequest(request: Request[RawBuffer]) = {
-    makeRequest(request, protocol + coreHost + ":" + corePort)
-  }
-
-  def makeResolverRequest(request: Request[RawBuffer]) = {
-    makeRequest(request, protocol + resolverHost + ":" + resolverPort)
+  def getURL(requestTarget: RequestTarget.RequestTarget) = {
+    requestTarget match {
+      case RequestTarget.Core => protocol + coreHost + ":" + corePort
+      case RequestTarget.Resolver => protocol + resolverHost + ":" + resolverPort
+    }
   }
 
   def parseHeaders(headers: Headers) = {
@@ -102,4 +143,34 @@ class Application @Inject() (ws: WSClient) extends Controller {
     val headers = response.allHeaders.mapValues(x => x.head)
     Result(header = ResponseHeader(status = response.status, headers = headers), body = Enumerator(response.bodyAsBytes))
   }
+
+  def resolveUser(id: Id)(implicit ctx: ExecutionContext): Future[Option[User]] = {
+    Future.successful(accountManager.findById(id))
+  }
+
+  val loginForm = Form {
+    mapping("email" -> email, "password" -> nonEmptyText)(accountManager.authenticate)(_.map(u => (u.email, "")))
+      .verifying("Invalid email or password", result => result.isDefined)
+  }
+
+  def login = Action { request =>
+    Ok(html.login(loginForm))
+  }
+
+  def logout = Action.async{ implicit request =>
+    gotoLogoutSucceeded
+  }
+
+  def authenticate = Action.async { implicit request =>
+    loginForm.bindFromRequest.fold(
+      formWithErrors => Future.successful(BadRequest(views.html.login(formWithErrors))),
+      user => gotoLoginSucceeded(user.get.email)
+    )
+  }
+
+  object RequestTarget extends Enumeration {
+    type RequestTarget = Value
+    val Core, Resolver = Value
+  }
+
 }

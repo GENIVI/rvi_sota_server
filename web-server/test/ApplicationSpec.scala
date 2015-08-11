@@ -1,14 +1,11 @@
-import org.scalatest._
-import play.api.test._
+/**
+ * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * License: MPL-2.0
+ */
 import play.api.test.Helpers._
 import org.scalatestplus.play._
 import play.api.libs.ws.WS
 
-/**
- * Add your spec here.
- * You can mock out a whole application including requests, plugins etc.
- * For more information, consult the wiki.
- */
 class ApplicationSpec extends PlaySpec with OneServerPerSuite {
 
   "send 404 on a bad request" in {
@@ -20,4 +17,5 @@ class ApplicationSpec extends PlaySpec with OneServerPerSuite {
     val response = await(WS.url(s"http://localhost:$port/").get())
     response.status mustBe (OK)
   }
+
 }

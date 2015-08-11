@@ -15,4 +15,9 @@ PUT     /api/v1/packages/*path      org.genivi.webserver.controllers.Application
 
 POST    /api/v1/*path               org.genivi.webserver.controllers.Application.reverseProxy(path: String)
 PUT     /api/v1/*path               org.genivi.webserver.controllers.Application.reverseProxy(path: String)
-GET     /api/v1/*path               org.genivi.webserver.controllers.Application.reverseProxy(path: String)
+GET     /api/v1/*path               org.genivi.webserver.controllers.Application.reverseProxyNoBody(path: String)
+
+GET     /login                      org.genivi.webserver.controllers.Application.login
+GET     /logout                     org.genivi.webserver.controllers.Application.logout
+POST    /authenticate               org.genivi.webserver.controllers.Application.authenticate
+
