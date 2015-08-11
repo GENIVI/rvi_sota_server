@@ -1,4 +1,4 @@
-CREATE TABLE Vin (
+CREATE TABLE Vehicle (
     vin varchar(64) NOT NULL, -- SRV-VIN-2 A VIN shall be identified by an 1-64 byte string
 
     PRIMARY KEY (vin)

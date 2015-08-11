@@ -4,17 +4,18 @@
  */
 package org.genivi.sota.resolver.db
 
-import org.genivi.sota.resolver.types.Vin
+import org.genivi.sota.refined.SlickRefined._
+import org.genivi.sota.resolver.types.Vehicle
 import scala.concurrent.ExecutionContext
 
-object Vins {
+object Vehicles {
 
   import slick.driver.MySQLDriver.api._
 
   // scalastyle:off
-  class VinTable(tag: Tag) extends Table[Vin](tag, "Vin") {
-    def vin = column[String]("vin")
-    def * = (vin) <> (Vin.apply, Vin.unapply)
+  class VinTable(tag: Tag) extends Table[Vehicle](tag, "Vehicle") {
+    def vin = column[Vehicle.IdentificationNumber]("vin")
+    def * = (vin) <> (Vehicle.apply, Vehicle.unapply)
     def pk = primaryKey("vin", vin)  // insertOrUpdate doesn't work if
                                      // we use O.PrimaryKey in the vin
                                      // column, see Slick issue #966.
@@ -23,9 +24,10 @@ object Vins {
 
   val vins = TableQuery[VinTable]
 
-  def add(vin: Vin.ValidVin)(implicit ec: ExecutionContext): DBIO[Vin] =
-    vins.insertOrUpdate(vin).map(_ => vin)
+  def add(vehicle: Vehicle)
+         (implicit ec: ExecutionContext): DBIO[Vehicle] =
+    vins.insertOrUpdate(vehicle).map(_ => vehicle)
 
-  def list: DBIO[Seq[Vin]] =
+  def list: DBIO[Seq[Vehicle]] =
     vins.result
 }
