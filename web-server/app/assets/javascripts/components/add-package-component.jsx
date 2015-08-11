@@ -23,7 +23,7 @@ define(['jquery', 'react', '../mixins/serialize-form', '../mixins/fluxbone', '..
           <form ref='form' onSubmit={this.handleSubmit} encType="multipart/form-data">
             <div className="form-group">
               <label htmlFor="name">Package Name</label>
-              <input type="text" className="form-control" name="name" ref="name" placeholder="PACKAGE NAME"/>
+              <input type="text" className="form-control" name="name" ref="name" placeholder="Package Name"/>
             </div>
             <div className="form-group">
               <label htmlFor="version">Version</label>

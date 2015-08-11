@@ -6,7 +6,7 @@ import org.genivi.webserver.requesthelpers.{ErrorResponse, RightResponse, LeftRe
 import org.scalatestplus.play._
 import org.genivi.webserver.requesthelpers.RequestHelper._
 
-class RequestHelpersSpec extends PlaySpec {
+class RequestHelpersUnitTests extends PlaySpec {
 
   "chooseResponse" must {
     "Pick the left one if the other is 404" in {
