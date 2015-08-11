@@ -6,7 +6,7 @@ package org.genivi.sota.rest
 
 import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import akka.http.scaladsl.model.Uri._
-import akka.http.scaladsl.server.PathMatcher.Matched
+import akka.http.scaladsl.server.PathMatcher.{Matched, Unmatched}
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.unmarshalling.FromRequestUnmarshaller
 import eu.timepit.refined.boolean.And
@@ -65,18 +65,16 @@ object Validation extends Directives {
       }
     }
 
-  def refined[T, P](wrapped: PathMatcher1[T])
-                   (implicit p: Predicate[P, T], ev: ClassTag[T]): Directive1[T Refined P] = {
+  def refined[T, P](pm: PathMatcher1[T])(implicit p: Predicate[P, T], ev: ClassTag[T]): Directive1[T Refined P] =
     extractRequestContext.flatMap[Tuple1[T Refined P]] { ctx =>
-      val pathMatcher = PathMatchers.Slash ~ wrapped ~ PathEnd
-      pathMatcher(ctx.unmatchedPath) match {
-        case Matched(Path.Empty, Tuple1(x: T)) =>
-          refineV[P](x).fold( e => reject(ValidationRejection(e)), a => provide(a))
-        case _                                => reject
+      pm(ctx.unmatchedPath) match {
+        case Matched(rest, Tuple1(t: T)) => refineV[P](t) match {
+          case Left(err)      => reject(ValidationRejection(err))
+          case Right(refined) => provide(refined) & mapRequestContext(_ withUnmatchedPath rest)
+        }
+        case Unmatched                   => reject
       }
     }
-
-  }
 
   def vpost[A](k: A @@ Valid => ToResponseMarshallable)
     (implicit um: FromRequestUnmarshaller[A], p: Predicate[Valid, A]): Route =

@@ -17,7 +17,8 @@ class PackageResourceSpec extends ResourcePropSpec {
   import org.genivi.sota.resolver.types.Package._
   import org.scalacheck._
 
-  val VersionGen : Gen[Version] = Gen.listOfN(3, Gen.choose(0, 999)).map( _.mkString(".")).map( Wrapper.refinedWrapper.wrap(_) )
+  val VersionGen: Gen[Version] =
+    Gen.listOfN(3, Gen.choose(0, 999)).map( _.mkString(".")).map( Wrapper.refinedWrapper.wrap(_) )
 
   val PackageNameGen : Gen[PackageName] = Gen.identifier.map( Wrapper.refinedWrapper.wrap(_) )
 
@@ -30,9 +31,9 @@ class PackageResourceSpec extends ResourcePropSpec {
 
   implicit lazy val arbitraryPackage = Arbitrary( PackageGen )
 
-  property("create a new resource on POST request") {
+  property("create a new resource on PUT request") {
     forAll { (p : Package) =>
-      Post( PackagesUri, p ) ~> route ~> check {
+      Put( PackagesUri(p.name.get, p.version.get), Metadata(p.description, p.vendor) ) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
     }
@@ -40,38 +41,44 @@ class PackageResourceSpec extends ResourcePropSpec {
 
   property("not accept empty package names") {
     forAll { (p: Package) =>
-      Post( PackagesUri, p.copy( name = Wrapper.refinedWrapper.wrap( "" ) )) ~> route ~> check {
-        status shouldBe StatusCodes.BadRequest
-        val error = responseAs[ErrorRepresentation]
-        error.code shouldBe ErrorCodes.InvalidEntity
-        error.description shouldBe "Predicate failed: Package name required."
+      Put( PackagesUri("", p.version.get), Metadata(p.description, p.vendor) ) ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
       }
     }
   }
 
   property("not accept empty package version") {
     forAll { (p: Package) =>
-      Post( PackagesUri, p.copy( version = Wrapper.refinedWrapper.wrap("") )) ~> route ~> check {
+      Put( PackagesUri(p.name.get, ""), Metadata(p.description, p.vendor) ) ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
+      }
+    }
+
+  }
+
+  property("not accept bad package versions") {
+    forAll { (p: Package, version: String) =>
+      Put( PackagesUri(p.name.get, version + ".0"), Metadata(p.description, p.vendor) ) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         val error = responseAs[ErrorRepresentation]
         error.code shouldBe ErrorCodes.InvalidEntity
         error.description shouldBe "Predicate failed: Invalid version format."
       }
     }
-    
+
   }
 
-  property("not accept duplicates (name and version have to unique)") {
-    forAll{ (p: Package) => 
-      Post( PackagesUri, p ) ~> route ~> check {
+  property("PUTting the same package twice should update it") {
+    forAll{ (p: Package) =>
+      Put( PackagesUri(p.name.get, p.version.get), Metadata(p.description, p.vendor) ) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
 
-      Post( PackagesUri, p ) ~> route ~> check {
-        status shouldBe StatusCodes.Conflict
+      Put( PackagesUri(p.name.get, p.version.get), Metadata(p.description, p.vendor) ) ~> route ~> check {
+        status shouldBe StatusCodes.OK
       }
     }
-    
+
   }
 
 }

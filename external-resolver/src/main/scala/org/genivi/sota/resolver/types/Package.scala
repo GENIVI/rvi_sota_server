@@ -14,7 +14,7 @@ case class Package (
   name: Package.PackageName,
   version: Package.Version,
   description: Option[String],
-  vendor: Option[String]
+  vendor     : Option[String]
 )
 
 object Package {
@@ -22,14 +22,21 @@ object Package {
   import eu.timepit.refined._
   import spray.json.DefaultJsonProtocol._
 
+  case class Metadata(
+    description: Option[String],
+    vendor     : Option[String]
+  )
+
   trait Required
   type PackageName = String Refined Required
-  implicit val required : Predicate[Required, String] = Predicate.instance( _.nonEmpty, _ => "Package name required" )
+  implicit val required: Predicate[Required, String]
+    = Predicate.instance( _.nonEmpty, _ => "Package name required" )
 
   trait ValidVersionFormat
-  implicit val validVersion : Predicate[ValidVersionFormat, String] = Predicate.instance( _.matches( """^\d+\.\d+\.\d+$""" ), _ => "Invalid version format")
-
   type Version = String Refined ValidVersionFormat
+  implicit val validVersion: Predicate[ValidVersionFormat, String] =
+    Predicate.instance( _.matches( """^\d+\.\d+\.\d+$""" ), _ => "Invalid version format")
+
 
   implicit val packageIdFormat = new JsonFormat[PackageId] {
     override def read(json: JsValue): PackageId = json match {
@@ -39,6 +46,8 @@ object Package {
 
     override def write(obj: PackageId): JsValue = JsNumber( obj.id )
   }
+
+  implicit val packageMetadataFormat = jsonFormat2(Metadata.apply)
 
   implicit val packageFormat = new RootJsonFormat[Package] {
 
