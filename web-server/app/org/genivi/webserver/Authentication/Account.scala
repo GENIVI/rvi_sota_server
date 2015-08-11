@@ -5,7 +5,6 @@
 package org.genivi.webserver.Authentication
 
 import java.io.FileNotFoundException
-
 import org.mindrot.jbcrypt.BCrypt
 import play.api.Play
 import play.api.libs.json._
