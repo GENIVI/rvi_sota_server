@@ -33,7 +33,7 @@ class Routing(db: Database)
   import spray.json.DefaultJsonProtocol._
   import org.genivi.sota.rest.Handlers._
 
-  def vinsRoute: Route =
+  def vehiclesRoute: Route =
     pathPrefix("vehicles") {
       get {
         complete(db.run(Vehicles.list))
@@ -88,7 +88,7 @@ class Routing(db: Database)
   val route: Route = pathPrefix("api" / "v1") {
     handleRejections(rejectionHandler) {
       handleExceptions(exceptionHandler) {
-        vinsRoute ~ packagesRoute ~ resolveRoute ~ filterRoute ~ validateRoute
+        vehiclesRoute ~ packagesRoute ~ resolveRoute ~ filterRoute ~ validateRoute
       }
     }
   }
