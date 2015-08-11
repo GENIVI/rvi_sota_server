@@ -15,10 +15,14 @@ class VinResourcePropSpec extends ResourcePropSpec {
 
   import org.scalacheck._
 
-  val VehicleGenerator: Gen[Vehicle] = Gen.listOfN(17, Gen.alphaNumChar).map( xs => Vehicle(Wrapper.refinedWrapper.wrap(xs.mkString)) )
+  val vehicleGen: Gen[Vehicle] =
+    Gen.listOfN(17, Gen.alphaNumChar).map( xs => Vehicle( Wrapper.refinedWrapper.wrap(xs.mkString) ) )
+
+  implicit val arbitraryVehicle: Arbitrary[Vehicle] =
+    Arbitrary(vehicleGen)
 
   property("Vin resource add") {
-    forAll(VehicleGenerator) { vehicle =>
+    forAll { vehicle: Vehicle =>
       Put( VinsUri(vehicle.vin.get) ) ~> route ~> check {
         status shouldBe StatusCodes.NoContent
       }
