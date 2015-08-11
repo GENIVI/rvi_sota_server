@@ -34,9 +34,8 @@ class Application @Inject() (ws: WSClient) extends Controller {
 
   def apiProxy(path: String): Action[JsValue] = Action.async(parse.json) { request =>
     val RequestResponse: Future[Result] = for {
-      responseOne <- ws.url(protocol + coreHost + ":" + corePort + request.path).post(request.body)
-      responseTwo <- ws.url(protocol + resolverHost + ":" + resolverPort + request.path)
-        .post(request.body)
+      responseOne <- makeRequest(request.method, protocol + coreHost + ":" + corePort + request.path, request.body)
+      responseTwo <- makeRequest(request.method, protocol + resolverHost + ":" + resolverPort + request.path, request.body)
     } yield {
         chooseResponse(responseOne.status, responseTwo.status) match {
           case LeftResponse() => resultFromWsResponse(responseOne)
@@ -45,6 +44,10 @@ class Application @Inject() (ws: WSClient) extends Controller {
         }
       }
     RequestResponse
+  }
+
+  def makeRequest(methodName: String, path: String, body: JsValue): Future[WSResponse] = {
+    ws.url(path).withMethod(methodName).withBody(body).execute
   }
 
   def installCampaign: Action[JsValue] = Action.async(parse.json) { request =>
