@@ -64,6 +64,17 @@ class WebService(db : Database)(implicit system: ActorSystem, mat: ActorMaterial
           complete(db.run( Vehicles.create(Vehicle(vin)) ).map(_ => NoContent))
         }
       } ~
+      path("vehicles") {
+        get {
+          parameters('regex.?) { (regex) =>
+            val query = regex match {
+              case Some(r) => Vehicles.searchByRegex(r)
+              case _ => Vehicles.list()
+            }
+            complete(db.run(query))
+          }
+        }
+      } ~
       path("packages") {
         get {
           complete {

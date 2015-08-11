@@ -27,4 +27,8 @@ object Vehicles {
 
   def create(vehicle: Vehicle)(implicit ec: ExecutionContext) : DBIO[Vehicle.IdentificationNumber] =
     vins.insertOrUpdate(vehicle).map( _ => vehicle.vin )
+
+  val byRegex = SimpleBinaryOperator[Boolean]("REGEXP")
+
+  def searchByRegex(reg:String) : DBIO[Seq[Vehicle]] = vins.filter(vins => byRegex(vins.vin, reg)).result
 }
