@@ -4,41 +4,50 @@
  */
 package org.genivi.sota.resolver.test
 
+import akka.http.scaladsl.model.Uri
+import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import com.zaxxer.hikari.util.DriverDataSource
-import org.scalatest.BeforeAndAfterAll
+import org.flywaydb.core.Flyway
+import org.genivi.sota.resolver.db.{Vehicles, Packages}
+import org.genivi.sota.resolver.types.{Vehicle$, Package}
 import org.scalatest.prop.PropertyChecks
-import org.scalatest.{WordSpec, PropSpec, Matchers}
+import org.scalatest.{BeforeAndAfterAll, Suite, WordSpec, PropSpec, Matchers}
+import slick.jdbc.JdbcBackend.Database
 
-trait ResourceSpec extends Matchers with ScalatestRouteTest { self: org.scalatest.Suite =>
 
-  import akka.http.scaladsl.model.Uri
-  import akka.http.scaladsl.model.Uri.Path
-  import org.genivi.sota.resolver.db.{Vehicles, Packages}
-  import org.genivi.sota.resolver.types.{Vehicle$, Package}
-  import slick.jdbc.JdbcBackend.Database
+trait ResourceSpec extends Matchers
+    with ScalatestRouteTest
+    with BeforeAndAfterAll { self: Suite =>
 
   // Paths
-
-  def resourceUri(pathSuffixes: String*): Uri = {
-    Uri.Empty.withPath(pathSuffixes.foldLeft(BasePath)((ih, p) => ih / p))
-  }
+  def resourceUri(pathSuffixes: String*): Uri =
+    Uri.Empty.withPath(pathSuffixes.foldLeft(BasePath)(_/_))
 
   val BasePath     = Path("/api") / "v1"
-  val VinsUri      = (vin: String) => resourceUri("vehicles", vin)
+  val VehiclesUri  = (vin: String) => resourceUri("vehicles", vin)
   val PackagesUri  = (name: String, version: String) => resourceUri("packages", name, version)
   val ResolveUri   = (i: Long) => resourceUri("resolve", i.toString)
   val FiltersUri   = resourceUri("filters")
   val ValidateUri  = (s: String) => resourceUri("validate", s)
 
   // Database
-  val db = Database.forConfig("test-database")
+  val name = "test-database"
+  val db = Database.forConfig(name)
 
   override def beforeAll() = {
-    TestDatabase.reset
+    val dbConfig = system.settings.config.getConfig(name)
+    val url      = dbConfig.getString("url")
+    val user     = dbConfig.getConfig("properties").getString("user")
+    val passwd   = dbConfig.getConfig("properties").getString("password")
+
+    val flyway = new Flyway
+    flyway.setDataSource(url, user, passwd)
+    flyway.setLocations("classpath:db.migration")
+    flyway.clean()
+    flyway.migrate()
   }
 
-  override def afterAll() {
+  override def afterAll() = {
     system.shutdown()
     db.close()
   }
