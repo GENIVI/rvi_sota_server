@@ -6,19 +6,25 @@ package org.genivi.sota.rest
 
 import org.genivi.sota.refined.SprayJsonRefined
 
-object RejectionHandlers {
+object Handlers {
   import akka.http.scaladsl.model._
   import akka.http.scaladsl.server._
   import akka.http.scaladsl.server.Directives._
   import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
   import SprayJsonRefined.RefinmentError
 
-  implicit def rejectionHandler : RejectionHandler = RejectionHandler.newBuilder().handle {
+  def rejectionHandler : RejectionHandler = RejectionHandler.newBuilder().handle {
     case ValidationRejection(msg, None) =>
       complete( StatusCodes.BadRequest -> ErrorRepresentation(ErrorCodes.InvalidEntity, msg) )
   }.handle{
     case MalformedRequestContentRejection(_, Some(RefinmentError(_, msg))) =>
       complete(StatusCodes.BadRequest -> ErrorRepresentation(ErrorCodes.InvalidEntity, msg))
   }.result().withFallback(RejectionHandler.default)
+
+  def exceptionHandler: ExceptionHandler = ExceptionHandler {
+    case err: java.sql.SQLIntegrityConstraintViolationException if err.getErrorCode == 1062 =>
+      complete(StatusCodes.Conflict ->
+        ErrorRepresentation(ErrorCodes.DuplicateEntry, s"Entry already exists"))
+  }
 
 }
