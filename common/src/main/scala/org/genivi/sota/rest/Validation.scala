@@ -4,15 +4,11 @@
  */
 package org.genivi.sota.rest
 
-import akka.http.scaladsl.marshalling.ToResponseMarshallable
-import akka.http.scaladsl.model.Uri._
 import akka.http.scaladsl.server.PathMatcher.{Matched, Unmatched}
 import akka.http.scaladsl.server._
-import akka.http.scaladsl.unmarshalling.FromRequestUnmarshaller
 import eu.timepit.refined.boolean.And
-import eu.timepit.refined.{Refined, Predicate, refineT, refineV}
+import eu.timepit.refined.{Refined, Predicate, refineV}
 import scala.reflect.ClassTag
-import shapeless.tag.@@
 
 
 final class RefinedMatcher[P] {
@@ -51,44 +47,5 @@ object Validation {
       override val isConstant: Boolean = pa.isConstant && pb.isConstant
     }
 
-  trait Valid
-
-  def validatedPost2[A, B](implicit um: FromRequestUnmarshaller[A], p: Predicate[B, A]): Directive1[A @@ B] = {
-    entity[A](um).flatMap { a: A =>
-      refineT[B](a) match {
-        case Left(e)  => reject(ValidationRejection(e))
-        case Right(b) => provide(b)
-      }
-    }
-  }
-
-  def validatedPost[A](implicit um: FromRequestUnmarshaller[A], p: Predicate[Valid, A]): Directive1[A @@ Valid] =
-    validatedPost2[A, Valid]
-
-  def taggedSegment[P, A](parser: String => Either[String, A])(implicit p: Predicate[P, A]): Directive1[A @@ P] =
-    extractRequestContext.flatMap[Tuple1[A @@ P]] { ctx =>
-      val pathMatcher = PathMatchers.Slash ~ Segment ~ PathEnd
-      pathMatcher(ctx.unmatchedPath) match {
-        case Matched(Path.Empty, Tuple1(str)) => parser(str) match {
-          case Left(e)  => reject(ValidationRejection(e))
-          case Right(a) => refineT[P](a) match {
-            case Left(e)  => reject(ValidationRejection(e))
-            case Right(b) => provide(b)
-          }
-        }
-        case _                                => reject
-      }
-    }
-
-
   def refined[P] = new RefinedMatcher[P]
-
-
-  def vpost[A](k: A @@ Valid => ToResponseMarshallable)
-    (implicit um: FromRequestUnmarshaller[A], p: Predicate[Valid, A]): Route =
-      (post & validatedPost[A]) { v => complete(k(v)) }
-
-  def vput[A](parser: String => Either[String, A])(k: A @@ Valid => ToResponseMarshallable)
-    (implicit um: FromRequestUnmarshaller[A], p: Predicate[Valid, A]): Route =
-      (put & taggedSegment[Valid, A](parser)) { v => complete(k(v)) }
 }

@@ -1,6 +1,7 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
+import eu.timepit.refined.Refined
 import org.genivi.sota.resolver.types.{Filter, FilterId}
 import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
 
@@ -11,7 +12,7 @@ class ValidateResourceSpec extends ResourceWordSpec {
 
   "Validate resource" should {
 
-    val filter = Filter(None, "myfilter", s"""vin_matches "SAJNX5745SC??????"""")
+    val filter = Filter(None, Refined("myfilter"), Refined(s"""vin_matches "SAJNX5745SC??????""""))
 
     "accept valid filters" in {
       Post(ValidateUri("filter"), filter) ~> route ~> check {
@@ -20,14 +21,14 @@ class ValidateResourceSpec extends ResourceWordSpec {
     }
 
     "reject filters with empty names" in {
-      Post(ValidateUri("filter"), filter.copy(name = "")) ~> route ~> check {
+      Post(ValidateUri("filter"), filter.copy(name = Refined(""))) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
     "reject filters with bad filter expressions" in {
-      Post(ValidateUri("filter"), filter.copy(expression = filter.expression + " AND ?")) ~> route ~> check {
+      Post(ValidateUri("filter"), filter.copy(expression = Refined(filter.expression + " AND ?"))) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
