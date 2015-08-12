@@ -1,6 +1,7 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
+import eu.timepit.refined.Refined
 import org.genivi.sota.resolver.types.{Filter, FilterId}
 import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
 
@@ -11,7 +12,7 @@ class FiltersResourceSpec extends ResourceWordSpec {
 
   "Filters resource" should {
 
-    val filter = Filter(None, "myfilter", s"""vin_matches "SAJNX5745SC??????"""")
+    val filter = Filter(None, Refined("myfilter"), Refined(s"""vin_matches "SAJNX5745SC??????""""))
 
     "create a new resource on POST request" in {
       Post(FiltersUri, filter) ~> route ~> check {
@@ -20,20 +21,21 @@ class FiltersResourceSpec extends ResourceWordSpec {
     }
 
     "not accept empty filter names" in {
-      Post(FiltersUri, Filter(None, "", s"""vin_matches "SAJNX5745SC??????"""")) ~> route ~> check {
+      Post(FiltersUri, Filter(None, Refined(""), Refined(s"""vin_matches "SAJNX5745SC??????""""))) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
     "not accept grammatically wrong expressions" in {
-      Post(FiltersUri, Filter(None, "myfilter", s"""vin_matches "SAJNX5745SC??????" AND""")) ~> route ~> check {
-        status shouldBe StatusCodes.BadRequest
-        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
-      }
+      Post(FiltersUri,
+        Filter(None, Refined("myfilter"), Refined(s"""vin_matches "SAJNX5745SC??????" AND"""))) ~> route ~> check {
+          status shouldBe StatusCodes.BadRequest
+          responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
+        }
     }
 
-    val filter2 = Filter(None, "myfilter2", s"""vin_matches "TAJNX5745SC??????"""")
+    val filter2 = Filter(None, Refined("myfilter2"), Refined(s"""vin_matches "TAJNX5745SC??????""""))
 
     "list available filters on a GET request" in {
       Post(FiltersUri, filter2) ~> route ~> check {

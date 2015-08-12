@@ -70,12 +70,12 @@ class Routing(db: Database)
       get {
         complete(db.run(Filters.list))
       } ~
-      vpost[Filter] { filter => db.run(Filters.add(filter)) }
+      (post & entity(as[Filter])) { filter => complete(db.run(Filters.add(filter))) }
     }
 
   def validateRoute: Route =
     pathPrefix("validate") {
-      path("filter") (vpost[Filter] (const("OK")))
+      path("filter") ((post & entity(as[Filter])) (const(complete("OK"))))
     }
 
   val route: Route = pathPrefix("api" / "v1") {
