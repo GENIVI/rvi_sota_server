@@ -15,7 +15,22 @@ import scala.reflect.ClassTag
 import shapeless.tag.@@
 
 
-object Validation extends Directives {
+final class RefinedMatcher[P] {
+  import Directives._
+  def apply[T]( pm: PathMatcher1[T] )(implicit p: Predicate[P, T], ev: ClassTag[T]) : Directive1[T Refined P] =
+    extractRequestContext.flatMap[Tuple1[T Refined P]] { ctx =>
+      pm(ctx.unmatchedPath) match {
+        case Matched(rest, Tuple1(t: T)) => refineV[P](t) match {
+          case Left(err)      => reject(ValidationRejection(err))
+          case Right(refined) => provide(refined) & mapRequestContext(_ withUnmatchedPath rest)
+        }
+        case Unmatched                   => reject
+      }
+    }
+}
+
+object Validation {
+  import Directives._
 
   implicit def andPredicate[A, B, T](implicit pa: Predicate[A, T], pb: Predicate[B, T]): Predicate[A And B, T] =
     new Predicate[A And B, T] {
@@ -65,16 +80,9 @@ object Validation extends Directives {
       }
     }
 
-  def refined[T, P](pm: PathMatcher1[T])(implicit p: Predicate[P, T], ev: ClassTag[T]): Directive1[T Refined P] =
-    extractRequestContext.flatMap[Tuple1[T Refined P]] { ctx =>
-      pm(ctx.unmatchedPath) match {
-        case Matched(rest, Tuple1(t: T)) => refineV[P](t) match {
-          case Left(err)      => reject(ValidationRejection(err))
-          case Right(refined) => provide(refined) & mapRequestContext(_ withUnmatchedPath rest)
-        }
-        case Unmatched                   => reject
-      }
-    }
+
+  def refined[P] = new RefinedMatcher[P]
+
 
   def vpost[A](k: A @@ Valid => ToResponseMarshallable)
     (implicit um: FromRequestUnmarshaller[A], p: Predicate[Valid, A]): Route =

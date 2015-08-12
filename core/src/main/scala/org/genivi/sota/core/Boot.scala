@@ -60,7 +60,7 @@ class WebService(db : Database)(implicit system: ActorSystem, mat: ActorMaterial
         }
       } ~
       pathPrefix("vehicles") {
-        (put & refined[String, Vehicle.Vin](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.PathEnd)) { vin =>
+        (put & refined[Vehicle.Vin](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.PathEnd)) { vin =>
           complete(db.run( Vehicles.create(Vehicle(vin)) ).map(_ => NoContent))
         }
       } ~
