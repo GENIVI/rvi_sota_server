@@ -46,7 +46,7 @@ object SotaBuild extends Build {
 
   lazy val common = Project(id = "common", base = file("common"))
     .settings(basicSettings ++ compilerSettings)
-    .settings( libraryDependencies ++= Dependencies.Rest :+ Dependencies.Refined )
+    .settings( libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Refined )
 
   lazy val externalResolver = Project(id = "resolver", base = file("external-resolver"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
@@ -62,7 +62,7 @@ object SotaBuild extends Build {
 
   lazy val core = Project(id = "core", base = file("core"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
-      libraryDependencies ++= Dependencies.Rest :+ Dependencies.NscalaTime :+ Dependencies.Scalaz,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.NscalaTime :+ Dependencies.Scalaz,
       dockerExposedPorts := Seq(8080),
       flywayUrl := sys.env.get("CORE_DB_URL").orElse( sys.props.get("core.db.url") ).getOrElse("jdbc:mysql://localhost:3306/sota_core"),
       flywayUser := sys.env.get("CORE_DB_USER").orElse( sys.props.get("core.db.user") ).getOrElse("sota"),
@@ -105,6 +105,8 @@ object Dependencies {
 
   val AkkaVersion = "2.3.12"
 
+  val CirceVersion = "0.1.1"
+
   lazy val Akka = Seq(
     "com.typesafe.akka" % "akka-http-core-experimental_2.11" % AkkaHttpVersion,
     "com.typesafe.akka" % "akka-http-experimental_2.11" % AkkaHttpVersion,
@@ -112,6 +114,12 @@ object Dependencies {
     "com.typesafe.akka" %% "akka-http-testkit-experimental" % AkkaHttpVersion % Test,
     "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion,
     "ch.qos.logback" % "logback-classic" % "1.0.13"
+  )
+
+  lazy val Circe = Seq(
+    "io.circe" %% "circe-core" % CirceVersion,
+    "io.circe" %% "circe-generic" % CirceVersion,
+    "io.circe" %% "circe-jawn" % CirceVersion
   )
 
   lazy val Refined = "eu.timepit" %% "refined" % "0.2.0"
