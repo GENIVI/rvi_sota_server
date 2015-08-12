@@ -10,65 +10,109 @@ import eu.timepit.refined.Refined
 import eu.timepit.refined.internal.Wrapper
 import org.genivi.sota.resolver.types.Vehicle
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
+import org.scalacheck._
 
-class VinResourcePropSpec extends ResourcePropSpec {
 
-  import org.scalacheck._
+object ArbitraryVehicle {
 
-  val vehicleGen: Gen[Vehicle] =
-    Gen.listOfN(17, Gen.alphaNumChar).map( xs => Vehicle( Wrapper.refinedWrapper.wrap(xs.mkString) ) )
+  val genVehicle: Gen[Vehicle] =
+    Gen.listOfN(17, Gen.alphaNumChar).
+      map(xs => Vehicle(Wrapper.refinedWrapper.wrap(xs.mkString)))
 
-  implicit val arbitraryVehicle: Arbitrary[Vehicle] =
-    Arbitrary(vehicleGen)
+  implicit lazy val arbVehicle: Arbitrary[Vehicle] =
+    Arbitrary(genVehicle)
 
-  property("Vin resource add") {
+  val genTooLongVin: Gen[String] = for {
+    n   <- Gen.choose(18, 100)
+    vin <- Gen.listOfN(n, Gen.alphaNumChar)
+  } yield vin.mkString
+
+  val genTooShortVin: Gen[String] = for {
+    n   <- Gen.choose(1, 16)
+    vin <- Gen.listOfN(n, Gen.alphaNumChar)
+  } yield vin.mkString
+
+  val genNotAlphaNumVin: Gen[String] =
+    Gen.listOfN(17, Arbitrary.arbitrary[Char]).
+      suchThat(_.exists(c => !(c.isLetter || c.isDigit))).flatMap(_.mkString)
+
+  val genInvalidVehicle: Gen[Vehicle] =
+    Gen.oneOf(genTooLongVin, genTooShortVin, genNotAlphaNumVin).
+      map(x => Vehicle(Wrapper.refinedWrapper.wrap(x)))
+}
+
+class VehiclesResourcePropSpec extends ResourcePropSpec {
+
+  import ArbitraryVehicle.{arbVehicle, genInvalidVehicle}
+
+  property("Vehicles resource should create new resource on PUT request") {
     forAll { vehicle: Vehicle =>
-      Put( VinsUri(vehicle.vin.get) ) ~> route ~> check {
+      Put(VehiclesUri(vehicle.vin.get)) ~> route ~> check {
         status shouldBe StatusCodes.NoContent
       }
     }
   }
+
+  property("Invalid vehicles are rejected") {
+    forAll(genInvalidVehicle) { vehicle: Vehicle =>
+      Put(VehiclesUri(vehicle.vin.get)) ~> route ~> check {
+        status shouldBe StatusCodes.BadRequest
+      }
+    }
+  }
+
+  property("PUTting the same vin twice updates it") {
+    forAll { vehicle: Vehicle  =>
+      Put(VehiclesUri(vehicle.vin.get)) ~> route ~> check {
+        status shouldBe StatusCodes.NoContent
+      }
+      Put(VehiclesUri(vehicle.vin.get)) ~> route ~> check {
+        status shouldBe StatusCodes.NoContent
+      }
+    }
+  }
+
 }
 
-class VinResourceWordSpec extends ResourceWordSpec {
+class VehiclesResourceWordSpec extends ResourceWordSpec {
 
   "Vin resource" should {
 
     "create a new resource on PUT request" in {
-      Put( VinsUri("VINOOLAM0FAU2DEEP") ) ~> route ~> check {
+      Put( VehiclesUri("VINOOLAM0FAU2DEEP") ) ~> route ~> check {
         status shouldBe StatusCodes.NoContent
       }
     }
 
     "not accept too long Vins" in {
-      Put( VinsUri("VINOOLAM0FAU2DEEP1") ) ~> route ~> check {
+      Put( VehiclesUri("VINOOLAM0FAU2DEEP1") ) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
     "not accept too short Vins" in {
-      Put( VinsUri("VINOOLAM0FAU2DEE") ) ~> route ~> check {
+      Put( VehiclesUri("VINOOLAM0FAU2DEE") ) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
     "not accept Vins which aren't alpha num" in {
-      Put( VinsUri("VINOOLAM0FAU2DEE!") ) ~> route ~> check {
+      Put( VehiclesUri("VINOOLAM0FAU2DEE!") ) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
     "allow duplicate entries" in {
-      Put( VinsUri("VINOOLAM0FAU2DEEP") ) ~> route ~> check {
+      Put( VehiclesUri("VINOOLAM0FAU2DEEP") ) ~> route ~> check {
         status shouldBe StatusCodes.NoContent
       }
     }
 
     "list all Vins on a GET request" in {
-      Get(VinsUri("")) ~> route ~> check {
+      Get(VehiclesUri("")) ~> route ~> check {
         import spray.json.DefaultJsonProtocol._
         responseAs[Seq[Vehicle]] shouldBe List(Vehicle(Refined("VINOOLAM0FAU2DEEP")))
       }
