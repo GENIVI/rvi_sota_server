@@ -18,9 +18,9 @@ import spray.json._
 import DefaultJsonProtocol._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 
-class Resolver(host: String, port: Int)(implicit system : ActorSystem,
-                                        mat: ActorMaterializer,
-                                        exec: ExecutionContext) {
+class DependencyResolver(host: String, port: Int)(implicit system : ActorSystem,
+                                                  mat: ActorMaterializer,
+                                                  exec: ExecutionContext) {
   val uri: Uri = Uri().withScheme("http").withAuthority(host, port)
 
   import org.genivi.sota.refined.SprayJsonRefined._

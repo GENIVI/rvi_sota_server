@@ -4,29 +4,32 @@
  */
 package org.genivi.sota.core
 
-import akka.actor.{ActorLogging, ActorSystem}
-import akka.event.{BusLogging, Logging, LoggingAdapter}
+import java.nio.file.Paths
+
+import akka.actor.ActorSystem
+import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.server.PathMatchers
-import akka.http.scaladsl.server.{Directives, ExceptionHandler}
+import akka.http.scaladsl.server.{Directives, ExceptionHandler, PathMatchers}
 import akka.stream.ActorMaterializer
-import data._
+import org.genivi.sota.core.data._
 import org.genivi.sota.core.db._
+import org.genivi.sota.core.files.Types.ValidExtension
 import org.genivi.sota.core.rvi._
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
+import org.genivi.sota.rest.Validation._
 import slick.driver.MySQLDriver.api.Database
 import spray.json.{JsObject, JsString}
-import org.genivi.sota.rest.Validation._
+
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 class WebService(db : Database)(implicit system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext) extends Directives {
 
   val resolverHost = system.settings.config.getString("resolver.host")
   val resolverPort = system.settings.config.getInt("resolver.port")
-  val resolver = new Resolver(resolverHost, resolverPort)
+  val resolver = new DependencyResolver(resolverHost, resolverPort)
   val log = Logging(system, "webservice")
 
   val exceptionHandler = ExceptionHandler {
@@ -90,6 +93,9 @@ class WebService(db : Database)(implicit system: ActorSystem, mat: ActorMaterial
   }
 }
 
+import eu.timepit.refined._
+import eu.timepit.refined.string._
+
 object Boot extends App with DatabaseConfig {
   implicit val system = ActorSystem("sota-core-service")
   implicit val materializer = ActorMaterializer()
@@ -99,9 +105,14 @@ object Boot extends App with DatabaseConfig {
 
   val rviHost = config.getString("rvi.host")
   val rviPort = config.getInt("rvi.port")
-
   val rviInterface = new JsonRpcRviInterface(rviHost, rviPort)
-  val deviceCommunication = new DeviceCommunication(db, rviInterface, e => log.error(e, e.getMessage()))
+  val fileResolver = (for {
+    path <- refineV[Uri](config.getString("packages.absolutePath")).right
+    fileExt <- refineV[ValidExtension](config.getString("packages.extension")).right
+    checksumExt <- refineV[ValidExtension](config.getString("packages.checksumExtension")).right
+  } yield new files.Resolver(path, fileExt, checksumExt)).fold(err => throw new Exception(err), identity)
+
+  val deviceCommunication = new DeviceCommunication(db, rviInterface, fileResolver, e => log.error(e, e.getMessage()))
 
   val service = new WebService( db )
 
@@ -112,9 +123,9 @@ object Boot extends App with DatabaseConfig {
   val port = config.getInt("server.port")
 
   import Directives._
-  val routes = service.route ~ rvi.WebService.route(deviceCommunication)
+  val routes = service.route ~ new rvi.WebService().route(deviceCommunication)
 
-  val bindingFuture = Http().bindAndHandle(service.route, host, port)
+  val bindingFuture = Http().bindAndHandle(routes, host, port)
 
   log.info(s"Server online at http://$host:$port")
 
