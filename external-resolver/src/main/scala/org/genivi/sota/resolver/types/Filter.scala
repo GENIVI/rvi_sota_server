@@ -7,7 +7,6 @@ package org.genivi.sota.resolver.types
 import eu.timepit.refined.{Predicate, Refined}
 import org.genivi.sota.refined.SprayJsonRefined.refinedJsonFormat
 import org.genivi.sota.resolver.types.FilterParser.parseFilter
-import org.genivi.sota.rest.Validation
 import spray.json.DefaultJsonProtocol._
 
 

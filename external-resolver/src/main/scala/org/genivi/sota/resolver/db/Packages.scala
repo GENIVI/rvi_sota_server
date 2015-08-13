@@ -21,7 +21,7 @@ object Packages {
   class PackageTable(tag: Tag) extends Table[Package](tag, "Package") {
 
     def id          = column[PackageId]("id", O.AutoInc)
-    def name        = column[Package.PackageName]("name")
+    def name        = column[Package.Name]("name")
     def version     = column[Package.Version]("version")
     def description = column[String]("description")
     def vendor      = column[String]("vendor")
