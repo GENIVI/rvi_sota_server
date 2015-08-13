@@ -15,6 +15,8 @@ import akka.http.scaladsl.model.StatusCodes
 import org.scalatest.{WordSpec, Matchers}
 import slick.driver.MySQLDriver.api._
 
+import scala.concurrent.Await
+
 class VinResourceWordSpec extends WordSpec
     with Matchers
     with ScalatestRouteTest
@@ -31,9 +33,8 @@ class VinResourceWordSpec extends WordSpec
 
   override def beforeAll {
     TestDatabase.resetDatabase( databaseName )
-    testVins.foreach { v =>
-      db.run(Vehicles.create(new Vehicle(new Vehicle.IdentificationNumber(v))))
-    }
+    import scala.concurrent.duration._
+    Await.ready( db.run( DBIO.seq( testVins.map( v => Vehicles.create(new Vehicle(new Vehicle.IdentificationNumber(v)))): _*) ), 2.seconds )
   }
 
   val BasePath = Path("/api") / "v1"
