@@ -5,6 +5,7 @@
 package org.genivi.webserver.controllers
 
 import org.genivi.webserver.requesthelpers.{RightResponse, LeftResponse, ErrorResponse}
+import org.slf4j.LoggerFactory
 import play.api._
 import play.api.libs.iteratee.Enumerator
 import play.api.libs.json.JsValue
@@ -26,6 +27,7 @@ class Application @Inject() (ws: WSClient) extends Controller {
   val resolverHost = Play.current.configuration.getString("resolver.host").get
   val resolverPort = Play.current.configuration.getString("resolver.port").get
   val protocol = "http://"
+  val auditLogger = LoggerFactory.getLogger("audit")
   implicit val context = play.api.libs.concurrent.Execution.Implicits.defaultContext
 
   def index: Action[AnyContent] = Action {
@@ -33,6 +35,10 @@ class Application @Inject() (ws: WSClient) extends Controller {
   }
 
   def apiProxy(path: String): Action[JsValue] = Action.async(parse.json) { request =>
+    val user = "unknown"
+    // Mitigation for C04 : Log transactions to and from SOTA Server
+    auditLogger.info(s"Request: $request from user $user")
+
     val RequestResponse: Future[Result] = for {
       responseOne <- makeRequest(request.method, protocol + coreHost + ":" + corePort + request.path, request.body)
       responseTwo <- makeRequest(request.method, protocol + resolverHost + ":" + resolverPort + request.path, request.body)
