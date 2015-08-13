@@ -75,6 +75,17 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
     RequestResponse
   }
 
+  def resolverProxyNoBody(pkgName: String, pkgVersion: String) = AsyncStack(AuthorityKey -> Role.USER) { implicit request =>
+    val user = loggedIn.name
+    // Mitigation for C04 : Log transactions to and from SOTA Server
+    auditLogger.info(s"Request: $request from user $user")
+
+    val RequestResponse = for {
+      response <- makeRequestNoBody(RequestTarget.Resolver, request)
+    } yield resultFromWsResponse(response)
+    RequestResponse
+  }
+
   def coreProxy(path: String) = AsyncStack(parse.raw, AuthorityKey -> Role.USER) { implicit request =>
     val user = loggedIn.name
     // Mitigation for C04 : Log transactions to and from SOTA Server

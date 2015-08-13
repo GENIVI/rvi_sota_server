@@ -1,4 +1,4 @@
-define(['underscore', 'react', '../mixins/show-model', './package-filters/add-package-filters'], function(_, React, showModel, AddPackageFilters) {
+define(['underscore', 'react', '../mixins/show-model', 'components/create-update', './package-filters/add-package-filters'], function(_, React, showModel, CreateUpdate, AddPackageFilters) {
 
   var ShowPackageComponent = React.createClass({
     contextTypes: {
@@ -25,6 +25,7 @@ define(['underscore', 'react', '../mixins/show-model', './package-filters/add-pa
             {listItems}
           </ul>
           <AddPackageFilters Package={this.state.Model}/>
+          <CreateUpdate packageName={this.state.Model.get('name')} packageVersion={this.state.Model.get('version')}/>
         </div>
       );
     }
