@@ -47,5 +47,6 @@ object Validation {
       override val isConstant: Boolean = pa.isConstant && pb.isConstant
     }
 
-  def refined[P] = new RefinedMatcher[P]
+  def refined[P]: RefinedMatcher[P] = new RefinedMatcher[P]
+
 }
