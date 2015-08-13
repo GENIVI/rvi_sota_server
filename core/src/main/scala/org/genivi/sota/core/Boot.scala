@@ -4,8 +4,6 @@
  */
 package org.genivi.sota.core
 
-import java.nio.file.Paths
-
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.Http
@@ -14,16 +12,18 @@ import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.{Directives, ExceptionHandler, PathMatchers}
 import akka.stream.ActorMaterializer
+import java.nio.file.Paths
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.files.Types.ValidExtension
 import org.genivi.sota.core.rvi._
 import org.genivi.sota.rest.Validation._
-import slick.driver.MySQLDriver.api.Database
-import spray.json.{JsObject, JsString}
-
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
+import slick.driver.MySQLDriver.api.Database
+import spray.json.DefaultJsonProtocol._
+import spray.json.{JsObject, JsString}
+
 
 class WebService(db : Database)(implicit system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext) extends Directives {
 

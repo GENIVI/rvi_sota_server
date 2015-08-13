@@ -34,7 +34,7 @@ object ArbitraryPackage {
 
     desc    <- Gen.option(Gen.alphaStr)
     vendor  <- Gen.option(Gen.alphaStr)
-  } yield Package(None, name, version, desc, vendor)
+  } yield Package(Package.Id(name, version), desc, vendor)
 
   implicit lazy val arbPackage = Arbitrary(genPackage)
 }
@@ -45,7 +45,7 @@ class PackageResourcePropSpec extends ResourcePropSpec {
 
   property("create a new resource on PUT request") {
     forAll { (p : Package) =>
-      Put( PackagesUri(p.name.get, p.version.get), Metadata(p.description, p.vendor) ) ~> route ~> check {
+      Put( PackagesUri(p.id.name.get, p.id.version.get), Metadata(p.description, p.vendor) ) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Package] shouldBe p
       }
@@ -54,7 +54,7 @@ class PackageResourcePropSpec extends ResourcePropSpec {
 
   property("not accept empty package names") {
     forAll { (p: Package) =>
-      Put( PackagesUri("", p.version.get), Metadata(p.description, p.vendor) ) ~> route ~> check {
+      Put( PackagesUri("", p.id.version.get), Metadata(p.description, p.vendor) ) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
       }
     }
@@ -62,7 +62,7 @@ class PackageResourcePropSpec extends ResourcePropSpec {
 
   property("not accept empty package version") {
     forAll { (p: Package) =>
-      Put( PackagesUri(p.name.get, ""), Metadata(p.description, p.vendor) ) ~> route ~> check {
+      Put( PackagesUri(p.id.name.get, ""), Metadata(p.description, p.vendor) ) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
       }
     }
@@ -71,7 +71,7 @@ class PackageResourcePropSpec extends ResourcePropSpec {
 
   property("not accept bad package versions") {
     forAll { (p: Package, version: String) =>
-      Put( PackagesUri(p.name.get, version + ".0"), Metadata(p.description, p.vendor) ) ~> route ~> check {
+      Put( PackagesUri(p.id.name.get, version + ".0"), Metadata(p.description, p.vendor) ) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         val error = responseAs[ErrorRepresentation]
         error.code shouldBe ErrorCodes.InvalidEntity
@@ -82,10 +82,10 @@ class PackageResourcePropSpec extends ResourcePropSpec {
 
   property("PUTting the same package twice should update it") {
     forAll{ (p: Package) =>
-      Put( PackagesUri(p.name.get, p.version.get), Metadata(p.description, p.vendor) ) ~> route ~> check {
+      Put( PackagesUri(p.id.name.get, p.id.version.get), Metadata(p.description, p.vendor) ) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
-      Put( PackagesUri(p.name.get, p.version.get), Metadata(p.description, p.vendor) ) ~> route ~> check {
+      Put( PackagesUri(p.id.name.get, p.id.version.get), Metadata(p.description, p.vendor) ) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
     }

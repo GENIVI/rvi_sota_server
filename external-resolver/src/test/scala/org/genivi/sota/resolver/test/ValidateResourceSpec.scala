@@ -2,7 +2,7 @@ package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
 import eu.timepit.refined.Refined
-import org.genivi.sota.resolver.types.{Filter, FilterId}
+import org.genivi.sota.resolver.types.Filter
 import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
 
 
@@ -12,7 +12,7 @@ class ValidateResourceSpec extends ResourceWordSpec {
 
   "Validate resource" should {
 
-    val filter = Filter(None, Refined("myfilter"), Refined(s"""vin_matches "SAJNX5745SC??????""""))
+    val filter = Filter(Refined("myfilter"), Refined(s"""vin_matches "SAJNX5745SC??????""""))
 
     "accept valid filters" in {
       Post(ValidateUri("filter"), filter) ~> route ~> check {

@@ -8,20 +8,25 @@ import eu.timepit.refined.{Predicate, Refined}
 import org.genivi.sota.refined.SprayJsonRefined.refinedJsonFormat
 import spray.json.DefaultJsonProtocol._
 import spray.json._
-import spray.json.JsValue
 
-
-case class PackageId(id: Long)
 
 case class Package(
-  id         : Option[PackageId],
-  name       : Package.Name,
-  version    : Package.Version,
+  id         : Package.Id,
   description: Option[String],
   vendor     : Option[String]
 )
 
 object Package {
+
+  case class Id(
+    name   : Package.Name,
+    version: Package.Version
+  )
+
+  case class Metadata(
+    description: Option[String],
+    vendor     : Option[String]
+  )
 
   trait ValidName
   trait ValidVersion
@@ -36,21 +41,8 @@ object Package {
     Predicate.instance( _.matches( """^\d+\.\d+\.\d+$""" ), _ => "Invalid version format")
 
 
-  implicit val packageIdFormat = jsonFormat1(PackageId.apply)
-  implicit val packageFormat   = new RootJsonFormat[Package] {
-
-    override def write(obj: Package): JsValue =
-      jsonFormat5(Package.apply).write(obj.copy(id = None))
-
-    override def read(json: JsValue): Package =
-      jsonFormat5(Package.apply).read(json)
-  }
-
-  case class Metadata(
-    description: Option[String],
-    vendor     : Option[String]
-  )
-
+  implicit val packageIdFormat       = jsonFormat2(Package.Id.apply)
   implicit val packageMetadataFormat = jsonFormat2(Metadata.apply)
+  implicit val packageFormat         = jsonFormat3(Package.apply)
 
 }

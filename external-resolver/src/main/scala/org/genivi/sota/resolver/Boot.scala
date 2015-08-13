@@ -25,7 +25,7 @@ import org.genivi.sota.resolver.types.Vehicle
 class Routing(db: Database)
   (implicit system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext) extends Directives {
 
-  import org.genivi.sota.resolver.types.{Vehicle$, Package, Filter}
+  import org.genivi.sota.resolver.types.{Vehicle$, Package, Filter, PackageFilter}
   import spray.json.DefaultJsonProtocol._
   import org.genivi.sota.rest.Handlers._
 
@@ -50,7 +50,7 @@ class Routing(db: Database)
            & refined[Package.ValidVersion](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.PathEnd)
            & entity(as[Package.Metadata]))
       { (name: Package.Name, version: Package.Version, metadata: Package.Metadata) =>
-        complete(db.run(Packages.add(Package(None, name, version, metadata.description, metadata.vendor))))
+        complete(db.run(Packages.add(Package(Package.Id(name, version), metadata.description, metadata.vendor))))
       }
     }
 
@@ -78,10 +78,20 @@ class Routing(db: Database)
       path("filter") ((post & entity(as[Filter])) (const(complete("OK"))))
     }
 
+  def packageFiltersRoute: Route =
+    pathPrefix("packageFilter") {
+      get {
+        complete(db.run(PackageFilters.list))
+      } ~
+      (post & entity(as[PackageFilter])) { pf =>
+        complete(db.run(PackageFilters.add(pf)))
+      }
+    }
+
   val route: Route = pathPrefix("api" / "v1") {
     handleRejections(rejectionHandler) {
       handleExceptions(exceptionHandler) {
-        vehiclesRoute ~ packagesRoute ~ resolveRoute ~ filterRoute ~ validateRoute
+        vehiclesRoute ~ packagesRoute ~ resolveRoute ~ filterRoute ~ validateRoute ~ packageFiltersRoute
       }
     }
   }
