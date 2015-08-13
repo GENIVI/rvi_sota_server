@@ -51,6 +51,7 @@ object SotaBuild extends Build {
   lazy val externalResolver = Project(id = "resolver", base = file("external-resolver"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
       libraryDependencies ++= Dependencies.Rest :+ Dependencies.Scalaz :+ Dependencies.Refined :+ Dependencies.ParserCombinators,
+      parallelExecution in Test := false,
       dockerExposedPorts := Seq(8081),
       flywayUrl := sys.env.get("RESOLVER_DB_URL").orElse( sys.props.get("resolver.db.url") ).getOrElse("jdbc:mysql://localhost:3306/sota_resolver"),
       flywayUser := sys.env.get("RESOLVER_DB_USER").orElse( sys.props.get("resolver.db.user") ).getOrElse("sota"),
@@ -63,6 +64,7 @@ object SotaBuild extends Build {
   lazy val core = Project(id = "core", base = file("core"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
       libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.NscalaTime :+ Dependencies.Scalaz,
+      parallelExecution in Test := false,
       dockerExposedPorts := Seq(8080),
       flywayUrl := sys.env.get("CORE_DB_URL").orElse( sys.props.get("core.db.url") ).getOrElse("jdbc:mysql://localhost:3306/sota_core"),
       flywayUser := sys.env.get("CORE_DB_USER").orElse( sys.props.get("core.db.user") ).getOrElse("sota"),
