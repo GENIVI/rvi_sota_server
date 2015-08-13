@@ -4,61 +4,53 @@
  */
 package org.genivi.sota.resolver.types
 
-import org.genivi.sota.refined.SprayJsonRefined
+import eu.timepit.refined.{Predicate, Refined}
+import org.genivi.sota.refined.SprayJsonRefined.refinedJsonFormat
+import spray.json.DefaultJsonProtocol._
 import spray.json._
+import spray.json.JsValue
 
-case class PackageId(id: Long) extends AnyVal
 
-case class Package (
-  id: Option[PackageId],
-  name: Package.PackageName,
-  version: Package.Version,
+case class PackageId(id: Long)
+
+case class Package(
+  id         : Option[PackageId],
+  name       : Package.Name,
+  version    : Package.Version,
   description: Option[String],
   vendor     : Option[String]
 )
 
 object Package {
-  import SprayJsonRefined._
-  import eu.timepit.refined._
-  import spray.json.DefaultJsonProtocol._
+
+  trait ValidName
+  trait ValidVersion
+
+  type Name    = String Refined ValidName
+  type Version = String Refined ValidVersion
+
+  implicit val validPackageName: Predicate[ValidName, String] =
+    Predicate.instance( _.nonEmpty, _ => "Package name required" )
+
+  implicit val validPackageVersion: Predicate[ValidVersion, String] =
+    Predicate.instance( _.matches( """^\d+\.\d+\.\d+$""" ), _ => "Invalid version format")
+
+
+  implicit val packageIdFormat = jsonFormat1(PackageId.apply)
+  implicit val packageFormat   = new RootJsonFormat[Package] {
+
+    override def write(obj: Package): JsValue =
+      jsonFormat5(Package.apply).write(obj.copy(id = None))
+
+    override def read(json: JsValue): Package =
+      jsonFormat5(Package.apply).read(json)
+  }
 
   case class Metadata(
     description: Option[String],
     vendor     : Option[String]
   )
 
-  trait Required
-  type PackageName = String Refined Required
-  implicit val required: Predicate[Required, String]
-    = Predicate.instance( _.nonEmpty, _ => "Package name required" )
-
-  trait ValidVersionFormat
-  type Version = String Refined ValidVersionFormat
-  implicit val validVersion: Predicate[ValidVersionFormat, String] =
-    Predicate.instance( _.matches( """^\d+\.\d+\.\d+$""" ), _ => "Invalid version format")
-
-
-  implicit val packageIdFormat = new JsonFormat[PackageId] {
-    override def read(json: JsValue): PackageId = json match {
-      case JsNumber(n) => PackageId(n.toLong)
-      case x => deserializationError( s"Number expected, '$x' found" )
-    }
-
-    override def write(obj: PackageId): JsValue = JsNumber( obj.id )
-  }
-
   implicit val packageMetadataFormat = jsonFormat2(Metadata.apply)
-
-  implicit val packageFormat = new RootJsonFormat[Package] {
-
-    override def write(obj: Package): JsValue = JsObject(
-      "name" -> JsString( obj.name.get ),
-      "version" -> JsString( obj.version.get ),
-      "description" -> implicitly[JsonFormat[Option[String]]].write( obj.description ),
-      "vendor" -> implicitly[JsonFormat[Option[String]]].write( obj.vendor )
-    )
-
-    override def read(json: JsValue): Package = jsonFormat5(Package.apply).read( json )
-  }
 
 }

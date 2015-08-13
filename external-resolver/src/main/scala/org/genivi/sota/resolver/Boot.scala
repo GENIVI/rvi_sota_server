@@ -46,10 +46,10 @@ class Routing(db: Database)
           NoContent
         }
       } ~
-      (put & refined[Package.Required](PathMatchers.Slash ~ PathMatchers.Segment)
-           & refined[Package.ValidVersionFormat](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.PathEnd)
+      (put & refined[Package.ValidName](PathMatchers.Slash ~ PathMatchers.Segment)
+           & refined[Package.ValidVersion](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.PathEnd)
            & entity(as[Package.Metadata]))
-      { (name: Package.PackageName, version: Package.Version, metadata: Package.Metadata) =>
+      { (name: Package.Name, version: Package.Version, metadata: Package.Metadata) =>
         complete(db.run(Packages.add(Package(None, name, version, metadata.description, metadata.vendor))))
       }
     }
