@@ -5,37 +5,27 @@
 package org.genivi.sota.resolver.db
 
 import org.genivi.sota.refined.SlickRefined._
-import org.genivi.sota.resolver.types.{Filter, FilterId}
+import org.genivi.sota.resolver.types.Filter
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
 
 object Filters {
 
-  implicit val filterIdColumnType = MappedColumnType.base[FilterId, Long](
-    { _.id },
-    { FilterId.apply }
-  )
-
-
   // scalastyle:off
   class FiltersTable(tag: Tag) extends Table[Filter](tag, "Filter") {
 
-    def id         = column[FilterId]("id", O.PrimaryKey, O.AutoInc)
-    def name       = column[Filter.Name]("name")
+    def name       = column[Filter.Name]("name", O.PrimaryKey)
     def expression = column[Filter.Expression]("expression")
 
-    def * = (id.?, name, expression) <>
-      ((Filter.apply _).tupled, Filter.unapply)
+    def * = (name, expression) <> ((Filter.apply _).tupled, Filter.unapply)
   }
   // scalastyle:on
 
   val filters = TableQuery[FiltersTable]
 
   def add(filter: Filter)(implicit ec: ExecutionContext): DBIO[Filter] =
-    (filters
-      returning filters.map(_.id)
-      into ((filter, id) => filter.copy(id = Some(id)))) += filter
+    (filters += filter).map(_ => filter)
 
   def list: DBIO[Seq[Filter]] =
     filters.result

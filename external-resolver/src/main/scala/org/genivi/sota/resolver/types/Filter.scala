@@ -10,10 +10,7 @@ import org.genivi.sota.resolver.types.FilterParser.parseFilter
 import spray.json.DefaultJsonProtocol._
 
 
-case class FilterId(id: Long)
-
 case class Filter (
-  id        : Option[FilterId],
   name      : Filter.Name,
   expression: Filter.Expression
 )
@@ -39,7 +36,5 @@ object Filter {
         case Right(_) => "IMPOSSIBLE"
     })
 
-  implicit val filterIdFormat   = jsonFormat1(FilterId.apply)
-  implicit val filterFormat     = jsonFormat3(Filter.apply)
-  implicit val filterListFormat = seqFormat[Filter]
+  implicit val filterFormat = jsonFormat2(Filter.apply)
 }

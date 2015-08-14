@@ -25,5 +25,4 @@ object Vehicle {
   import spray.json.DefaultJsonProtocol._
   import org.genivi.sota.refined.SprayJsonRefined._
   implicit val vehicleFormat = jsonFormat1(Vehicle.apply)
-  implicit val vehicleListFormat = seqFormat[Vehicle]
 }

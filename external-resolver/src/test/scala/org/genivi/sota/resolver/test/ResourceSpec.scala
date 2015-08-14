@@ -23,12 +23,13 @@ trait ResourceSpec extends Matchers
   def resourceUri(pathSuffixes: String*): Uri =
     Uri.Empty.withPath(pathSuffixes.foldLeft(BasePath)(_/_))
 
-  val BasePath     = Path("/api") / "v1"
-  val VehiclesUri  = (vin: String) => resourceUri("vehicles", vin)
-  val PackagesUri  = (name: String, version: String) => resourceUri("packages", name, version)
-  val ResolveUri   = (i: Long) => resourceUri("resolve", i.toString)
-  val FiltersUri   = resourceUri("filters")
-  val ValidateUri  = (s: String) => resourceUri("validate", s)
+  val BasePath          = Path("/api") / "v1"
+  val VehiclesUri       = (vin: String) => resourceUri("vehicles", vin)
+  val PackagesUri       = (name: String, version: String) => resourceUri("packages", name, version)
+  val ResolveUri        = (i: Long) => resourceUri("resolve", i.toString)
+  val FiltersUri        = resourceUri("filters")
+  val ValidateUri       = (s: String) => resourceUri("validate", s)
+  val PackageFiltersUri = resourceUri("packageFilters")
 
   // Database
   val name = "test-database"

@@ -5,8 +5,6 @@ CREATE TABLE Vehicle (
 );
 
 CREATE TABLE Package (
-    -- Surrogate key
-    id BIGINT NOT NULL AUTO_INCREMENT,
     -- Natural key is name + version
     name varchar(200) NOT NULL,
     version varchar(200) NOT NULL,
@@ -15,6 +13,5 @@ CREATE TABLE Package (
     -- Free form information about the vendor
     vendor text,
 
-    PRIMARY KEY (id),
-    UNIQUE KEY name_version_unique (name, version)
+    PRIMARY KEY (name, version)
 );

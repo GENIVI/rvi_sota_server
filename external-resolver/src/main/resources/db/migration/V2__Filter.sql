@@ -1,12 +1,10 @@
 CREATE TABLE Filter (
-    -- Surrogate key
-    id BIGINT NOT NULL AUTO_INCREMENT,
     -- Natural key
     name varchar(200) NOT NULL,
     -- Filter expression
     expression text NOT NULL,
 
-    PRIMARY KEY (id),
+    PRIMARY KEY (name),
     UNIQUE KEY name_unique (name)
 );
 
