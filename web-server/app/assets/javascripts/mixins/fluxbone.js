@@ -13,7 +13,7 @@ define([], function() {
         return this.props[model_name].on(event_name, this[eventCbName], this);
       },
       componentWillUnmount: function() {
-        return this.props[model_name].off(event_name, this[eventCbName], this);
+        return this.props[model_name].off();
       }
     };
     mixin[eventCbName] = function() {
