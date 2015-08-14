@@ -11,6 +11,7 @@ import akka.http.scaladsl.model.HttpResponse
 import akka.http.scaladsl.model.Uri
 import akka.stream.ActorMaterializer
 import org.genivi.sota.core.data.Vehicle
+import org.genivi.sota.core.data.PackageId
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
@@ -24,14 +25,14 @@ class DependencyResolver(host: String, port: Int)(implicit system : ActorSystem,
   val uri: Uri = Uri().withScheme("http").withAuthority(host, port)
 
   import org.genivi.sota.refined.SprayJsonRefined._
-  def resolve(packageId: Long): Future[Map[Vehicle, Set[Long]]] =
+  def resolve(packageId: PackageId): Future[Map[Vehicle, Set[PackageId]]] =
     request(packageId).flatMap { response =>
-      Unmarshal(response.entity).to[Map[Vehicle.IdentificationNumber, Set[Long]]].map { parsed =>
+      Unmarshal(response.entity).to[Map[Vehicle.IdentificationNumber, Set[PackageId]]].map { parsed =>
         parsed.map { case (k, v) => Vehicle(k) -> v }
       }
-    }.recover { case _ => Map.empty[Vehicle, Set[Long]] }
+    }.recover { case _ => Map.empty[Vehicle, Set[PackageId]] }
 
-  private def request(packageId: Long): Future[HttpResponse] = {
+  private def request(packageId: PackageId): Future[HttpResponse] = {
     Http().singleRequest(HttpRequest(uri = uri.withPath(Uri.Path(s"/api/v1/resolve/$packageId"))))
   }
 }

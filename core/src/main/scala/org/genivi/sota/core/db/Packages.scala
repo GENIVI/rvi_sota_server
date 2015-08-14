@@ -4,21 +4,25 @@
  */
 package org.genivi.sota.core.db
 
-import org.genivi.sota.core.data.Package
+import org.genivi.sota.core.data.{Package, PackageId}
+import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
 object Packages {
 
+  import org.genivi.sota.refined.SlickRefined._
+
   // scalastyle:off
   class PackageTable(tag: Tag) extends Table[Package](tag, "Package") {
-    def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
-    def name = column[String]("name")
-    def version = column[String]("version")
+    def name = column[Package.Name]("name")
+    def version = column[Package.Version]("version")
     def description = column[String]("description")
     def vendor = column[String]("vendor")
 
-    def * = (id.?, name, version, description.?, vendor.?) <>
-      ((Package.apply _).tupled, Package.unapply)
+    def pk = primaryKey("pk_package", (name, version))
+
+    def * = (name, version, description.?, vendor.?).shaped <>
+      (x => Package(PackageId(x._1, x._2), x._3, x._4), (x: Package) => Some((x.id.name, x.id.version, x.description, x.vendor)))
   }
   // scalastyle:on
 
@@ -26,12 +30,6 @@ object Packages {
 
   def list: DBIO[Seq[Package]] = packages.result
 
-  def create(pkg: Package): DBIO[Package] =
-    (packages
-      returning packages.map(_.id)
-      into ((pkg, id) => pkg.copy(id = Some(id)))) += pkg
+  def create(pkg: Package)(implicit ec: ExecutionContext): DBIO[Package] = (packages += pkg).map( _ => pkg)
 
-  def createPackages(reqs: Seq[Package]): DBIO[Seq[Package]] = {
-    DBIO.sequence( reqs.map( create ) )
-  }
 }

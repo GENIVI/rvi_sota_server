@@ -20,6 +20,9 @@ object Package {
 
 class PartialPackageSpec extends WordSpec with Matchers {
 
+  import eu.timepit.refined.Predicate
+  implicit def refinedDecoder[T, P](implicit decoder: Decoder[T], predicate: Predicate[P, T]) : Decoder[T Refined P] = ???
+
   "Partial decoder" should {
     "support refinements" in {
       val withoutName =
