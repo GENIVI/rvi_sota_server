@@ -7,8 +7,10 @@ package org.genivi.sota.core.rvi
 import akka.http.scaladsl.model.HttpResponse
 import akka.util.ByteString
 import com.github.nscala_time.time.Imports._
+import eu.timepit.refined.Refined
+import java.util.concurrent.TimeUnit
 import org.genivi.sota.core._
-import org.genivi.sota.core.data.{InstallCampaign, InstallRequest, Package, Vehicle}
+import org.genivi.sota.core.data.{InstallCampaign, InstallRequest, Package, Vehicle, PackageId}
 import org.genivi.sota.core.db._
 import org.scalatest._
 import org.scalatest.prop.PropertyChecks
@@ -33,22 +35,33 @@ class RunCampaignsSpec extends PropSpec
     TestDatabase.resetDatabase(databaseName)
   }
 
+  val genVersion: Gen[Package.Version] =
+    Gen.listOfN(3, Gen.choose(0, 999)).map(_.mkString(".")).map(Refined(_))
+
+  val genPackageName: Gen[Package.Name] =
+    Gen.identifier.map(Refined(_))
+
+
+  val packageIdGen : Gen[PackageId] = for {
+    name <- genPackageName
+    version <- genVersion
+  } yield PackageId(name, version)
+
   val packageGen: Gen[data.Package] = for {
-    len <- Gen.choose(5, 10)
-    name <- Gen.listOfN(len, Gen.alphaNumChar)
-    major <- Gen.choose(0, 10)
-    minor <- Gen.choose(0, 10)
-  } yield Package(None, name.mkString, s"$major.$minor", None, None)
+    id <- packageIdGen
+    desc <- Gen.option( Gen.alphaStr )
+    vendor <- Gen.option( Gen.alphaStr )
+  } yield Package( id, desc, vendor )
 
   type Interval = (DateTime, DateTime)
 
   import InstallRequest.Status
 
-  def campaign(pkgId: Long, priority: Int, startAfter: DateTime, endBefore: DateTime): InstallCampaign =
-    InstallCampaign(None, pkgId, priority, startAfter, endBefore)
+  def campaign(pkg: Package, priority: Int, startAfter: DateTime, endBefore: DateTime): InstallCampaign =
+    InstallCampaign(None, pkg.id, priority, startAfter, endBefore)
 
-  def request(pkgId: Long, campaignId: Long, vin: Vehicle, status: InstallRequest.Status = Status.NotProcessed): InstallRequest =
-    InstallRequest(None, campaignId, pkgId, vin.vin, status, None)
+  def request(pkg: Package, campaignId: Long, vin: Vehicle, status: InstallRequest.Status = Status.NotProcessed): InstallRequest =
+    InstallRequest(None, campaignId, pkg.id, vin.vin, status, None)
 
   case class State(pkg1: Package,
                    pkg2: Package,
@@ -88,29 +101,29 @@ class RunCampaignsSpec extends PropSpec
     nonCurrentInterval = (now - (i * 2).days, now - i.days)
   } yield State(pkg1, pkg2, vin1, vin2, vin3, highPriority, lowPriority, currentInterval, nonCurrentInterval)
 
-  def persisted(p: Package): DBIO[(Long, Package)] = Packages.create(p).map { p => (p.id.head, p) }
+  def persisted(p: Package): DBIO[Package] = Packages.create(p)
   def persisted(v: Vehicle): DBIO[Vehicle.IdentificationNumber] = Vehicles.create(v).map { _ => v.vin }
   def persisted(r: InstallRequest): DBIO[Long] = InstallRequests.create(r).map(_.id.head)
   def persisted(c: InstallCampaign): DBIO[Long] = InstallCampaigns.create(c).map(_.id.head)
   def persisted(s: State): DBIO[(Package, Package, Long, Long, Long, Long, Long)] = for {
-    (pkgId1, pkg1) <- persisted(s.pkg1)
-    (pkgId2, pkg2) <- persisted(s.pkg2)
+    _ <- persisted(s.pkg1)
+    _ <- persisted(s.pkg2)
 
     _ <- persisted(s.vin1)
     _ <- persisted(s.vin2)
     _ <- persisted(s.vin3)
 
-    highPriorityCurrentCampaignId <- persisted(campaign(pkgId1, s.highPriority, s.currentInterval._1, s.currentInterval._2))
-    r1 <- persisted(request(pkgId1, highPriorityCurrentCampaignId, s.vin1))
-    r2 <- persisted(request(pkgId1, highPriorityCurrentCampaignId, s.vin2, Status.Notified))
+    highPriorityCurrentCampaignId <- persisted(campaign(s.pkg1, s.highPriority, s.currentInterval._1, s.currentInterval._2))
+    r1 <- persisted(request(s.pkg1, highPriorityCurrentCampaignId, s.vin1))
+    r2 <- persisted(request(s.pkg1, highPriorityCurrentCampaignId, s.vin2, Status.Notified))
 
-    lowPriorityCurrentCampaignId <- persisted(campaign(pkgId2, s.lowPriority, s.currentInterval._1, s.currentInterval._2))
-    r3 <- persisted(request(pkgId2, lowPriorityCurrentCampaignId, s.vin2))
-    r4 <- persisted(request(pkgId2, lowPriorityCurrentCampaignId, s.vin1, Status.Notified))
+    lowPriorityCurrentCampaignId <- persisted(campaign(s.pkg2, s.lowPriority, s.currentInterval._1, s.currentInterval._2))
+    r3 <- persisted(request(s.pkg2, lowPriorityCurrentCampaignId, s.vin2))
+    r4 <- persisted(request(s.pkg2, lowPriorityCurrentCampaignId, s.vin1, Status.Notified))
 
-    nonCurrentCampaignId <- persisted(campaign(pkgId1, s.highPriority, s.nonCurrentInterval._1, s.nonCurrentInterval._2))
-    r5 <- persisted(request(pkgId1, nonCurrentCampaignId, s.vin3))
-  } yield (pkg1, pkg2, r1, r2, r3, r4, r5)
+    nonCurrentCampaignId <- persisted(campaign(s.pkg1, s.highPriority, s.nonCurrentInterval._1, s.nonCurrentInterval._2))
+    r5 <- persisted(request(s.pkg1, nonCurrentCampaignId, s.vin3))
+  } yield (s.pkg1, s.pkg2, r1, r2, r3, r4, r5)
 
 
   class RviMock(worksWhen: ((Vehicle.IdentificationNumber, Package)) => Boolean = Function.const(true)) extends RviInterface {
@@ -149,14 +162,12 @@ class RunCampaignsSpec extends PropSpec
 
       test.onFailure { case e => fail(e) }
 
-      {
-        import scala.concurrent.duration.DurationInt
-        Await.result(test, DurationInt(10).seconds)
-      }
+      import scala.concurrent.duration._
+      Await.result(test, Duration(10, TimeUnit.SECONDS))
     }
   }
 
-  property("a DeviceCommunication logs all failures but still processes but still processes what it can") {
+  property("a DeviceCommunication logs all failures but still processes what it can") {
     forAll(states) { state =>
       val rviNode = new RviMock({ case (s, p) => s != state.vin1.vin })
       val errors = scala.collection.mutable.Set[Throwable]()

@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.core.db
 
-import org.genivi.sota.core.data.{Package, InstallRequest, Vehicle}
+import org.genivi.sota.core.data.{Package, InstallRequest, Vehicle, PackageId}
 import org.joda.time.DateTime
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -24,13 +24,14 @@ object InstallRequests {
   class InstallRequestTable(tag: Tag) extends Table[InstallRequest](tag, "InstallRequest") {
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def installCampaignId = column[Long]("installCampaignId")
-    def packageId = column[Long]("packageId")
+    def packageName = column[Package.Name]("packageName")
+    def packageVersion = column[Package.Version]("packageVersion")
     def vin = column[Vehicle.IdentificationNumber]("vin")
     def statusCode = column[Status]("statusCode")
     def errorMessage = column[String]("errorMessage")
+    def * = (id.?, installCampaignId, packageName, packageVersion, vin, statusCode, errorMessage.?).shaped <>
+      (row => InstallRequest(row._1, row._2, PackageId(row._3, row._4), row._5, row._6, row._7), (x: InstallRequest) => Some((x.id, x.installCampaignId, x.packageId.name, x.packageId.version, x.vin, x.statusCode, x.errorMessage)))
 
-    def * = (id.?, installCampaignId, packageId, vin, statusCode, errorMessage.?) <>
-      ((InstallRequest.apply _).tupled, InstallRequest.unapply)
   }
   // scalastyle:on
 
@@ -45,7 +46,7 @@ object InstallRequests {
     val q = for {
       c <- installCampaigns if c.startAfter < instant && c.endBefore > instant
       r <- installRequests if r.statusCode === Status.NotProcessed && r.installCampaignId === c.id
-      p <- packages if r.packageId === p.id
+      p <- packages if r.packageName === p.name && r.packageVersion === p.version
     } yield (r,p)
     q.result
   }

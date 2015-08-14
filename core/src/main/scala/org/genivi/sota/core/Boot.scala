@@ -42,14 +42,14 @@ class WebService(db : Database)(implicit system: ActorSystem, mat: ActorMaterial
   }
 
   def createCampaign( campaign : InstallCampaign ) : Future[InstallCampaign] = {
-    def persistCampaign( dependencies : Map[Vehicle, Set[Long]] ) = for {
+    def persistCampaign( dependencies : Map[Vehicle, Set[PackageId]] ) = for {
       persistedCampaign <- InstallCampaigns.create(campaign)
       _   <- InstallRequests.createRequests( InstallRequest.from(dependencies, persistedCampaign.id.head).toSeq )
     } yield persistedCampaign
 
     for {
       dependencyMap     <- resolver.resolve(campaign.packageId)
-      persistedCampaign <- db.run(persistCampaign( dependencyMap))
+      persistedCampaign <- db.run(persistCampaign( dependencyMap ))
     } yield persistedCampaign
   }
 
@@ -84,9 +84,6 @@ class WebService(db : Database)(implicit system: ActorSystem, mat: ActorMaterial
             NoContent
             //Packages.list
           }
-        } ~
-        (post & entity(as[data.Package])) { newPackage =>
-          complete(db.run( Packages.create(newPackage) ) )
         }
       }
     }

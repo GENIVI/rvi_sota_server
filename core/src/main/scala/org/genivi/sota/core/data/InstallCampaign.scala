@@ -8,7 +8,7 @@ import org.joda.time.DateTime
 
 case class InstallCampaign(
   id: Option[Long],
-  packageId: Long,
+  packageId: PackageId,
   priority: Int,
   startAfter: DateTime,
   endBefore: DateTime
