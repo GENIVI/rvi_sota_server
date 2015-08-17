@@ -4,7 +4,6 @@
  */
 package org.genivi.sota.resolver
 
-import Function._
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.Http
@@ -13,13 +12,14 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.StatusCodes.NoContent
 import akka.http.scaladsl.server.{Directives, ExceptionHandler, Route, PathMatchers}
 import akka.stream.ActorMaterializer
+import org.genivi.sota.refined.SprayJsonRefined._
 import org.genivi.sota.resolver.db._
+import org.genivi.sota.resolver.types.Vehicle
+import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 import org.genivi.sota.rest.Validation._
-import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 import slick.jdbc.JdbcBackend.Database
-import org.genivi.sota.resolver.types.Vehicle
 
 
 class Routing(db: Database)
@@ -58,7 +58,6 @@ class Routing(db: Database)
     path("resolve" / LongNumber) { pkgId =>
       get {
         complete {
-          import org.genivi.sota.refined.SprayJsonRefined._
           db.run( Vehicles.list ).map( _.map(vehicle => Map(vehicle.vin -> List(pkgId)))
             .foldRight(Map[Vehicle.IdentificationNumber, List[Long]]())(_++_))
         }
@@ -75,18 +74,41 @@ class Routing(db: Database)
 
   def validateRoute: Route =
     pathPrefix("validate") {
-      path("filter") ((post & entity(as[Filter])) (const(complete("OK"))))
+      path("filter") ((post & entity(as[Filter])) (_ => complete("OK")))
     }
 
-  def packageFiltersRoute: Route =
-    pathPrefix("packageFilter") {
+  def packageFiltersRoute: Route = {
+
+    def packageFiltersHandler: ExceptionHandler = ExceptionHandler {
+      case err: PackageFilters.MissingPackageException =>
+        complete(StatusCodes.BadRequest ->
+          ErrorRepresentation(PackageFilter.MissingPackage, "Package doesn't exist"))
+      case err: PackageFilters.MissingFilterException  =>
+        complete(StatusCodes.BadRequest ->
+          ErrorRepresentation(PackageFilter.MissingFilter, "Filter doesn't exist"))
+    }
+
+    path("packageFilters") {
       get {
         complete(db.run(PackageFilters.list))
       } ~
       (post & entity(as[PackageFilter])) { pf =>
-        complete(db.run(PackageFilters.add(pf)))
+        handleExceptions(packageFiltersHandler) {
+          complete(db.run(PackageFilters.add(pf)))
+        }
+      }
+    } ~
+    pathPrefix("packageFilters" / "packagesFor") {
+      (get & refined[Filter.ValidName](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.PathEnd)) { fname =>
+        complete(db.run(PackageFilters.listPackagesForFilter(fname)))
+      }
+    } ~
+    pathPrefix("packageFilters" / "filtersFor") {
+      (get & refined[Package.ValidName](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.PathEnd)) { pname =>
+        complete(db.run(PackageFilters.listFiltersForPackage(pname)))
       }
     }
+  }
 
   val route: Route = pathPrefix("api" / "v1") {
     handleRejections(rejectionHandler) {

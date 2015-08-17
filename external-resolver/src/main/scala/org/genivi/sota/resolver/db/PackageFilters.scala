@@ -4,9 +4,17 @@
  */
 package org.genivi.sota.resolver.db
 
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.http.scaladsl.model._
+import akka.http.scaladsl.server.Directives.complete
+import akka.http.scaladsl.server._
+import org.genivi.sota.resolver.db.Filters.filters
+import org.genivi.sota.resolver.db.Packages.packages
 import org.genivi.sota.resolver.types.PackageFilter
 import org.genivi.sota.resolver.types.{Filter, Package}
 import scala.concurrent.ExecutionContext
+import scala.util.control.NoStackTrace
+import scala.util.{Try, Success, Failure}
 import slick.driver.MySQLDriver.api._
 
 
@@ -31,10 +39,30 @@ object PackageFilters {
 
   val packageFilters = TableQuery[PackageFilterTable]
 
-  def add(pf: PackageFilter)(implicit ec: ExecutionContext): DBIO[PackageFilter] =
-    (packageFilters += pf).map(_ => pf)
+  class MissingPackageException extends Throwable with NoStackTrace
+  class MissingFilterException  extends Throwable with NoStackTrace
+
+  def add(pf: PackageFilter)(implicit ec: ExecutionContext): DBIO[PackageFilter] = {
+
+    def failIfEmpty[X](io: DBIO[Seq[X]], t: => Throwable)(implicit ec: ExecutionContext): DBIO[Unit] =
+      io flatMap { xs => if (xs.isEmpty) DBIO.failed(t) else DBIO.successful(()) }
+
+    for {
+      _ <- failIfEmpty(packages.filter(p => p.name === pf.packageName
+               && p.version === pf.packageVersion).result,
+             new MissingPackageException)
+      _ <- failIfEmpty(filters.filter(_.name === pf.filterName).result, new MissingFilterException)
+      _ <- packageFilters += pf
+    } yield pf
+  }
 
   def list: DBIO[Seq[PackageFilter]] =
     packageFilters.result
+
+  def listPackagesForFilter(fname: Filter.Name)(implicit ec: ExecutionContext): DBIO[Seq[Package.Name]] =
+    packageFilters.filter(_.filterName === fname).map(_.packageName).result
+
+  def listFiltersForPackage(pname: Package.Name)(implicit ec: ExecutionContext): DBIO[Seq[Filter.Name]] =
+    packageFilters.filter(_.packageName === pname).map(_.filterName).result
 
 }
