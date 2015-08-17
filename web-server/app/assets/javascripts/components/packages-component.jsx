@@ -8,7 +8,11 @@ define(['jquery', 'react', '../mixins/serialize-form', '../mixins/fluxbone', '..
     handleSubmit: function(e) {
       e.preventDefault();
 
-      payload = serializeForm(this.refs.form);
+      var payload = serializeForm(this.refs.form);
+
+      var file = $('.file-upload')[0].files[0];
+      payload.binary = file;
+
       SotaDispatcher.dispatch({
         actionType: 'package-add',
         package: payload
@@ -22,7 +26,7 @@ define(['jquery', 'react', '../mixins/serialize-form', '../mixins/fluxbone', '..
       });
       return (
         <div>
-          <form ref='form' onSubmit={this.handleSubmit}>
+          <form ref='form' onSubmit={this.handleSubmit} encType="multipart/form-data">
             <div className="form-group">
               <label htmlFor="name">Package Name</label>
               <input type="text" className="form-control" name="name" ref="name" placeholder="PACKAGE NAME"/>
@@ -38,6 +42,10 @@ define(['jquery', 'react', '../mixins/serialize-form', '../mixins/fluxbone', '..
             <div className="form-group">
               <label htmlFor="vendor">Vendor</label>
               <input type="text" className="form-control" name="vendor" ref="vendor" placeholder="Vendor name"/>
+            </div>
+            <div className="form-group">
+              <label htmlFor="binary">Package Binary</label>
+              <input type="file" className="file-upload" name="binary" />
             </div>
             <div className="form-group">
               <button type="submit" className="btn btn-primary">Add PACKAGE</button>

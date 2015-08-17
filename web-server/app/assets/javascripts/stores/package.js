@@ -1,8 +1,12 @@
-define(['backbone', 'underscore', '../mixins/send-request', 'sota-dispatcher'], function(Backbone, _, sendRequest, SotaDispatcher) {
+define(['backbone', 'underscore', '../lib/backbone-model-file-upload', '../mixins/send-request', 'sota-dispatcher'], function(Backbone, _, BackboneModelFileUpload, sendRequest, SotaDispatcher) {
 
   var Package = Backbone.Model.extend({
+    fileAttribute: 'binary',
     initialize: function() {
       SotaDispatcher.register(this.dispatchCallback.bind(this));
+    },
+    url: function() {
+      return '/api/v1/packages/' + this.get("name") + '/' + this.get("version");
     },
     dispatchCallback: function(payload) {
       switch(payload.actionType) {

@@ -39,23 +39,39 @@ class Application @Inject() (ws: WSClient) extends Controller {
     // Mitigation for C04 : Log transactions to and from SOTA Server
     auditLogger.info(s"Request: $request from user $user")
 
-    val proxyRequestCore = makeRequest(request, protocol + coreHost + ":" + corePort)
-    val proxyRequestResolver = makeRequest(request, protocol + resolverHost + ":" + resolverPort)
-
     val RequestResponse = for {
-      proxyResponseOne <- proxyRequestCore.execute
-      proxyResponseTwo <- proxyRequestResolver.execute
+      proxyResponseOne <- makeCoreRequest(request)
+      proxyResponseTwo <- makeResolverRequest(request)
     } yield successfulResponse(proxyResponseOne, proxyResponseTwo)
     RequestResponse
   }
 
-  def makeRequest(request: Request[RawBuffer], url: String): WSRequest = {
+  def makeRequest(request: Request[RawBuffer], url: String): Future[WSResponse] = {
     WS.url(url + request.path)
       .withFollowRedirects(false)
       .withMethod(request.method)
       .withHeaders(parseHeaders(request.headers).toSeq: _*)
       .withQueryString(request.queryString.mapValues(_.head).toSeq: _*)
-      .withBody(request.body.asBytes().get)
+      .withBody(request.body.asBytes().get).execute
+  }
+
+  def makeCoreRequest(request: Request[RawBuffer]) = {
+    makeRequest(request, protocol + coreHost + ":" + corePort)
+  }
+
+  def makeResolverRequest(request: Request[RawBuffer]) = {
+    makeRequest(request, protocol + resolverHost + ":" + resolverPort)
+  }
+
+  def coreProxy(path: String) = Action.async(parse.raw) { request: Request[RawBuffer] =>
+    val user = "unknown"
+    // Mitigation for C04 : Log transactions to and from SOTA Server
+    auditLogger.info(s"Request: $request from user $user")
+
+    val RequestResponse = for {
+      proxyResponseOne <- makeCoreRequest(request)
+    } yield resultFromWsResponse(proxyResponseOne)
+    RequestResponse
   }
 
   def parseHeaders(headers: Headers) = {
