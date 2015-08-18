@@ -18,4 +18,8 @@ object PackageFilter {
 
   implicit val packageFilterFormat = jsonFormat3(PackageFilter.apply)
 
+  import org.genivi.sota.rest.ErrorCode
+
+  val MissingPackage = new ErrorCode("missing_package")
+  val MissingFilter  = new ErrorCode("missing_filter")
 }

@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.rest
 
+
 case class ErrorCode( code: String ) extends AnyVal
 
 object ErrorCode {
@@ -17,11 +18,10 @@ object ErrorCode {
       case _ => deserializationError("Error code expected")
     }
   }
-
 }
 
 object ErrorCodes {
-  val InvalidEntity = new ErrorCode("invalid_entity")
+  val InvalidEntity  = new ErrorCode("invalid_entity")
   val DuplicateEntry = new ErrorCode("duplicate_entry")
 }
 

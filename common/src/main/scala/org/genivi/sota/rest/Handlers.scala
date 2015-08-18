@@ -4,13 +4,15 @@
  */
 package org.genivi.sota.rest
 
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.http.scaladsl.model._
+import akka.http.scaladsl.server.Directives.complete
+import akka.http.scaladsl.server._
 import org.genivi.sota.refined.SprayJsonRefined
 
+
 object Handlers {
-  import akka.http.scaladsl.model._
-  import akka.http.scaladsl.server._
-  import akka.http.scaladsl.server.Directives._
-  import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+
   import SprayJsonRefined.RefinmentError
 
   def rejectionHandler : RejectionHandler = RejectionHandler.newBuilder().handle {
@@ -24,7 +26,6 @@ object Handlers {
   def exceptionHandler: ExceptionHandler = ExceptionHandler {
     case err: java.sql.SQLIntegrityConstraintViolationException if err.getErrorCode == 1062 =>
       complete(StatusCodes.Conflict ->
-        ErrorRepresentation(ErrorCodes.DuplicateEntry, s"Entry already exists"))
+        ErrorRepresentation(ErrorCodes.DuplicateEntry, "Entry already exists"))
   }
-
 }
