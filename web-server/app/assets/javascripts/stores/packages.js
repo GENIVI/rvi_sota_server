@@ -9,7 +9,7 @@ define(['backbone', 'sota-dispatcher', './package'], function(Backbone, SotaDisp
     dispatchCallback: function(payload) {
       switch(payload.actionType) {
         case 'package-add':
-          this.createWithEvents(payload.package);
+          this.createWithEvents(payload.package, { type: 'put' });
           break;
       }
     }
