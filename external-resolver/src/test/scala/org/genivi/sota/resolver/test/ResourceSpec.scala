@@ -26,11 +26,12 @@ trait ResourceSpec extends Matchers
   val BasePath              = Path("/api") / "v1"
   val VehiclesUri           = (vin: String) => resourceUri("vehicles", vin)
   val PackagesUri           = (name: String, version: String) => resourceUri("packages", name, version)
-  val ResolveUri            = (i: Long) => resourceUri("resolve", i.toString)
+  val ResolveUri            = (name: String, version: String) => resourceUri("resolve", name, version)
   val FiltersUri            = resourceUri("filters")
   val ValidateUri           = (s: String) => resourceUri("validate", s)
   val PackageFiltersUri     = resourceUri("packageFilters")
-  val PackageFiltersListUri = (s: String, fname: String) => resourceUri("packageFilters", s, fname)
+
+  def PackageFiltersListUri(ss: String*) = resourceUri(("packageFilters" +: ss): _*)
 
   // Database
   val name = "test-database"

@@ -9,7 +9,8 @@ import org.scalatest.FlatSpec
 import org.genivi.sota.resolver.types.FilterParser.parseFilter
 import org.genivi.sota.resolver.types.FilterPrinter.ppFilter
 import org.genivi.sota.resolver.types.FilterAST
-import org.genivi.sota.resolver.types.{VinMatches, HasPackage, HasComponent, Not, And, Or}
+import org.genivi.sota.resolver.types.
+  {VinMatches, HasPackage, HasComponent, Not, And, Or, True, False}
 
 
 class FilterParserSpec extends FlatSpec {
@@ -71,6 +72,8 @@ object FilterParserPropSpec extends Properties("The filter parser") {
 
   def genFilterHelper(i: Int): Gen[FilterAST] = {
 
+    def genNullary = Gen.oneOf(True, False)
+
     def genUnary(n: Int) = for {
         f     <- genFilterHelper(n / 2)
         unary <- Gen.oneOf(Not, Not)
@@ -96,8 +99,9 @@ object FilterParserPropSpec extends Properties("The filter parser") {
     i match {
       case 0 => genLeaf
       case n => Gen.frequency(
-        (1, genUnary(n)),
-        (4, genBinary(n))
+        (2, genNullary),
+        (8, genUnary(n)),
+        (10, genBinary(n))
       )
     }
   }

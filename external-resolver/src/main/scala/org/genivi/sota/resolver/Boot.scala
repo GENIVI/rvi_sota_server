@@ -39,6 +39,10 @@ class Routing(db: Database)
       }
     }
 
+  def refinedPackageId =
+    refined[Package.ValidName](PathMatchers.Slash ~ PathMatchers.Segment) &
+      refined[Package.ValidVersion](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.PathEnd)
+
   def packagesRoute: Route =
     pathPrefix("packages") {
       get {
@@ -46,21 +50,15 @@ class Routing(db: Database)
           NoContent
         }
       } ~
-      (put & refined[Package.ValidName](PathMatchers.Slash ~ PathMatchers.Segment)
-           & refined[Package.ValidVersion](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.PathEnd)
-           & entity(as[Package.Metadata]))
-      { (name: Package.Name, version: Package.Version, metadata: Package.Metadata) =>
+      (put & refinedPackageId & entity(as[Package.Metadata])) { (name, version, metadata) =>
         complete(db.run(Packages.add(Package(Package.Id(name, version), metadata.description, metadata.vendor))))
       }
     }
 
   def resolveRoute: Route =
-    path("resolve" / LongNumber) { pkgId =>
-      get {
-        complete {
-          db.run( Vehicles.list ).map( _.map(vehicle => Map(vehicle.vin -> List(pkgId)))
-            .foldRight(Map[Vehicle.IdentificationNumber, List[Long]]())(_++_))
-        }
+    pathPrefix("resolve") {
+      (get & refinedPackageId) { (name, version) =>
+        complete(db.run(Resolve.resolve(name, version)))
       }
     }
 
@@ -104,8 +102,8 @@ class Routing(db: Database)
       }
     } ~
     pathPrefix("packageFilters" / "filtersFor") {
-      (get & refined[Package.ValidName](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.PathEnd)) { pname =>
-        complete(db.run(PackageFilters.listFiltersForPackage(pname)))
+      (get & refinedPackageId) { (pname, pversion) =>
+        complete(db.run(PackageFilters.listFiltersForPackage(pname, pversion)))
       }
     }
   }
