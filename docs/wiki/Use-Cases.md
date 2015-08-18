@@ -64,7 +64,7 @@
 
 ## <a name="server-config">SOTA Server Configuration</a>
 
-### <a name="VIN_ADD">[VIN_ADD](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#VIN_ADD) Add a VIN to the system</a>
+### <a name="VIN_ADD">[VIN_ADD](#VIN_ADD) Add a VIN to the system</a>
 
    - Actors
 
@@ -93,7 +93,7 @@
 
        * X1 - VIN already exists. Triggered by E2, E5
 
-### <a name="VIN_DEL">[VIN_DEL](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#VIN_DEL) Delete an existing VIN</a>
+### <a name="VIN_DEL">[VIN_DEL](#VIN_DEL) Delete an existing VIN</a>
 
    - Actors
 
@@ -121,7 +121,7 @@
 
        * X1 - VIN does not exist. Triggered by E6
 
-### <a name="VIN_SEARCH">[VIN_SEARCH](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#VIN_SEARCH) Search for VINs</a>
+### <a name="VIN_SEARCH">[VIN_SEARCH](#VIN_SEARCH) Search for VINs</a>
 
 Searches and retrieves one or more VINs with their Packages and Components
 
@@ -147,7 +147,7 @@ Searches and retrieves one or more VINs with their Packages and Components
 
        * None
 
-### <a name="VIN_SET_DATA_PLAN">[VIN_SET_DATA_PLAN](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#VIN_SET_DATA_PLAN) Associate Data Plan with VIN</a>
+### <a name="VIN_SET_DATA_PLAN">[VIN_SET_DATA_PLAN](#VIN_SET_DATA_PLAN) Associate Data Plan with VIN</a>
 
 Associates a previously created data plan with a given VIN
 
@@ -172,7 +172,7 @@ Associates a previously created data plan with a given VIN
        * X1 - VIN does not exist. Triggered by E2
        * X2 - Data Plan does not exist. Triggered by E3
 
-### <a name="VIN_GET_UPDATE_HISTORY">[VIN_GET_UPDATE_HISTORY](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#VIN_GET_UPDATE_HISTORY) Get installation history for VIN</a>
+### <a name="VIN_GET_UPDATE_HISTORY">[VIN_GET_UPDATE_HISTORY](#VIN_GET_UPDATE_HISTORY) Get installation history for VIN</a>
 
 All install requests, failed, pending, in-flight or completed are returned.
 
@@ -196,7 +196,7 @@ All install requests, failed, pending, in-flight or completed are returned.
 
        * X1 - VIN does not exist. Triggered by E2
 
-### <a name="PACKAGE_ADD_SOTASERVER">[PACKAGE_ADD_SOTASERVER](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#PACKAGE_ADD_SOTASERVER) Register a new Package with SOTA Server</a>
+### <a name="PACKAGE_ADD_SOTASERVER">[PACKAGE_ADD_SOTASERVER](#PACKAGE_ADD_SOTASERVER) Register a new Package with SOTA Server</a>
 
 Add a software Package that can be pushed to a specific Component on a VIN
 
@@ -220,7 +220,7 @@ Add a software Package that can be pushed to a specific Component on a VIN
 
        * X1 - Software Package with same ID String and Version is already registered with SOTA Server. Triggered by E2
 
-### <a name="PACKAGE_ADD_RESOLVER">[PACKAGE_ADD_RESOLVER](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#PACKAGE_ADD_RESOLVER) Register a new Package with External Resolver</a>
+### <a name="PACKAGE_ADD_RESOLVER">[PACKAGE_ADD_RESOLVER](#PACKAGE_ADD_RESOLVER) Register a new Package with External Resolver</a>
 
 Add a software Package that can be pushed to a specific Component on a VIN
 
@@ -245,7 +245,7 @@ Add a software Package that can be pushed to a specific Component on a VIN
 
        * X1 - Software Package with same ID String and Version is already registered with SOTA Server. Triggered by E2
 
-### <a name="PACKAGE_SEARCH">[PACKAGE_SEARCH](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#PACKAGE_SEARCH) Search for a Package</a>
+### <a name="PACKAGE_SEARCH">[PACKAGE_SEARCH](#PACKAGE_SEARCH) Search for a Package</a>
 
 Searches and retrieves data for software Packages from the system
 
@@ -268,7 +268,7 @@ Searches and retrieves data for software Packages from the system
 
        * None
 
-### <a name="PLAN_ADD">[PLAN_ADD](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#PLAN_ADD) Register a new Data Plan</a>
+### <a name="PLAN_ADD">[PLAN_ADD](#PLAN_ADD) Register a new Data Plan</a>
 
 Add a Data Plan that can later be used by VINs. Billing Cycles are added to the Data Plan by [PLAN_ADD_BILLING_CYCLE](#PLAN_ADD_BILLING_CYCLE)
 
@@ -291,7 +291,7 @@ Add a Data Plan that can later be used by VINs. Billing Cycles are added to the 
 
        * X1 - Data Plan already exists. Triggered by E2.
 
-### <a name="PLAN_ADD_BILLING_CYCLE">[PLAN_ADD_BILLING_CYCLE](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#PLAN_ADD_BILLING_CYCLE) Associate a Billing Cycle with a Data Plan</a>
+### <a name="PLAN_ADD_BILLING_CYCLE">[PLAN_ADD_BILLING_CYCLE](#PLAN_ADD_BILLING_CYCLE) Associate a Billing Cycle with a Data Plan</a>
 
 Add a billing cycle to a Data Plan previously created with [PLAN_ADD](#PLAN_ADD).
 
@@ -315,7 +315,7 @@ Add a billing cycle to a Data Plan previously created with [PLAN_ADD](#PLAN_ADD)
 
        * X1 - Data Plan does not exist. Triggered by E2.
 
-### <a name="PLAN_SEARCH">[PLAN_SEARCH](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#PLAN_SEARCH) Find existing Data Plan</a>
+### <a name="PLAN_SEARCH">[PLAN_SEARCH](#PLAN_SEARCH) Find existing Data Plan</a>
 
 Search for a Data Plan previously added with PLAN_ADD.
 
@@ -337,7 +337,7 @@ Search for a Data Plan previously added with PLAN_ADD.
 
        * None
 
-### <a name="PLAN_GET_BILLING_CYCLES">[PLAN_GET_BILLING_CYCLES](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#PLAN_GET_BILLING_CYCLES) Get Billing Cycles for a Data Plan</a>
+### <a name="PLAN_GET_BILLING_CYCLES">[PLAN_GET_BILLING_CYCLES](#PLAN_GET_BILLING_CYCLES) Get Billing Cycles for a Data Plan</a>
 
 Retrieve billing cycles and their details belonging to a specific Data Plan.
 
@@ -361,7 +361,7 @@ Retrieve billing cycles and their details belonging to a specific Data Plan.
 
        * X1 - Data Plan does not exist. Triggered by E2. 
 
-### <a name="PLAN_ADD_TRAFFIC">[PLAN_ADD_TRAFFIC](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#PLAN_ADD_TRAFFIC) Add Traffic Information to active Billing Cycle for Data Plan associated with VIN</a>
+### <a name="PLAN_ADD_TRAFFIC">[PLAN_ADD_TRAFFIC](#PLAN_ADD_TRAFFIC) Add Traffic Information to active Billing Cycle for Data Plan associated with VIN</a>
 
 Add traffic information to the active Billing Cycle under the Data Plan associated with a specific VIN.
 
@@ -391,7 +391,7 @@ Add traffic information to the active Billing Cycle under the Data Plan associat
 
 ## <a name="resolver-config">External Resolver Configuration</a>
 
-### <a name="FILTER_ADD">[FILTER_ADD](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#FILTER_ADD) Add a new Filter</a>
+### <a name="FILTER_ADD">[FILTER_ADD](#FILTER_ADD) Add a new Filter</a>
 
 Add a filter
 
@@ -416,7 +416,7 @@ Add a filter
        * X1 - Filter Label already exists. Triggered by E1.
        * X2 - Filter Expression validation fails. Triggered by E2.
 
-### <a name="FILTER_SEARCH">[FILTER_SEARCH](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#FILTER_SEARCH) Search for a Filter</a>
+### <a name="FILTER_SEARCH">[FILTER_SEARCH](#FILTER_SEARCH) Search for a Filter</a>
 
 Search for an existing filter
 
@@ -439,7 +439,7 @@ Search for an existing filter
 
        * None
 
-### <a name="FILTER_VALIDATE">[FILTER_VALIDATE](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#FILTER_VALIDATE) Test validity of a Filter Expression</a>
+### <a name="FILTER_VALIDATE">[FILTER_VALIDATE](#FILTER_VALIDATE) Test validity of a Filter Expression</a>
 
 Validate filter syntax and semantics
 
@@ -463,7 +463,7 @@ Validate filter syntax and semantics
 
        * None
 
-### <a name="FILTER_DELETE">[FILTER_DELETE](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#FILTER_DELETE) Delete a Filter</a>
+### <a name="FILTER_DELETE">[FILTER_DELETE](#FILTER_DELETE) Delete a Filter</a>
 
 Delete an existing filter
 
@@ -486,7 +486,7 @@ Delete an existing filter
 
        * X1 - Filter label does not exist. Triggered by E2. 
 
-### <a name="FILTER_PACKAGE_ADD">[FILTER_PACKAGE_ADD](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#FILTER_PACKAGE_ADD) Associate a Package with a Filter</a>
+### <a name="FILTER_PACKAGE_ADD">[FILTER_PACKAGE_ADD](#FILTER_PACKAGE_ADD) Associate a Package with a Filter</a>
 
 Associate an existing filter with an existing Package.
 
@@ -513,7 +513,7 @@ Associate an existing filter with an existing Package.
        * X1 - Filter label does not exist. Triggered by E2.
        * X2 - Package ID does not exist. Triggered by E3.
 
-### <a name="FILTER_PACKAGE_DELETE">[FILTER_PACKAGE_DELETE](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#FILTER_PACKAGE_DELETE) Remove a Package from a Filter</a>
+### <a name="FILTER_PACKAGE_DELETE">[FILTER_PACKAGE_DELETE](#FILTER_PACKAGE_DELETE) Remove a Package from a Filter</a>
 
 Remove an association between an existing Package and an existing Filter
 
@@ -536,7 +536,7 @@ Remove an association between an existing Package and an existing Filter
 
        * X1 - Filter-Package association does not exist. Triggered by E2.
 
-### <a name="FILTER_SEARCH_PACKAGE_BY_FILTER">[FILTER_SEARCH_PACKAGE_BY_FILTER](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#FILTER_SEARCH_PACKAGE_BY_FILTER) Get list of Packages by Filter</a>
+### <a name="FILTER_SEARCH_PACKAGE_BY_FILTER">[FILTER_SEARCH_PACKAGE_BY_FILTER](#FILTER_SEARCH_PACKAGE_BY_FILTER) Get list of Packages by Filter</a>
 
 Retrieve all Packages associated with a Filter.
 
@@ -559,7 +559,7 @@ Retrieve all Packages associated with a Filter.
 
        * X1 - Filter label does not exist. Triggered by E2.
 
-### <a name="FILTER_SEARCH_FILTER_BY_PACKAGE">[FILTER_SEARCH_FILTER_BY_PACKAGE](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#FILTER_SEARCH_FILTER_BY_PACKAGE) Get list of Filters by Package</a>
+### <a name="FILTER_SEARCH_FILTER_BY_PACKAGE">[FILTER_SEARCH_FILTER_BY_PACKAGE](#FILTER_SEARCH_FILTER_BY_PACKAGE) Get list of Filters by Package</a>
 
 Retrieve all Filters associated with a Package.
 
@@ -582,7 +582,7 @@ Retrieve all Filters associated with a Package.
 
        * X1 - Package does not exist. Triggered by E2.
 
-### <a name="COMP_ADD">[COMP_ADD](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#COMP_ADD) Add a Component</a>
+### <a name="COMP_ADD">[COMP_ADD](#COMP_ADD) Add a Component</a>
 
 Adds a component that can subsequently be associated with one or more VINs
 
@@ -606,7 +606,7 @@ Adds a component that can subsequently be associated with one or more VINs
        * X1 - If Component exists, X1 is executed. Triggered at E1.
 
 
-### <a name="VIN_ADD_COMP">[VIN_ADD_COMP](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#VIN_ADD_COMP) Associate a Component with a VIN</a>
+### <a name="VIN_ADD_COMP">[VIN_ADD_COMP](#VIN_ADD_COMP) Associate a Component with a VIN</a>
 
 Associates a previously configured Component with a VIN, indicating that the VIN has the given part number installed
 
@@ -636,7 +636,7 @@ Associates a previously configured Component with a VIN, indicating that the VIN
 
        * The association is registered in the External Resolver, and searchable with [VIN_SEARCH_BY_COMP](#VIN_SEARCH_BY_COMP) and [COMP_SEARCH_BY_VIN](#COMP_SEARCH_BY_VIN)
 
-### <a name="VIN_ADD_PACKAGE">[VIN_ADD_PACKAGE](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#VIN_ADD_PACKAGE) Associate a Package with a VIN</a>
+### <a name="VIN_ADD_PACKAGE">[VIN_ADD_PACKAGE](#VIN_ADD_PACKAGE) Associate a Package with a VIN</a>
 
 Associates a previously provisioned software Package as being installed on a given VIN
 
@@ -666,7 +666,7 @@ Associates a previously provisioned software Package as being installed on a giv
 
        * The association is registered in the External Resolver, and searchable with [PACKAGE_SEARCH_BY_VIN](#PACKAGE_SEARCH_BY_VIN)
 
-### <a name="VIN_DELETE_PACKAGE">[VIN_DELETE_PACKAGE](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#VIN_DELETE_PACKAGE) Remove a Package from a VIN</a>
+### <a name="VIN_DELETE_PACKAGE">[VIN_DELETE_PACKAGE](#VIN_DELETE_PACKAGE) Remove a Package from a VIN</a>
 
 Removes an existing reference for a software package as being install on a VIN
 
@@ -693,7 +693,7 @@ Removes an existing reference for a software package as being install on a VIN
 
        * None
 
-### <a name="COMP_SEARCH">[COMP_SEARCH](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#COMP_SEARCH) Search for a Component</a>
+### <a name="COMP_SEARCH">[COMP_SEARCH](#COMP_SEARCH) Search for a Component</a>
 
 Search for one or more components based on a regexp search pattern
 
@@ -720,7 +720,7 @@ Search for one or more components based on a regexp search pattern
 
        * None
 
-### <a name="VIN_SEARCH_BY_COMP">[VIN_SEARCH_BY_COMP](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#VIN_SEARCH_BY_COMP) Find VINs by Component</a>
+### <a name="VIN_SEARCH_BY_COMP">[VIN_SEARCH_BY_COMP](#VIN_SEARCH_BY_COMP) Find VINs by Component</a>
 
 Find and return all VINs that have been associated with a specific Component
 
@@ -748,7 +748,7 @@ Find and return all VINs that have been associated with a specific Component
 
        * None
 
-### <a name="COMP_SEARCH_BY_VIN">[COMP_SEARCH_BY_VIN](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#COMP_SEARCH_BY_VIN) Find Components associated with a VIN</a>
+### <a name="COMP_SEARCH_BY_VIN">[COMP_SEARCH_BY_VIN](#COMP_SEARCH_BY_VIN) Find Components associated with a VIN</a>
 
 Find and return part numbers of all Components installed on a specific VIN
 
@@ -776,7 +776,7 @@ Find and return part numbers of all Components installed on a specific VIN
 
        * None
 
-### <a name="PACKAGE_ADD_DEPENDENCY">[PACKAGE_ADD_DEPENDENCY](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#PACKAGE_ADD_DEPENDENCY) Create Dependency between Packages</a>
+### <a name="PACKAGE_ADD_DEPENDENCY">[PACKAGE_ADD_DEPENDENCY](#PACKAGE_ADD_DEPENDENCY) Create Dependency between Packages</a>
 
 Specifies that a software Package needs another software Package in order to function properly when installed on a Component.
 
@@ -802,7 +802,7 @@ Specifies that a software Package needs another software Package in order to fun
        * X1 - Dependent Package ID does not exist. Triggered by E2
        * X2 - Depended Package ID does not exist. Triggered by E3
 
-### <a name="PACKAGE_GET_DEPENDENCIES">[PACKAGE_GET_DEPENDENCIES](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#PACKAGE_GET_DEPENDENCIES) Get Dependencies for a Package</a>
+### <a name="PACKAGE_GET_DEPENDENCIES">[PACKAGE_GET_DEPENDENCIES](#PACKAGE_GET_DEPENDENCIES) Get Dependencies for a Package</a>
 
 Retrieves the IDs of all Packages that the provided Package needs in order to operate on a Component. Recursive Dependencies are an option.
 
@@ -835,7 +835,7 @@ Retrieves the IDs of all Packages that the provided Package needs in order to op
 
        * X1 - Package does not exist. Triggered by E2
 
-### <a name="PACKAGE_DEL_DEPENDENCY">[PACKAGE_DEL_DEPENDENCY](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#PACKAGE_DEL_DEPENDENCY) Remove Dependency between Packages</a>
+### <a name="PACKAGE_DEL_DEPENDENCY">[PACKAGE_DEL_DEPENDENCY](#PACKAGE_DEL_DEPENDENCY) Remove Dependency between Packages</a>
 
 Deletes a dependency between two software packages previously added with [PACKAGE_ADD_DEPENDENCY](#PACKAGE_ADD_DEPENDENCY).
 
@@ -863,7 +863,7 @@ Deletes a dependency between two software packages previously added with [PACKAG
        * X2 - Depended-upon Package does not exist. Triggered by E3
        * X3 - Dependency relation could not be found. Triggered by E4
 
-### <a name="PACKAGE_SEARCH_BY_VIN">[PACKAGE_SEARCH_BY_VIN](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#PACKAGE_SEARCH_BY_VIN) Find VINs by Package</a>
+### <a name="PACKAGE_SEARCH_BY_VIN">[PACKAGE_SEARCH_BY_VIN](#PACKAGE_SEARCH_BY_VIN) Find VINs by Package</a>
 
 Retrieves all VINs with a specific Package installed on them
 
@@ -889,7 +889,7 @@ Retrieves all VINs with a specific Package installed on them
 
 ## <a name="queue-management">Installation Queue Management (SOTA Server)</a>
 
-### <a name="QUEUE_REQUEST_ADD">[QUEUE_REQUEST_ADD](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE_REQUEST_ADD) Queue a package for installation on VINs matching Filter</a>
+### <a name="QUEUE_REQUEST_ADD">[QUEUE_REQUEST_ADD](#QUEUE_REQUEST_ADD) Queue a package for installation on VINs matching Filter</a>
 
 Queues a package for distribution to all VINs that match a provided boolean algebra filter
 
@@ -919,7 +919,7 @@ Queues a package for distribution to all VINs that match a provided boolean alge
        * X1 - Package ID does not exist. Triggered by E2
        * A1.1 - Resolver returns all provisioned VINs to SOTA Server. Triggered by E4. Continue execution at E7.
 
-### <a name="QUEUE_REQUEST_CANCEL">[QUEUE_REQUEST_CANCEL](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE_REQUEST_CANCEL) Cancel a previous Installation Request</a>
+### <a name="QUEUE_REQUEST_CANCEL">[QUEUE_REQUEST_CANCEL](#QUEUE_REQUEST_CANCEL) Cancel a previous Installation Request</a>
 
 Cancels a previously added install request.
 
@@ -946,7 +946,7 @@ Cancels a previously added install request.
 
        * X1 - Install Request ID does not exist. Triggered by E2
 
-### <a name="QUEUE_GET_STATUS">[QUEUE_GET_STATUS](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE_GET_STATUS) Get status for an Installation Request</a>
+### <a name="QUEUE_GET_STATUS">[QUEUE_GET_STATUS](#QUEUE_GET_STATUS) Get status for an Installation Request</a>
 
 Retrieve status for an install request previously setup with [QUEUE_REQUEST_ADD](#QUEUE_REQUEST_ADD)
 
@@ -973,7 +973,7 @@ Retrieve status for an install request previously setup with [QUEUE_REQUEST_ADD]
        * X1 - Install Request ID does not exist. Triggered by E2
 
 
-### <a name="QUEUE_GET_COMPLETED_VINS">[QUEUE_GET_COMPLETED_VINS](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE_GET_COMPLETED_VINS) List VINs for which installation is complete for Installation Request</a>
+### <a name="QUEUE_GET_COMPLETED_VINS">[QUEUE_GET_COMPLETED_VINS](#QUEUE_GET_COMPLETED_VINS) List VINs for which installation is complete for Installation Request</a>
 
 Retrieve all completed VINs for a given Install Request ID
 
@@ -997,7 +997,7 @@ Retrieve all completed VINs for a given Install Request ID
 
        * X1 - Install Request ID does not exist. Triggered by E2
 
-### <a name="QUEUE_GET_PENDING_VINS">[QUEUE_GET_PENDING_VINS](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE_GET_PENDING_VINS) List VINs for which installation is pending for Installation Request</a>
+### <a name="QUEUE_GET_PENDING_VINS">[QUEUE_GET_PENDING_VINS](#QUEUE_GET_PENDING_VINS) List VINs for which installation is pending for Installation Request</a>
 
 Retrieve all pending VINs for a given Install Request ID
 
@@ -1021,7 +1021,7 @@ Retrieve all pending VINs for a given Install Request ID
 
        * X1 - Install Request ID does not exist. Triggered by E2
 
-### <a name="QUEUE_GET_IN_FLIGHT_VINS">[QUEUE_GET_IN_FLIGHT_VINS](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE_GET_IN_FLIGHT_VINS) List VINs for which installation is ongoing for Installation Request</a>
+### <a name="QUEUE_GET_IN_FLIGHT_VINS">[QUEUE_GET_IN_FLIGHT_VINS](#QUEUE_GET_IN_FLIGHT_VINS) List VINs for which installation is ongoing for Installation Request</a>
 
 Retrieve install requests for a given Install Request ID, which have initiated their transfers to their target VINs, but have yet to complete the transmission and be installed
 
@@ -1045,7 +1045,7 @@ Retrieve install requests for a given Install Request ID, which have initiated t
 
        * X1 - Install Request ID does not exist. Triggered by E2
 
-### <a name="QUEUE_GET_FAILED_VINS">[QUEUE_GET_FAILED_VINS](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE_GET_FAILED_VINS) List VINs for which installation failed for Installation Request</a>
+### <a name="QUEUE_GET_FAILED_VINS">[QUEUE_GET_FAILED_VINS](#QUEUE_GET_FAILED_VINS) List VINs for which installation failed for Installation Request</a>
 
 Retrieve install requests for a given Install Request ID which have failed
 
@@ -1069,7 +1069,7 @@ Retrieve install requests for a given Install Request ID which have failed
 
        * X1 - Install Request ID does not exist. Triggered by E2
 
-### <a name="QUEUE_GET_NEXT_SOFTWARE_UPDATE">[QUEUE_GET_NEXT_SOFTWARE_UPDATE](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE_GET_NEXT_SOFTWARE_UPDATE) Get current or next queued Installation Request for VIN</a>
+### <a name="QUEUE_GET_NEXT_SOFTWARE_UPDATE">[QUEUE_GET_NEXT_SOFTWARE_UPDATE](#QUEUE_GET_NEXT_SOFTWARE_UPDATE) Get current or next queued Installation Request for VIN</a>
 
 Sub use case used by [QUEUE_INITIATE_XMIT](#QUEUE_INITIATE_XMIT) and [TRANSFER_START](#TRANSFER_START) to determine which software update to transmit next to a specific VIN
 
@@ -1098,7 +1098,7 @@ Sub use case used by [QUEUE_INITIATE_XMIT](#QUEUE_INITIATE_XMIT) and [TRANSFER_S
        * A2 - No data plan has been set by VIN. Use case returns successfully with the given software update. Triggered by E7
        * A3 - Software update size is greater than remaining size of current billing cycle. Use case returns an over size error. Triggered by E7
 
-### <a name="QUEUE_INITIATE_XMIT">[QUEUE_INITIATE_XMIT](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE_INITIATE_XMIT) </a>
+### <a name="QUEUE_INITIATE_XMIT">[QUEUE_INITIATE_XMIT](#QUEUE_INITIATE_XMIT) </a>
 
 Periodically go through all queued software updates targeting VINs and initiate the transmission of those ready to send
 
@@ -1127,7 +1127,7 @@ Periodically go through all queued software updates targeting VINs and initiate 
        * A2 - [QUEUE_GET_NEXT_SOFTWARE_UPDATE](#QUEUE_GET_NEXT_SOFTWARE_UPDATE) returns oversize error. Use case continues at E3 with the next VIN from the list retrieved in E1. (Will leave the oversized update as pending until the next billing cycle for the data plan used by the VIN becomes active.) Triggered by E5
 
 
-### <a name="QUEUE_PURGE">[QUEUE_PURGE](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE_PURGE) Purge failing or expired Installation Requests from Queue</a>
+### <a name="QUEUE_PURGE">[QUEUE_PURGE](#QUEUE_PURGE) Purge failing or expired Installation Requests from Queue</a>
 
 Periodically go through all pending software updates that are not complete, failed, or in flight and remove those whose date/time install interval has expired.
 
@@ -1153,7 +1153,7 @@ Periodically go through all pending software updates that are not complete, fail
 
        * None
 
-### <a name="QUEUE_REQUEST_GET_ALL_PACKAGES">[QUEUE_REQUEST_GET_ALL_PACKAGES](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#QUEUE_REQUEST_GET_ALL_PACKAGES) Get list of Packages queued for a VIN</a>
+### <a name="QUEUE_REQUEST_GET_ALL_PACKAGES">[QUEUE_REQUEST_GET_ALL_PACKAGES](#QUEUE_REQUEST_GET_ALL_PACKAGES) Get list of Packages queued for a VIN</a>
 
 A request to retrieve a list of all installed packages is queued for a specific VIN
 
@@ -1181,7 +1181,7 @@ A request to retrieve a list of all installed packages is queued for a specific 
 
 ## <a name="device-interaction">Device Interaction</a>
 
-### <a name="DEV_WAKEUP">[DEV_WAKEUP](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#DEV_WAKEUP) Send Wake-up event to VIN, triggering [DEV_CONNECT](#DEV_CONNECT)</a>
+### <a name="DEV_WAKEUP">[DEV_WAKEUP](#DEV_WAKEUP) Send Wake-up event to VIN, triggering [DEV_CONNECT](#DEV_CONNECT)</a>
 
 A Device receives a wakeup notification sent by a [QUEUE_INITIATE_XMIT](#QUEUE_INITIATE_XMIT) use case and will start the download and install software update process.
 
@@ -1203,7 +1203,7 @@ A Device receives a wakeup notification sent by a [QUEUE_INITIATE_XMIT](#QUEUE_I
 
        * X1 - PKI validation failed. The message is ignored and the use cases is terminated. Triggered by E2
 
-### <a name="DEV_CONNECT">[DEV_CONNECT](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#DEV_CONNECT) Device connects to SOTA Server to process or resume Installation Request</a>
+### <a name="DEV_CONNECT">[DEV_CONNECT](#DEV_CONNECT) Device connects to SOTA Server to process or resume Installation Request</a>
 
 The device connects to SOTA Server in order to start or continue a download of a software update targeting the VIN of the device.
 
@@ -1239,7 +1239,7 @@ The device connects to SOTA Server in order to start or continue a download of a
        * A3 - [TRANSFER_CHUNK](#TRANSFER_CHUNK) is waiting to have its message sent to Device. The use case transitions to [TRANSFER_CHUNK](#TRANSFER_CHUNK)-E2. Triggered by E5.
        * A4 - [TRANSFER_COMPLETE](#TRANSFER_COMPLETE) is waiting to have its message sent to Device. The use case transitions to [TRANSFER_COMPLETE](#TRANSFER_COMPLETE)-E1. Triggered by E5.
 
-### <a name="DEV_DISCONNECT">[DEV_DISCONNECT](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#DEV_DISCONNECT) SOTA Server instructs Device to disconnect</a>
+### <a name="DEV_DISCONNECT">[DEV_DISCONNECT](#DEV_DISCONNECT) SOTA Server instructs Device to disconnect</a>
 
 Disconnect a server session
 
@@ -1262,7 +1262,7 @@ Disconnect a server session
 
        * X1 - Network connection lost before disconnect is received by device. Triggered by E1. [DEV_CONNECT](#DEV_CONNECT) is executed X times in order to reconnet to the server.
 
-### <a name="UPDATE_NOTIFICATION">[UPDATE_NOTIFICATION](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#UPDATE_NOTIFICATION) Send any queued Installation Requests ([QUEUE_GET_NEXT_SOFTWARE_UPDATE](#QUEUE_GET_NEXT_SOFTWARE_UPDATE)) to Device</a>
+### <a name="UPDATE_NOTIFICATION">[UPDATE_NOTIFICATION](#UPDATE_NOTIFICATION) Send any queued Installation Requests ([QUEUE_GET_NEXT_SOFTWARE_UPDATE](#QUEUE_GET_NEXT_SOFTWARE_UPDATE)) to Device</a>
 
 Send a notification of available software updates to vehicle
 
@@ -1286,7 +1286,7 @@ Send a notification of available software updates to vehicle
 
        * X1 - Network connection lost before update is received by device. Triggered by E2. [DEV_CONNECT](#DEV_CONNECT) is executed X times in order to reconnet to the server.
 
-### <a name="TRIGGER_TRANSFER_START">[TRIGGER_TRANSFER_START](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#TRIGGER_TRANSFER_START) Software Loading Manager requests download from SOTA Server via SOTA Client</a>
+### <a name="TRIGGER_TRANSFER_START">[TRIGGER_TRANSFER_START](#TRIGGER_TRANSFER_START) Software Loading Manager requests download from SOTA Server via SOTA Client</a>
 
 Send a request to start the transfer from
 
@@ -1314,7 +1314,7 @@ Send a request to start the transfer from
 
        * X1 - Network connection lost before Initiate / Cancel Software Download is sent. Triggered by E2. Use case transitions to [DEV_CONNECT](#DEV_CONNECT).
 
-### <a name="TRANSFER_START">[TRANSFER_START](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#TRANSFER_START) SOTA Server sends Download metadata to Device</a>
+### <a name="TRANSFER_START">[TRANSFER_START](#TRANSFER_START) SOTA Server sends Download metadata to Device</a>
 
 Start transfer of an update.
 
@@ -1342,7 +1342,7 @@ Start transfer of an update.
        * A2 - Software update is marked as in-flight. Use case transitions to [TRANSFER_CHUNK](#TRANSFER_CHUNK). (We are picking up a previously interrupted software update transfer and want to move on to the next chunk of the update)
        * A3 - Next element in queue is a GET_ALL_PACKAGES request. Use case transitions to [GET_ALL_PACKAGES](#GET_ALL_PACKAGES)
 
-### <a name="TRANSFER_CHUNK">[TRANSFER_CHUNK](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#TRANSFER_CHUNK) SOTA Server sends next Download chunk to Device</a>
+### <a name="TRANSFER_CHUNK">[TRANSFER_CHUNK](#TRANSFER_CHUNK) SOTA Server sends next Download chunk to Device</a>
 
 Transfer a chunk of data for an update
 
@@ -1377,7 +1377,7 @@ Transfer a chunk of data for an update
 
        * X2 - Network connection lost before acknowledgement is received by SOTA Server. Triggered by E5. [DEV_CONNECT](#DEV_CONNECT) is executed X times in order to reconnect to the server. Chunk will be retransmitted, and E4.A1 will handle the case. After X time, we rely on [QUEUE_INITIATE_XMIT](#QUEUE_INITIATE_XMIT) for future retries.
 
-### <a name="TRANSFER_COMPLETE">[TRANSFER_COMPLETE](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#TRANSFER_COMPLETE) SOTA Server sends Finalize Download to Device</a>
+### <a name="TRANSFER_COMPLETE">[TRANSFER_COMPLETE](#TRANSFER_COMPLETE) SOTA Server sends Finalize Download to Device</a>
 
 Finalize an update transfer
 
@@ -1402,7 +1402,7 @@ Finalize an update transfer
        * X1 - Network connection lost before FINALIZE_DOWNLOAD command is received by Device. Triggered by E1. [DEV_CONNECT](#DEV_CONNECT) is executed X times in order to reconnect to the server. After X times we rely on [QUEUE_INITIATE_XMIT](#QUEUE_INITIATE_XMIT) for future retries.
        * X2.1 - Chunks are missing on Device, even if SOTA Server believes all have been transmitted. Triggered by E2. Use case transitions to [INSTALL_SOFTWARE_UPDATE](#INSTALL_SOFTWARE_UPDATE) with an INCOMPLETE_DOWNLOAD result code.
 
-### <a name="INSTALL_SOFTWARE_UPDATE">[INSTALL_SOFTWARE_UPDATE](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#INSTALL_SOFTWARE_UPDATE) Device installs all received Packages </a>
+### <a name="INSTALL_SOFTWARE_UPDATE">[INSTALL_SOFTWARE_UPDATE](#INSTALL_SOFTWARE_UPDATE) Device installs all received Packages </a>
 
 Validate and install all packages received in a software update from SOTA Server.
 
@@ -1425,7 +1425,7 @@ Validate and install all packages received in a software update from SOTA Server
 
        * X1 - Package validation fails. Triggered by E1. Use case transitions to [INSTALL_REPORT](#INSTALL_REPORT) with a VALIDATION_FAIL result code.
 
-### <a name="INSTALL_REPORT">[INSTALL_REPORT](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#INSTALL_REPORT) Device reports Installation Result to SOTA Server</a>
+### <a name="INSTALL_REPORT">[INSTALL_REPORT](#INSTALL_REPORT) Device reports Installation Result to SOTA Server</a>
 
 Report installation success or failure
 
@@ -1453,7 +1453,7 @@ Report installation success or failure
        * A1 - VIN is already marked as completed. Triggered by E2. Use case transitions to [TRANSFER_START](#TRANSFER_START).
        * A2 - VIN is already marked as failed. Triggered by E3. Use case transitions to [TRANSFER_START](#TRANSFER_START).
 
-### <a name="GET_ALL_PACKAGES">[GET_ALL_PACKAGES](https://github.com/advancedtelematic/sota-server/wiki/Use-Cases#GET_ALL_PACKAGES) Get list of Packages installed on a VIN (from the Device)</a>
+### <a name="GET_ALL_PACKAGES">[GET_ALL_PACKAGES](#GET_ALL_PACKAGES) Get list of Packages installed on a VIN (from the Device)</a>
 
 Retrieve all packages currently installed on a device
 
