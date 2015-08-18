@@ -13,7 +13,7 @@ This project also houses common resources for the sub-projects including:
 
 ## <a name="install_deploy">Deployment / Installation</a>
 
-<!--- The [sota_client](https://github.com/advancedtelematic/sota-client) project builds an RPM that can be installed on a target system, and includes Yocto recipes to allow it to be built into a GENIVI Demo Platform or AGL Reference Platform image.
+<!--- The [sota_client](https://github.com/PDXostc/rvi_sota_client) project builds an RPM that can be installed on a target system, and includes Yocto recipes to allow it to be built into a GENIVI Demo Platform or AGL Reference Platform image.
 -->
 
 For the server-side components, this project includes a [docker-laucher](https://github.com/advancedtelematic/docker-launcher) configuration file to allow the cluster of components to be deployed conveniently to a developer machine. In future versions, it will also include docker-launcher configuration files to deploy to an IaaS cloud (e.g. AWS).
