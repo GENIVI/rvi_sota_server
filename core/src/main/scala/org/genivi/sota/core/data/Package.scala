@@ -4,6 +4,8 @@
  */
 package org.genivi.sota.core.data
 
+import akka.http.scaladsl.model.Uri
+
 case class PackageId( name: Package.Name, version: Package.Version )
 
 object PackageId {
@@ -15,6 +17,9 @@ object PackageId {
 
 case class Package(
   id: PackageId,
+  uri: Uri,
+  size: Long,
+  checkSum: String,
   description: Option[String],
   vendor: Option[String]
 )

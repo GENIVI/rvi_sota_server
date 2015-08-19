@@ -8,6 +8,9 @@ CREATE TABLE Package (
     -- Natural key is name + version
     name varchar(200) NOT NULL,
     version varchar(200) NOT NULL,
+    uri varchar(4096) NOT NULL,
+    file_size int NOT NULL,
+    check_sum varchar(4096) NOT NULL,
     -- Free form description
     description text,
     -- Free form information about the vendor

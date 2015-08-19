@@ -19,20 +19,28 @@ import spray.json._
 import DefaultJsonProtocol._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 
-class DependencyResolver(host: String, port: Int)(implicit system : ActorSystem,
-                                                  mat: ActorMaterializer,
-                                                  exec: ExecutionContext) {
-  val uri: Uri = Uri().withScheme("http").withAuthority(host, port)
+trait ExternalResolverClient {
+
+  def putPackage(packageId: PackageId, description: Option[String], vendor: Option[String]): Future[Unit]
+
+  def resolve(packageId: PackageId): Future[Map[Vehicle, Set[PackageId]]]
+}
+
+class DefaultExternalResolverClient(baseUri : Uri)
+                                   (implicit system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext) extends ExternalResolverClient {
 
   import org.genivi.sota.refined.SprayJsonRefined._
-  def resolve(packageId: PackageId): Future[Map[Vehicle, Set[PackageId]]] =
+
+  override def resolve(packageId: PackageId): Future[Map[Vehicle, Set[PackageId]]] =
     request(packageId).flatMap { response =>
       Unmarshal(response.entity).to[Map[Vehicle.IdentificationNumber, Set[PackageId]]].map { parsed =>
         parsed.map { case (k, v) => Vehicle(k) -> v }
       }
     }.recover { case _ => Map.empty[Vehicle, Set[PackageId]] }
 
+  override def putPackage(packageId: PackageId, description: Option[String], vendor: Option[String]): Future[Unit] = ???
+
   private def request(packageId: PackageId): Future[HttpResponse] = {
-    Http().singleRequest(HttpRequest(uri = uri.withPath(Uri.Path(s"/api/v1/resolve/$packageId"))))
+    Http().singleRequest(HttpRequest(uri = baseUri.withPath( baseUri.path / packageId.name.get / packageId.version.get)))
   }
 }

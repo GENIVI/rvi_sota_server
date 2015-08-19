@@ -1,0 +1,159 @@
+/**
+ * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * License: MPL-2.0
+ */
+package org.genivi.sota.core
+
+import java.io.File
+import java.security.MessageDigest
+
+import akka.actor.ActorSystem
+import akka.event.Logging
+import akka.http.scaladsl.common.StrictForm
+import akka.http.scaladsl.model.{Uri, HttpResponse}
+import akka.http.scaladsl.model.StatusCodes._
+import akka.http.scaladsl.server.PathMatchers.Slash
+import akka.http.scaladsl.server.{PathMatchers, ExceptionHandler, Directives}
+import akka.parboiled2.util.Base64
+import akka.stream.ActorMaterializer
+import akka.stream.io.SynchronousFileSink
+import akka.util.ByteString
+import org.genivi.sota.core.data._
+import org.genivi.sota.core.db.{Packages, Vehicles, InstallRequests, InstallCampaigns}
+import org.genivi.sota.rest.Validation._
+import spray.json.{JsString, JsObject}
+import slick.driver.MySQLDriver.api.Database
+import scala.concurrent.Future
+import Directives._
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import spray.json.DefaultJsonProtocol._
+
+class VehiclesResource(db: Database)
+                      (implicit system: ActorSystem, mat: ActorMaterializer) {
+
+  import system.dispatcher
+
+  val route = pathPrefix("vehicles") {
+    (put & refined[Vehicle.Vin](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.PathEnd)) { vin =>
+          complete(db.run( Vehicles.create(Vehicle(vin)) ).map(_ => NoContent))
+        }
+    } ~
+    path("vehicles") {
+      get {
+        parameters('regex.?) { (regex) =>
+          val query = regex match {
+            case Some(r) => Vehicles.searchByRegex(r)
+            case _ => Vehicles.list()
+          }
+          complete{ db.run(query) }
+        }
+      }
+    }
+}
+
+class CampaignsResource(resolver: ExternalResolverClient, db: Database)
+                       (implicit system: ActorSystem, mat: ActorMaterializer) {
+  import system.dispatcher
+
+  def createCampaign(campaign: InstallCampaign): Future[InstallCampaign] = {
+    def persistCampaign(dependencies: Map[Vehicle, Set[PackageId]]) = for {
+      persistedCampaign <- InstallCampaigns.create(campaign)
+      _ <- InstallRequests.createRequests(InstallRequest.from(dependencies, persistedCampaign.id.head).toSeq)
+    } yield persistedCampaign
+
+    for {
+      dependencyMap <- resolver.resolve(campaign.packageId)
+      persistedCampaign <- db.run(persistCampaign(dependencyMap))
+    } yield persistedCampaign
+  }
+
+  val route = path("install_campaigns") {
+    (post & entity(as[InstallCampaign])) { campaign =>
+      complete( createCampaign( campaign ) )
+    }
+  }
+}
+
+class PackagesResource(resolver: ExternalResolverClient, db : Database)
+                      (implicit system: ActorSystem, mat: ActorMaterializer) {
+
+  import akka.stream.stage._
+  import system.dispatcher
+
+  def digestCalculator(algorithm: String) : PushPullStage[ByteString, String] = new PushPullStage[ByteString, String] {
+    val digest = MessageDigest.getInstance(algorithm)
+
+    override def onPush(chunk: ByteString, ctx: Context[String]): SyncDirective = {
+      digest.update(chunk.toArray)
+      ctx.pull()
+    }
+
+    override def onPull(ctx: Context[String]): SyncDirective = {
+      if (ctx.isFinishing) ctx.pushAndFinish(Base64.rfc2045().encodeToString(digest.digest(), false))
+      else ctx.pull()
+    }
+
+    override def onUpstreamFinish(ctx: Context[String]): TerminationDirective = {
+      // If the stream is finished, we need to emit the last element in the onPull block.
+      // It is not allowed to directly emit elements from a termination block
+      // (onUpstreamFinish or onUpstreamFailure)
+      ctx.absorbTermination()
+    }
+  }
+
+  def savePackage( packageId: PackageId, fileData: StrictForm.FileData )(implicit system: ActorSystem, mat: ActorMaterializer) : Future[(Uri, Long, String)] = {
+    val fileName = fileData.filename.getOrElse(s"${packageId.name.get}-${packageId.version.get}")
+    val file = new File(fileName)
+    val data = fileData.entity.dataBytes
+    for {
+      size <- data.runWith( SynchronousFileSink( file ) )
+      digest <- data.transform(() => digestCalculator("SHA-1")).runFold("")( (acc, data) => acc ++ data)
+    } yield (file.toURI().toString(), size, digest)
+  }
+
+  val route = pathPrefix("packages") {
+    get {
+      complete {
+        NoContent
+        //Packages.list
+      }
+    } ~
+    (put & refined[Package.ValidName]( Slash ~ Segment) & refined[Package.ValidVersion](Slash ~ Segment ~ PathEnd)).as(PackageId.apply _) { packageId =>
+      formFields('description.?, 'vendor.?, 'file.as[StrictForm.FileData]) { (description, vendor, fileData) =>
+        complete(
+          for {
+            _                   <- resolver.putPackage(packageId, description, vendor)
+            (uri, size, digest) <- savePackage(packageId, fileData)
+            _                   <- db.run(Packages.create( Package(packageId, uri, size, digest, description, vendor) ))
+          } yield NoContent
+        )
+      }
+    }
+  }
+
+}
+
+class WebService(resolver: ExternalResolverClient, db : Database)
+                (implicit system: ActorSystem, mat: ActorMaterializer) extends Directives {
+  val log = Logging(system, "webservice")
+
+  val exceptionHandler = ExceptionHandler {
+    case e: Throwable =>
+      extractUri { uri =>
+        log.error(s"Request to $uri errored: $e")
+        val entity = JsObject("error" -> JsString(e.getMessage()))
+        complete(HttpResponse(InternalServerError, entity = entity.toString()))
+      }
+  }
+
+  val vehicles = new VehiclesResource( db )
+  val campaigns = new CampaignsResource(resolver, db)
+  val packages = new PackagesResource(resolver, db)
+
+  val route = pathPrefix("api" / "v1") {
+    handleExceptions(exceptionHandler) {
+       vehicles.route ~ campaigns.route ~ packages.route
+    }
+  }
+
+}
