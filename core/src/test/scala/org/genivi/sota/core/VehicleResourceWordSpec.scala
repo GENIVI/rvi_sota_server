@@ -8,7 +8,6 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import eu.timepit.refined.internal.Wrapper
 import org.genivi.sota.core.data.Vehicle
 import org.genivi.sota.core.db.Vehicles
 import org.scalatest.BeforeAndAfterAll

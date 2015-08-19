@@ -8,7 +8,6 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.RouteTestTimeout
 import eu.timepit.refined.Refined
-import eu.timepit.refined.internal.Wrapper
 import org.genivi.sota.resolver.types.Vehicle
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 import org.scalacheck._
@@ -18,7 +17,7 @@ object ArbitraryVehicle {
 
   val genVehicle: Gen[Vehicle] =
     Gen.listOfN(17, Gen.alphaNumChar).
-      map(xs => Vehicle(Wrapper.refinedWrapper.wrap(xs.mkString)))
+      map(xs => Vehicle(Refined(xs.mkString)))
 
   implicit lazy val arbVehicle: Arbitrary[Vehicle] =
     Arbitrary(genVehicle)
@@ -39,7 +38,7 @@ object ArbitraryVehicle {
 
   val genInvalidVehicle: Gen[Vehicle] =
     Gen.oneOf(genTooLongVin, genTooShortVin, genNotAlphaNumVin).
-      map(x => Vehicle(Wrapper.refinedWrapper.wrap(x)))
+      map(x => Vehicle(Refined(x)))
 }
 
 class VehiclesResourcePropSpec extends ResourcePropSpec {
