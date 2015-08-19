@@ -39,13 +39,13 @@ object ArbitraryPackage {
   implicit lazy val arbPackage = Arbitrary(genPackage)
 }
 
-class PackageResourcePropSpec extends ResourcePropSpec {
+class PackagesResourcePropSpec extends ResourcePropSpec {
 
   import ArbitraryPackage.arbPackage
 
   property("create a new resource on PUT request") {
     forAll { (p : Package) =>
-      Put( PackagesUri(p.id.name.get, p.id.version.get), Metadata(p.description, p.vendor) ) ~> route ~> check {
+      addPackage(p.id.name.get, p.id.version.get, p.description, p.vendor) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Package] shouldBe p
       }
@@ -54,7 +54,7 @@ class PackageResourcePropSpec extends ResourcePropSpec {
 
   property("not accept empty package names") {
     forAll { (p: Package) =>
-      Put( PackagesUri("", p.id.version.get), Metadata(p.description, p.vendor) ) ~> route ~> check {
+      addPackage("", p.id.version.get, p.description, p.vendor) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
       }
     }
@@ -62,7 +62,7 @@ class PackageResourcePropSpec extends ResourcePropSpec {
 
   property("not accept empty package version") {
     forAll { (p: Package) =>
-      Put( PackagesUri(p.id.name.get, ""), Metadata(p.description, p.vendor) ) ~> route ~> check {
+      addPackage(p.id.name.get, "", p.description, p.vendor) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
       }
     }
@@ -71,7 +71,7 @@ class PackageResourcePropSpec extends ResourcePropSpec {
 
   property("not accept bad package versions") {
     forAll { (p: Package, version: String) =>
-      Put( PackagesUri(p.id.name.get, version + ".0"), Metadata(p.description, p.vendor) ) ~> route ~> check {
+      addPackage(p.id.name.get, version + ".0", p.description, p.vendor) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         val error = responseAs[ErrorRepresentation]
         error.code shouldBe ErrorCodes.InvalidEntity
@@ -81,11 +81,11 @@ class PackageResourcePropSpec extends ResourcePropSpec {
   }
 
   property("PUTting the same package twice should update it") {
-    forAll{ (p: Package) =>
-      Put( PackagesUri(p.id.name.get, p.id.version.get), Metadata(p.description, p.vendor) ) ~> route ~> check {
+    forAll { (p: Package) =>
+      addPackage(p.id.name.get, p.id.version.get, p.description, p.vendor) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
-      Put( PackagesUri(p.id.name.get, p.id.version.get), Metadata(p.description, p.vendor) ) ~> route ~> check {
+      addPackage(p.id.name.get, p.id.version.get, p.description, p.vendor) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
     }
@@ -98,7 +98,7 @@ class PackageResourcePropSpec extends ResourcePropSpec {
 // gets mangled...
 
 /*
-class PackageResourceWordSpec extends ResourceWordSpec {
+class PackagesResourceWordSpec extends ResourceWordSpec {
 
   "Packages resource" should {
 

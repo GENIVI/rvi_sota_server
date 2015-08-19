@@ -22,7 +22,7 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
 
     "be able to assign exisiting filters to existing packages" in {
 
-      Put(PackagesUri(pf.packageName.get, pf.packageVersion.get), Metadata(None, None)) ~> route ~> check {
+      addPackage(pf.packageName.get, pf.packageVersion.get, None, None) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
       Post(FiltersUri, Filter(pf.filterName, Refined(s"""vin_matches "^X.*""""))) ~> route ~> check {

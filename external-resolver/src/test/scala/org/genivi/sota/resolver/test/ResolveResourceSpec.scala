@@ -30,7 +30,7 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
       }
 
       // Add a package.
-      Put(PackagesUri("resolve pkg", "0.0.1"), Metadata(None, None)) ~> route ~> check {
+      addPackage("resolve pkg", "0.0.1", None, None) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
 
