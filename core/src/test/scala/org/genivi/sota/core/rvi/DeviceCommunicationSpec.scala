@@ -21,7 +21,7 @@ import scala.concurrent.{Await, Future}
 class RunCampaignsSpec extends PropSpec
     with Matchers
     with PropertyChecks
-    with BeforeAndAfterEach {
+    with BeforeAndAfterEach with Generators {
 
   import org.genivi.sota.core.Generators._
   import org.scalacheck._
@@ -34,24 +34,6 @@ class RunCampaignsSpec extends PropSpec
   override def beforeEach {
     TestDatabase.resetDatabase(databaseName)
   }
-
-  val genVersion: Gen[Package.Version] =
-    Gen.listOfN(3, Gen.choose(0, 999)).map(_.mkString(".")).map(Refined(_))
-
-  val genPackageName: Gen[Package.Name] =
-    Gen.identifier.map(Refined(_))
-
-
-  val packageIdGen : Gen[PackageId] = for {
-    name <- genPackageName
-    version <- genVersion
-  } yield PackageId(name, version)
-
-  val packageGen: Gen[data.Package] = for {
-    id <- packageIdGen
-    desc <- Gen.option( Gen.alphaStr )
-    vendor <- Gen.option( Gen.alphaStr )
-  } yield Package( id, desc, vendor )
 
   type Interval = (DateTime, DateTime)
 
@@ -86,8 +68,8 @@ class RunCampaignsSpec extends PropSpec
   }
 
   val states: Gen[State] = for {
-    pkg1 <- packageGen
-    pkg2 <- packageGen
+    pkg1 <- PackageGen
+    pkg2 <- PackageGen
     vin1 <- vinGen
     vin2 <- vinGen
     vin3 <- vinGen
@@ -179,8 +161,8 @@ class RunCampaignsSpec extends PropSpec
 
         expectedMessages = Seq((state.vin2.vin, pkg2))
         _ = expectedMessages.length should equal(rviNode.msgs.toSeq.length)
-        _ = expectedMessages.sortBy(_._1).zip(rviNode.msgs.toSeq.sortBy(_._1)).foreach { case (expected, actual) =>
-          expected should equal (actual)
+        _ = expectedMessages.sortBy(_._1).zip(rviNode.msgs.toSeq.sortBy(_._1)).foreach {
+          case (expected, actual) => expected should equal (actual)
         }
         _ = errors.toSeq.length should equal (1)
 

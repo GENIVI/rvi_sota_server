@@ -24,19 +24,19 @@ class VehicleResourceSpec extends PropSpec with PropertyChecks
   val databaseName = "test-database"
 
   val db = Database.forConfig(databaseName)
-  lazy val service = new WebService (db)
+  lazy val service = new VehiclesResource(db)
 
   override def beforeAll {
     TestDatabase.resetDatabase( databaseName )
   }
 
-  val BasePath = Path("/api") / "v1"
+  val BasePath = Path("/vehicles")
 
   def resourceUri( pathSuffix : String ) : Uri = {
     Uri.Empty.withPath(BasePath / pathSuffix)
   }
 
-  def vehicleUri(vin: Vehicle.IdentificationNumber)  = Uri.Empty.withPath( BasePath / "vehicles" / vin.get )
+  def vehicleUri(vin: Vehicle.IdentificationNumber)  = Uri.Empty.withPath( BasePath / vin.get )
 
   import Generators._
 

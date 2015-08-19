@@ -119,7 +119,8 @@ object Protocol {
     def notifyPackage(vin: Vehicle.IdentificationNumber, pack: Package): JsonRpcRequest[Notify] =
       JsonRpcRequest.build(s"/vin/$vin/sota", Notify(Retry, s"${pack.id.name}-${pack.id.version}"))
 
-    def transferStart(transactionId: Long, destination: String, packageIdentifier: String, totalSize: Long, chunkSize: Long, checksum: String): JsonRpcRequest[TransferStart] =
+    def transferStart(transactionId: Long, destination: String, packageIdentifier: String, totalSize: Long, chunkSize: Long,
+                      checksum: String): JsonRpcRequest[TransferStart] =
       JsonRpcRequest.build(destination, TransferStart(totalSize, packageIdentifier, chunkSize, checksum), transactionId)
 
     def transferChunk(transactionId: Long, destination: String, index: Long, data: ByteString): JsonRpcRequest[TransferChunk] =

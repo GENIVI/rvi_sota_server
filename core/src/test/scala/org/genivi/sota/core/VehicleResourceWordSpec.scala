@@ -27,7 +27,7 @@ class VinResourceWordSpec extends WordSpec
   val databaseName = "test-database"
 
   val db = Database.forConfig(databaseName)
-  lazy val service = new WebService (db)
+  lazy val service = new VehiclesResource(db)
 
   val testVins = List("12345678901234500", "1234567WW0123AAAA", "123456789012345WW")
 
@@ -37,13 +37,7 @@ class VinResourceWordSpec extends WordSpec
     Await.ready( db.run( DBIO.seq( testVins.map( v => Vehicles.create(new Vehicle(new Vehicle.IdentificationNumber(v)))): _*) ), 2.seconds )
   }
 
-  val BasePath = Path("/api") / "v1"
-
-  def resourceUri( pathSuffix : String ) : Uri = {
-    Uri.Empty.withPath(BasePath / pathSuffix)
-  }
-
-  val VinsUri  = resourceUri("vehicles")
+  val VinsUri  = Uri( "/vehicles" )
 
   "Vin resource" should {
     "list resources on GET request" in {
