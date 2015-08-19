@@ -25,7 +25,7 @@ define(['jquery'], function($) {
     },
     onFail: function(data) {
       var res = JSON.parse(data.responseText);
-      this.setState({postStatus: res.errorMsg});
+      this.setState({postStatus: res.description});
     }
   };
 

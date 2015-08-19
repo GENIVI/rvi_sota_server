@@ -8,8 +8,6 @@ import org.genivi.webserver.requesthelpers.{RightResponse, LeftResponse, ErrorRe
 import org.slf4j.LoggerFactory
 import play.api._
 import play.api.libs.iteratee.Enumerator
-import play.api.libs.json.JsValue
-import play.api.mvc._
 import play.api.Play.current
 import play.api.libs.json.Json._
 
@@ -46,6 +44,28 @@ class Application @Inject() (ws: WSClient) extends Controller {
     RequestResponse
   }
 
+  def coreProxy(path: String) = Action.async(parse.raw) { request: Request[RawBuffer] =>
+    val user = "unknown"
+    // Mitigation for C04 : Log transactions to and from SOTA Server
+    auditLogger.info(s"Request: $request from user $user")
+
+    val RequestResponse = for {
+      response <- makeCoreRequest(request)
+    } yield resultFromWsResponse(response)
+    RequestResponse
+  }
+
+  def resolverProxy = Action.async(parse.raw) { request: Request[RawBuffer] =>
+    val user = "unknown"
+    // Mitigation for C04 : Log transactions to and from SOTA Server
+    auditLogger.info(s"Request: $request from user $user")
+
+    val RequestResponse = for {
+      response <- makeResolverRequest(request)
+    } yield resultFromWsResponse(response)
+    RequestResponse
+  }
+
   def makeRequest(request: Request[RawBuffer], url: String): Future[WSResponse] = {
     WS.url(url + request.path)
       .withFollowRedirects(false)
@@ -63,17 +83,6 @@ class Application @Inject() (ws: WSClient) extends Controller {
     makeRequest(request, protocol + resolverHost + ":" + resolverPort)
   }
 
-  def coreProxy(path: String) = Action.async(parse.raw) { request: Request[RawBuffer] =>
-    val user = "unknown"
-    // Mitigation for C04 : Log transactions to and from SOTA Server
-    auditLogger.info(s"Request: $request from user $user")
-
-    val RequestResponse = for {
-      proxyResponseOne <- makeCoreRequest(request)
-    } yield resultFromWsResponse(proxyResponseOne)
-    RequestResponse
-  }
-
   def parseHeaders(headers: Headers) = {
     val headersMap = headers.toMap.map { case( headerName, headerValue) =>
       headerName -> headerValue.mkString
@@ -88,13 +97,6 @@ class Application @Inject() (ws: WSClient) extends Controller {
       case ErrorResponse(msg) => BadRequest(toJson(Map("errorMsg" -> leftRes.body)))
     }
   }
-
-  def installCampaign: Action[JsValue] = Action.async(parse.json) { request =>
-    ws.url(protocol + coreHost + ":" + corePort + request.path).post(request.body).map { response =>
-      resultFromWsResponse(response)
-    }
-  }
-
 
   def resultFromWsResponse(response : WSResponse) : Result = {
     val headers = response.allHeaders.mapValues(x => x.head)

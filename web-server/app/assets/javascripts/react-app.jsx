@@ -1,4 +1,7 @@
-require(['react', 'components/filterable-vehicle-component', 'components/create-filter', 'components/packages-component', 'stores/packages', 'react-router', 'sota-dispatcher'], function(React, FilterableVehicleComponent, CreateFilter, PackagesComponent, PackageStore, Router, SotaDispatcher) {
+require(['react', 'components/filterable-vehicle-component', 'components/create-filter',
+  'components/packages-component', 'components/create-association', 'stores/packages',
+  'react-router', 'sota-dispatcher'], function(React, FilterableVehicleComponent, CreateFilter,
+  PackagesComponent, CreateAssociation, PackageStore, Router, SotaDispatcher) {
 
   var Link = Router.Link;
   var Route = Router.Route;
@@ -17,6 +20,9 @@ require(['react', 'components/filterable-vehicle-component', 'components/create-
           </li>
           <li role="presentation">
             <Link to="filters">Filters</Link>
+          </li>
+          <li role="presentation">
+            <Link to="associations">Associations</Link>
           </li>
         </ul>
         <div>
@@ -39,6 +45,7 @@ require(['react', 'components/filterable-vehicle-component', 'components/create-
       <Route name="packages" handler={wrapComponent(PackagesComponent, {PackageStore:PackageStore})}/>
       <Route name="vehicles" handler={FilterableVehicleComponent}/>
       <Route name="filters" handler={wrapComponent(CreateFilter, {url:"/api/v1/filters"})} />
+      <Route name="associations" handler={wrapComponent(CreateAssociation, {url:"/api/v1/packageFilters"})} />
     </Route>
   );
 
