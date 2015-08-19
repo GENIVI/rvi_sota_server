@@ -22,12 +22,12 @@ object Vehicles {
   }
   // scalastyle:on
 
-  val vins = TableQuery[VinTable]
+  val vehicles = TableQuery[VinTable]
 
   def add(vehicle: Vehicle)
          (implicit ec: ExecutionContext): DBIO[Vehicle] =
-    vins.insertOrUpdate(vehicle).map(_ => vehicle)
+    vehicles.insertOrUpdate(vehicle).map(_ => vehicle)
 
   def list: DBIO[Seq[Vehicle]] =
-    vins.result
+    vehicles.result
 }

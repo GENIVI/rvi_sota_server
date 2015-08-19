@@ -4,7 +4,8 @@
  */
 package org.genivi.sota.resolver.test
 
-import akka.http.scaladsl.model.Uri
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+import akka.http.scaladsl.model.{Uri, HttpRequest}
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.flywaydb.core.Flyway
@@ -19,18 +20,25 @@ trait ResourceSpec extends Matchers
     with ScalatestRouteTest
     with BeforeAndAfterAll { self: Suite =>
 
-  // Paths
-  def resourceUri(pathSuffixes: String*): Uri =
-    Uri.Empty.withPath(pathSuffixes.foldLeft(BasePath)(_/_))
-
-  val BasePath              = Path("/api") / "v1"
+  // URIs
+  val BasePath = Path("/api") / "v1"
   val VehiclesUri           = (vin: String) => resourceUri("vehicles", vin)
-  val PackagesUri           = (name: String, version: String) => resourceUri("packages", name, version)
-  val ResolveUri            = (i: Long) => resourceUri("resolve", i.toString)
+  val ResolveUri            = (name: String, version: String) => resourceUri("resolve", name, version)
   val FiltersUri            = resourceUri("filters")
   val ValidateUri           = (s: String) => resourceUri("validate", s)
   val PackageFiltersUri     = resourceUri("packageFilters")
-  val PackageFiltersListUri = (s: String, fname: String) => resourceUri("packageFilters", s, fname)
+
+  def PackageFiltersListUri(ss: String*) =
+    resourceUri(("packageFilters" +: ss): _*)
+
+  def resourceUri(pathSuffixes: String*): Uri =
+    Uri.Empty.withPath(pathSuffixes.foldLeft(BasePath)(_/_))
+
+  // Operations on the resources.
+  def addPackage
+    (name: String, version: String, desc: Option[String], vendor: Option[String])
+      : HttpRequest
+  = Put(resourceUri("packages", name, version), Package.Metadata(desc, vendor))
 
   // Database
   val name = "test-database"
