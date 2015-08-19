@@ -8,7 +8,7 @@ import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model.{StatusCodes, Uri}
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import eu.timepit.refined.internal.Wrapper
+import eu.timepit.refined.Refined
 import org.genivi.sota.core.data.Vehicle
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
@@ -59,10 +59,10 @@ class VehicleResourceSpec extends PropSpec with PropertyChecks
   } yield vin.mkString
 
 
-  val VehicleWithIllegalVin : Gen[Vehicle] = Gen.oneOf( tooLongVin, tooShortVin ).map( x => Vehicle( Wrapper.refinedWrapper.wrap(x) ) )
+  val VehicleWithIllegalVin : Gen[Vehicle] = Gen.oneOf( tooLongVin, tooShortVin ).map( x => Vehicle( Refined(x) ) )
 
   property( "reject illegal vins" ) {
-    forAll( VehicleWithIllegalVin ) { vehicle => 
+    forAll( VehicleWithIllegalVin ) { vehicle =>
       Put( vehicleUri(vehicle.vin), vehicle ) ~> Route.seal(service.route) ~> check {
         status shouldBe StatusCodes.BadRequest
       }

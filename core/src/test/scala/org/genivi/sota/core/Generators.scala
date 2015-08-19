@@ -4,13 +4,13 @@
  */
 package org.genivi.sota.core
 
-import eu.timepit.refined.internal.Wrapper
+import eu.timepit.refined.Refined
 import org.genivi.sota.core.data.Vehicle
 import org.scalacheck.{Arbitrary, Gen}
 
 object Generators {
 
-  val vinGen: Gen[Vehicle] = Gen.listOfN(17, Gen.alphaNumChar).map( xs => Vehicle( Wrapper.refinedWrapper.wrap(xs.mkString) ) )
+  val vinGen: Gen[Vehicle] = Gen.listOfN(17, Gen.alphaNumChar).map( xs => Vehicle( Refined(xs.mkString) ) )
   implicit val arbitraryVehicle : Arbitrary[Vehicle] = Arbitrary( vinGen )
 
 }
