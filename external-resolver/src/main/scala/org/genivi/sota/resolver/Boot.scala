@@ -34,7 +34,7 @@ class Routing(db: Database)
       get {
         complete(db.run(Vehicles.list))
       } ~
-      (put & refined[Vehicle.Vin](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.PathEnd)) { vin =>
+      (put & refined[Vehicle.ValidVin](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.PathEnd)) { vin =>
         complete(db.run( Vehicles.add(Vehicle(vin)) ).map(_ => NoContent))
       }
     }

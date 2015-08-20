@@ -19,11 +19,17 @@ object Resolve {
   def resolve
     (name: Package.Name, version: Package.Version)
     (implicit ec: ExecutionContext)
-      : DBIO[Seq[Vehicle]]
+      : DBIO[Map[Vehicle.Vin, Seq[Package.Id]]]
   = for {
     fs <- listFiltersForPackage(name, version)
     vs <- vehicles.result
   } yield
-    vs.filter(query(fs.map(_.expression).map(parseValidFilter).foldLeft[FilterAST](True)(And)))
+    makeFakeDependencyMap(name, version,
+      vs.filter(query(fs.map(_.expression).map(parseValidFilter).foldLeft[FilterAST](True)(And))))
 
+  def makeFakeDependencyMap
+    (name: Package.Name, version: Package.Version, vs: Seq[Vehicle])
+      : Map[Vehicle.Vin, List[Package.Id]]
+  = vs.map(vehicle => Map(vehicle.vin -> List(Package.Id(name, version))))
+      .foldRight(Map[Vehicle.Vin, List[Package.Id]]())(_++_)
 }
