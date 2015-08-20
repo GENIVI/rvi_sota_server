@@ -46,7 +46,7 @@ object Packages {
 
   def list: DBIO[Seq[Package]] = packages.result
 
-  def create(pkg: Package)(implicit ec:
-      ExecutionContext): DBIO[Package] = (packages += pkg).map( _ => pkg)
+  def create(pkg: Package)(implicit ec: ExecutionContext): DBIO[Package] =
+    packages.insertOrUpdate(pkg).map(_ => pkg)
 
 }

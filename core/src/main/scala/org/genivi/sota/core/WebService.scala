@@ -10,7 +10,7 @@ import java.security.MessageDigest
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.common.StrictForm
-import akka.http.scaladsl.model.{Uri, HttpResponse}
+import akka.http.scaladsl.model.{StatusCodes, Uri, HttpResponse}
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.PathMatchers.Slash
 import akka.http.scaladsl.server.{PathMatchers, ExceptionHandler, Directives}
@@ -20,6 +20,7 @@ import akka.stream.io.SynchronousFileSink
 import akka.util.ByteString
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.{Packages, Vehicles, InstallRequests, InstallCampaigns}
+import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 import org.genivi.sota.rest.Validation._
 import spray.json.{JsString, JsObject}
 import slick.driver.MySQLDriver.api.Database
@@ -27,6 +28,10 @@ import scala.concurrent.Future
 import Directives._
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import spray.json.DefaultJsonProtocol._
+
+object ErrorCodes {
+  val ExternalResolverError = ErrorCode( "external_resolver_error" )
+}
 
 class VehiclesResource(db: Database)
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
@@ -80,6 +85,8 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
   import akka.stream.stage._
   import system.dispatcher
 
+  private[this] val log = Logging.getLogger( system, "packagesResource" )
+
   def digestCalculator(algorithm: String) : PushPullStage[ByteString, String] = new PushPullStage[ByteString, String] {
     val digest = MessageDigest.getInstance(algorithm)
 
@@ -120,13 +127,18 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
     } ~
     (put & refined[Package.ValidName]( Slash ~ Segment) & refined[Package.ValidVersion](Slash ~ Segment ~ PathEnd)).as(PackageId.apply _) { packageId =>
       formFields('description.?, 'vendor.?, 'file.as[StrictForm.FileData]) { (description, vendor, fileData) =>
-        complete(
+        completeOrRecoverWith(
           for {
             _                   <- resolver.putPackage(packageId, description, vendor)
             (uri, size, digest) <- savePackage(packageId, fileData)
             _                   <- db.run(Packages.create( Package(packageId, uri, size, digest, description, vendor) ))
           } yield NoContent
-        )
+        ) {
+          case ExternalResolverRequestFailed(msg, cause) =>
+            log.error( cause, s"Unable to create/update package: $msg" )
+            complete( StatusCodes.ServiceUnavailable -> ErrorRepresentation( ErrorCodes.ExternalResolverError, msg ) )
+          case e => failWith(e)
+        }
       }
     }
   }
