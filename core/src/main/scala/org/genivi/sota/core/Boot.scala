@@ -7,33 +7,16 @@ package org.genivi.sota.core
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.common.StrictForm
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.model.HttpResponse
-import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model.Uri
-import akka.http.scaladsl.server.{Directives, ExceptionHandler, PathMatchers}
-import akka.parboiled2.util.Base64
+import akka.http.scaladsl.server.Directives
 import akka.stream.ActorMaterializer
-import akka.stream.io.SynchronousFileSink
-import akka.util.ByteString
-import java.io.File
-import java.nio.file.Paths
-import java.security.MessageDigest
-import org.genivi.sota.core.data._
+import eu.timepit.refined._
+import eu.timepit.refined.string.{Uri => RUri}
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.files.Types.ValidExtension
 import org.genivi.sota.core.rvi._
-import org.genivi.sota.rest.Validation._
-import scala.concurrent.{ExecutionContext, Future}
+
 import scala.util.Try
-import slick.driver.MySQLDriver.api.Database
-import spray.json.DefaultJsonProtocol._
-import spray.json.{JsObject, JsString}
-
-
-import eu.timepit.refined._
-import eu.timepit.refined.string.{Uri => RUri}
 
 object Boot extends App with DatabaseConfig {
   implicit val system = ActorSystem("sota-core-service")
