@@ -6,7 +6,7 @@
     - [WL-B1-3](#WL-B1-3) Web Server sends CSS stylesheets linked in index.html to Web Browser.
     - [WL-B1-4](#WL-B1-4) Web Browser sends new VIN to Web Server.
     - [WL-B1-5](#WL-B1-5) Web Browser sends new campaign to Web Server.
-    - [WL-B1-6](#WL-B1-6) Web Browser sends new filter data to Web Server.
+    - [WL-B1-6](#WL-B1-6) Web Browser sends New Filter Request to Web Server.
     - [WL-B1-7](#WL-B1-7) Web Browser sends filter-to-package association to Web Server.
     - [WL-B1-8](#WL-B1-8) Web Browser sends Queue Package Request to Web Server.
     - [WL-B1-9](#WL-B1-9) Web Server sends login page and assets to Web Browser.
@@ -17,31 +17,29 @@
     - [WL-B1-14](#WL-B1-14) Web Server sends a redirection back to the last requested page for authenticated users.
     - [WL-B1-15](#WL-B1-15) Web Browser sends a request for an Admin GUI resource to Web Server, along with a session cookie.
     - [WL-B1-16](#WL-B1-16) Web Server sends Admin GUI resource HTML and associated assets to Web Browser.
-    - [WL-B1-17](#WL-B1-17) Web Server sends a redirection to the login page for unauthenticated users.
     - [WL-B1-18](#WL-B1-18) Web Browser sends a List Queue Package Request to Web Server.
-    - [WL-B1-19](#WL-B1-19) Web Browser sends a GET Queued Request to Web Server.
+    - [WL-B1-19](#WL-B1-19) Web Browser sends a Get Queued Request to Web Server.
     - [WL-B1-20](#WL-B1-20) Web Browser sends Search VINs Request to Web Server.
     - [WL-B1-21](#WL-B1-21) Web Browser sends the binary package and its metadata to Web Server.
     - [WL-B1-22](#WL-B1-22) Web Browser sends Search Filters Request to Web Server.
     - [WL-B1-23](#WL-B1-23) Web Browser sends List Filters Request to Web Server.
     - [WL-B1-24](#WL-B1-24) Web Browser sends Update Filter Request to Web Server.
     - [WL-B1-25](#WL-B1-25) Web Browser sends Delete Filter Request to Web Server.
-    - [WL-B1-26](#WL-B1-26) Web Browser sends Updates Packages per VIN Request to Web Server.
+    - [WL-B1-26](#WL-B1-26) Web Browser sends Update Packages per VIN Request to Web Server.
     - [WL-B1-27](#WL-B1-27) Web Browser sends View Packages per VIN Request to Web Server.
     - [WL-B1-28](#WL-B1-28) Web Browser sends View VINs per Package Request to Web Server.
-    - [WL-B1-29](#WL-B1-29) Web Browser sends new component data to Web Server.
+    - [WL-B1-29](#WL-B1-29) Web Browser sends New Component Request to Web Server.
     - [WL-B1-30](#WL-B1-20) Web Browser sends Search Component Request to Web Server.
 
 
 2. [B2](#b-2) Web Server - SOTA Core
-    - [WL-B2-1](#WL-B2-1) Web Server sends new package data to SOTA Core.
-    - [WL-B2-2](#WL-B2-2) Web Server sends new VIN to SOTA Core.
-    - [WL-B2-3](#WL-B2-3) Web Server sends new campaign data to SOTA Core.
+    - [WL-B2-1](#WL-B2-1) Web Server sends New Package Request to SOTA Core.
+    - [WL-B2-2](#WL-B2-2) Web Server sends New VIN Request to SOTA Core.
+    - [WL-B2-3](#WL-B2-3) Web Server sends New Campaign Request to SOTA Core.
     - [WL-B2-4](#WL-B2-4) Web Server sends Queue Package Request to SOTA Core.
     - [WL-B2-5](#WL-B2-5) Web Server sends List Queue Package Request to SOTA Core.
     - [WL-B2-6](#WL-B2-6) Web Server sends a GET Queued Request to SOTA Core.
     - [WL-B2-7](#WL-B2-7) Web Server sends Search VINs Request to SOTA Core.
-    - [WL-B2-8](#WL-B2-8) Web Server sends the new package metadata to SOTA Core.
     - [WL-B2-9](#WL-B2-9) Web Server sends Updates Packages per VIN Request to SOTA Core.
     - [WL-B2-10](#WL-B2-10) Web Server sends View Packages per VIN Request to SOTA Core.
     - [WL-B2-11](#WL-B2-11) Web Server sends View VINs per Package Request to SOTA Core.
@@ -63,14 +61,14 @@
 4. [B4](#b-4) SOTA Core - SOTA Core Database
     - [WL-B4-1](#WL-B4-1) SOTA Core persists new VIN to SOTA Core Database.
     - [WL-B4-2](#WL-B4-2) SOTA Core persists new package data to SOTA Core Database.
-    - [WL-B4-3](#WL-B4-3) SOTA Core looks-up Package ID in SOTA Core Database.
-    - [WL-B4-4](#WL-B4-4) SOTA Core looks-up Updates in SOTA Core Database.
-    - [WL-B4-5](#WL-B4-5) SOTA Core looks-up VINs in SOTA Core Database.
-    - [WL-B4-6](#WL-B4-6) SOTA Core looks-up for Packages per VIN in SOTA Core Database.
+    - [WL-B4-3](#WL-B4-3) SOTA Core looks up Package ID in SOTA Core Database.
+    - [WL-B4-4](#WL-B4-4) SOTA Core looks up Updates in SOTA Core Database.
+    - [WL-B4-5](#WL-B4-5) SOTA Core looks up VINs in SOTA Core Database.
+    - [WL-B4-6](#WL-B4-6) SOTA Core looks up Packages per VIN in SOTA Core Database.
     - [WL-B4-7](#WL-B4-7) SOTA Core updates Packages per VIN in SOTA Core Database.
-    - [WL-B4-8](#WL-B4-6) SOTA Core looks-up for VINs per Package in SOTA Core Database.
+    - [WL-B4-8](#WL-B4-6) SOTA Core looks up VINs per Package in SOTA Core Database.
     - [WL-B4-9](#WL-B4-9) SOTA Core persists new Component to SOTA Core Database.
-    - [WL-B4-10](#WL-B4-10) SOTA Core looks-up Components in SOTA Core Database.
+    - [WL-B4-10](#WL-B4-10) SOTA Core looks up Components in SOTA Core Database.
 
 
 5. [B5](#b-5) SOTA Core - External Resolver
@@ -82,10 +80,10 @@
     - [WL-B6-2](#WL-B6-2) External Resolver persists new package data to External Resolver Database.
     - [WL-B6-3](#WL-B6-3) External Resolver persists new filter data to External Resolver Database.
     - [WL-B6-4](#WL-B6-4) External Resolver persists filter-to-package association to External Resolver Database.
-    - [WL-B6-5](#WL-B6-5) External Resolver looks-up Package ID filters in External Resolver Database.
-    - [WL-B6-6](#WL-B6-6) External Resolver looks-up VIN in External Resolver Database.
-    - [WL-B6-7](#WL-B6-7) External Resolver looks-up Package Dependencies in External Resolver Database.
-    - [WL-B6-8](#WL-B6-8) External Resolver looks-up Filters in External Resolver Database.
+    - [WL-B6-5](#WL-B6-5) External Resolver looks up Package ID filters in External Resolver Database.
+    - [WL-B6-6](#WL-B6-6) External Resolver looks up VIN in External Resolver Database.
+    - [WL-B6-7](#WL-B6-7) External Resolver looks up Package Dependencies in External Resolver Database.
+    - [WL-B6-8](#WL-B6-8) External Resolver looks up Filters in External Resolver Database.
     - [WL-B6-9](#WL-B6-9) External Resolver updates Filters in External Resolver Database.
     - [WL-B6-10](#WL-B6-10) External Resolver deletes Filters in External Resolver Database.
 
@@ -109,9 +107,9 @@
     - [WL-B8-6](#WL-B8-6) RVI Node Client sends "Initiate Software Download" notification to RVI Node Server.
 
 
-9. [B9](#b-9) RVI Node Client- SOTA Client
+9. [B9](#b-9) RVI Node Client - SOTA Client
     - [WL-B9-1](#WL-B9-1) RVI Node Client sends "Software Update Available" notification to SOTA Client.
-    - [WL-B9-2](#WL-B9-2) RVI Node Client sends "Initiate Software Download" notification to RVI Node Server.
+    - [WL-B9-2](#WL-B9-2) SOTA Client sends "Initiate Software Download" notification to RVI Node Client.
     - [WL-B9-3](#WL-B9-3) RVI Node Client sends "Start Download" notification to SOTA Client.
     - [WL-B9-4](#WL-B9-4) RVI Node Client sends lowest numbered data block to SOTA Client.
     - [WL-B9-5](#WL-B9-5) RVI Node Client sends "Finalize Download" notification to SOTA Client.
@@ -121,7 +119,7 @@
 10. [B10](#b-10) SOTA Client - Software Loading Manager
     - [WL-B10-1](#WL-B10-1) SOTA Client sends "Software Update Available" notification to Software Loading Manager.
     - [WL-B10-2](#WL-B10-2) Software Loading Manager sends "Initiate Software Download" notification to SOTA Client.
-    - [WL-B10-3](#WL-B10-3) SOTA Client sends "Initiate Software Download" notification to RVI Node Client.
+    - [WL-B10-3](#WL-B10-3) SOTA Client sends "Initiate Software Download" notification to Software Loading Manager.
     - [WL-B10-4](#WL-B10-4) SOTA Client sends "Start Download" notification to Software Loading Manager.
     - [WL-B10-5](#WL-B10-5) SOTA Client sends lowest numbered data block to Software Loading Manager.
     - [WL-B10-6](#WL-B10-6) Software Loading Manager sends Install Report to SOTA Client.
@@ -174,7 +172,7 @@ The Web Browser can send new a Campaign (Package ID, Priority, Start Time, End T
    * Upon the Web Browsers's request, the Web Server can look for the Package ID lookup process and if the Package exists, it will respond with a 'Campaign created' message in the response body and a 200 status code.
    * Upon the Web Browsers's request, the Web Server can lookup for the Package ID, and if the Package does not exist, it will respond with a 'Unknown Package ID' message in the response body and a 404 status code.
 
-### <a name="WL-B1-6">[WL-B1-6](#WL-B1-6) Web Browser sends new filter data to Web Server</a>
+### <a name="WL-B1-6">[WL-B1-6](#WL-B1-6) Web Browser sends New Filter Request to Web Server</a>
 
 The Web Browser can send a new Filter's data to the Web Server using JSON over HTTP on port 80.
 
@@ -231,9 +229,6 @@ The Web Browser can send a Queue Package Request [Package ID, Priority, Date/Tim
 
    * In response to authenticated HTTPS (port 443) requests from Web Browser for protected Admin GUI resources, Web Server may send back associated HTML and resources to render resource details and necessary hyperlinks, JavaScript code, assets, etc. to Web Browser.
 
-### <a name="WL-B1-17">[WL-B1-17](#WL-B1-17) Web Server sends a redirection to the login page for unauthenticated users</a>
-
-   * In response to unauthenticated HTTPS (port 443) requests from Web Browser, Web Server may send an HTTPS 301 response to direct Web Browser to login page
 
 ### <a name="WL-B1-18">[WL-B1-18](#WL-B1-18) Web Browser sends a List Queue Package Request to Web Server</a>
 
@@ -329,7 +324,7 @@ The Web Browser can send a View VINs per Package Request to the Web Server using
    * Upon the Web Browser's request, the Web Server can start a View VINs per Package Request process and if the given Package does not exist, it will respond with a 'Package does not exist' message in the response body and a 409 status code.
    * Upon the Web Browser's request, the Web Server can start a View VINs per Package Request process and if an error occurs, it will respond with an error message in the response body and a 404 status code.
 
-### <a name="WL-B1-29">[WL-B1-29](#WL-B1-29) Web Browser sends new component data to Web Server</a>
+### <a name="WL-B1-29">[WL-B1-29](#WL-B1-29) Web Browser sends New Component Request to Web Server</a>
 
 The Web Browser can send a new Component's data to the Web Server using JSON over HTTP on port 80.
 
@@ -347,12 +342,12 @@ The Web Browser can send a Search Components Request to the Web Server using JSO
 
 ## <a name="b-2">[B-2](#) Web Server - SOTA Core</a>
 
-### <a name="WL-B2-1">[WL-B2-1](#WL-B2-1) Web Server sends new package data to SOTA Core</a>
+### <a name="WL-B2-1">[WL-B2-1](#WL-B2-1) Web Server sends New Package Request to SOTA Core</a>
 
-The Web Server can send the new package data to the SOTA Core using JSON over HTTP on port 80.
+The Web Server can send A New Package Request to the SOTA Core using JSON over HTTP on port 80.
 
    * Upon the Web Server's request, SOTA Core can start a new Package insertion process and if a new database entry is created, it will respond with a 'Row Inserted' message in the response body and a 200 status code.
-   * Upon the Web Server's request, SOTA Core can start a new Package insertion process and if a database entry already exists, it will respond with a 'VIN already exists' message in the response body and a 409 status code.
+   * Upon the Web Server's request, SOTA Core can start a new Package insertion process and if a database entry already exists, it will respond with a 'Package already exists' message in the response body and a 409 status code.
 
 ### <a name="WL-B2-2">[WL-B2-2](#WL-B2-2) Web Server sends new VIN to SOTA Core</a>
 
@@ -400,19 +395,6 @@ The Web Server can send a Search VINs Request to the SOTA Core using JSON over H
    * Upon the Web Server's request, SOTA Core can start a Search VINs Request process and if there are no VINs matching the search criteria, it will respond with an empty list in the response body and a 200 status code.
    * Upon the Web Server's request, SOTA Core can start a Search VINs Request process and if no filters are associated with the one of the packages, it will respond with a 'No filters associated with package' message in the response body and a 404 status code.
 
-### <a name="WL-B2-8">[WL-B2-8](#WL-B2-8) Web Server sends the new package metadata to SOTA Core</a>
-
-The Web Server can send the new package metadata to SOTA Core.
-
-  * Upon the Web Server's request, SOTA Core can receive the metadata associated with a new package
-    and perform an Upload New Package process and if the request is processed without errors, it will respond
-    with a message informing for successful persistence in the response body and a 200 status code.
-  * Upon the Web Server's request, SOTA Core can receive the metadata associated with a new package
-    and perform an Upload New Package process and if the request is processed with errors, it will respond
-    with a message informing for the generated error in the response body and a 500 status code.
-  * Upon the Web Server's request, SOTA Core can receive the metadata associated with a new package and if SOTA
-    Core fails to authenticate, it will respond with an 'Authentication Failed' message in the response body
-    and a 404 status code.
 
 ### <a name="WL-B2-9">[WL-B2-9](#WL-B2-9) Web Server sends Update Packages per VIN Request to SOTA Core</a>
 
@@ -456,9 +438,9 @@ The Web Server can send a Search Components Request to the SOTA Core using JSON 
 
 ## <a name="b-3">[B-3](#) Web Server - External Resolver</a>
 
-### <a name="WL-B3-1">[WL-B3-1](#WL-B3-1) Web Server sends new package data to External Resolver</a>
+### <a name="WL-B3-1">[WL-B3-1](#WL-B3-1) Web Server sends New Package Request to External Resolver</a>
 
-The Web Server can send new Package data to the External Resolver using JSON over HTTP on port 80.
+The Web Server can send a New Package Request to the External Resolver using JSON over HTTP on port 80.
 
    * Upon the Web Server's request, the External Resolver can start a new Package insertion process and if a new database entry is created, it will respond with a 'Row Inserted' message in the response body and a 200 status code.
    * Upon the Web Server's request, the External Resolver can start a new Package insertion process and if a database entry already exists, it will respond with a 'VIN already exists' message in the response body and a 409 status code.
@@ -479,9 +461,9 @@ The Web Server can send a new association between a Filter and a Package to the 
    * Upon the Web Server's request, the External Resolver can start a new Filter/Package association insertion process and if the Filter does not exist, it will respond with a 'Filter label does not exist' message in the response body and a 404 status code.
    * Upon the Web Server's request, the External Resolver can start a new Filter/Package association insertion process and if the Package does not exist, it will respond with a Package ID does not exist' message in the response body and a 404 status code.
 
-### <a name="WL-B3-4">[WL-B3-4](#WL-B3-4) Web Server sends new filter data to External Resolver</a>
+### <a name="WL-B3-4">[WL-B3-4](#WL-B3-4) Web Server sends New Filter Request to External Resolver</a>
 
-The Web Server can send a new Filter's data to the External Resolver using JSON over HTTP on port 80.
+The Web Server can send a New Filter Request to the External Resolver using JSON over HTTP on port 80.
 
    * Upon the Web Server's request, the External Resolver can start a new Filter insertion process and if a new database entry is created, it will respond with a 'Row Inserted' message in the response body and a 200 status code.
    * Upon the Web Server's request, the External Resolver can start a new Filter insertion process and if a database entry already exists, it will respond with a 'Filter already exists' message in the response body and a 409 status code.
@@ -489,7 +471,7 @@ The Web Server can send a new Filter's data to the External Resolver using JSON 
 
 ### <a name="WL-B3-5">[WL-B3-5](#WL-B3-5) Web Server sends Resolve VIN Request to External Resolver</a>
 
-Web Server can send a Resolve VIN request to the External Resolver using JSON over HTTP on port 80.
+Web Server can send a Resolve VIN Request to the External Resolver using JSON over HTTP on port 80.
 
    * Upon the Web Server's request, the External Resolver can resolve the dependencies for all VINs involved and if the request is processed without errors, it will respond with the subset of all VINs that passed all filters in the response body and a 200 status code.
    * Upon Web Server's request, the External Resolver can resolve the dependencies for all VINs involved and if no filters are associated with the package, it will respond with a 'No filters associated with package' message in the response body and a 404 status code.
@@ -545,7 +527,7 @@ SOTA Core can persist new package data to the SOTA Core Database in the Database
    * If SOTA Core authenticates successfully with the correct Username/Password credentials, upon its request, the Database Server can perform an INSERT operation with the new Package data and if the Package already exists, it will respond with a 'Record exists' message.
    * If SOTA Server does not authenticate successfully due to incorrect Username/Password credentials against the Database Server, the Database Server should reject the connection.
 
-### <a name="WL-B4-3">[WL-B4-3](#WL-B4-3) SOTA Core lookups Package ID in SOTA Core Database</a>
+### <a name="WL-B4-3">[WL-B4-3](#WL-B4-3) SOTA Core looks up Package ID in SOTA Core Database</a>
 
 SOTA Core can perform a lookup operation for a Package ID in the SOTAServer database in the Database Server over TCP on port 3306.
 
@@ -553,7 +535,7 @@ SOTA Core can perform a lookup operation for a Package ID in the SOTAServer data
    * If SOTA Core authenticates successfully with the correct Username/Password credentials, upon its request, the Database Server can perform an SELECT operation with the given Package ID and if no entry is found, it will respond with a 'Record does not exists' message.
    * If SOTA Server does not authenticate successfully due to incorrect Username/Password credentials against the Database Server, the Database Server should reject the connection.
 
-### <a name="WL-B4-4">[WL-B4-4](#WL-B4-4) SOTA Core looks-up Updates in SOTA Core Database</a>
+### <a name="WL-B4-4">[WL-B4-4](#WL-B4-4) SOTA Core looks up Updates in SOTA Core Database</a>
 
 SOTA Core can perform a lookup operation for an Update in the SOTAServer database in the Database Server over TCP on port 3306.
 
@@ -561,7 +543,7 @@ SOTA Core can perform a lookup operation for an Update in the SOTAServer databas
    * If SOTA Core authenticates successfully with the correct Username/Password credentials, upon its request, the Database Server can perform an SELECT operation with the given Update ID and if no entry is found, it will respond with a 'Record does not exists' message.
    * If SOTA Server does not authenticate successfully due to incorrect Username/Password credentials against the Database Server, the Database Server should reject the connection.
 
-### <a name="WL-B4-5">[WL-B4-5](#WL-B4-5) SOTA Core looks-up VINs in SOTA Core Database</a>
+### <a name="WL-B4-5">[WL-B4-5](#WL-B4-5) SOTA Core looks up VINs in SOTA Core Database</a>
 
 SOTA Core can perform a lookup operation for VINs matching the given criteria in the SOTAServer database in the Database Server over TCP on port 3306.
 
@@ -569,7 +551,7 @@ SOTA Core can perform a lookup operation for VINs matching the given criteria in
    * If SOTA Core authenticates successfully with the correct Username/Password credentials, upon its request, the Database Server can perform an SELECT operation with the given search criteria and if no entry is found, it will respond with a 'Record does not exists' message.
    * If SOTA Server does not authenticate successfully due to incorrect Username/Password credentials against the Database Server, the Database Server should reject the connection.
 
-### <a name="WL-B4-6">[WL-B4-6](#WL-B4-6) SOTA Core looks-up for Packages per VIN in SOTA Core Database</a>
+### <a name="WL-B4-6">[WL-B4-6](#WL-B4-6) SOTA Core looks up Packages per VIN in SOTA Core Database</a>
 
 SOTA Core can perform a lookup operation for the installed Packages on a given VIN in the SOTAServer database in the Database Server over TCP on port 3306.
 
@@ -585,7 +567,7 @@ SOTA Core can perform an UPDATE operation for the packages associated with a giv
    * If SOTA Core authenticates successfully with the correct Username/Password credentials, upon its request, the Database Server can perform an SELECT operation with the given VIN and if no entry is found, it will respond with a 'Record does not exists' message.
    * If SOTA Server does not authenticate successfully due to incorrect Username/Password credentials against the Database Server, the Database Server should reject the connection.
 
-### <a name="WL-B4-8">[WL-B4-8](#WL-B4-8) SOTA Core looks-up for VINs per Package in SOTA Core Database</a>
+### <a name="WL-B4-8">[WL-B4-8](#WL-B4-8) SOTA Core looks up VINs per Package in SOTA Core Database</a>
 
 SOTA Core can perform a lookup operation for the VINs with have installed the Package with the given Package ID in the SOTA Server database in the Database Server over TCP on port 3306.
 
@@ -601,7 +583,7 @@ SOTA Core can persist new Component data to the SOTA Core Database in the Databa
    * If SOTA Core authenticates successfully with the correct Username/Password credentials, upon its request, the Database Server can perform an INSERT operation with the new Component data and if the VIN already exists, it will respond with a 'Record exists' message.
    * If SOTA Server does not authenticate successfully due to incorrect Username/Password credentials against the Database Server, the Database Server should reject the connection.
 
-### <a name="WL-B4-10">[WL-B4-10](#WL-B4-10) SOTA Core lookups Component ID in SOTA Core Database</a>
+### <a name="WL-B4-10">[WL-B4-10](#WL-B4-10) SOTA Core looks up Component ID in SOTA Core Database</a>
 
 SOTA Core can perform a regex-based lookup operation for a Component or Componets in the SOTAServer database in the Database Server over TCP on port 3306.
 
@@ -656,7 +638,7 @@ The External Resolver can persist a new Filter/Package association to the Extern
    * If the External Resolver authenticates successfully with the correct Username/Password credentials, upon its request, the Database Server can perform an INSERT operation with the new Filter/Package association and if the Package does not exist exist, it will respond with a 'Package does not exist' error message.
    * If the External Resolver does not authenticate successfully due to incorrect Username/Password credentials against the Database Server, the Database Server should reject the connection.
 
-### <a name="WL-B6-5">[WL-B6-5](#WL-B6-5) External Resolver looks-up Package ID filters in External Resolver Database</a>
+### <a name="WL-B6-5">[WL-B6-5](#WL-B6-5) External Resolver looks up Package ID filters in External Resolver Database</a>
 
 The External Resolver can perform a lookup operation for all filters associated with a Package ID to the Resolver database in the Database Server over TCP on port 3306.
 
@@ -664,7 +646,7 @@ The External Resolver can perform a lookup operation for all filters associated 
    * If the External Resolver authenticates successfully with the correct Username/Password credentials, upon its request, the Database Server can perform an SELECT operation for all filters associated with the given Package ID and if no entry is found, it will respond with a 'Record does not exists' message.
    * If SOTA Server does not authenticate successfully due to incorrect Username/Password credentials against the Database Server, the Database Server should reject the connection.
 
-### <a name="WL-B6-6">[WL-B6-6](#WL-B6-6) External Resolver looks-up VIN in External Resolver Database</a>
+### <a name="WL-B6-6">[WL-B6-6](#WL-B6-6) External Resolver looks up VIN in External Resolver Database</a>
 
 The External Resolver can perform a lookup operation for a VIN to the Resolver database in the Database Server over TCP on port 3306.
 
@@ -672,7 +654,7 @@ The External Resolver can perform a lookup operation for a VIN to the Resolver d
    * If the External Resolver authenticates successfully with the correct Username/Password credentials, upon its request, the Database Server can perform an SELECT operation with the given VIN and if no entry is found, it will respond with a 'Record does not exists' message.
    * If SOTA Server does not authenticate successfully due to incorrect Username/Password credentials against the Database Server, the Database Server should reject the connection.
 
-### <a name="WL-B6-7">[WL-B6-7](#WL-B6-7) External Resolver looks-up Package Dependencies in External Resolver Database</a>
+### <a name="WL-B6-7">[WL-B6-7](#WL-B6-7) External Resolver looks up Package Dependencies in External Resolver Database</a>
 
 The External Resolver can perform a lookup operation for all the package dependencies of a VIN to the Resolver database in the Database Server over TCP on port 3306.
 
@@ -680,7 +662,7 @@ The External Resolver can perform a lookup operation for all the package depende
    * If the External Resolver authenticates successfully with the correct Username/Password credentials, upon its request, the Database Server can perform an SELECT operation with the given VIN and if no entry is found, it will respond with a 'Record does not exists' message.
    * If SOTA Server does not authenticate successfully due to incorrect Username/Password credentials against the Database Server, the Database Server should reject the connection.
 
-### <a name="WL-B6-8">[WL-B6-8](#WL-B6-8) External Resolver looks-up Filters in External Resolver Database</a>
+### <a name="WL-B6-8">[WL-B6-8](#WL-B6-8) External Resolver looks up Filters in External Resolver Database</a>
 
 The External Resolver can perform a lookup operation for all the Filters to the Resolver database in the Database Server over TCP on port 3306.
 
@@ -853,13 +835,13 @@ Software Loading Manager can send a "Initiate Software Download" [Download Index
    * Upon the Software Loading Manager's request, SOTA Client can start the update download process and if the update is interrupted due to lost network, it will try to reconnect to RVI Node Server to resume the update.
    * Upon the Software Loading Manager's "Cancel Software Download" request, SOTA Client can interrupt the update download process.
 
-### <a name="WL-B10-3">[WL-B10-3](#WL-B10-3) SOTA Client sends "Initiate Software Download" notification to RVI Node Client</a>
+### <a name="WL-B10-3">[WL-B10-3](#WL-B10-3) SOTA Client sends "Initiate Software Download" notification to Software Loading Manager</a>
 
-SOTA Client can accept a "Initiate Software Download" [Download Index] notification to RVI Node Client using JSON on port 80 over HTTP.
+SOTA Client can accept a "Initiate Software Download" [Download Index] notification to Software Loading Manager using JSON on port 80 over HTTP.
 
-   * Upon the SOTA Client's request, RVI Node Client can start the update download process and if the update is finished without errors, it will respond with 'Installation of *Package ID* complete' in the response body and a 200 status code.
-   * Upon the SOTA Client's request, RVI Node Client can start the update download process and if the update is interrupted due to lost network, it will try to reconnect to RVI Node Server to resume the update.
-   * Upon the SOTA Client's "Cancel Software Download" request, RVI Node Client can interrupt the update download process.
+   * Upon the SOTA Client's request, Software Loading Manager can start the update download process and if the update is finished without errors, it will respond with 'Installation of *Package ID* complete' in the response body and a 200 status code.
+   * Upon the SOTA Client's request, Software Loading Manager can start the update download process and if the update is interrupted due to lost network, it will try to reconnect to RVI Node Server to resume the update.
+   * Upon the SOTA Client's "Cancel Software Download" request, Software Loading Manager can interrupt the update download process.
 
 ### <a name="WL-B10-4">[WL-B10-4](#WL-B10-4) SOTA Client sends "Start Download" notification to Software Loading Manager</a>
 
