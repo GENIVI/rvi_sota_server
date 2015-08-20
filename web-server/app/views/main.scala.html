@@ -1,0 +1,28 @@
+@()()
+
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <title>SOTA Admin UI</title>
+        <link rel='stylesheet' href='@routes.WebJarAssets.at(WebJarAssets.locate("css/bootstrap.min.css"))'>
+    </head>
+    <body>
+      <div class="container">
+        <h1>SOTA Web Admin</h1>
+
+        <div id="app">
+        </div>
+
+        <div id="package">
+        </div>
+
+        <div id="updatePackage">
+        </div>
+        <script>
+          @Html(org.webjars.RequireJS.getSetupJavaScript(routes.WebJarAssets.at("").url))
+        </script>
+        <script data-main="@routes.Assets.versioned("javascripts/react-app.js")" src="@routes.WebJarAssets.at(WebJarAssets.locate("require.min.js"))"></script>
+      </div>
+    </body>
+</html>

@@ -1,0 +1,29 @@
+@(form: Form[Option[org.genivi.webserver.Authentication.Account]])(implicit messages: Messages)
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign in</title>
+    <link rel='stylesheet' href='@routes.WebJarAssets.at(WebJarAssets.locate("css/bootstrap.min.css"))'>
+</head>
+<body>
+    <div class="container">
+        <h1>Sign in</h1>
+        @helper.form(action = org.genivi.webserver.controllers.routes.Application.authenticate) {
+            @form.globalError.map { error =>
+                <p class="error">@error.message</p>
+            }
+            <div class="form-group">
+                <label for="email">Email address</label>
+                <input class="form-control" type="email" name="email" id="email" placeholder="email" value='@form("email").value'>
+            </div>
+            <div class="form-group">
+                <label for="email">Password</label>
+                <input class="form-control" type="password" name="password" id="password" placeholder="password">
+            </div>
+            <button class="btn btn-primary" type="submit">Login</button>
+        }
+    </div>
+</body>
+</html>

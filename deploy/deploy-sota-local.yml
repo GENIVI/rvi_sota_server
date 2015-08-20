@@ -1,0 +1,81 @@
+---
+services:
+  - name: mysql
+    repo: advancedtelematic/mariadb
+    ports:
+      - 3306
+    env:
+      MYSQL_ROOT_PASSWORD: "{{ db_root_password }}"
+      MYSQL_USER: "{{ db_user }}"
+      MYSQL_PASSWORD: "{{ db_user_password }}"
+      MYSQL_DATABASES: "{{ db_resolver_name }} {{ db_core_name }}"
+
+  - name: rvi-server
+    repo: advancedtelematic/rvi
+    attach: true
+    ports:
+      - 8801
+      - 8805
+      - 8806
+      - 8807
+      - 8808
+    command: server
+
+  - name: rvi-client
+    repo: advancedtelematic/rvi
+    attach: true
+    ports:
+      - 8901
+      - 8905
+      - 8906
+      - 8907
+      - 8908
+    command: client
+
+  - name: sota-client
+    repo: advancedtelematic/sota-client
+    ports:
+      - 9000
+    links:
+      - rvi-client
+
+  - name: resolver
+    repo: sota-resolver
+    pull: false
+    ports:
+      - 8081
+    expose:
+      - "8081"
+    links:
+      - mysql
+    env:
+      HOST: 0.0.0.0
+      RESOLVER_DB_URL: "jdbc:mysql://mysql:3306/{{ db_resolver_name }}"
+
+  - name: core
+    repo: sota-core
+    pull: false
+    ports:
+      - 8080
+    expose:
+      - "8080"
+    links:
+      - mysql
+      - resolver
+    env:
+      HOST: 0.0.0.0
+      CORE_DB_URL: "jdbc:mysql://mysql:3306/{{ db_core_name }}"
+      RESOLVER_PORT: "8080"
+      RESOLVER_HOST: "resolver"
+
+  - name: webserver
+    repo: sota-webserver
+    links:
+      - resolver
+    pull: false
+    ports:
+      - 80:9000
+    env:
+      RESOLVER_PORT: "8080"
+      RESOLVER_HOST: "resolver"
+

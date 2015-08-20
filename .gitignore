@@ -1,0 +1,52 @@
+# Created by .ignore support plugin (hsz.mobi)
+### SBT template
+# Simple Build Tool
+# http://www.scala-sbt.org/release/docs/Getting-Started/Directories.html#configuring-version-control
+
+target/
+lib_managed/
+src_managed/
+project/boot/
+.history
+.cache
+
+### Scala template
+*.class
+*.log
+*.sc
+
+# sbt specific
+.cache
+.history
+.lib/
+dist/*
+target/
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+
+# Scala-IDE specific
+.scala_dependencies
+.worksheet
+
+# vim temporary files
+.*.swp
+
+# patch backup files
+*.orig
+
+# IntelliJ IDEA
+/.idea
+
+# Ensime
+.ensime
+.ensime_cache
+
+# Docker Launcher
+deploy/tmp-*
+deploy/docker-launcher.yml
+deploy/roles
+
+# Generated files in docs/
+/docs/**/*.pdf
