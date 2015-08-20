@@ -88,7 +88,12 @@ object SotaBuild extends Build {
         "org.webjars.bower" % "flux" % "2.0.2",
         "org.webjars.bower" % "backbone" % "1.2.1",
         "org.webjars" % "bootstrap" % "3.3.4",
-        ws
+        "jp.t2v" %% "play2-auth"        % "0.14.0",
+        "jp.t2v" %% "play2-auth-test"   % "0.14.0" % "test",
+        "org.scala-lang.modules" %% "scala-pickling" % "0.10.1",
+        "org.mindrot" % "jbcrypt" % "0.3m",
+        ws,
+        play.sbt.Play.autoImport.cache
       )
     )).enablePlugins(PlayScala, SbtWeb)
 

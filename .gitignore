@@ -10,7 +10,6 @@ project/boot/
 .history
 .cache
 
-
 ### Scala template
 *.class
 *.log
