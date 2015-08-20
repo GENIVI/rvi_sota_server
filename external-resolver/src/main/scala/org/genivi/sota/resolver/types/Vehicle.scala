@@ -5,23 +5,26 @@
 package org.genivi.sota.resolver.types
 
 import eu.timepit.refined.{Refined, Predicate}
+import org.genivi.sota.refined.SprayJsonRefined._
+import spray.json.DefaultJsonProtocol._
 
-case class Vehicle(vin: Vehicle.IdentificationNumber)
+
+case class Vehicle(vin: Vehicle.Vin)
 
 object Vehicle {
-  trait Vin
-  implicit val validVin : Predicate[Vin, String] = Predicate.instance(
+
+  trait ValidVin
+
+  implicit val validVin : Predicate[ValidVin, String] = Predicate.instance(
     vin => vin.length == 17 && vin.forall(c => c.isLetter || c.isDigit),
     vin => s"($vin isn't 17 letters or digits long)"
   )
 
-  type IdentificationNumber = String Refined Vin
+  type Vin = Refined[String, ValidVin]
 
-  implicit val VinOrdering : Ordering[IdentificationNumber] = new Ordering[IdentificationNumber] {
-    override def compare( a: IdentificationNumber, b: IdentificationNumber ) : Int = a.get compare b.get
+  implicit val VinOrdering: Ordering[Vin] = new Ordering[Vin] {
+    override def compare(a: Vin, b: Vin): Int = a.get compare b.get
   }
 
-  import spray.json.DefaultJsonProtocol._
-  import org.genivi.sota.refined.SprayJsonRefined._
   implicit val vehicleFormat = jsonFormat1(Vehicle.apply)
 }

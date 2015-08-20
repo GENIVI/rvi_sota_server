@@ -4,6 +4,9 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import eu.timepit.refined.Refined
+import org.genivi.sota.refined.SprayJsonRefined._
+import org.genivi.sota.resolver.db.Resolve.makeFakeDependencyMap
+import org.genivi.sota.resolver.types.Package
 import org.genivi.sota.resolver.types.Package.Metadata
 import org.genivi.sota.resolver.types.{Vehicle, Filter, PackageFilter}
 import spray.json.DefaultJsonProtocol._
@@ -55,7 +58,8 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
       def resolve(pname: String, pversion: String, vins: Seq[String]): Unit =
         Get(ResolveUri(pname, pversion)) ~> route ~> check {
           status shouldBe StatusCodes.OK
-          responseAs[Seq[Vehicle]] shouldBe (vins.map(s => Vehicle(Refined(s))))
+          responseAs[Map[Vehicle.Vin, List[Package.Id]]] shouldBe
+            makeFakeDependencyMap(Refined(pname), Refined(pversion), vins.map(s => Vehicle(Refined(s))))
         }
 
       resolve("resolve pkg", "0.0.1",
