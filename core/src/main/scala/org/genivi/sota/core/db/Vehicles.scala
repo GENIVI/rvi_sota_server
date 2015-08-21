@@ -7,6 +7,7 @@ package org.genivi.sota.core.db
 import org.genivi.sota.core.data.Vehicle
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
+import org.genivi.sota.db.Operators.regex
 
 object Vehicles {
   import org.genivi.sota.refined.SlickRefined._
@@ -28,7 +29,5 @@ object Vehicles {
   def create(vehicle: Vehicle)(implicit ec: ExecutionContext) : DBIO[Vehicle.IdentificationNumber] =
     vins.insertOrUpdate(vehicle).map( _ => vehicle.vin )
 
-  val byRegex = SimpleBinaryOperator[Boolean]("REGEXP")
-
-  def searchByRegex(reg:String) : DBIO[Seq[Vehicle]] = vins.filter(vins => byRegex(vins.vin, reg)).result
+  def searchByRegex(reg:String) : DBIO[Seq[Vehicle]] = vins.filter(vins => regex(vins.vin, reg)).result
 }

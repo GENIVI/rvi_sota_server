@@ -28,6 +28,9 @@ import scala.concurrent.Future
 import Directives._
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import spray.json.DefaultJsonProtocol._
+import eu.timepit.refined._
+import eu.timepit.refined.string._
+import org.genivi.sota.refined.SprayJsonRefined._
 
 object ErrorCodes {
   val ExternalResolverError = ErrorCode( "external_resolver_error" )
@@ -120,9 +123,13 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
 
   val route = pathPrefix("packages") {
     get {
-      complete {
-        NoContent
-        //Packages.list
+      parameters('regex.as[String Refined Regex].?) { (regex: Option[String Refined Regex]) =>
+
+        val query = (regex) match {
+          case Some(r) => Packages.searchByRegex(r.get)
+          case None => Packages.list
+      }
+        complete(db.run(query))
       }
     } ~
     (put & refined[Package.ValidName]( Slash ~ Segment) & refined[Package.ValidVersion](Slash ~ Segment ~ PathEnd)).as(PackageId.apply _) { packageId =>
