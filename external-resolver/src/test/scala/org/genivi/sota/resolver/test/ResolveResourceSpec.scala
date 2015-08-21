@@ -42,3 +42,68 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
   }
 
 }
+
+class ResolveResourcePropSpec extends ResourcePropSpec {
+
+  import ArbitraryFilter.arbFilter
+  import ArbitraryPackage.arbPackage
+  import ArbitraryVehicle.arbVehicle
+  import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+  import akka.http.scaladsl.model.StatusCodes
+  import org.genivi.sota.refined.SprayJsonRefined._
+  import org.genivi.sota.resolver.types.FilterParser.parseValidFilter
+  import org.genivi.sota.resolver.types._
+  import org.genivi.sota.resolver.db.Resolve.makeFakeDependencyMap
+  import spray.json.DefaultJsonProtocol._
+
+  property("Resolve should give back the same thing as if we filtered with the filters") {
+
+    forAll { (
+      vs: Seq[Vehicle],   // The available vehicles.
+      p : Package,        // The package we want to install.
+      ps: Seq[Package],   // Other packages in the system.
+      fs: Seq[Filter],    // Filters to be associated to the package we
+                          // want to install.
+      f: Filter)
+        => {
+
+          // Add all the vehicles.
+          vs map (v => addVehicleOK(v.vin.get))
+
+          // Add all the packages.
+          (p +: ps) map (q => addPackageOK(q.id.name.get, q.id.version.get, q.description, q.vendor))
+
+          // Add all the filters.
+          fs map (f => addFilterOK(f.name.get, f.expression.get))
+
+          // Associate the first set of filters to the package we want to install.
+          fs map (f => addPackageFilterOK(p.id.name.get, p.id.version.get, f.name.get))
+
+          // Add a filter that only passes through the VINs we just
+          // added (there might be old VINs around from previous
+          // iterations of this test).
+          addFilterOK(f.name.get,
+            FilterPrinter.ppFilter
+              (vs.map(_.vin.get).map(VinMatches).foldLeft[FilterAST](False)(Or)))
+
+          addPackageFilterOK(p.id.name.get, p.id.version.get, f.name.get)
+
+          // The resolver should give back the same VINs as if...
+          resolve(p.id.name.get, p.id.version.get) ~> route ~> check {
+            status shouldBe StatusCodes.OK
+            responseAs[Map[Vehicle.Vin, Seq[Package.Id]]] shouldBe
+              makeFakeDependencyMap(p.id.name, p.id.version,
+
+                // ... we filtered the initial list of VINs by the
+                // boolean predicate that arises from the combined
+                // filter queries.
+                vs.filter(FilterQuery.query
+                  (fs.map(_.expression).map(parseValidFilter)
+                     .foldLeft[FilterAST](True)(And))))
+          }
+        }
+    }
+
+  }
+
+}
