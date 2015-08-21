@@ -18,54 +18,50 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
 
   "Package filter resource" should {
 
-    val pf = PackageFilter(Refined("package"), Refined("1.0.0"), Refined("filter"))
+    val pkgName    = "package"
+    val pkgVersion = "1.0.0"
+    val filterName = "filter"
+    val filterExpr = s"""vin_matches "^X.*""""
+    val pkgFilter  =  PackageFilter(Refined(pkgName), Refined(pkgVersion), Refined(filterName))
 
     "be able to assign exisiting filters to existing packages" in {
-
-      addPackage(pf.packageName.get, pf.packageVersion.get, None, None) ~> route ~> check {
-        status shouldBe StatusCodes.OK
-      }
-      Post(FiltersUri, Filter(pf.filterName, Refined(s"""vin_matches "^X.*""""))) ~> route ~> check {
-        status shouldBe StatusCodes.OK
-      }
-      Post(PackageFiltersUri, pf) ~> route ~> check {
-        status shouldBe StatusCodes.OK
-        responseAs[PackageFilter] shouldBe pf
-      }
+      addPackageOK(pkgName, pkgVersion, None, None)
+      addFilterOK(filterName, filterExpr)
+      addPackageFilterOK("package", "1.0.0", "filter")
     }
 
     "not allow assignment of filters to non-existing packages " in {
-      Post(PackageFiltersUri, pf.copy(packageName = Refined("nonexistant"))) ~> route ~> check {
+      addPackageFilter("nonexistant", pkgVersion, filterName) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingPackage
       }
     }
 
     "not allow assignment of non-existing filters to existing packages " in {
-      Post(PackageFiltersUri, pf.copy(filterName = Refined("nonexistant"))) ~> route ~> check {
+      addPackageFilter(pkgName, pkgVersion, "nonexistant") ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingFilter
       }
     }
 
     "list existing package filters on GET requests" in {
-      Get(PackageFiltersUri) ~> route ~> check {
+      listPackageFilters ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[Seq[PackageFilter]] shouldBe List(pf)
+        responseAs[Seq[PackageFilter]] shouldBe List(pkgFilter)
       }
     }
 
     "list packages associated to a filter on GET requests to /packagesFor/:filterName" in {
-      Get(PackageFiltersListUri("packagesFor", "filter")) ~> route ~> check {
+      listPackagesForFilter(filterName) ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[Seq[Package.Name]] shouldBe List(pf.packageName)
+        responseAs[Seq[Package.Name]] shouldBe List(Refined(pkgName))
       }
     }
 
     "list filters associated to a package on GET requests to /filtersFor/:packageName" in {
-      Get(PackageFiltersListUri("filtersFor", "package", "1.0.0")) ~> route ~> check {
+      listFiltersForPackage(pkgName, pkgVersion) ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[Seq[Filter]] shouldBe List(Filter(pf.filterName, Refined(s"""vin_matches "^X.*"""")))
+        responseAs[Seq[Filter]] shouldBe List(Filter(Refined(filterName), Refined(filterExpr)))
       }
     }
 

@@ -50,15 +50,13 @@ class VehiclesResourcePropSpec extends ResourcePropSpec {
 
   property("Vehicles resource should create new resource on PUT request") {
     forAll { vehicle: Vehicle =>
-      Put(VehiclesUri(vehicle.vin.get)) ~> route ~> check {
-        status shouldBe StatusCodes.NoContent
-      }
+      addVehicleOK(vehicle.vin.get)
     }
   }
 
   property("Invalid vehicles are rejected") {
     forAll(genInvalidVehicle) { vehicle: Vehicle =>
-      Put(VehiclesUri(vehicle.vin.get)) ~> route ~> check {
+      addVehicle(vehicle.vin.get) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
       }
     }
@@ -66,12 +64,8 @@ class VehiclesResourcePropSpec extends ResourcePropSpec {
 
   property("PUTting the same vin twice updates it") {
     forAll { vehicle: Vehicle  =>
-      Put(VehiclesUri(vehicle.vin.get)) ~> route ~> check {
-        status shouldBe StatusCodes.NoContent
-      }
-      Put(VehiclesUri(vehicle.vin.get)) ~> route ~> check {
-        status shouldBe StatusCodes.NoContent
-      }
+      addVehicleOK(vehicle.vin.get)
+      addVehicleOK(vehicle.vin.get)
     }
   }
 
@@ -82,40 +76,36 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
   "Vin resource" should {
 
     "create a new resource on PUT request" in {
-      Put( VehiclesUri("VINOOLAM0FAU2DEEP") ) ~> route ~> check {
-        status shouldBe StatusCodes.NoContent
-      }
+      addVehicleOK("VINOOLAM0FAU2DEEP")
     }
 
     "not accept too long Vins" in {
-      Put( VehiclesUri("VINOOLAM0FAU2DEEP1") ) ~> route ~> check {
+      addVehicle("VINOOLAM0FAU2DEEP1") ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
     "not accept too short Vins" in {
-      Put( VehiclesUri("VINOOLAM0FAU2DEE") ) ~> route ~> check {
+      addVehicle("VINOOLAM0FAU2DEE") ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
     "not accept Vins which aren't alpha num" in {
-      Put( VehiclesUri("VINOOLAM0FAU2DEE!") ) ~> route ~> check {
+      addVehicle("VINOOLAM0FAU2DEE!") ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
     "allow duplicate entries" in {
-      Put( VehiclesUri("VINOOLAM0FAU2DEEP") ) ~> route ~> check {
-        status shouldBe StatusCodes.NoContent
-      }
+      addVehicleOK("VINOOLAM0FAU2DEEP")
     }
 
     "list all Vins on a GET request" in {
-      Get(VehiclesUri("")) ~> route ~> check {
+      listVehicles ~> route ~> check {
         import spray.json.DefaultJsonProtocol._
         responseAs[Seq[Vehicle]] shouldBe List(Vehicle(Refined("VINOOLAM0FAU2DEEP")))
       }

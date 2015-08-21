@@ -16,42 +16,41 @@ class FiltersResourceSpec extends ResourceWordSpec {
 
   "Filters resource" should {
 
-    val filter = Filter(Refined("myfilter"), Refined(s"""vin_matches "SAJNX5745SC??????""""))
+    val filterName = "myfilter"
+    val filterExpr = s"""vin_matches "SAJNX5745SC??????""""
+    val filter     = Filter(Refined(filterName), Refined(filterExpr))
 
     "create a new resource on POST request" in {
-      Post(FiltersUri, filter) ~> route ~> check {
-        status shouldBe StatusCodes.OK
-      }
+      addFilterOK(filterName, filterExpr)
     }
 
     "not accept empty filter names" in {
-      Post(FiltersUri, Filter(Refined(""), Refined(s"""vin_matches "SAJNX5745SC??????""""))) ~> route ~> check {
+      addFilter("", filterExpr) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
     "not accept grammatically wrong expressions" in {
-      Post(FiltersUri,
-        Filter(Refined("myfilter"), Refined(s"""vin_matches "SAJNX5745SC??????" AND"""))) ~> route ~> check {
-          status shouldBe StatusCodes.BadRequest
-          responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
-        }
+      addFilter(filterName, filterExpr + " AND") ~> route ~> check {
+        status shouldBe StatusCodes.BadRequest
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
+      }
     }
 
-    val filter2 = Filter(Refined("myfilter2"), Refined(s"""vin_matches "TAJNX5745SC??????""""))
+    val filterName2 = "myfilter2"
+    val filterExpr2 = s"""vin_matches "TAJNX5745SC??????""""
+    val filter2     = Filter(Refined(filterName2), Refined(filterExpr2))
 
     "list available filters on a GET request" in {
-      Post(FiltersUri, filter2) ~> route ~> check {
-        status shouldBe StatusCodes.OK
-      }
-      Get(FiltersUri) ~> route ~> check {
+      addFilterOK(filterName2, filterExpr2)
+      listFilters ~> route ~> check {
         responseAs[Seq[Filter]] shouldBe List(filter, filter2)
       }
     }
 
     "not accept duplicate filter names" in {
-      Post(FiltersUri, filter) ~> route ~> check {
+      addFilter(filterName, filterExpr) ~> route ~> check {
         status shouldBe StatusCodes.Conflict
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.DuplicateEntry
       }
