@@ -12,7 +12,7 @@ import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
 import spray.json.DefaultJsonProtocol._
 
 
-class FiltersResourceSpec extends ResourceWordSpec {
+class FiltersResourceWordSpec extends ResourceWordSpec {
 
   "Filters resource" should {
 
@@ -57,4 +57,39 @@ class FiltersResourceSpec extends ResourceWordSpec {
     }
 
   }
+}
+
+object ArbitraryFilter {
+
+  import ArbitraryFilterAST.arbFilterAST
+  import org.genivi.sota.resolver.types.{Filter, FilterPrinter}
+  import org.scalacheck._
+
+    val genName: Gen[String] =
+      for {
+        // We don't want name clashes so keep the names long.
+        n  <- Gen.choose(50, 100)
+        cs <- Gen.listOfN(n, Gen.alphaNumChar)
+      } yield cs.mkString
+
+    val genFilter: Gen[Filter] =
+      for {
+        name <- genName
+        expr <- ArbitraryFilterAST.genFilter
+      } yield Filter(Refined(name), Refined(FilterPrinter.ppFilter(expr)))
+
+  implicit lazy val arbFilter = Arbitrary(genFilter)
+}
+
+class FiltersResourcePropSpec extends ResourcePropSpec {
+
+  import ArbitraryFilter.arbFilter
+
+  property("Posting random filters should work") {
+
+    forAll { filter: Filter =>
+      addFilterOK(filter.name.get, filter.expression.get)
+    }
+  }
+
 }
