@@ -68,7 +68,7 @@ class FilterParserSpec extends FlatSpec {
 
 }
 
-object FilterParserPropSpec extends Properties("The filter parser") {
+object ArbitraryFilterAST {
 
   def genFilterHelper(i: Int): Gen[FilterAST] = {
 
@@ -108,13 +108,23 @@ object FilterParserPropSpec extends Properties("The filter parser") {
 
   def genFilter: Gen[FilterAST] = Gen.sized(genFilterHelper)
 
-  property("parses pretty printed filters") =
-    Prop.forAll(genFilter) { f: FilterAST =>
-      parseFilter(ppFilter(f)) == Right(f)
-    }
+  implicit lazy val arbFilterAST: Arbitrary[FilterAST] =
+    Arbitrary(genFilter)
+}
 
-  property("does not parse junk") =
-    Prop.forAll(genFilter) { f: FilterAST =>
-      parseFilter(ppFilter(f) + "junk").isLeft
+object FilterParserPropSpec extends ResourcePropSpec {
+
+  import ArbitraryFilterAST.arbFilterAST
+
+  property("The filter parser parses pretty printed filters") {
+    forAll { f: FilterAST =>
+      parseFilter(ppFilter(f)) shouldBe Right(f)
     }
+  }
+
+  property("does not parse junk") {
+    forAll { f: FilterAST =>
+      parseFilter(ppFilter(f) + "junk").isLeft shouldBe true
+    }
+  }
 }
