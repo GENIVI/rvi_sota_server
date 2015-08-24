@@ -13,8 +13,8 @@ import org.scalatest.{BeforeAndAfterAll, Suite, WordSpec, PropSpec, Matchers}
 import slick.jdbc.JdbcBackend.Database
 
 
-trait ResourceSpec extends Matchers
-    with VehicleRequests
+trait ResourceSpec extends
+         VehicleRequests
     with PackageRequests
     with FilterRequests
     with PackageFilterRequests
@@ -25,7 +25,6 @@ trait ResourceSpec extends Matchers
   // Database
   val name = "test-database"
   val db = Database.forConfig(name)
-
 
   override def beforeAll() = {
     val dbConfig = system.settings.config.getConfig(name)
@@ -46,7 +45,7 @@ trait ResourceSpec extends Matchers
   }
 
   // Route
-  lazy implicit val route: Route = new org.genivi.sota.resolver.Routing(db).route
+  lazy implicit val route: Route = new Routing(db).route
 
 }
 

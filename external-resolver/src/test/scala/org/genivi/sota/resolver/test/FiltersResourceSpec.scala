@@ -65,18 +65,18 @@ object ArbitraryFilter {
   import org.genivi.sota.resolver.types.{Filter, FilterPrinter}
   import org.scalacheck._
 
-    val genName: Gen[String] =
-      for {
-        // We don't want name clashes so keep the names long.
-        n  <- Gen.choose(50, 100)
-        cs <- Gen.listOfN(n, Gen.alphaNumChar)
-      } yield cs.mkString
+  val genName: Gen[String] =
+    for {
+      // We don't want name clashes so keep the names long.
+      n  <- Gen.choose(50, 100)
+      cs <- Gen.listOfN(n, Gen.alphaNumChar)
+    } yield cs.mkString
 
-    val genFilter: Gen[Filter] =
-      for {
-        name <- genName
-        expr <- ArbitraryFilterAST.genFilter
-      } yield Filter(Refined(name), Refined(FilterPrinter.ppFilter(expr)))
+  val genFilter: Gen[Filter] =
+    for {
+      name <- genName
+      expr <- ArbitraryFilterAST.genFilter
+    } yield Filter(Refined(name), Refined(FilterPrinter.ppFilter(expr)))
 
   implicit lazy val arbFilter = Arbitrary(genFilter)
 }
