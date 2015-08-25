@@ -6,6 +6,7 @@ Note that all responses are sent as JSON.
 
 ### GET /vehicles
 
+  * Availability: core, resolver, web server
   Returns a list of all vehicle VINs in the database.
 
 ##### URL
@@ -19,7 +20,17 @@ Note that all responses are sent as JSON.
 ##### Success Response:
 
   * **Code:** 200  
-    **Content:** `[{  "vin": "AAAAAAA1234567890"}, {  "vin": "BBBBBBB1234567890"}]`
+    **Content:** A list of VINs.
+```json
+[
+  {
+    "vin": "AAAAAAA1234567890"
+  },
+  {
+    "vin": "BBBBBBB1234567890"
+  }
+]
+```
  
 ##### Error Response:
 
@@ -29,6 +40,7 @@ Note that all responses are sent as JSON.
 
 ### PUT /vehicles/:vin
 
+  * Availability: core, resolver, web server
   Adds a vehicle VIN to the database.
 
 ##### URL
@@ -53,7 +65,8 @@ Note that all responses are sent as JSON.
 
 ### GET /packages
 
-  Currently returns nothing.
+  * Availability: core, resolver, web server
+  Currently returns nothing. Should return a list of packages.
 
 ##### URL
 
@@ -76,6 +89,7 @@ Note that all responses are sent as JSON.
 
 ### PUT /packages/:name/:version
 
+  * Availability: core, resolver
   Adds a package to the database.
 
 ##### URL
@@ -107,6 +121,7 @@ Note that all responses are sent as JSON.
 
 ### GET /resolve/:name/:version
 
+  * Availability: web server, resolver
   Takes a package name and version, and returns a list of VINs it applies to.
 
 ##### URL
@@ -121,15 +136,31 @@ Note that all responses are sent as JSON.
 ##### Success Response:
 
   * **Code:** 200  
-    **Content:** `[{  "vin": "AAAAAAA1234567890"}, {  "vin": "BBBBBBB1234567890"}]`
- 
+    **Content:**
+```json
+{    
+  "AAAAAAA1234567890": [
+    {
+      "name": "myPackage",
+      "version": "1.2.3"
+    }
+  ],
+  "BBBBBBB1234567890": [
+    {
+      "name": "myPackage",
+      "version": "1.2.3"
+    }
+  ]
+}
+```
+
 ##### Error Response:
 
   * N/A
 
-
 ### GET /filters
 
+  * Availability: web server, resolver
   Returns a list of all filters in the database.
 
 ##### URL
@@ -143,15 +174,24 @@ Note that all responses are sent as JSON.
 ##### Success Response:
 
   * **Code:** 200  
-    **Content:** `[{ "name": "myFilter", "expression": "TRUE" }]`
+    **Content:** A list of filters.
+```json
+[
+  {
+    "name": "myFilter",
+    "expression": "vin_matches \"^12ABC\" AND has_component \"AcmeDVDPlayer\""
+  }
+]
+```
  
 ##### Error Response:
 
    * N/A
 
 
-### PUT /filters
+### POST /filters
 
+  * Availability: web server, resolver
   Adds a filter to the database.
 
 ##### URL
@@ -170,12 +210,14 @@ Note that all responses are sent as JSON.
  
 ##### Error Response:
 
-  * **Code:** 400  
-    **Content:** {"code": "invalid_entity","description": "Predicate failed: (Expression failed to parse)."}
-    
+  * **Code:** 400
+    **Content:** `{"code": "invalid_entity","description": "Predicate failed: (Expression failed to parse)."}`
+  * **Code:** 409
+    **Content:** `{"code": "duplicate_entry","description": "Entry already exists"}`    
 
 ### POST /validate/filter
 
+  * Availability: web server, resolver
   Validates the syntax of a filter.
 
 ##### URL
@@ -191,15 +233,18 @@ Note that all responses are sent as JSON.
 
   * **Code:** 200  
     **Content:** None
- 
+  * Note: Only the *validity* of the filter name is checked. As long as the filter syntax is correct and the name is between 2 and 100 alphanumeric characters, a success response is returned, regardless of whether a filter with this name already exists.
+   
 ##### Error Response:
 
   * **Code:** 400  
     **Content:** {"code": "invalid_entity","description": "Predicate failed: (Expression failed to parse)."}
+
     
 
 ### GET /packageFilters
 
+  * Availability: web server, resolver
   Returns a list of all package —> filter associations.
 
 ##### URL
@@ -213,7 +258,7 @@ Note that all responses are sent as JSON.
 ##### Success Response:
 
   * **Code:** 200  
-    **Content:** `[{  "packageName": "myPackage",  "packageVersion": "1.2.3",  "filterName": "myFilter"}]`
+    **Content:** `[{ list of package-filter associations }]`
  
 ##### Error Response:
 
@@ -222,6 +267,7 @@ Note that all responses are sent as JSON.
 
 ### GET /packageFilters/packagesFor/:filter
 
+  * Availability: web server, resolver
   Returns a list of all packages associated with a particular filter.
 
 ##### URL
@@ -246,6 +292,7 @@ Note that all responses are sent as JSON.
 
 ### GET /packageFilters/filtersFor/:name/:version
 
+  * Availability: web server, resolver
   Returns a list of all filters associated with a particular package ID.
 
 ##### URL
