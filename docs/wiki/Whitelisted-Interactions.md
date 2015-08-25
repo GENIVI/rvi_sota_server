@@ -1,3 +1,11 @@
+# Whitelisted Interactions
+
+This page details all currently whitelisted interactions. When creating stories in JIRA, you must note any interactions between components that will be required. If they are not already covered by a whitelisted interaction in this list, you must review them with the security curator, [Angelos Kapsimanis](https://github.com/akxs14). If the new interactions are approved, they will be added to this list. Code **will not be merged** if it contains non-whitelisted interactions.
+
+Whitelisted interactions are organized by boundary:
+
+![Whitelisted Interactions Reference Diagram](images/Whitelisted-Interactions-Reference-Diagram.png)
+
 ## <a name='TOC'>List of whitelisted interactions per boundary</a>
 
 1. [B1](#b-1) Web Browser - Web Server
