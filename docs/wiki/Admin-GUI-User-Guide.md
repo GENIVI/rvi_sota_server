@@ -4,7 +4,7 @@ This is the user manual for the SOTA Admin Web GUI. Development is currently at 
 
 ## Signing in
 
-Once the sota-server is built and running, the Admin Browser will be available at <http://localhost:9000>. User authentication is not yet implemented.
+Once the SOTA server is [built](/wiki#building-locally) and running, the Admin Browser will be available at <http://localhost:9000>. The default username is `admin@sota.com`, and the default password is `genivirocks!`.
 
 ## Managing Vehicles
 
