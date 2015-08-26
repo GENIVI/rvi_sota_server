@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width">
+
+        <title>GENIVI SOTA Project : Building & Deploying</title>
+        <meta name="description" content="Software Updates Over the Air">
+
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="/rvi_sota_server/css/syntax.css">
+        <link rel="stylesheet" href="/rvi_sota_server/css/main.css">
+    </head>
+    <body>
+
+        <div class="container">
+            <div class="row">
+                <div id="header" class="col-sm-12">
+                    <h4><a class="brand" href="/rvi_sota_server/">GENIVI SOTA Project</a>
+    <small>Software Updates Over the Air</small>
+</h4>
+
+                </div>
+            </div>
+
+            <div class="row">
+                
+                
+                    <div id="navigation" class="col-sm-2">
+                        <ul class="nav nav-list">
+    <li><a href="/rvi_sota_server/">Home</a></li>
+    
+        
+        
+
+        
+            
+                <li class="nav-header">Documentation</li>
+            
+            <li data-order="5"><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
+        
+            
+            <li data-order="2"><a href="/rvi_sota_server/doc/deployment-with-docker-launcher.html">Deployment with Docker Launcher</a></li>
+        
+            
+            <li data-order="6"><a href="/rvi_sota_server/doc/contributing.html">Contributing</a></li>
+        
+            
+            <li data-order="1"><a href="/rvi_sota_server/doc/building-installing.html">Building & Deploying</a></li>
+        
+    
+        
+        
+
+        
+            
+                <li class="nav-header">Security</li>
+            
+            <li data-order=""><a href="/rvi_sota_server/sec/security-threats-mitigations.html">Security Threats & Mitigations</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/sec/whitelisted-interactions.html">Whitelisted Interactions</a></li>
+        
+    
+        
+        
+
+        
+            
+                <li class="nav-header">Reference</li>
+            
+            <li data-order=""><a href="/rvi_sota_server/ref/dependencies.html">Dependencies</a></li>
+        
+            
+            <li data-order="5"><a href="/rvi_sota_server/ref/use-cases.html">Use Cases</a></li>
+        
+            
+            <li data-order="4"><a href="/rvi_sota_server/ref/requirements.html">Requirements</a></li>
+        
+    
+        
+        
+
+        
+            
+                <li class="nav-header">Developers</li>
+            
+            <li data-order=""><a href="/rvi_sota_server/dev/architecture.html">Architecture</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/dev/database-style-guide.html">Database Style Guide</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/dev/scala-style-guide.html">Scala Style Guide</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/dev/api.html">API</a></li>
+        
+    
+<!-- List additional links. It is recommended to add a divider
+    e.g. <li class="divider"></li> first to break up the content. -->
+</ul>
+
+                    </div>
+
+                    <div id="content" class="col-sm-10">
+                        <div class="page-header">
+    <h2>Building & Deploying
+        
+    </h2>
+</div>
+
+<!--- The [sota_client](https://github.com/PDXostc/rvi_sota_client) project builds an RPM that can be installed on a target system, and includes Yocto recipes to allow it to be built into a GENIVI Demo Platform or AGL Reference Platform image.
+-->
+<p>For the server-side components, this project includes a <a href="https://github.com/advancedtelematic/docker-launcher">docker-laucher</a> configuration file to allow the cluster of components to be deployed conveniently to a developer machine. In future versions, it will also include docker-launcher configuration files to deploy to an IaaS cloud (e.g. AWS).</p>
+<p>See <a href="../doc/deployment-with-docker-launcher.html">Deployment with Docker Launcher</a> for deploying development or production systems with Docker Launcher.</p>
+<h2 id="building-locally">Building Locally</h2>
+<p>For local development, the following prerequisites are required:</p>
+<ol type="1">
+<li>Java 8</li>
+<li>mysql (with appropriate databases created)</li>
+</ol>
+<p>The other dependencies are managed using Scala’s <code>sbt</code>. If you have sbt installed then use it, otherwise the <code>./sbt</code> script in the root of the project will bootstrap everything you need beyond Java 8.</p>
+<p>To check the version of java installed, run:</p>
+<pre><code># java -version
+java version &quot;1.8.0_45&quot;
+Java(TM) SE Runtime Environment (build 1.8.0_45-b14)
+Java HotSpot(TM) 64-Bit Server VM (build 25.45-b02, mixed mode)</code></pre>
+<p>For development, a local MariaDB install is required. (Note that this is <strong>not</strong> required for deployment, as Docker Launcher will handle the creation of the database. If a Docker Launcher local deployment is attempted on a machine already running a database instance, there may be conflicts.) Create two databases called ‘sota_core’ and ‘sota_resolver’:</p>
+<div class="sourceCode"><pre class="sourceCode sql"><code class="sourceCode sql">    mysql -u root -p
+    <span class="kw">CREATE</span> <span class="kw">DATABASE</span> sota_core;
+    <span class="kw">CREATE</span> <span class="kw">DATABASE</span> sota_core_test;
+    <span class="kw">CREATE</span> <span class="kw">DATABASE</span> sota_resolver;
+    <span class="kw">CREATE</span> <span class="kw">DATABASE</span> sota_resolver_test;
+    <span class="kw">CREATE</span> <span class="fu">USER</span> <span class="st">&#39;sota&#39;</span>@<span class="st">&#39;localhost&#39;</span> <span class="kw">IDENTIFIED</span> <span class="kw">BY</span> <span class="st">&#39;s0ta&#39;</span>;
+    <span class="kw">GRANT</span> <span class="kw">ALL</span> <span class="kw">PRIVILEGES</span> <span class="kw">ON</span> sota_core . * <span class="kw">TO</span> <span class="st">&#39;sota&#39;</span>@<span class="st">&#39;localhost&#39;</span>;
+    <span class="kw">GRANT</span> <span class="kw">ALL</span> <span class="kw">PRIVILEGES</span> <span class="kw">ON</span> sota_core_test . * <span class="kw">TO</span> <span class="st">&#39;sota&#39;</span>@<span class="st">&#39;localhost&#39;</span>;
+    <span class="kw">GRANT</span> <span class="kw">ALL</span> <span class="kw">PRIVILEGES</span> <span class="kw">ON</span> sota_resolver . * <span class="kw">TO</span> <span class="st">&#39;sota&#39;</span>@<span class="st">&#39;localhost&#39;</span>;
+    <span class="kw">GRANT</span> <span class="kw">ALL</span> <span class="kw">PRIVILEGES</span> <span class="kw">ON</span> sota_resolver_test . * <span class="kw">TO</span> <span class="st">&#39;sota&#39;</span>@<span class="st">&#39;localhost&#39;</span>;
+    <span class="kw">FLUSH</span> <span class="kw">PRIVILEGES</span>;</code></pre></div>
+<p>To update the database schema, run:</p>
+<pre><code>sbt core/flywayMigrate
+sbt resolver/flywayMigrate</code></pre>
+<p>This will apply any new migrations in src/main/resources/db/migration, and keep your existing data. These commands expect to find the databases on localhost with sota/s0ta for the username/password. The URL to the database and login details can be overridden with the <code>CORE_DB_URL</code>, <code>CORE_DB_USER</code> and <code>CORE_DB_PASSWORD</code> environment variables for the core and <code>RESOLVER_DB_URL</code>, <code>RESOLVER_DB_USER</code> and, <code>RESOLVER_DB_PASSWORD</code> for the external resolver. See <code>project/SotaBuild.scala</code> for the implementation.</p>
+<p>If you are using an encrypted home directory, you may get the following error when attempting a build. This is because scala/sbt tends to create long file names, and these get expanded even further by ecryptfs.</p>
+<pre><code>[error] File name too long
+[error] one error found
+[error] (core/compile:compileIncremental) Compilation failed
+[error] Total time: 9 s, completed Jul 24, 2015 9:10:13 AM</code></pre>
+<p>The solution is to point the build directories to somewhere outside ecryptfs:</p>
+<pre><code>sudo mkdir /var/sota-build
+sudo chown `whoami` /var/sota-build/
+mkdir /var/sota-build/core-target
+mkdir /var/sota-build/resolver-target
+mkdir /var/sota-build/webserver-target
+rm -r core/target/
+rm -r external-resolver/target
+rm -r web-server/target
+ln -s /var/sota-build/core-target/ core/target
+ln -s /var/sota-build/resolver-target external-resolver/target
+ln -s /var/sota-build/webserver-target/ web-server/target</code></pre>
+<p>Once flywayMigrate has run, open three consoles and run:</p>
+<pre><code>sbt core/run
+sbt resolver/run
+CORE_HOST=localhost RESOLVER_HOST=localhost sbt webserver/run</code></pre>
+<p>Now open <a href="http://localhost:9000/">localhost:9000</a> in a browser.</p>
+<h2 id="database-migrations">Database Migrations</h2>
+<p>Never make changes to migrations that already exist. Add columns by creating a new migration with an ‘ALTER TABLE’ statement.</p>
+<p>If someone else has added a migration, run <code>sbt core/flywayMigrate</code> to update your local database.</p>
+
+                    </div>
+                
+            </div>
+
+            
+
+            <div class="row">
+                <div id="footer" class="col-sm-12">
+                    Documentation for <a href="https://github.com/PDXostc/rvi_sota_server">GENIVI SOTA Project</a>
+
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function orderNav() {
+                var list,
+                    section,
+                    header,
+                    sections = [],
+                    lists = {},
+                    headers = {};
+
+                var navUl = document.querySelectorAll('#navigation ul')[0],
+                    navLis = document.querySelectorAll('#navigation ul li');
+
+                if (!navUl) return;
+
+                for (var i = 0; i < navLis.length; i++) {
+                    var order, li = navLis[i];
+
+                    if (li.classList.contains('nav-header')) {
+                        section = li.textContent || li.innerText;
+                        sections.push(section);
+                        headers[section] = li;
+                        continue;
+                    }
+
+                    if (!lists[section]) {
+                        lists[section] = [];
+                    }
+
+                    order = parseFloat(li.getAttribute('data-order'))
+                    lists[section].push([order, li]);
+                }
+
+                for (var i = 0; i < sections.length; i++) {
+                    section = sections[i];
+                    list = lists[section].sort(function(a, b) {
+                        return a[0] - b[0];
+                    });
+
+                    if (header = headers[section]) {
+                        navUl.appendChild(header);
+                    }
+                    for (var j = 0; j < list.length; j++) {
+                        navUl.appendChild(list[j][1]);
+                    }
+                }
+            }
+
+            if (document.querySelectorAll) orderNav();
+        </script>
+        
+    </body>
+</html>

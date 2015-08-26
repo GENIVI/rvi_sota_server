@@ -77,3 +77,18 @@ body.rtl .row-fluid [class*="span"]:first-child {
 body.rtl ul, body.rtl ol {
     margin: 0 25px 10px 0;
 }
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #999;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+td:first-child {
+  width: 25%;
+}
+

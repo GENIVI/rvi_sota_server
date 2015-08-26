@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width">
+
+        <title>GENIVI SOTA Project : Scala Style Guide</title>
+        <meta name="description" content="Software Updates Over the Air">
+
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="/rvi_sota_server/css/syntax.css">
+        <link rel="stylesheet" href="/rvi_sota_server/css/main.css">
+    </head>
+    <body>
+
+        <div class="container">
+            <div class="row">
+                <div id="header" class="col-sm-12">
+                    <h4><a class="brand" href="/rvi_sota_server/">GENIVI SOTA Project</a>
+    <small>Software Updates Over the Air</small>
+</h4>
+
+                </div>
+            </div>
+
+            <div class="row">
+                
+                
+                    <div id="navigation" class="col-sm-2">
+                        <ul class="nav nav-list">
+    <li><a href="/rvi_sota_server/">Home</a></li>
+    
+        
+        
+
+        
+            
+                <li class="nav-header">Documentation</li>
+            
+            <li data-order="5"><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
+        
+            
+            <li data-order="2"><a href="/rvi_sota_server/doc/deployment-with-docker-launcher.html">Deployment with Docker Launcher</a></li>
+        
+            
+            <li data-order="6"><a href="/rvi_sota_server/doc/contributing.html">Contributing</a></li>
+        
+            
+            <li data-order="1"><a href="/rvi_sota_server/doc/building-installing.html">Building & Deploying</a></li>
+        
+    
+        
+        
+
+        
+            
+                <li class="nav-header">Security</li>
+            
+            <li data-order=""><a href="/rvi_sota_server/sec/security-threats-mitigations.html">Security Threats & Mitigations</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/sec/whitelisted-interactions.html">Whitelisted Interactions</a></li>
+        
+    
+        
+        
+
+        
+            
+                <li class="nav-header">Reference</li>
+            
+            <li data-order=""><a href="/rvi_sota_server/ref/dependencies.html">Dependencies</a></li>
+        
+            
+            <li data-order="5"><a href="/rvi_sota_server/ref/use-cases.html">Use Cases</a></li>
+        
+            
+            <li data-order="4"><a href="/rvi_sota_server/ref/requirements.html">Requirements</a></li>
+        
+    
+        
+        
+
+        
+            
+                <li class="nav-header">Developers</li>
+            
+            <li data-order=""><a href="/rvi_sota_server/dev/architecture.html">Architecture</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/dev/database-style-guide.html">Database Style Guide</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/dev/scala-style-guide.html">Scala Style Guide</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/dev/api.html">API</a></li>
+        
+    
+<!-- List additional links. It is recommended to add a divider
+    e.g. <li class="divider"></li> first to break up the content. -->
+</ul>
+
+                    </div>
+
+                    <div id="content" class="col-sm-10">
+                        <div class="page-header">
+    <h2>Scala Style Guide
+        
+    </h2>
+</div>
+
+<p>The document contains Scala stylistic guidelines, which should be fillowed in order to produce readable and idiomatic code, allowing effective collaboration. The following style guides were used as a basis:</p>
+<ol type="1">
+<li><a href="http://docs.scala-lang.org/style/">Typesafe Scala Style Guide</a></li>
+<li><a href="https://github.com/databricks/scala-style-guide">Databricks Scala Guide</a></li>
+<li><a href="http://twitter.github.io/effectivescala/">Twitter’s Effective Scala</a></li>
+</ol>
+<h2 id="table-of-contents"><a name='TOC'>Table of Contents</a></h2>
+<ol type="1">
+<li><a href="#syntactic">Syntactic Style</a>
+<ul>
+<li><a href="#identation">Identation</a></li>
+<li><a href="#naming">Naming Convention</a></li>
+<li><a href="#declarations">Declarations</a></li>
+<li><a href="#imports">Imports</a></li>
+<li><a href="#control_structures">Control Structures</a></li>
+<li><a href="#infix">Infix Methods</a></li>
+<li><a href="#documentation">Documentation Style</a></li>
+</ul></li>
+<li><a href="#lang">Language Features</a>
+<ul>
+<li><a href="#override_modifier">override Modifier</a></li>
+<li><a href="#destruct_bind">Destructuring Binds</a></li>
+<li><a href="#symbolic_methods">Symbolic Methods (Operator Overloading)</a></li>
+<li><a href="#type_inference">Type Inference</a></li>
+<li><a href="#return">Return Statements</a></li>
+<li><a href="#recursion">Recursion and Tail Recursion</a></li>
+<li><a href="#exception">Exception Handling</a></li>
+<li><a href="#option">Options</a></li>
+<li><a href="#chaining">Monadic Chaining</a></li>
+<li><a href="#concurrency">Concurrency</a></li>
+<li><a href="#concurrency-private-this">Private Fields</a></li>
+<li><a href="#java-default-param-values">Default Parameter Values</a></li>
+</ul></li>
+</ol>
+<h2 id="syntactic-style"><a name='syntactic'>Syntactic Style</a></h2>
+<h3 id="identation"><a name='identation'>Identation</a></h3>
+<ul>
+<li>General identation: 2 spaces</li>
+<li>Limit lines to 100 characters</li>
+<li>If a single expression is longer than 100 characters it should be spitted into multiple expressions by assigning intermediate results to values. In case it is not practical and the expression should be wrapped across several lines, each successive line should be indented two spaces from the first.</li>
+<li><p>When calling a method which takes numerous arguments (in the range of five or more), it is often necessary to wrap the method invocation onto multiple lines. In such cases, put each argument on a line by itself, indented two spaces from the current indent level:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="fu">foo</span>(
+  someVeryLongFieldName,
+  andAnotherVeryLongFieldName,
+  <span class="st">&quot;this is a string&quot;</span>,
+  <span class="fl">3.1415</span>)</code></pre></div></li>
+</ul>
+<h3 id="naming-convention"><a name='naming'>Naming Convention</a></h3>
+<ul>
+<li>Classes, traits should follow Java class convention, i.e. CamelCase style with the first letter capitalized.</li>
+</ul>
+<p>``` scala class RedFox</p>
+<p>trait LazyDog ```</p>
+<ul>
+<li>Objects follow the class naming convention except when attempting to mimic a package or a function.</li>
+</ul>
+<p>``` scala object ast { sealed trait Expr case class Plus(e1: Expr, e2: Expr) extends Expr … }</p>
+<p>object inc { def apply(x: Int): Int = x + 1 } ```</p>
+<ul>
+<li>Scala packages should follow the Java package naming conventions</li>
+</ul>
+<p><code>scala   package com.databricks.resourcemanager</code></p>
+<ul>
+<li>Constant names should be in upper camel case. That is, if the member is final, immutable and it belongs to a package object or an object, it may be considered a constant (similar to Java’s static final members):</li>
+</ul>
+<p><code>scala   object Foo {     val Bar = 10   }</code></p>
+<ul>
+<li>Enums should be CamelCase with first letter capitalized.</li>
+<li>Names for methods should be in the camelCase style with the first letter lower-case.</li>
+</ul>
+<h3 id="declarations"><a name='declarations'>Declarations</a></h3>
+<p>All guides referenced above agreed on how the declarations should be styled. Please refer to the one from <a href="http://docs.scala-lang.org/style/declarations.html">Scala Style Guide</a>, as is most comprehensive of them.</p>
+<h3 id="imports"><a name='imports'>Imports</a></h3>
+<ul>
+<li>Do NOT use wildcard imports, unless you are importing implicit methods.</li>
+<li>Always import packages using absolute paths</li>
+</ul>
+<h3 id="control-structures"><a name='control_structures'>Control Structures</a></h3>
+<p>Control structures should be styled as defined in <a href="http://docs.scala-lang.org/style/control-structures.html">Scala Style Guide</a></p>
+<h3 id="infix-methods"><a name='infix'>Infix Methods</a></h3>
+<p>Do NOT use infix notation for methods that aren’t symbolic methods (i.e. operator overloading).</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="co">// Correct</span>
+list.<span class="fu">map</span>(func)
+string.<span class="fu">contains</span>(<span class="st">&quot;foo&quot;</span>)
+
+<span class="co">// Wrong</span>
+list <span class="fu">map</span> (func)
+string contains <span class="st">&quot;foo&quot;</span>
+
+<span class="co">// But overloaded operators should be invoked in infix style</span>
+arrayBuffer += elem</code></pre></div>
+<h3 id="documentation-style"><a name='documentation'>Documentation Style</a></h3>
+<ul>
+<li>Use Java docs style instead of Scala docs style.</li>
+</ul>
+<p>``` scala /** * Style mandated by “Scala Style Guide” */</p>
+<p>/** * Style to use */ ```</p>
+<ul>
+<li>Do not use <span class="citation" data-cites="author">@author</span> tags since it does not encourage Collective Code Ownership.</li>
+</ul>
+<h2 id="language-features"><a name='lang'>Language Features</a></h2>
+<h3 id="override-modifier"><a name='override_modifier'>override Modifier</a></h3>
+<p>Always add override modifier for methods, both for overriding concrete methods and implementing abstract methods. The Scala compiler does not require <code>override</code> for implementing abstract methods.</p>
+<h3 id="destructuring-binds"><a name='destruct_bind'>Destructuring Binds</a></h3>
+<p>Destructuring bind (sometimes called tuple extraction) is a convenient way to assign two variables in one expression.</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> (a, b) = (<span class="dv">1</span>, <span class="dv">2</span>)</code></pre></div>
+<p>However, do NOT use them in constructors, especially when <code>a</code> and <code>b</code> need to be marked transient. The Scala compiler generates an extra Tuple2 field that will not be transient for the above example.</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">class</span> MyClass {
+  <span class="co">// This will NOT work because the compiler generates a non-transient Tuple2</span>
+  <span class="co">// that points to both a and b.</span>
+  @transient <span class="kw">private</span> <span class="kw">val</span> (a, b) = <span class="fu">someFuncThatReturnsTuple2</span>()
+}</code></pre></div>
+<h3 id="symbolic-methods-operator-overloading"><a name='symbolic_methods'>Symbolic Methods (Operator Overloading)</a></h3>
+<p>Avoid symbolic method names, unless you are defining them for natural arithmetic operations (e.g. <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>) or as part as some DSL (<code>!</code> to send message in Akka, <code>\</code> to concatenate parts of a path or an uri). In second case they should be defined as aliases to the non-symbolic functions.</p>
+<h3 id="type-inference"><a name='type_inference'>Type Inference</a></h3>
+<p>Scala type inference, especially left-side type inference and closure inference, can make code more concise. That said, there are a few cases where explicit typing should be used:</p>
+<ul>
+<li><strong>Public methods should be explicitly typed</strong>, otherwise the compiler’s inferred type can often surprise you.</li>
+<li><strong>Implicit methods should be explicitly typed</strong>, otherwise it can crash the Scala compiler with incremental compilation.</li>
+<li><strong>Variables or closures with non-obvious types should be explicitly typed</strong>. A good litmus test is that explicit types should be used if a code reviewer cannot determine the type in 3 seconds.</li>
+</ul>
+<h3 id="return-statements"><a name='return'>Return Statements</a></h3>
+<p><strong>Do NOT use return statements</strong>.</p>
+<h3 id="recursion-and-tail-recursion"><a name='recursion'>Recursion and Tail Recursion</a></h3>
+<p>Do NOT use recursion, unless the problem can be naturally framed recursively (e.g. graph traversal, tree traversal).</p>
+<p>For functions that are meant to be tail recursive, apply <code>@tailrec</code> annotation to make sure the compiler can check it is tail recursive (you will be surprised how often seemingly tail recursive code is actually not tail recursive due to the use of closures and functional transformations.)</p>
+<h3 id="exception-handling"><a name='exception'>Exception Handling</a></h3>
+<ul>
+<li>Do NOT catch Throwable or Exception. Use <code>scala.util.control.NonFatal</code>:</li>
+</ul>
+<p><code>scala   try {     ...   } catch {     case NonFatal(e) =&gt;       // handle exception; note that NonFatal does not match InterruptedException     case e: InterruptedException =&gt;       // handle InterruptedException   }</code></p>
+<h3 id="options"><a name='option'>Options</a></h3>
+<ul>
+<li>Use <code>Option</code> when the value can be empty. Compared with <code>null</code>, an <code>Option</code> explicitly states in the API contract that the value can be <code>None</code>.</li>
+<li>When constructing an <code>Option</code>, use <code>Option</code> rather than <code>Some</code> to guard against <code>null</code> values.</li>
+</ul>
+<p>``` scala def myMethod1(input: String): Option[String] = Option(transform(input))</p>
+<p>// This is not as robust because transform can return null, and then // myMethod2 will return Some(null). def myMethod2(input: String): Option[String] = Some(transform(input)) ```</p>
+<ul>
+<li>Do not use <code>None</code> to represent exceptions.</li>
+<li>Do not call <code>get</code> directly on an <code>Option</code>.</li>
+</ul>
+<h3 id="monadic-chaining"><a name='chaining'>Monadic Chaining</a></h3>
+<p>One of Scala’s powerful features is monadic chaining. Almost everything (e.g. collections, Option, Future, Try) is a monad and operations on them can be chained together. This is an incredibly powerful concept, but chaining should be used sparingly. In particular:</p>
+<ul>
+<li>Do NOT chain (and/or nest) more than one <code>flatMap</code> operations.</li>
+<li>If you need to chain more than one <code>flatMap</code>, use for-comprehension.</li>
+</ul>
+<h3 id="concurrency"><a name='concurrency'>Concurrency</a></h3>
+<p>Use Akka for concurrency.</p>
+<h3 id="private-fields"><a name='concurrency-private-this'>Private Fields</a></h3>
+<p>Note that <code>private</code> fields are still accessible by other instances of the same class, so protecting it with <code>this.synchronized</code> (or just <code>synchronized</code>) is not technically sufficient. Make the field <code>private[this]</code> instead.</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="co">// The following is still unsafe.</span>
+<span class="kw">class</span> Foo {
+  <span class="kw">private</span> <span class="kw">var</span> count: Int = <span class="dv">0</span>
+  <span class="kw">def</span> <span class="fu">inc</span>(): Unit = synchronized { count + <span class="dv">1</span> }
+}
+
+<span class="co">// The following is safe.</span>
+<span class="kw">class</span> Foo {
+  <span class="kw">private</span>[<span class="kw">this</span>] <span class="kw">var</span> count: Int = <span class="dv">0</span>
+  <span class="kw">def</span> <span class="fu">inc</span>(): Unit = synchronized { count + <span class="dv">1</span> }
+}</code></pre></div>
+<h3 id="default-parameter-values"><a name='java-default-param-values'>Default Parameter Values</a></h3>
+<p>Do NOT use default parameter values. Overload the method instead.</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="co">// Breaks Java interoperability</span>
+<span class="kw">def</span> <span class="fu">sample</span>(ratio: Double, withReplacement: Boolean = <span class="kw">false</span>): RDD[T] = { ... }
+
+<span class="co">// The following two work</span>
+<span class="kw">def</span> <span class="fu">sample</span>(ratio: Double, withReplacement: Boolean): RDD[T] = { ... }
+<span class="kw">def</span> <span class="fu">sample</span>(ratio: Double): RDD[T] = <span class="fu">sample</span>(ratio, withReplacement = <span class="kw">false</span>)</code></pre></div>
+
+                    </div>
+                
+            </div>
+
+            
+
+            <div class="row">
+                <div id="footer" class="col-sm-12">
+                    Documentation for <a href="https://github.com/PDXostc/rvi_sota_server">GENIVI SOTA Project</a>
+
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function orderNav() {
+                var list,
+                    section,
+                    header,
+                    sections = [],
+                    lists = {},
+                    headers = {};
+
+                var navUl = document.querySelectorAll('#navigation ul')[0],
+                    navLis = document.querySelectorAll('#navigation ul li');
+
+                if (!navUl) return;
+
+                for (var i = 0; i < navLis.length; i++) {
+                    var order, li = navLis[i];
+
+                    if (li.classList.contains('nav-header')) {
+                        section = li.textContent || li.innerText;
+                        sections.push(section);
+                        headers[section] = li;
+                        continue;
+                    }
+
+                    if (!lists[section]) {
+                        lists[section] = [];
+                    }
+
+                    order = parseFloat(li.getAttribute('data-order'))
+                    lists[section].push([order, li]);
+                }
+
+                for (var i = 0; i < sections.length; i++) {
+                    section = sections[i];
+                    list = lists[section].sort(function(a, b) {
+                        return a[0] - b[0];
+                    });
+
+                    if (header = headers[section]) {
+                        navUl.appendChild(header);
+                    }
+                    for (var j = 0; j < list.length; j++) {
+                        navUl.appendChild(list[j][1]);
+                    }
+                }
+            }
+
+            if (document.querySelectorAll) orderNav();
+        </script>
+        
+    </body>
+</html>

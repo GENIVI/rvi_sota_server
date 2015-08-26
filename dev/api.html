@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width">
+
+        <title>GENIVI SOTA Project : API</title>
+        <meta name="description" content="Software Updates Over the Air">
+
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="/rvi_sota_server/css/syntax.css">
+        <link rel="stylesheet" href="/rvi_sota_server/css/main.css">
+    </head>
+    <body>
+
+        <div class="container">
+            <div class="row">
+                <div id="header" class="col-sm-12">
+                    <h4><a class="brand" href="/rvi_sota_server/">GENIVI SOTA Project</a>
+    <small>Software Updates Over the Air</small>
+</h4>
+
+                </div>
+            </div>
+
+            <div class="row">
+                
+                
+                    <div id="navigation" class="col-sm-2">
+                        <ul class="nav nav-list">
+    <li><a href="/rvi_sota_server/">Home</a></li>
+    
+        
+        
+
+        
+            
+                <li class="nav-header">Documentation</li>
+            
+            <li data-order="5"><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
+        
+            
+            <li data-order="2"><a href="/rvi_sota_server/doc/deployment-with-docker-launcher.html">Deployment with Docker Launcher</a></li>
+        
+            
+            <li data-order="6"><a href="/rvi_sota_server/doc/contributing.html">Contributing</a></li>
+        
+            
+            <li data-order="1"><a href="/rvi_sota_server/doc/building-installing.html">Building & Deploying</a></li>
+        
+    
+        
+        
+
+        
+            
+                <li class="nav-header">Security</li>
+            
+            <li data-order=""><a href="/rvi_sota_server/sec/security-threats-mitigations.html">Security Threats & Mitigations</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/sec/whitelisted-interactions.html">Whitelisted Interactions</a></li>
+        
+    
+        
+        
+
+        
+            
+                <li class="nav-header">Reference</li>
+            
+            <li data-order=""><a href="/rvi_sota_server/ref/dependencies.html">Dependencies</a></li>
+        
+            
+            <li data-order="5"><a href="/rvi_sota_server/ref/use-cases.html">Use Cases</a></li>
+        
+            
+            <li data-order="4"><a href="/rvi_sota_server/ref/requirements.html">Requirements</a></li>
+        
+    
+        
+        
+
+        
+            
+                <li class="nav-header">Developers</li>
+            
+            <li data-order=""><a href="/rvi_sota_server/dev/architecture.html">Architecture</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/dev/database-style-guide.html">Database Style Guide</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/dev/scala-style-guide.html">Scala Style Guide</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/dev/api.html">API</a></li>
+        
+    
+<!-- List additional links. It is recommended to add a divider
+    e.g. <li class="divider"></li> first to break up the content. -->
+</ul>
+
+                    </div>
+
+                    <div id="content" class="col-sm-10">
+                        <div class="page-header">
+    <h2>API
+        
+    </h2>
+</div>
+
+<h1 id="sota-rest-api-documentation">SOTA REST API Documentation</h1>
+<p>This is the draft documentation page for the REST API of SOTA, including the Web Server, the Core Server, and the Resolver.</p>
+<p>Note that all responses are sent as JSON.</p>
+<h3 id="get-vehicles">GET /vehicles</h3>
+<table>
+<colgroup>
+<col style="width: 26%" />
+<col style="width: 73%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><p>Availability</p></td>
+<td style="text-align: left;"><p>core, resolver, web server</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Description</p></td>
+<td style="text-align: left;"><p>Returns a list of all vehicle VINs in the database.</p></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>URL</p></td>
+<td style="text-align: left;"><p>/api/v1/vehicles</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Parameters</p></td>
+<td style="text-align: left;"><p>None</p></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>Success Response</p></td>
+<td style="text-align: left;"><p><strong>Code:</strong> 200</p>
+<p><strong>Content:</strong> A list of VINs.</p>
+<div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json"><span class="ot">[</span>
+  <span class="fu">{</span>
+    <span class="dt">&quot;vin&quot;</span><span class="fu">:</span> <span class="st">&quot;AAAAAAA1234567890&quot;</span>
+   <span class="fu">}</span><span class="ot">,</span>
+  <span class="fu">{</span>
+    <span class="dt">&quot;vin&quot;</span><span class="fu">:</span> <span class="st">&quot;BBBBBBB1234567890&quot;</span>
+  <span class="fu">}</span>
+<span class="ot">]</span></code></pre></div></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Error Response</p></td>
+<td style="text-align: left;"><p>N/A</p></td>
+</tr>
+</tbody>
+</table>
+<h3 id="put-vehiclesvin">PUT /vehicles/:vin</h3>
+<table>
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 89%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><p>Availability</p></td>
+<td style="text-align: left;"><p>core, resolver, web server</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Description</p></td>
+<td style="text-align: left;"><p>Adds a vehicle VIN to the database.</p></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>URL</p></td>
+<td style="text-align: left;"><p>/api/v1/vehicles/:vin</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>URL Parameters</p></td>
+<td style="text-align: left;"><ul>
+<li><strong>:vin</strong> — A vehicle identification number to be added to the database. Must be exactly 17 characters long, and contain only alphanumeric characters.</li>
+</ul></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>Success Response</p></td>
+<td style="text-align: left;"><p><strong>Code:</strong> 204</p>
+<p><strong>Content:</strong> None</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Error Response</p></td>
+<td style="text-align: left;"><p><strong>Code:</strong> 400</p>
+<p><strong>Content:</strong> <code>{&quot;code&quot;: &quot;invalid_entity&quot;,&quot;description&quot;: &quot;Predicate failed: (ABCDEFGHIJKLMNOP1234567890 isn't 17 letters or digits long).&quot;}</code></p></td>
+</tr>
+</tbody>
+</table>
+<h3 id="get-packages">GET /packages</h3>
+<table>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 76%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><p>Availability</p></td>
+<td style="text-align: left;"><p>core, resolver, web server</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Description</p></td>
+<td style="text-align: left;"><p>Currently returns nothing. Should return a list of packages.</p></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>URL</p></td>
+<td style="text-align: left;"><p>/api/v1/packages</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Parameters</p></td>
+<td style="text-align: left;"><p>None</p></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>Success Response</p></td>
+<td style="text-align: left;"><p><strong>Code:</strong> 204</p>
+<p><strong>Content:</strong> None</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Error Response</p></td>
+<td style="text-align: left;"><p>N/A</p></td>
+</tr>
+</tbody>
+</table>
+<h3 id="put-packagesnameversion">PUT /packages/:name/:version</h3>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 78%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><p>Availability</p></td>
+<td style="text-align: left;"><p>core, resolver</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Description</p></td>
+<td style="text-align: left;"><p>Adds a package to the database.</p></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>URL</p></td>
+<td style="text-align: left;"><p>/api/v1/packages/:name/:version</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>URL Parameters</p></td>
+<td style="text-align: left;"><ul>
+<li><strong>:name</strong> — The unique name of the software package.</li>
+<li><strong>:version</strong> — The package version, in <em>x.y.z</em> format. <em>x</em>, <em>y</em>, and <em>z</em> must all contain only digits.</li>
+</ul></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>Data Parameters</p></td>
+<td style="text-align: left;"><p><strong>Required:</strong></p>
+<ul>
+<li><strong>file</strong> — The binary package file.</li>
+</ul>
+<p><strong>Optional:</strong></p>
+<ul>
+<li><strong>description</strong> — A short description of the package.</li>
+<li><strong>vendor</strong> — The vendor for the software package.</li>
+</ul></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Success Response</p></td>
+<td style="text-align: left;"><p>unknown</p></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>Error Response</p></td>
+<td style="text-align: left;"><p>unknown</p></td>
+</tr>
+</tbody>
+</table>
+<h3 id="get-resolvenameversion">GET /resolve/:name/:version</h3>
+<table>
+<colgroup>
+<col style="width: 19%" />
+<col style="width: 80%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><p>Availability</p></td>
+<td style="text-align: left;"><p>resolver, web server</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Description</p></td>
+<td style="text-align: left;"><p>Takes a package name and version, and returns a list of VINs it applies to.</p></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>URL</p></td>
+<td style="text-align: left;"><p>/api/v1/resolve/:name/:version</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>URL Parameters</p></td>
+<td style="text-align: left;"><ul>
+<li><strong>:name</strong> — The unique name of the software package.</li>
+<li><strong>:version</strong> — The package version, in <em>x.y.z</em> format. <em>x</em>, <em>y</em>, and <em>z</em> must all contain only digits.</li>
+</ul></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>Success Response</p></td>
+<td style="text-align: left;"><p><strong>Code:</strong> 200</p>
+<p><strong>Content:</strong></p>
+<div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
+  <span class="dt">&quot;AAAAAAA1234567890&quot;</span><span class="fu">:</span> <span class="ot">[</span>
+    <span class="fu">{</span>
+      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;myPackage&quot;</span><span class="fu">,</span>
+      <span class="dt">&quot;version&quot;</span><span class="fu">:</span> <span class="st">&quot;1.2.3&quot;</span>
+    <span class="fu">}</span>
+  <span class="ot">]</span><span class="fu">,</span>
+  <span class="dt">&quot;BBBBBBB1234567890&quot;</span><span class="fu">:</span> <span class="ot">[</span>
+    <span class="fu">{</span>
+      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;myPackage&quot;</span><span class="fu">,</span>
+      <span class="dt">&quot;version&quot;</span><span class="fu">:</span> <span class="st">&quot;1.2.3&quot;</span>
+    <span class="fu">}</span>
+  <span class="ot">]</span>
+<span class="fu">}</span></code></pre></div></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Error Response</p></td>
+<td style="text-align: left;"><p>N/A</p></td>
+</tr>
+</tbody>
+</table>
+<h3 id="get-filters">GET /filters</h3>
+<table>
+<colgroup>
+<col style="width: 19%" />
+<col style="width: 81%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><p>Availability</p></td>
+<td style="text-align: left;"><p>resolver, web server</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Description</p></td>
+<td style="text-align: left;"><p>Returns a list of all filters in the database.</p></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>URL</p></td>
+<td style="text-align: left;"><p>/api/v1/filters</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Parameters</p></td>
+<td style="text-align: left;"><p>None</p></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>Success Response</p></td>
+<td style="text-align: left;"><p><strong>Code:</strong> 200</p>
+<p><strong>Content:</strong> A list of filters.</p>
+<div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json"><span class="ot">[</span>
+  <span class="fu">{</span>
+    <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;myFilter&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;expression&quot;</span><span class="fu">:</span> <span class="st">&quot;vin_matches </span><span class="ch">\&quot;</span><span class="st">^12ABC</span><span class="ch">\&quot;</span><span class="st"> AND has_component </span><span class="ch">\&quot;</span><span class="st">AcmeDVDPlayer</span><span class="ch">\&quot;</span><span class="st">&quot;</span>
+  <span class="fu">}</span>
+<span class="ot">]</span></code></pre></div></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Error Response</p></td>
+<td style="text-align: left;"><p>N/A</p></td>
+</tr>
+</tbody>
+</table>
+<h3 id="post-filters">POST /filters</h3>
+<table>
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 86%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><p>Availability</p></td>
+<td style="text-align: left;"><p>resolver, web server</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Description</p></td>
+<td style="text-align: left;"><p>Adds a filter to the database.</p></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>URL</p></td>
+<td style="text-align: left;"><p>/api/v1/filters</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Data Parameters</p></td>
+<td style="text-align: left;"><ul>
+<li><strong>name</strong> — <code>[string]</code> A unique identifying name for the filter, between 2 and 100 alphanumeric characters in length.</li>
+<li><strong>expression</strong> — <code>[string]</code> A filter. See the filter syntax documentation at <a href="#">insert URL here</a>.</li>
+</ul></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>Success Response</p></td>
+<td style="text-align: left;"><p><strong>Code:</strong> 204</p>
+<p><strong>Content:</strong> None</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Error Responses</p></td>
+<td style="text-align: left;"><p><strong>Code:</strong> 400</p>
+<p><strong>Content:</strong> <code>{&quot;code&quot;: &quot;invalid_entity&quot;,&quot;description&quot;: &quot;Predicate failed: (Expression failed to parse).&quot;}</code></p>
+<p><strong>Code:</strong> 409</p>
+<p><strong>Content:</strong> <code>{&quot;code&quot;: &quot;duplicate_entry&quot;,&quot;description&quot;: &quot;Entry already exists&quot;}</code></p></td>
+</tr>
+</tbody>
+</table>
+<h3 id="post-validatefilter">POST /validate/filter</h3>
+<table>
+<colgroup>
+<col style="width: 11%" />
+<col style="width: 88%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><p>Availability</p></td>
+<td style="text-align: left;"><p>resolver, web server</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Description</p></td>
+<td style="text-align: left;"><p>Validates the syntax of a filter.</p></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>URL</p></td>
+<td style="text-align: left;"><p>/api/v1/validate/filter</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Data Parameters</p></td>
+<td style="text-align: left;"><ul>
+<li><strong>name</strong> — <code>[string]</code> A unique identifying name for the filter, between 2 and 100 alphanumeric characters in length.</li>
+<li><strong>expression</strong> — <code>[string]</code> A filter. See the filter syntax documentation at <a href="#">insert URL here</a>.</li>
+</ul></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>Success Response</p></td>
+<td style="text-align: left;"><p><strong>Code:</strong> 200</p>
+<p><strong>Content:</strong> None</p>
+<p><strong>Note:</strong> Only the <em>validity</em> of the filter name is checked. As long as the filter syntax is correct and the name is between 2 and 100 alphanumeric characters, a success response is returned, regardless of whether a filter with this name already exists.</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Error Responses</p></td>
+<td style="text-align: left;"><p><strong>Code:</strong> 400</p>
+<p><strong>Content:</strong> <code>{&quot;code&quot;: &quot;invalid_entity&quot;,&quot;description&quot;: &quot;Predicate failed: (Expression failed to parse).&quot;}</code></p></td>
+</tr>
+</tbody>
+</table>
+<h3 id="get-packagefilters">GET /packageFilters</h3>
+<table>
+<colgroup>
+<col style="width: 24%" />
+<col style="width: 75%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><p>Availability</p></td>
+<td style="text-align: left;"><p>web server, resolver</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Description</p></td>
+<td style="text-align: left;"><p>Returns a list of all package —&gt; filter associations.</p></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>URL</p></td>
+<td style="text-align: left;"><p>/api/v1/packageFilters</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Parameters</p></td>
+<td style="text-align: left;"><p>None</p></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>Success Response</p></td>
+<td style="text-align: left;"><p><strong>Code:</strong> 200</p>
+<p><strong>Content:</strong> <code>[{ list of package-filter associations }]</code></p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Error Response</p></td>
+<td style="text-align: left;"><p>N/A</p></td>
+</tr>
+</tbody>
+</table>
+<h3 id="get-packagefilterspackagesforfilter">GET /packageFilters/packagesFor/:filter</h3>
+<table>
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 86%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><p>Availability</p></td>
+<td style="text-align: left;"><p>web server, resolver</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Description</p></td>
+<td style="text-align: left;"><p>Returns a list of all packages associated with a particular filter.</p></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>URL</p></td>
+<td style="text-align: left;"><p>/api/v1/packageFilters/packagesFor/:filter</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>URL Parameters</p></td>
+<td style="text-align: left;"><ul>
+<li><strong>:filter</strong> — A filter name.</li>
+</ul></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>Success Response</p></td>
+<td style="text-align: left;"><p><strong>Code:</strong> 200</p>
+<p><strong>Content:</strong> <code>[{ list of packages }]</code></p>
+<ul>
+<li>Note: if <strong>:filter</strong> does not match any existing filter, it is still a success response; an empty list is returned.</li>
+</ul></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Error Response</p></td>
+<td style="text-align: left;"><p>N/A</p></td>
+</tr>
+</tbody>
+</table>
+<h3 id="get-packagefiltersfiltersfornameversion">GET /packageFilters/filtersFor/:name/:version</h3>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 87%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><p>Availability</p></td>
+<td style="text-align: left;"><p>web server, resolver</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Description</p></td>
+<td style="text-align: left;"><p>Returns a list of all filters associated with a particular package.</p></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>URL</p></td>
+<td style="text-align: left;"><p>/api/v1/packageFilters/filtersFor/:name/:version</p></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>URL Parameters</p></td>
+<td style="text-align: left;"><ul>
+<li><strong>:name</strong> — A package name.</li>
+<li><strong>:version</strong> — A package version, in <em>x.y.z</em> format. <em>x</em>, <em>y</em>, and <em>z</em> must all exist, and contain only digits.</li>
+</ul></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><p>Success Response</p></td>
+<td style="text-align: left;"><p><strong>Code:</strong> 200</p>
+<p><strong>Content:</strong> <code>[{ list of filters }]</code></p>
+<ul>
+<li>Note: if <strong>:name/:version</strong> does not match any existing package, it is still a success response; an empty list is returned.</li>
+</ul></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><p>Error Response</p></td>
+<td style="text-align: left;"><p>N/A</p></td>
+</tr>
+</tbody>
+</table>
+<!--- Template
+
+### Title
+
+  <_Additional information about your API call. Try to use verbs that match both request type (fetching vs modifying) and plurality (one vs multiple)._>
+
+##### URL
+
+  <_The URL Structure (path only, no root url)_>
+
+##### Method:**
+  
+  <_The request type_>
+
+  `GET` | `POST` | `DELETE` | `PUT`
+  
+##### URL Params
+
+   <_If URL params exist, specify them in accordance with name mentioned in URL section. Separate into optional and required. Document data constraints._> 
+
+   **Required:**
+ 
+   `id=[integer]`
+
+   **Optional:**
+ 
+   `photo_id=[alphanumeric]`
+
+##### Data Params
+
+  <_If making a post request, what should the body payload look like? URL Params rules apply here too._>
+
+##### Success Response:**
+  
+  <_What should the status code be on success and is there any returned data? This is useful when people need to to know what their callbacks should expect!_>
+
+  * **Code:** 200 <br />
+    **Content:** `{ id : 12 }`
+ 
+##### Error Response:
+
+  <_Most endpoints will have many ways they can fail. From unauthorized access, to wrongful parameters etc. All of those should be liste d here. It might seem repetitive, but it helps prevent assumptions from being made where they should be._>
+
+  * **Code:** 401 UNAUTHORIZED <br />
+    **Content:** `{ error : "Log in" }`
+
+  OR
+
+  * **Code:** 422 UNPROCESSABLE ENTRY <br />
+    **Content:** `{ error : "Email Invalid" }`
+
+##### Sample Call:
+
+  <_Just a sample call to your endpoint in a runnable format ($.ajax call or a curl request) - this makes life easier and more predictable._> 
+
+##### Notes:
+
+  <_This is where all uncertainties, commentary, discussion etc. can go. I recommend timestamping and identifying oneself when leaving comments here._> 
+  
+  -->
+
+                    </div>
+                
+            </div>
+
+            
+
+            <div class="row">
+                <div id="footer" class="col-sm-12">
+                    Documentation for <a href="https://github.com/PDXostc/rvi_sota_server">GENIVI SOTA Project</a>
+
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function orderNav() {
+                var list,
+                    section,
+                    header,
+                    sections = [],
+                    lists = {},
+                    headers = {};
+
+                var navUl = document.querySelectorAll('#navigation ul')[0],
+                    navLis = document.querySelectorAll('#navigation ul li');
+
+                if (!navUl) return;
+
+                for (var i = 0; i < navLis.length; i++) {
+                    var order, li = navLis[i];
+
+                    if (li.classList.contains('nav-header')) {
+                        section = li.textContent || li.innerText;
+                        sections.push(section);
+                        headers[section] = li;
+                        continue;
+                    }
+
+                    if (!lists[section]) {
+                        lists[section] = [];
+                    }
+
+                    order = parseFloat(li.getAttribute('data-order'))
+                    lists[section].push([order, li]);
+                }
+
+                for (var i = 0; i < sections.length; i++) {
+                    section = sections[i];
+                    list = lists[section].sort(function(a, b) {
+                        return a[0] - b[0];
+                    });
+
+                    if (header = headers[section]) {
+                        navUl.appendChild(header);
+                    }
+                    for (var j = 0; j < list.length; j++) {
+                        navUl.appendChild(list[j][1]);
+                    }
+                }
+            }
+
+            if (document.querySelectorAll) orderNav();
+        </script>
+        
+    </body>
+</html>
