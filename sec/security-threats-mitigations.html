@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width">
+
+        <title>GENIVI SOTA Project : Security Threats & Mitigations</title>
+        <meta name="description" content="Software Updates Over the Air">
+
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="/rvi_sota_server/css/syntax.css">
+        <link rel="stylesheet" href="/rvi_sota_server/css/main.css">
+    </head>
+    <body>
+
+        <div class="container">
+            <div class="row">
+                <div id="header" class="col-sm-12">
+                    <h4><a class="brand" href="/rvi_sota_server/">GENIVI SOTA Project</a>
+    <small>Software Updates Over the Air</small>
+</h4>
+
+                </div>
+            </div>
+
+            <div class="row">
+                
+                
+                    <div id="navigation" class="col-sm-2">
+                        <ul class="nav nav-list">
+    <li><a href="/rvi_sota_server/">Home</a></li>
+    
+        
+        
+
+        
+            
+                <li class="nav-header">Documentation</li>
+            
+            <li data-order="5"><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
+        
+            
+            <li data-order="2"><a href="/rvi_sota_server/doc/deployment-with-docker-launcher.html">Deployment with Docker Launcher</a></li>
+        
+            
+            <li data-order="6"><a href="/rvi_sota_server/doc/contributing.html">Contributing</a></li>
+        
+            
+            <li data-order="1"><a href="/rvi_sota_server/doc/building-installing.html">Building & Deploying</a></li>
+        
+    
+        
+        
+
+        
+            
+                <li class="nav-header">Security</li>
+            
+            <li data-order=""><a href="/rvi_sota_server/sec/security-threats-mitigations.html">Security Threats & Mitigations</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/sec/whitelisted-interactions.html">Whitelisted Interactions</a></li>
+        
+    
+        
+        
+
+        
+            
+                <li class="nav-header">Reference</li>
+            
+            <li data-order=""><a href="/rvi_sota_server/ref/dependencies.html">Dependencies</a></li>
+        
+            
+            <li data-order="5"><a href="/rvi_sota_server/ref/use-cases.html">Use Cases</a></li>
+        
+            
+            <li data-order="4"><a href="/rvi_sota_server/ref/requirements.html">Requirements</a></li>
+        
+    
+        
+        
+
+        
+            
+                <li class="nav-header">Developers</li>
+            
+            <li data-order=""><a href="/rvi_sota_server/dev/architecture.html">Architecture</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/dev/database-style-guide.html">Database Style Guide</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/dev/scala-style-guide.html">Scala Style Guide</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/dev/api.html">API</a></li>
+        
+    
+<!-- List additional links. It is recommended to add a divider
+    e.g. <li class="divider"></li> first to break up the content. -->
+</ul>
+
+                    </div>
+
+                    <div id="content" class="col-sm-10">
+                        <div class="page-header">
+    <h2>Security Threats & Mitigations
+        
+    </h2>
+</div>
+
+<h1 id="potential-security-threats">Potential Security Threats</h1>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">ID</th>
+<th style="text-align: left;">Label</th>
+<th style="text-align: left;">STRIDE Attribute</th>
+<th style="text-align: left;">Assets</th>
+<th style="text-align: left;">Interactions</th>
+<th style="text-align: left;">Attack potential vector</th>
+<th style="text-align: left;">Attack potential rating</th>
+<th style="text-align: left;">Damage potential vector</th>
+<th style="text-align: left;">Damage potential rating</th>
+<th style="text-align: left;">Risk</th>
+<th style="text-align: left;">Diagram</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">+++</td>
+<td style="text-align: left;">+++++++++++++++++++++++</td>
+<td style="text-align: left;">++++++++++</td>
+<td style="text-align: left;">+++++++++++++++++++++++</td>
+<td style="text-align: left;">+++++++++++++++++++++++++++++</td>
+<td style="text-align: left;">+++++++++++++++++++++++++++++++</td>
+<td style="text-align: left;">++++++++</td>
+<td style="text-align: left;">++++++++++++++++++</td>
+<td style="text-align: left;">+++++++</td>
+<td style="text-align: left;">++++</td>
+<td style="text-align: left;">+++++++++++++++++++++++++++++++++++++</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a name="t01_row"><a href="#t01">T01</a></a></td>
+<td style="text-align: left;">Spoofing of Admin UI</td>
+<td style="text-align: left;">Spoofing</td>
+<td style="text-align: left;">Client credentials</td>
+<td style="text-align: left;">Anyone -&gt; Web API</td>
+<td style="text-align: left;">exp:pro acc:unl tim:day equ:std kno:pub</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">fin:xxx ope:xxx saf:xxx</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><a name="t02_row"><a href="#t02">T02</a></a></td>
+<td style="text-align: left;">Node sniffing</td>
+<td style="text-align: left;">Information Disclosure</td>
+<td style="text-align: left;">Client credentials</td>
+<td style="text-align: left;">Anyone -&gt; Web API</td>
+<td style="text-align: left;">exp:exp acc:unl tim:wee equ:std kno:pub</td>
+<td style="text-align: left;">11</td>
+<td style="text-align: left;">fin:xxx ope:xxx saf:xxx</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a name="t03_row"><a href="#t03">T03</a></a></td>
+<td style="text-align: left;">Invalid package configuration injection</td>
+<td style="text-align: left;">Tampering</td>
+<td style="text-align: left;">Vehicle installed software state</td>
+<td style="text-align: left;">Admin UI -&gt; Web API</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><a name="t04_row"><a href="#t04">T04</a></a></td>
+<td style="text-align: left;">Repudiation of vehicle SW configuration</td>
+<td style="text-align: left;">Repudiation</td>
+<td style="text-align: left;">Vehicle installed software state</td>
+<td style="text-align: left;">Admin UI -&gt; Web API</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a name="t05_row"><a href="#t05">T05</a></a></td>
+<td style="text-align: left;">Web API Denial of Service attack</td>
+<td style="text-align: left;">Denial of service</td>
+<td style="text-align: left;">Quality of Service</td>
+<td style="text-align: left;">Anyone -&gt; Web API</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><a name="t06_row"><a href="#t06">T06</a></a></td>
+<td style="text-align: left;">Brute force password cracking</td>
+<td style="text-align: left;">Elevation of Privilege</td>
+<td style="text-align: left;">Acces to vehicle data, vehicle installed software state</td>
+<td style="text-align: left;">Admin UI -&gt; Web API</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a name="t07_row"><a href="#t07">T07</a></a></td>
+<td style="text-align: left;">Spoofing of External Resolver</td>
+<td style="text-align: left;">Spoofing</td>
+<td style="text-align: left;">Vehicle installed software state</td>
+<td style="text-align: left;">External Resolver -&gt; SOTA Server</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><a name="t08_row"><a href="#t08">T08</a></a></td>
+<td style="text-align: left;">Tampering of package dependencies</td>
+<td style="text-align: left;">Tampering</td>
+<td style="text-align: left;">Vehicle installed software state, vehicle software security</td>
+<td style="text-align: left;">External Resolver -&gt; SOTA Server</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a name="t09_row"><a href="#t09">T09</a></a></td>
+<td style="text-align: left;">Information leak of installed packages per VIN</td>
+<td style="text-align: left;">Information Disclosure</td>
+<td style="text-align: left;">Vehicle installed software state</td>
+<td style="text-align: left;">External Resolver -&gt; SOTA Server</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><a name="t10_row"><a href="#t10">T10</a></a></td>
+<td style="text-align: left;">RVI node spoofing</td>
+<td style="text-align: left;">Spoofing</td>
+<td style="text-align: left;">Information on vehicle software state</td>
+<td style="text-align: left;">SOTA Server -&gt; RVI Node</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a name="t11_row"><a href="#t11">T11</a></a></td>
+<td style="text-align: left;">Retrieving false package installation results</td>
+<td style="text-align: left;">Tampering</td>
+<td style="text-align: left;">Package information, software configuration per VIN</td>
+<td style="text-align: left;">RVI Node -&gt; SOTA Server</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><a name="t12_row"><a href="#t12">T12</a></a></td>
+<td style="text-align: left;">Denying the installation of a software package</td>
+<td style="text-align: left;">Repudiation</td>
+<td style="text-align: left;">Vehicle software security</td>
+<td style="text-align: left;">RVI Node -&gt; SOTA Server</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a name="t13_row"><a href="#t13">T13</a></a></td>
+<td style="text-align: left;">RVI node sniffing</td>
+<td style="text-align: left;">Information Disclosure</td>
+<td style="text-align: left;">Vehicle installed software state</td>
+<td style="text-align: left;">SOTA Server -&gt; RVI Node</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><a name="t14_row"><a href="#t14">T14</a></a></td>
+<td style="text-align: left;">RVI node Denial of Service attack</td>
+<td style="text-align: left;">Denial of service</td>
+<td style="text-align: left;">Service Availability</td>
+<td style="text-align: left;">Anyone -&gt; RVI Node</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a name="t15_row"><a href="#t15">T15</a></a></td>
+<td style="text-align: left;">Logistics &amp; Provisioning API Spoofing</td>
+<td style="text-align: left;">Spoofing</td>
+<td style="text-align: left;">Vehicle software security</td>
+<td style="text-align: left;">Logistics &amp; Provisioning -&gt; SOTA Server</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><a name="t16_row"><a href="#t16">T16</a></a></td>
+<td style="text-align: left;">Associating a part number with a malicious package</td>
+<td style="text-align: left;">Tampering</td>
+<td style="text-align: left;">Vehicle software security</td>
+<td style="text-align: left;">Logistics &amp; Provisioning -&gt; SOTA Server</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a name="t17_row"><a href="#t17">T17</a></a></td>
+<td style="text-align: left;">VIN, part number, configurations compromise</td>
+<td style="text-align: left;">Information Disclosure</td>
+<td style="text-align: left;">Corporate data, vehicle software configuration, vehicle software security.</td>
+<td style="text-align: left;">Logistics &amp; Provisioning -&gt; SOTA Server</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><a name="t18_row"><a href="#t18">T18</a></a></td>
+<td style="text-align: left;">Charging &amp; Billing API Spoofing</td>
+<td style="text-align: left;">Spoofing</td>
+<td style="text-align: left;">Financial loss</td>
+<td style="text-align: left;">Charging &amp; Billing -&gt; SOTA Server</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a name="t19_row"><a href="#t19">T19</a></a></td>
+<td style="text-align: left;">Associating an update with the wrong cost</td>
+<td style="text-align: left;">Tampering</td>
+<td style="text-align: left;">Financial loss</td>
+<td style="text-align: left;">Charging &amp; Billing -&gt; SOTA Server</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><a name="t20_row"><a href="#t20">T20</a></a></td>
+<td style="text-align: left;">VIN, configurations, financial information compromise</td>
+<td style="text-align: left;">Information Disclosure</td>
+<td style="text-align: left;">Financial loss</td>
+<td style="text-align: left;">Charging &amp; Billing -&gt; SOTA Server</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a name="t21_row"><a href="#t21">T21</a></a></td>
+<td style="text-align: left;">Spoofing SOTA Core Server</td>
+<td style="text-align: left;">Spoofing</td>
+<td style="text-align: left;">User data, VINs, Package information, Vehicle configurations</td>
+<td style="text-align: left;">SOTA Core Server -&gt; MariaDB</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-1-SOTA-Server-Context-Diagram.svg">Level 1 - SOTA Server Context Diagram</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><a name="t22_row"><a href="#t22">T22</a></a></td>
+<td style="text-align: left;">Persistence of false data</td>
+<td style="text-align: left;">Tampering</td>
+<td style="text-align: left;">User data, VINs, Package information, Vehicle configurations</td>
+<td style="text-align: left;">Anyone -&gt; MariaDB</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-1-SOTA-Server-Context-Diagram.svg">Level 1 - SOTA Server Context Diagram</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a name="t23_row"><a href="#t23">T23</a></a></td>
+<td style="text-align: left;">Compromise of sensitive data</td>
+<td style="text-align: left;">Information Disclosure</td>
+<td style="text-align: left;">User data, VINs, Package information, Vehicle configurations</td>
+<td style="text-align: left;">Anyone -&gt; MariaDB</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-1-SOTA-Server-Context-Diagram.svg">Level 1 - SOTA Server Context Diagram</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><a name="t24_row"><a href="#t24">T24</a></a></td>
+<td style="text-align: left;">MariaDB Denial of Service attack</td>
+<td style="text-align: left;">Denial of service</td>
+<td style="text-align: left;">Service Availability</td>
+<td style="text-align: left;">Anyone -&gt; MariaDB</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-1-SOTA-Server-Context-Diagram.svg">Level 1 - SOTA Server Context Diagram</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a name="t25_row"><a href="#t25">T25</a></a></td>
+<td style="text-align: left;">Getting admin rights</td>
+<td style="text-align: left;">Elevation of Privilege</td>
+<td style="text-align: left;">User data, VINs, Package information, Vehicle configurations, data store state</td>
+<td style="text-align: left;">Anyone -&gt; MariaDB</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-1-SOTA-Server-Context-Diagram.svg">Level 1 - SOTA Server Context Diagram</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><a name="t26_row"><a href="#t26">T26</a></a></td>
+<td style="text-align: left;">Spoofing External Resolver</td>
+<td style="text-align: left;">Spoofing</td>
+<td style="text-align: left;">User data, VINs, Package information, Vehicle configurations</td>
+<td style="text-align: left;">External Resolver -&gt; MariaDB</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-1-SOTA-Server-Context-Diagram.svg">Level 1 - SOTA Server Context Diagram</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a name="t27_row"><a href="#t27">T27</a></a></td>
+<td style="text-align: left;">In-vehicle process spoofing</td>
+<td style="text-align: left;">Spoofing</td>
+<td style="text-align: left;">VINs, Package information</td>
+<td style="text-align: left;">Anyone -&gt; SOTA Client</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-1-SOTA-Server-Context-Diagram.svg">Level 1 - SOTA Server Context Diagram</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><a name="t28_row"><a href="#t28">T28</a></a></td>
+<td style="text-align: left;">SOTA Client sniffing</td>
+<td style="text-align: left;">Tampering</td>
+<td style="text-align: left;">VINs, Package information</td>
+<td style="text-align: left;">In vehicle process -&gt; SOTA Client</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-1-SOTA-Server-Context-Diagram.svg">Level 1 - SOTA Server Context Diagram</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><a name="t29_row"><a href="#t29">T29</a></a></td>
+<td style="text-align: left;">SOTA Client Denial of Service attack</td>
+<td style="text-align: left;">Denial of service</td>
+<td style="text-align: left;">Service Availability</td>
+<td style="text-align: left;">Anyone -&gt; SOTA Client</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;"><a href="../images/Level-1-SOTA-Server-Context-Diagram.svg">Level 1 - SOTA Server Context Diagram</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="t01"><a href="#t01_row">T01</a></h2>
+<ul>
+<li><strong>Description:</strong> A malicious person may try to gain administrator-level access to the web server’s admin console to gain information about the system’s structure.</li>
+<li><strong>Rationale:</strong></li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c01">C01</a> - Password complexity check</li>
+<li><a href="#c06">C06</a> - Limit login attempts per session</li>
+<li><a href="#c07">C07</a> - Log VIN and package creations</li>
+</ul></li>
+</ul>
+<h2 id="t02"><a href="#t02_row">T02</a></h2>
+<ul>
+<li><strong>Description:</strong> Sniffing software installed on the load balancing node may lead to the leak of the credentials of all clients connecting to the given cluster.</li>
+<li><strong>Rationale:</strong> A node sniffer could intercept the credentials of all incoming client connections.</li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c02">C02</a> - TLS Transport Integrity, Confidentiality</li>
+<li><a href="#c03">C03</a> - Enforce only SSL connections</li>
+<li><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</li>
+</ul></li>
+</ul>
+<h2 id="t03"><a href="#t03_row">T03</a></h2>
+<ul>
+<li><strong>Description:</strong> An invalid combination of software packages or versions may be attempted to be installed in order to create exploits or vulnerabilities.</li>
+<li><strong>Rationale:</strong></li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c01">C01</a> - Password complexity check</li>
+<li><a href="#c07">C07</a> - Log VIN and package creations</li>
+<li><a href="#c09">C09</a> - Verify the VIN/package filter sanity</li>
+<li><a href="#c14">C14</a> - SOTA Server-supplied checksum for every package send, recalculated it and verify it locally</li>
+<li><a href="#c15">C15</a> - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification</li>
+</ul></li>
+</ul>
+<h2 id="t04"><a href="#t04_row">T04</a></h2>
+<ul>
+<li><strong>Description:</strong> A configuration that may create exploits or vulnerabilities on the vehicle’s software environment may be injected and a modified web interface may be used to repudiate the traces of the installation of the malicious configuration to a group of vehicles.</li>
+<li><strong>Rationale:</strong> Javascript code running on the browser can be modified and a repudiation attack against a group of vehicles may be attempted.</li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c01">C01</a> - Password complexity check</li>
+</ul></li>
+</ul>
+<h2 id="t05"><a href="#t05_row">T05</a></h2>
+<ul>
+<li><strong>Description:</strong> A large amount of false or dummy requests from a malicious group may saturate the load balancer and prevent the service of legitimate clients.</li>
+<li><strong>Rationale:</strong> An easy to orchestrate DOS attack may disrupt the system’s operations.</li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c05">C05</a> - Notify administrators for suspicious traffic patterns</li>
+<li><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</li>
+</ul></li>
+</ul>
+<h2 id="t06"><a href="#t06_row">T06</a></h2>
+<ul>
+<li><strong>Description:</strong> A password cracker may break an account and provide access to a malicious, unauthorized user.</li>
+<li><strong>Rationale:</strong> Weak passwords may be cracked in a short amount of time with a password cracker.</li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c01">C01</a> - Password complexity check</li>
+<li><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</li>
+</ul></li>
+</ul>
+<h2 id="t07"><a href="#t07_row">T07</a></h2>
+<ul>
+<li><strong>Description:</strong> A malicious person may use a fake external resolver to gain information about the workings of the SOTA server and leak information about VINs and the software packages they have installed.</li>
+<li><strong>Rationale:</strong> A fake external resolver may be used to gain information about the SOTA server which may be used in a composite attack vector.</li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c02">C02</a> - TLS Transport Integrity, Confidentiality</li>
+<li><a href="#c04">C04</a> - Log transactions to and from SOTA Server</li>
+</ul></li>
+</ul>
+<h2 id="t08"><a href="#t08_row">T08</a></h2>
+<ul>
+<li><strong>Description:</strong> A maliciously compiled dependency tree may include dependencies that open vulnerabilities or provide access to attackers, or it sets package versions known to have bugs or open vulnerabilities.</li>
+<li><strong>Rationale:</strong> A package that may open a backdoor, or that functions as a Trojan can be added as a package dependency.</li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c14">C14</a> - SOTA Server-supplied checksum for every package send, recalculated it and verify it locally</li>
+<li><a href="#c15">C15</a> - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification</li>
+</ul></li>
+</ul>
+<h2 id="t09"><a href="#t09_row">T09</a></h2>
+<ul>
+<li><strong>Description:</strong> A verbose API may reveal information on which software packages are installed on which vehicle, which is unnecessary on a need-to-know basis.</li>
+<li><strong>Rationale:</strong></li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c03">C03</a> - Enforce only SSL connections</li>
+</ul></li>
+</ul>
+<h2 id="t10"><a href="#t10_row">T10</a></h2>
+<ul>
+<li><strong>Description:</strong> An RVI node may be spoofed and become a leaking sink for vehicle and package data.</li>
+<li><strong>Rationale:</strong> A spoofed RVI node may cause a huge leak of sensitive information.</li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c02">C02</a> - TLS Transport Integrity, Confidentiality</li>
+<li><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</li>
+</ul></li>
+</ul>
+<h2 id="t11"><a href="#t11_row">T11</a></h2>
+<ul>
+<li><strong>Description:</strong> A compromised RVI node may send incorrect status reports for package installation in order to skip the installation of bugfixes or exploit fixes, intercept packages, and acquire information about VINs and their software configuration.</li>
+<li><strong>Rationale:</strong> Knowing or sending over to a spoofed vehicle software packages may help to analyze them and find potential attack vectors.</li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c14">C14</a> - SOTA Server-supplied checksum for every package send, recalculated it and verify it locally</li>
+<li><a href="#c15">C15</a> - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification</li>
+</ul></li>
+</ul>
+<h2 id="t12"><a href="#t12_row">T12</a></h2>
+<ul>
+<li><strong>Description:</strong> A compromised RVI node may block the installation of security-critical software packages and return a false status that they were installed, leaving open security vulnerabilities.</li>
+<li><strong>Rationale:</strong> A non-installed package may leave backdoors and exploits open for attackers.</li>
+<li><strong>Mitigations:</strong> None</li>
+</ul>
+<h2 id="t13"><a href="#t13_row">T13</a></h2>
+<ul>
+<li><strong>Description:</strong> Sniffing software installed on a RVI node can intercept VINs, their configuration, and the latest package configuration for every VIN.</li>
+<li><strong>Rationale:</strong> A node sniffer may intercept all VINs and their associated software packages.</li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c03">C03</a> - Enforce only SSL connections</li>
+</ul></li>
+</ul>
+<h2 id="t14"><a href="#t14_row">T14</a></h2>
+<ul>
+<li><strong>Description:</strong> A Denial-Of-Service (DOS) attack may block the installation of software packages or updates.</li>
+<li><strong>Rationale:</strong> A DOS attack on the RVI node/s may block the installation of zero-days or other crucial updates and leave vehicles vulnerable for a prolonged period of time.</li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c05">C05</a> - Notify administrators for suspicious traffic patterns</li>
+<li><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</li>
+</ul></li>
+</ul>
+<h2 id="t15"><a href="#t15_row">T15</a></h2>
+<ul>
+<li><strong>Description:</strong> An attacker may use a spoofed Logistics API to install trojans or packages with known vulnerabilities.</li>
+<li><strong>Rationale:</strong> Responses from a spoofed Logistics API may lead to the installation of malicious or vulnerable packages.</li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c02">C02</a> - TLS Transport Integrity, Confidentiality</li>
+<li><a href="#c04">C04</a> - Log transactions to and from SOTA Server</li>
+<li><a href="#c06">C06</a> - Limit login attempts per session</li>
+</ul></li>
+</ul>
+<h2 id="t16"><a href="#t16_row">T16</a></h2>
+<ul>
+<li><strong>Description:</strong> An attacker may assign a valid part number to a malicious package which may provide backdoor or related system vulnerabilities after being installed.</li>
+<li><strong>Rationale:</strong> A malicious packaged related with a valid part number will be installed without any warning or any alarm raised.</li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c04">C04</a> - Log transactions to and from SOTA Server</li>
+</ul></li>
+</ul>
+<h2 id="t17"><a href="#t17_row">T17</a></h2>
+<ul>
+<li><strong>Description:</strong> A malicious person may try to intercept the data exchanged between the SOTA server and the Logistics &amp; Provisioning API.</li>
+<li><strong>Rationale:</strong> Information leak may compromise sensitive corporate and vehicle data.</li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c02">C02</a> - TLS Transport Integrity, Confidentiality</li>
+<li><a href="#c03">C03</a> - Enforce only SSL connections</li>
+<li><a href="#c04">C04</a> - Log transactions to and from SOTA Server</li>
+</ul></li>
+</ul>
+<h2 id="t18"><a href="#t18_row">T18</a></h2>
+<ul>
+<li><strong>Description:</strong> An attacker may used a spoofed Billing API to install updates without being charged or by charging a third person excessively.</li>
+<li><strong>Rationale:</strong> Responses from a spoofed Billing API may lead to the installation of updates for no or excessive cost.</li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c02">C02</a> - TLS Transport Integrity, Confidentiality</li>
+<li><a href="#c04">C04</a> - Log transactions to and from SOTA Server</li>
+<li><a href="#c06">C06</a> - Limit login attempts per session</li>
+<li><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</li>
+</ul></li>
+</ul>
+<h2 id="t19"><a href="#t19_row">T19</a></h2>
+<ul>
+<li><strong>Description:</strong> A compromised Charging &amp; Billing endpoint may provide false charging information.</li>
+<li><strong>Rationale:</strong></li>
+<li><strong>Mitigations:</strong> None</li>
+</ul>
+<h2 id="t20"><a href="#t20_row">T20</a></h2>
+<ul>
+<li><strong>Description:</strong> A malicious person may try to intercept the data exchanged between the SOTA server and the Charging &amp; Billing API.</li>
+<li><strong>Rationale:</strong> Information leak may compromise sensitive corporate and vehicle data.</li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c02">C02</a> - TLS Transport Integrity, Confidentiality</li>
+<li><a href="#c03">C03</a> - Enforce only SSL connections</li>
+<li><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</li>
+</ul></li>
+</ul>
+<h2 id="t21"><a href="#t21_row">T21</a></h2>
+<ul>
+<li><strong>Description:</strong> A spoofed SOTA Server may retrieve most of the sensitive data stored in the data store.</li>
+<li><strong>Rationale:</strong> A spoofed SOTA Server may retrieve most of the sensitive data stored in the datastore.</li>
+<li><strong>Mitigations:</strong> None</li>
+</ul>
+<h2 id="t22"><a href="#t22_row">T22</a></h2>
+<ul>
+<li><strong>Description:</strong> A MariaDB client with access to the data store can manipulate the persisted data.</li>
+<li><strong>Rationale:</strong> Persisting false data in the datastore may open the door for more pervasive attack vectors.</li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c01">C01</a> - Password complexity check</li>
+<li><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</li>
+<li><a href="#c10">C10</a> - Allow only Intranet/VPN connections to MariaDB</li>
+<li><a href="#c11">C11</a> - Don’t use Admin account with MariaDB</li>
+</ul></li>
+</ul>
+<h2 id="t23"><a href="#t23_row">T23</a></h2>
+<ul>
+<li><strong>Description:</strong> A MariaDB client with access to the data store can retrieve all of the sensitive data stored in it.</li>
+<li><strong>Rationale:</strong></li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c01">C01</a> - Password complexity check</li>
+<li><a href="#c02">C02</a> - TLS Transport Integrity, Confidentiality</li>
+<li><a href="#c03">C03</a> - Enforce only SSL connections</li>
+<li><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</li>
+<li><a href="#c10">C10</a> - Allow only Intranet/VPN connections to MariaDB</li>
+<li><a href="#c11">C11</a> - Don’t use Admin account with MariaDB</li>
+</ul></li>
+</ul>
+<h2 id="t24"><a href="#t24_row">T24</a></h2>
+<ul>
+<li><strong>Description:</strong> An attacker may orchestrate a Denial-Of-Service (DOS) attack to interrupt the system’s operation or as part of a phishing attack.</li>
+<li><strong>Rationale:</strong></li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c01">C01</a> - Password complexity check</li>
+<li><a href="#c05">C05</a> - Notify administrators for suspicious traffic patterns</li>
+<li><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</li>
+<li><a href="#c10">C10</a> - Allow only Intranet/VPN connections to MariaDB</li>
+<li><a href="#c11">C11</a> - Don’t use Admin account with MariaDB</li>
+</ul></li>
+</ul>
+<h2 id="t25"><a href="#t25_row">T25</a></h2>
+<ul>
+<li><strong>Description:</strong> A malicious user may pursue elevating his access rights to administrator or superuser, allowing him to perform any arbitrary operation on the data store.</li>
+<li><strong>Rationale:</strong> Getting administrator rights can lead to data theft, tampering and complete loss of data.</li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c01">C01</a> - Password complexity check</li>
+<li><a href="#c02">C02</a> - TLS Transport Integrity, Confidentiality</li>
+<li><a href="#c10">C10</a> - Allow only Intranet/VPN connections to MariaDB</li>
+<li><a href="#c11">C11</a> - Don’t use Admin account with MariaDB</li>
+</ul></li>
+</ul>
+<h2 id="t26"><a href="#t26_row">T26</a></h2>
+<ul>
+<li><strong>Description:</strong> A spoofed External Resolver may retrieve most of the sensitive data stored in the data store.</li>
+<li><strong>Rationale:</strong> A spoofed External Resolver may retrieve most of the data stored in the datastore.</li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c02">C02</a> - TLS Transport Integrity, Confidentiality</li>
+<li><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</li>
+</ul></li>
+</ul>
+<h2 id="t27"><a href="#t27_row">T27</a></h2>
+<ul>
+<li><strong>Description:</strong> A malicious in-vehicle process can attempt to exchange data with the SOTA Client and intercept information about the vehicle’s software state.</li>
+<li><strong>Rationale:</strong> A third party process can intercept information about every package installed from an unsecured client.</li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c12">C12</a> - SOTA Client should not accept any calls or requests from in-vehicle processes</li>
+<li><a href="#c13">C13</a> - SOTA Client should authenticate and communicate only with the Software Loading Manager (from in-vehicle software)</li>
+</ul></li>
+</ul>
+<h2 id="t28"><a href="#t28_row">T28</a></h2>
+<ul>
+<li><strong>Description:</strong> A malicious in-vehicle process can attempt to intercept the communication between the SOTA Client and the RVI Node and alter the contents of the messages before delivering them to the SOTA Client.</li>
+<li><strong>Rationale:</strong> A third party process may attempt to intercept the communication between the SOTA Client and the RVI node and alter the contents of the received data.</li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c12">C12</a> - SOTA Client should not accept any calls or requests from in-vehicle processes</li>
+<li><a href="#c13">C13</a> - SOTA Client should authenticate and communicate only with the Software Loading Manager (from in-vehicle software)</li>
+<li><a href="#c14">C14</a> - SOTA Server-supplied checksum for every package send, recalculated it and verify it locally</li>
+<li><a href="#c15">C15</a> - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification</li>
+</ul></li>
+</ul>
+<h2 id="t29"><a href="#t29_row">T29</a></h2>
+<ul>
+<li><strong>Description:</strong> An attacker may orchestrate a Denial-Of-Service (DOS) attack to interrupt the system’s operation or as part of a phishing attack.</li>
+<li><strong>Rationale:</strong></li>
+<li><strong>Mitigations:</strong>
+<ul>
+<li><a href="#c12">C12</a> - SOTA Client should not accept any calls or requests from in-vehicle processes</li>
+</ul></li>
+</ul>
+<h1 id="mitigations">Mitigations</h1>
+<h2 id="c01">C01</h2>
+<h4 id="password-complexity-check">Password complexity check</h4>
+<h6 id="applicable-threats">Applicable threats</h6>
+<ul>
+<li><a href="#t01">T01</a> - Spoofing of Admin UI</li>
+<li><a href="#t03">T03</a> - Invalid package configuration injection</li>
+<li><a href="#t04">T04</a> - Repudiation of vehicle SW configuration</li>
+<li><a href="#t06">T06</a> - Brute force password cracking</li>
+<li><a href="#t22">T22</a> - Persistence of false data</li>
+<li><a href="#t23">T23</a> - Compromise of sensitive data</li>
+<li><a href="#t24">T24</a> - MariaDB Denial of Service attack</li>
+<li><a href="#t25">T25</a> - Getting admin rights</li>
+</ul>
+<h6 id="purpose">Purpose</h6>
+<p>deterrence</p>
+<h6 id="goal">Goal</h6>
+<h6 id="depends">Depends</h6>
+<h2 id="c02">C02</h2>
+<h4 id="tls-transport-integrity-confidentiality">TLS Transport Integrity, Confidentiality</h4>
+<h6 id="applicable-threats-1">Applicable threats</h6>
+<ul>
+<li><a href="#t02">T02</a> - Node sniffing</li>
+<li><a href="#t07">T07</a> - Spoofing of External Resolver</li>
+<li><a href="#t10">T10</a> - RVI node spoofing</li>
+<li><a href="#t15">T15</a> - Logistics &amp; Provisioning API Spoofing</li>
+<li><a href="#t17">T17</a> - VIN, part number, configurations compromise</li>
+<li><a href="#t18">T18</a> - Charging &amp; Billing API Spoofing</li>
+<li><a href="#t20">T20</a> - VIN, configurations, financial information compromise</li>
+<li><a href="#t23">T23</a> - Compromise of sensitive data</li>
+<li><a href="#t25">T25</a> - Getting admin rights</li>
+<li><a href="#t26">T26</a> - Spoofing External Resolver</li>
+</ul>
+<h6 id="purpose-1">Purpose</h6>
+<p>prevention</p>
+<h6 id="goal-1">Goal</h6>
+<h6 id="depends-1">Depends</h6>
+<h2 id="c03">C03</h2>
+<h4 id="enforce-only-ssl-connections">Enforce only SSL connections</h4>
+<h6 id="applicable-threats-2">Applicable threats</h6>
+<ul>
+<li><a href="#t02">T02</a> - Node sniffing</li>
+<li><a href="#t09">T09</a> - Information leak of installed packages per VIN</li>
+<li><a href="#t13">T13</a> - RVI node sniffing</li>
+<li><a href="#t17">T17</a> - VIN, part number, configurations compromise</li>
+<li><a href="#t20">T20</a> - VIN, configurations, financial information compromise</li>
+<li><a href="#t23">T23</a> - Compromise of sensitive data</li>
+</ul>
+<h6 id="purpose-2">Purpose</h6>
+<p>deterrence</p>
+<h6 id="goal-2">Goal</h6>
+<h6 id="depends-2">Depends</h6>
+<h2 id="c04">C04</h2>
+<h4 id="log-transactions-to-and-from-sota-server">Log transactions to and from SOTA Server</h4>
+<h6 id="applicable-threats-3">Applicable threats</h6>
+<ul>
+<li><a href="#t07">T07</a> - Spoofing of External Resolver</li>
+<li><a href="#t15">T15</a> - Logistics &amp; Provisioning API Spoofing</li>
+<li><a href="#t16">T16</a> - Associating a part number with a malicious package</li>
+<li><a href="#t17">T17</a> - VIN, part number, configurations compromise</li>
+<li><a href="#t18">T18</a> - Charging &amp; Billing API Spoofing</li>
+</ul>
+<h6 id="potentially-applicable-threats">Potentially applicable threats</h6>
+<ul>
+<li><a href="#t03">T03</a> - Invalid package configuration injection</li>
+<li><a href="#t08">T08</a> - Tampering of package dependencies</li>
+<li><a href="#t12">T12</a> - Denying the installation of a software package</li>
+</ul>
+<h6 id="purpose-3">Purpose</h6>
+<p>monitoring</p>
+<h6 id="goal-3">Goal</h6>
+<h6 id="depends-3">Depends</h6>
+<h2 id="c05">C05</h2>
+<h4 id="notify-administrators-for-suspicious-traffic-patterns">Notify administrators for suspicious traffic patterns</h4>
+<h6 id="applicable-threats-4">Applicable threats</h6>
+<ul>
+<li><a href="#t05">T05</a> - Web API Denial of Service attack</li>
+<li><a href="#t14">T14</a> - RVI Node Denial of Service attack</li>
+<li><a href="#t24">T24</a> - MariaDB Denial of Service attack</li>
+</ul>
+<h6 id="purpose-4">Purpose</h6>
+<p>monitoring</p>
+<h6 id="goal-4">Goal</h6>
+<h6 id="depends-4">Depends</h6>
+<h2 id="c06">C06</h2>
+<h4 id="limit-login-attempts-per-session">Limit login attempts per session</h4>
+<h6 id="applicable-threats-5">Applicable threats</h6>
+<ul>
+<li><a href="#t01">T01</a> - Spoofing of Admin UI</li>
+<li><a href="#t15">T15</a> - Logistics &amp; Provisioning API Spoofing</li>
+<li><a href="#t18">T18</a> - Charging &amp; Billing API Spoofing</li>
+</ul>
+<h6 id="purpose-5">Purpose</h6>
+<p>deterrence</p>
+<h6 id="goal-5">Goal</h6>
+<h6 id="depends-5">Depends</h6>
+<h2 id="c07">C07</h2>
+<h4 id="log-vin-and-package-creations">Log VIN and package creations</h4>
+<h6 id="applicable-threats-6">Applicable threats</h6>
+<ul>
+<li><a href="#t01">T01</a> - Spoofing of Admin UI</li>
+<li><a href="#t03">T03</a> - Invalid package configuration injection</li>
+</ul>
+<h6 id="purpose-6">Purpose</h6>
+<p>monitoring</p>
+<h6 id="goal-6">Goal</h6>
+<h6 id="depends-6">Depends</h6>
+<h2 id="c08">C08</h2>
+<h4 id="avoid-exposing-unnecessary-interfaces-to-public-internet">Avoid exposing unnecessary interfaces to public Internet</h4>
+<h6 id="applicable-threats-7">Applicable threats</h6>
+<ul>
+<li><a href="#t02">T02</a> - Node sniffing</li>
+<li><a href="#t05">T05</a> - Web API Denial of Service attack</li>
+<li><a href="#t06">T06</a> - Brute force password cracking</li>
+<li><a href="#t10">T10</a> - RVI node spoofing</li>
+<li><a href="#t14">T14</a> - RVI Node Denial of Service attack</li>
+<li><a href="#t18">T18</a> - Charging &amp; Billing API Spoofing</li>
+<li><a href="#t20">T20</a> - VIN, configurations, financial information compromise</li>
+<li><a href="#t22">T22</a> - Persistence of false data</li>
+<li><a href="#t23">T23</a> - Compromise of sensitive data</li>
+<li><a href="#t24">T24</a> - MariaDB Denial of Service attack</li>
+<li><a href="#t26">T26</a> - Spoofing External Resolver</li>
+</ul>
+<h6 id="purpose-7">Purpose</h6>
+<p>prevention</p>
+<h6 id="goal-7">Goal</h6>
+<h6 id="depends-7">Depends</h6>
+<h2 id="c09">C09</h2>
+<h4 id="verify-the-vinpackage-filter-sanity">Verify the VIN/package filter sanity</h4>
+<h6 id="applicable-threats-8">Applicable threats</h6>
+<p>T03</p>
+<h6 id="purpose-8">Purpose</h6>
+<p>deterrence</p>
+<h6 id="goal-8">Goal</h6>
+<h6 id="depends-8">Depends</h6>
+<h2 id="c10">C10</h2>
+<h4 id="allow-only-intranetvpn-connections-to-mariadb">Allow only Intranet/VPN connections to MariaDB</h4>
+<h6 id="applicable-threats-9">Applicable threats</h6>
+<ul>
+<li><a href="#t22">T22</a> - Persistence of false data</li>
+<li><a href="#t23">T23</a> - Compromise of sensitive data</li>
+<li><a href="#t24">T24</a> - MariaDB Denial of Service attack</li>
+<li><a href="#t25">T25</a> - Getting admin rights</li>
+</ul>
+<h6 id="purpose-9">Purpose</h6>
+<p>deterrence</p>
+<h6 id="goal-9">Goal</h6>
+<h6 id="depends-9">Depends</h6>
+<h2 id="c11">C11</h2>
+<h4 id="dont-use-admin-account-with-mariadb">Don’t use Admin account with MariaDB</h4>
+<h6 id="applicable-threats-10">Applicable threats</h6>
+<ul>
+<li><a href="#t22">T22</a> - Persistence of false data</li>
+<li><a href="#t23">T23</a> - Compromise of sensitive data</li>
+<li><a href="#t24">T24</a> - MariaDB Denial of Service attack</li>
+<li><a href="#t25">T25</a> - Getting admin rights</li>
+</ul>
+<h6 id="purpose-10">Purpose</h6>
+<p>deterrence</p>
+<h6 id="goal-10">Goal</h6>
+<h6 id="depends-10">Depends</h6>
+<h2 id="c12">C12</h2>
+<h4 id="sota-client-should-not-accept-any-calls-or-requests-from-in-vehicle-processes">SOTA Client should not accept any calls or requests from in-vehicle processes</h4>
+<h6 id="applicable-threats-11">Applicable threats</h6>
+<ul>
+<li><a href="#t27">T27</a> - In-vehicle process spoofing</li>
+<li><a href="#t28">T28</a> - SOTA Client sniffing</li>
+<li><a href="#t29">T29</a> - SOTA Client Denial of Service attack</li>
+</ul>
+<h6 id="purpose-11">Purpose</h6>
+<p>prevention</p>
+<h6 id="goal-11">Goal</h6>
+<h6 id="depends-11">Depends</h6>
+<h2 id="c13">C13</h2>
+<h4 id="sota-client-should-authenticate-and-communicate-only-with-the-software-loading-manager-from-in-vehicle-software">SOTA Client should authenticate and communicate only with the Software Loading Manager (from in-vehicle software)</h4>
+<h6 id="applicable-threats-12">Applicable threats</h6>
+<ul>
+<li><a href="#t27">T27</a> - In-vehicle process spoofing</li>
+<li><a href="#t28">T28</a> - SOTA Client sniffing</li>
+</ul>
+<h6 id="purpose-12">Purpose</h6>
+<p>prevention</p>
+<h6 id="goal-12">Goal</h6>
+<h6 id="depends-12">Depends</h6>
+<h2 id="c14">C14</h2>
+<h4 id="sota-server-supplied-checksum-for-every-package-send-recalculated-it-and-verify-it-locally.">SOTA Server-supplied checksum for every package send, recalculated it and verify it locally.</h4>
+<h6 id="applicable-threats-13">Applicable threats</h6>
+<ul>
+<li><a href="#t28">T28</a> - SOTA Client sniffing</li>
+<li><a href="#t11">T11</a> - Retrieving false package installation results</li>
+<li><a href="#t08">T08</a> - Tampering of package dependencies</li>
+<li><a href="#t03">T03</a> - Invalid package configuration injection</li>
+</ul>
+<h6 id="purpose-13">Purpose</h6>
+<p>deterrence</p>
+<h6 id="goal-13">Goal</h6>
+<h6 id="depends-13">Depends</h6>
+<h2 id="c15">C15</h2>
+<h4 id="in-case-that-the-sota-server-is-unavailable-and-a-package-download-has-been-interrupted-set-the-downloads-state-as-erroneous-and-update-the-server-with-the-information-upon-the-next-notification">In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification</h4>
+<h6 id="applicable-threats-14">Applicable threats</h6>
+<ul>
+<li><a href="#t28">T28</a> - SOTA Client sniffing</li>
+<li><a href="#t11">T11</a> - Retrieving false package installation results</li>
+<li><a href="#t08">T08</a> - Tampering of package dependencies</li>
+<li><a href="#t03">T03</a> - Invalid package configuration injection</li>
+</ul>
+<h6 id="purpose-14">Purpose</h6>
+<p>deterrence</p>
+<h6 id="goal-14">Goal</h6>
+<h6 id="depends-14">Depends</h6>
+
+                    </div>
+                
+            </div>
+
+            
+
+            <div class="row">
+                <div id="footer" class="col-sm-12">
+                    Documentation for <a href="https://github.com/PDXostc/rvi_sota_server">GENIVI SOTA Project</a>
+
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function orderNav() {
+                var list,
+                    section,
+                    header,
+                    sections = [],
+                    lists = {},
+                    headers = {};
+
+                var navUl = document.querySelectorAll('#navigation ul')[0],
+                    navLis = document.querySelectorAll('#navigation ul li');
+
+                if (!navUl) return;
+
+                for (var i = 0; i < navLis.length; i++) {
+                    var order, li = navLis[i];
+
+                    if (li.classList.contains('nav-header')) {
+                        section = li.textContent || li.innerText;
+                        sections.push(section);
+                        headers[section] = li;
+                        continue;
+                    }
+
+                    if (!lists[section]) {
+                        lists[section] = [];
+                    }
+
+                    order = parseFloat(li.getAttribute('data-order'))
+                    lists[section].push([order, li]);
+                }
+
+                for (var i = 0; i < sections.length; i++) {
+                    section = sections[i];
+                    list = lists[section].sort(function(a, b) {
+                        return a[0] - b[0];
+                    });
+
+                    if (header = headers[section]) {
+                        navUl.appendChild(header);
+                    }
+                    for (var j = 0; j < list.length; j++) {
+                        navUl.appendChild(list[j][1]);
+                    }
+                }
+            }
+
+            if (document.querySelectorAll) orderNav();
+        </script>
+        
+    </body>
+</html>

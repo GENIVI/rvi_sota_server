@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width">
+
+        <title>GENIVI SOTA Project : Dependencies</title>
+        <meta name="description" content="Software Updates Over the Air">
+
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="/rvi_sota_server/css/syntax.css">
+        <link rel="stylesheet" href="/rvi_sota_server/css/main.css">
+    </head>
+    <body>
+
+        <div class="container">
+            <div class="row">
+                <div id="header" class="col-sm-12">
+                    <h4><a class="brand" href="/rvi_sota_server/">GENIVI SOTA Project</a>
+    <small>Software Updates Over the Air</small>
+</h4>
+
+                </div>
+            </div>
+
+            <div class="row">
+                
+                
+                    <div id="navigation" class="col-sm-2">
+                        <ul class="nav nav-list">
+    <li><a href="/rvi_sota_server/">Home</a></li>
+    
+        
+        
+
+        
+            
+                <li class="nav-header">Documentation</li>
+            
+            <li data-order="5"><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
+        
+            
+            <li data-order="2"><a href="/rvi_sota_server/doc/deployment-with-docker-launcher.html">Deployment with Docker Launcher</a></li>
+        
+            
+            <li data-order="6"><a href="/rvi_sota_server/doc/contributing.html">Contributing</a></li>
+        
+            
+            <li data-order="1"><a href="/rvi_sota_server/doc/building-installing.html">Building & Deploying</a></li>
+        
+    
+        
+        
+
+        
+            
+                <li class="nav-header">Security</li>
+            
+            <li data-order=""><a href="/rvi_sota_server/sec/security-threats-mitigations.html">Security Threats & Mitigations</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/sec/whitelisted-interactions.html">Whitelisted Interactions</a></li>
+        
+    
+        
+        
+
+        
+            
+                <li class="nav-header">Reference</li>
+            
+            <li data-order=""><a href="/rvi_sota_server/ref/dependencies.html">Dependencies</a></li>
+        
+            
+            <li data-order="5"><a href="/rvi_sota_server/ref/use-cases.html">Use Cases</a></li>
+        
+            
+            <li data-order="4"><a href="/rvi_sota_server/ref/requirements.html">Requirements</a></li>
+        
+    
+        
+        
+
+        
+            
+                <li class="nav-header">Developers</li>
+            
+            <li data-order=""><a href="/rvi_sota_server/dev/architecture.html">Architecture</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/dev/database-style-guide.html">Database Style Guide</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/dev/scala-style-guide.html">Scala Style Guide</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/dev/api.html">API</a></li>
+        
+    
+<!-- List additional links. It is recommended to add a divider
+    e.g. <li class="divider"></li> first to break up the content. -->
+</ul>
+
+                    </div>
+
+                    <div id="content" class="col-sm-10">
+                        <div class="page-header">
+    <h2>Dependencies
+        
+    </h2>
+</div>
+
+<h2 id="web-client">Web Client</h2>
+<h3 id="javascript-libraries">Javascript libraries</h3>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Name</th>
+<th style="text-align: left;">Description</th>
+<th style="text-align: left;">Version</th>
+<th style="text-align: left;">License</th>
+<th style="text-align: left;">Source code URL</th>
+<th style="text-align: left;">Source Repository URL / Binary Source</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">ReactJS</td>
+<td style="text-align: left;">Front-end JS Framework</td>
+<td style="text-align: left;">0.13.3</td>
+<td style="text-align: left;">BSD</td>
+<td style="text-align: left;">https://github.com/facebook/react</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Bootstrap</td>
+<td style="text-align: left;">Web UI Framework</td>
+<td style="text-align: left;">3.3.5</td>
+<td style="text-align: left;">MIT</td>
+<td style="text-align: left;">https://github.com/twbs/bootstrap</td>
+</tr>
+</tbody>
+</table>
+<h2 id="sota-server">SOTA Server</h2>
+<h3 id="java-scala-libraries">Java / Scala Libraries</h3>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Group</th>
+<th style="text-align: left;">Artefact</th>
+<th style="text-align: left;">Version</th>
+<th style="text-align: left;">License</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">com.github.nscala-time</td>
+<td style="text-align: left;">nscala-time_2.11</td>
+<td style="text-align: left;">2.0.0</td>
+<td style="text-align: left;">Apache</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.sksamuel.scapegoat</td>
+<td style="text-align: left;">scalac-scapegoat-plugin_2.11</td>
+<td style="text-align: left;">1.0.0</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.sksamuel.scapegoat</td>
+<td style="text-align: left;">scalac-scapegoat-plugin_2.11</td>
+<td style="text-align: left;">1.0.0</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.typesafe.netty</td>
+<td style="text-align: left;">netty-http-pipelining</td>
+<td style="text-align: left;">1.1.4</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">io.spray</td>
+<td style="text-align: left;">spray-json_2.11</td>
+<td style="text-align: left;">1.3.1</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">joda-time</td>
+<td style="text-align: left;">joda-time</td>
+<td style="text-align: left;">2.7</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">joda-time</td>
+<td style="text-align: left;">joda-time</td>
+<td style="text-align: left;">2.8.1</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">org.joda</td>
+<td style="text-align: left;">joda-convert</td>
+<td style="text-align: left;">1.2</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">org.joda</td>
+<td style="text-align: left;">joda-convert</td>
+<td style="text-align: left;">1.7</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.sksamuel.scapegoat</td>
+<td style="text-align: left;">scalac-scapegoat-plugin_2.11</td>
+<td style="text-align: left;">1.0.0</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.sksamuel.scapegoat</td>
+<td style="text-align: left;">scalac-scapegoat-plugin_2.11</td>
+<td style="text-align: left;">1.0.0</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.typesafe</td>
+<td style="text-align: left;">config</td>
+<td style="text-align: left;">1.2.1</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.typesafe.akka</td>
+<td style="text-align: left;">akka-actor_2.11</td>
+<td style="text-align: left;">2.3.12</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.typesafe.akka</td>
+<td style="text-align: left;">akka-http-core-experimental_2.11</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.typesafe.akka</td>
+<td style="text-align: left;">akka-http-experimental_2.11</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.typesafe.akka</td>
+<td style="text-align: left;">akka-http-spray-json-experimental_2.11</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.typesafe.akka</td>
+<td style="text-align: left;">akka-parsing-experimental_2.11</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.typesafe.akka</td>
+<td style="text-align: left;">akka-slf4j_2.11</td>
+<td style="text-align: left;">2.3.12</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.typesafe.akka</td>
+<td style="text-align: left;">akka-stream-experimental_2.11</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">io.spray</td>
+<td style="text-align: left;">spray-json_2.11</td>
+<td style="text-align: left;">1.3.1</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">org.scaldi</td>
+<td style="text-align: left;">scaldi_2.11</td>
+<td style="text-align: left;">0.4</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">org.scaldi</td>
+<td style="text-align: left;">scaldi_2.11</td>
+<td style="text-align: left;">0.4</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">org.scaldi</td>
+<td style="text-align: left;">scaldi_2.11</td>
+<td style="text-align: left;">0.4</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">org.scaldi</td>
+<td style="text-align: left;">scaldi_2.11</td>
+<td style="text-align: left;">0.4</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.typesafe</td>
+<td style="text-align: left;">config</td>
+<td style="text-align: left;">1.2.1</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.typesafe</td>
+<td style="text-align: left;">config</td>
+<td style="text-align: left;">1.3.0</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.typesafe.akka</td>
+<td style="text-align: left;">akka-actor_2.11</td>
+<td style="text-align: left;">2.3.12</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.typesafe.akka</td>
+<td style="text-align: left;">akka-actor_2.11</td>
+<td style="text-align: left;">2.3.11</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.typesafe.akka</td>
+<td style="text-align: left;">akka-http-core-experimental_2.11</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.typesafe.akka</td>
+<td style="text-align: left;">akka-http-experimental_2.11</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.typesafe.akka</td>
+<td style="text-align: left;">akka-http-spray-json-experimental_2.11</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.typesafe.akka</td>
+<td style="text-align: left;">akka-parsing-experimental_2.11</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.typesafe.akka</td>
+<td style="text-align: left;">akka-slf4j_2.11</td>
+<td style="text-align: left;">2.3.12</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.typesafe.akka</td>
+<td style="text-align: left;">akka-slf4j_2.11</td>
+<td style="text-align: left;">2.3.11</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.typesafe.akka</td>
+<td style="text-align: left;">akka-stream-experimental_2.11</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">io.netty</td>
+<td style="text-align: left;">netty</td>
+<td style="text-align: left;">3.10.3.Final</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.typesafe.play</td>
+<td style="text-align: left;">build-link</td>
+<td style="text-align: left;">2.4.2</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.typesafe.play</td>
+<td style="text-align: left;">play_2.11</td>
+<td style="text-align: left;">2.4.2</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.typesafe.play</td>
+<td style="text-align: left;">play-datacommons_2.11</td>
+<td style="text-align: left;">2.4.2</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.typesafe.play</td>
+<td style="text-align: left;">play-exceptions</td>
+<td style="text-align: left;">2.4.2</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.typesafe.play</td>
+<td style="text-align: left;">play-functional_2.11</td>
+<td style="text-align: left;">2.4.2</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.typesafe.play</td>
+<td style="text-align: left;">play-iteratees_2.11</td>
+<td style="text-align: left;">2.4.2</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.typesafe.play</td>
+<td style="text-align: left;">play-json_2.11</td>
+<td style="text-align: left;">2.4.2</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.typesafe.play</td>
+<td style="text-align: left;">play-netty-server_2.11</td>
+<td style="text-align: left;">2.4.2</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.typesafe.play</td>
+<td style="text-align: left;">play-netty-utils</td>
+<td style="text-align: left;">2.4.2</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.typesafe.play</td>
+<td style="text-align: left;">play-server_2.11</td>
+<td style="text-align: left;">2.4.2</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.typesafe.play</td>
+<td style="text-align: left;">twirl-api_2.11</td>
+<td style="text-align: left;">1.1.1</td>
+<td style="text-align: left;">Apache License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">org.scala-stm</td>
+<td style="text-align: left;">scala-stm_2.11</td>
+<td style="text-align: left;">0.7</td>
+<td style="text-align: left;">BSD</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">org.scala-lang</td>
+<td style="text-align: left;">scala-reflect</td>
+<td style="text-align: left;">2.11.7</td>
+<td style="text-align: left;">BSD 3-Clause</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">org.scala-lang</td>
+<td style="text-align: left;">scala-reflect</td>
+<td style="text-align: left;">2.11.7</td>
+<td style="text-align: left;">BSD 3-Clause</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">org.scala-lang</td>
+<td style="text-align: left;">scala-reflect</td>
+<td style="text-align: left;">2.11.7</td>
+<td style="text-align: left;">BSD 3-Clause</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">org.scala-lang.modules</td>
+<td style="text-align: left;">scala-parser-combinators_2.11</td>
+<td style="text-align: left;">1.0.1</td>
+<td style="text-align: left;">BSD 3-clause</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">org.scala-lang.modules</td>
+<td style="text-align: left;">scala-xml_2.11</td>
+<td style="text-align: left;">1.0.4</td>
+<td style="text-align: left;">BSD 3-Clause</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">org.scala-lang.modules</td>
+<td style="text-align: left;">scala-xml_2.11</td>
+<td style="text-align: left;">1.0.4</td>
+<td style="text-align: left;">BSD 3-clause</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">org.scala-lang.modules</td>
+<td style="text-align: left;">scala-xml_2.11</td>
+<td style="text-align: left;">1.0.4</td>
+<td style="text-align: left;">BSD 3-clause</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">org.reactivestreams</td>
+<td style="text-align: left;">reactive-streams</td>
+<td style="text-align: left;">1.0.0</td>
+<td style="text-align: left;">CC0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">org.reactivestreams</td>
+<td style="text-align: left;">reactive-streams</td>
+<td style="text-align: left;">1.0.0</td>
+<td style="text-align: left;">CC0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">org.javassist</td>
+<td style="text-align: left;">javassist</td>
+<td style="text-align: left;">3.18.2-GA</td>
+<td style="text-align: left;">MPL 1.1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">org.javassist</td>
+<td style="text-align: left;">javassist</td>
+<td style="text-align: left;">3.18.2-GA</td>
+<td style="text-align: left;">MPL 1.1</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">org.javassist</td>
+<td style="text-align: left;">javassist</td>
+<td style="text-align: left;">3.19.0-GA</td>
+<td style="text-align: left;">MPL 1.1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">aopalliance</td>
+<td style="text-align: left;">aopalliance</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">Public Domain</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.zaxxer</td>
+<td style="text-align: left;">HikariCP</td>
+<td style="text-align: left;">2.3.8</td>
+<td style="text-align: left;">The Apache Software License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.zaxxer</td>
+<td style="text-align: left;">HikariCP</td>
+<td style="text-align: left;">2.3.8</td>
+<td style="text-align: left;">The Apache Software License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">javax.inject</td>
+<td style="text-align: left;">javax.inject</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">The Apache Software License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">xerces</td>
+<td style="text-align: left;">xercesImpl</td>
+<td style="text-align: left;">2.11.0</td>
+<td style="text-align: left;">The Apache Software License, Version 2.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">xml-apis</td>
+<td style="text-align: left;">xml-apis</td>
+<td style="text-align: left;">1.4.01</td>
+<td style="text-align: left;">The Apache Software License, Version 2.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">mysql</td>
+<td style="text-align: left;">mysql-connector-java</td>
+<td style="text-align: left;">5.1.12</td>
+<td style="text-align: left;">The GNU General Public License, Version 2</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">mysql</td>
+<td style="text-align: left;">mysql-connector-java</td>
+<td style="text-align: left;">5.1.12</td>
+<td style="text-align: left;">The GNU General Public License, Version 2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.typesafe.slick</td>
+<td style="text-align: left;">slick_2.11</td>
+<td style="text-align: left;">3.0.0</td>
+<td style="text-align: left;">Two-clause BSD-style license</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.typesafe.slick</td>
+<td style="text-align: left;">slick_2.11</td>
+<td style="text-align: left;">3.0.0</td>
+<td style="text-align: left;">Two-clause BSD-style license</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ch.qos.logback</td>
+<td style="text-align: left;">logback-classic</td>
+<td style="text-align: left;">1.1.3</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ch.qos.logback</td>
+<td style="text-align: left;">logback-core</td>
+<td style="text-align: left;">1.1.3</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.fasterxml.jackson.core</td>
+<td style="text-align: left;">jackson-annotations</td>
+<td style="text-align: left;">2.5.4</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.fasterxml.jackson.core</td>
+<td style="text-align: left;">jackson-core</td>
+<td style="text-align: left;">2.5.4</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.fasterxml.jackson.core</td>
+<td style="text-align: left;">jackson-databind</td>
+<td style="text-align: left;">2.5.4</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.fasterxml.jackson.datatype</td>
+<td style="text-align: left;">jackson-datatype-jdk8</td>
+<td style="text-align: left;">2.5.4</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.fasterxml.jackson.datatype</td>
+<td style="text-align: left;">jackson-datatype-jsr310</td>
+<td style="text-align: left;">2.5.4</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.google.guava</td>
+<td style="text-align: left;">guava</td>
+<td style="text-align: left;">16.0.1</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">com.google.inject</td>
+<td style="text-align: left;">guice</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">com.google.inject.extensions</td>
+<td style="text-align: left;">guice-assistedinject</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">commons-codec</td>
+<td style="text-align: left;">commons-codec</td>
+<td style="text-align: left;">1.1</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">javax.transaction</td>
+<td style="text-align: left;">jta</td>
+<td style="text-align: left;">1.1</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">No license specified</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">org.apache.commons</td>
+<td style="text-align: left;">commons-lang3</td>
+<td style="text-align: left;">3.4</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">org.slf4j</td>
+<td style="text-align: left;">jcl-over-slf4j</td>
+<td style="text-align: left;">1.7.12</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">org.slf4j</td>
+<td style="text-align: left;">jul-to-slf4j</td>
+<td style="text-align: left;">1.7.12</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">org.slf4j</td>
+<td style="text-align: left;">slf4j-api</td>
+<td style="text-align: left;">1.7.10</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">org.slf4j</td>
+<td style="text-align: left;">slf4j-api</td>
+<td style="text-align: left;">1.7.12</td>
+<td style="text-align: left;"></td>
+</tr>
+</tbody>
+</table>
+
+                    </div>
+                
+            </div>
+
+            
+
+            <div class="row">
+                <div id="footer" class="col-sm-12">
+                    Documentation for <a href="https://github.com/PDXostc/rvi_sota_server">GENIVI SOTA Project</a>
+
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function orderNav() {
+                var list,
+                    section,
+                    header,
+                    sections = [],
+                    lists = {},
+                    headers = {};
+
+                var navUl = document.querySelectorAll('#navigation ul')[0],
+                    navLis = document.querySelectorAll('#navigation ul li');
+
+                if (!navUl) return;
+
+                for (var i = 0; i < navLis.length; i++) {
+                    var order, li = navLis[i];
+
+                    if (li.classList.contains('nav-header')) {
+                        section = li.textContent || li.innerText;
+                        sections.push(section);
+                        headers[section] = li;
+                        continue;
+                    }
+
+                    if (!lists[section]) {
+                        lists[section] = [];
+                    }
+
+                    order = parseFloat(li.getAttribute('data-order'))
+                    lists[section].push([order, li]);
+                }
+
+                for (var i = 0; i < sections.length; i++) {
+                    section = sections[i];
+                    list = lists[section].sort(function(a, b) {
+                        return a[0] - b[0];
+                    });
+
+                    if (header = headers[section]) {
+                        navUl.appendChild(header);
+                    }
+                    for (var j = 0; j < list.length; j++) {
+                        navUl.appendChild(list[j][1]);
+                    }
+                }
+            }
+
+            if (document.querySelectorAll) orderNav();
+        </script>
+        
+    </body>
+</html>
