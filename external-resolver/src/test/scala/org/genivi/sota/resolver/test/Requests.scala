@@ -8,14 +8,15 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model.{Uri, HttpRequest, StatusCode, StatusCodes}
 import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.testkit.ScalatestRouteTest
+import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import eu.timepit.refined.Refined
-import org.genivi.sota.resolver.db.Resolve.makeFakeDependencyMap
-import org.genivi.sota.resolver.types.{Vehicle, Filter, Package, PackageFilter}
-import org.genivi.sota.resolver.types.Package.Metadata
-import org.scalatest.Matchers
-import spray.json.DefaultJsonProtocol._
 import org.genivi.sota.refined.SprayJsonRefined._
+import org.genivi.sota.resolver.db.Resolve.makeFakeDependencyMap
+import org.genivi.sota.resolver.types.Package.Metadata
+import org.genivi.sota.resolver.types.{Vehicle, Filter, Package, PackageFilter}
+import org.scalatest.Matchers
+import scala.concurrent.duration._
+import spray.json.DefaultJsonProtocol._
 
 
 object Resource {
@@ -32,8 +33,6 @@ trait VehicleRequests extends Matchers { self: ScalatestRouteTest =>
 
   def addVehicleOK(vin: String)(implicit route: Route): Unit = {
 
-    import akka.http.scaladsl.testkit.RouteTestTimeout
-    import scala.concurrent.duration._
     implicit val routeTimeout: RouteTestTimeout = RouteTestTimeout(5.second)
 
     addVehicle(vin) ~> route ~> check {
@@ -66,10 +65,14 @@ trait FilterRequests extends Matchers { self: ScalatestRouteTest =>
   def addFilter(name: String, expr: String): HttpRequest =
     Post(Resource.uri("filters"), Filter(Refined(name), Refined(expr)))
 
-  def addFilterOK(name: String, expr: String)(implicit route: Route): Unit =
+  def addFilterOK(name: String, expr: String)(implicit route: Route): Unit = {
+
+    implicit val routeTimeout: RouteTestTimeout = RouteTestTimeout(5.second)
+
     addFilter(name, expr) ~> route ~> check {
       status shouldBe StatusCodes.OK
     }
+  }
 
   def listFilters: HttpRequest =
     Get(Resource.uri("filters"))
