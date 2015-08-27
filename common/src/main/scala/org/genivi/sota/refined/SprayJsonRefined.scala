@@ -11,7 +11,7 @@ import scala.util.control.NoStackTrace
 
 trait SprayJsonRefined {
 
-  case class RefinmentError[T]( o: T, msg: String) extends NoStackTrace
+  case class RefinementError[T]( o: T, msg: String) extends NoStackTrace
 
   implicit def refinedJsonFormat[T, P](implicit delegate: JsonFormat[T], p: Predicate[P, T]): JsonFormat[Refined[T, P]] =
     new JsonFormat[Refined[T, P]] {
@@ -21,7 +21,7 @@ trait SprayJsonRefined {
         val value = delegate.read(json)
         refineV[P]( value ) match {
           case Right(x) => x
-          case Left(e)  => deserializationError(e, RefinmentError(value, e))
+          case Left(e)  => deserializationError(e, RefinementError(value, e))
         }
       }
     }
