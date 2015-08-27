@@ -65,14 +65,24 @@ trait FilterRequests extends Matchers { self: ScalatestRouteTest =>
   def addFilter(name: String, expr: String): HttpRequest =
     Post(Resource.uri("filters"), Filter(Refined(name), Refined(expr)))
 
+  def updateFilter(name: String, expr: String): HttpRequest =
+    Put(Resource.uri("filters", name), expr)
+
   def addFilterOK(name: String, expr: String)(implicit route: Route): Unit = {
 
     implicit val routeTimeout: RouteTestTimeout = RouteTestTimeout(5.second)
 
     addFilter(name, expr) ~> route ~> check {
       status shouldBe StatusCodes.OK
+      responseAs[Filter] shouldBe Filter(Refined(name), Refined(expr))
     }
   }
+
+  def updateFilterOK(name: String, expr: String)(implicit route: Route): Unit =
+    updateFilter(name, expr) ~> route ~> check {
+      status shouldBe StatusCodes.OK
+      responseAs[Filter] shouldBe Filter(Refined(name), Refined(expr))
+    }
 
   def listFilters: HttpRequest =
     Get(Resource.uri("filters"))

@@ -21,11 +21,11 @@ object Resolve {
     (implicit ec: ExecutionContext)
       : DBIO[Map[Vehicle.Vin, Seq[Package.Id]]]
   = for {
-    fs <- listFiltersForPackage(name, version)
-    vs <- vehicles.result
-  } yield
-    makeFakeDependencyMap(name, version,
-      vs.filter(query(fs.map(_.expression).map(parseValidFilter).foldLeft[FilterAST](True)(And))))
+      fs <- listFiltersForPackage(name, version)
+      vs <- vehicles.result
+    } yield
+      makeFakeDependencyMap(name, version,
+        vs.filter(query(fs.map(_.expression).map(parseValidFilter).foldLeft[FilterAST](True)(And))))
 
   def makeFakeDependencyMap
     (name: Package.Name, version: Package.Version, vs: Seq[Vehicle])

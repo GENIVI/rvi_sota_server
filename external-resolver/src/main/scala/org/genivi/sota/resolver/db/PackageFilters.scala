@@ -40,7 +40,6 @@ object PackageFilters {
   val packageFilters = TableQuery[PackageFilterTable]
 
   class MissingPackageException extends Throwable with NoStackTrace
-  class MissingFilterException  extends Throwable with NoStackTrace
 
   def add(pf: PackageFilter)(implicit ec: ExecutionContext): DBIO[PackageFilter] = {
 
@@ -51,7 +50,7 @@ object PackageFilters {
       _ <- failIfEmpty(packages.filter(p => p.name === pf.packageName
                && p.version === pf.packageVersion).result,
              new MissingPackageException)
-      _ <- failIfEmpty(filters.filter(_.name === pf.filterName).result, new MissingFilterException)
+      _ <- failIfEmpty(filters.filter(_.name === pf.filterName).result, new Filters.MissingFilterException)
       _ <- packageFilters += pf
     } yield pf
   }
