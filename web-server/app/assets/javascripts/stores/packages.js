@@ -11,6 +11,12 @@ define(['backbone', 'sota-dispatcher', './package'], function(Backbone, SotaDisp
         case 'package-add':
           this.createWithEvents(payload.package, { type: 'put' });
           break;
+        case 'packages-filter':
+          this.fetch({ data: $.param({regex: payload.regex}) });
+          break;
+        case 'initialize':
+          this.fetch();
+          break;
       }
     }
   });
