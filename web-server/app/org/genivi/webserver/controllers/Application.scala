@@ -4,27 +4,26 @@
  */
 package org.genivi.webserver.controllers
 
-import org.genivi.webserver.requesthelpers.{RightResponse, LeftResponse, ErrorResponse}
-import org.slf4j.LoggerFactory
-import play.api.libs.iteratee.Enumerator
-import play.api.Play.current
 import javax.inject.Inject
+
 import jp.t2v.lab.play2.auth.{AuthElement, LoginLogout}
 import org.genivi.webserver.Authentication.{AccountManager, Role}
 import org.genivi.webserver.requesthelpers.RequestHelper._
-import play.api.libs.json.JsValue
-import scala.concurrent.{ExecutionContext}
+import org.genivi.webserver.requesthelpers.{ErrorResponse, LeftResponse, RightResponse}
+import org.slf4j.LoggerFactory
+import play.api.Play.current
 import play.api._
-import play.api.data._
 import play.api.data.Forms._
-import play.api.i18n.I18nSupport
+import play.api.data._
+import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.libs.iteratee.Enumerator
+import play.api.libs.json.JsValue
 import play.api.libs.json.Json._
 import play.api.libs.ws._
 import play.api.mvc._
-import play.api.i18n.MessagesApi
 import views.html
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val accountManager: AccountManager)
   extends Controller with LoginLogout with AuthConfigImpl with I18nSupport with AuthElement {
@@ -138,6 +137,7 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
       case ErrorResponse(msg) => BadRequest(toJson(Map("errorMsg" -> leftRes.body)))
     }
   }
+
 
   def resultFromWsResponse(response : WSResponse) : Result = {
     val headers = response.allHeaders.mapValues(x => x.head)

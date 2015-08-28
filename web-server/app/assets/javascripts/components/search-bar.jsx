@@ -3,7 +3,7 @@ define(['react', 'underscore', 'sota-dispatcher'], function(React, _, SotaDispat
   var SearchBar = React.createClass({
     handleChange: function() {
       SotaDispatcher.dispatch({
-        actionType: 'vehicles-filter',
+        actionType: this.props.event,
         regex: this.refs.filterTextInput.getDOMNode().value
       });
       return false;
@@ -12,7 +12,7 @@ define(['react', 'underscore', 'sota-dispatcher'], function(React, _, SotaDispat
       return (
         <form>
           <div className="form-group">
-            <label htmlFor="regex">Vehicle Vin Regex</label>
+            <label htmlFor="regex">{this.props.label}</label>
             <input
               type="text"
               name="regex"

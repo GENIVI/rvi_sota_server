@@ -13,6 +13,7 @@ import shapeless.HList
 import shapeless.Lazy
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.generic.DeepUnapply
+import org.genivi.sota.db.Operators.regex
 
 object Packages {
 
@@ -49,4 +50,5 @@ object Packages {
   def create(pkg: Package)(implicit ec: ExecutionContext): DBIO[Package] =
     packages.insertOrUpdate(pkg).map(_ => pkg)
 
+  def searchByRegex(reg:String): DBIO[Seq[Package]] = packages.filter (packages => regex(packages.name, reg) || regex(packages.version, reg) ).result
 }

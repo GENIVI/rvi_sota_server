@@ -21,7 +21,7 @@ define(['jquery', 'react', '../mixins/handle-fail', '../mixins/serialize-form'],
             return true;
         },
         onSuccess: function(data) {
-            this.setState({postStatus: "Added Filter \"" + data.name + "\" successfully"});
+            this.setState({postStatus: "Added filter \"" + data.name + "\" successfully"});
             React.findDOMNode(this.refs.name).value = '';
             React.findDOMNode(this.refs.expression).value = '';
         },
@@ -34,7 +34,9 @@ define(['jquery', 'react', '../mixins/handle-fail', '../mixins/serialize-form'],
                     <textarea type="text" className="form-control" id="expression" ref="expression" name="expression" placeholder="Vin(1234)" />
                 </div>
                 <button type="submit" className="btn btn-primary">Add Filter</button>
-                {this.state.postStatus}
+                <span className="postStatus">
+                    {this.state.postStatus}
+                </span>
             </form>
         );}
     });
