@@ -1,7 +1,7 @@
 define(['backbone', 'underscore', '../lib/backbone-model-file-upload', '../mixins/send-request', 'sota-dispatcher'], function(Backbone, _, BackboneModelFileUpload, sendRequest, SotaDispatcher) {
 
   var Package = Backbone.Model.extend({
-    fileAttribute: 'binary',
+    fileAttribute: 'file',
     initialize: function() {
       SotaDispatcher.register(this.dispatchCallback.bind(this));
     },
