@@ -13,13 +13,13 @@ import org.genivi.sota.refined.SprayJsonRefined
 
 object Handlers {
 
-  import SprayJsonRefined.RefinmentError
+  import SprayJsonRefined.RefinementError
 
   def rejectionHandler : RejectionHandler = RejectionHandler.newBuilder().handle {
     case ValidationRejection(msg, None) =>
       complete( StatusCodes.BadRequest -> ErrorRepresentation(ErrorCodes.InvalidEntity, msg) )
   }.handle{
-    case MalformedRequestContentRejection(_, Some(RefinmentError(_, msg))) =>
+    case MalformedRequestContentRejection(_, Some(RefinementError(_, msg))) =>
       complete(StatusCodes.BadRequest -> ErrorRepresentation(ErrorCodes.InvalidEntity, msg))
   }.result().withFallback(RejectionHandler.default)
 
