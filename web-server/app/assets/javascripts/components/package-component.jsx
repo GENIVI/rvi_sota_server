@@ -2,7 +2,7 @@ define(['jquery', 'react', '../mixins/fluxbone', 'sota-dispatcher'], function($,
 
   var PackageComponent = React.createClass({
     mixins: [
-      Fluxbone.Mixin('Package')
+      Fluxbone.Mixin('Package', 'sync')
     ],
     handleUpdatePackage: function() {
       SotaDispatcher.dispatch({

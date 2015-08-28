@@ -7,7 +7,7 @@ define(['jquery', 'react', '../mixins/serialize-form', '../mixins/fluxbone', '..
     render: function() {
       var packages = this.props.PackageStore.models.map(function(package) {
         return (
-          <PackageComponent Package = { package }/>
+          <PackageComponent Package={ package } key={package.get('name') + package.get('version')}/>
         );
       });
       return (

@@ -12,6 +12,7 @@ GET     /webjars/*file              controllers.WebJarAssets.at(file)
 POST    /api/v1/packageFilters      org.genivi.webserver.controllers.Application.resolverProxy
 POST    /api/v1/install_campaigns   org.genivi.webserver.controllers.Application.coreProxy(path: String)
 PUT     /api/v1/packages/*path      org.genivi.webserver.controllers.Application.coreProxy(path: String)
+GET     /api/v1/packages            org.genivi.webserver.controllers.Application.coreProxy(path: String = "")
 
 POST    /api/v1/*path               org.genivi.webserver.controllers.Application.reverseProxy(path: String)
 PUT     /api/v1/*path               org.genivi.webserver.controllers.Application.reverseProxy(path: String)
