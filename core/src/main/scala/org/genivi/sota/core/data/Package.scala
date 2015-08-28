@@ -5,6 +5,8 @@
 package org.genivi.sota.core.data
 
 import akka.http.scaladsl.model.Uri
+import spray.json._
+import eu.timepit.refined._
 
 case class PackageId( name: Package.Name, version: Package.Version )
 
@@ -25,7 +27,6 @@ case class Package(
 )
 
 object Package {
-  import eu.timepit.refined._
 
   trait ValidName
   trait ValidVersion
@@ -39,5 +40,37 @@ object Package {
   implicit val validPackageVersion: Predicate[ValidVersion, String] =
     Predicate.instance( _.matches( """^\d+\.\d+\.\d+$""" ), _ => "Invalid version format")
 
+
+  def jsonOption(opt: Option[String]): String = {
+    opt match {
+      case Some(str) => str
+      case None => ""
+    }
+  }
+
+  implicit object PackageJsonFormat extends RootJsonFormat[Package] {
+    def write(pkg: Package) = {
+      val description = pkg.description match {
+        case Some(d) => d
+        case None => ""
+      }
+      JsObject(
+        "name" -> JsString(pkg.id.name.get),
+        "version" -> JsString(pkg.id.version.get),
+        "uri" -> JsString(pkg.uri.toString()),
+        "size" -> JsNumber(pkg.size),
+        "checksum" -> JsString(pkg.checkSum),
+        "description" -> JsString(jsonOption(pkg.description)),
+        "vendor" -> JsString(jsonOption(pkg.vendor))
+      )
+    }
+    def read(value: JsValue) = {
+      value.asJsObject.getFields("name", "version", "uri", "size", "checksum", "description", "vendor") match {
+        case Seq(JsString(name), JsString(version), JsString(uri), JsNumber(size), JsString(checksum), JsString(description), JsString(vendor)) =>
+          new Package(PackageId(Refined(name), Refined(version)), Uri(uri), size.toLong, checksum, Some(description), Some(vendor))
+        case _ => throw new DeserializationException("Package expected")
+      }
+    }
+  }
 
 }

@@ -7,6 +7,7 @@ package org.genivi.sota.refined
 import eu.timepit.refined.{Predicate, Refined, refineV}
 import spray.json._
 import scala.util.control.NoStackTrace
+import akka.http.scaladsl.unmarshalling._
 
 
 trait SprayJsonRefined {
@@ -25,6 +26,13 @@ trait SprayJsonRefined {
         }
       }
     }
+
+  implicit def refinedUnmarshaller[P](implicit p: Predicate[P, String]) = Unmarshaller.strict[String, Refined[String, P]] { string =>
+    refineV[P](string) match {
+      case Left(e)  => throw new IllegalArgumentException(e)
+      case Right(r) => r
+    }
+  }
 }
 
 object SprayJsonRefined extends SprayJsonRefined
