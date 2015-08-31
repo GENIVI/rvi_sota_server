@@ -2,7 +2,7 @@ define(['jquery', 'react', '../mixins/serialize-form', '../mixins/fluxbone', '..
 
   var Packages = React.createClass({
     mixins: [
-      Fluxbone.Mixin("PackageStore")
+      Fluxbone.Mixin("PackageStore", "sync change")
     ],
     render: function() {
       var packages = this.props.PackageStore.models.map(function(package) {
