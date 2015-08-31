@@ -1,4 +1,4 @@
-define(['jquery', 'react', '../mixins/fluxbone', 'sota-dispatcher'], function($, React, Fluxbone, SotaDispatcher) {
+define(['react', 'react-router', '../mixins/fluxbone', 'sota-dispatcher'], function(React, Router, Fluxbone, SotaDispatcher) {
 
   var PackageComponent = React.createClass({
     mixins: [
@@ -12,12 +12,14 @@ define(['jquery', 'react', '../mixins/fluxbone', 'sota-dispatcher'], function($,
     },
     render: function() {
       return (
-        <li className="list-group-item">
-          <span className="badge" onClick={ this.handleUpdatePackage }>
-            Update Package
-          </span>
-          { this.props.Package.get('name') }
-        </li>
+        <Router.Link to='package' params={{name: this.props.Package.get('name'), version: this.props.Package.get('version')}}>
+          <li className="list-group-item">
+            <span className="badge" onClick={ this.handleUpdatePackage }>
+              Update Package
+            </span>
+            { this.props.Package.get('name') }
+          </li>
+        </Router.Link>
       );
     }
   });
