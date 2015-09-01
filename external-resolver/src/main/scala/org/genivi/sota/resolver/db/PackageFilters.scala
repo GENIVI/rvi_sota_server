@@ -4,7 +4,6 @@
  */
 package org.genivi.sota.resolver.db
 
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server._
@@ -70,5 +69,24 @@ object PackageFilters {
       .map(_.filterName)
       .flatMap(fname => filters.filter(_.name === fname))
       .result
+
+  def deleteByFilterName(fname: Filter.Name)(implicit ec: ExecutionContext): DBIO[Int] =
+    packageFilters
+      .filter(_.filterName === fname)
+      .delete
+
+  class MissingPackageFilterException extends Throwable with NoStackTrace
+
+  def delete
+    (pname: Package.Name, pversion: Package.Version, fname: Filter.Name)
+    (implicit ec: ExecutionContext)
+      : DBIO[Int]
+  = packageFilters
+      .filter(pf => pf.packageName    === pname
+                 && pf.packageVersion === pversion
+                 && pf.filterName     === fname)
+      .delete
+      .map(i =>
+        if (i == 0) throw new MissingPackageFilterException else i)
 
 }

@@ -5,9 +5,7 @@
 package org.genivi.sota.resolver.types
 
 import eu.timepit.refined.{Predicate, Refined}
-import org.genivi.sota.refined.SprayJsonRefined.refinedJsonFormat
 import org.genivi.sota.resolver.types.FilterParser.parseFilter
-import spray.json.DefaultJsonProtocol._
 
 
 case class Filter (
@@ -35,6 +33,4 @@ object Filter {
         case Left(e)  => s"($expr failed to parse: $e.)"
         case Right(_) => "IMPOSSIBLE"
     })
-
-  implicit val filterFormat = jsonFormat2(Filter.apply)
 }

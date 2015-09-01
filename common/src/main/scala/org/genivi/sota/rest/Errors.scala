@@ -4,31 +4,40 @@
  */
 package org.genivi.sota.rest
 
+import akka.http.scaladsl.unmarshalling.FromResponseUnmarshaller
+import cats.data.Xor
+import io.circe._
+import Json.{obj, string}
+
 
 case class ErrorCode( code: String ) extends AnyVal
 
-object ErrorCode {
-  import spray.json.{JsString, JsValue, RootJsonFormat, deserializationError}
+case class ErrorRepresentation( code: ErrorCode, description: String )
 
-  implicit object Format extends RootJsonFormat[ErrorCode] {
-    override def write( x : ErrorCode ) : JsValue = JsString( x.code )
+object ErrorRepresentation {
 
-    override def read(value : JsValue ) : ErrorCode = value match {
-      case JsString(x) => ErrorCode(x)
-      case _ => deserializationError("Error code expected")
+  implicit val errorRepresentationEncoder: Encoder[ErrorRepresentation] =
+    Encoder.instance { er =>
+      obj( ("code",        string(er.code.code))
+         , ("description", string(er.description))
+         )
     }
-  }
+
+  implicit val errorRepresentationDecoder: Decoder[ErrorRepresentation] =
+    Decoder.instance { c =>
+      c.focus.asObject match {
+        case None      => Xor.left(DecodingFailure("ErrorRepresentation", c.history))
+        case Some(obj) => (obj.toMap.get("code")       .flatMap(_.asString),
+                           obj.toMap.get("description").flatMap(_.asString)) match {
+          case (Some(code), Some(desc)) => Xor.right(ErrorRepresentation(ErrorCode(code), desc))
+          case _                        => Xor.left(DecodingFailure("ErrorRepresentation", c.history))
+        }
+      }
+    }
+
 }
 
 object ErrorCodes {
   val InvalidEntity  = new ErrorCode("invalid_entity")
   val DuplicateEntry = new ErrorCode("duplicate_entry")
-}
-
-case class ErrorRepresentation( code: ErrorCode, description: String )
-
-object ErrorRepresentation {
-  import spray.json.DefaultJsonProtocol._
-
-  implicit val format = jsonFormat2(ErrorRepresentation.apply)
 }
