@@ -14,7 +14,7 @@ import akka.http.scaladsl.server.{Directives, ExceptionHandler, Route, PathMatch
 import akka.stream.ActorMaterializer
 import org.genivi.sota.refined.SprayJsonRefined._
 import org.genivi.sota.resolver.db._
-import org.genivi.sota.resolver.types.Vehicle
+import org.genivi.sota.resolver.types.{Vehicle, Filter}
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 import org.genivi.sota.rest.Validation._
 import scala.concurrent.ExecutionContext
@@ -62,12 +62,28 @@ class Routing(db: Database)
       }
     }
 
+  def packageFiltersHandler: ExceptionHandler = ExceptionHandler {
+    case err: PackageFilters.MissingPackageException =>
+      complete(StatusCodes.BadRequest ->
+        ErrorRepresentation(PackageFilter.MissingPackage, "Package doesn't exist"))
+    case err: Filters.MissingFilterException         =>
+      complete(StatusCodes.BadRequest ->
+        ErrorRepresentation(PackageFilter.MissingFilter, "Filter doesn't exist"))
+  }
+
   def filterRoute: Route =
-    path("filters") {
+    pathPrefix("filters") {
       get {
         complete(db.run(Filters.list))
       } ~
-      (post & entity(as[Filter])) { filter => complete(db.run(Filters.add(filter))) }
+      (post & entity(as[Filter])) { filter => complete(db.run(Filters.add(filter)))
+      } ~
+      (put  & refined[Filter.ValidName](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.PathEnd)
+            & entity(as[Filter.Expression])) { (fname, expr) =>
+        handleExceptions(packageFiltersHandler) {
+          complete(db.run(Filters.update(Filter(fname, expr))))
+        }
+      }
     }
 
   def validateRoute: Route =
@@ -76,15 +92,6 @@ class Routing(db: Database)
     }
 
   def packageFiltersRoute: Route = {
-
-    def packageFiltersHandler: ExceptionHandler = ExceptionHandler {
-      case err: PackageFilters.MissingPackageException =>
-        complete(StatusCodes.BadRequest ->
-          ErrorRepresentation(PackageFilter.MissingPackage, "Package doesn't exist"))
-      case err: PackageFilters.MissingFilterException  =>
-        complete(StatusCodes.BadRequest ->
-          ErrorRepresentation(PackageFilter.MissingFilter, "Filter doesn't exist"))
-    }
 
     path("packageFilters") {
       get {

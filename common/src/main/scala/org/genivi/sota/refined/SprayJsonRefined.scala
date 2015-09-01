@@ -4,7 +4,9 @@
  */
 package org.genivi.sota.refined
 
+import akka.http.scaladsl.unmarshalling.{FromRequestUnmarshaller, Unmarshaller, FromEntityUnmarshaller}
 import eu.timepit.refined.{Predicate, Refined, refineV}
+import akka.http.scaladsl.util.FastFuture.successful
 import spray.json._
 import scala.util.control.NoStackTrace
 import akka.http.scaladsl.unmarshalling._
@@ -33,6 +35,19 @@ trait SprayJsonRefined {
       case Right(r) => r
     }
   }
+
+  implicit def refinedFromRequestUnmarshaller[T, P]
+    (implicit um: FromEntityUnmarshaller[T], p: Predicate[P, T])
+      : FromRequestUnmarshaller[Refined[T, P]]
+  = Unmarshaller { implicit ec => request =>
+      um(request.entity).flatMap { (t: T) =>
+        refineV[P](t) match {
+          case Left(e)  => deserializationError(e, RefinementError(t, e))
+          case Right(r) => successful(r)
+        }
+      }
+  }
+
 }
 
 object SprayJsonRefined extends SprayJsonRefined
