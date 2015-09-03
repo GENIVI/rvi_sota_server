@@ -9,7 +9,7 @@ import scala.language.reflectiveCalls
 class AccountUnitTests extends PlaySpec with OneServerPerSuite {
 
   def fixture = new {
-    val email = "admin@sota.com"
+    val email = "admin@genivi.org"
     val name = "admin"
     val password = "genivirocks!"
     val role = Role.USER

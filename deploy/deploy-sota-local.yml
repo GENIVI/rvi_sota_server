@@ -82,4 +82,5 @@ services:
       CORE_HOST: "core"
       RESOLVER_PORT: "8081"
       RESOLVER_HOST: "resolver"
+      PLAY_CRYPTO_SECRET: {{ play_crypto_secret }}
 

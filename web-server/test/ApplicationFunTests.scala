@@ -52,7 +52,7 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
       "allow users to add and search for vins " + browser.name in {
         val testVin = "TESTVIN0123456789"
         go to (s"http://$webHost:$webPort/login")
-        emailField("email").value = "admin@sota.com"
+        emailField("email").value = "admin@genivi.org"
         pwdField("password").value = "genivirocks!"
         submit()
         eventually {
@@ -70,7 +70,7 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
 
       "allow users to add packages " + browser.name in {
         go to (s"http://$webHost:$webPort/login")
-        emailField("email").value = "admin@sota.com"
+        emailField("email").value = "admin@genivi.org"
         pwdField("password").value = "genivirocks!"
         submit()
         eventually {
@@ -95,7 +95,7 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
       "allow users to add filters " + browser.name in {
         val filterName = "Testfilter"
         go to (s"http://$webHost:$webPort/login")
-        emailField("email").value = "admin@sota.com"
+        emailField("email").value = "admin@genivi.org"
         pwdField("password").value = "genivirocks!"
         submit()
         eventually {
