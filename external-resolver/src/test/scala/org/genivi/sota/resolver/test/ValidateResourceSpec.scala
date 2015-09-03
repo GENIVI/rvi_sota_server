@@ -8,27 +8,30 @@ import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
 
 class ValidateResourceSpec extends ResourceWordSpec {
 
-  import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+  import akka.http.scaladsl.unmarshalling._
+  import io.circe.generic.auto._
+  import org.genivi.sota.CirceSupport._
+
 
   "Validate resource" should {
 
     val filter = Filter(Refined("myfilter"), Refined(s"""vin_matches "SAJNX5745SC??????""""))
 
     "accept valid filters" in {
-      Post(ValidateUri("filter"), filter) ~> route ~> check {
+      validateFilter(filter) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
     }
 
     "reject filters with empty names" in {
-      Post(ValidateUri("filter"), filter.copy(name = Refined(""))) ~> route ~> check {
+      validateFilter(filter.copy(name = Refined(""))) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
     "reject filters with bad filter expressions" in {
-      Post(ValidateUri("filter"), filter.copy(expression = Refined(filter.expression + " AND ?"))) ~> route ~> check {
+      validateFilter(filter.copy(expression = Refined(filter.expression + " AND ?"))) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }

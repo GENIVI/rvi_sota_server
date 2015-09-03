@@ -16,6 +16,7 @@ object SotaBuild extends Build {
   lazy val basicSettings = Seq(
     organization := "org.genivi",
     scalaVersion := "2.11.7",
+    resolvers += Resolver.sonatypeRepo("snapshots"),
 
     libraryDependencies ++= Dependencies.TestFrameworks,
 
@@ -46,11 +47,11 @@ object SotaBuild extends Build {
 
   lazy val common = Project(id = "common", base = file("common"))
     .settings(basicSettings ++ compilerSettings)
-    .settings( libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Refined )
+    .settings( libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Spray :+ Dependencies.Refined )
 
   lazy val externalResolver = Project(id = "resolver", base = file("external-resolver"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
-      libraryDependencies ++= Dependencies.Rest :+ Dependencies.Scalaz :+ Dependencies.Refined :+ Dependencies.ParserCombinators,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Scalaz :+ Dependencies.Refined :+ Dependencies.ParserCombinators,
       parallelExecution in Test := false,
       dockerExposedPorts := Seq(8081),
       flywayUrl := sys.env.get("RESOLVER_DB_URL").orElse( sys.props.get("resolver.db.url") ).getOrElse("jdbc:mysql://localhost:3306/sota_resolver"),
@@ -63,7 +64,7 @@ object SotaBuild extends Build {
 
   lazy val core = Project(id = "core", base = file("core"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.NscalaTime :+ Dependencies.Scalaz,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Spray :+ Dependencies.NscalaTime :+ Dependencies.Scalaz,
       parallelExecution in Test := false,
       dockerExposedPorts := Seq(8080),
       flywayUrl := sys.env.get("CORE_DB_URL").orElse( sys.props.get("core.db.url") ).getOrElse("jdbc:mysql://localhost:3306/sota_core"),
@@ -94,7 +95,7 @@ object SotaBuild extends Build {
         "org.mindrot" % "jbcrypt" % "0.3m",
         ws,
         play.sbt.Play.autoImport.cache
-      )
+      ) ++ Dependencies.Database
     )).enablePlugins(PlayScala, SbtWeb)
 
   lazy val sota = Project(id = "sota", base = file("."))
@@ -112,16 +113,18 @@ object Dependencies {
 
   val AkkaVersion = "2.3.12"
 
-  val CirceVersion = "0.1.1"
+  val CirceVersion = "0.2.0-SNAPSHOT"
+
 
   lazy val Akka = Seq(
     "com.typesafe.akka" % "akka-http-core-experimental_2.11" % AkkaHttpVersion,
     "com.typesafe.akka" % "akka-http-experimental_2.11" % AkkaHttpVersion,
-    "com.typesafe.akka" %% "akka-http-spray-json-experimental" % AkkaHttpVersion,
     "com.typesafe.akka" %% "akka-http-testkit-experimental" % AkkaHttpVersion % Test,
     "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion,
     "ch.qos.logback" % "logback-classic" % "1.0.13"
   )
+
+  lazy val Spray = "com.typesafe.akka" %% "akka-http-spray-json-experimental" % AkkaHttpVersion
 
   lazy val Circe = Seq(
     "io.circe" %% "circe-core" % CirceVersion,
@@ -141,12 +144,13 @@ object Dependencies {
 
   lazy val TestFrameworks = Seq( ScalaTest, ScalaCheck )
 
-  lazy val Slick = Seq(
+  lazy val Database = Seq (
     "com.typesafe.slick" %% "slick" % "3.0.0",
     "com.zaxxer" % "HikariCP" % "2.3.8",
-    "org.mariadb.jdbc" % "mariadb-java-client" % "1.2.0",
-    Flyway
+    "org.mariadb.jdbc" % "mariadb-java-client" % "1.2.0"
   )
+
+  lazy val Slick = Database ++ Seq(Flyway)
 
   lazy val NscalaTime = "com.github.nscala-time" %% "nscala-time" % "2.0.0"
 

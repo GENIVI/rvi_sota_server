@@ -4,22 +4,21 @@
  */
 package org.genivi.sota.rest
 
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server._
-import org.genivi.sota.refined.SprayJsonRefined
 
 
 object Handlers {
 
-  import SprayJsonRefined.RefinmentError
+  import io.circe.generic.auto._
+  import org.genivi.sota.CirceSupport._
 
   def rejectionHandler : RejectionHandler = RejectionHandler.newBuilder().handle {
     case ValidationRejection(msg, None) =>
       complete( StatusCodes.BadRequest -> ErrorRepresentation(ErrorCodes.InvalidEntity, msg) )
   }.handle{
-    case MalformedRequestContentRejection(_, Some(RefinmentError(_, msg))) =>
+    case MalformedRequestContentRejection(_, Some(RefinementError(_, msg))) =>
       complete(StatusCodes.BadRequest -> ErrorRepresentation(ErrorCodes.InvalidEntity, msg))
   }.result().withFallback(RejectionHandler.default)
 

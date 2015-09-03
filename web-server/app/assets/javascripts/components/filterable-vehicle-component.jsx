@@ -4,7 +4,7 @@ define(['react', 'components/vehicles-component', 'components/add-vehicle-compon
     render: function() {
       return (
       <div>
-        <SearchBar />
+        <SearchBar label="Vehicle Vin Regex" event="vehicles-filter"/>
         <AddVehicleComponent VehicleStore={VehicleStore}/>
         <VehiclesComponent VehicleStore={VehicleStore}/>
       </div>

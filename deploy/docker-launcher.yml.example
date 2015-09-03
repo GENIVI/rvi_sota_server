@@ -14,3 +14,4 @@ vars:
   db_user_password: "s0ta"
   db_resolver_name: "sota_resolver"
   db_core_name: "sota_core"
+  play_crypto_secret: "YM5B6o<ywKn4tTyA;tOZ<2xUEajF4DDi=O/PPm1Q^w2LqtKISd9oqYT6b>>C1gQa"

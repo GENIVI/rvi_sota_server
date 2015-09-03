@@ -63,6 +63,9 @@ class PackageUploadSpec extends PropSpec with PropertyChecks with Matchers with 
 
   property("Returns service unavailable if request to external resolver fails") {
     new Service( Future.failed( ExternalResolverRequestFailed( StatusCodes.InternalServerError ) ) ) {
+      import org.genivi.sota.CirceSupport._
+      import io.circe.generic.auto._
+      import akka.http.scaladsl.unmarshalling._
       forAll { (pckg: Package) =>
         mkRequest( pckg ) ~> resource.route ~> check {
           status shouldBe StatusCodes.ServiceUnavailable

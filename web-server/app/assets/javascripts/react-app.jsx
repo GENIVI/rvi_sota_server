@@ -1,11 +1,9 @@
-require(['react', 'components/filterable-vehicle-component', 'components/create-filter',
-  'components/packages-component', 'components/create-association', 'stores/packages',
-  'react-router', 'sota-dispatcher'], function(React, FilterableVehicleComponent, CreateFilter,
-  PackagesComponent, CreateAssociation, PackageStore, Router, SotaDispatcher) {
+require(['react', 'components/filterable-vehicle-component', 'components/filterable-package-component', 'components/show-package-component', 'components/create-filter', 'components/create-association', 'stores/packages', 'react-router', 'sota-dispatcher'], function(React, FilterableVehicleComponent, FilterablePackageComponent, ShowPackage, CreateFilter, CreateAssociation, Packages, Router, SotaDispatcher) {
 
   var Link = Router.Link;
   var Route = Router.Route;
   var RouteHandler = Router.RouteHandler;
+  var DefaultRoute = Router.DefaultRoute;
 
   var App = React.createClass({
     render: function() {
@@ -42,8 +40,11 @@ require(['react', 'components/filterable-vehicle-component', 'components/create-
 
   var routes = (
     <Route handler={App} path="/">
-      <Route name="packages" handler={wrapComponent(PackagesComponent, {PackageStore:PackageStore})}/>
       <Route name="vehicles" handler={FilterableVehicleComponent}/>
+      <Route name="packages">
+        <Route name="package" path="/packages/:name/:version" handler={wrapComponent(ShowPackage, {Store: Packages})}/>
+        <DefaultRoute handler={FilterablePackageComponent}/>
+      </Route>
       <Route name="filters" handler={wrapComponent(CreateFilter, {url:"/api/v1/filters"})} />
       <Route name="associations" handler={wrapComponent(CreateAssociation, {url:"/api/v1/packageFilters"})} />
     </Route>

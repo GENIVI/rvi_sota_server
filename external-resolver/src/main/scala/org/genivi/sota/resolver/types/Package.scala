@@ -5,9 +5,6 @@
 package org.genivi.sota.resolver.types
 
 import eu.timepit.refined.{Predicate, Refined}
-import org.genivi.sota.refined.SprayJsonRefined.refinedJsonFormat
-import spray.json.DefaultJsonProtocol._
-import spray.json._
 
 
 case class Package(
@@ -39,10 +36,5 @@ object Package {
 
   implicit val validPackageVersion: Predicate[ValidVersion, String] =
     Predicate.instance( _.matches( """^\d+\.\d+\.\d+$""" ), _ => "Invalid version format")
-
-
-  implicit val packageIdFormat       = jsonFormat2(Package.Id.apply)
-  implicit val packageMetadataFormat = jsonFormat2(Metadata.apply)
-  implicit val packageFormat         = jsonFormat3(Package.apply)
 
 }

@@ -41,7 +41,7 @@ class SprayJsonRefinedSpec extends WordSpec with Matchers {
 
       type GrZeroLessTwo = Greater[_0] And Less[_2]
       val exception = the [DeserializationException] thrownBy JsNumber(3).convertTo[Int Refined GrZeroLessTwo]
-      exception.getCause() shouldBe a [RefinmentError[_]]
+      exception.getCause() shouldBe a [RefinementError[_]]
     }
 
     "format case classes" in {

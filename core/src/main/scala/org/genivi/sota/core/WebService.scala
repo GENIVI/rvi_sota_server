@@ -22,12 +22,14 @@ import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.{Packages, Vehicles, InstallRequests, InstallCampaigns}
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 import org.genivi.sota.rest.Validation._
-import spray.json.{JsString, JsObject}
 import slick.driver.MySQLDriver.api.Database
 import scala.concurrent.Future
 import Directives._
+import eu.timepit.refined._
+import eu.timepit.refined.string._
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import spray.json.DefaultJsonProtocol._
+import org.genivi.sota.refined.SprayJsonRefined._
 
 object ErrorCodes {
   val ExternalResolverError = ErrorCode( "external_resolver_error" )
@@ -120,9 +122,13 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
 
   val route = pathPrefix("packages") {
     get {
-      complete {
-        NoContent
-        //Packages.list
+      parameters('regex.as[String Refined Regex].?) { (regex: Option[String Refined Regex]) =>
+
+        val query = (regex) match {
+          case Some(r) => Packages.searchByRegex(r.get)
+          case None => Packages.list
+      }
+        complete(db.run(query))
       }
     } ~
     (put & refined[Package.ValidName]( Slash ~ Segment) & refined[Package.ValidVersion](Slash ~ Segment ~ PathEnd)).as(PackageId.apply _) { packageId =>
@@ -134,9 +140,13 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
             _                   <- db.run(Packages.create( Package(packageId, uri, size, digest, description, vendor) ))
           } yield NoContent
         ) {
-          case ExternalResolverRequestFailed(msg, cause) =>
+          case ExternalResolverRequestFailed(msg, cause) => {
+            import org.genivi.sota.CirceSupport._
+            import io.circe.generic.auto._
+            import akka.http.scaladsl.unmarshalling._
             log.error( cause, s"Unable to create/update package: $msg" )
             complete( StatusCodes.ServiceUnavailable -> ErrorRepresentation( ErrorCodes.ExternalResolverError, msg ) )
+          }
           case e => failWith(e)
         }
       }
@@ -149,11 +159,14 @@ class WebService(resolver: ExternalResolverClient, db : Database)
                 (implicit system: ActorSystem, mat: ActorMaterializer) extends Directives {
   val log = Logging(system, "webservice")
 
+  import io.circe.Json
+  import Json.{obj, string}
+
   val exceptionHandler = ExceptionHandler {
     case e: Throwable =>
       extractUri { uri =>
         log.error(s"Request to $uri errored: $e")
-        val entity = JsObject("error" -> JsString(e.getMessage()))
+        val entity = obj("error" -> string(e.getMessage()))
         complete(HttpResponse(InternalServerError, entity = entity.toString()))
       }
   }

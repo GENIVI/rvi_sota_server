@@ -4,10 +4,12 @@
  */
 package org.genivi.sota.resolver.test
 
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.ValidationRejection
+import akka.http.scaladsl.unmarshalling._
 import eu.timepit.refined.Refined
+import io.circe.generic.auto._
+import org.genivi.sota.CirceSupport._
 import org.genivi.sota.resolver.types.Package
 import org.genivi.sota.resolver.types.Package._
 import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
@@ -25,14 +27,7 @@ object ArbitraryPackage {
   val genPackage: Gen[Package] = for {
     name    <- genPackageName
     version <- genVersion
-
-    // XXX: This should be changed back to arbitrary strings once we
-    // figured out where this encoding bug happens (see
-    // PackageResourceWordSpec at the bottom of this file).
-
-    // desc    <- Gen.option(Arbitrary.arbitrary[String])
-
-    desc    <- Gen.option(Gen.alphaStr)
+    desc    <- Gen.option(Arbitrary.arbitrary[String])
     vendor  <- Gen.option(Gen.alphaStr)
   } yield Package(Package.Id(name, version), desc, vendor)
 
@@ -70,6 +65,7 @@ class PackagesResourcePropSpec extends ResourcePropSpec {
   }
 
   property("not accept bad package versions") {
+
     forAll { (p: Package, version: String) =>
       addPackage(p.id.name.get, version + ".0", p.description, p.vendor) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
@@ -93,23 +89,17 @@ class PackagesResourcePropSpec extends ResourcePropSpec {
 
 }
 
-
-// This test currently fails, because somewhere the unicode character
-// gets mangled...
-
-/*
 class PackagesResourceWordSpec extends ResourceWordSpec {
 
   "Packages resource" should {
 
     "be able to handle unicode descriptions" in {
-      Put( PackagesUri("name", "1.0.0"), Metadata(Some("嚢"), None) ) ~> route ~> check {
+      addPackage("name", "1.0.0", Some("嚢"), None) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Package] shouldBe
-          Package(None, Refined("name"), Refined("1.0.0"), Some("嚢"), None)
+          Package(Package.Id(Refined("name"), Refined("1.0.0")), Some("嚢"), None)
       }
     }
   }
 
 }
-*/
