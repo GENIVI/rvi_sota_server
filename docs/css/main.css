@@ -79,6 +79,7 @@ body.rtl ul, body.rtl ol {
 }
 table {
   border-collapse: collapse;
+  table-layout: fixed;
   width: 100%;
 }
 
@@ -88,7 +89,7 @@ td, th {
   text-align: left;
 }
 
-td:first-child {
-  width: 25%;
+col:first-child {
+    width: 17% !important;
 }
 
