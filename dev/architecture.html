@@ -38,13 +38,13 @@
             
                 <li class="nav-header">Documentation</li>
             
-            <li data-order="5"><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
-        
-            
             <li data-order="2"><a href="/rvi_sota_server/doc/deployment-with-docker-launcher.html">Deployment with Docker Launcher</a></li>
         
             
             <li data-order="6"><a href="/rvi_sota_server/doc/contributing.html">Contributing</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
         
             
             <li data-order="1"><a href="/rvi_sota_server/doc/building-installing.html">Building & Deploying</a></li>
@@ -112,34 +112,96 @@
 </div>
 
 <h1 id="sota-architecture">SOTA Architecture</h1>
-<p>The SOTA System includes a client and server, communicating using the RVI protocol. The SOTA Server is comprised of three sub-modules:</p>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>The SOTA System includes a client and server, communicating using the
+RVI protocol. The SOTA Server is comprised of three sub-modules:</p>
+</div>
+<div class="ulist">
 <ul>
-<li><a href="https://github.com/PDXostc/rvi_sota_server/tree/master/core">core</a> - The central component of the SOTA server that implements package queuing and distribution</li>
-<li><a href="https://github.com/PDXostc/rvi_sota_server/tree/master/external-resolver">external-resolver</a> - An implementation of a package resolution server, which maps VINs to a list of software components to be installed on a vehicle</li>
-<li><a href="https://github.com/PDXostc/rvi_sota_server/tree/master/web-server">web-server</a> - The web interface to the SOTA server, allowing administration of vehicles and software components</li>
+<li>
+<p><a href="https://github.com/PDXostc/rvi_sota_server/tree/master/core">core</a> -
+The central component of the SOTA server that implements package queuing
+and distribution</p>
+</li>
+<li>
+<p><a href="https://github.com/PDXostc/rvi_sota_server/tree/master/external-resolver">external-resolver</a></p>
+<div class="ulist">
+<ul>
+<li>
+<p>An implementation of a package resolution server, which maps VINs to a
+list of software components to be installed on a vehicle</p>
+</li>
 </ul>
-<p>The client is a standalone project hosted <a href="https://github.com/PDXostc/rvi_sota_client">here</a>.</p>
+</div>
+</li>
+<li>
+<p><a href="https://github.com/PDXostc/rvi_sota_server/tree/master/web-server">web-server</a></p>
+<div class="ulist">
+<ul>
+<li>
+<p>The web interface to the SOTA server, allowing administration of
+vehicles and software components</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The client is a standalone project hosted
+<a href="https://github.com/PDXostc/rvi_sota_client">here</a>.</p>
+</div>
+<div class="paragraph">
 <p>The system architecture is illustrated here:</p>
-<figure>
-<img src="../images/System-Architecture-Diagram.svg" alt="System Architecture Diagram" /><figcaption>System Architecture Diagram</figcaption>
-</figure>
+</div>
+<div class="paragraph">
+<p><span class="image"><img src="../images/System-Architecture-Diagram.svg" alt="System Architecture Diagram"></span></p>
+</div>
+<div class="paragraph">
 <p>The data model for the system is illustrated here:</p>
-<figure>
-<img src="../images/Data-Model.svg" alt="Data Model Diagram" /><figcaption>Data Model Diagram</figcaption>
-</figure>
+</div>
+<div class="paragraph">
+<p><span class="image"><img src="../images/Data-Model.svg" alt="Data Model Diagram"></span></p>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="context-diagrams">Context Diagrams</h2>
+<div class="sectionbody">
+<div class="sect2">
 <h3 id="level-0">Level 0</h3>
-<figure>
-<img src="../images/Level-0-Context-Diagram.svg" alt="Level 0 Context Diagram" /><figcaption>Level 0 Context Diagram</figcaption>
-</figure>
+<div class="paragraph">
+<p><span class="image"><img src="../images/Level-0-Context-Diagram.svg" alt="Level 0 Context Diagram"></span></p>
+</div>
+</div>
+<div class="sect2">
 <h3 id="level-1-sota-server">Level 1 SOTA Server</h3>
-<figure>
-<img src="../images/Level-1-SOTA-Server-Context-Diagram.svg" alt="Level 1 Context Diagram" /><figcaption>Level 1 Context Diagram</figcaption>
-</figure>
+<div class="paragraph">
+<p><span class="image"><img src="../images/Level-1-SOTA-Server-Context-Diagram.svg" alt="Level 1 Context Diagram"></span></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="requirements">Requirements</h2>
-<p>You can find a complete list of the <a href="../ref/requirements.html">software requirements here</a></p>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You can find a complete list of the
+<a href="../ref/requirements.html">software requirements here</a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="dependencies">Dependencies</h2>
-<p>You can find a complete list of <a href="../ref/dependencies.html">software dependencies here</a></p>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You can find a complete list of <a href="../ref/dependencies.html">software
+dependencies here</a></p>
+</div>
+</div>
+</div>
 
                     </div>
                 

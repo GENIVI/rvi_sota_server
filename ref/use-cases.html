@@ -38,13 +38,13 @@
             
                 <li class="nav-header">Documentation</li>
             
-            <li data-order="5"><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
-        
-            
             <li data-order="2"><a href="/rvi_sota_server/doc/deployment-with-docker-launcher.html">Deployment with Docker Launcher</a></li>
         
             
             <li data-order="6"><a href="/rvi_sota_server/doc/contributing.html">Contributing</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
         
             
             <li data-order="1"><a href="/rvi_sota_server/doc/building-installing.html">Building & Deploying</a></li>
@@ -111,1488 +111,3923 @@
     </h2>
 </div>
 
-<h2 id="table-of-contents"><a name="TOC">Table of Contents</a></h2>
-<ol type="1">
-<li><a href="#server-config">SOTA Server Configuration</a>
+<div class="sect1">
+<h2 id="table-of-contents">Table of Contents</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><a href="#server-config">SOTA Server Configuration</a></p>
+<div class="ulist">
 <ul>
-<li><a href="#VIN_ADD">VIN_ADD</a> Add a VIN to the system</li>
-<li><a href="#VIN_DEL">VIN_DEL</a> Delete an existing VIN</li>
-<li><a href="#VIN_SEARCH">VIN_SEARCH</a> Search for VINs</li>
-<li><a href="#VIN_SET_DATA_PLAN">VIN_SET_DATA_PLAN</a> Associate Data Plan with VIN</li>
-<li><a href="#VIN_GET_UPDATE_HISTORY">VIN_GET_UPDATE_HISTORY</a> Get installation history for VIN</li>
-<li><a href="#PACKAGE_ADD_SOTASERVER">PACKAGE_ADD_SOTASERVER</a> Register a new Package with SOTA Server</li>
-<li><a href="#PACKAGE_ADD_RESOLVER">PACKAGE_ADD_RESOLVER</a> Register a new Package with External Resolver</li>
-<li><a href="#PACKAGE_SEARCH">PACKAGE_SEARCH</a> Search for a Package</li>
-<li><a href="#PLAN_ADD">PLAN_ADD</a> Register a new Data Plan</li>
-<li><a href="#PLAN_ADD_BILLING_CYCLE">PLAN_ADD_BILLING_CYCLE</a> Associate a Billing Cycle with a Data Plan</li>
-<li><a href="#PLAN_SEARCH">PLAN_SEARCH</a> Find existing Data Plan</li>
-<li><a href="#PLAN_GET_BILLING_CYCLES">PLAN_GET_BILLING_CYCLES</a> Get Billing Cycles for a Data Plan</li>
-<li><a href="#PLAN_ADD_TRAFFIC">PLAN_ADD_TRAFFIC</a> Add Traffic Information to active Billing Cycle for Data Plan associated with VIN</li>
-</ul></li>
-<li><a href="#resolver-config">External Resolver Configuration</a>
+<li>
+<p><a href="#VIN_ADD">VIN_ADD</a> Add a VIN to the system</p>
+</li>
+<li>
+<p><a href="#VIN_DEL">VIN_DEL</a> Delete an existing VIN</p>
+</li>
+<li>
+<p><a href="#VIN_SEARCH">VIN_SEARCH</a> Search for VINs</p>
+</li>
+<li>
+<p><a href="#VIN_SET_DATA_PLAN">VIN_SET_DATA_PLAN</a> Associate Data Plan with
+VIN</p>
+</li>
+<li>
+<p><a href="#VIN_GET_UPDATE_HISTORY">VIN_GET_UPDATE_HISTORY</a> Get installation
+history for VIN</p>
+</li>
+<li>
+<p><a href="#PACKAGE_ADD_SOTASERVER">PACKAGE_ADD_SOTASERVER</a> Register a new
+Package with SOTA Server</p>
+</li>
+<li>
+<p><a href="#PACKAGE_ADD_RESOLVER">PACKAGE_ADD_RESOLVER</a> Register a new
+Package with External Resolver</p>
+</li>
+<li>
+<p><a href="#PACKAGE_SEARCH">PACKAGE_SEARCH</a> Search for a Package</p>
+</li>
+<li>
+<p><a href="#PLAN_ADD">PLAN_ADD</a> Register a new Data Plan</p>
+</li>
+<li>
+<p><a href="#PLAN_ADD_BILLING_CYCLE">PLAN_ADD_BILLING_CYCLE</a> Associate a
+Billing Cycle with a Data Plan</p>
+</li>
+<li>
+<p><a href="#PLAN_SEARCH">PLAN_SEARCH</a> Find existing Data Plan</p>
+</li>
+<li>
+<p><a href="#PLAN_GET_BILLING_CYCLES">PLAN_GET_BILLING_CYCLES</a> Get Billing
+Cycles for a Data Plan</p>
+</li>
+<li>
+<p><a href="#PLAN_ADD_TRAFFIC">PLAN_ADD_TRAFFIC</a> Add Traffic Information to
+active Billing Cycle for Data Plan associated with VIN</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><a href="#resolver-config">External Resolver Configuration</a></p>
+<div class="ulist">
 <ul>
-<li><a href="#FILTER_ADD">FILTER_ADD</a> Add a new Filter</li>
-<li><a href="#FILTER_SEARCH">FILTER_SEARCH</a> Search for a Filter</li>
-<li><a href="#FILTER_VALIDATE">FILTER_VALIDATE</a> Test validity of a Filter Expression</li>
-<li><a href="#FILTER_DELETE">FILTER_DELETE</a> Delete a Filter</li>
-<li><a href="#FILTER_PACKAGE_ADD">FILTER_PACKAGE_ADD</a> Associate a Package with a Filter</li>
-<li><a href="#FILTER_PACKAGE_DELETE">FILTER_PACKAGE_DELETE</a> Remove a Package from a Filter</li>
-<li><a href="#FILTER_SEARCH_PACKAGE_BY_FILTER">FILTER_SEARCH_PACKAGE_BY_FILTER</a> Get list of Packages by Filter</li>
-<li><a href="#FILTER_SEARCH_FILTER_BY_PACKAGE">FILTER_SEARCH_FILTER_BY_PACKAGE</a> Get list of Filters by Package</li>
-<li><a href="#COMP_ADD">COMP_ADD</a> Add a Component</li>
-<li><a href="#VIN_ADD_COMP">VIN_ADD_COMP</a> Associate a Component with a VIN</li>
-<li><a href="#VIN_ADD_PACKAGE">VIN_ADD_PACKAGE</a> Associate a Package with a VIN</li>
-<li><a href="#VIN_DELETE_PACKAGE">VIN_DELETE_PACKAGE</a> Remove a Package from a VIN</li>
-<li><a href="#COMP_SEARCH">COMP_SEARCH</a> Search for a Component</li>
-<li><a href="#VIN_SEARCH_BY_COMP">VIN_SEARCH_BY_COMP</a> Find VINs by Component</li>
-<li><a href="#COMP_SEARCH_BY_VIN">COMP_SEARCH_BY_VIN</a> Find Components associated with a VIN</li>
-<li><a href="#PACKAGE_ADD_DEPENDENCY">PACKAGE_ADD_DEPENDENCY</a> Create Dependency between Packages</li>
-<li><a href="#PACKAGE_GET_DEPENDENCIES">PACKAGE_GET_DEPENDENCIES</a> Get Dependencies for a Package</li>
-<li><a href="#PACKAGE_DEL_DEPENDENCY">PACKAGE_DEL_DEPENDENCY</a> Remove Dependency between Packages</li>
-<li><a href="#PACKAGE_SEARCH_BY_VIN">PACKAGE_SEARCH_BY_VIN</a> Find VINs by Package</li>
-</ul></li>
-<li><a href="#queue-management">Installation Queue Management (SOTA Server)</a>
+<li>
+<p><a href="#FILTER_ADD">FILTER_ADD</a> Add a new Filter</p>
+</li>
+<li>
+<p><a href="#FILTER_SEARCH">FILTER_SEARCH</a> Search for a Filter</p>
+</li>
+<li>
+<p><a href="#FILTER_VALIDATE">FILTER_VALIDATE</a> Test validity of a Filter
+Expression</p>
+</li>
+<li>
+<p><a href="#FILTER_DELETE">FILTER_DELETE</a> Delete a Filter</p>
+</li>
+<li>
+<p><a href="#FILTER_PACKAGE_ADD">FILTER_PACKAGE_ADD</a> Associate a Package with
+a Filter</p>
+</li>
+<li>
+<p><a href="#FILTER_PACKAGE_DELETE">FILTER_PACKAGE_DELETE</a> Remove a Package
+from a Filter</p>
+</li>
+<li>
+<p><a href="#FILTER_SEARCH_PACKAGE_BY_FILTER">FILTER_SEARCH_PACKAGE_BY_FILTER</a>
+Get list of Packages by Filter</p>
+</li>
+<li>
+<p><a href="#FILTER_SEARCH_FILTER_BY_PACKAGE">FILTER_SEARCH_FILTER_BY_PACKAGE</a>
+Get list of Filters by Package</p>
+</li>
+<li>
+<p><a href="#COMP_ADD">COMP_ADD</a> Add a Component</p>
+</li>
+<li>
+<p><a href="#VIN_ADD_COMP">VIN_ADD_COMP</a> Associate a Component with a VIN</p>
+</li>
+<li>
+<p><a href="#VIN_ADD_PACKAGE">VIN_ADD_PACKAGE</a> Associate a Package with a VIN</p>
+</li>
+<li>
+<p><a href="#VIN_DELETE_PACKAGE">VIN_DELETE_PACKAGE</a> Remove a Package from a
+VIN</p>
+</li>
+<li>
+<p><a href="#COMP_SEARCH">COMP_SEARCH</a> Search for a Component</p>
+</li>
+<li>
+<p><a href="#VIN_SEARCH_BY_COMP">VIN_SEARCH_BY_COMP</a> Find VINs by Component</p>
+</li>
+<li>
+<p><a href="#COMP_SEARCH_BY_VIN">COMP_SEARCH_BY_VIN</a> Find Components
+associated with a VIN</p>
+</li>
+<li>
+<p><a href="#PACKAGE_ADD_DEPENDENCY">PACKAGE_ADD_DEPENDENCY</a> Create Dependency
+between Packages</p>
+</li>
+<li>
+<p><a href="#PACKAGE_GET_DEPENDENCIES">PACKAGE_GET_DEPENDENCIES</a> Get
+Dependencies for a Package</p>
+</li>
+<li>
+<p><a href="#PACKAGE_DEL_DEPENDENCY">PACKAGE_DEL_DEPENDENCY</a> Remove Dependency
+between Packages</p>
+</li>
+<li>
+<p><a href="#PACKAGE_SEARCH_BY_VIN">PACKAGE_SEARCH_BY_VIN</a> Find VINs by
+Package</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><a href="#queue-management">Installation Queue Management (SOTA Server)</a></p>
+<div class="ulist">
 <ul>
-<li><a href="#QUEUE_REQUEST_ADD">QUEUE_REQUEST_ADD</a> Queue a package for installation on VINs matching Filter</li>
-<li><a href="#QUEUE_REQUEST_CANCEL">QUEUE_REQUEST_CANCEL</a> Cancel a previous Installation Request</li>
-<li><a href="#QUEUE_GET_STATUS">QUEUE_GET_STATUS</a> Get status for an Installation Request</li>
-<li><a href="#QUEUE_GET_COMPLETED_VINS">QUEUE_GET_COMPLETED_VINS</a> List VINs for which installation is complete for Installation Request</li>
-<li><a href="#QUEUE_GET_PENDING_VINS">QUEUE_GET_PENDING_VINS</a> List VINs for which installation is pending for Installation Request</li>
-<li><a href="#QUEUE_GET_IN_FLIGHT_VINS">QUEUE_GET_IN_FLIGHT_VINS</a> List VINs for which installation is ongoing for Installation Request</li>
-<li><a href="#QUEUE_GET_FAILED_VINS">QUEUE_GET_FAILED_VINS</a> List VINs for which installation failed for Installation Request</li>
-<li><a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE">QUEUE_GET_NEXT_SOFTWARE_UPDATE</a> Get current or next queued Installation Request for VIN</li>
-<li><a href="#QUEUE_INITIATE_XMIT">QUEUE_INITIATE_XMIT</a> Trigger <a href="#DEV_WAKEUP">DEV_WAKEUP</a> for sleeping VINs with queued Installation Requests</li>
-<li><a href="#QUEUE_PURGE">QUEUE_PURGE</a> Purge failing or expired Installation Requests from Queue</li>
-<li><a href="#QUEUE_REQUEST_GET_ALL_PACKAGES">QUEUE_REQUEST_GET_ALL_PACKAGES</a> Get list of Packages queued for a VIN</li>
-</ul></li>
-<li><a href="#device-interaction">Device Interaction</a>
+<li>
+<p><a href="#QUEUE_REQUEST_ADD">QUEUE_REQUEST_ADD</a> Queue a package for
+installation on VINs matching Filter</p>
+</li>
+<li>
+<p><a href="#QUEUE_REQUEST_CANCEL">QUEUE_REQUEST_CANCEL</a> Cancel a previous
+Installation Request</p>
+</li>
+<li>
+<p><a href="#QUEUE_GET_STATUS">QUEUE_GET_STATUS</a> Get status for an
+Installation Request</p>
+</li>
+<li>
+<p><a href="#QUEUE_GET_COMPLETED_VINS">QUEUE_GET_COMPLETED_VINS</a> List VINs for
+which installation is complete for Installation Request</p>
+</li>
+<li>
+<p><a href="#QUEUE_GET_PENDING_VINS">QUEUE_GET_PENDING_VINS</a> List VINs for
+which installation is pending for Installation Request</p>
+</li>
+<li>
+<p><a href="#QUEUE_GET_IN_FLIGHT_VINS">QUEUE_GET_IN_FLIGHT_VINS</a> List VINs for
+which installation is ongoing for Installation Request</p>
+</li>
+<li>
+<p><a href="#QUEUE_GET_FAILED_VINS">QUEUE_GET_FAILED_VINS</a> List VINs for which
+installation failed for Installation Request</p>
+</li>
+<li>
+<p><a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE">QUEUE_GET_NEXT_SOFTWARE_UPDATE</a>
+Get current or next queued Installation Request for VIN</p>
+</li>
+<li>
+<p><a href="#QUEUE_INITIATE_XMIT">QUEUE_INITIATE_XMIT</a> Trigger
+<a href="#DEV_WAKEUP">DEV_WAKEUP</a> for sleeping VINs with queued Installation
+Requests</p>
+</li>
+<li>
+<p><a href="#QUEUE_PURGE">QUEUE_PURGE</a> Purge failing or expired Installation
+Requests from Queue</p>
+</li>
+<li>
+<p><a href="#QUEUE_REQUEST_GET_ALL_PACKAGES">QUEUE_REQUEST_GET_ALL_PACKAGES</a>
+Get list of Packages queued for a VIN</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><a href="#device-interaction">Device Interaction</a></p>
+<div class="ulist">
 <ul>
-<li><a href="#DEV_WAKEUP">DEV_WAKEUP</a> Send Wake-up event to VIN, triggering <a href="#DEV_CONNECT">DEV_CONNECT</a></li>
-<li><a href="#DEV_CONNECT">DEV_CONNECT</a> Device connects to SOTA Server to process or resume Installation Request</li>
-<li><a href="#DEV_DISCONNECT">DEV_DISCONNECT</a> SOTA Server instructs Device to disconnect</li>
-<li><a href="#UPDATE_NOTIFICATION">UPDATE_NOTIFICATION</a> Send any queued Installation Requests (<a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE">QUEUE_GET_NEXT_SOFTWARE_UPDATE</a>) to Device</li>
-<li><a href="#TRIGGER_TRANSFER_START">TRIGGER_TRANSFER_START</a> Software Loading Manager requests download from SOTA Server via SOTA Client</li>
-<li><a href="#TRANSFER_START">TRANSFER_START</a> SOTA Server sends Download metadata to Device</li>
-<li><a href="#TRANSFER_CHUNK">TRANSFER_CHUNK</a> SOTA Server sends next Download chunk to Device</li>
-<li><a href="#TRANSFER_COMPLETE">TRANSFER_COMPLETE</a> SOTA Server sends Finalize Download to Device</li>
-<li><a href="#INSTALL_SOFTWARE_UPDATE">INSTALL_SOFTWARE_UPDATE</a> Device installs all received Packages</li>
-<li><a href="#INSTALL_REPORT">INSTALL_REPORT</a> Device reports Installation Result to SOTA Server</li>
-<li><a href="#GET_ALL_PACKAGES">GET_ALL_PACKAGES</a> Get list of Packages installed on a VIN (from the Device)</li>
-</ul></li>
+<li>
+<p><a href="#DEV_WAKEUP">DEV_WAKEUP</a> Send Wake-up event to VIN, triggering
+<a href="#DEV_CONNECT">DEV_CONNECT</a></p>
+</li>
+<li>
+<p><a href="#DEV_CONNECT">DEV_CONNECT</a> Device connects to SOTA Server to
+process or resume Installation Request</p>
+</li>
+<li>
+<p><a href="#DEV_DISCONNECT">DEV_DISCONNECT</a> SOTA Server instructs Device to
+disconnect</p>
+</li>
+<li>
+<p><a href="#UPDATE_NOTIFICATION">UPDATE_NOTIFICATION</a> Send any queued
+Installation Requests
+(<a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE">QUEUE_GET_NEXT_SOFTWARE_UPDATE</a>)
+to Device</p>
+</li>
+<li>
+<p><a href="#TRIGGER_TRANSFER_START">TRIGGER_TRANSFER_START</a> Software Loading
+Manager requests download from SOTA Server via SOTA Client</p>
+</li>
+<li>
+<p><a href="#TRANSFER_START">TRANSFER_START</a> SOTA Server sends Download
+metadata to Device</p>
+</li>
+<li>
+<p><a href="#TRANSFER_CHUNK">TRANSFER_CHUNK</a> SOTA Server sends next Download
+chunk to Device</p>
+</li>
+<li>
+<p><a href="#TRANSFER_COMPLETE">TRANSFER_COMPLETE</a> SOTA Server sends Finalize
+Download to Device</p>
+</li>
+<li>
+<p><a href="#INSTALL_SOFTWARE_UPDATE">INSTALL_SOFTWARE_UPDATE</a> Device installs
+all received Packages</p>
+</li>
+<li>
+<p><a href="#INSTALL_REPORT">INSTALL_REPORT</a> Device reports Installation
+Result to SOTA Server</p>
+</li>
+<li>
+<p><a href="#GET_ALL_PACKAGES">GET_ALL_PACKAGES</a> Get list of Packages
+installed on a VIN (from the Device)</p>
+</li>
+</ul>
+</div>
+</li>
 </ol>
-<h2 id="sota-server-configuration"><a name="server-config">SOTA Server Configuration</a></h2>
-<h3 id="vin_add-add-a-vin-to-the-system"><a name="VIN_ADD"><a href="#VIN_ADD">VIN_ADD</a> Add a VIN to the system</a></h3>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="sota-server-configuration">SOTA Server Configuration</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="VIN_ADD"><a href="#VIN_ADD">VIN_ADD</a> Add a VIN to the system</h3>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>SOTA Server</li>
-<li>Resolver</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>VIN does not already exist</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - An ADD_VIN command is sent from Web Server to SOTA Server</li>
-<li>E2 - VIN is added to the SOTA Server Database</li>
-<li>E3 - A success code is sent back to Web Server</li>
-<li>E4 - An ADD_VIN command is snet to External Resolver from Web Server</li>
-<li>E5 - VIN is added to External Resolver database</li>
-<li>E6 - A success code is sent back to Web Server</li>
-</ul></li>
-<li><p>Postconditions</p>
-<ul>
-<li>VIN is part of the system</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - VIN already exists. Triggered by E2, E5</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
+<li>
+<p>Resolver</p>
+</li>
 </ul>
-<h3 id="vin_del-delete-an-existing-vin"><a name="VIN_DEL"><a href="#VIN_DEL">VIN_DEL</a> Delete an existing VIN</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
-<ul>
-<li>Web Server</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>VIN has been installed by <a href="#VIN_ADD">VIN_ADD</a></li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A delete VIN command is sent from Web Server to SOTA Server</li>
-<li>E2 - All references to Packages being installed on given VIN are removed from SOTA Server Database</li>
-<li>E3 - The VIN is removed from the SOTA Server Database</li>
-<li>E4 - Any Data Plan references to the VIN are removed from the SOTA Server Database</li>
-<li>E5 - A success code is sent back to the Web Server</li>
-<li>E6 - A DELETE_VIN command is sent from Web Server to Resolver</li>
-<li>E7 - All references to Components being installed on the given VIN are removed from the Resolver Database</li>
-<li>E8 - All references to Packages being installed on the given VIN are removed from the Resolver Database</li>
-<li>E9 - The VIN is removed from the Resolver Database</li>
-<li>E10 - A success code is sent back to the Web Server</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - VIN does not exist. Triggered by E6</li>
-</ul></li>
+<li>
+<p>VIN does not already exist</p>
+</li>
 </ul>
-<h3 id="vin_search-search-for-vins"><a name="VIN_SEARCH"><a href="#VIN_SEARCH">VIN_SEARCH</a> Search for VINs</a></h3>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - An ADD_VIN command is sent from Web Server to SOTA Server</p>
+</li>
+<li>
+<p>E2 - VIN is added to the SOTA Server Database</p>
+</li>
+<li>
+<p>E3 - A success code is sent back to Web Server</p>
+</li>
+<li>
+<p>E4 - An ADD_VIN command is snet to External Resolver from Web Server</p>
+</li>
+<li>
+<p>E5 - VIN is added to External Resolver database</p>
+</li>
+<li>
+<p>E6 - A success code is sent back to Web Server</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Postconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>VIN is part of the system</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - VIN already exists. Triggered by E2, E5</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="VIN_DEL"><a href="#VIN_DEL">VIN_DEL</a> Delete an existing VIN</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Actors</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>VIN has been installed by <a href="#VIN_ADD">VIN_ADD</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A delete VIN command is sent from Web Server to SOTA Server</p>
+</li>
+<li>
+<p>E2 - All references to Packages being installed on given VIN are removed from SOTA Server Database</p>
+</li>
+<li>
+<p>E3 - The VIN is removed from the SOTA Server Database</p>
+</li>
+<li>
+<p>E4 - Any Data Plan references to the VIN are removed from the SOTA Server Database</p>
+</li>
+<li>
+<p>E5 - A success code is sent back to the Web Server</p>
+</li>
+<li>
+<p>E6 - A DELETE_VIN command is sent from Web Server to Resolver</p>
+</li>
+<li>
+<p>E7 - All references to Components being installed on the given VIN are removed from the Resolver Database</p>
+</li>
+<li>
+<p>E8 - All references to Packages being installed on the given VIN are removed from the Resolver Database</p>
+</li>
+<li>
+<p>E9 - The VIN is removed from the Resolver Database</p>
+</li>
+<li>
+<p>E10 - A success code is sent back to the Web Server</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - VIN does not exist. Triggered by E6</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="VIN_SEARCH"><a href="#VIN_SEARCH">VIN_SEARCH</a> Search for VINs</h3>
+<div class="paragraph">
 <p>Searches and retrieves one or more VINs with their Packages and Components</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>SOTA Server</li>
-<li>External Resolver</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A SEARCH_VIN command is sent from Web Server to SOTA Server. VIN is searched for using POSIX-style regular expressions.</li>
-<li>E2 - The SOTA Server Database is searched for all VINs matching the given expression.</li>
-<li>E3 - For each retrieved VIN, the part numbers of all installed Components are retrieved by the Web Server from the Resolver(!)</li>
-<li>E4 - For each retrieved VIN, the IDs of all Installed Packages are retrieved</li>
-<li>E5 - All matching VINs, with their retrieved Components and Installed Packages are returned by SOTA Server to Web Server</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>None</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
+<li>
+<p>External Resolver</p>
+</li>
 </ul>
-<h3 id="vin_set_data_plan-associate-data-plan-with-vin"><a name="VIN_SET_DATA_PLAN"><a href="#VIN_SET_DATA_PLAN">VIN_SET_DATA_PLAN</a> Associate Data Plan with VIN</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A SEARCH_VIN command is sent from Web Server to SOTA Server. VIN is searched for using POSIX-style regular expressions.</p>
+</li>
+<li>
+<p>E2 - The SOTA Server Database is searched for all VINs matching the given expression.</p>
+</li>
+<li>
+<p>E3 - For each retrieved VIN, the part numbers of all installed Components are retrieved by the Web Server from the Resolver(!)</p>
+</li>
+<li>
+<p>E4 - For each retrieved VIN, the IDs of all Installed Packages are retrieved</p>
+</li>
+<li>
+<p>E5 - All matching VINs, with their retrieved Components and Installed Packages are returned by SOTA Server to Web Server</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="VIN_SET_DATA_PLAN"><a href="#VIN_SET_DATA_PLAN">VIN_SET_DATA_PLAN</a> Associate Data Plan with VIN</h3>
+<div class="paragraph">
 <p>Associates a previously created data plan with a given VIN</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A SET_VIN_DATA_PLAN command is sent from Web Server to SOTA Server with VIN and Data Plan ID.</li>
-<li>E2 - The VIN is retrieved from the SOTA Server Database</li>
-<li>E3 - The Data Plan is retrieved from the SOTA Server Database</li>
-<li>E4 - A success code is sent back to the Web Server</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - VIN does not exist. Triggered by E2</li>
-<li>X2 - Data Plan does not exist. Triggered by E3</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="vin_get_update_history-get-installation-history-for-vin"><a name="VIN_GET_UPDATE_HISTORY"><a href="#VIN_GET_UPDATE_HISTORY">VIN_GET_UPDATE_HISTORY</a> Get installation history for VIN</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A SET_VIN_DATA_PLAN command is sent from Web Server to SOTA Server with VIN and Data Plan ID.</p>
+</li>
+<li>
+<p>E2 - The VIN is retrieved from the SOTA Server Database</p>
+</li>
+<li>
+<p>E3 - The Data Plan is retrieved from the SOTA Server Database</p>
+</li>
+<li>
+<p>E4 - A success code is sent back to the Web Server</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - VIN does not exist. Triggered by E2</p>
+</li>
+<li>
+<p>X2 - Data Plan does not exist. Triggered by E3</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="VIN_GET_UPDATE_HISTORY"><a href="#VIN_GET_UPDATE_HISTORY">VIN_GET_UPDATE_HISTORY</a> Get installation history for VIN</h3>
+<div class="paragraph">
 <p>All install requests, failed, pending, in-flight or completed are returned.</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A GET_VIN_PACKAGE_HISTORY command is sent from Web Server to SOTA Server with a VIN.</li>
-<li>E2 - The provided VIN is retrieved from the SOTA Server Database</li>
-<li>E3 - All updates, completed, failed, in-flight or pending targeting the provided VIN are retieved from the SOTA Server Database, together with the IDs of all Packages included in the update for each VIN</li>
-<li>E4 - A success code is sent back to the Web Server, with all updates, their package IDs, their status, and the completion / failure date</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - VIN does not exist. Triggered by E2</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="package_add_sotaserver-register-a-new-package-with-sota-server"><a name="PACKAGE_ADD_SOTASERVER"><a href="#PACKAGE_ADD_SOTASERVER">PACKAGE_ADD_SOTASERVER</a> Register a new Package with SOTA Server</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A GET_VIN_PACKAGE_HISTORY command is sent from Web Server to SOTA Server with a VIN.</p>
+</li>
+<li>
+<p>E2 - The provided VIN is retrieved from the SOTA Server Database</p>
+</li>
+<li>
+<p>E3 - All updates, completed, failed, in-flight or pending targeting the provided VIN are retieved from the SOTA Server Database, together with the IDs of all Packages included in the update for each VIN</p>
+</li>
+<li>
+<p>E4 - A success code is sent back to the Web Server, with all updates, their package IDs, their status, and the completion / failure date</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - VIN does not exist. Triggered by E2</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="PACKAGE_ADD_SOTASERVER"><a href="#PACKAGE_ADD_SOTASERVER">PACKAGE_ADD_SOTASERVER</a> Register a new Package with SOTA Server</h3>
+<div class="paragraph">
 <p>Add a software Package that can be pushed to a specific Component on a VIN</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>Software package does not already exist</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - An ADD_SOFTWARE_PACKAGE command is sent from Web Server to SOTA Server together with an ID string, a version (major.minor.patch), a description, and a vendor. The software package binary is sent as part of the command together with a checksum.</li>
-<li>E2 - Software package’s meta-data is added to SOTA Server database</li>
-<li>E3 - The SOTA Server stores the package binary in its storage area and stores the URL to the binary in the database.</li>
-<li>E4 - A success code is sent back to Web Server</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Software Package with same ID String and Version is already registered with SOTA Server. Triggered by E2</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="package_add_resolver-register-a-new-package-with-external-resolver"><a name="PACKAGE_ADD_RESOLVER"><a href="#PACKAGE_ADD_RESOLVER">PACKAGE_ADD_RESOLVER</a> Register a new Package with External Resolver</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Software package does not already exist</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - An ADD_SOFTWARE_PACKAGE command is sent from Web Server to SOTA Server together with an ID string, a version (major.minor.patch), a description, and a vendor. The software package binary is sent as part of the command together with a checksum.</p>
+</li>
+<li>
+<p>E2 - Software package&#8217;s meta-data is added to SOTA Server database</p>
+</li>
+<li>
+<p>E3 - The SOTA Server stores the package binary in its storage area and stores the URL to the binary in the database.</p>
+</li>
+<li>
+<p>E4 - A success code is sent back to Web Server</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Software Package with same ID String and Version is already registered with SOTA Server. Triggered by E2</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="PACKAGE_ADD_RESOLVER"><a href="#PACKAGE_ADD_RESOLVER">PACKAGE_ADD_RESOLVER</a> Register a new Package with External Resolver</h3>
+<div class="paragraph">
 <p>Add a software Package that can be pushed to a specific Component on a VIN</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>External Resoler</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>Software package does not already exist</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - An ADD_SOFTWARE_PACKAGE command is sent from Web Server to the Resolver together with an ID string, a version (major.minor.patch), a description, and a vendor.</li>
-<li>E2 - Software package’s meta-data is added to the Resolver database</li>
-<li>E3 - An ADD_SOFTWARE_PACKAGE command is sent from Web Server to External Resolver together with an ID string.</li>
-<li>E4 - Software Package is added to External Resolver database</li>
-<li>E5 - A success code is sent back to Web Server</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Software Package with same ID String and Version is already registered with SOTA Server. Triggered by E2</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>External Resoler</p>
+</li>
 </ul>
-<h3 id="package_search-search-for-a-package"><a name="PACKAGE_SEARCH"><a href="#PACKAGE_SEARCH">PACKAGE_SEARCH</a> Search for a Package</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Software package does not already exist</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - An ADD_SOFTWARE_PACKAGE command is sent from Web Server to the Resolver together with an ID string, a version (major.minor.patch), a description, and a vendor.</p>
+</li>
+<li>
+<p>E2 - Software package&#8217;s meta-data is added to the Resolver database</p>
+</li>
+<li>
+<p>E3 - An ADD_SOFTWARE_PACKAGE command is sent from Web Server to External Resolver together with an ID string.</p>
+</li>
+<li>
+<p>E4 - Software Package is added to External Resolver database</p>
+</li>
+<li>
+<p>E5 - A success code is sent back to Web Server</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Software Package with same ID String and Version is already registered with SOTA Server. Triggered by E2</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="PACKAGE_SEARCH"><a href="#PACKAGE_SEARCH">PACKAGE_SEARCH</a> Search for a Package</h3>
+<div class="paragraph">
 <p>Searches and retrieves data for software Packages from the system</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A SEARCH_PACKAGE command is sent from Web Server to SOTA Server with a regular expression formatted Package ID and version string</li>
-<li>E2 - The SOTA Server Database is searched for all Packages matching the search criteria.</li>
-<li>E3 - All matching Package IDs, with their version, vendor and descriptions are returned.</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>None</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="plan_add-register-a-new-data-plan"><a name="PLAN_ADD"><a href="#PLAN_ADD">PLAN_ADD</a> Register a new Data Plan</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A SEARCH_PACKAGE command is sent from Web Server to SOTA Server with a regular expression formatted Package ID and version string</p>
+</li>
+<li>
+<p>E2 - The SOTA Server Database is searched for all Packages matching the search criteria.</p>
+</li>
+<li>
+<p>E3 - All matching Package IDs, with their version, vendor and descriptions are returned.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="PLAN_ADD"><a href="#PLAN_ADD">PLAN_ADD</a> Register a new Data Plan</h3>
+<div class="paragraph">
 <p>Add a Data Plan that can later be used by VINs. Billing Cycles are added to the Data Plan by <a href="#PLAN_ADD_BILLING_CYCLE">PLAN_ADD_BILLING_CYCLE</a></p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - An ADD_DATA_PLAN command is sent from Web Server to SOTA Server with a Data Plan ID.</li>
-<li>E2 - The Data Plan is added to SOTA Server Database.</li>
-<li>E3 - A success code is sent back to Web Server</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Data Plan already exists. Triggered by E2.</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="plan_add_billing_cycle-associate-a-billing-cycle-with-a-data-plan"><a name="PLAN_ADD_BILLING_CYCLE"><a href="#PLAN_ADD_BILLING_CYCLE">PLAN_ADD_BILLING_CYCLE</a> Associate a Billing Cycle with a Data Plan</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - An ADD_DATA_PLAN command is sent from Web Server to SOTA Server with a Data Plan ID.</p>
+</li>
+<li>
+<p>E2 - The Data Plan is added to SOTA Server Database.</p>
+</li>
+<li>
+<p>E3 - A success code is sent back to Web Server</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Data Plan already exists. Triggered by E2.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="PLAN_ADD_BILLING_CYCLE"><a href="#PLAN_ADD_BILLING_CYCLE">PLAN_ADD_BILLING_CYCLE</a> Associate a Billing Cycle with a Data Plan</h3>
+<div class="paragraph">
 <p>Add a billing cycle to a Data Plan previously created with <a href="#PLAN_ADD">PLAN_ADD</a>.</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li><a href="#PLAN_ADD">PLAN_ADD</a> executed to provide a Data Plan to which to add a Billing Cycle</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - An ADD_BILLING_CYCLE command is sent from Web Server to SOTA Server with a Data Plan ID, a Billing Cycle start date / time, and a Billing Cycle pool size.</li>
-<li>E2 - The Data Plan is retrieved from the SOTA Server Database</li>
-<li>E3 - A Billing Cycle is created in the SOTA Server Database with zero bytes transmitted, the given start data, and the pool size.</li>
-<li>E4 - A success code is returned by SOTA Server to Web Server</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Data Plan does not exist. Triggered by E2.</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="plan_search-find-existing-data-plan"><a name="PLAN_SEARCH"><a href="#PLAN_SEARCH">PLAN_SEARCH</a> Find existing Data Plan</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#PLAN_ADD">PLAN_ADD</a> executed to provide a Data Plan to which to add a Billing Cycle</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - An ADD_BILLING_CYCLE command is sent from Web Server to SOTA Server with a Data Plan ID, a Billing Cycle start date / time, and a Billing Cycle pool size.</p>
+</li>
+<li>
+<p>E2 - The Data Plan is retrieved from the SOTA Server Database</p>
+</li>
+<li>
+<p>E3 - A Billing Cycle is created in the SOTA Server Database with zero bytes transmitted, the given start data, and the pool size.</p>
+</li>
+<li>
+<p>E4 - A success code is returned by SOTA Server to Web Server</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Data Plan does not exist. Triggered by E2.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="PLAN_SEARCH"><a href="#PLAN_SEARCH">PLAN_SEARCH</a> Find existing Data Plan</h3>
+<div class="paragraph">
 <p>Search for a Data Plan previously added with PLAN_ADD.</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A SEARCH_DATA_PLAN command is sent from Web Server to SOTA Server with a Data Plan ID regular expression</li>
-<li>E2 - A success code is returned by SOTA Server to Web Server with all located Data Plan IDs</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>None</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="plan_get_billing_cycles-get-billing-cycles-for-a-data-plan"><a name="PLAN_GET_BILLING_CYCLES"><a href="#PLAN_GET_BILLING_CYCLES">PLAN_GET_BILLING_CYCLES</a> Get Billing Cycles for a Data Plan</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A SEARCH_DATA_PLAN command is sent from Web Server to SOTA Server with a Data Plan ID regular expression</p>
+</li>
+<li>
+<p>E2 - A success code is returned by SOTA Server to Web Server with all located Data Plan IDs</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="PLAN_GET_BILLING_CYCLES"><a href="#PLAN_GET_BILLING_CYCLES">PLAN_GET_BILLING_CYCLES</a> Get Billing Cycles for a Data Plan</h3>
+<div class="paragraph">
 <p>Retrieve billing cycles and their details belonging to a specific Data Plan.</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A SEARCH_BILLING_CYCLES command is sent from Web Server to SOTA Server with a Data Plan ID, an earliest date / time, and a latest date / time.</li>
-<li>E2 - The Data Plan is retrieved from SOTA Server Database.</li>
-<li>E3 - All Billing Cycles belonging to the Data Plan, with a start date / time between the provided earliest and latest date / time, are retrieved from SOTA Server Database together with their pool size, and used data.</li>
-<li>E4 - A success code is returned by SOTA Server to Web Server with all located Billing Cycles, their pool size and data usage.</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Data Plan does not exist. Triggered by E2.</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="plan_add_traffic-add-traffic-information-to-active-billing-cycle-for-data-plan-associated-with-vin"><a name="PLAN_ADD_TRAFFIC"><a href="#PLAN_ADD_TRAFFIC">PLAN_ADD_TRAFFIC</a> Add Traffic Information to active Billing Cycle for Data Plan associated with VIN</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A SEARCH_BILLING_CYCLES command is sent from Web Server to SOTA Server with a Data Plan ID, an earliest date / time, and a latest date / time.</p>
+</li>
+<li>
+<p>E2 - The Data Plan is retrieved from SOTA Server Database.</p>
+</li>
+<li>
+<p>E3 - All Billing Cycles belonging to the Data Plan, with a start date / time between the provided earliest and latest date / time, are retrieved from SOTA Server Database together with their pool size, and used data.</p>
+</li>
+<li>
+<p>E4 - A success code is returned by SOTA Server to Web Server with all located Billing Cycles, their pool size and data usage.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Data Plan does not exist. Triggered by E2.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="PLAN_ADD_TRAFFIC"><a href="#PLAN_ADD_TRAFFIC">PLAN_ADD_TRAFFIC</a> Add Traffic Information to active Billing Cycle for Data Plan associated with VIN</h3>
+<div class="paragraph">
 <p>Add traffic information to the active Billing Cycle under the Data Plan associated with a specific VIN.</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>SOTA Server</li>
-<li>Network Monitoring Process</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - An ADD_DATA_TRAFFIC command is sent from an internal SOTA Server Network Monitoring Process to SOTA Server with a VIN and a byte count of transmitted data.</li>
-<li>E2 - The VIN is retrieved from SOTA Server Database.</li>
-<li>E3 - The Data Plan setup for the VIN created through the <a href="#VIN_SET_DATA_PLAN">VIN_SET_DATA_PLAN</a> use case is retrieved from SOTA Server.</li>
-<li>E4 - The Billing Cycle, owned by the Data Plan, that has the latest start date / time before the provided date / time stamp is retrieve from the SOTA Server Database.</li>
-<li>E5 - The data usage for the given Billing Cycle is incremented by the byte count provided</li>
-<li>E6 - A success code is returned to the Network Monitoring Process, together with the retrieved Data Plan ID, and the start date, pool size, and update data usage of the located Billing Cycle.</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - VIN does not exist. An error code is sent back to Web Server. Triggered by E2.</li>
-<li>A1 - No Data Plan is setup for VIN. A success code is sent back to Web Server. Triggered by E3.</li>
-<li>A2 - No Billing Cycles have been added to the Data Plan. A success code is sent back to Web Server. Triggered by E4.</li>
-</ul></li>
+<li>
+<p>SOTA Server</p>
+</li>
+<li>
+<p>Network Monitoring Process</p>
+</li>
 </ul>
-<h2 id="external-resolver-configuration"><a name="resolver-config">External Resolver Configuration</a></h2>
-<h3 id="filter_add-add-a-new-filter"><a name="FILTER_ADD"><a href="#FILTER_ADD">FILTER_ADD</a> Add a new Filter</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - An ADD_DATA_TRAFFIC command is sent from an internal SOTA Server Network Monitoring Process to SOTA Server with a VIN and a byte count of transmitted data.</p>
+</li>
+<li>
+<p>E2 - The VIN is retrieved from SOTA Server Database.</p>
+</li>
+<li>
+<p>E3 - The Data Plan setup for the VIN created through the <a href="#VIN_SET_DATA_PLAN">VIN_SET_DATA_PLAN</a> use case is retrieved from SOTA Server.</p>
+</li>
+<li>
+<p>E4 - The Billing Cycle, owned by the Data Plan, that has the latest start date / time before the provided date / time stamp is retrieve from the SOTA Server Database.</p>
+</li>
+<li>
+<p>E5 - The data usage for the given Billing Cycle is incremented by the byte count provided</p>
+</li>
+<li>
+<p>E6 - A success code is returned to the Network Monitoring Process, together with the retrieved Data Plan ID, and the start date, pool size, and update data usage of the located Billing Cycle.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - VIN does not exist. An error code is sent back to Web Server. Triggered by E2.</p>
+</li>
+<li>
+<p>A1 - No Data Plan is setup for VIN. A success code is sent back to Web Server. Triggered by E3.</p>
+</li>
+<li>
+<p>A2 - No Billing Cycles have been added to the Data Plan. A success code is sent back to Web Server. Triggered by E4.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="EXTERNAL">External Resolver Configuration</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="FILTER_ADD"><a href="#FILTER_ADD">FILTER_ADD</a> Add a new Filter</h3>
+<div class="paragraph">
 <p>Add a filter</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>External Resolver</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A FILTER_ADD command is sent from Web Server to External Resolver with the filter expression and a filter label.</li>
-<li>E2 - The filter expression is validated for semantic and syntactic correctness.</li>
-<li>E3 - The fitler is stored in the External Resolver Database.</li>
-<li>E4 - A success code is returned by External Resolver to Web Server.</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Filter Label already exists. Triggered by E1.</li>
-<li>X2 - Filter Expression validation fails. Triggered by E2.</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>External Resolver</p>
+</li>
 </ul>
-<h3 id="filter_search-search-for-a-filter"><a name="FILTER_SEARCH"><a href="#FILTER_SEARCH">FILTER_SEARCH</a> Search for a Filter</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A FILTER_ADD command is sent from Web Server to External Resolver with the filter expression and a filter label.</p>
+</li>
+<li>
+<p>E2 - The filter expression is validated for semantic and syntactic correctness.</p>
+</li>
+<li>
+<p>E3 - The fitler is stored in the External Resolver Database.</p>
+</li>
+<li>
+<p>E4 - A success code is returned by External Resolver to Web Server.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Filter Label already exists. Triggered by E1.</p>
+</li>
+<li>
+<p>X2 - Filter Expression validation fails. Triggered by E2.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="FILTER_SEARCH"><a href="#FILTER_SEARCH">FILTER_SEARCH</a> Search for a Filter</h3>
+<div class="paragraph">
 <p>Search for an existing filter</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>External Resolver</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A FILTER_SEARCH command is sent from Web Server to External Resolver with a regular expression describing zero or more filter labels.</li>
-<li>E2 - The filters with matching filter labels are retrieved from the External Resolver Database.</li>
-<li>E3 - A success code is returned by External Resolver to Web Server, with all matching filter labels and their filter expression.</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>None</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>External Resolver</p>
+</li>
 </ul>
-<h3 id="filter_validate-test-validity-of-a-filter-expression"><a name="FILTER_VALIDATE"><a href="#FILTER_VALIDATE">FILTER_VALIDATE</a> Test validity of a Filter Expression</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A FILTER_SEARCH command is sent from Web Server to External Resolver with a regular expression describing zero or more filter labels.</p>
+</li>
+<li>
+<p>E2 - The filters with matching filter labels are retrieved from the External Resolver Database.</p>
+</li>
+<li>
+<p>E3 - A success code is returned by External Resolver to Web Server, with all matching filter labels and their filter expression.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="FILTER_VALIDATE"><a href="#FILTER_VALIDATE">FILTER_VALIDATE</a> Test validity of a Filter Expression</h3>
+<div class="paragraph">
 <p>Validate filter syntax and semantics</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>External Resolver</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A FILTER_VALIDATE command is sent from Web Server to External Resolver with a filter expression.</li>
-<li>E2 - The filter expression is validated for semantic and syntactic correctness.</li>
-<li>E4 - If the filter expression is valid, a success code is returned to Web Server</li>
-<li>E5 - If the filter expression is not valid, an error code is returned together with an error message describing the problem with the filter expression.</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>None</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>External Resolver</p>
+</li>
 </ul>
-<h3 id="filter_delete-delete-a-filter"><a name="FILTER_DELETE"><a href="#FILTER_DELETE">FILTER_DELETE</a> Delete a Filter</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A FILTER_VALIDATE command is sent from Web Server to External Resolver with a filter expression.</p>
+</li>
+<li>
+<p>E2 - The filter expression is validated for semantic and syntactic correctness.</p>
+</li>
+<li>
+<p>E4 - If the filter expression is valid, a success code is returned to Web Server</p>
+</li>
+<li>
+<p>E5 - If the filter expression is not valid, an error code is returned together with an error message describing the problem with the filter expression.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="FILTER_DELETE"><a href="#FILTER_DELETE">FILTER_DELETE</a> Delete a Filter</h3>
+<div class="paragraph">
 <p>Delete an existing filter</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>External Resolver</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>Filter has been added to External Resolver Database using <a href="#FILTER_ADD">FILTER_ADD</a></li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A DELETE_FILTER command is sent from Web Server to External Resolver with a filter label.</li>
-<li>E2 - The filter is deleted from the External Resolver Database.</li>
-<li>E3 - A success code is returned by External Resolver to Web Server.</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Filter label does not exist. Triggered by E2.</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>External Resolver</p>
+</li>
 </ul>
-<h3 id="filter_package_add-associate-a-package-with-a-filter"><a name="FILTER_PACKAGE_ADD"><a href="#FILTER_PACKAGE_ADD">FILTER_PACKAGE_ADD</a> Associate a Package with a Filter</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Filter has been added to External Resolver Database using <a href="#FILTER_ADD">FILTER_ADD</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A DELETE_FILTER command is sent from Web Server to External Resolver with a filter label.</p>
+</li>
+<li>
+<p>E2 - The filter is deleted from the External Resolver Database.</p>
+</li>
+<li>
+<p>E3 - A success code is returned by External Resolver to Web Server.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Filter label does not exist. Triggered by E2.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="FILTER_PACKAGE_ADD"><a href="#FILTER_PACKAGE_ADD">FILTER_PACKAGE_ADD</a> Associate a Package with a Filter</h3>
+<div class="paragraph">
 <p>Associate an existing filter with an existing Package.</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>External Resolver</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>Filter has been added to External Resolver Database using <a href="#FILTER_ADD">FILTER_ADD</a></li>
-<li>Package has been added to External Resolver Database using <a href="#PACKAGE_ADD">PACKAGE_ADD</a></li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A FILTER_PACKAGE_ADD command is sent from Web Server to External Resolver with a filter label and a Package ID.</li>
-<li>E2 - The filter is retrieved from External Resolver Database.</li>
-<li>E3 - The Package is retrieved from External Resolver Database.</li>
-<li>E4 - A reference is added to External Resolver Database that the filter should be applied to all VINs when the Package is to be resolved in <a href="#QUEUE_REQUEST_ADD">QUEUE_REQUEST_ADD</a>.</li>
-<li>E3 - A success code is returned by External Resolver to Web Server.</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Filter label does not exist. Triggered by E2.</li>
-<li>X2 - Package ID does not exist. Triggered by E3.</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>External Resolver</p>
+</li>
 </ul>
-<h3 id="filter_package_delete-remove-a-package-from-a-filter"><a name="FILTER_PACKAGE_DELETE"><a href="#FILTER_PACKAGE_DELETE">FILTER_PACKAGE_DELETE</a> Remove a Package from a Filter</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Filter has been added to External Resolver Database using <a href="#FILTER_ADD">FILTER_ADD</a></p>
+</li>
+<li>
+<p>Package has been added to External Resolver Database using <a href="#PACKAGE_ADD">PACKAGE_ADD</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A FILTER_PACKAGE_ADD command is sent from Web Server to External Resolver with a filter label and a Package ID.</p>
+</li>
+<li>
+<p>E2 - The filter is retrieved from External Resolver Database.</p>
+</li>
+<li>
+<p>E3 - The Package is retrieved from External Resolver Database.</p>
+</li>
+<li>
+<p>E4 - A reference is added to External Resolver Database that the filter should be applied to all VINs when the Package is to be resolved in <a href="#QUEUE_REQUEST_ADD">QUEUE_REQUEST_ADD</a>.</p>
+</li>
+<li>
+<p>E3 - A success code is returned by External Resolver to Web Server.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Filter label does not exist. Triggered by E2.</p>
+</li>
+<li>
+<p>X2 - Package ID does not exist. Triggered by E3.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="FILTER_PACKAGE_DELETE"><a href="#FILTER_PACKAGE_DELETE">FILTER_PACKAGE_DELETE</a> Remove a Package from a Filter</h3>
+<div class="paragraph">
 <p>Remove an association between an existing Package and an existing Filter</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>External Resolver</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>Filter-Package association has been added to External Resolver Database using <a href="#FILTER_PACKAGE_ADD">FILTER_PACKAGE_ADD</a></li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A FILTER_PACKAGE_DELETE command is sent from Web Server to External Resolver with a filter label and a Package ID.</li>
-<li>E2 - The reference that the given Filter should be applied to the specific Package ID is removed from the External Resolver Database.</li>
-<li>E3 - A success code is returned by External Resolver to Web Server.</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Filter-Package association does not exist. Triggered by E2.</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>External Resolver</p>
+</li>
 </ul>
-<h3 id="filter_search_package_by_filter-get-list-of-packages-by-filter"><a name="FILTER_SEARCH_PACKAGE_BY_FILTER"><a href="#FILTER_SEARCH_PACKAGE_BY_FILTER">FILTER_SEARCH_PACKAGE_BY_FILTER</a> Get list of Packages by Filter</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Filter-Package association has been added to External Resolver Database using <a href="#FILTER_PACKAGE_ADD">FILTER_PACKAGE_ADD</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A FILTER_PACKAGE_DELETE command is sent from Web Server to External Resolver with a filter label and a Package ID.</p>
+</li>
+<li>
+<p>E2 - The reference that the given Filter should be applied to the specific Package ID is removed from the External Resolver Database.</p>
+</li>
+<li>
+<p>E3 - A success code is returned by External Resolver to Web Server.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Filter-Package association does not exist. Triggered by E2.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="FILTER_SEARCH_PACKAGE_BY_FILTER"><a href="#FILTER_SEARCH_PACKAGE_BY_FILTER">FILTER_SEARCH_PACKAGE_BY_FILTER</a> Get list of Packages by Filter</h3>
+<div class="paragraph">
 <p>Retrieve all Packages associated with a Filter.</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>External Resolver</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A FILTER_SEARCH_PACKAGE_BY_FILTER command is sent from Web Server to External Resolver with a filter label.</li>
-<li>E2 - The External Resolver Database is searched for all Packages associated with the given Filter.</li>
-<li>E3 - A success code is returned by External Resolver to Web Server, with all retrieved Package IDs.</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Filter label does not exist. Triggered by E2.</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>External Resolver</p>
+</li>
 </ul>
-<h3 id="filter_search_filter_by_package-get-list-of-filters-by-package"><a name="FILTER_SEARCH_FILTER_BY_PACKAGE"><a href="#FILTER_SEARCH_FILTER_BY_PACKAGE">FILTER_SEARCH_FILTER_BY_PACKAGE</a> Get list of Filters by Package</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A FILTER_SEARCH_PACKAGE_BY_FILTER command is sent from Web Server to External Resolver with a filter label.</p>
+</li>
+<li>
+<p>E2 - The External Resolver Database is searched for all Packages associated with the given Filter.</p>
+</li>
+<li>
+<p>E3 - A success code is returned by External Resolver to Web Server, with all retrieved Package IDs.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Filter label does not exist. Triggered by E2.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="FILTER_SEARCH_FILTER_BY_PACKAGE"><a href="#FILTER_SEARCH_FILTER_BY_PACKAGE">FILTER_SEARCH_FILTER_BY_PACKAGE</a> Get list of Filters by Package</h3>
+<div class="paragraph">
 <p>Retrieve all Filters associated with a Package.</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>External Resolver</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A FILTER_SEARCH_FILTER_BY_PACKAGE command is sent from Web Server to External Resolver with a Package ID.</li>
-<li>E2 - The External Resolver Database is searched for all Filters assocaited with the given Package.</li>
-<li>E3 - A success code is returned by External Resolver to Web Server, with all retrieved Filter Labels.</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Package does not exist. Triggered by E2.</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>External Resolver</p>
+</li>
 </ul>
-<h3 id="comp_add-add-a-component"><a name="COMP_ADD"><a href="#COMP_ADD">COMP_ADD</a> Add a Component</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A FILTER_SEARCH_FILTER_BY_PACKAGE command is sent from Web Server to External Resolver with a Package ID.</p>
+</li>
+<li>
+<p>E2 - The External Resolver Database is searched for all Filters assocaited with the given Package.</p>
+</li>
+<li>
+<p>E3 - A success code is returned by External Resolver to Web Server, with all retrieved Filter Labels.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Package does not exist. Triggered by E2.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="COMP_ADD"><a href="#COMP_ADD">COMP_ADD</a> Add a Component</h3>
+<div class="paragraph">
 <p>Adds a component that can subsequently be associated with one or more VINs</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>External Resolver</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - An ADD_COMPONENT command is sent from Web Server to External Resolver</li>
-<li>E2 - The Component is added to External Resolver Database</li>
-<li>E3 - A success code is sent back to Web Server</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - If Component exists, X1 is executed. Triggered at E1.</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>External Resolver</p>
+</li>
 </ul>
-<h3 id="vin_add_comp-associate-a-component-with-a-vin"><a name="VIN_ADD_COMP"><a href="#VIN_ADD_COMP">VIN_ADD_COMP</a> Associate a Component with a VIN</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - An ADD_COMPONENT command is sent from Web Server to External Resolver</p>
+</li>
+<li>
+<p>E2 - The Component is added to External Resolver Database</p>
+</li>
+<li>
+<p>E3 - A success code is sent back to Web Server</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - If Component exists, X1 is executed. Triggered at E1.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="VIN_ADD_COMP"><a href="#VIN_ADD_COMP">VIN_ADD_COMP</a> Associate a Component with a VIN</h3>
+<div class="paragraph">
 <p>Associates a previously configured Component with a VIN, indicating that the VIN has the given part number installed</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>External Resolver</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - An ADD_COMPONENT command is sent from Web Server to External Resolver</li>
-<li>E2 - The provided VIN is retrieved from External Resolver Database</li>
-<li>E3 - The provided Component is retrieved from External Resolver Database</li>
-<li>E4 - The part provided Component is marked as installed on the VIN in External Resolver Database</li>
-<li>E5 - A success code is sent back to Web Server</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - VIN does not exist - an error code is sent back to Web Server. Triggered at E2 if VIN does not exist.</li>
-<li>X2 - Component does not exist - an error code is sent back to Web Server. Triggered at E3 if Component does not exist.</li>
-</ul></li>
-<li><p>Postconditions</p>
-<ul>
-<li>The association is registered in the External Resolver, and searchable with <a href="#VIN_SEARCH_BY_COMP">VIN_SEARCH_BY_COMP</a> and <a href="#COMP_SEARCH_BY_VIN">COMP_SEARCH_BY_VIN</a></li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>External Resolver</p>
+</li>
 </ul>
-<h3 id="vin_add_package-associate-a-package-with-a-vin"><a name="VIN_ADD_PACKAGE"><a href="#VIN_ADD_PACKAGE">VIN_ADD_PACKAGE</a> Associate a Package with a VIN</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - An ADD_COMPONENT command is sent from Web Server to External Resolver</p>
+</li>
+<li>
+<p>E2 - The provided VIN is retrieved from External Resolver Database</p>
+</li>
+<li>
+<p>E3 - The provided Component is retrieved from External Resolver Database</p>
+</li>
+<li>
+<p>E4 - The part provided Component is marked as installed on the VIN in External Resolver Database</p>
+</li>
+<li>
+<p>E5 - A success code is sent back to Web Server</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - VIN does not exist - an error code is sent back to Web Server. Triggered at E2 if VIN does not exist.</p>
+</li>
+<li>
+<p>X2 - Component does not exist - an error code is sent back to Web Server. Triggered at E3 if Component does not exist.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Postconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>The association is registered in the External Resolver, and searchable with <a href="#VIN_SEARCH_BY_COMP">VIN_SEARCH_BY_COMP</a> and <a href="#COMP_SEARCH_BY_VIN">COMP_SEARCH_BY_VIN</a></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="VIN_ADD_PACKAGE"><a href="#VIN_ADD_PACKAGE">VIN_ADD_PACKAGE</a> Associate a Package with a VIN</h3>
+<div class="paragraph">
 <p>Associates a previously provisioned software Package as being installed on a given VIN</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>External Resolver</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - An ADD_PACKAGE command is sent from Web Server to External Resolver with a Package and a VIN</li>
-<li>E2 - The provided VIN is retrieved from External Resolver Database</li>
-<li>E3 - The provided Package is retrieved from External Resolver Database</li>
-<li>E4 - The Package is marked as installed on the VIN in External Resolver Database</li>
-<li>E5 - A success code is sent back to Web Server</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - VIN does not exist - an error code is sent back to Web Server. Triggered at E2 if VIN does not exist.</li>
-<li>X2 - Package does not exist - an error code is sent back to Web Server. Triggered at E3 if Package does not exist.</li>
-</ul></li>
-<li><p>Postconditions</p>
-<ul>
-<li>The association is registered in the External Resolver, and searchable with <a href="#PACKAGE_SEARCH_BY_VIN">PACKAGE_SEARCH_BY_VIN</a></li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>External Resolver</p>
+</li>
 </ul>
-<h3 id="vin_delete_package-remove-a-package-from-a-vin"><a name="VIN_DELETE_PACKAGE"><a href="#VIN_DELETE_PACKAGE">VIN_DELETE_PACKAGE</a> Remove a Package from a VIN</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - An ADD_PACKAGE command is sent from Web Server to External Resolver with a Package and a VIN</p>
+</li>
+<li>
+<p>E2 - The provided VIN is retrieved from External Resolver Database</p>
+</li>
+<li>
+<p>E3 - The provided Package is retrieved from External Resolver Database</p>
+</li>
+<li>
+<p>E4 - The Package is marked as installed on the VIN in External Resolver Database</p>
+</li>
+<li>
+<p>E5 - A success code is sent back to Web Server</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - VIN does not exist - an error code is sent back to Web Server. Triggered at E2 if VIN does not exist.</p>
+</li>
+<li>
+<p>X2 - Package does not exist - an error code is sent back to Web Server. Triggered at E3 if Package does not exist.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Postconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>The association is registered in the External Resolver, and searchable with <a href="#PACKAGE_SEARCH_BY_VIN">PACKAGE_SEARCH_BY_VIN</a></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="VIN_DELETE_PACKAGE"><a href="#VIN_DELETE_PACKAGE">VIN_DELETE_PACKAGE</a> Remove a Package from a VIN</h3>
+<div class="paragraph">
 <p>Removes an existing reference for a software package as being install on a VIN</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>External Resolver</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A DELETE_PACKAGE command is sent from Web Server to External Resolver with a Package and a VIN</li>
-<li>E2 - The reference to the Package being installed on the VIN is removed</li>
-<li>E3 - A success code is sent back to Web Server</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - The Package is not registered as installed on the VIN - an error code is sent back to Web Server. Triggered at E2.</li>
-</ul></li>
-<li><p>Postconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>External Resolver</p>
+</li>
 </ul>
-<h3 id="comp_search-search-for-a-component"><a name="COMP_SEARCH"><a href="#COMP_SEARCH">COMP_SEARCH</a> Search for a Component</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A DELETE_PACKAGE command is sent from Web Server to External Resolver with a Package and a VIN</p>
+</li>
+<li>
+<p>E2 - The reference to the Package being installed on the VIN is removed</p>
+</li>
+<li>
+<p>E3 - A success code is sent back to Web Server</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - The Package is not registered as installed on the VIN - an error code is sent back to Web Server. Triggered at E2.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Postconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="COMP_SEARCH"><a href="#COMP_SEARCH">COMP_SEARCH</a> Search for a Component</h3>
+<div class="paragraph">
 <p>Search for one or more components based on a regexp search pattern</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>External Resolver</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A SEARCH_COMPONENT command is sent from Web Server to External Resolver with a POSIX-style regular expression for the part numbers of interest</li>
-<li>E2 - The External Resolver Database is searched for all Components matching the part number regular expression</li>
-<li>E3 - The part numbers of all matching Components are returned</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Postconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>External Resolver</p>
+</li>
 </ul>
-<h3 id="vin_search_by_comp-find-vins-by-component"><a name="VIN_SEARCH_BY_COMP"><a href="#VIN_SEARCH_BY_COMP">VIN_SEARCH_BY_COMP</a> Find VINs by Component</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A SEARCH_COMPONENT command is sent from Web Server to External Resolver with a POSIX-style regular expression for the part numbers of interest</p>
+</li>
+<li>
+<p>E2 - The External Resolver Database is searched for all Components matching the part number regular expression</p>
+</li>
+<li>
+<p>E3 - The part numbers of all matching Components are returned</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Postconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="VIN_SEARCH_BY_COMP"><a href="#VIN_SEARCH_BY_COMP">VIN_SEARCH_BY_COMP</a> Find VINs by Component</h3>
+<div class="paragraph">
 <p>Find and return all VINs that have been associated with a specific Component</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>External Resolver</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A SEARCH_COMPONENT command is sent from Web Server to External Resolver with specific Component ID (part number) of interest</li>
-<li>E2 - The Component is retrieved from the External Resolver Database</li>
-<li>E3 - All VINs associated with the Component ID (part number) are retrieved from the External Resolver Database</li>
-<li>E4 - The retrieved VINs are returned by External Resolver to Web Server</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Component does not exist - an error code is sent back to Web Server. Triggered at E2 if Component ID is not found.</li>
-</ul></li>
-<li><p>Postconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>External Resolver</p>
+</li>
 </ul>
-<h3 id="comp_search_by_vin-find-components-associated-with-a-vin"><a name="COMP_SEARCH_BY_VIN"><a href="#COMP_SEARCH_BY_VIN">COMP_SEARCH_BY_VIN</a> Find Components associated with a VIN</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A SEARCH_COMPONENT command is sent from Web Server to External Resolver with specific Component ID (part number) of interest</p>
+</li>
+<li>
+<p>E2 - The Component is retrieved from the External Resolver Database</p>
+</li>
+<li>
+<p>E3 - All VINs associated with the Component ID (part number) are retrieved from the External Resolver Database</p>
+</li>
+<li>
+<p>E4 - The retrieved VINs are returned by External Resolver to Web Server</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Component does not exist - an error code is sent back to Web Server. Triggered at E2 if Component ID is not found.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Postconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="COMP_SEARCH_BY_VIN"><a href="#COMP_SEARCH_BY_VIN">COMP_SEARCH_BY_VIN</a> Find Components associated with a VIN</h3>
+<div class="paragraph">
 <p>Find and return part numbers of all Components installed on a specific VIN</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>External Resolver</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A SEARCH_COMPONENT command is sent from Web Server to External Resolver with specific VIN (not regexp) of interest</li>
-<li>E2 - The VIN is retrieved from the External Resolver Database</li>
-<li>E3 - All Components associated with the VIN are retrieved from the External Resolver Database</li>
-<li>E4 - The retrieved Components are returned by External Resolver to Web Server</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - VIN does not exist - an error code is sent back to Web Server. Triggered at E2 if VIN is not found.</li>
-</ul></li>
-<li><p>Postconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>External Resolver</p>
+</li>
 </ul>
-<h3 id="package_add_dependency-create-dependency-between-packages"><a name="PACKAGE_ADD_DEPENDENCY"><a href="#PACKAGE_ADD_DEPENDENCY">PACKAGE_ADD_DEPENDENCY</a> Create Dependency between Packages</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A SEARCH_COMPONENT command is sent from Web Server to External Resolver with specific VIN (not regexp) of interest</p>
+</li>
+<li>
+<p>E2 - The VIN is retrieved from the External Resolver Database</p>
+</li>
+<li>
+<p>E3 - All Components associated with the VIN are retrieved from the External Resolver Database</p>
+</li>
+<li>
+<p>E4 - The retrieved Components are returned by External Resolver to Web Server</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - VIN does not exist - an error code is sent back to Web Server. Triggered at E2 if VIN is not found.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Postconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="PACKAGE_ADD_DEPENDENCY"><a href="#PACKAGE_ADD_DEPENDENCY">PACKAGE_ADD_DEPENDENCY</a> Create Dependency between Packages</h3>
+<div class="paragraph">
 <p>Specifies that a software Package needs another software Package in order to function properly when installed on a Component.</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>External Resolver</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>Both references software Packages have been added with PACKAGE_ADD</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - An ADD_PACKAGE_DEPENDENCY command is sent from Web Server to External Resolver with the Package ID that has a dependency and the Package ID that is depended upon.</li>
-<li>E2 - The Package for the dependent Package ID is retrieved from the External Resolver Database.</li>
-<li>E3 - The Package for the depended Package ID is retrieved from the External Resolver Database.</li>
-<li>E4 - The unidirectional Dependency between the two Packages is stored in the External Resolver Database.</li>
-<li>E5 - A success code is sent back to Web Server</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Dependent Package ID does not exist. Triggered by E2</li>
-<li>X2 - Depended Package ID does not exist. Triggered by E3</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>External Resolver</p>
+</li>
 </ul>
-<h3 id="package_get_dependencies-get-dependencies-for-a-package"><a name="PACKAGE_GET_DEPENDENCIES"><a href="#PACKAGE_GET_DEPENDENCIES">PACKAGE_GET_DEPENDENCIES</a> Get Dependencies for a Package</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Both references software Packages have been added with PACKAGE_ADD</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - An ADD_PACKAGE_DEPENDENCY command is sent from Web Server to External Resolver with the Package ID that has a dependency and the Package ID that is depended upon.</p>
+</li>
+<li>
+<p>E2 - The Package for the dependent Package ID is retrieved from the External Resolver Database.</p>
+</li>
+<li>
+<p>E3 - The Package for the depended Package ID is retrieved from the External Resolver Database.</p>
+</li>
+<li>
+<p>E4 - The unidirectional Dependency between the two Packages is stored in the External Resolver Database.</p>
+</li>
+<li>
+<p>E5 - A success code is sent back to Web Server</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Dependent Package ID does not exist. Triggered by E2</p>
+</li>
+<li>
+<p>X2 - Depended Package ID does not exist. Triggered by E3</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="PACKAGE_GET_DEPENDENCIES"><a href="#PACKAGE_GET_DEPENDENCIES">PACKAGE_GET_DEPENDENCIES</a> Get Dependencies for a Package</h3>
+<div class="paragraph">
 <p>Retrieves the IDs of all Packages that the provided Package needs in order to operate on a Component. Recursive Dependencies are an option.</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>External Resolver</li>
-</ul></li>
-<li><p>Preconditions</p>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>External Resolver</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
 <ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
 <ul>
-<li>E1 - A GET_PACKAGE_DEPENDENCIES command is sent from Web Server to External Resolver with a software Package ID and an optional recursive resolve flag.</li>
-<li>E2 - The Package is retrieved from the External Resolver Database.</li>
-<li>E3 - The Package Dependencies are retrieved from the External Resolver Database.</li>
-<li>E4 - If the recursive resolve flag is set, E3 is executed for each located Dependency, resulting in a complete Dependency Graph including all Packages needed to run the provided Package ID on a Component.</li>
-<li><p>E5 - All retrieved Dependencies are returned, where each Dependency contains the Package ID of the depended-upon Package and the ID of the Package that is dependent on it.</p>
-<pre><code>Dependency for A1 is { A1, { B1, B2 { C1, { D1, D2 } } } }
+<li>
+<p>E1 - A GET_PACKAGE_DEPENDENCIES command is sent from Web Server to External Resolver with a software Package ID and an optional recursive resolve flag.</p>
+</li>
+<li>
+<p>E2 - The Package is retrieved from the External Resolver Database.</p>
+</li>
+<li>
+<p>E3 - The Package Dependencies are retrieved from the External Resolver Database.</p>
+</li>
+<li>
+<p>E4 - If the recursive resolve flag is set, E3 is executed for each located Dependency, resulting in a complete Dependency Graph including all Packages needed to run the provided Package ID on a Component.</p>
+</li>
+<li>
+<p>E5 - All retrieved Dependencies are returned, where each Dependency contains the Package ID of the depended-upon Package and the ID of the Package that is dependent on it.</p>
+<div class="listingblock">
+<div class="content">
+<pre>Dependency for A1 is { A1, { B1, B2 { C1, { D1, D2 } } } }
 Returns:
   D1 -&gt; C1
   D2 -&gt; C2
   C1 -&gt; B2
   B2 -&gt; A1
-  B1 -&gt; A1</code></pre></li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Package does not exist. Triggered by E2</li>
-</ul></li>
+  B1 -&gt; A1</pre>
+</div>
+</div>
+</li>
 </ul>
-<h3 id="package_del_dependency-remove-dependency-between-packages"><a name="PACKAGE_DEL_DEPENDENCY"><a href="#PACKAGE_DEL_DEPENDENCY">PACKAGE_DEL_DEPENDENCY</a> Remove Dependency between Packages</a></h3>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Package does not exist. Triggered by E2</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="PACKAGE_DEL_DEPENDENCY"><a href="#PACKAGE_DEL_DEPENDENCY">PACKAGE_DEL_DEPENDENCY</a> Remove Dependency between Packages</h3>
+<div class="paragraph">
 <p>Deletes a dependency between two software packages previously added with <a href="#PACKAGE_ADD_DEPENDENCY">PACKAGE_ADD_DEPENDENCY</a>.</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>External Resolver</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>A Dependency has previously been set up by PACKAGE_ADD_DEPENDENCY</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A DELETE_PACKAGE_DEPENDENCY command is sent from Web Server to External Resolver with the IDs of the dependent and depended-upon Packages</li>
-<li>E2 - Dependent Package is retrieved from External Resolver Database</li>
-<li>E3 - Depended-upon Package is retrieved from External Resolver Database</li>
-<li>E4 - External Resolver Database is searched for the matching unidircetional Dependency</li>
-<li>E5 - The unidirectional dependency is deleted from the External Resolver Database</li>
-<li>E6 - A success code is sent back to Web Server</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Dependent Package does not exist. Triggered by E2</li>
-<li>X2 - Depended-upon Package does not exist. Triggered by E3</li>
-<li>X3 - Dependency relation could not be found. Triggered by E4</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>External Resolver</p>
+</li>
 </ul>
-<h3 id="package_search_by_vin-find-vins-by-package"><a name="PACKAGE_SEARCH_BY_VIN"><a href="#PACKAGE_SEARCH_BY_VIN">PACKAGE_SEARCH_BY_VIN</a> Find VINs by Package</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>A Dependency has previously been set up by PACKAGE_ADD_DEPENDENCY</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A DELETE_PACKAGE_DEPENDENCY command is sent from Web Server to External Resolver with the IDs of the dependent and depended-upon Packages</p>
+</li>
+<li>
+<p>E2 - Dependent Package is retrieved from External Resolver Database</p>
+</li>
+<li>
+<p>E3 - Depended-upon Package is retrieved from External Resolver Database</p>
+</li>
+<li>
+<p>E4 - External Resolver Database is searched for the matching unidircetional Dependency</p>
+</li>
+<li>
+<p>E5 - The unidirectional dependency is deleted from the External Resolver Database</p>
+</li>
+<li>
+<p>E6 - A success code is sent back to Web Server</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Dependent Package does not exist. Triggered by E2</p>
+</li>
+<li>
+<p>X2 - Depended-upon Package does not exist. Triggered by E3</p>
+</li>
+<li>
+<p>X3 - Dependency relation could not be found. Triggered by E4</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="PACKAGE_SEARCH_BY_VIN"><a href="#PACKAGE_SEARCH_BY_VIN">PACKAGE_SEARCH_BY_VIN</a> Find VINs by Package</h3>
+<div class="paragraph">
 <p>Retrieves all VINs with a specific Package installed on them</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>External Resolver</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A SEARCH_PACKAGE_BY_VIN command is sent from Web Server to External Resolver</li>
-<li>E2 - Package is retrieved from External Resolver Database</li>
-<li>E3 - All VINs with Package installed are retrieved from External Resolver Database</li>
-<li>E4 - A success code is sent back to Web Server with all VINs that have the Package installed</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Package does not exist. Triggered by E2</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>External Resolver</p>
+</li>
 </ul>
-<h2 id="installation-queue-management-sota-server"><a name="queue-management">Installation Queue Management (SOTA Server)</a></h2>
-<h3 id="queue_request_add-queue-a-package-for-installation-on-vins-matching-filter"><a name="QUEUE_REQUEST_ADD"><a href="#QUEUE_REQUEST_ADD">QUEUE_REQUEST_ADD</a> Queue a package for installation on VINs matching Filter</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A SEARCH_PACKAGE_BY_VIN command is sent from Web Server to External Resolver</p>
+</li>
+<li>
+<p>E2 - Package is retrieved from External Resolver Database</p>
+</li>
+<li>
+<p>E3 - All VINs with Package installed are retrieved from External Resolver Database</p>
+</li>
+<li>
+<p>E4 - A success code is sent back to Web Server with all VINs that have the Package installed</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Package does not exist. Triggered by E2</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="INSTALLATION">Installation Queue Management (SOTA Server)</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="QUEUE_REQUEST_ADD"><a href="#QUEUE_REQUEST_ADD">QUEUE_REQUEST_ADD</a> Queue a package for installation on VINs matching Filter</h3>
+<div class="paragraph">
 <p>Queues a package for distribution to all VINs that match a provided boolean algebra filter</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>External Resolver</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>Package added with <a href="#PACKAGE_ADD">PACKAGE_ADD</a></li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A QUEUE_PACKAGE request is sent from Web Server to SOTA Server with a Package ID, a Priority, and a Date/time Interval in which the install must happen</li>
-<li>E2 - The database is searched for the Package ID</li>
-<li>E3 - A Resolve VIN command is sent from SOTAServer to Resolver</li>
-<li>E4 - External Resolver searches its database for all Filters associated with Package</li>
-<li>E5 - All VINs are consecutively run through all Filters</li>
-<li>E6 - External Resolver returns the subset of VINs passing all Filters to SOTA Server, where each VIN has a list of dependent-on Packages that need to be bundled with the update for the install to succeed on that VIN</li>
-<li>E7 - SOTA Server creates a software update generated for each VIN returned by External Resolver, containing the package IDs of main and dependent-on packages to install, the date/time interval provided in E1, the priority provided in E1, and a creation date/time stamp set to the current time.</li>
-<li>E8 - A unique Install Request ID, used in all future references to the Install Request, is returned by SOTA Server to Web Server</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Package ID does not exist. Triggered by E2</li>
-<li>A1.1 - Resolver returns all provisioned VINs to SOTA Server. Triggered by E4. Continue execution at E7.</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>External Resolver</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="queue_request_cancel-cancel-a-previous-installation-request"><a name="QUEUE_REQUEST_CANCEL"><a href="#QUEUE_REQUEST_CANCEL">QUEUE_REQUEST_CANCEL</a> Cancel a previous Installation Request</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Package added with <a href="#PACKAGE_ADD">PACKAGE_ADD</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A QUEUE_PACKAGE request is sent from Web Server to SOTA Server with a Package ID, a Priority, and a Date/time Interval in which the install must happen</p>
+</li>
+<li>
+<p>E2 - The database is searched for the Package ID</p>
+</li>
+<li>
+<p>E3 - A Resolve VIN command is sent from SOTAServer to Resolver</p>
+</li>
+<li>
+<p>E4 - External Resolver searches its database for all Filters associated with Package</p>
+</li>
+<li>
+<p>E5 - All VINs are consecutively run through all Filters</p>
+</li>
+<li>
+<p>E6 - External Resolver returns the subset of VINs passing all Filters to SOTA Server, where each VIN has a list of dependent-on Packages that need to be bundled with the update for the install to succeed on that VIN</p>
+</li>
+<li>
+<p>E7 - SOTA Server creates a software update generated for each VIN returned by External Resolver, containing the package IDs of main and dependent-on packages to install, the date/time interval provided in E1, the priority provided in E1, and a creation date/time stamp set to the current time.</p>
+</li>
+<li>
+<p>E8 - A unique Install Request ID, used in all future references to the Install Request, is returned by SOTA Server to Web Server</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Package ID does not exist. Triggered by E2</p>
+</li>
+<li>
+<p>A1.1 - Resolver returns all provisioned VINs to SOTA Server. Triggered by E4. Continue execution at E7.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="QUEUE_REQUEST_CANCEL"><a href="#QUEUE_REQUEST_CANCEL">QUEUE_REQUEST_CANCEL</a> Cancel a previous Installation Request</h3>
+<div class="paragraph">
 <p>Cancels a previously added install request.</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li><a href="#QUEUE_REQUEST_ADD">QUEUE_REQUEST_ADD</a> called to setup the Install Request that is to be cancelled</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A CANCEL_PACKAGE request is sent from Web Server to SOTA Server with an Install Request ID</li>
-<li>E2 - SOTA Server database is searched for the Install Request ID</li>
-<li>E3 - Each VIN that has an update generated from the Install Request is retrieved from SOTA Server database</li>
-<li>E4 - Each VIN that is still marked as pending is removed, and is marked as canceled.</li>
-<li>E5 - Each VIN that is marked as being in flight is ignored. (If the update is currently being transmitted to its target VIN, it is allowed to complete.)</li>
-<li>E6 - Each VIN that is marked as completd is ignored.</li>
-<li>E7 - A success code is returend by SOTA Server to Web Server</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Install Request ID does not exist. Triggered by E2</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="queue_get_status-get-status-for-an-installation-request"><a name="QUEUE_GET_STATUS"><a href="#QUEUE_GET_STATUS">QUEUE_GET_STATUS</a> Get status for an Installation Request</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#QUEUE_REQUEST_ADD">QUEUE_REQUEST_ADD</a> called to setup the Install Request that is to be cancelled</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A CANCEL_PACKAGE request is sent from Web Server to SOTA Server with an Install Request ID</p>
+</li>
+<li>
+<p>E2 - SOTA Server database is searched for the Install Request ID</p>
+</li>
+<li>
+<p>E3 - Each VIN that has an update generated from the Install Request is retrieved from SOTA Server database</p>
+</li>
+<li>
+<p>E4 - Each VIN that is still marked as pending is removed, and is marked as canceled.</p>
+</li>
+<li>
+<p>E5 - Each VIN that is marked as being in flight is ignored. (If the update is currently being transmitted to its target VIN, it is allowed to complete.)</p>
+</li>
+<li>
+<p>E6 - Each VIN that is marked as completd is ignored.</p>
+</li>
+<li>
+<p>E7 - A success code is returend by SOTA Server to Web Server</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Install Request ID does not exist. Triggered by E2</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="QUEUE_GET_STATUS"><a href="#QUEUE_GET_STATUS">QUEUE_GET_STATUS</a> Get status for an Installation Request</h3>
+<div class="paragraph">
 <p>Retrieve status for an install request previously setup with <a href="#QUEUE_REQUEST_ADD">QUEUE_REQUEST_ADD</a></p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li><a href="#QUEUE_REQUEST_ADD">QUEUE_REQUEST_ADD</a> called to setup the Install Request that is to be queried</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A GET_INSTALL_REQUEST_STATUS request is sent from Web Server to SOTA Server with an Install Request ID</li>
-<li>E2 - SOTA Server database is searched for the Install Request ID</li>
-<li>E3 - The number of VINs where the Install Request has completed is calculated</li>
-<li>E4 - The number of VINs where the Install Request is still pending is calculated</li>
-<li>E5 - The number of VINs where the Install Request has failed is calculated</li>
-<li>E6 - A success code is returned by SOTA Server to Web Server together with the number of completed, in-flight, pending and failed updates</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Install Request ID does not exist. Triggered by E2</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="queue_get_completed_vins-list-vins-for-which-installation-is-complete-for-installation-request"><a name="QUEUE_GET_COMPLETED_VINS"><a href="#QUEUE_GET_COMPLETED_VINS">QUEUE_GET_COMPLETED_VINS</a> List VINs for which installation is complete for Installation Request</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#QUEUE_REQUEST_ADD">QUEUE_REQUEST_ADD</a> called to setup the Install Request that is to be queried</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A GET_INSTALL_REQUEST_STATUS request is sent from Web Server to SOTA Server with an Install Request ID</p>
+</li>
+<li>
+<p>E2 - SOTA Server database is searched for the Install Request ID</p>
+</li>
+<li>
+<p>E3 - The number of VINs where the Install Request has completed is calculated</p>
+</li>
+<li>
+<p>E4 - The number of VINs where the Install Request is still pending is calculated</p>
+</li>
+<li>
+<p>E5 - The number of VINs where the Install Request has failed is calculated</p>
+</li>
+<li>
+<p>E6 - A success code is returned by SOTA Server to Web Server together with the number of completed, in-flight, pending and failed updates</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Install Request ID does not exist. Triggered by E2</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="QUEUE_GET_COMPLETED_VINS"><a href="#QUEUE_GET_COMPLETED_VINS">QUEUE_GET_COMPLETED_VINS</a> List VINs for which installation is complete for Installation Request</h3>
+<div class="paragraph">
 <p>Retrieve all completed VINs for a given Install Request ID</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A GET_INSTALL_REQUEST_COMPLETED request is sent from Web Server to SOTA Server with an Install Request ID</li>
-<li>E2 - SOTA Server database is searched for the Install Request ID</li>
-<li>E3 - Each VIN that has successfully completed the Install Request is retrieved, together with the timestamp of completion, from the database</li>
-<li>E4 - A success code is returned by SOTA Server to Web Server together with all retrieved VINs</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Install Request ID does not exist. Triggered by E2</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="queue_get_pending_vins-list-vins-for-which-installation-is-pending-for-installation-request"><a name="QUEUE_GET_PENDING_VINS"><a href="#QUEUE_GET_PENDING_VINS">QUEUE_GET_PENDING_VINS</a> List VINs for which installation is pending for Installation Request</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A GET_INSTALL_REQUEST_COMPLETED request is sent from Web Server to SOTA Server with an Install Request ID</p>
+</li>
+<li>
+<p>E2 - SOTA Server database is searched for the Install Request ID</p>
+</li>
+<li>
+<p>E3 - Each VIN that has successfully completed the Install Request is retrieved, together with the timestamp of completion, from the database</p>
+</li>
+<li>
+<p>E4 - A success code is returned by SOTA Server to Web Server together with all retrieved VINs</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Install Request ID does not exist. Triggered by E2</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="QUEUE_GET_PENDING_VINS"><a href="#QUEUE_GET_PENDING_VINS">QUEUE_GET_PENDING_VINS</a> List VINs for which installation is pending for Installation Request</h3>
+<div class="paragraph">
 <p>Retrieve all pending VINs for a given Install Request ID</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li><a href="#QUEUE_REQUEST_ADD">QUEUE_REQUEST_ADD</a> called to setup the Install Request that is to be queried</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A GET_INSTALL_REQUEST_COMPLETED request is sent from Web Server to SOTA Server with an Install Request ID</li>
-<li>E2 - SOTA Server database is searched for the Install Request ID</li>
-<li>E3 - Each VIN that is still pending to receive the software update as part of the specified Install Request is retrieved from the database</li>
-<li>E4 - A success code is returned by SOTA Server to Web Server together with all retrieved VINs</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Install Request ID does not exist. Triggered by E2</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="queue_get_in_flight_vins-list-vins-for-which-installation-is-ongoing-for-installation-request"><a name="QUEUE_GET_IN_FLIGHT_VINS"><a href="#QUEUE_GET_IN_FLIGHT_VINS">QUEUE_GET_IN_FLIGHT_VINS</a> List VINs for which installation is ongoing for Installation Request</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#QUEUE_REQUEST_ADD">QUEUE_REQUEST_ADD</a> called to setup the Install Request that is to be queried</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A GET_INSTALL_REQUEST_COMPLETED request is sent from Web Server to SOTA Server with an Install Request ID</p>
+</li>
+<li>
+<p>E2 - SOTA Server database is searched for the Install Request ID</p>
+</li>
+<li>
+<p>E3 - Each VIN that is still pending to receive the software update as part of the specified Install Request is retrieved from the database</p>
+</li>
+<li>
+<p>E4 - A success code is returned by SOTA Server to Web Server together with all retrieved VINs</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Install Request ID does not exist. Triggered by E2</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="QUEUE_GET_IN_FLIGHT_VINS"><a href="#QUEUE_GET_IN_FLIGHT_VINS">QUEUE_GET_IN_FLIGHT_VINS</a> List VINs for which installation is ongoing for Installation Request</h3>
+<div class="paragraph">
 <p>Retrieve install requests for a given Install Request ID, which have initiated their transfers to their target VINs, but have yet to complete the transmission and be installed</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li><a href="#QUEUE_REQUEST_ADD">QUEUE_REQUEST_ADD</a> called to setup the Install Request that is to be queried</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A GET_INSTALL_REQUEST_COMPLETED request is sent from Web Server to SOTA Server with an Install Request ID</li>
-<li>E2 - SOTA Server database is searched for the Install Request ID</li>
-<li>E3 - Each VIN that has successfully completed the Install Request is retrieved, together with the timestamp of completion, from the database</li>
-<li>E4 - A success code is returned by SOTA Server to Web Server together with all retrieved VINs</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Install Request ID does not exist. Triggered by E2</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="queue_get_failed_vins-list-vins-for-which-installation-failed-for-installation-request"><a name="QUEUE_GET_FAILED_VINS"><a href="#QUEUE_GET_FAILED_VINS">QUEUE_GET_FAILED_VINS</a> List VINs for which installation failed for Installation Request</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#QUEUE_REQUEST_ADD">QUEUE_REQUEST_ADD</a> called to setup the Install Request that is to be queried</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A GET_INSTALL_REQUEST_COMPLETED request is sent from Web Server to SOTA Server with an Install Request ID</p>
+</li>
+<li>
+<p>E2 - SOTA Server database is searched for the Install Request ID</p>
+</li>
+<li>
+<p>E3 - Each VIN that has successfully completed the Install Request is retrieved, together with the timestamp of completion, from the database</p>
+</li>
+<li>
+<p>E4 - A success code is returned by SOTA Server to Web Server together with all retrieved VINs</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Install Request ID does not exist. Triggered by E2</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="QUEUE_GET_FAILED_VINS"><a href="#QUEUE_GET_FAILED_VINS">QUEUE_GET_FAILED_VINS</a> List VINs for which installation failed for Installation Request</h3>
+<div class="paragraph">
 <p>Retrieve install requests for a given Install Request ID which have failed</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li><a href="#QUEUE_REQUEST_ADD">QUEUE_REQUEST_ADD</a> called to setup the Install Request that is to be queried</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A GET_INSTALL_REQUEST_COMPLETED request is sent from Web Server to SOTA Server with an Install Request ID</li>
-<li>E2 - SOTA Server database is searched for the Install Request ID</li>
-<li>E3 - All VINs that have failed to receive a software update as a part of the specified Request ID are retrieved, together with an error code and a time stamp, from the database</li>
-<li>E4 - A success code is returned by SOTA Server to Web Server together with all retrieved VINS and their error codes and time stamps.</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Install Request ID does not exist. Triggered by E2</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="queue_get_next_software_update-get-current-or-next-queued-installation-request-for-vin"><a name="QUEUE_GET_NEXT_SOFTWARE_UPDATE"><a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE">QUEUE_GET_NEXT_SOFTWARE_UPDATE</a> Get current or next queued Installation Request for VIN</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#QUEUE_REQUEST_ADD">QUEUE_REQUEST_ADD</a> called to setup the Install Request that is to be queried</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A GET_INSTALL_REQUEST_COMPLETED request is sent from Web Server to SOTA Server with an Install Request ID</p>
+</li>
+<li>
+<p>E2 - SOTA Server database is searched for the Install Request ID</p>
+</li>
+<li>
+<p>E3 - All VINs that have failed to receive a software update as a part of the specified Request ID are retrieved, together with an error code and a time stamp, from the database</p>
+</li>
+<li>
+<p>E4 - A success code is returned by SOTA Server to Web Server together with all retrieved VINS and their error codes and time stamps.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Install Request ID does not exist. Triggered by E2</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="QUEUE_GET_NEXT_SOFTWARE_UPDATE"><a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE">QUEUE_GET_NEXT_SOFTWARE_UPDATE</a> Get current or next queued Installation Request for VIN</h3>
+<div class="paragraph">
 <p>Sub use case used by <a href="#QUEUE_INITIATE_XMIT">QUEUE_INITIATE_XMIT</a> and <a href="#TRANSFER_START">TRANSFER_START</a> to determine which software update to transmit next to a specific VIN</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>External Resolver</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>Invoked by <a href="#QUEUE_INITIATE_XMIT">QUEUE_INITIATE_XMIT</a> or <a href="#TRANSFER_START">TRANSFER_START</a></li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - SOTA Server checks if there is a software update marked as in-flight for the targeted VIN</li>
-<li>E2 - If an in-flight update was found, it is returned to the invoker of this use case. End of use case</li>
-<li>E3 - SOTA Server retrieves all currently pending software updates for the target VIN from the database</li>
-<li>E4 - All retrieved software updates are sorted by the priority provided to QUEUE_REQUEST_ADD when the updates were created</li>
-<li>E5 - All software updates with the same priority are sorted by their creation date/time stamp.</li>
-<li>E6 - The software update at the top of the priority- and date/time stamp-sorted list is retrieved for transfer, including all its dependent-upon packages</li>
-<li>E7 - The size of the software update is verified to be less than the remaining bytes of the active billing cycle of the data plan used by the target VIN</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>A1 - No packages are pending for the VIN. Use case returns with a nothing-to-do answer. Triggered by E3</li>
-<li>A2 - No data plan has been set by VIN. Use case returns successfully with the given software update. Triggered by E7</li>
-<li>A3 - Software update size is greater than remaining size of current billing cycle. Use case returns an over size error. Triggered by E7</li>
-</ul></li>
+<li>
+<p>External Resolver</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="queue_initiate_xmit"><a name="QUEUE_INITIATE_XMIT"><a href="#QUEUE_INITIATE_XMIT">QUEUE_INITIATE_XMIT</a> </a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Invoked by <a href="#QUEUE_INITIATE_XMIT">QUEUE_INITIATE_XMIT</a> or <a href="#TRANSFER_START">TRANSFER_START</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - SOTA Server checks if there is a software update marked as in-flight for the targeted VIN</p>
+</li>
+<li>
+<p>E2 - If an in-flight update was found, it is returned to the invoker of this use case. End of use case</p>
+</li>
+<li>
+<p>E3 - SOTA Server retrieves all currently pending software updates for the target VIN from the database</p>
+</li>
+<li>
+<p>E4 - All retrieved software updates are sorted by the priority provided to QUEUE_REQUEST_ADD when the updates were created</p>
+</li>
+<li>
+<p>E5 - All software updates with the same priority are sorted by their creation date/time stamp.</p>
+</li>
+<li>
+<p>E6 - The software update at the top of the priority- and date/time stamp-sorted list is retrieved for transfer, including all its dependent-upon packages</p>
+</li>
+<li>
+<p>E7 - The size of the software update is verified to be less than the remaining bytes of the active billing cycle of the data plan used by the target VIN</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>A1 - No packages are pending for the VIN. Use case returns with a nothing-to-do answer. Triggered by E3</p>
+</li>
+<li>
+<p>A2 - No data plan has been set by VIN. Use case returns successfully with the given software update. Triggered by E7</p>
+</li>
+<li>
+<p>A3 - Software update size is greater than remaining size of current billing cycle. Use case returns an over size error. Triggered by E7</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="QUEUE_INITIATE_XMIT"><a href="#QUEUE_INITIATE_XMIT">QUEUE_INITIATE_XMIT</a></h3>
+<div class="paragraph">
 <p>Periodically go through all queued software updates targeting VINs and initiate the transmission of those ready to send</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>High-level scheduler triggers this use case periodically</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - All VINs with pending software or in-flight updates are retrieved. (Failed, completed, and in-flight updates are ignored.)</li>
-<li>E2 - Each VIN is traversed in a non-specified order</li>
-<li>E3 - If the currently traversed VIN’s Device is connected to SOTA Server, the VIN is skipped. (Ignore VINs that are currently being communicated with.)</li>
-<li>E4 - If the currently traversed VIN has had DEV_WAKEUP, or DEV_DISCONNECT executed within the number of seconds specified by the VIN’s reconnect interval provided to VIN_ADD, the VIN is skipped. (Ignore VINs that we’ve tried to communicate with during the last number of seconds specified by the reconnect interval. Avoids continuous reconnect attempts.)</li>
-<li>E5 - Use case <a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE">QUEUE_GET_NEXT_SOFTWARE_UPDATE</a> is executed to retrieve the next in-flight or pending software to (continue to) send to the VIN</li>
-<li>E6 - Send a wakeup signal to trigger DEV_WAKEUP on the currently traversed VIN. (Wakeup/shoulder tap SMS)</li>
-<li>E7 - A success code is returned together with the number VINs that have been sent a wakeup signal</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>A1 - <a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE">QUEUE_GET_NEXT_SOFTWARE_UPDATE</a> returns ‘nothing-to-do’. Use case continues at E3 with the next VIN from the list retrieved in E1. Triggered by E5</li>
-<li>A2 - <a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE">QUEUE_GET_NEXT_SOFTWARE_UPDATE</a> returns oversize error. Use case continues at E3 with the next VIN from the list retrieved in E1. (Will leave the oversized update as pending until the next billing cycle for the data plan used by the VIN becomes active.) Triggered by E5</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="queue_purge-purge-failing-or-expired-installation-requests-from-queue"><a name="QUEUE_PURGE"><a href="#QUEUE_PURGE">QUEUE_PURGE</a> Purge failing or expired Installation Requests from Queue</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>High-level scheduler triggers this use case periodically</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - All VINs with pending software or in-flight updates are retrieved. (Failed, completed, and in-flight updates are ignored.)</p>
+</li>
+<li>
+<p>E2 - Each VIN is traversed in a non-specified order</p>
+</li>
+<li>
+<p>E3 - If the currently traversed VIN&#8217;s Device is connected to SOTA Server, the VIN is skipped. (Ignore VINs that are currently being communicated with.)</p>
+</li>
+<li>
+<p>E4 - If the currently traversed VIN has had DEV_WAKEUP, or DEV_DISCONNECT executed within the number of seconds specified by the VIN&#8217;s reconnect interval provided to VIN_ADD, the VIN is skipped. (Ignore VINs that we&#8217;ve tried to communicate with during the last number of seconds specified by the reconnect interval. Avoids continuous reconnect attempts.)</p>
+</li>
+<li>
+<p>E5 - Use case <a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE">QUEUE_GET_NEXT_SOFTWARE_UPDATE</a> is executed to retrieve the next in-flight or pending software to (continue to) send to the VIN</p>
+</li>
+<li>
+<p>E6 - Send a wakeup signal to trigger DEV_WAKEUP on the currently traversed VIN. (Wakeup/shoulder tap SMS)</p>
+</li>
+<li>
+<p>E7 - A success code is returned together with the number VINs that have been sent a wakeup signal</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>A1 - <a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE">QUEUE_GET_NEXT_SOFTWARE_UPDATE</a> returns 'nothing-to-do'. Use case continues at E3 with the next VIN from the list retrieved in E1. Triggered by E5</p>
+</li>
+<li>
+<p>A2 - <a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE">QUEUE_GET_NEXT_SOFTWARE_UPDATE</a> returns oversize error. Use case continues at E3 with the next VIN from the list retrieved in E1. (Will leave the oversized update as pending until the next billing cycle for the data plan used by the VIN becomes active.) Triggered by E5</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="QUEUE_PURGE"><a href="#QUEUE_PURGE">QUEUE_PURGE</a> Purge failing or expired Installation Requests from Queue</h3>
+<div class="paragraph">
 <p>Periodically go through all pending software updates that are not complete, failed, or in flight and remove those whose date/time install interval has expired.</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>High-level scheduler triggers this use case periodically</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - All pending software updates are retrieved from the database.</li>
-<li>E2 - Each pending software update has its date/time Install Interval compared with the current date and time.</li>
-<li>E3 - If the current date/time is before or inside of the software update’s Install Interval, it will not be touched, and the next software pending software update is examined</li>
-<li>E4 - If the current date/time is after the software update’s Install Interval, it will be marked as failed. (The software update will be returned in future calls to <a href="#QUEUE_GET_FAILED_VINS">QUEUE_GET_FAILED_VINS</a>)</li>
-<li>E5 - The failed update will have an error code set as “expired”</li>
-<li>E6 - The failed update will have a failure date/time stamp set to the current time.</li>
-<li>E7 - A success code is returned together with the number of purged updates.</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>None</li>
-</ul></li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="queue_request_get_all_packages-get-list-of-packages-queued-for-a-vin"><a name="QUEUE_REQUEST_GET_ALL_PACKAGES"><a href="#QUEUE_REQUEST_GET_ALL_PACKAGES">QUEUE_REQUEST_GET_ALL_PACKAGES</a> Get list of Packages queued for a VIN</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>High-level scheduler triggers this use case periodically</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - All pending software updates are retrieved from the database.</p>
+</li>
+<li>
+<p>E2 - Each pending software update has its date/time Install Interval compared with the current date and time.</p>
+</li>
+<li>
+<p>E3 - If the current date/time is before or inside of the software update&#8217;s Install Interval, it will not be touched, and the next software pending software update is examined</p>
+</li>
+<li>
+<p>E4 - If the current date/time is after the software update&#8217;s Install Interval, it will be marked as failed. (The software update will be returned in future calls to <a href="#QUEUE_GET_FAILED_VINS">QUEUE_GET_FAILED_VINS</a>)</p>
+</li>
+<li>
+<p>E5 - The failed update will have an error code set as "expired"</p>
+</li>
+<li>
+<p>E6 - The failed update will have a failure date/time stamp set to the current time.</p>
+</li>
+<li>
+<p>E7 - A success code is returned together with the number of purged updates.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="QUEUE_REQUEST_GET_ALL_PACKAGES"><a href="#QUEUE_REQUEST_GET_ALL_PACKAGES">QUEUE_REQUEST_GET_ALL_PACKAGES</a> Get list of Packages queued for a VIN</h3>
+<div class="paragraph">
 <p>A request to retrieve a list of all installed packages is queued for a specific VIN</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Web Server</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>VIN added with <a href="#VIN_ADD">VIN_ADD</a></li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - A GET_ALL_PACKAGES request is sent from Web Server to SOTA Server with a VIN to retrieve the installed software list
-<ul>
-<li>The date/time interval specifies an earliest and latest install date and time stamp within which the install must be initiated</li>
-</ul></li>
-<li>E2 - The database is searched for the VIN</li>
-<li>E3 - SOTA Server creates a GET_ALL_PACKAGES request containing the VIN, a default date/time interval, a default priority, and a creation date/time stamp set to the current time.</li>
-<li>E4 - A unique Request ID, used in all future references to the installation request, is returned by SOTA Server to Web Server</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - The VIN does not exist. An error code is sent back to Web Server</li>
-</ul></li>
+<li>
+<p>Web Server</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h2 id="device-interaction"><a name="device-interaction">Device Interaction</a></h2>
-<h3 id="dev_wakeup-send-wake-up-event-to-vin-triggering-dev_connect"><a name="DEV_WAKEUP"><a href="#DEV_WAKEUP">DEV_WAKEUP</a> Send Wake-up event to VIN, triggering <a href="#DEV_CONNECT">DEV_CONNECT</a></a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>VIN added with <a href="#VIN_ADD">VIN_ADD</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - A GET_ALL_PACKAGES request is sent from Web Server to SOTA Server with a VIN to retrieve the installed software list</p>
+<div class="ulist">
+<ul>
+<li>
+<p>The date/time interval specifies an earliest and latest install date and time stamp within which the install must be initiated</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>E2 - The database is searched for the VIN</p>
+</li>
+<li>
+<p>E3 - SOTA Server creates a GET_ALL_PACKAGES request containing the VIN, a default date/time interval, a default priority, and a creation date/time stamp set to the current time.</p>
+</li>
+<li>
+<p>E4 - A unique Request ID, used in all future references to the installation request, is returned by SOTA Server to Web Server</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - The VIN does not exist. An error code is sent back to Web Server</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="DEVICE">Device Interaction</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="DEV_WAKEUP"><a href="#DEV_WAKEUP">DEV_WAKEUP</a> Send Wake-up event to VIN, triggering <a href="#DEV_CONNECT">DEV_CONNECT</a></h3>
+<div class="paragraph">
 <p>A Device receives a wakeup notification sent by a <a href="#QUEUE_INITIATE_XMIT">QUEUE_INITIATE_XMIT</a> use case and will start the download and install software update process.</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Device</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>None</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - The Device receives a wakeup notification via a mobile or other network trigger mechanism.</li>
-<li>E2 - The Device uses PKI-based signatures to validate that the wakeup notification is from SOTA Server</li>
-<li>E3 - The <a href="#DEV_CONNECT">DEV_CONNECT</a> use cases is executed.</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - PKI validation failed. The message is ignored and the use cases is terminated. Triggered by E2</li>
-</ul></li>
+<li>
+<p>Device</p>
+</li>
 </ul>
-<h3 id="dev_connect-device-connects-to-sota-server-to-process-or-resume-installation-request"><a name="DEV_CONNECT"><a href="#DEV_CONNECT">DEV_CONNECT</a> Device connects to SOTA Server to process or resume Installation Request</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>None</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - The Device receives a wakeup notification via a mobile or other network trigger mechanism.</p>
+</li>
+<li>
+<p>E2 - The Device uses PKI-based signatures to validate that the wakeup notification is from SOTA Server</p>
+</li>
+<li>
+<p>E3 - The <a href="#DEV_CONNECT">DEV_CONNECT</a> use cases is executed.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - PKI validation failed. The message is ignored and the use cases is terminated. Triggered by E2</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="DEV_CONNECT"><a href="#DEV_CONNECT">DEV_CONNECT</a> Device connects to SOTA Server to process or resume Installation Request</h3>
+<div class="paragraph">
 <p>The device connects to SOTA Server in order to start or continue a download of a software update targeting the VIN of the device.</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Device</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li><a href="#DEV_WAKEUP">DEV_WAKEUP</a> executed, or periodic server connect occurs.</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - The Device sets up a network connection</li>
-<li>E2 - The Device connects to the predefined SOTA Server</li>
-<li>E3 - The Device authenticates itself to the SOTA Server</li>
-<li>E4 - The SOTA Server authenticates itself to the Device</li>
-<li>E5 - Use case transitions to <a href="#UPDATE_NOTIFICATION">UPDATE_NOTIFICATION</a></li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li><p>X1 - Network connection failed. Triggered by E1.</p>
-<ul>
-<li>If this is the N:th time that <a href="#DEV_CONNECT">DEV_CONNECT</a> has failed to connect, the use case is terminated</li>
-<li>A preconfigured incremental waiting period is setup</li>
-<li>The <a href="#DEV_CONNECT">DEV_CONNECT</a> use case is executed again</li>
-</ul></li>
-<li>X2 - Device Authentication fails. Use case transitions to <a href="#DEV_DISCONNECT">DEV_DISCONNECT</a>. Triggered by E3</li>
-<li>X3 - SOTA Server Authentication fails. Use case transitions to <a href="#DEV_DISCONNECT">DEV_DISCONNECT</a>. Triggered by E4</li>
-<li>A1 - <a href="#TRIGGER_TRANSFER_START">TRIGGER_TRANSFER_START</a> is waiting to have its message sent to SOTA Server. The use case transitions to <a href="#TRIGGER_TRANSFER_START">TRIGGER_TRANSFER_START</a>-E2. Triggered by E5.</li>
-<li>A2 - <a href="#TRANSFER_START">TRANSFER_START</a> is waiting to have its message sent to Device. The use case transitions to <a href="#TRANSFER_START">TRANSFER_START</a>-E2. Triggered by E5.</li>
-<li>A3 - <a href="#TRANSFER_CHUNK">TRANSFER_CHUNK</a> is waiting to have its message sent to Device. The use case transitions to <a href="#TRANSFER_CHUNK">TRANSFER_CHUNK</a>-E2. Triggered by E5.</li>
-<li><p>A4 - <a href="#TRANSFER_COMPLETE">TRANSFER_COMPLETE</a> is waiting to have its message sent to Device. The use case transitions to <a href="#TRANSFER_COMPLETE">TRANSFER_COMPLETE</a>-E1. Triggered by E5.</p></li>
-</ul></li>
+<li>
+<p>Device</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="dev_disconnect-sota-server-instructs-device-to-disconnect"><a name="DEV_DISCONNECT"><a href="#DEV_DISCONNECT">DEV_DISCONNECT</a> SOTA Server instructs Device to disconnect</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#DEV_WAKEUP">DEV_WAKEUP</a> executed, or periodic server connect occurs.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - The Device sets up a network connection</p>
+</li>
+<li>
+<p>E2 - The Device connects to the predefined SOTA Server</p>
+</li>
+<li>
+<p>E3 - The Device authenticates itself to the SOTA Server</p>
+</li>
+<li>
+<p>E4 - The SOTA Server authenticates itself to the Device</p>
+</li>
+<li>
+<p>E5 - Use case transitions to <a href="#UPDATE_NOTIFICATION">UPDATE_NOTIFICATION</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Network connection failed. Triggered by E1.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>If this is the N:th time that <a href="#DEV_CONNECT">DEV_CONNECT</a> has failed to connect, the use case is terminated</p>
+</li>
+<li>
+<p>A preconfigured incremental waiting period is setup</p>
+</li>
+<li>
+<p>The <a href="#DEV_CONNECT">DEV_CONNECT</a> use case is executed again</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>X2 - Device Authentication fails. Use case transitions to <a href="#DEV_DISCONNECT">DEV_DISCONNECT</a>. Triggered by E3</p>
+</li>
+<li>
+<p>X3 - SOTA Server Authentication fails. Use case transitions to <a href="#DEV_DISCONNECT">DEV_DISCONNECT</a>. Triggered by E4</p>
+</li>
+<li>
+<p>A1 - <a href="#TRIGGER_TRANSFER_START">TRIGGER_TRANSFER_START</a> is waiting to have its message sent to SOTA Server. The use case transitions to <a href="#TRIGGER_TRANSFER_START">TRIGGER_TRANSFER_START</a>-E2. Triggered by E5.</p>
+</li>
+<li>
+<p>A2 - <a href="#TRANSFER_START">TRANSFER_START</a> is waiting to have its message sent to Device. The use case transitions to <a href="#TRANSFER_START">TRANSFER_START</a>-E2. Triggered by E5.</p>
+</li>
+<li>
+<p>A3 - <a href="#TRANSFER_CHUNK">TRANSFER_CHUNK</a> is waiting to have its message sent to Device. The use case transitions to <a href="#TRANSFER_CHUNK">TRANSFER_CHUNK</a>-E2. Triggered by E5.</p>
+</li>
+<li>
+<p>A4 - <a href="#TRANSFER_COMPLETE">TRANSFER_COMPLETE</a> is waiting to have its message sent to Device. The use case transitions to <a href="#TRANSFER_COMPLETE">TRANSFER_COMPLETE</a>-E1. Triggered by E5.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="DEV_DISCONNECT"><a href="#DEV_DISCONNECT">DEV_DISCONNECT</a> SOTA Server instructs Device to disconnect</h3>
+<div class="paragraph">
 <p>Disconnect a server session</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Device</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>Multiple</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - SOTA Server sends Disconnect command to Device</li>
-<li>E2 - Device terminates network connection</li>
-<li>E3 - Device schedules next time to execute <a href="#DEV_CONNECT">DEV_CONNECT</a></li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Network connection lost before disconnect is received by device. Triggered by E1. <a href="#DEV_CONNECT">DEV_CONNECT</a> is executed X times in order to reconnet to the server.</li>
-</ul></li>
+<li>
+<p>Device</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="update_notification-send-any-queued-installation-requests-queue_get_next_software_update-to-device"><a name="UPDATE_NOTIFICATION"><a href="#UPDATE_NOTIFICATION">UPDATE_NOTIFICATION</a> Send any queued Installation Requests (<a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE">QUEUE_GET_NEXT_SOFTWARE_UPDATE</a>) to Device</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Multiple</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - SOTA Server sends Disconnect command to Device</p>
+</li>
+<li>
+<p>E2 - Device terminates network connection</p>
+</li>
+<li>
+<p>E3 - Device schedules next time to execute <a href="#DEV_CONNECT">DEV_CONNECT</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Network connection lost before disconnect is received by device. Triggered by E1. <a href="#DEV_CONNECT">DEV_CONNECT</a> is executed X times in order to reconnet to the server.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="UPDATE_NOTIFICATION"><a href="#UPDATE_NOTIFICATION">UPDATE_NOTIFICATION</a> Send any queued Installation Requests (<a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE">QUEUE_GET_NEXT_SOFTWARE_UPDATE</a>) to Device</h3>
+<div class="paragraph">
 <p>Send a notification of available software updates to vehicle</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Device</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li><a href="#DEV_CONNECT">DEV_CONNECT</a> has been executed to setup and authenicate a SOTA Server - Device connection.</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - Use case <a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE">QUEUE_GET_NEXT_SOFTWARE_UPDATE</a> is executed to retrieve the next pending or in-flight update to transfer / continue.</li>
-<li>E2 - A SOFTWARE_UPDATE_AVAILABLE command is sent by SOTA Server to Device with the Package IDs included in the download, size, a download index and a descriptive string</li>
-<li>E3 - Device forwards the update information to the Software Loading Manager. The Software Loading Manager will either wait for a user confirmation, or automatically initiate the download.</li>
-<li>E4 - Use case transitions to <a href="#TRIGGER_TRANSFER_START">TRIGGER_TRANSFER_START</a></li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Network connection lost before update is received by device. Triggered by E2. <a href="#DEV_CONNECT">DEV_CONNECT</a> is executed X times in order to reconnet to the server.</li>
-</ul></li>
+<li>
+<p>Device</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="trigger_transfer_start-software-loading-manager-requests-download-from-sota-server-via-sota-client"><a name="TRIGGER_TRANSFER_START"><a href="#TRIGGER_TRANSFER_START">TRIGGER_TRANSFER_START</a> Software Loading Manager requests download from SOTA Server via SOTA Client</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#DEV_CONNECT">DEV_CONNECT</a> has been executed to setup and authenicate a SOTA Server - Device connection.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - Use case <a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE">QUEUE_GET_NEXT_SOFTWARE_UPDATE</a> is executed to retrieve the next pending or in-flight update to transfer / continue.</p>
+</li>
+<li>
+<p>E2 - A SOFTWARE_UPDATE_AVAILABLE command is sent by SOTA Server to Device with the Package IDs included in the download, size, a download index and a descriptive string</p>
+</li>
+<li>
+<p>E3 - Device forwards the update information to the Software Loading Manager. The Software Loading Manager will either wait for a user confirmation, or automatically initiate the download.</p>
+</li>
+<li>
+<p>E4 - Use case transitions to <a href="#TRIGGER_TRANSFER_START">TRIGGER_TRANSFER_START</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Network connection lost before update is received by device. Triggered by E2. <a href="#DEV_CONNECT">DEV_CONNECT</a> is executed X times in order to reconnet to the server.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="TRIGGER_TRANSFER_START"><a href="#TRIGGER_TRANSFER_START">TRIGGER_TRANSFER_START</a> Software Loading Manager requests download from SOTA Server via SOTA Client</h3>
+<div class="paragraph">
 <p>Send a request to start the transfer from</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Device</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li><a href="#UPDATE_NOTIFICATION">UPDATE_NOTIFICATION</a> has been executed. Connection is up.</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - An INITIATE_SOFTWARE_DOWNLOAD command is sent by Software Loading Manager to SOTA Client on Device</li>
-<li>E2 - An INITIATE_SOFTWARE_DOWNLOAD command is forwarded by Device to SOTA Server together with the download index provided by <a href="#UPDATE_NOTIFICATION">UPDATE_NOTIFICATION</a></li>
-<li>E3 - Use case transitions to <a href="#TRANSFER_START">TRANSFER_START</a></li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li><p>A1 - Software Loading Manager cancels download instead of starting it. Triggered by E1.</p>
-<ul>
-<li>A CANCEL_SOFTWARE_DOWNLOAD is forwarded by Device to SOTA Server together with the update notification</li>
-<li>Use case transitions to <a href="#DEV_DISCONNECT">DEV_DISCONNECT</a></li>
-</ul></li>
-<li><p>X1 - Network connection lost before Initiate / Cancel Software Download is sent. Triggered by E2. Use case transitions to <a href="#DEV_CONNECT">DEV_CONNECT</a>.</p></li>
-</ul></li>
+<li>
+<p>Device</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="transfer_start-sota-server-sends-download-metadata-to-device"><a name="TRANSFER_START"><a href="#TRANSFER_START">TRANSFER_START</a> SOTA Server sends Download metadata to Device</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#UPDATE_NOTIFICATION">UPDATE_NOTIFICATION</a> has been executed. Connection is up.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - An INITIATE_SOFTWARE_DOWNLOAD command is sent by Software Loading Manager to SOTA Client on Device</p>
+</li>
+<li>
+<p>E2 - An INITIATE_SOFTWARE_DOWNLOAD command is forwarded by Device to SOTA Server together with the download index provided by <a href="#UPDATE_NOTIFICATION">UPDATE_NOTIFICATION</a></p>
+</li>
+<li>
+<p>E3 - Use case transitions to <a href="#TRANSFER_START">TRANSFER_START</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>A1 - Software Loading Manager cancels download instead of starting it. Triggered by E1.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>A CANCEL_SOFTWARE_DOWNLOAD is forwarded by Device to SOTA Server together with the update notification</p>
+</li>
+<li>
+<p>Use case transitions to <a href="#DEV_DISCONNECT">DEV_DISCONNECT</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>X1 - Network connection lost before Initiate / Cancel Software Download is sent. Triggered by E2. Use case transitions to <a href="#DEV_CONNECT">DEV_CONNECT</a>.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="TRANSFER_START"><a href="#TRANSFER_START">TRANSFER_START</a> SOTA Server sends Download metadata to Device</h3>
+<div class="paragraph">
 <p>Start transfer of an update.</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Device</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li><a href="#DEV_CONNECT">DEV_CONNECT</a> has been executed to setup and authenticate a SOTA Server - Device connection <em>OR</em></li>
-<li><a href="#INSTALL_REPORT">INSTALL_REPORT</a> has been executed to signal the success or failure of a previous install</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - An INITIATE_SOFTWARE_DOWNLOAD command is received by SOTA Server from Device.</li>
-<li>E2 - An START_DOWNLOAD command is sent by SOTA Server to Device with the Package IDs to be installed and the total size of the transfer.</li>
-<li>E3 - Device verifies that it has the resources to receive the package from SOTA Server.</li>
-<li>E4 - Use case transitions to <a href="#TRANSFER_CHUNK">TRANSFER_CHUNK</a></li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>A1.1 - CANCEL_SOFTWARE_DOWNLOAD received. Triggered by E1. Use case transitions to <a href="#INSTALL_REPORT">INSTALL_REPORT</a> with a CANCELLED result code. (Software update was cancelled by Software Loading Manager, possibly after the user pressed “no” in a confirmation dialog).</li>
-<li>A1 - Network connection was lost before START_DOWNLOAD command was sent. Triggered by E1. Use case transitions to <a href="#DEV_DISCONNECT">DEV_DISCONNECT</a>. (No packages available for transfer since they were cancelled between <a href="#QUEUE_INITIATE_XMIT">QUEUE_INITIATE_XMIT</a> and this use case)</li>
-<li>A2 - Software update is marked as in-flight. Use case transitions to <a href="#TRANSFER_CHUNK">TRANSFER_CHUNK</a>. (We are picking up a previously interrupted software update transfer and want to move on to the next chunk of the update)</li>
-<li>A3 - Next element in queue is a GET_ALL_PACKAGES request. Use case transitions to <a href="#GET_ALL_PACKAGES">GET_ALL_PACKAGES</a></li>
-</ul></li>
+<li>
+<p>Device</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="transfer_chunk-sota-server-sends-next-download-chunk-to-device"><a name="TRANSFER_CHUNK"><a href="#TRANSFER_CHUNK">TRANSFER_CHUNK</a> SOTA Server sends next Download chunk to Device</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#DEV_CONNECT">DEV_CONNECT</a> has been executed to setup and authenticate a SOTA Server - Device connection <em>OR</em></p>
+</li>
+<li>
+<p><a href="#INSTALL_REPORT">INSTALL_REPORT</a> has been executed to signal the success or failure of a previous install</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - An INITIATE_SOFTWARE_DOWNLOAD command is received by SOTA Server from Device.</p>
+</li>
+<li>
+<p>E2 - An START_DOWNLOAD command is sent by SOTA Server to Device with the Package IDs to be installed and the total size of the transfer.</p>
+</li>
+<li>
+<p>E3 - Device verifies that it has the resources to receive the package from SOTA Server.</p>
+</li>
+<li>
+<p>E4 - Use case transitions to <a href="#TRANSFER_CHUNK">TRANSFER_CHUNK</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>A1.1 - CANCEL_SOFTWARE_DOWNLOAD received. Triggered by E1. Use case transitions to <a href="#INSTALL_REPORT">INSTALL_REPORT</a> with a CANCELLED result code. (Software update was cancelled by Software Loading Manager, possibly after the user pressed "no" in a confirmation dialog).</p>
+</li>
+<li>
+<p>A1 - Network connection was lost before START_DOWNLOAD command was sent. Triggered by E1. Use case transitions to <a href="#DEV_DISCONNECT">DEV_DISCONNECT</a>. (No packages available for transfer since they were cancelled between <a href="#QUEUE_INITIATE_XMIT">QUEUE_INITIATE_XMIT</a> and this use case)</p>
+</li>
+<li>
+<p>A2 - Software update is marked as in-flight. Use case transitions to <a href="#TRANSFER_CHUNK">TRANSFER_CHUNK</a>. (We are picking up a previously interrupted software update transfer and want to move on to the next chunk of the update)</p>
+</li>
+<li>
+<p>A3 - Next element in queue is a GET_ALL_PACKAGES request. Use case transitions to <a href="#GET_ALL_PACKAGES">GET_ALL_PACKAGES</a></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="TRANSFER_CHUNK"><a href="#TRANSFER_CHUNK">TRANSFER_CHUNK</a> SOTA Server sends next Download chunk to Device</h3>
+<div class="paragraph">
 <p>Transfer a chunk of data for an update</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Device</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li><a href="#TRANSFER_START">TRANSFER_START</a> has been executed.</li>
-<li>Device is connected to SOTA Server</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - SOTA Server retrieves the lowest numbered chunk (data block) that has yet to be transferred to Device</li>
-<li>E2 - SOTA Server transmits chunk to Device</li>
-<li>E3 - Device receives chunk</li>
-<li>E4 - Device stores chunk at its correct position in the package being built up</li>
-<li>E5 - Device sense acknowledgement of successful chunk receipt to SOTA Server</li>
-<li>E6 - SOTA Server marks chunk as successfully transmitted</li>
-<li>E7 - Use case restarts at E1 with next untransmitted chunk</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>A1 - No more chunks to transmit. Triggered by E1. Use case transitions to <a href="#TRANSFER_COMPLETE">TRANSFER_COMPLETE</a></li>
-<li>X1 - Network connection is lost before chunk is received by Device. Triggered by E2. <a href="#DEV_CONNECT">DEV_CONNECT</a> is executed X times in order to reconned to the server. After X times, we rely on <a href="#QUEUE_INITIATE_XMIT">QUEUE_INITIATE_XMIT</a> for future retries.</li>
-<li><p>A2 - Chunk has already been received. Triggered by E4. (Retransmit of chunks are allowed in case the ack in E5 is lost).</p>
-<ul>
-<li>A2.1 - New chunk is dropped</li>
-<li>A2.2 - Use case continues at E5</li>
-</ul></li>
-<li><p>X2 - Network connection lost before acknowledgement is received by SOTA Server. Triggered by E5. <a href="#DEV_CONNECT">DEV_CONNECT</a> is executed X times in order to reconnect to the server. Chunk will be retransmitted, and E4.A1 will handle the case. After X time, we rely on <a href="#QUEUE_INITIATE_XMIT">QUEUE_INITIATE_XMIT</a> for future retries.</p></li>
-</ul></li>
+<li>
+<p>Device</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="transfer_complete-sota-server-sends-finalize-download-to-device"><a name="TRANSFER_COMPLETE"><a href="#TRANSFER_COMPLETE">TRANSFER_COMPLETE</a> SOTA Server sends Finalize Download to Device</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#TRANSFER_START">TRANSFER_START</a> has been executed.</p>
+</li>
+<li>
+<p>Device is connected to SOTA Server</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - SOTA Server retrieves the lowest numbered chunk (data block) that has yet to be transferred to Device</p>
+</li>
+<li>
+<p>E2 - SOTA Server transmits chunk to Device</p>
+</li>
+<li>
+<p>E3 - Device receives chunk</p>
+</li>
+<li>
+<p>E4 - Device stores chunk at its correct position in the package being built up</p>
+</li>
+<li>
+<p>E5 - Device sense acknowledgement of successful chunk receipt to SOTA Server</p>
+</li>
+<li>
+<p>E6 - SOTA Server marks chunk as successfully transmitted</p>
+</li>
+<li>
+<p>E7 - Use case restarts at E1 with next untransmitted chunk</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>A1 - No more chunks to transmit. Triggered by E1. Use case transitions to <a href="#TRANSFER_COMPLETE">TRANSFER_COMPLETE</a></p>
+</li>
+<li>
+<p>X1 - Network connection is lost before chunk is received by Device. Triggered by E2. <a href="#DEV_CONNECT">DEV_CONNECT</a> is executed X times in order to reconned to the server. After X times, we rely on <a href="#QUEUE_INITIATE_XMIT">QUEUE_INITIATE_XMIT</a> for future retries.</p>
+</li>
+<li>
+<p>A2 - Chunk has already been received. Triggered by E4. (Retransmit of chunks are allowed in case the ack in E5 is lost).</p>
+<div class="ulist">
+<ul>
+<li>
+<p>A2.1 - New chunk is dropped</p>
+</li>
+<li>
+<p>A2.2 - Use case continues at E5</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>X2 - Network connection lost before acknowledgement is received by SOTA Server. Triggered by E5. <a href="#DEV_CONNECT">DEV_CONNECT</a> is executed X times in order to reconnect to the server. Chunk will be retransmitted, and E4.A1 will handle the case. After X time, we rely on <a href="#QUEUE_INITIATE_XMIT">QUEUE_INITIATE_XMIT</a> for future retries.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="TRANSFER_COMPLETE"><a href="#TRANSFER_COMPLETE">TRANSFER_COMPLETE</a> SOTA Server sends Finalize Download to Device</h3>
+<div class="paragraph">
 <p>Finalize an update transfer</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Device</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li>Called by <a href="#TRANSFER_CHUNK">TRANSFER_CHUNK</a>-A1.</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - SOTA Server sends FINALIZE_DOWNLOAD command to Device</li>
-<li>E2 - Device validates that all chunks have been received</li>
-<li>E3 - SOTA Server marks software update as in-flight with 0 bytes left to transmit.</li>
-<li>E4 - Use case transitions to <a href="#INSTALL_SOFTWARE_UPDATE">INSTALL_SOFTWARE_UPDATE</a></li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Network connection lost before FINALIZE_DOWNLOAD command is received by Device. Triggered by E1. <a href="#DEV_CONNECT">DEV_CONNECT</a> is executed X times in order to reconnect to the server. After X times we rely on <a href="#QUEUE_INITIATE_XMIT">QUEUE_INITIATE_XMIT</a> for future retries.</li>
-<li>X2.1 - Chunks are missing on Device, even if SOTA Server believes all have been transmitted. Triggered by E2. Use case transitions to <a href="#INSTALL_SOFTWARE_UPDATE">INSTALL_SOFTWARE_UPDATE</a> with an INCOMPLETE_DOWNLOAD result code.</li>
-</ul></li>
+<li>
+<p>Device</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
-<h3 id="install_software_update-device-installs-all-received-packages"><a name="INSTALL_SOFTWARE_UPDATE"><a href="#INSTALL_SOFTWARE_UPDATE">INSTALL_SOFTWARE_UPDATE</a> Device installs all received Packages </a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Called by <a href="#TRANSFER_CHUNK">TRANSFER_CHUNK</a>-A1.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - SOTA Server sends FINALIZE_DOWNLOAD command to Device</p>
+</li>
+<li>
+<p>E2 - Device validates that all chunks have been received</p>
+</li>
+<li>
+<p>E3 - SOTA Server marks software update as in-flight with 0 bytes left to transmit.</p>
+</li>
+<li>
+<p>E4 - Use case transitions to <a href="#INSTALL_SOFTWARE_UPDATE">INSTALL_SOFTWARE_UPDATE</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Network connection lost before FINALIZE_DOWNLOAD command is received by Device. Triggered by E1. <a href="#DEV_CONNECT">DEV_CONNECT</a> is executed X times in order to reconnect to the server. After X times we rely on <a href="#QUEUE_INITIATE_XMIT">QUEUE_INITIATE_XMIT</a> for future retries.</p>
+</li>
+<li>
+<p>X2.1 - Chunks are missing on Device, even if SOTA Server believes all have been transmitted. Triggered by E2. Use case transitions to <a href="#INSTALL_SOFTWARE_UPDATE">INSTALL_SOFTWARE_UPDATE</a> with an INCOMPLETE_DOWNLOAD result code.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="INSTALL_SOFTWARE_UPDATE"><a href="#INSTALL_SOFTWARE_UPDATE">INSTALL_SOFTWARE_UPDATE</a> Device installs all received Packages</h3>
+<div class="paragraph">
 <p>Validate and install all packages received in a software update from SOTA Server.</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Device</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li><a href="#TRANSFER_COMPLETE">TRANSFER_COMPLETE</a> executed.</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - Device verifies signature and integrity of software updates.</li>
-<li>E2 - Device sends an INSTALL command to the Software Loading Manager.</li>
-<li>E3 - Software Loading Manager returns an installation result code and descriptive text.</li>
-<li>E4 - The installation result is forwarded to the <a href="#INSTALL_REPORT">INSTALL_REPORT</a> use case.</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Package validation fails. Triggered by E1. Use case transitions to <a href="#INSTALL_REPORT">INSTALL_REPORT</a> with a VALIDATION_FAIL result code.</li>
-</ul></li>
+<li>
+<p>Device</p>
+</li>
 </ul>
-<h3 id="install_report-device-reports-installation-result-to-sota-server"><a name="INSTALL_REPORT"><a href="#INSTALL_REPORT">INSTALL_REPORT</a> Device reports Installation Result to SOTA Server</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#TRANSFER_COMPLETE">TRANSFER_COMPLETE</a> executed.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - Device verifies signature and integrity of software updates.</p>
+</li>
+<li>
+<p>E2 - Device sends an INSTALL command to the Software Loading Manager.</p>
+</li>
+<li>
+<p>E3 - Software Loading Manager returns an installation result code and descriptive text.</p>
+</li>
+<li>
+<p>E4 - The installation result is forwarded to the <a href="#INSTALL_REPORT">INSTALL_REPORT</a> use case.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Package validation fails. Triggered by E1. Use case transitions to <a href="#INSTALL_REPORT">INSTALL_REPORT</a> with a VALIDATION_FAIL result code.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="INSTALL_REPORT"><a href="#INSTALL_REPORT">INSTALL_REPORT</a> Device reports Installation Result to SOTA Server</h3>
+<div class="paragraph">
 <p>Report installation success or failure</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Device</li>
-<li>SOTA Server</li>
-<li>External Resolver</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li><a href="#INSTALL_SOFTWARE_UPDATE">INSTALL_SOFTWARE_UPDATE</a> executed.</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - Device sends report with provided result code to SOTA Server</li>
-<li>E2 - If result code is SUCCESS, the software update for the VIN is marked as completed.</li>
-<li>E3 - If result code is not SUCCESS, the software update for the VIN is marked as failed together with provided result code.</li>
-<li>E4 - If result code is SUCCESS, the <a href="#VIN_ADD_PACKAGE">VIN_ADD_PACKAGE</a> use case is executed to update the installed package list of the External Resolver Database.</li>
-<li>E5 - Use case transitions to <a href="#TRANSFER_START">TRANSFER_START</a> to start the transmission of the next software update for the VIN.</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X1 - Network connection lost before report is received by SOTA Server. Triggered by E1. <a href="#DEV_CONNECT">DEV_CONNECT</a> is executed X times in order to reconnect to the server.</li>
-<li>A1 - VIN is already marked as completed. Triggered by E2. Use case transitions to <a href="#TRANSFER_START">TRANSFER_START</a>.</li>
-<li>A2 - VIN is already marked as failed. Triggered by E3. Use case transitions to <a href="#TRANSFER_START">TRANSFER_START</a>.</li>
-</ul></li>
+<li>
+<p>Device</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
+<li>
+<p>External Resolver</p>
+</li>
 </ul>
-<h3 id="get_all_packages-get-list-of-packages-installed-on-a-vin-from-the-device"><a name="GET_ALL_PACKAGES"><a href="#GET_ALL_PACKAGES">GET_ALL_PACKAGES</a> Get list of Packages installed on a VIN (from the Device)</a></h3>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#INSTALL_SOFTWARE_UPDATE">INSTALL_SOFTWARE_UPDATE</a> executed.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - Device sends report with provided result code to SOTA Server</p>
+</li>
+<li>
+<p>E2 - If result code is SUCCESS, the software update for the VIN is marked as completed.</p>
+</li>
+<li>
+<p>E3 - If result code is not SUCCESS, the software update for the VIN is marked as failed together with provided result code.</p>
+</li>
+<li>
+<p>E4 - If result code is SUCCESS, the <a href="#VIN_ADD_PACKAGE">VIN_ADD_PACKAGE</a> use case is executed to update the installed package list of the External Resolver Database.</p>
+</li>
+<li>
+<p>E5 - Use case transitions to <a href="#TRANSFER_START">TRANSFER_START</a> to start the transmission of the next software update for the VIN.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X1 - Network connection lost before report is received by SOTA Server. Triggered by E1. <a href="#DEV_CONNECT">DEV_CONNECT</a> is executed X times in order to reconnect to the server.</p>
+</li>
+<li>
+<p>A1 - VIN is already marked as completed. Triggered by E2. Use case transitions to <a href="#TRANSFER_START">TRANSFER_START</a>.</p>
+</li>
+<li>
+<p>A2 - VIN is already marked as failed. Triggered by E3. Use case transitions to <a href="#TRANSFER_START">TRANSFER_START</a>.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="GET_ALL_PACKAGES"><a href="#GET_ALL_PACKAGES">GET_ALL_PACKAGES</a> Get list of Packages installed on a VIN (from the Device)</h3>
+<div class="paragraph">
 <p>Retrieve all packages currently installed on a device</p>
+</div>
+<div class="ulist">
 <ul>
-<li><p>Actors</p>
+<li>
+<p>Actors</p>
+<div class="ulist">
 <ul>
-<li>Device</li>
-<li>SOTA Server</li>
-</ul></li>
-<li><p>Preconditions</p>
-<ul>
-<li><a href="#DEV_CONNECT">DEV_CONNECT</a> has been executed to setup and authenticate a SOTA Server - Device connection <em>OR</em></li>
-<li><a href="#INSTALL_REPORT">INSTALL_REPORT</a> has been executed to signal the success or failure of a previous install.</li>
-</ul></li>
-<li><p>Steps</p>
-<ul>
-<li>E1 - Use case <a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE">QUEUE_GET_NEXT_SOFTWARE_UPDATE</a> is executed to retrieve the next pending or in-flight update to transfer / continue, yielding instead a queued GET_ALL_PACKAGES request.</li>
-<li>E2 - A GET_ALL_PACKAGES command is sent by SOTA Server to Device.</li>
-<li>E3 - Device uses local package manager to retrieve a list of all installed packages</li>
-<li>E4 - Device returns all installed packages to SOTA Server.</li>
-<li>E4.1 - SOTA Server uses <a href="#VIN_PACKAGE_ADD">VIN_PACKAGE_ADD</a> and <a href="#VIN_PACKAGE_DELETE">VIN_PACKAGE_DELETE</a> to synchronize External Resolver’s installed package list for the given VIN.</li>
-<li>E5 - Use case transitions to <a href="#TRANSFER_START">TRANSFER_START</a> to start.</li>
-</ul></li>
-<li><p>Exceptions</p>
-<ul>
-<li>X3 - Acknowledgement lost due to network disconnect. Triggered by E4. <a href="#DEV_CONNECT">DEV_CONNECT</a> is executed X times in order to reconnect to the server. After X times, we rely on <a href="#QUEUE_INITIATE_XMIT">QUEUE_INITIATE_XMIT</a> for future retries.</li>
-</ul></li>
+<li>
+<p>Device</p>
+</li>
+<li>
+<p>SOTA Server</p>
+</li>
 </ul>
+</div>
+</li>
+<li>
+<p>Preconditions</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#DEV_CONNECT">DEV_CONNECT</a> has been executed to setup and authenticate a SOTA Server - Device connection <em>OR</em></p>
+</li>
+<li>
+<p><a href="#INSTALL_REPORT">INSTALL_REPORT</a> has been executed to signal the success or failure of a previous install.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Steps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>E1 - Use case <a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE">QUEUE_GET_NEXT_SOFTWARE_UPDATE</a> is executed to retrieve the next pending or in-flight update to transfer / continue, yielding instead a queued GET_ALL_PACKAGES request.</p>
+</li>
+<li>
+<p>E2 - A GET_ALL_PACKAGES command is sent by SOTA Server to Device.</p>
+</li>
+<li>
+<p>E3 - Device uses local package manager to retrieve a list of all installed packages</p>
+</li>
+<li>
+<p>E4 - Device returns all installed packages to SOTA Server.</p>
+</li>
+<li>
+<p>E4.1 - SOTA Server uses <a href="#VIN_PACKAGE_ADD">VIN_PACKAGE_ADD</a> and <a href="#VIN_PACKAGE_DELETE">VIN_PACKAGE_DELETE</a> to synchronize External Resolver&#8217;s installed package list for the given VIN.</p>
+</li>
+<li>
+<p>E5 - Use case transitions to <a href="#TRANSFER_START">TRANSFER_START</a> to start.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Exceptions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X3 - Acknowledgement lost due to network disconnect. Triggered by E4. <a href="#DEV_CONNECT">DEV_CONNECT</a> is executed X times in order to reconnect to the server. After X times, we rely on <a href="#QUEUE_INITIATE_XMIT">QUEUE_INITIATE_XMIT</a> for future retries.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
 
                     </div>
                 

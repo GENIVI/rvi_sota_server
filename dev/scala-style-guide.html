@@ -38,13 +38,13 @@
             
                 <li class="nav-header">Documentation</li>
             
-            <li data-order="5"><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
-        
-            
             <li data-order="2"><a href="/rvi_sota_server/doc/deployment-with-docker-launcher.html">Deployment with Docker Launcher</a></li>
         
             
             <li data-order="6"><a href="/rvi_sota_server/doc/contributing.html">Contributing</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
         
             
             <li data-order="1"><a href="/rvi_sota_server/doc/building-installing.html">Building & Deploying</a></li>
@@ -111,177 +111,498 @@
     </h2>
 </div>
 
-<p>The document contains Scala stylistic guidelines, which should be fillowed in order to produce readable and idiomatic code, allowing effective collaboration. The following style guides were used as a basis:</p>
-<ol type="1">
-<li><a href="http://docs.scala-lang.org/style/">Typesafe Scala Style Guide</a></li>
-<li><a href="https://github.com/databricks/scala-style-guide">Databricks Scala Guide</a></li>
-<li><a href="http://twitter.github.io/effectivescala/">Twitter’s Effective Scala</a></li>
+<div class="paragraph">
+<p>The document contains Scala stylistic guidelines, which should be
+fillowed in order to produce readable and idiomatic code, allowing
+effective collaboration. The following style guides were used as a
+basis:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><a href="http://docs.scala-lang.org/style/">Typesafe Scala Style Guide</a></p>
+</li>
+<li>
+<p><a href="https://github.com/databricks/scala-style-guide">Databricks Scala
+Guide</a></p>
+</li>
+<li>
+<p><a href="http://twitter.github.io/effectivescala/">Twitter&#8217;s Effective Scala</a></p>
+</li>
 </ol>
-<h2 id="table-of-contents"><a name='TOC'>Table of Contents</a></h2>
-<ol type="1">
-<li><a href="#syntactic">Syntactic Style</a>
+</div>
+<div class="sect1">
+<h2 id="table-of-contents">Table of Contents</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><a href="#syntactic">Syntactic Style</a></p>
+<div class="ulist">
 <ul>
-<li><a href="#identation">Identation</a></li>
-<li><a href="#naming">Naming Convention</a></li>
-<li><a href="#declarations">Declarations</a></li>
-<li><a href="#imports">Imports</a></li>
-<li><a href="#control_structures">Control Structures</a></li>
-<li><a href="#infix">Infix Methods</a></li>
-<li><a href="#documentation">Documentation Style</a></li>
-</ul></li>
-<li><a href="#lang">Language Features</a>
+<li>
+<p><a href="#identation">Identation</a></p>
+</li>
+<li>
+<p><a href="#naming">Naming Convention</a></p>
+</li>
+<li>
+<p><a href="#declarations">Declarations</a></p>
+</li>
+<li>
+<p><a href="#imports">Imports</a></p>
+</li>
+<li>
+<p><a href="#control_structures">Control Structures</a></p>
+</li>
+<li>
+<p><a href="#infix">Infix Methods</a></p>
+</li>
+<li>
+<p><a href="#documentation">Documentation Style</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><a href="#lang">Language Features</a></p>
+<div class="ulist">
 <ul>
-<li><a href="#override_modifier">override Modifier</a></li>
-<li><a href="#destruct_bind">Destructuring Binds</a></li>
-<li><a href="#symbolic_methods">Symbolic Methods (Operator Overloading)</a></li>
-<li><a href="#type_inference">Type Inference</a></li>
-<li><a href="#return">Return Statements</a></li>
-<li><a href="#recursion">Recursion and Tail Recursion</a></li>
-<li><a href="#exception">Exception Handling</a></li>
-<li><a href="#option">Options</a></li>
-<li><a href="#chaining">Monadic Chaining</a></li>
-<li><a href="#concurrency">Concurrency</a></li>
-<li><a href="#concurrency-private-this">Private Fields</a></li>
-<li><a href="#java-default-param-values">Default Parameter Values</a></li>
-</ul></li>
+<li>
+<p><a href="#override_modifier">override Modifier</a></p>
+</li>
+<li>
+<p><a href="#destruct_bind">Destructuring Binds</a></p>
+</li>
+<li>
+<p><a href="#symbolic_methods">Symbolic Methods (Operator Overloading)</a></p>
+</li>
+<li>
+<p><a href="#type_inference">Type Inference</a></p>
+</li>
+<li>
+<p><a href="#return">Return Statements</a></p>
+</li>
+<li>
+<p><a href="#recursion">Recursion and Tail Recursion</a></p>
+</li>
+<li>
+<p><a href="#exception">Exception Handling</a></p>
+</li>
+<li>
+<p><a href="#option">Options</a></p>
+</li>
+<li>
+<p><a href="#chaining">Monadic Chaining</a></p>
+</li>
+<li>
+<p><a href="#concurrency">Concurrency</a></p>
+</li>
+<li>
+<p><a href="#concurrency-private-this">Private Fields</a></p>
+</li>
+<li>
+<p><a href="#java-default-param-values">Default Parameter Values</a></p>
+</li>
+</ul>
+</div>
+</li>
 </ol>
-<h2 id="syntactic-style"><a name='syntactic'>Syntactic Style</a></h2>
-<h3 id="identation"><a name='identation'>Identation</a></h3>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="syntactic-style">Syntactic Style</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="identation">Identation</h3>
+<div class="ulist">
 <ul>
-<li>General identation: 2 spaces</li>
-<li>Limit lines to 100 characters</li>
-<li>If a single expression is longer than 100 characters it should be spitted into multiple expressions by assigning intermediate results to values. In case it is not practical and the expression should be wrapped across several lines, each successive line should be indented two spaces from the first.</li>
-<li><p>When calling a method which takes numerous arguments (in the range of five or more), it is often necessary to wrap the method invocation onto multiple lines. In such cases, put each argument on a line by itself, indented two spaces from the current indent level:</p>
-<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="fu">foo</span>(
-  someVeryLongFieldName,
-  andAnotherVeryLongFieldName,
-  <span class="st">&quot;this is a string&quot;</span>,
-  <span class="fl">3.1415</span>)</code></pre></div></li>
+<li>
+<p>General identation: 2 spaces</p>
+</li>
+<li>
+<p>Limit lines to 100 characters</p>
+</li>
+<li>
+<p>If a single expression is longer than 100 characters it should be
+spitted into multiple expressions by assigning intermediate results to
+values. In case it is not practical and the expression should be wrapped
+across several lines, each successive line should be indented two spaces
+from the first.</p>
+</li>
+<li>
+<p>When calling a method which takes numerous arguments (in the range of
+five or more), it is often necessary to wrap the method invocation onto
+multiple lines. In such cases, put each argument on a line by itself,
+indented two spaces from the current indent level:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala">foo<span style="color: #666666">(</span>
+  someVeryLongFieldName<span style="color: #666666">,</span>
+  andAnotherVeryLongFieldName<span style="color: #666666">,</span>
+  <span style="color: #BA2121">&quot;this is a string&quot;</span><span style="color: #666666">,</span>
+  <span style="color: #666666">3.1415)</span></code></pre>
+</div>
+</div>
+</li>
 </ul>
-<h3 id="naming-convention"><a name='naming'>Naming Convention</a></h3>
+</div>
+</div>
+<div class="sect2">
+<h3 id="naming-convention">Naming Convention</h3>
+<div class="ulist">
 <ul>
-<li>Classes, traits should follow Java class convention, i.e. CamelCase style with the first letter capitalized.</li>
-</ul>
-<p>``` scala class RedFox</p>
-<p>trait LazyDog ```</p>
-<ul>
-<li>Objects follow the class naming convention except when attempting to mimic a package or a function.</li>
-</ul>
-<p>``` scala object ast { sealed trait Expr case class Plus(e1: Expr, e2: Expr) extends Expr … }</p>
-<p>object inc { def apply(x: Int): Int = x + 1 } ```</p>
-<ul>
-<li>Scala packages should follow the Java package naming conventions</li>
-</ul>
-<p><code>scala   package com.databricks.resourcemanager</code></p>
-<ul>
-<li>Constant names should be in upper camel case. That is, if the member is final, immutable and it belongs to a package object or an object, it may be considered a constant (similar to Java’s static final members):</li>
-</ul>
-<p><code>scala   object Foo {     val Bar = 10   }</code></p>
-<ul>
-<li>Enums should be CamelCase with first letter capitalized.</li>
-<li>Names for methods should be in the camelCase style with the first letter lower-case.</li>
-</ul>
-<h3 id="declarations"><a name='declarations'>Declarations</a></h3>
-<p>All guides referenced above agreed on how the declarations should be styled. Please refer to the one from <a href="http://docs.scala-lang.org/style/declarations.html">Scala Style Guide</a>, as is most comprehensive of them.</p>
-<h3 id="imports"><a name='imports'>Imports</a></h3>
-<ul>
-<li>Do NOT use wildcard imports, unless you are importing implicit methods.</li>
-<li>Always import packages using absolute paths</li>
-</ul>
-<h3 id="control-structures"><a name='control_structures'>Control Structures</a></h3>
-<p>Control structures should be styled as defined in <a href="http://docs.scala-lang.org/style/control-structures.html">Scala Style Guide</a></p>
-<h3 id="infix-methods"><a name='infix'>Infix Methods</a></h3>
-<p>Do NOT use infix notation for methods that aren’t symbolic methods (i.e. operator overloading).</p>
-<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="co">// Correct</span>
-list.<span class="fu">map</span>(func)
-string.<span class="fu">contains</span>(<span class="st">&quot;foo&quot;</span>)
+<li>
+<p>Classes, traits should follow Java class convention, i.e. CamelCase
+style with the first letter capitalized.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">RedFox</span>
 
-<span class="co">// Wrong</span>
-list <span class="fu">map</span> (func)
-string contains <span class="st">&quot;foo&quot;</span>
+<span style="color: #008000; font-weight: bold">trait</span> <span style="color: #0000FF; font-weight: bold">LazyDog</span></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Objects follow the class naming convention except when attempting to
+mimic a package or a function.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span style="color: #008000; font-weight: bold">object</span> <span style="color: #0000FF; font-weight: bold">ast</span> <span style="color: #666666">{</span>
+  <span style="color: #008000; font-weight: bold">sealed</span> <span style="color: #008000; font-weight: bold">trait</span> <span style="color: #0000FF; font-weight: bold">Expr</span>
+  <span style="color: #008000; font-weight: bold">case</span> <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Plus</span><span style="color: #666666">(</span>e1<span style="color: #008000; font-weight: bold">:</span> <span style="color: #B00040">Expr</span><span style="color: #666666">,</span> e2<span style="color: #008000; font-weight: bold">:</span> <span style="color: #B00040">Expr</span><span style="color: #666666">)</span> <span style="color: #008000; font-weight: bold">extends</span> <span style="color: #0000FF; font-weight: bold">Expr</span>
+  <span style="color: #666666">...</span>
+<span style="color: #666666">}</span>
 
-<span class="co">// But overloaded operators should be invoked in infix style</span>
-arrayBuffer += elem</code></pre></div>
-<h3 id="documentation-style"><a name='documentation'>Documentation Style</a></h3>
-<ul>
-<li>Use Java docs style instead of Scala docs style.</li>
+<span style="color: #008000; font-weight: bold">object</span> <span style="color: #0000FF; font-weight: bold">inc</span> <span style="color: #666666">{</span>
+  <span style="color: #008000; font-weight: bold">def</span> apply<span style="color: #666666">(</span>x<span style="color: #008000; font-weight: bold">:</span> <span style="color: #B00040">Int</span><span style="color: #666666">)</span><span style="color: #008000; font-weight: bold">:</span> <span style="color: #B00040">Int</span> <span style="color: #666666">=</span> x <span style="color: #666666">+</span> <span style="color: #666666">1</span>
+<span style="color: #666666">}</span></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Scala packages should follow the Java package naming conventions</p>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span style="color: #008000; font-weight: bold">package</span> <span style="color: #0000FF; font-weight: bold">com.databricks.resourcemanager</span></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Constant names should be in upper camel case. That is, if the member
+is final, immutable and it belongs to a package object or an object, it
+may be considered a constant (similar to Java’s static final members):</p>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span style="color: #008000; font-weight: bold">object</span> <span style="color: #0000FF; font-weight: bold">Foo</span> <span style="color: #666666">{</span>
+  <span style="color: #008000; font-weight: bold">val</span> <span style="color: #0000FF; font-weight: bold">Bar</span> <span style="color: #008000; font-weight: bold">=</span> <span style="color: #666666">10</span>
+<span style="color: #666666">}</span></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Enums should be CamelCase with first letter capitalized.</p>
+</li>
+<li>
+<p>Names for methods should be in the camelCase style with the first
+letter lower-case.</p>
+</li>
 </ul>
-<p>``` scala /** * Style mandated by “Scala Style Guide” */</p>
-<p>/** * Style to use */ ```</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="declarations">Declarations</h3>
+<div class="paragraph">
+<p>All guides referenced above agreed on how the declarations should be
+styled. Please refer to the one from
+<a href="http://docs.scala-lang.org/style/declarations.html">Scala Style Guide</a>,
+as is most comprehensive of them.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="imports">Imports</h3>
+<div class="ulist">
 <ul>
-<li>Do not use <span class="citation" data-cites="author">@author</span> tags since it does not encourage Collective Code Ownership.</li>
+<li>
+<p>Do NOT use wildcard imports, unless you are importing implicit
+methods.</p>
+</li>
+<li>
+<p>Always import packages using absolute paths</p>
+</li>
 </ul>
-<h2 id="language-features"><a name='lang'>Language Features</a></h2>
-<h3 id="override-modifier"><a name='override_modifier'>override Modifier</a></h3>
-<p>Always add override modifier for methods, both for overriding concrete methods and implementing abstract methods. The Scala compiler does not require <code>override</code> for implementing abstract methods.</p>
-<h3 id="destructuring-binds"><a name='destruct_bind'>Destructuring Binds</a></h3>
-<p>Destructuring bind (sometimes called tuple extraction) is a convenient way to assign two variables in one expression.</p>
-<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> (a, b) = (<span class="dv">1</span>, <span class="dv">2</span>)</code></pre></div>
-<p>However, do NOT use them in constructors, especially when <code>a</code> and <code>b</code> need to be marked transient. The Scala compiler generates an extra Tuple2 field that will not be transient for the above example.</p>
-<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">class</span> MyClass {
-  <span class="co">// This will NOT work because the compiler generates a non-transient Tuple2</span>
-  <span class="co">// that points to both a and b.</span>
-  @transient <span class="kw">private</span> <span class="kw">val</span> (a, b) = <span class="fu">someFuncThatReturnsTuple2</span>()
-}</code></pre></div>
-<h3 id="symbolic-methods-operator-overloading"><a name='symbolic_methods'>Symbolic Methods (Operator Overloading)</a></h3>
-<p>Avoid symbolic method names, unless you are defining them for natural arithmetic operations (e.g. <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>) or as part as some DSL (<code>!</code> to send message in Akka, <code>\</code> to concatenate parts of a path or an uri). In second case they should be defined as aliases to the non-symbolic functions.</p>
-<h3 id="type-inference"><a name='type_inference'>Type Inference</a></h3>
-<p>Scala type inference, especially left-side type inference and closure inference, can make code more concise. That said, there are a few cases where explicit typing should be used:</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="control-structures">Control Structures</h3>
+<div class="paragraph">
+<p>Control structures should be styled as defined in
+<a href="http://docs.scala-lang.org/style/control-structures.html">Scala Style
+Guide</a></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="infix-methods">Infix Methods</h3>
+<div class="paragraph">
+<p>Do NOT use infix notation for methods that aren&#8217;t symbolic methods (i.e.
+operator overloading).</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span style="color: #408080; font-style: italic">// Correct</span>
+list<span style="color: #666666">.</span>map<span style="color: #666666">(</span>func<span style="color: #666666">)</span>
+string<span style="color: #666666">.</span>contains<span style="color: #666666">(</span><span style="color: #BA2121">&quot;foo&quot;</span><span style="color: #666666">)</span>
+
+<span style="color: #408080; font-style: italic">// Wrong</span>
+list map <span style="color: #666666">(</span>func<span style="color: #666666">)</span>
+string contains <span style="color: #BA2121">&quot;foo&quot;</span>
+
+<span style="color: #408080; font-style: italic">// But overloaded operators should be invoked in infix style</span>
+arrayBuffer <span style="color: #666666">+=</span> elem</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="documentation-style">Documentation Style</h3>
+<div class="ulist">
 <ul>
-<li><strong>Public methods should be explicitly typed</strong>, otherwise the compiler’s inferred type can often surprise you.</li>
-<li><strong>Implicit methods should be explicitly typed</strong>, otherwise it can crash the Scala compiler with incremental compilation.</li>
-<li><strong>Variables or closures with non-obvious types should be explicitly typed</strong>. A good litmus test is that explicit types should be used if a code reviewer cannot determine the type in 3 seconds.</li>
+<li>
+<p>Use Java docs style instead of Scala docs style.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span style="color: #408080; font-style: italic">/**</span>
+<span style="color: #408080; font-style: italic">  * Style mandated by &quot;Scala Style Guide&quot;</span>
+<span style="color: #408080; font-style: italic">  */</span>
+
+<span style="color: #408080; font-style: italic">/**</span>
+<span style="color: #408080; font-style: italic">* Style to use</span>
+<span style="color: #408080; font-style: italic">*/</span></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Do not use @author tags since it does not encourage Collective Code
+Ownership.</p>
+</li>
 </ul>
-<h3 id="return-statements"><a name='return'>Return Statements</a></h3>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="language-features">Language Features</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="override-modifier">override Modifier</h3>
+<div class="paragraph">
+<p>Always add override modifier for methods, both for overriding concrete
+methods and implementing abstract methods. The Scala compiler does not
+require <code>override</code> for implementing abstract methods.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="destructuring-binds">Destructuring Binds</h3>
+<div class="paragraph">
+<p>Destructuring bind (sometimes called tuple extraction) is a convenient
+way to assign two variables in one expression.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span style="color: #008000; font-weight: bold">val</span> <span style="color: #666666">(</span>a<span style="color: #666666">,</span> b<span style="color: #666666">)</span> <span style="color: #008000; font-weight: bold">=</span> <span style="color: #666666">(1,</span> <span style="color: #666666">2)</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>However, do NOT use them in constructors, especially when <code>a</code> and <code>b</code>
+need to be marked transient. The Scala compiler generates an extra
+Tuple2 field that will not be transient for the above example.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">MyClass</span> <span style="color: #666666">{</span>
+  <span style="color: #408080; font-style: italic">// This will NOT work because the compiler generates a non-transient Tuple2</span>
+  <span style="color: #408080; font-style: italic">// that points to both a and b.</span>
+  <span style="color: #AA22FF">@transient</span> <span style="color: #008000; font-weight: bold">private</span> <span style="color: #008000; font-weight: bold">val</span> <span style="color: #666666">(</span>a<span style="color: #666666">,</span> b<span style="color: #666666">)</span> <span style="color: #008000; font-weight: bold">=</span> someFuncThatReturnsTuple2<span style="color: #666666">()</span>
+<span style="color: #666666">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="symbolic-methods-operator-overloading">Symbolic Methods (Operator Overloading)</h3>
+<div class="paragraph">
+<p>Avoid symbolic method names, unless you are defining them for natural
+arithmetic operations (e.g. <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>) or as part as some DSL
+(<code>!</code> to send message in Akka, <code>\</code> to concatenate parts of a path or an
+uri). In second case they should be defined as aliases to the
+non-symbolic functions.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="type-inference">Type Inference</h3>
+<div class="paragraph">
+<p>Scala type inference, especially left-side type inference and closure
+inference, can make code more concise. That said, there are a few cases
+where explicit typing should be used:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Public methods should be explicitly typed</strong>, otherwise the
+compiler&#8217;s inferred type can often surprise you.</p>
+</li>
+<li>
+<p><strong>Implicit methods should be explicitly typed</strong>, otherwise it can
+crash the Scala compiler with incremental compilation.</p>
+</li>
+<li>
+<p><strong>Variables or closures with non-obvious types should be explicitly
+typed</strong>. A good litmus test is that explicit types should be used if a
+code reviewer cannot determine the type in 3 seconds.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="return-statements">Return Statements</h3>
+<div class="paragraph">
 <p><strong>Do NOT use return statements</strong>.</p>
-<h3 id="recursion-and-tail-recursion"><a name='recursion'>Recursion and Tail Recursion</a></h3>
-<p>Do NOT use recursion, unless the problem can be naturally framed recursively (e.g. graph traversal, tree traversal).</p>
-<p>For functions that are meant to be tail recursive, apply <code>@tailrec</code> annotation to make sure the compiler can check it is tail recursive (you will be surprised how often seemingly tail recursive code is actually not tail recursive due to the use of closures and functional transformations.)</p>
-<h3 id="exception-handling"><a name='exception'>Exception Handling</a></h3>
+</div>
+</div>
+<div class="sect2">
+<h3 id="recursion-and-tail-recursion">Recursion and Tail Recursion</h3>
+<div class="paragraph">
+<p>Do NOT use recursion, unless the problem can be naturally framed
+recursively (e.g. graph traversal, tree traversal).</p>
+</div>
+<div class="paragraph">
+<p>For functions that are meant to be tail recursive, apply <code>@tailrec</code>
+annotation to make sure the compiler can check it is tail recursive (you
+will be surprised how often seemingly tail recursive code is actually
+not tail recursive due to the use of closures and functional
+transformations.)</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="exception-handling">Exception Handling</h3>
+<div class="ulist">
 <ul>
-<li>Do NOT catch Throwable or Exception. Use <code>scala.util.control.NonFatal</code>:</li>
+<li>
+<p>Do NOT catch Throwable or Exception. Use
+<code>scala.util.control.NonFatal</code>:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span style="color: #008000; font-weight: bold">try</span> <span style="color: #666666">{</span>
+  <span style="color: #666666">...</span>
+<span style="color: #666666">}</span> <span style="color: #008000; font-weight: bold">catch</span> <span style="color: #666666">{</span>
+  <span style="color: #008000; font-weight: bold">case</span> <span style="color: #0000FF; font-weight: bold">NonFatal</span><span style="color: #666666">(</span>e<span style="color: #666666">)</span> <span style="color: #008000; font-weight: bold">=&gt;</span>
+    <span style="color: #408080; font-style: italic">// handle exception; note that NonFatal does not match InterruptedException</span>
+  <span style="color: #008000; font-weight: bold">case</span> e<span style="color: #008000; font-weight: bold">:</span> <span style="color: #B00040">InterruptedException</span> <span style="color: #666666">=&gt;</span>
+    <span style="color: #408080; font-style: italic">// handle InterruptedException</span>
+<span style="color: #666666">}</span></code></pre>
+</div>
+</div>
+</li>
 </ul>
-<p><code>scala   try {     ...   } catch {     case NonFatal(e) =&gt;       // handle exception; note that NonFatal does not match InterruptedException     case e: InterruptedException =&gt;       // handle InterruptedException   }</code></p>
-<h3 id="options"><a name='option'>Options</a></h3>
+</div>
+</div>
+<div class="sect2">
+<h3 id="options">Options</h3>
+<div class="ulist">
 <ul>
-<li>Use <code>Option</code> when the value can be empty. Compared with <code>null</code>, an <code>Option</code> explicitly states in the API contract that the value can be <code>None</code>.</li>
-<li>When constructing an <code>Option</code>, use <code>Option</code> rather than <code>Some</code> to guard against <code>null</code> values.</li>
+<li>
+<p>Use <code>Option</code> when the value can be empty. Compared with <code>null</code>, an
+<code>Option</code> explicitly states in the API contract that the value can be
+<code>None</code>.</p>
+</li>
+<li>
+<p>When constructing an <code>Option</code>, use <code>Option</code> rather than <code>Some</code> to
+guard against <code>null</code> values.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span style="color: #008000; font-weight: bold">def</span> myMethod1<span style="color: #666666">(</span>input<span style="color: #008000; font-weight: bold">:</span> <span style="color: #B00040">String</span><span style="color: #666666">)</span><span style="color: #008000; font-weight: bold">:</span> <span style="color: #B00040">Option</span><span style="color: #666666">[</span><span style="color: #B00040">String</span><span style="color: #666666">]</span> <span style="color: #008000; font-weight: bold">=</span> <span style="color: #0000FF; font-weight: bold">Option</span><span style="color: #666666">(</span>transform<span style="color: #666666">(</span>input<span style="color: #666666">))</span>
+
+<span style="color: #408080; font-style: italic">// This is not as robust because transform can return null, and then</span>
+<span style="color: #408080; font-style: italic">// myMethod2 will return Some(null).</span>
+<span style="color: #008000; font-weight: bold">def</span> myMethod2<span style="color: #666666">(</span>input<span style="color: #008000; font-weight: bold">:</span> <span style="color: #B00040">String</span><span style="color: #666666">)</span><span style="color: #008000; font-weight: bold">:</span> <span style="color: #B00040">Option</span><span style="color: #666666">[</span><span style="color: #B00040">String</span><span style="color: #666666">]</span> <span style="color: #008000; font-weight: bold">=</span> <span style="color: #0000FF; font-weight: bold">Some</span><span style="color: #666666">(</span>transform<span style="color: #666666">(</span>input<span style="color: #666666">))</span></code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Do not use <code>None</code> to represent exceptions.</p>
+</li>
+<li>
+<p>Do not call <code>get</code> directly on an <code>Option</code>.</p>
+</li>
 </ul>
-<p>``` scala def myMethod1(input: String): Option[String] = Option(transform(input))</p>
-<p>// This is not as robust because transform can return null, and then // myMethod2 will return Some(null). def myMethod2(input: String): Option[String] = Some(transform(input)) ```</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="monadic-chaining">Monadic Chaining</h3>
+<div class="paragraph">
+<p>One of Scala&#8217;s powerful features is monadic chaining. Almost everything
+(e.g. collections, Option, Future, Try) is a monad and operations on
+them can be chained together. This is an incredibly powerful concept,
+but chaining should be used sparingly. In particular:</p>
+</div>
+<div class="ulist">
 <ul>
-<li>Do not use <code>None</code> to represent exceptions.</li>
-<li>Do not call <code>get</code> directly on an <code>Option</code>.</li>
+<li>
+<p>Do NOT chain (and/or nest) more than one <code>flatMap</code> operations.</p>
+</li>
+<li>
+<p>If you need to chain more than one <code>flatMap</code>, use for-comprehension.</p>
+</li>
 </ul>
-<h3 id="monadic-chaining"><a name='chaining'>Monadic Chaining</a></h3>
-<p>One of Scala’s powerful features is monadic chaining. Almost everything (e.g. collections, Option, Future, Try) is a monad and operations on them can be chained together. This is an incredibly powerful concept, but chaining should be used sparingly. In particular:</p>
-<ul>
-<li>Do NOT chain (and/or nest) more than one <code>flatMap</code> operations.</li>
-<li>If you need to chain more than one <code>flatMap</code>, use for-comprehension.</li>
-</ul>
-<h3 id="concurrency"><a name='concurrency'>Concurrency</a></h3>
+</div>
+</div>
+<div class="sect2">
+<h3 id="concurrency">Concurrency</h3>
+<div class="paragraph">
 <p>Use Akka for concurrency.</p>
-<h3 id="private-fields"><a name='concurrency-private-this'>Private Fields</a></h3>
-<p>Note that <code>private</code> fields are still accessible by other instances of the same class, so protecting it with <code>this.synchronized</code> (or just <code>synchronized</code>) is not technically sufficient. Make the field <code>private[this]</code> instead.</p>
-<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="co">// The following is still unsafe.</span>
-<span class="kw">class</span> Foo {
-  <span class="kw">private</span> <span class="kw">var</span> count: Int = <span class="dv">0</span>
-  <span class="kw">def</span> <span class="fu">inc</span>(): Unit = synchronized { count + <span class="dv">1</span> }
-}
+</div>
+</div>
+<div class="sect2">
+<h3 id="private-fields">Private Fields</h3>
+<div class="paragraph">
+<p>Note that <code>private</code> fields are still accessible by other instances of
+the same class, so protecting it with <code>this.synchronized</code> (or just
+<code>synchronized</code>) is not technically sufficient. Make the field
+<code>private[this]</code> instead.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span style="color: #408080; font-style: italic">// The following is still unsafe.</span>
+<span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Foo</span> <span style="color: #666666">{</span>
+  <span style="color: #008000; font-weight: bold">private</span> <span style="color: #008000; font-weight: bold">var</span> count<span style="color: #008000; font-weight: bold">:</span> <span style="color: #B00040">Int</span> <span style="color: #666666">=</span> <span style="color: #666666">0</span>
+  <span style="color: #008000; font-weight: bold">def</span> inc<span style="color: #666666">()</span><span style="color: #008000; font-weight: bold">:</span> <span style="color: #B00040">Unit</span> <span style="color: #666666">=</span> synchronized <span style="color: #666666">{</span> count <span style="color: #666666">+</span> <span style="color: #666666">1</span> <span style="color: #666666">}</span>
+<span style="color: #666666">}</span>
 
-<span class="co">// The following is safe.</span>
-<span class="kw">class</span> Foo {
-  <span class="kw">private</span>[<span class="kw">this</span>] <span class="kw">var</span> count: Int = <span class="dv">0</span>
-  <span class="kw">def</span> <span class="fu">inc</span>(): Unit = synchronized { count + <span class="dv">1</span> }
-}</code></pre></div>
-<h3 id="default-parameter-values"><a name='java-default-param-values'>Default Parameter Values</a></h3>
+<span style="color: #408080; font-style: italic">// The following is safe.</span>
+<span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Foo</span> <span style="color: #666666">{</span>
+  <span style="color: #008000; font-weight: bold">private</span><span style="color: #666666">[</span><span style="color: #B00040">this</span><span style="color: #666666">]</span> <span style="color: #008000; font-weight: bold">var</span> count<span style="color: #008000; font-weight: bold">:</span> <span style="color: #B00040">Int</span> <span style="color: #666666">=</span> <span style="color: #666666">0</span>
+  <span style="color: #008000; font-weight: bold">def</span> inc<span style="color: #666666">()</span><span style="color: #008000; font-weight: bold">:</span> <span style="color: #B00040">Unit</span> <span style="color: #666666">=</span> synchronized <span style="color: #666666">{</span> count <span style="color: #666666">+</span> <span style="color: #666666">1</span> <span style="color: #666666">}</span>
+<span style="color: #666666">}</span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="default-parameter-values">Default Parameter Values</h3>
+<div class="paragraph">
 <p>Do NOT use default parameter values. Overload the method instead.</p>
-<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="co">// Breaks Java interoperability</span>
-<span class="kw">def</span> <span class="fu">sample</span>(ratio: Double, withReplacement: Boolean = <span class="kw">false</span>): RDD[T] = { ... }
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="scala"><span style="color: #408080; font-style: italic">// Breaks Java interoperability</span>
+<span style="color: #008000; font-weight: bold">def</span> sample<span style="color: #666666">(</span>ratio<span style="color: #008000; font-weight: bold">:</span> <span style="color: #B00040">Double</span><span style="color: #666666">,</span> withReplacement<span style="color: #008000; font-weight: bold">:</span> <span style="color: #B00040">Boolean</span> <span style="color: #666666">=</span> <span style="color: #008000; font-weight: bold">false</span><span style="color: #666666">)</span><span style="color: #008000; font-weight: bold">:</span> <span style="color: #B00040">RDD</span><span style="color: #666666">[</span><span style="color: #B00040">T</span><span style="color: #666666">]</span> <span style="color: #008000; font-weight: bold">=</span> <span style="color: #666666">{</span> <span style="color: #666666">...</span> <span style="color: #666666">}</span>
 
-<span class="co">// The following two work</span>
-<span class="kw">def</span> <span class="fu">sample</span>(ratio: Double, withReplacement: Boolean): RDD[T] = { ... }
-<span class="kw">def</span> <span class="fu">sample</span>(ratio: Double): RDD[T] = <span class="fu">sample</span>(ratio, withReplacement = <span class="kw">false</span>)</code></pre></div>
+<span style="color: #408080; font-style: italic">// The following two work</span>
+<span style="color: #008000; font-weight: bold">def</span> sample<span style="color: #666666">(</span>ratio<span style="color: #008000; font-weight: bold">:</span> <span style="color: #B00040">Double</span><span style="color: #666666">,</span> withReplacement<span style="color: #008000; font-weight: bold">:</span> <span style="color: #B00040">Boolean</span><span style="color: #666666">)</span><span style="color: #008000; font-weight: bold">:</span> <span style="color: #B00040">RDD</span><span style="color: #666666">[</span><span style="color: #B00040">T</span><span style="color: #666666">]</span> <span style="color: #008000; font-weight: bold">=</span> <span style="color: #666666">{</span> <span style="color: #666666">...</span> <span style="color: #666666">}</span>
+<span style="color: #008000; font-weight: bold">def</span> sample<span style="color: #666666">(</span>ratio<span style="color: #008000; font-weight: bold">:</span> <span style="color: #B00040">Double</span><span style="color: #666666">)</span><span style="color: #008000; font-weight: bold">:</span> <span style="color: #B00040">RDD</span><span style="color: #666666">[</span><span style="color: #B00040">T</span><span style="color: #666666">]</span> <span style="color: #008000; font-weight: bold">=</span> sample<span style="color: #666666">(</span>ratio<span style="color: #666666">,</span> withReplacement <span style="color: #008000; font-weight: bold">=</span> <span style="color: #008000; font-weight: bold">false</span><span style="color: #666666">)</span></code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
 
                     </div>
                 

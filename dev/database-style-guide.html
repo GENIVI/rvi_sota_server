@@ -38,13 +38,13 @@
             
                 <li class="nav-header">Documentation</li>
             
-            <li data-order="5"><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
-        
-            
             <li data-order="2"><a href="/rvi_sota_server/doc/deployment-with-docker-launcher.html">Deployment with Docker Launcher</a></li>
         
             
             <li data-order="6"><a href="/rvi_sota_server/doc/contributing.html">Contributing</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
         
             
             <li data-order="1"><a href="/rvi_sota_server/doc/building-installing.html">Building & Deploying</a></li>
@@ -111,24 +111,51 @@
     </h2>
 </div>
 
+<div class="sect2">
 <h3 id="table-names-are-uppercamelcase-singular.">Table names are UpperCamelCase Singular.</h3>
-<p>Table names should be the same as the Scala domain object that represents them (if it exists). By using the same casing rules as Scala, the domain object and SQL table names can match exactly.</p>
-<p>For more arguments on the singular/plural naming, see http://stackoverflow.com/questions/338156/table-naming-dilemma-singular-vs-plural-names</p>
+<div class="paragraph">
+<p>Table names should be the same as the Scala domain object that
+represents them (if it exists). By using the same casing rules as Scala,
+the domain object and SQL table names can match exactly.</p>
+</div>
+<div class="paragraph">
+<p>For more arguments on the singular/plural naming, see
+<a href="http://stackoverflow.com/questions/338156/table-naming-dilemma-singular-vs-plural-names" class="bare">http://stackoverflow.com/questions/338156/table-naming-dilemma-singular-vs-plural-names</a></p>
+</div>
+</div>
+<div class="sect2">
 <h3 id="column-names-are-lowercamelcase">Column names are lowerCamelCase</h3>
+<div class="paragraph">
 <p>Lower camel case column names should match scala property names.</p>
-<h3 id="surrogate-primary-keys-are-called-id.">Surrogate primary keys are called ‘id’.</h3>
+</div>
+</div>
+<div class="sect2">
+<h3 id="surrogate-primary-keys-are-called-id.">Surrogate primary keys are called 'id'.</h3>
+<div class="paragraph">
 <p>For example:</p>
-<div class="sourceCode"><pre class="sourceCode sql"><code class="sourceCode sql">    <span class="co">-- Good</span>
-    <span class="kw">CREATE</span> <span class="kw">TABLE</span> Person (
-      <span class="kw">id</span> <span class="dt">int</span> <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="sql">    <span style="color: #408080; font-style: italic">-- Good</span>
+    <span style="color: #008000; font-weight: bold">CREATE</span> <span style="color: #008000; font-weight: bold">TABLE</span> Person (
+      id <span style="color: #008000">int</span> <span style="color: #008000; font-weight: bold">PRIMARY</span> <span style="color: #008000; font-weight: bold">KEY</span>,
       ...
-    );</code></pre></div>
+    );</code></pre>
+</div>
+</div>
+<div class="paragraph">
 <p>rather than:</p>
-<div class="sourceCode"><pre class="sourceCode sql"><code class="sourceCode sql">    <span class="co">-- BAD</span>
-    <span class="kw">CREATE</span> <span class="kw">TABLE</span> Person (
-      personId <span class="dt">int</span> <span class="kw">PRIMARY</span> <span class="kw">KEY</span>, <span class="co">-- BAD: should be &#39;id&#39;</span>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="sql">    <span style="color: #408080; font-style: italic">-- BAD</span>
+    <span style="color: #008000; font-weight: bold">CREATE</span> <span style="color: #008000; font-weight: bold">TABLE</span> Person (
+      personId <span style="color: #008000">int</span> <span style="color: #008000; font-weight: bold">PRIMARY</span> <span style="color: #008000; font-weight: bold">KEY</span>, <span style="color: #408080; font-style: italic">-- BAD: should be &#39;id&#39;</span>
       ...
-    );</code></pre></div>
+    );</code></pre>
+</div>
+</div>
+</div>
 
                     </div>
                 

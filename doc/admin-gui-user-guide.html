@@ -38,13 +38,13 @@
             
                 <li class="nav-header">Documentation</li>
             
-            <li data-order="5"><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
-        
-            
             <li data-order="2"><a href="/rvi_sota_server/doc/deployment-with-docker-launcher.html">Deployment with Docker Launcher</a></li>
         
             
             <li data-order="6"><a href="/rvi_sota_server/doc/contributing.html">Contributing</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
         
             
             <li data-order="1"><a href="/rvi_sota_server/doc/building-installing.html">Building & Deploying</a></li>
@@ -111,34 +111,141 @@
     </h2>
 </div>
 
-<p>This is the user manual for the SOTA Admin Web GUI. Development is currently at an early stage, but this document will be updated as features are added.</p>
+<div class="paragraph">
+<p>This is the user manual for the SOTA Admin Web GUI. Development is
+currently at an early stage, but this document will be updated as
+features are added.</p>
+</div>
+<div class="sect1">
 <h2 id="signing-in">Signing in</h2>
-<p>Once the SOTA server is <a href="../doc/building-installing.html">built</a> and running, the Admin Browser will be available at <a href="http://localhost:9000" class="uri">http://localhost:9000</a>. The default username is <code>admin@sota.com</code>, and the default password is <code>genivirocks!</code>.</p>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Once the SOTA server is <a href="../doc/building-installing.html">built</a> and
+running, the Admin Browser will be available at <a href="http://localhost:9000" class="bare">http://localhost:9000</a>.
+The default username is <code>admin@sota.com</code>, and the default password is
+<code>genivirocks!</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="managing-vehicles">Managing Vehicles</h2>
+<div class="sectionbody">
+<div class="sect2">
 <h3 id="adding-a-vin">Adding a VIN</h3>
-<p>To add a VIN, click the <em>Vehicles</em> tab at the top of the page. Enter a valid VIN number (exactly 17 characters long and consisting only of alphanumeric characters) in the <strong>Vehicle Name</strong> field, and click the <strong>Add Vehicle</strong> button. If the addition was successful, the newly added VIN will appear in the list at the bottom of the page. If not, an error message will be displayed.</p>
+<div class="paragraph">
+<p>To add a VIN, click the <em>Vehicles</em> tab at the top of the page. Enter a
+valid VIN number (exactly 17 characters long and consisting only of
+alphanumeric characters) in the <strong>Vehicle Name</strong> field, and click the <strong>Add
+Vehicle</strong> button. If the addition was successful, the newly added VIN
+will appear in the list at the bottom of the page. If not, an error
+message will be displayed.</p>
+</div>
+</div>
+<div class="sect2">
 <h3 id="managing-vins">Managing VINs</h3>
+<div class="sect3">
 <h4 id="adding-a-software-package-to-a-vin">Adding a software package to a VIN</h4>
+
+</div>
+<div class="sect3">
 <h4 id="adding-a-hardware-component-to-a-vin">Adding a hardware component to a VIN</h4>
+
+</div>
+</div>
+<div class="sect2">
 <h3 id="vin-filters">VIN filters</h3>
-<p>You can create filters to powerfully select sub-groups of VINs. For example, you might wish to create a filter that matches only vehicles that have the hardware component <strong>AcmeDVDPlayer</strong>, so that you can send a firmware update to only the relevant vehicles.</p>
+<div class="paragraph">
+<p>You can create filters to powerfully select sub-groups of VINs. For
+example, you might wish to create a filter that matches only vehicles
+that have the hardware component <strong>AcmeDVDPlayer</strong>, so that you can send
+a firmware update to only the relevant vehicles.</p>
+</div>
+<div class="sect3">
 <h4 id="filter-syntax">Filter syntax</h4>
-<p>SOTA has a filter syntax to create these filters; currently the valid terms are <strong>vin_matches</strong>, <strong>has_package</strong>, and <strong>has_component</strong>, and the boolean operators <strong>NOT</strong>, <strong>AND</strong>, and <strong>OR</strong>.</p>
-<p>Example: For a filter that matched all VINs beginning with 12ABC, that have the AcmeDVDPlayer installed, the syntax would be <code>vin_matches &quot;^12ABC&quot; AND has_component &quot;AcmeDVDPlayer&quot;</code>.</p>
+<div class="paragraph">
+<p>SOTA has a filter syntax to create these filters; currently the valid
+terms are <strong>vin_matches</strong>, <strong>has_package</strong>, and <strong>has_component</strong>, and
+the boolean operators <strong>NOT</strong>, <strong>AND</strong>, and <strong>OR</strong>.</p>
+</div>
+<div class="paragraph">
+<p>Example: For a filter that matched all VINs beginning with 12ABC, that
+have the AcmeDVDPlayer installed, the syntax would be
+<code>vin_matches "^12ABC" AND has_component "AcmeDVDPlayer"</code>.</p>
+</div>
+</div>
+<div class="sect3">
 <h4 id="creating-a-vin-filter">Creating a VIN filter</h4>
-<p>To create a new filter, click the <strong>Filters</strong> tab at the top of the page. Enter a unique name in the <strong>Filter Name</strong> field, and enter your expression in the <strong>Filter Expression</strong> field. Click the <strong>Add Filter</strong> button. If the filter was successfully created, you should see a message saying <code>Added Filter [filtername] successfully.</code> If the name you gave was already taken, or if the filter’s syntax was invalid, you will see an error message instead.</p>
+<div class="paragraph">
+<p>To create a new filter, click the <strong>Filters</strong> tab at the top of the page.
+Enter a unique name in the <strong>Filter Name</strong> field, and enter your
+expression in the <strong>Filter Expression</strong> field. Click the <strong>Add Filter</strong>
+button. If the filter was successfully created, you should see a message
+saying <code>Added Filter [filtername] successfully.</code> If the name you gave
+was already taken, or if the filter&#8217;s syntax was invalid, you will see
+an error message instead.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="managing-software-packages">Managing Software Packages</h2>
+<div class="sectionbody">
+<div class="sect2">
 <h3 id="adding-a-software-package">Adding a software package</h3>
-<p>To add a software package, you will need to upload a package file and give it a unique <strong>Package ID</strong>. A package ID consists of a package name and a version number. The name must be alphanumeric, and the version must consist of three numbers separated by periods. (For example, 3.0.4 and 0.115.33 are both valid version numbers, but 1.3 and 2.7.22b are not.)</p>
-<p>Click the <strong>Packages</strong> tab at the top of the page. Enter a Package Name, Version, and optionally a description and vendor name in the appropriate fields. Then, select a file to upload. Click <strong>Add Package</strong>. If the upload was successful, you will see a status message confirming it. If there was a problem, you will see an appropriate error message.</p>
+<div class="paragraph">
+<p>To add a software package, you will need to upload a package file and
+give it a unique <strong>Package ID</strong>. A package ID consists of a package name
+and a version number. The name must be alphanumeric, and the version
+must consist of three numbers separated by periods. (For example, 3.0.4
+and 0.115.33 are both valid version numbers, but 1.3 and 2.7.22b are
+not.)</p>
+</div>
+<div class="paragraph">
+<p>Click the <strong>Packages</strong> tab at the top of the page. Enter a Package Name,
+Version, and optionally a description and vendor name in the appropriate
+fields. Then, select a file to upload. Click <strong>Add Package</strong>. If the
+upload was successful, you will see a status message confirming it. If
+there was a problem, you will see an appropriate error message.</p>
+</div>
+</div>
+<div class="sect2">
 <h3 id="searching-for-packages">Searching for packages</h3>
+
+</div>
+<div class="sect2">
 <h3 id="associating-a-package-with-a-filter">Associating a package with a filter</h3>
-<p>To associate a package with a filter, click the <strong>Associations</strong> tab at the top of the page. Enter a package name, version and filter name in the appropriate fields, then click <strong>Create Association</strong>.</p>
-<p>This functionality will be used to select a group of vehicles to send specific software updates to.</p>
+<div class="paragraph">
+<p>To associate a package with a filter, click the <strong>Associations</strong> tab at
+the top of the page. Enter a package name, version and filter name in
+the appropriate fields, then click <strong>Create Association</strong>.</p>
+</div>
+<div class="paragraph">
+<p>This functionality will be used to select a group of vehicles to send
+specific software updates to.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="managing-hardware-components">Managing Hardware Components</h2>
+<div class="sectionbody">
+<div class="sect2">
 <h3 id="adding-a-hardware-component">Adding a hardware component</h3>
+
+</div>
+<div class="sect2">
 <h3 id="searching-for-vehicles-by-installed-component">Searching for vehicles by installed component</h3>
+
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="triggering-updates">Triggering Updates</h2>
+<div class="sectionbody">
+
+</div>
+</div>
 
                     </div>
                 

@@ -38,13 +38,13 @@
             
                 <li class="nav-header">Documentation</li>
             
-            <li data-order="5"><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
-        
-            
             <li data-order="2"><a href="/rvi_sota_server/doc/deployment-with-docker-launcher.html">Deployment with Docker Launcher</a></li>
         
             
             <li data-order="6"><a href="/rvi_sota_server/doc/contributing.html">Contributing</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
         
             
             <li data-order="1"><a href="/rvi_sota_server/doc/building-installing.html">Building & Deploying</a></li>
@@ -111,12 +111,45 @@
     </h2>
 </div>
 
-<p>This project is developed entirely in the open, on public mailing lists and with public code reviews. To participate in development discussions, please subscribe to the <a href="https://lists.linuxfoundation.org/mailman/listinfo/automotive-eg-rvi">automotive-eg-rvi</a> mailing list, or join the #automotive channel on Freenode. Code is reviewed on <a href="https://gerrithub.io">gerrit</a>. Development is planned and issues are tracked in <a href="https://www.atlassian.com/software/jira">JIRA</a>.</p>
-<p>All code contributed to this project must be licensed under the <a href="https://www.mozilla.org/MPL/2.0/">MPL v2 license</a>, a copy of which you can find in this repository. Documentation must be licensed under the <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 license</a>.</p>
+<div class="paragraph">
+<p>This project is developed entirely in the open, on public mailing lists
+and with public code reviews. To participate in development discussions, please subscribe to the
+<a href="https://lists.linuxfoundation.org/mailman/listinfo/automotive-eg-rvi">automotive-eg-rvi</a>
+mailing list, or join the #automotive channel on Freenode. Code is
+reviewed on <a href="https://gerrithub.io">gerrit</a>. Development is planned and
+issues are tracked in <a href="https://www.atlassian.com/software/jira">JIRA</a>.</p>
+</div>
+<div class="paragraph">
+<p>All code contributed to this project must be licensed under the
+<a href="https://www.mozilla.org/MPL/2.0/">MPL v2 license</a>, a copy of which you
+can find in this repository. Documentation must be licensed under the
+<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 license</a>.</p>
+</div>
+<div class="sect2">
 <h3 id="development-process">Development Process</h3>
-<p>This project is developed with a special focus on secure engineering. In the <em>docs</em> folder you will find details of the security architecture and threat model.</p>
-<p>During development, any interaction between components must be documented and included in the security modelling. To this end, each project includes a list of implemented requirements and permitted interactions.</p>
-<p>Developers must only implement functionality for which there is an associated requirement, described in the project JIRA. When implementing functionality, developers must update the list of <a href="../ref/requirements.html">implemented requirements</a>. Developers must only implement interactions that are permitted or whitelisted according to the associated JIRA ticket. The list of <a href="../sec/whitelisted-interactions.html">Whitelisted Interactions</a> should be updated when new functionality is implemented, and reviewers should ensure that the code only implements permitted interactions.</p>
+<div class="paragraph">
+<p>This project is developed with a special focus on secure engineering. In
+the <em>docs</em> folder you will find details of the security architecture and
+threat model.</p>
+</div>
+<div class="paragraph">
+<p>During development, any interaction between components must be
+documented and included in the security modelling. To this end, each
+project includes a list of implemented requirements and permitted
+interactions.</p>
+</div>
+<div class="paragraph">
+<p>Developers must only implement functionality for which there is an
+associated requirement, described in the project JIRA. When implementing
+functionality, developers must update the list of
+<a href="../ref/requirements.html">implemented requirements</a>. Developers must
+only implement interactions that are permitted or whitelisted according
+to the associated JIRA ticket. The list of
+<a href="../sec/whitelisted-interactions.html">Whitelisted Interactions</a>
+should be updated when new functionality is implemented, and reviewers
+should ensure that the code only implements permitted interactions.</p>
+</div>
+</div>
 
                     </div>
                 

@@ -38,13 +38,13 @@
             
                 <li class="nav-header">Documentation</li>
             
-            <li data-order="5"><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
-        
-            
             <li data-order="2"><a href="/rvi_sota_server/doc/deployment-with-docker-launcher.html">Deployment with Docker Launcher</a></li>
         
             
             <li data-order="6"><a href="/rvi_sota_server/doc/contributing.html">Contributing</a></li>
+        
+            
+            <li data-order=""><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
         
             
             <li data-order="1"><a href="/rvi_sota_server/doc/building-installing.html">Building & Deploying</a></li>
@@ -111,34 +111,124 @@
     </h2>
 </div>
 
-<p>Docker Launcher launches projects using Docker and Ansible. It is a prerequisite for deploying the SOTA server, and can be installed from <a href="https://github.com/advancedtelematic/docker-launcher">its GitHub repository.</a> <strong>Please ensure you are using the latest version of Docker Launcher. Older versions may not correctly deploy the SOTA Server.</strong></p>
-<h1 id="deploying-with-docker-launcher">Deploying with Docker Launcher</h1>
+<div class="paragraph">
+<p>Docker Launcher launches projects using Docker and Ansible. It is a
+prerequisite for deploying the SOTA server, and can be installed from
+<a href="https://github.com/advancedtelematic/docker-launcher">its GitHub
+repository.</a> <strong>Please ensure you are using the latest version of Docker
+Launcher. Older versions may not correctly deploy the SOTA Server.</strong></p>
+</div>
+<h1 id="deploying-with-docker-launcher" class="sect0">Deploying with Docker Launcher</h1>
+<div class="sect1">
 <h2 id="development-system">Development System</h2>
+<div class="sectionbody">
+<div class="paragraph">
 <p>As a prerequisite to deploying a local development system, you must run</p>
-<pre class="sh"><code>./sbt docker:publishLocal</code></pre>
-<p>Once this completes successfully, you may deploy with <a href="https://github.com/advancedtelematic/docker-launcher">Docker Launcher.</a> For deploying a development system to your local machine, make sure you have Docker Launcher and Docker installed and configured to your liking. Docker Launcher currently requires Docker &gt;= v.1.6.1 and Ansible v.1.9.2. Ansible 2.x has not yet been tested, and is not guaranteed to work.</p>
-<p>First, enter the <code>deploy</code> directory, and copy the example Docker Launcher configuration file, then edit it to match your preferences. The only values you should need to change are the <code>user</code> and <code>email</code> fields in <code>docker-launcher.yml</code>. These should be a valid username and associated email address for Docker Hub.</p>
-<pre class="sh"><code>cd deploy
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="sh">./sbt docker:publishLocal</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Once this completes successfully, you may deploy with
+<a href="https://github.com/advancedtelematic/docker-launcher">Docker Launcher.</a>
+For deploying a development system to your local machine, make sure you
+have Docker Launcher and Docker installed and configured to your liking.
+Docker Launcher currently requires Docker &gt;= v.1.6.1 and Ansible
+v.1.9.2. Ansible 2.x has not yet been tested, and is not guaranteed to
+work.</p>
+</div>
+<div class="paragraph">
+<p>First, enter the <code>deploy</code> directory, and copy the example Docker
+Launcher configuration file, then edit it to match your preferences. The
+only values you should need to change are the <code>user</code> and <code>email</code> fields
+in <code>docker-launcher.yml</code>. These should be a valid username and
+associated email address for Docker Hub.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="sh"><span style="color: #008000">cd </span>deploy
 cp docker-launcher.yml.example docker-launcher.yml</code></pre>
+</div>
+</div>
+<div class="paragraph">
 <p>You can then deploy a development system with</p>
-<pre class="sh"><code>docker-launcher -c docker-launcher.yml deploy-sota-local.yml</code></pre>
-<p>For a local deployment, a Docker Hub password is not actually required. When prompted for one, you can just press enter to continue.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="sh">docker-launcher -c docker-launcher.yml deploy-sota-local.yml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For a local deployment, a Docker Hub password is not actually required.
+When prompted for one, you can just press enter to continue.</p>
+</div>
+<div class="paragraph">
 <p>To stop the running system run</p>
-<pre class="sh"><code>docker-launcher --teardown -c docker-launcher.yml deploy-sota-local.yml</code></pre>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="sh">docker-launcher --teardown -c docker-launcher.yml deploy-sota-local.yml</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="cistaging-remote-system">CI/Staging remote system</h2>
-<p>For deploying a remote system for staging and CI, with a docker daemon accessible from a single IP run</p>
-<pre class="sh"><code>cd deploy/sota-docker-hub
+<div class="sectionbody">
+<div class="paragraph">
+<p>For deploying a remote system for staging and CI, with a docker daemon
+accessible from a single IP run</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="sh"><span style="color: #008000">cd </span>deploy/sota-docker-hub
 ansible-playbook -i inventory launch-docker-hub.yml</code></pre>
-<p>You’ll get prompted for the IP you want to allow to connect to the docker daemon.</p>
-<p><strong>NOTE:</strong> This depends on a properly configured <code>docker-launcher.yml</code>, even though it is not using Docker Launcher.</p>
-<p>To connect to the remote instance, find its IP from AWS Console and prepend your docker commands with <code>-H tcp://&lt;Address-of-staging-system&gt;:2375</code> like this</p>
-<pre class="sh"><code>docker -H tcp://&lt;Address-of-staging-system&gt;:2375 build -t something .</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You&#8217;ll get prompted for the IP you want to allow to connect to the
+docker daemon.</p>
+</div>
+<div class="paragraph">
+<p><strong>NOTE:</strong> This depends on a properly configured <code>docker-launcher.yml</code>,
+even though it is not using Docker Launcher.</p>
+</div>
+<div class="paragraph">
+<p>To connect to the remote instance, find its IP from AWS Console and
+prepend your docker commands with
+<code>-H tcp://&lt;Address-of-staging-system&gt;:2375</code> like this</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="sh">docker -H tcp://&lt;Address-of-staging-system&gt;:2375 build -t something .</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="deploying-against-the-staging-system">Deploying against the staging system</h2>
-<pre class="sh"><code>export DOCKER_HOST=tcp://&lt;Address-of-staging-system&gt;:2375
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="sh"><span style="color: #008000">export </span><span style="color: #19177C">DOCKER_HOST</span><span style="color: #666666">=</span>tcp://&lt;Address-of-staging-system&gt;:2375
 docker-launcher -c deploy/docker-launcher.yml deploy/deploy-sota-local.yml</code></pre>
+</div>
+</div>
+<div class="paragraph">
 <p>For migrations you need to tell flyway the connection details like so:</p>
-<pre class="sh"><code>CORE_DB_USER=&lt;user&gt; CORE_DB_PASSWORD=&lt;password&gt; CORE_DB_URL=jdbc:mysql://&lt;host&gt;:3306/sota sbt core/flywayMigrate</code></pre>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="sh"><span style="color: #19177C">CORE_DB_USER</span><span style="color: #666666">=</span>&lt;user&gt; <span style="color: #19177C">CORE_DB_PASSWORD</span><span style="color: #666666">=</span>&lt;password&gt; <span style="color: #19177C">CORE_DB_URL</span><span style="color: #666666">=</span>jdbc:mysql://&lt;host&gt;:3306/sota sbt core/flywayMigrate</code></pre>
+</div>
+</div>
+<div class="paragraph">
 <p>With <code>&lt;user&gt;</code>, <code>&lt;password&gt;</code> and <code>&lt;host&gt;</code> replaced with suitable values.</p>
+</div>
+</div>
+</div>
 
                     </div>
                 
