@@ -5,8 +5,8 @@
 package org.genivi.sota.resolver.types
 
 import eu.timepit.refined.{Refined, Predicate}
-import org.genivi.sota.refined.SprayJsonRefined._
-import spray.json.DefaultJsonProtocol._
+import io.circe.{Encoder, Decoder}
+import io.circe.generic.auto._
 
 
 case class Vehicle(vin: Vehicle.Vin)
@@ -26,5 +26,14 @@ object Vehicle {
     override def compare(a: Vin, b: Vin): Int = a.get compare b.get
   }
 
-  implicit val vehicleFormat = jsonFormat1(Vehicle.apply)
+  implicit def vehicleMapEncoder[V]
+    (implicit valueEncoder: Encoder[V])
+      : Encoder[Map[Vehicle.Vin, V]]
+  = Encoder[Seq[(Vehicle.Vin, V)]].contramap((m: Map[Vehicle.Vin, V]) => m.toSeq)
+
+  implicit def vehicleMapDecoder[V]
+    (implicit valueDecoder: Decoder[V])
+      : Decoder[Map[Vehicle.Vin, V]]
+  = Decoder[Seq[(Vehicle.Vin, V)]].map(_.toMap)
+
 }

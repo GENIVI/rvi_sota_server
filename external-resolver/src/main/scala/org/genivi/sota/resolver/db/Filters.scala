@@ -39,6 +39,18 @@ object Filters {
     q.update(filter.expression).map(i => if (i == 0) throw new MissingFilterException else filter)
   }
 
+  def deleteFilter(name: Filter.Name)(implicit ec: ExecutionContext): DBIO[String] =
+    filters
+      .filter(_.name === name)
+      .delete
+      .map(i =>
+        if (i == 0)
+          throw new MissingFilterException
+        else s"The filter named $name has been deleted.")
+
+  def delete(name: Filter.Name)(implicit ec: ExecutionContext): DBIO[String] =
+    PackageFilters.deleteByFilterName(name).andThen(deleteFilter(name))
+
   def list: DBIO[Seq[Filter]] =
     filters.result
 }

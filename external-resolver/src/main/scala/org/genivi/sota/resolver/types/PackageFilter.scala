@@ -4,9 +4,6 @@
  */
 package org.genivi.sota.resolver.types
 
-import spray.json.DefaultJsonProtocol._
-import org.genivi.sota.refined.SprayJsonRefined.refinedJsonFormat
-
 
 case class PackageFilter(
   packageName   : Package.Name,
@@ -16,10 +13,9 @@ case class PackageFilter(
 
 object PackageFilter {
 
-  implicit val packageFilterFormat = jsonFormat3(PackageFilter.apply)
-
   import org.genivi.sota.rest.ErrorCode
 
-  val MissingPackage = new ErrorCode("missing_package")
-  val MissingFilter  = new ErrorCode("missing_filter")
+  val MissingPackage       = new ErrorCode("missing_package")
+  val MissingFilter        = new ErrorCode("missing_filter")
+  val MissingPackageFilter = new ErrorCode("missing_package_filter")
 }

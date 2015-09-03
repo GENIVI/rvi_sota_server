@@ -29,11 +29,14 @@ trait SprayJsonRefined {
       }
     }
 
-  implicit def refinedUnmarshaller[P](implicit p: Predicate[P, String]) = Unmarshaller.strict[String, Refined[String, P]] { string =>
-    refineV[P](string) match {
-      case Left(e)  => throw new IllegalArgumentException(e)
-      case Right(r) => r
-    }
+  implicit def refinedUnmarshaller[P]
+    (implicit p: Predicate[P, String])
+      : FromStringUnmarshaller[Refined[String, P]]
+  = Unmarshaller.strict[String, Refined[String, P]] { string =>
+      refineV[P](string) match {
+        case Left(e)  => throw new IllegalArgumentException(e)
+        case Right(r) => r
+      }
   }
 
   implicit def refinedFromRequestUnmarshaller[T, P]

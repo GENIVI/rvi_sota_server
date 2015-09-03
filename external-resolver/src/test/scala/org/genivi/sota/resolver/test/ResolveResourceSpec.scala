@@ -42,20 +42,22 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
   }
 
 }
+/*
 
 class ResolveResourcePropSpec extends ResourcePropSpec {
 
   import ArbitraryFilter.arbFilter
   import ArbitraryPackage.arbPackage
   import ArbitraryVehicle.arbVehicle
-  import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
   import akka.http.scaladsl.model.StatusCodes
-  import org.genivi.sota.refined.SprayJsonRefined._
   import org.genivi.sota.resolver.db.Resolve.makeFakeDependencyMap
   import org.genivi.sota.resolver.types.FilterParser.parseValidFilter
   import org.genivi.sota.resolver.types._
   import org.scalacheck.Prop.{True => _, _}
-  import spray.json.DefaultJsonProtocol._
+  import org.genivi.sota.CirceSupport._
+  import io.circe.generic.auto._
+  import akka.http.scaladsl.unmarshalling._
+
 
   property("Resolve should give back the same thing as if we filtered with the filters") {
 
@@ -106,3 +108,5 @@ class ResolveResourcePropSpec extends ResourcePropSpec {
   }
 
 }
+
+ */

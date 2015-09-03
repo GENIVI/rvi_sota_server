@@ -4,19 +4,19 @@
  */
 package org.genivi.sota.resolver.test
 
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model.{Uri, HttpRequest, StatusCode, StatusCodes}
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
+import akka.http.scaladsl.unmarshalling._
 import eu.timepit.refined.Refined
-import org.genivi.sota.refined.SprayJsonRefined._
+import io.circe.generic.auto._
+import org.genivi.sota.CirceSupport._
 import org.genivi.sota.resolver.db.Resolve.makeFakeDependencyMap
 import org.genivi.sota.resolver.types.Package.Metadata
 import org.genivi.sota.resolver.types.{Vehicle, Filter, Package, PackageFilter}
 import org.scalatest.Matchers
 import scala.concurrent.duration._
-import spray.json.DefaultJsonProtocol._
 
 
 object Resource {
@@ -84,6 +84,14 @@ trait FilterRequests extends Matchers { self: ScalatestRouteTest =>
       responseAs[Filter] shouldBe Filter(Refined(name), Refined(expr))
     }
 
+  def deleteFilter(name: String): HttpRequest =
+    Delete(Resource.uri("filters", name))
+
+  def deleteFilterOK(name: String)(implicit route: Route): Unit =
+    deleteFilter(name) ~> route ~> check {
+      status shouldBe StatusCodes.OK
+    }
+
   def listFilters: HttpRequest =
     Get(Resource.uri("filters"))
 
@@ -110,6 +118,9 @@ trait PackageFilterRequests extends Matchers { self: ScalatestRouteTest =>
 
   def listFiltersForPackage(pname: String, pversion: String): HttpRequest =
     Get(Resource.uri("packageFilters", "filtersFor", pname, pversion))
+
+  def deletePackageFilter(pname: String, pversion: String, fname: String): HttpRequest =
+    Delete(Resource.uri("packageFiltersDelete", pname, pversion, fname))
 }
 
 trait ResolveRequests extends Matchers { self: ScalatestRouteTest =>
@@ -117,10 +128,14 @@ trait ResolveRequests extends Matchers { self: ScalatestRouteTest =>
   def resolve(pname: String, pversion: String): HttpRequest =
     Get(Resource.uri("resolve", pname, pversion))
 
-  def resolveOK(pname: String, pversion: String, vins: Seq[String])(implicit route: Route): Unit =
+  def resolveOK(pname: String, pversion: String, vins: Seq[String])(implicit route: Route): Unit = {
+
+
     resolve(pname, pversion) ~> route ~> check {
+      import org.genivi.sota.resolver.types.Vehicle.vehicleMapEncoder
       status shouldBe StatusCodes.OK
       responseAs[Map[Vehicle.Vin, List[Package.Id]]] shouldBe
         makeFakeDependencyMap(Refined(pname), Refined(pversion), vins.map(s => Vehicle(Refined(s))))
     }
+  }
 }
