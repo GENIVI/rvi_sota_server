@@ -1,13 +1,19 @@
 define(['jquery'], function($) {
   var sendRequest = {
-    doPost: function(url, data) {
+    jsonAjax: function(type, url, data) {
       return $.ajax({
-        type: "POST",
+        type: "DELETE",
         url: url,
         dataType: 'json',
         data: JSON.stringify(data),
         contentType: "application/json"
       });
+    },
+    doPost: function(url, data) {
+      return this.jsonAjax("POST", url, data);
+    },
+    doDelete: function(url, data) {
+      return this.jsonAjax("DELETE", url, data);
     }
   };
 

@@ -3,6 +3,7 @@ define(['backbone', 'underscore', '../lib/backbone-model-file-upload', '../mixin
   var Package = Backbone.Model.extend({
     fileAttribute: 'file',
     initialize: function() {
+      this.set({ packageId: this.get("name") + '/' + this.get("version")});
       SotaDispatcher.register(this.dispatchCallback.bind(this));
     },
     url: function() {

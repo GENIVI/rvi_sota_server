@@ -64,7 +64,7 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
     RequestResponse
   }
 
-  def resolverProxy = AsyncStack(parse.raw, AuthorityKey -> Role.USER) { implicit request =>
+  def resolverProxy(path: String) = AsyncStack(parse.raw, AuthorityKey -> Role.USER) { implicit request =>
     val user = loggedIn.name
     // Mitigation for C04 : Log transactions to and from SOTA Server
     auditLogger.info(s"Request: $request from user $user")

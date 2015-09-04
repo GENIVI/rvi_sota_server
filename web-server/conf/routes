@@ -9,7 +9,9 @@ GET     /                           org.genivi.webserver.controllers.Application
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
 GET     /webjars/*file              controllers.WebJarAssets.at(file)
 
-POST    /api/v1/packageFilters      org.genivi.webserver.controllers.Application.resolverProxy
+DELETE  /api/v1/packageFiltersDelete/*path     org.genivi.webserver.controllers.Application.resolverProxy(path: String)
+GET     /api/v1/packageFilters      org.genivi.webserver.controllers.Application.resolverProxy(path: String = "")
+POST    /api/v1/packageFilters      org.genivi.webserver.controllers.Application.resolverProxy(path: String = "")
 POST    /api/v1/install_campaigns   org.genivi.webserver.controllers.Application.coreProxy(path: String)
 PUT     /api/v1/packages/*path      org.genivi.webserver.controllers.Application.coreProxy(path: String)
 GET     /api/v1/packages            org.genivi.webserver.controllers.Application.coreProxy(path: String = "")
