@@ -18,11 +18,12 @@ import scala.util.control.NoStackTrace
 
 
 object CirceSupport {
+  case class DeserializationException(cause: Throwable) extends Throwable(cause)
 
   // Unmarshalling
 
   implicit def circeUnmarshaller[T](implicit decoder: Decoder[T], mat: Materializer) : FromEntityUnmarshaller[T] =
-    circeFromEntityJsonUnmarshaller.map( decoder.decodeJson ).flatMap(_ => _.fold( FastFuture.failed, FastFuture.successful ))
+    circeFromEntityJsonUnmarshaller.map( decoder.decodeJson ).flatMap(_ => _.fold( e => FastFuture.failed(new DeserializationException(e)), FastFuture.successful ))
 
   implicit def circeFromEntityJsonUnmarshaller(implicit mat: Materializer) : FromEntityUnmarshaller[Json] =
     Unmarshaller.byteStringUnmarshaller
@@ -31,71 +32,29 @@ object CirceSupport {
         val input = if (charset == HttpCharsets.`UTF-8`) data.utf8String else data.decodeString(charset.nioCharset.name)
         jawn.parse(input) match {
           case Xor.Right(json) => json
-          case Xor.Left(e)     => throw e
+          case Xor.Left(e)     => throw new DeserializationException(e)
         }
       }
 
-  implicit def circeFromRequestUnmarshaller[T]
-    (implicit decoder: Decoder[T], mat: Materializer)
-      : FromRequestUnmarshaller[T]
-  = circeFromRequestJsonUnmarshaller
-      .map(decoder.decodeJson)
-      .flatMap(_ => _.fold(FastFuture.failed, FastFuture.successful))
-
-  implicit def circeFromRequestJsonUnmarshaller
-    (implicit mat: Materializer)
-      : FromRequestUnmarshaller[Json]
-  = Unmarshaller((ec: ExecutionContext) => (req: HttpRequest) => {
-      circeFromEntityJsonUnmarshaller.apply(req.entity)(ec)
-    })
-
-  implicit def circeFromResponseJsonUnmarshaller
-    (implicit mat: Materializer)
-      : FromResponseUnmarshaller[Json]
-  = Unmarshaller((ec: ExecutionContext) => (resp: HttpResponse) => {
-      circeFromEntityJsonUnmarshaller.apply(resp.entity)(ec)
-    })
-
-  implicit def circeFromReponseUnarshaller[T]
-    (implicit decoder: Decoder[T], mat: Materializer)
-      : FromResponseUnmarshaller[T]
-  = circeFromResponseJsonUnmarshaller
-      .map(decoder.decodeJson)
-      .flatMap(_ => _.fold(FastFuture.failed, FastFuture.successful))
-
   case class RefinementError[T]( o: T, msg: String) extends NoStackTrace
 
-  class DeserializationException(msg: String, cause: Throwable = null) extends RuntimeException(msg, cause)
 
-  implicit def refinedDecoder[T, P]
-    (implicit decoder: Decoder[T], predicate: Predicate[P, T])
-      : Decoder[Refined[T, P]]
-  = decoder.map((t: T) =>
+  implicit def refinedDecoder[T, P](implicit decoder: Decoder[T], predicate: Predicate[P, T]): Decoder[Refined[T, P]] =
+    decoder.map(t =>
       refineV[P](t) match {
-        case Left(e)  => throw new DeserializationException(e, RefinementError(t, e))
+        case Left(e)  => throw new DeserializationException(RefinementError(t, e))
         case Right(r) => r
       })
-
-
 
   // Marshalling
 
   implicit def circeJsonMarshaller(implicit printer: Printer) : ToEntityMarshaller[Json] =
     Marshaller.StringMarshaller.wrap(ContentTypes.`application/json`)(printer.pretty)
 
-  implicit def circeToEntityMarshaller[T]
-    (implicit encoder: Encoder[T], printer: Printer = Printer.noSpaces)
-      : ToEntityMarshaller[T]
-  = circeJsonMarshaller.compose(encoder.apply)
+  implicit def circeToEntityMarshaller[T](implicit encoder: Encoder[T], printer: Printer = Printer.noSpaces): ToEntityMarshaller[T] =
+    circeJsonMarshaller.compose(encoder.apply)
 
-  implicit def circeToResponseMarshaller[T]
-    (implicit encoder: Encoder[T], printer: Printer = Printer.noSpaces)
-      : ToResponseMarshaller[T]
-  = circeJsonMarshaller.compose(encoder.apply)
-
-  implicit def refinedEncoder[T, P]
-    (implicit encoder: Encoder[T])
-      : Encoder[Refined[T, P]]
-  = encoder.contramap(_.get)
+  implicit def refinedEncoder[T, P](implicit encoder: Encoder[T]): Encoder[Refined[T, P]] =
+    encoder.contramap(_.get)
 
 }
