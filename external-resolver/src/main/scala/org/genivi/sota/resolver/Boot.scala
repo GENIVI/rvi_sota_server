@@ -12,6 +12,8 @@ import akka.http.scaladsl.model.StatusCodes.NoContent
 import akka.http.scaladsl.server.{Directives, ExceptionHandler, Route, PathMatchers}
 import akka.http.scaladsl.server.PathMatchers.Slash
 import akka.stream.ActorMaterializer
+import eu.timepit.refined.Refined
+import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.CirceSupport._
 import org.genivi.sota.resolver.db._
@@ -77,10 +79,15 @@ class Routing(db: Database)
         ErrorRepresentation(PackageFilter.MissingFilter, "Filter doesn't exist"))
   }
 
+  import org.genivi.sota.refined.SprayJsonRefined.refinedUnmarshaller
+
   def filterRoute: Route =
     pathPrefix("filters") {
       get {
-        complete(db.run(Filters.list))
+        parameters('regex.as[Refined[String, Regex]].?) { re =>
+          val query = re.fold(Filters.list)(r => Filters.searchByRegex(r.get))
+          complete(db.run(query))
+        }
       } ~
       (post & entity(as[Filter])) { filter => complete(db.run(Filters.add(filter)))
       } ~

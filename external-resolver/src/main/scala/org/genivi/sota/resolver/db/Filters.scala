@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.resolver.db
 
+import org.genivi.sota.db.Operators.regex
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.types.Filter
 import scala.concurrent.ExecutionContext
@@ -53,4 +54,8 @@ object Filters {
 
   def list: DBIO[Seq[Filter]] =
     filters.result
+
+  def searchByRegex(re:String): DBIO[Seq[Filter]] =
+    filters.filter(filter => regex(filter.name, re)).result
+
 }

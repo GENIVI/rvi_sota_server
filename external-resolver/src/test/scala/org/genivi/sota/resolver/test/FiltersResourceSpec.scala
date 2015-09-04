@@ -51,6 +51,12 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
       }
     }
 
+    "allow regex search on listing filters" in {
+      listFiltersRegex("^.*2$") ~> route ~> check {
+        responseAs[Seq[Filter]] shouldBe List(filter2)
+      }
+    }
+
     "Posting the same filter twice should fail" in {
       addFilter(filterName, filterExpr) ~> route ~> check {
         status shouldBe StatusCodes.Conflict

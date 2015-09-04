@@ -92,6 +92,9 @@ trait FilterRequests extends Matchers { self: ScalatestRouteTest =>
       status shouldBe StatusCodes.OK
     }
 
+  def listFiltersRegex(re: String): HttpRequest =
+    Get(Resource.uri("filters") + "?regex=" + re)
+
   def listFilters: HttpRequest =
     Get(Resource.uri("filters"))
 
