@@ -9,6 +9,9 @@ define(function(require) {
       Packages = require('stores/packages'),
       Filters = require('stores/filters'),
       Router = require('react-router'),
+      Updates = require('stores/updates'),
+      UpdatesComponent = require('components/updates/updates-component'),
+      ShowUpdate = require('components/updates/show-update-component'),
       SotaDispatcher = require('sota-dispatcher');
 
   var Link = Router.Link;
@@ -29,6 +32,9 @@ define(function(require) {
           </li>
           <li role="presentation">
             <Link to="filters">Filters</Link>
+          </li>
+          <li role="presentation">
+            <Link to="updates">Updates</Link>
           </li>
         </ul>
         <div>
@@ -56,6 +62,10 @@ define(function(require) {
       <Route name="filters">
         <Route name="filter" path="/filters/:name" handler={wrapComponent(ShowFilter, {Store: Filters})}/>
         <DefaultRoute handler={SearchableFilterComponent} />
+      </Route>
+      <Route name="updates">
+        <Route name="update" path="/updates/:id" handler={wrapComponent(ShowUpdate, {Store: new Updates()})} />
+        <DefaultRoute handler={wrapComponent(UpdatesComponent, {Store: new Updates()})} />
       </Route>
     </Route>
   );
