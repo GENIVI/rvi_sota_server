@@ -17,7 +17,7 @@ define(['react', 'react-router', '../mixins/fluxbone', 'sota-dispatcher'], funct
             <span className="badge" onClick={ this.handleUpdatePackage }>
               Update Package
             </span>
-            { this.props.Package.get('name') }
+            { this.props.Package.get('name') } - { this.props.Package.get('version') }
           </li>
         </Router.Link>
       );
