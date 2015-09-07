@@ -42,29 +42,13 @@ future: true
 # Exclude non-site files
 exclude: ['bin', 'README.md','Gemfile*','Makefile']
 
-pandoc:
-  skip: true
-  impose: false
-  output: ./tmp
-  flags: '--smart'
-  site_flags: '--toc'
-  outputs:
-    pdf: '--latex-engine=latex'
-    epub:
-    markdown:
+gems: 
+  - jekyll-asciidoc
 
-gems: [ 'jekyll-pandoc-multiple-formats' ]
+asciidoctor:
+  attributes:
+    - hardbreaks!
+    - source-highlighter=pygments
+    - pygments-css=style
 
-# Use the redcarpet Markdown renderer
-# markdown: redcarpet
-# redcarpet:
-#     extensions: [
-#         'no_intra_emphasis',
-#        'fenced_code_blocks',
-#         'autolink',
-#         'strikethrough',
-#         'superscript',
-#         'with_toc_data',
-#         'tables',
-#         'hardwrap'
-#     ]
+
