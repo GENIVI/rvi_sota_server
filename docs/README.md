@@ -12,3 +12,5 @@ To see a local version of the site, run `jekyll serve`, then open a browser at <
 To simply build the site without running the local server, run `jekyll build`; it will output to `./_site/`.
 
 To update the site on Github Pages, build the site with `jekyll build`, then copy the complete generated static site to the gh-pages branch, commit, and push.
+
+You can also just run `make` to build the site using docker. It will output the static site to `./output`.

@@ -6,110 +6,64 @@ date: 2015-08-26 10:40:49
 order: 3
 ---
 
-This is the user manual for the SOTA Admin Web GUI. Development is
-currently at an early stage, but this document will be updated as
-features are added.
+This is the user manual for the SOTA Admin Web GUI. Development is currently at an early stage, but this document will be updated as features are added.
 
-[[signing-in]]
 == Signing in
 
-Once the SOTA server is link:../doc/building-installing.html[built] and
-running, the Admin Browser will be available at http://localhost:9000.
-The default username is `admin@genivi.org`, and the default password is
-`genivirocks!`.
+Once the SOTA server is link:../doc/building-installing.html[built] and running, the Admin Browser will be available at http://localhost:9000. The default username is `admin@genivi.org`, and the default password is `genivirocks!`.
 
-[[managing-vehicles]]
 == Managing Vehicles
 
-[[adding-a-vin]]
 === Adding a VIN
 
-To add a VIN, click the _Vehicles_ tab at the top of the page. Enter a
-valid VIN number (exactly 17 characters long and consisting only of
-alphanumeric characters) in the *Vehicle Name* field, and click the *Add
-Vehicle* button. If the addition was successful, the newly added VIN
-will appear in the list at the bottom of the page. If not, an error
-message will be displayed.
+To add a VIN, click the _Vehicles_ tab at the top of the page. Enter a valid VIN number (exactly 17 characters long and consisting only of alphanumeric characters) in the *Vehicle Name* field, and click the *Add Vehicle* button. If the addition was successful, the newly added VIN will appear in the list at the bottom of the page. If not, an error message will be displayed.
 
-[[managing-vins]]
-=== Managing VINs
+=== Searching for VINs
 
-[[adding-a-software-package-to-a-vin]]
-==== Adding a software package to a VIN
+You can search VINs by regular expression. As you type a regular expression in the **Vehicle VIN Regex** field, the list of VINs below is dynamically updated.
 
-[[adding-a-hardware-component-to-a-vin]]
-==== Adding a hardware component to a VIN
+=== Adding a software package to a VIN
 
-[[vin-filters]]
-=== VIN filters
+=== Adding a hardware component to a VIN
 
-You can create filters to powerfully select sub-groups of VINs. For
-example, you might wish to create a filter that matches only vehicles
-that have the hardware component **AcmeDVDPlayer**, so that you can send
-a firmware update to only the relevant vehicles.
+== Managing Filters
 
-[[filter-syntax]]
-==== Filter syntax
+You can create filters to powerfully select sub-groups of VINs. For example, you might wish to create a filter that matches only vehicles that have the hardware component **AcmeDVDPlayer**, so that you can send a firmware update to only the relevant vehicles.
 
-SOTA has a filter syntax to create these filters; currently the valid
-terms are **vin_matches**, **has_package**, and **has_component**, and
-the boolean operators **NOT**, **AND**, and **OR**.
+=== Filter syntax
 
-Example: For a filter that matched all VINs beginning with 12ABC, that
-have the AcmeDVDPlayer installed, the syntax would be
-`vin_matches "^12ABC" AND has_component "AcmeDVDPlayer"`.
+SOTA has a filter syntax to create these filters; currently the valid terms are **vin_matches**, **has_package**, and **has_component**, and the boolean operators **NOT**, **AND**, and **OR**. **vin_matches**, **has_package**, and **has_component** take regular expressions (enclosed in quotes) as arguments.
 
-[[creating-a-vin-filter]]
-==== Creating a VIN filter
+Example: For a filter matching all VINs beginning with 12ABC, that have the AcmeDVDPlayer installed, the syntax would be `vin_matches "^12ABC" AND has_component "AcmeDVDPlayer"`.
 
-To create a new filter, click the *Filters* tab at the top of the page.
-Enter a unique name in the *Filter Name* field, and enter your
-expression in the *Filter Expression* field. Click the *Add Filter*
-button. If the filter was successfully created, you should see a message
-saying `Added Filter [filtername] successfully.` If the name you gave
-was already taken, or if the filter's syntax was invalid, you will see
-an error message instead.
+=== Creating a filter
 
-[[managing-software-packages]]
+To create a new filter, click the *Filters* tab at the top of the page. Enter a unique name in the *Filter Name* field, and enter your expression in the *Filter Expression* field. Click the *Add Filter* button. If the filter was successfully created, you should see a message saying `Added Filter [filtername] successfully.` If the name you gave was already taken, or if the filter's syntax was invalid, you will see an error message instead.
+
+=== Associating a filter with a package
+
+To actually associate your filter with a particular software package, go to the *Packages* tab and click on a package in the list at the bottom of the form to take you to that package's page. You can click on a filter name under *All Filters* to associate it with the package and click on a filter name under *Package Filters* to remove the association.
+
 == Managing Software Packages
 
-[[adding-a-software-package]]
 === Adding a software package
 
-To add a software package, you will need to upload a package file and
-give it a unique **Package ID**. A package ID consists of a package name
-and a version number. The name must be alphanumeric, and the version
-must consist of three numbers separated by periods. (For example, 3.0.4
-and 0.115.33 are both valid version numbers, but 1.3 and 2.7.22b are
-not.)
+To add a software package, you will need to upload a package file and give it a unique **Package ID**. A package ID consists of a package name and a version number. The name must be alphanumeric, and the version must consist of three digits separated by periods. (For example, 3.0.4 and 0.115.33 are both valid version numbers, but 1.3 and 2.7.22b are not.)
 
-Click the *Packages* tab at the top of the page. Enter a Package Name,
-Version, and optionally a description and vendor name in the appropriate
-fields. Then, select a file to upload. Click **Add Package**. If the
-upload was successful, you will see a status message confirming it. If
-there was a problem, you will see an appropriate error message.
+Click the *Packages* tab at the top of the page. Enter a Package Name, Version, and optionally a description and vendor name in the appropriate fields. Then, select a file to upload. Click **Add Package**. If the upload was successful, you will see a status message confirming it. If there was a problem, you will see an appropriate error message.
 
-[[searching-for-packages]]
 === Searching for packages
 
-[[associating-a-package-with-a-filter]]
+You can search for packages by regular expression. As you type a regular expression in the **Search packages by regex** field, the list of packages below is dynamically updated.
+
 === Associating a package with a filter
 
-To associate a package with a filter, click the *Associations* tab at
-the top of the page. Enter a package name, version and filter name in
-the appropriate fields, then click **Create Association**.
+To associate a software package with a filter, go to the *Packages* tab and click on a package in the list at the bottom of the form to take you to that package's page. You can click on a filter name under *All Filters* to associate it with the package and click on a filter name under *Package Filters* to remove the association.
 
-This functionality will be used to select a group of vehicles to send
-specific software updates to.
-
-[[managing-hardware-components]]
 == Managing Hardware Components
 
-[[adding-a-hardware-component]]
 === Adding a hardware component
 
-[[searching-for-vehicles-by-installed-component]]
 === Searching for vehicles by installed component
 
-[[triggering-updates]]
 == Triggering Updates
