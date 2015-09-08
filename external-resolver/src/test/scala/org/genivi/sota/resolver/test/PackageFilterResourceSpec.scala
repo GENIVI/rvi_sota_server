@@ -30,9 +30,15 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
       addPackageFilterOK(pkgName, pkgVersion, filterName)
     }
 
-    "not allow assignment of filters to non-existing packages " in {
+    "not allow assignment of filters to non-existing package names" in {
       addPackageFilter("nonexistant", pkgVersion, filterName) ~> route ~> check {
+        status shouldBe StatusCodes.BadRequest
+        responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingPackage
+      }
+    }
 
+    "not allow assignment of filters to non-existing package versions" in {
+      addPackageFilter(pkgName, "0.0.9", filterName) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingPackage
       }
@@ -56,7 +62,7 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
     "list packages associated to a filter on GET requests to /packagesFor/:filterName" in {
       listPackagesForFilter(filterName) ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[Seq[Package.Name]] shouldBe List(Refined(pkgName))
+        responseAs[List[Tuple2[Package.Name, Package.Version]]] shouldBe List((Refined(pkgName), Refined(pkgVersion)))
       }
     }
 
@@ -64,6 +70,18 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
       listFiltersForPackage(pkgName, pkgVersion) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Seq[Filter]] shouldBe List(Filter(Refined(filterName), Refined(filterExpr)))
+      }
+    }
+
+    "fail to list filters associated to a package if no package name is given" in {
+      listFiltersForPackage("", pkgVersion) ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
+      }
+    }
+
+    "fail to list filters associated to a package if no package version is given" in {
+      listFiltersForPackage(pkgName, "") ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
       }
     }
 
