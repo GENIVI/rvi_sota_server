@@ -12,41 +12,15 @@ define(['backbone', 'underscore', '../lib/backbone-model-file-upload', '../mixin
     dispatchCallback: function(payload) {
       switch(payload.actionType) {
         case 'package-updatePackage':
-          this.updatePackage();
+          this.updatePackage(payload.package);
       }
     },
-    updatePackage: function() {
-      var timestamp = new Date();
-      var payload = {
-        packageId: this.get('id'),
-        priority: 10,
-        startAfter: this.formatDatetime(timestamp),
-        endBefore: this.formatDatetime(new Date(timestamp.getTime() + 10*60000))
-      };
-
+    updatePackage: function(payload) {
       // TODO find a good place to configure this url
       sendRequest.doPost("/api/v1/install_campaigns", payload)
         .fail(_.bind(function(xhr) {
           this.trigger("error", this, xhr);
         }, this));
-    },
-    formatDatetime: function(now) {
-      var tzo = -now.getTimezoneOffset();
-      var dif = tzo >= 0 ? '+' : '-';
-
-      var pad = function(num) {
-        var norm = Math.abs(Math.floor(num));
-        return (norm < 10 ? '0' : '') + norm;
-      };
-
-      return now.getFullYear() +
-        '-' + pad(now.getMonth()+1) +
-        '-' + pad(now.getDate()) +
-        'T' + pad(now.getHours()) +
-        ':' + pad(now.getMinutes()) +
-        ':' + pad(now.getSeconds()) +
-        dif + pad(tzo / 60) +
-        ':' + pad(tzo % 60);
     }
   });
 
