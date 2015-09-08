@@ -5,7 +5,6 @@ define(function(require) {
       FilterablePackageComponent = require('components/filterable-package-component'),
       ShowPackage = require('components/show-package-component'),
       CreateFilter = require('components/create-filter'),
-      CreateAssociation = require('components/create-association'),
       Packages = require('stores/packages'),
       Router = require('react-router'),
       SotaDispatcher = require('sota-dispatcher');
@@ -28,9 +27,6 @@ define(function(require) {
           </li>
           <li role="presentation">
             <Link to="filters">Filters</Link>
-          </li>
-          <li role="presentation">
-            <Link to="associations">Associations</Link>
           </li>
         </ul>
         <div>
@@ -56,7 +52,6 @@ define(function(require) {
         <DefaultRoute handler={FilterablePackageComponent}/>
       </Route>
       <Route name="filters" handler={wrapComponent(CreateFilter, {url:"/api/v1/filters"})} />
-      <Route name="associations" handler={wrapComponent(CreateAssociation, {url:"/api/v1/packageFilters"})} />
     </Route>
   );
 
