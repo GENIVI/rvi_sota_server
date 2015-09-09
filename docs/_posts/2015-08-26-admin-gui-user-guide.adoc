@@ -3,6 +3,7 @@ layout: page
 title: "Admin GUI User Guide"
 category: doc
 date: 2015-08-26 10:40:49
+order: 3
 ---
 
 This is the user manual for the SOTA Admin Web GUI. Development is
@@ -14,7 +15,7 @@ features are added.
 
 Once the SOTA server is link:../doc/building-installing.html[built] and
 running, the Admin Browser will be available at http://localhost:9000.
-The default username is `admin@sota.com`, and the default password is
+The default username is `admin@genivi.org`, and the default password is
 `genivirocks!`.
 
 [[managing-vehicles]]
