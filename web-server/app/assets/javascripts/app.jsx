@@ -3,9 +3,11 @@ define(function(require) {
   var React = require('react'),
       FilterableVehicleComponent = require('components/filterable-vehicle-component'),
       FilterablePackageComponent = require('components/filterable-package-component'),
+      SearchableFilterComponent = require('components/filters/searchable-filter-component'),
       ShowPackage = require('components/show-package-component'),
-      CreateFilter = require('components/create-filter'),
+      ShowFilter = require('components/filters/show-filter-component'),
       Packages = require('stores/packages'),
+      Filters = require('stores/filters'),
       Router = require('react-router'),
       SotaDispatcher = require('sota-dispatcher');
 
@@ -51,7 +53,10 @@ define(function(require) {
         <Route name="package" path="/packages/:name/:version" handler={wrapComponent(ShowPackage, {Store: Packages})}/>
         <DefaultRoute handler={FilterablePackageComponent}/>
       </Route>
-      <Route name="filters" handler={wrapComponent(CreateFilter, {url:"/api/v1/filters"})} />
+      <Route name="filters">
+        <Route name="filter" path="/filters/:name" handler={wrapComponent(ShowFilter, {Store: Filters})}/>
+        <DefaultRoute handler={SearchableFilterComponent} />
+      </Route>
     </Route>
   );
 

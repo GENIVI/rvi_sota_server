@@ -7,6 +7,9 @@ define(['backbone', 'sota-dispatcher'], function(Backbone, SotaDispatcher) {
     },
     dispatchCallback: function(payload) {
       switch(payload.actionType) {
+        case 'fetch-filters':
+          this.fetch();
+          break;
         case 'initialize':
           this.fetch();
           break;
