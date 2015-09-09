@@ -1,4 +1,4 @@
-define(['jquery', 'react', '../mixins/handle-fail', '../mixins/serialize-form'], function($, React, HandleFailMixin, serializeForm) {
+define(['jquery', 'react', '../../mixins/handle-fail', '../../mixins/serialize-form', 'sota-dispatcher'], function($, React, HandleFailMixin, serializeForm, SotaDispatcher) {
 
     var CreateFilter = React.createClass({
         mixins: [HandleFailMixin],
@@ -21,6 +21,9 @@ define(['jquery', 'react', '../mixins/handle-fail', '../mixins/serialize-form'],
             return true;
         },
         onSuccess: function(data) {
+            SotaDispatcher.dispatch({
+                actionType: 'fetch-filters'
+            });
             this.setState({postStatus: "Added filter \"" + data.name + "\" successfully"});
             React.findDOMNode(this.refs.name).value = '';
             React.findDOMNode(this.refs.expression).value = '';

@@ -18,9 +18,6 @@ define(['jquery', 'react'], function($, React) {
       var model = this.props.Store.findWhere(this.whereClause());
       this.setState({ Model: model });
     },
-    whereClause: function() {
-      return this.context.router.getCurrentParams();
-    },
     getInitialState: function () {
       this.getStateFromStore();
       return { Model: undefined };

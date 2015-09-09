@@ -5,6 +5,9 @@ define(['underscore', 'react', '../mixins/show-model', 'components/create-update
       router: React.PropTypes.func
     },
     mixins: [showModel],
+    whereClause: function() {
+      return this.context.router.getCurrentParams();
+    },
     showView: function() {
       var listItems = _.map(this.state.Model.attributes, function(value, key) {
         return (
