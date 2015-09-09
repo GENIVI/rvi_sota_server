@@ -59,16 +59,24 @@ class Routing(db: Database)
     }
   }
 
+  def resolveHandler: ExceptionHandler = ExceptionHandler {
+    case err: Packages.MissingPackageException.type =>
+      complete(StatusCodes.NotFound ->
+        ErrorRepresentation(PackageFilter.MissingPackage, "Package doesn't exist"))
+  }
+
   def resolveRoute: Route = {
     pathPrefix("resolve") {
       (get & refinedPackageId) { (name, version) =>
-        complete(db.run(Resolve.resolve(name, version)))
+        handleExceptions(resolveHandler) {
+          complete(db.run(Resolve.resolve(name, version)))
+        }
       }
     }
   }
 
   def packageFiltersHandler: ExceptionHandler = ExceptionHandler {
-    case err: PackageFilters.MissingPackageException =>
+    case err: Packages.MissingPackageException.type =>
       complete(StatusCodes.BadRequest ->
         ErrorRepresentation(PackageFilter.MissingPackage, "Package doesn't exist"))
     case err: PackageFilters.MissingPackageFilterException =>

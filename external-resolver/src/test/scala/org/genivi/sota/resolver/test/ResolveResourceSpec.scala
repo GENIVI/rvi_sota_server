@@ -1,5 +1,12 @@
 package org.genivi.sota.resolver.test
 
+import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.unmarshalling._
+import io.circe.generic.auto._
+import org.genivi.sota.CirceSupport._
+import org.genivi.sota.resolver.types.{Vehicle, Package, PackageFilter}
+import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
+
 
 class ResolveResourceWordSpec extends ResourceWordSpec {
 
@@ -38,6 +45,22 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
 
       resolveOK("resolve pkg", "0.0.1", List())
 
+    }
+  }
+
+  "fail if a non-existing package name is given" in {
+
+    resolve("resolve pkg2", "0.0.1") ~> route ~> check {
+      status shouldBe StatusCodes.NotFound
+      responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingPackage
+    }
+  }
+
+  "fail if a non-existing package version is given" in {
+
+    resolve("resolve pkg", "0.0.2") ~> route ~> check {
+      status shouldBe StatusCodes.NotFound
+      responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingPackage
     }
   }
 
