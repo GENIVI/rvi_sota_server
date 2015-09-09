@@ -25,7 +25,7 @@ define(['jquery', 'react', '../mixins/handle-fail', '../mixins/serialize-form', 
         package: payload
       });
     },
-    formatDate(date, time, timeZone) {
+    formatDate: function(date, time, timeZone) {
       //TODO: Get seconds working with ReactJS
       return date + "T" + time + ":00" + timeZone;
     },
