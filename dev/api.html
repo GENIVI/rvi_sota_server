@@ -44,7 +44,7 @@
             <li data-order="6"><a href="/rvi_sota_server/doc/contributing.html">Contributing</a></li>
         
             
-            <li data-order=""><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
+            <li data-order="3"><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
         
             
             <li data-order="1"><a href="/rvi_sota_server/doc/building-installing.html">Building & Deploying</a></li>
@@ -111,17 +111,33 @@
     </h2>
 </div>
 
-<h1 id="sota-rest-api-documentation">SOTA REST API Documentation</h1>
-<div id="preamble">
-<div class="sectionbody">
+<div id="toc" class="toc">
+<div id="toctitle" class="title">Table of Contents</div>
+<ul class="sectlevel2">
+<li><a href="#get-vehicles">GET /vehicles</a></li>
+<li><a href="#put-vehicles-vin">PUT /vehicles/:vin</a></li>
+<li><a href="#get-packages">GET /packages</a></li>
+<li><a href="#put-packages-name-version">PUT /packages/:name/:version</a></li>
+<li><a href="#put-packages-name-version-2">PUT /packages/:name/:version</a></li>
+<li><a href="#get-resolve-name-version">GET /resolve/:name/:version</a></li>
+<li><a href="#get-filters">GET /filters</a></li>
+<li><a href="#post-filters">POST /filters</a></li>
+<li><a href="#put-filters-filter">PUT /filters/:filter</a></li>
+<li><a href="#delete-filters-filter">DELETE /filters/:filter</a></li>
+<li><a href="#post-validate-filter">POST /validate/filter</a></li>
+<li><a href="#get-packagefilters">GET /packageFilters</a></li>
+<li><a href="#post-packagefilters">POST /packageFilters</a></li>
+<li><a href="#delete-packagefiltersdelete-packagename-packageversion-filtername">DELETE /packageFiltersDelete/:packageName/:packageVersion/:filterName</a></li>
+<li><a href="#get-packagefilters-packagesfor-filter">GET /packageFilters/packagesFor/:filter</a></li>
+<li><a href="#get-packagefilters-filtersfor-name-version">GET /packageFilters/filtersFor/:name/:version</a></li>
+</ul>
+</div>
 <div class="paragraph">
 <p>This is the draft documentation page for the REST API of SOTA, including
 the Web Server, the Core Server, and the Resolver.</p>
 </div>
 <div class="paragraph">
 <p>Note that all responses are sent as JSON.</p>
-</div>
-</div>
 </div>
 <div class="sect2">
 <h3 id="get-vehicles">GET /vehicles</h3>
@@ -133,7 +149,7 @@ the Web Server, the Core Server, and the Resolver.</p>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">core, resolver, web server</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">core, resolver</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
@@ -170,13 +186,15 @@ the Web Server, the Core Server, and the Resolver.</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Error Response</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">N/A</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>N/A</p>
+</div></div></td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="sect2">
-<h3 id="put-vehiclesvin">PUT /vehicles/:vin</h3>
+<h3 id="put-vehicles-vin">PUT /vehicles/:vin</h3>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
 <col style="width: 18%;">
@@ -185,7 +203,7 @@ the Web Server, the Core Server, and the Resolver.</p>
 <thead>
 <tr>
 <th class="tableblock halign-left valign-top">Availability</th>
-<th class="tableblock halign-left valign-top">core, resolver, web server</th>
+<th class="tableblock halign-left valign-top">core, resolver</th>
 </tr>
 </thead>
 <tbody>
@@ -241,7 +259,7 @@ characters.</p>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">core, resolver, web server</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">core, resolver</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
@@ -274,18 +292,20 @@ characters.</p>
 </div>
 </div>
 <div class="paragraph">
-<p><strong>Content:</strong> None</p>
+<p>Note: Currently, the resolver returns an empty list and a <strong>204 No Content</strong> code for this endpoint, even though it stores package information in its database.</p>
 </div></div></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Error Response</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">N/A</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>N/A</p>
+</div></div></td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="sect2">
-<h3 id="put-packagesnameversion">PUT /packages/:name/:version</h3>
+<h3 id="put-packages-name-version">PUT /packages/:name/:version</h3>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
 <col style="width: 18%;">
@@ -294,7 +314,7 @@ characters.</p>
 <thead>
 <tr>
 <th class="tableblock halign-left valign-top">Availability</th>
-<th class="tableblock halign-left valign-top">core, resolver</th>
+<th class="tableblock halign-left valign-top">core</th>
 </tr>
 </thead>
 <tbody>
@@ -348,17 +368,21 @@ characters.</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">unknown</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>unknown</p>
+</div></div></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Error Response</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">unknown</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>unknown</p>
+</div></div></td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="sect2">
-<h3 id="get-resolvenameversion">GET /resolve/:name/:version</h3>
+<h3 id="put-packages-name-version-2">PUT /packages/:name/:version</h3>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
 <col style="width: 18%;">
@@ -367,7 +391,74 @@ characters.</p>
 <thead>
 <tr>
 <th class="tableblock halign-left valign-top">Availability</th>
-<th class="tableblock halign-left valign-top">resolver, web server</th>
+<th class="tableblock halign-left valign-top">resolver</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Adds a package to the database.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/packages/:name/:version</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>:name</strong> — The unique name of the software package.</p>
+</li>
+<li>
+<p><strong>:version</strong> — The package version, in <em>x.y.z</em> format. <em>x</em>, <em>y</em>, and
+<em>z</em> must all contain only digits.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Data Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Optional:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>description</strong> — A short description of the package.</p>
+</li>
+<li>
+<p><strong>vendor</strong> — The vendor for the software package.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>unknown</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Error Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>unknown</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="get-resolve-name-version">GET /resolve/:name/:version</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Availability</th>
+<th class="tableblock halign-left valign-top">resolver</th>
 </tr>
 </thead>
 <tbody>
@@ -404,26 +495,38 @@ VINs it applies to.</p></td>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="json">{
-  <span style="color: #008000; font-weight: bold">&quot;AAAAAAA1234567890&quot;</span>: [
+<pre class="pygments highlight"><code data-lang="json">[
+  [
     {
-      <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>: <span style="color: #BA2121">&quot;myPackage&quot;</span>,
-      <span style="color: #008000; font-weight: bold">&quot;version&quot;</span>: <span style="color: #BA2121">&quot;1.2.3&quot;</span>
-    }
+      <span style="color: #008000; font-weight: bold">&quot;get&quot;</span>: <span style="color: #BA2121">&quot;bbbbbbb0987054321&quot;</span>
+    },
+    [
+      {
+        <span style="color: #008000; font-weight: bold">&quot;version&quot;</span>:<span style="color: #BA2121">&quot;4.5.6&quot;</span>,
+        <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>:<span style="color: #BA2121">&quot;myPackage&quot;</span>
+      }
+    ]
   ],
-  <span style="color: #008000; font-weight: bold">&quot;BBBBBBB1234567890&quot;</span>: [
+  [
     {
-      <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>: <span style="color: #BA2121">&quot;myPackage&quot;</span>,
-      <span style="color: #008000; font-weight: bold">&quot;version&quot;</span>: <span style="color: #BA2121">&quot;1.2.3&quot;</span>
-    }
+      <span style="color: #008000; font-weight: bold">&quot;get&quot;</span>:<span style="color: #BA2121">&quot;abcdefg1234567890&quot;</span>
+    },
+    [
+      {
+        <span style="color: #008000; font-weight: bold">&quot;version&quot;</span>:<span style="color: #BA2121">&quot;4.5.6&quot;</span>,
+        <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>:<span style="color: #BA2121">&quot;myPackage&quot;</span>
+      }
+    ]
   ]
-}</code></pre>
+]</code></pre>
 </div>
 </div></div></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Error Response</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">N/A</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>N/A</p>
+</div></div></td>
 </tr>
 </tbody>
 </table>
@@ -438,7 +541,7 @@ VINs it applies to.</p></td>
 <thead>
 <tr>
 <th class="tableblock halign-left valign-top">Availability</th>
-<th class="tableblock halign-left valign-top">resolver, web server</th>
+<th class="tableblock halign-left valign-top">resolver</th>
 </tr>
 </thead>
 <tbody>
@@ -466,8 +569,8 @@ VINs it applies to.</p></td>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="json">[
   {
-    <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>: <span style="color: #BA2121">&quot;myFilter&quot;</span>,
-    <span style="color: #008000; font-weight: bold">&quot;expression&quot;</span>: <span style="color: #BA2121">&quot;vin_matches \&quot;^12ABC\&quot; AND has_component \&quot;AcmeDVDPlayer\&quot;&quot;</span>
+    <span style="color: #008000; font-weight: bold">&quot;expression&quot;</span>: <span style="color: #BA2121">&quot;vin_matches \&quot;^12ABC\&quot; AND has_component \&quot;AcmeDVDPlayer\&quot;&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>: <span style="color: #BA2121">&quot;myFilter&quot;</span>
   }
 ]</code></pre>
 </div>
@@ -475,7 +578,9 @@ VINs it applies to.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Error Response</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">N/A</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>N/A</p>
+</div></div></td>
 </tr>
 </tbody>
 </table>
@@ -490,7 +595,7 @@ VINs it applies to.</p></td>
 <thead>
 <tr>
 <th class="tableblock halign-left valign-top">Availability</th>
-<th class="tableblock halign-left valign-top">resolver, web server</th>
+<th class="tableblock halign-left valign-top">resolver</th>
 </tr>
 </thead>
 <tbody>
@@ -520,20 +625,43 @@ documentation at <a href="#">insert URL here</a>.</p>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
 <td class="tableblock halign-left valign-top"><div><div class="paragraph">
-<p><strong>Code:</strong> 204</p>
+<p><strong>Code:</strong> 200</p>
 </div>
 <div class="paragraph">
-<p><strong>Content:</strong> None</p>
+<p><strong>Content:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">[
+  {
+    <span style="color: #008000; font-weight: bold">&quot;expression&quot;</span>: <span style="color: #BA2121">&quot;vin_matches \&quot;^12ABC\&quot; AND has_component \&quot;AcmeDVDPlayer\&quot;&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>: <span style="color: #BA2121">&quot;myFilter&quot;</span>
+  }
+]</code></pre>
+</div>
 </div></div></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Error Responses</p></td>
-<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p>Invalid filter syntax</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
 <p><strong>Code:</strong> 400</p>
 </div>
 <div class="paragraph">
-<p><strong>Content:</strong> \{"code": "invalid_entity","description": "Predicate failed:
-(Expression failed to parse)."}</p>
+<p><strong>Content:</strong> {"code": "invalid_entity","description": "Predicate failed: (Expression failed to parse)."}</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Filter name already exists</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
 <p><strong>Code:</strong> 409</p>
@@ -547,7 +675,7 @@ exists"}</p>
 </table>
 </div>
 <div class="sect2">
-<h3 id="post-validatefilter">POST /validate/filter</h3>
+<h3 id="put-filters-filter">PUT /filters/:filter</h3>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
 <col style="width: 18%;">
@@ -556,7 +684,164 @@ exists"}</p>
 <thead>
 <tr>
 <th class="tableblock halign-left valign-top">Availability</th>
-<th class="tableblock halign-left valign-top">resolver, web server</th>
+<th class="tableblock halign-left valign-top">resolver</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Modifies an existing filter</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/filters</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>:filter</strong> — The name of an existing filter.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Data Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><code>[string]</code> A filter. See the filter syntax documentation at <a href="#">insert URL here</a>. Note that this is a bare string being passed, not an object.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div>
+<div class="paragraph">
+<p><strong>Content:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">[
+  {
+    <span style="color: #008000; font-weight: bold">&quot;expression&quot;</span>: <span style="color: #BA2121">&quot;vin_matches \&quot;^12ABC\&quot; AND has_component \&quot;AcmeDVDPlayer\&quot;&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>: <span style="color: #BA2121">&quot;myFilter&quot;</span>
+  }
+]</code></pre>
+</div>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Error Responses</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p>Invalid filter syntax</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Code:</strong> 400</p>
+</div>
+<div class="paragraph">
+<p><strong>Content:</strong> {"code": "invalid_entity","description": "Predicate failed: (Expression failed to parse)."}</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Filter name doesn&#8217;t exist</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Code:</strong> 400</p>
+</div>
+<div class="paragraph">
+<p><strong>Content:</strong> {"code": "missing_filter", "description": "Filter doesn&#8217;t exist"}</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="delete-filters-filter">DELETE /filters/:filter</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Availability</th>
+<th class="tableblock halign-left valign-top">resolver</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Deletes an existing filter</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/filters/:filter</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>:filter</strong> — <code>[string]</code> The name of an existing filter, between 2 and 100 alphanumeric characters in length.</p>
+</li>
+<li>
+<p><strong>expression</strong> — <code>[string]</code> A filter. See the filter syntax
+documentation at <a href="#">insert URL here</a>.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div>
+<div class="paragraph">
+<p><strong>Content:</strong> "The filter named Refined(myFilter) has been deleted."</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Error Responses</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p>Filter name doesn&#8217;t exist</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Code:</strong> 400</p>
+</div>
+<div class="paragraph">
+<p><strong>Content:</strong> {"code": "missing_filter", "description": "Filter doesn&#8217;t exist"}</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="post-validate-filter">POST /validate/filter</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Availability</th>
+<th class="tableblock halign-left valign-top">resolver</th>
 </tr>
 </thead>
 <tbody>
@@ -589,7 +874,7 @@ documentation at <a href="#">insert URL here</a>.</p>
 <p><strong>Code:</strong> 200</p>
 </div>
 <div class="paragraph">
-<p><strong>Content:</strong> None</p>
+<p><strong>Content:</strong> "OK"</p>
 </div>
 <div class="paragraph">
 <p><strong>Note:</strong> Only the <em>validity</em> of the filter name is checked. As long as
@@ -604,7 +889,7 @@ whether a filter with this name already exists.</p>
 <p><strong>Code:</strong> 400</p>
 </div>
 <div class="paragraph">
-<p><strong>Content:</strong> \{"code": "invalid_entity","description": "Predicate failed:
+<p><strong>Content:</strong> {"code": "invalid_entity","description": "Predicate failed:
 (Expression failed to parse)."}</p>
 </div></div></td>
 </tr>
@@ -621,7 +906,7 @@ whether a filter with this name already exists.</p>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">web server, resolver</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
@@ -641,18 +926,150 @@ whether a filter with this name already exists.</p>
 <p><strong>Code:</strong> 200</p>
 </div>
 <div class="paragraph">
-<p><strong>Content:</strong> [\{ list of package-filter associations }]</p>
+<p><strong>Content:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">[
+  {
+    <span style="color: #008000; font-weight: bold">&quot;filterName&quot;</span>: <span style="color: #BA2121">&quot;myFilter&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;packageVersion&quot;</span>: <span style="color: #BA2121">&quot;4.5.6&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;packageName&quot;</span>: <span style="color: #BA2121">&quot;myPackage&quot;</span>
+  }
+]</code></pre>
+</div>
 </div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Error Response</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">N/A</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="sect2">
-<h3 id="get-packagefilterspackagesforfilter">GET /packageFilters/packagesFor/:filter</h3>
+<h3 id="post-packagefilters">POST /packageFilters</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Associate a filter with a package</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/packageFilters</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Data Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>packageName</strong> - <code>[string]</code> The name of an existing package.</p>
+</li>
+<li>
+<p><strong>packageVersion</strong> - <code>[string]</code> A valid version number for that package.</p>
+</li>
+<li>
+<p><strong>filterName</strong> - <code>[string]</code> The name of an existing filter.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div>
+<div class="paragraph">
+<p><strong>Content:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">[
+  {
+    <span style="color: #008000; font-weight: bold">&quot;filterName&quot;</span>: <span style="color: #BA2121">&quot;myFilter&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;packageVersion&quot;</span>: <span style="color: #BA2121">&quot;4.5.6&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;packageName&quot;</span>: <span style="color: #BA2121">&quot;myPackage&quot;</span>
+  }
+]</code></pre>
+</div>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Error Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 409</p>
+</div>
+<div class="paragraph">
+<p><strong>Content:</strong> {"code":"duplicate_entry","description":"Entry already exists"}</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="delete-packagefiltersdelete-packagename-packageversion-filtername">DELETE /packageFiltersDelete/:packageName/:packageVersion/:filterName</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Delete a package &#8594; filter association</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/packageFiltersDelete/:packageName/:packageVersion/:filterName</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>packageName</strong> - <code>[string]</code> The name of an existing package.</p>
+</li>
+<li>
+<p><strong>packageVersion</strong> - <code>[string]</code> A valid version number for that package.</p>
+</li>
+<li>
+<p><strong>filterName</strong> - <code>[string]</code> The name of an existing filter that is associated with that package name and version.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div>
+<div class="paragraph">
+<p><strong>Content:</strong> 1</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Error Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 400</p>
+</div>
+<div class="paragraph">
+<p><strong>Content:</strong> {"code":"missing_package_filter","description":"Package filter doesn&#8217;t exist"}</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="get-packagefilters-packagesfor-filter">GET /packageFilters/packagesFor/:filter</h3>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
 <col style="width: 18%;">
@@ -690,7 +1107,15 @@ particular filter.</p></td>
 <p><strong>Code:</strong> 200</p>
 </div>
 <div class="paragraph">
-<p><strong>Content:</strong> [\{ list of packages }]</p>
+<p><strong>Content:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">[
+  [<span style="color: #BA2121">&quot;myPackage&quot;</span>,<span style="color: #BA2121">&quot;1.2.3&quot;</span>],
+  [<span style="color: #BA2121">&quot;myPackage2&quot;</span>,<span style="color: #BA2121">&quot;2.3.4&quot;</span>]
+]</code></pre>
+</div>
 </div>
 <div class="ulist">
 <ul>
@@ -703,13 +1128,15 @@ success response; an empty list is returned.</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Error Response</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">N/A</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>N/A</p>
+</div></div></td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="sect2">
-<h3 id="get-packagefiltersfiltersfornameversion">GET /packageFilters/filtersFor/:name/:version</h3>
+<h3 id="get-packagefilters-filtersfor-name-version">GET /packageFilters/filtersFor/:name/:version</h3>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
 <col style="width: 18%;">
@@ -718,7 +1145,7 @@ success response; an empty list is returned.</p>
 <thead>
 <tr>
 <th class="tableblock halign-left valign-top">Availability</th>
-<th class="tableblock halign-left valign-top">web server, resolver</th>
+<th class="tableblock halign-left valign-top">resolver</th>
 </tr>
 </thead>
 <tbody>
@@ -739,8 +1166,7 @@ package.</p></td>
 <p><strong>:name</strong> — A package name.</p>
 </li>
 <li>
-<p><strong>:version</strong> — A package version, in <em>x.y.z</em> format. <em>x</em>, <em>y</em>, and
-<em>z</em> must all exist, and contain only digits.</p>
+<p><strong>:version</strong> — A package version, in <em>x.y.z</em> format. <em>x</em>, <em>y</em>, and <em>z</em> must all exist, and contain only digits.</p>
 </li>
 </ul>
 </div></div></td>
@@ -751,7 +1177,17 @@ package.</p></td>
 <p><strong>Code:</strong> 200</p>
 </div>
 <div class="paragraph">
-<p><strong>Content:</strong> [\{ list of filters }]</p>
+<p><strong>Content:</strong> A list of filters associated with the package.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">[
+  {
+    <span style="color: #008000; font-weight: bold">&quot;expression&quot;</span>: <span style="color: #BA2121">&quot;vin_matches \&quot;^12ABC\&quot; AND has_component \&quot;AcmeDVDPlayer\&quot;&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>: <span style="color: #BA2121">&quot;myFilter&quot;</span>
+  }
+]</code></pre>
+</div>
 </div>
 <div class="ulist">
 <ul>
@@ -764,7 +1200,9 @@ still a success response; an empty list is returned.</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Error Response</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">N/A</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>N/A</p>
+</div></div></td>
 </tr>
 </tbody>
 </table>
