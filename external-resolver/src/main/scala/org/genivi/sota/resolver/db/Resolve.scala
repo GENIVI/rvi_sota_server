@@ -21,6 +21,7 @@ object Resolve {
     (implicit ec: ExecutionContext)
       : DBIO[Map[Vehicle.Vin, Seq[Package.Id]]]
   = for {
+      _  <- Packages.exists(name, version)
       fs <- listFiltersForPackage(name, version)
       vs <- vehicles.result
     } yield
