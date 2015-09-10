@@ -4,6 +4,7 @@ define(['react', '../search-bar', './filters-component', './create-filter', '../
     render: function() {
       return (
       <div>
+        <SearchBar label="Search filters by regex" event="search-filters"/>
         <CreateFilterComponent url="/api/v1/filters"/>
         <FiltersComponent Store={FiltersStore}/>
       </div>
