@@ -15,6 +15,8 @@ object PackageId {
   import org.genivi.sota.refined.SprayJsonRefined._
 
   implicit val protocol = jsonFormat2(PackageId.apply)
+
+  implicit val packageIdShow = cats.Show.show[PackageId]( packageId => s"${packageId.name}-${packageId.version}" )
 }
 
 case class Package(

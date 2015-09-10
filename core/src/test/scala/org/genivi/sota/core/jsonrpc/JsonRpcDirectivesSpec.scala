@@ -12,6 +12,8 @@ import scala.concurrent.Future
 
 class JsonRpcDirectivesSpec extends PropSpec with PropertyChecks with Matchers with akka.http.scaladsl.testkit.ScalatestRouteTest with JsonRpcDirectives {
 
+  import org.genivi.sota.core.data.CodecInstances._
+
   property("parse errors") {
     Post("/").withEntity( HttpEntity(ContentTypes.`application/json`, "dafdsfasfasf") ) ~> service( Map.empty[String, MethodFn]) ~> check {
       status shouldBe StatusCodes.OK

@@ -29,9 +29,21 @@ object PredefinedErrors {
   val InvalidParams = JsonRpcError(-32602, "Invalid params")
 }
 
+private[this] case class ResultResponse(jsonrpc: String, result: Json, id: Option[Int])
+
+private[this] object ResultResponse {
+
+  def apply[T](t: T, id: Option[Int])(implicit et: Encoder[T]) : ResultResponse =
+    ResultResponse("2.0", et(t), id)
+
+  import io.circe.generic.semiauto._
+  implicit val encoderInstance = deriveFor[ResultResponse].encoder
+}
+
 trait JsonRpcDirectives {
 
   import akka.http.scaladsl.server.Directives._
+  import org.genivi.sota.core.data.CodecInstances._
   import org.genivi.sota.CirceSupport._
   import io.circe.generic.auto._
   import io.circe.syntax._
@@ -43,10 +55,12 @@ trait JsonRpcDirectives {
   implicit def lift[In, Out](fn: In => Future[Out])
                             (implicit inDecoder: Decoder[In], outEncoder: Encoder[Out], ec: ExecutionContext) : MethodFn = request => {
     import shapeless._
+    import record._
     import syntax.singleton._
+
     inDecoder.decodeJson( request.params ).map( fn ).fold[StandardRoute](
       err => complete(ErrorResponse( PredefinedErrors.InvalidParams, request.id)),
-      res => complete( res.map( x => ('jsonrpc ->> "2.0") :: ('result ->> outEncoder(x) ) :: ('id ->> request.id) :: HNil) ))
+      res => complete( res.map( x => ResultResponse(x, request.id)  )))
   }
 
   val ParseErrorHandler = RejectionHandler.newBuilder().handle{

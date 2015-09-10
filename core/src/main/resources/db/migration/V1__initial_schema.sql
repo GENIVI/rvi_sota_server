@@ -19,6 +19,44 @@ CREATE TABLE Package (
     PRIMARY KEY (name, version)
 );
 
+CREATE TABLE UpdateRequests (
+    update_request_id BINARY(36) NOT NULL,
+    package_name VARCHAR(200) NOT NULL,
+    package_version VARCHAR(200) NOT NULL,
+    creation_time DATETIME NOT NULL,
+    start_after DATETIME NOT NULL,
+    finish_before DATETIME NOT NULL,
+    priority INT NOT NULL,
+
+    PRIMARY KEY (update_request_id),
+    FOREIGN KEY fk_update_request_package_id (package_name, package_version) REFERENCES Package(name, version)
+);
+
+CREATE TABLE UpdateSpecs (
+    update_request_id BINARY(36) NOT NULL,
+    vin varchar(64) NOT NULL,
+    chunk_size INT NOT NULL,
+    status VARCHAR(200),
+
+    PRIMARY KEY (update_request_id, vin),
+    FOREIGN KEY fk_update_specs_request (update_request_id) REFERENCES UpdateRequests(update_request_id),
+    FOREIGN KEY fk_update_specs_vehicle (vin) REFERENCES Vehicle(vin)
+);
+
+CREATE TABLE Downloads (
+  update_request_id BINARY(36) NOT NULL,
+  vin varchar(64) NOT NULL,
+  download_index INT NOT NULL,
+  package_index INT NOT NULL,
+  package_name VARCHAR(200) NOT NULL,
+  package_version VARCHAR(200) NOT NULL,
+
+  PRIMARY KEY (update_request_id, vin, download_index, package_index),
+  FOREIGN KEY fk_downloads_update_specs (update_request_id, vin) REFERENCES UpdateSpecs(update_request_id, vin),
+  FOREIGN KEY fk_downloads_package (package_name, package_version) REFERENCES Package(name, version)
+);
+
+
 CREATE TABLE InstallCampaign (
     id BIGINT NOT NULL AUTO_INCREMENT,
     -- Head package

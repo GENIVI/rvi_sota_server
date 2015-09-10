@@ -28,7 +28,6 @@ object client extends Dynamic {
   import io.circe.generic.auto._
 
   private[jsonrpc] def responseDecoder[A](implicit da: Decoder[A]): Decoder[ErrorResponse Xor Response[A]] = Decoder.instance { c =>
-    implicit val errorDecoder = Decoder[JsonRpcError]
     val ed = Decoder[ErrorResponse]
     val rd = Decoder[Response[A]]
     for {
@@ -59,6 +58,7 @@ object client extends Dynamic {
   final case class Request(method: String, params: Json, id: Int) {
 
     import shapeless._
+    import record._
     import syntax.singleton._
 
     def run[A](transport: Json => Future[Json])(implicit decoder: Decoder[A], exec: ExecutionContext): Future[A] = {
