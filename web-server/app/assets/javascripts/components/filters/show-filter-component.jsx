@@ -1,10 +1,20 @@
-define(['underscore', 'react', '../../mixins/show-model'], function(_, React, showModel) {
+define(function(require) {
+
+  var _ = require('underscore'),
+      React = require('react'),
+      showModel = require('../../mixins/show-model'),
+      Fluxbone = require('../../mixins/fluxbone'),
+      FiltersStore = require('../../stores/filters'),
+      FilterFormComponent = require('./filter-form');
 
   var ShowFilterComponent = React.createClass({
     contextTypes: {
       router: React.PropTypes.func
     },
-    mixins: [showModel],
+    mixins: [
+      showModel,
+      Fluxbone.Mixin('Store', 'sync')
+    ],
     whereClause: function() {
       var params = this.context.router.getCurrentParams();
       return {name: params.name};
@@ -25,6 +35,13 @@ define(['underscore', 'react', '../../mixins/show-model'], function(_, React, sh
           <ul>
             {listItems}
           </ul>
+          <h2>
+            Edit filter
+          </h2>
+          <FilterFormComponent
+            Store={FiltersStore}
+            Model={this.state.Model}
+            event={"update-filter"}/>
         </div>
       );
     }

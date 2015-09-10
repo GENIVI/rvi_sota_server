@@ -1,7 +1,17 @@
 define(['jquery'], function($) {
   var HandleFailMixin = {
     getInitialState: function() {
+      if (this.props.Store) {
+        this.props.Store.on("error", function(model, err) {
+          this.onFail(err);
+        }, this);
+      }
       return {postStatus : ""};
+    },
+    componentWillUnmount: function() {
+      if (this.props.Store) {
+        this.props.Store.off();
+      }
     },
     sendPostRequest: function(url, data) {
       return this.sendRequest("POST", url, data);
