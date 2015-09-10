@@ -21,6 +21,10 @@ object Filter {
   type Name       = Refined[String, ValidName]
   type Expression = Refined[String, ValidExpression]
 
+  case class ExpressionWrapper (
+    expression: Filter.Expression
+  )
+
   implicit val validFilterName: Predicate[ValidName, String] =
     Predicate.instance (name =>
       name.length > 1 && name.length <= 100 &&

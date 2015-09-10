@@ -92,9 +92,9 @@ class Routing(db: Database)
       (post & entity(as[Filter])) { filter => complete(db.run(Filters.add(filter)))
       } ~
       (put  & refined[Filter.ValidName](Slash ~ Segment ~ PathEnd)
-            & entity(as[Filter.Expression])) { (fname, expr) =>
+            & entity(as[Filter.ExpressionWrapper])) { (fname, expr) =>
         handleExceptions(packageFiltersHandler) {
-          complete(db.run(Filters.update(Filter(fname, expr))))
+          complete(db.run(Filters.update(Filter(fname, expr.expression))))
         }
       } ~
       (delete & refined[Filter.ValidName](Slash ~ Segment ~ PathEnd)) { fname =>
