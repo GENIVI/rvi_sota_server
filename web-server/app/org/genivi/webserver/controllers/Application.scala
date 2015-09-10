@@ -28,130 +28,55 @@ import scala.concurrent.{ExecutionContext, Future}
 class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val accountManager: AccountManager)
   extends Controller with LoginLogout with AuthConfigImpl with I18nSupport with AuthElement {
 
-  val coreHost = Play.current.configuration.getString("core.host").get
-  val corePort = Play.current.configuration.getString("core.port").get
-  val resolverHost = Play.current.configuration.getString("resolver.host").get
-  val resolverPort = Play.current.configuration.getString("resolver.port").get
-  val protocol = "http://"
   val auditLogger = LoggerFactory.getLogger("audit")
   implicit val context = play.api.libs.concurrent.Execution.Implicits.defaultContext
 
-  def index = StackAction(AuthorityKey -> Role.USER) { implicit request =>
-    Ok(views.html.main())
-  }
+  val coreApiUri = Play.current.configuration.getString("core.api.uri").get
+  val resolverApiUri = Play.current.configuration.getString("resolver.api.uri").get
 
-  def reverseProxyNoBody(path: String) = AsyncStack(AuthorityKey -> Role.USER) { implicit request =>
-    val user = loggedIn.name
-    // Mitigation for C04 : Log transactions to and from SOTA Server
-    auditLogger.info(s"Request: $request from user $user")
+  val coreApiResources = Set("packages", "install_campaigns")
+  val resolverApiResources = Set("filters", "packageFilters", "packageFiltersDelete", "resolve")
 
-    val RequestResponse = for {
-      proxyResponseOne <- makeRequestNoBody(RequestTarget.Core, request)
-      proxyResponseTwo <- makeRequestNoBody(RequestTarget.Resolver, request)
-    } yield successfulResponse(proxyResponseOne, proxyResponseTwo)
-    RequestResponse
-  }
+  def proxyTo(apiUri: String, req: Request[RawBuffer]) : Future[Result] = {
+    def toWsHeaders(hdrs: Headers) = hdrs.toMap.map {
+      case(name, value) => name -> value.mkString }
 
-  def reverseProxy(path: String) = AsyncStack(parse.json, AuthorityKey -> Role.USER) { implicit request =>
-    val user = loggedIn.name
-    // Mitigation for C04 : Log transactions to and from SOTA Server
-    auditLogger.info(s"Request: $request from user $user")
-
-    val RequestResponse = for {
-      proxyResponseOne <- makeRequestJson(RequestTarget.Core, request)
-      proxyResponseTwo <- makeRequestJson(RequestTarget.Resolver, request)
-    } yield successfulResponse(proxyResponseOne, proxyResponseTwo)
-    RequestResponse
-  }
-
-  def resolverProxy(path: String) = AsyncStack(parse.raw, AuthorityKey -> Role.USER) { implicit request =>
-    val user = loggedIn.name
-    // Mitigation for C04 : Log transactions to and from SOTA Server
-    auditLogger.info(s"Request: $request from user $user")
-
-    val RequestResponse = for {
-      response <- makeRequestRaw(RequestTarget.Resolver, request)
-    } yield resultFromWsResponse(response)
-    RequestResponse
-  }
-
-  def resolverProxyNoBody(pkgName: String, pkgVersion: String) = AsyncStack(AuthorityKey -> Role.USER) { implicit request =>
-    val user = loggedIn.name
-    // Mitigation for C04 : Log transactions to and from SOTA Server
-    auditLogger.info(s"Request: $request from user $user")
-
-    val RequestResponse = for {
-      response <- makeRequestNoBody(RequestTarget.Resolver, request)
-    } yield resultFromWsResponse(response)
-    RequestResponse
-  }
-
-  def coreProxy(path: String) = AsyncStack(parse.raw, AuthorityKey -> Role.USER) { implicit request =>
-    val user = loggedIn.name
-    // Mitigation for C04 : Log transactions to and from SOTA Server
-    auditLogger.info(s"Request: $request from user $user")
-
-    val RequestResponse = for {
-      response <- makeRequestRaw(RequestTarget.Core, request)
-    } yield resultFromWsResponse(response)
-    RequestResponse
-  }
-
-  def makeRequestNoBody(requestTarget: RequestTarget.RequestTarget,
-                      request: Request[_]): Future[WSResponse] = {
-    WS.url(getURL(requestTarget) + request.path)
+    WS.url(apiUri + req.path)
       .withFollowRedirects(false)
-      .withMethod(request.method)
-      .withHeaders(parseHeaders(request.headers).toSeq: _*)
-      .withQueryString(request.queryString.mapValues(_.head).toSeq: _*)
+      .withMethod(req.method)
+      .withHeaders(toWsHeaders(req.headers).toSeq :_*)
+      .withQueryString(req.queryString.mapValues(_.head).toSeq :_*)
+      .withBody(req.body.asBytes().get)
       .execute
+      .map { resp => Result(
+        header = ResponseHeader(
+          status = resp.status,
+          headers = resp.allHeaders.mapValues(x => x.head)),
+        body = Enumerator(resp.bodyAsBytes))
+      }
   }
 
-  def makeRequestJson(requestTarget: RequestTarget.RequestTarget,
-                      request: Request[JsValue]): Future[WSResponse] = {
-    WS.url(getURL(requestTarget) + request.path)
-      .withFollowRedirects(false)
-      .withMethod(request.method)
-      .withHeaders(parseHeaders(request.headers).toSeq: _*)
-      .withQueryString(request.queryString.mapValues(_.head).toSeq: _*)
-      .withBody(request.body).execute
-  }
+  def apiProxy(path: String) = AsyncStack(parse.raw, AuthorityKey -> Role.USER) { implicit req =>
+    { // Mitigation for C04: Log transactions to and from SOTA Server
+      auditLogger.info(s"Request: $req from user ${loggedIn.name}")
+    }
 
-  def makeRequestRaw(requestTarget: RequestTarget.RequestTarget,
-                     request: Request[RawBuffer]): Future[WSResponse] = {
-    WS.url(getURL(requestTarget) + request.path)
-      .withFollowRedirects(false)
-      .withMethod(request.method)
-      .withHeaders(parseHeaders(request.headers).toSeq: _*)
-      .withQueryString(request.queryString.mapValues(_.head).toSeq: _*)
-      .withBody(request.body.asBytes().get).execute
-  }
-
-  def getURL(requestTarget: RequestTarget.RequestTarget) = {
-    requestTarget match {
-      case RequestTarget.Core => protocol + coreHost + ":" + corePort
-      case RequestTarget.Resolver => protocol + resolverHost + ":" + resolverPort
+    val head = path.split("/", 2).head
+    if (coreApiResources(head)) {
+      proxyTo(coreApiUri, req)
+    } else if (resolverApiResources(head)) {
+      proxyTo(resolverApiUri, req)
+    } else {
+      // Note: Only resource "vehicles" are on both core and resolver
+      for {
+        respCore <- proxyTo(coreApiUri, req)
+        respResult <- proxyTo(resolverApiUri, req)
+      } yield respCore // TODO: Retry until both responses are success
     }
   }
 
-  def parseHeaders(headers: Headers) = {
-    val headersMap = headers.toMap.map { case( headerName, headerValue) =>
-      headerName -> headerValue.mkString
-    }
-    headersMap
-  }
-
-  def successfulResponse(leftRes: WSResponse, rightRes: WSResponse): Result = {
-    chooseResponse(leftRes.status, rightRes.status) match {
-      case LeftResponse() => resultFromWsResponse(leftRes)
-      case RightResponse() => resultFromWsResponse(rightRes)
-      case ErrorResponse(msg) => BadRequest(toJson(Map("errorMsg" -> leftRes.body)))
-    }
-  }
-
-  def resultFromWsResponse(response : WSResponse) : Result = {
-    val headers = response.allHeaders.mapValues(x => x.head)
-    Result(header = ResponseHeader(status = response.status, headers = headers), body = Enumerator(response.bodyAsBytes))
+  def index = StackAction(AuthorityKey -> Role.USER) { implicit req =>
+    Ok(views.html.main())
   }
 
   def resolveUser(id: Id)(implicit ctx: ExecutionContext): Future[Option[User]] = {
@@ -177,10 +102,4 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
       user => gotoLoginSucceeded(user.get.email)
     )
   }
-
-  object RequestTarget extends Enumeration {
-    type RequestTarget = Value
-    val Core, Resolver = Value
-  }
-
 }
