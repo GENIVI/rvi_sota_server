@@ -66,7 +66,7 @@ trait FilterRequests extends Matchers { self: ScalatestRouteTest =>
     Post(Resource.uri("filters"), Filter(Refined(name), Refined(expr)))
 
   def updateFilter(name: String, expr: String): HttpRequest =
-    Put(Resource.uri("filters", name), expr)
+    Put(Resource.uri("filters", name), Filter.ExpressionWrapper(Refined(expr)))
 
   def addFilterOK(name: String, expr: String)(implicit route: Route): Unit = {
 
