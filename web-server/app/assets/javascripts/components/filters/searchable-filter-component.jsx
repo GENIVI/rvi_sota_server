@@ -1,11 +1,18 @@
-define(['react', '../search-bar', './filters-component', './create-filter', '../../stores/filters', 'sota-dispatcher'], function(React, SearchBar, FiltersComponent, CreateFilterComponent, FiltersStore, SotaDispatcher) {
+define(function(require) {
+
+  var React = require('react'),
+    SearchBar = require('../search-bar'),
+    FiltersComponent = require('./filters-component'),
+    FilterFormComponent = require('./filter-form'),
+    FiltersStore = require('../../stores/filters'),
+    SotaDispatcher = require('sota-dispatcher');
 
   var FilterablePackageComponent = React.createClass({
     render: function() {
       return (
       <div>
         <SearchBar label="Search filters by regex" event="search-filters"/>
-        <CreateFilterComponent url="/api/v1/filters"/>
+        <FilterFormComponent Store={FiltersStore} event="create-filter"/>
         <FiltersComponent Store={FiltersStore}/>
       </div>
     );}
