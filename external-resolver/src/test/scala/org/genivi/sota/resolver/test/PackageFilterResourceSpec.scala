@@ -32,14 +32,14 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
 
     "not allow assignment of filters to non-existing package names" in {
       addPackageFilter("nonexistant", pkgVersion, filterName) ~> route ~> check {
-        status shouldBe StatusCodes.BadRequest
+        status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingPackage
       }
     }
 
     "not allow assignment of filters to non-existing package versions" in {
       addPackageFilter(pkgName, "0.0.9", filterName) ~> route ~> check {
-        status shouldBe StatusCodes.BadRequest
+        status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingPackage
       }
     }
@@ -47,7 +47,7 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
     "not allow assignment of non-existing filters to existing packages " in {
       addPackageFilter(pkgName, pkgVersion, "nonexistant") ~> route ~> check {
 
-        status shouldBe StatusCodes.BadRequest
+        status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingFilter
       }
     }
@@ -97,7 +97,7 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
 
     "fail if package filter does not exist" in {
       deletePackageFilter("nonexistant", pkgVersion, filterName) ~> route ~> check {
-        status shouldBe StatusCodes.BadRequest
+        status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingPackageFilter
       }
     }

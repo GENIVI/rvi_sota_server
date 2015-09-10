@@ -77,13 +77,13 @@ class Routing(db: Database)
 
   def packageFiltersHandler: ExceptionHandler = ExceptionHandler {
     case err: Packages.MissingPackageException.type =>
-      complete(StatusCodes.BadRequest ->
+      complete(StatusCodes.NotFound ->
         ErrorRepresentation(PackageFilter.MissingPackage, "Package doesn't exist"))
     case err: PackageFilters.MissingPackageFilterException =>
-      complete(StatusCodes.BadRequest ->
+      complete(StatusCodes.NotFound ->
         ErrorRepresentation(PackageFilter.MissingPackageFilter, "Package filter doesn't exist"))
     case err: Filters.MissingFilterException         =>
-      complete(StatusCodes.BadRequest ->
+      complete(StatusCodes.NotFound ->
         ErrorRepresentation(PackageFilter.MissingFilter, "Filter doesn't exist"))
   }
 

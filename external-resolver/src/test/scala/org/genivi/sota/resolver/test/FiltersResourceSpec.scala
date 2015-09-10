@@ -57,27 +57,27 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
       }
     }
 
-    "Posting the same filter twice should fail" in {
+    "fail if the same filter is posted twice" in {
       addFilter(filterName, filterExpr) ~> route ~> check {
         status shouldBe StatusCodes.Conflict
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.DuplicateEntry
       }
     }
 
-    "Putting an existing filter name should update the expression" in {
+    "update the expression of existing filter on PUT request" in {
       updateFilter(filterName, filterExpr) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
     }
 
-    "Putting an non-existing filter name should fail" in {
+    "fail on trying to update non-existing filters" in {
       updateFilter("nonexistant", filterExpr) ~> route ~> check {
-        status shouldBe StatusCodes.BadRequest
+        status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingFilter
       }
     }
 
-    "DELETE requests should delete filters" in {
+    "delete filters on DELETE requests" in {
       deleteFilterOK(filterName)
 
       listFilters ~> route ~> check {
@@ -86,9 +86,9 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
       }
     }
 
-    "Deleting non-existant filters should fail" in {
+    "fail on trying to delete non-existing filters" in {
       deleteFilter("nonexistant") ~> route ~> check {
-        status shouldBe StatusCodes.BadRequest
+        status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingFilter
       }
     }
