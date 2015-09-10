@@ -46,7 +46,7 @@ object PackageFilters {
     for {
       _ <- failIfEmpty(packages.filter(p => p.name === pf.packageName
                && p.version === pf.packageVersion).result, Packages.MissingPackageException)
-      _ <- failIfEmpty(filters.filter(_.name === pf.filterName).result, new Filters.MissingFilterException)
+      _ <- failIfEmpty(filters.filter(_.name === pf.filterName).result, Filters.MissingFilterException)
       _ <- packageFilters += pf
     } yield pf
   }
@@ -57,18 +57,24 @@ object PackageFilters {
   def listPackagesForFilter
     (fname: Filter.Name)
     (implicit ec: ExecutionContext): DBIO[Seq[Tuple2[Package.Name, Package.Version]]] =
-    packageFilters.filter(_.filterName === fname)
-      .map(pf => (pf.packageName, pf.packageVersion)).result
+
+    Filters.exists(fname).andThen(
+      packageFilters
+        .filter(_.filterName === fname)
+        .map(pf => (pf.packageName, pf.packageVersion)).result
+    )
 
   def listFiltersForPackage
     (pname: Package.Name, pversion: Package.Version)
-    (implicit ec: ExecutionContext)
-      : DBIO[Seq[Filter]]
-  = packageFilters
+    (implicit ec: ExecutionContext): DBIO[Seq[Filter]] =
+
+  Packages.exists(pname, pversion).andThen(
+    packageFilters
       .filter(p => p.packageName === pname && p.packageVersion === pversion)
       .map(_.filterName)
       .flatMap(fname => filters.filter(_.name === fname))
       .result
+  )
 
   def deleteByFilterName(fname: Filter.Name)(implicit ec: ExecutionContext): DBIO[Int] =
     packageFilters
