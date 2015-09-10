@@ -11,8 +11,8 @@ import org.scalacheck.{Arbitrary, Gen}
 
 trait Generators {
 
-  val vinGen: Gen[Vehicle] = Gen.listOfN(17, Gen.alphaNumChar).map( xs => Vehicle( Refined(xs.mkString) ) )
-  implicit val arbitraryVehicle : Arbitrary[Vehicle] = Arbitrary( vinGen )
+  val vehicleGen: Gen[Vehicle] = Gen.listOfN(17, Gen.alphaNumChar).map( xs => Vehicle( Refined(xs.mkString) ) )
+  implicit val arbitraryVehicle : Arbitrary[Vehicle] = Arbitrary( vehicleGen )
 
   val PackageVersionGen: Gen[Package.Version] =
     Gen.listOfN(3, Gen.choose(0, 999)).map(_.mkString(".")).map(Refined(_))
@@ -27,7 +27,7 @@ trait Generators {
 
   val PackageGen: Gen[Package] = for {
     id <- PackageIdGen
-    size    <- Gen.choose(1000, 999999999)
+    size    <- Gen.choose(1000L, 999999999)
     cs      <- Gen.alphaStr
     // This should be changed back to arbitrary strings once we
     // figured out where this encoding bug happens.

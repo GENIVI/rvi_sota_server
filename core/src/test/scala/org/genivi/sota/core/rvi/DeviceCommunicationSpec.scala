@@ -23,7 +23,6 @@ class RunCampaignsSpec extends PropSpec
     with PropertyChecks
     with BeforeAndAfterEach with Generators {
 
-  import org.genivi.sota.core.Generators._
   import org.scalacheck._
 
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -31,7 +30,7 @@ class RunCampaignsSpec extends PropSpec
   val databaseName = "test-database"
   val db = Database.forConfig(databaseName)
 
-  override def beforeEach {
+  override def beforeEach(): Unit = {
     TestDatabase.resetDatabase(databaseName)
   }
 
@@ -70,9 +69,9 @@ class RunCampaignsSpec extends PropSpec
   val states: Gen[State] = for {
     pkg1 <- PackageGen
     pkg2 <- PackageGen
-    vin1 <- vinGen
-    vin2 <- vinGen
-    vin3 <- vinGen
+    vin1 <- vehicleGen
+    vin2 <- vehicleGen
+    vin3 <- vehicleGen
     highPriority <- Gen.choose(50, 200)
     lowPriority <- Gen.choose(1, 49)
 

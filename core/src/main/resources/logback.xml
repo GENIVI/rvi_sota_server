@@ -9,6 +9,9 @@
     </appender>
 
     <logger name="com.zaxxer.hikari" level="info" />
+    <logger name="sota.core" level="info" />
+    <logger name="slick.backend.DatabaseComponent.action" level="info" />
+
 
     <root level="${rootLevel:-INFO}">
         <appender-ref ref="STDOUT" />

@@ -40,6 +40,8 @@ class DefaultExternalResolverClient(baseUri : Uri)
   import io.circe.generic.auto._
   import org.genivi.sota.CirceSupport._
 
+  //import org.genivi.sota.core.data.CodecInstances._
+
   private[this] val log = Logging( system, "externalResolverClient" )
 
   override def resolve(packageId: PackageId): Future[Map[Vehicle, Set[PackageId]]] = {
@@ -71,8 +73,10 @@ class DefaultExternalResolverClient(baseUri : Uri)
   override def putPackage(packageId: PackageId, description: Option[String], vendor: Option[String]): Future[Unit] = {
     import akka.http.scaladsl.client.RequestBuilding._
     import shapeless._
+    import record._
     import syntax.singleton._
-
+    import io.circe.generic.auto._
+    import io.circe.generic.semiauto._
 
     val payload =
       ('name ->> packageId.name.get) ::
@@ -80,6 +84,8 @@ class DefaultExternalResolverClient(baseUri : Uri)
       ('description ->> description) ::
       ('vendor  ->> vendor) ::
       HNil
+
+    //implicit val payloadEncoder : Encoder[Record.`'name -> String, 'version -> String, 'description -> Option[String], 'vendor -> Option[String]`.T] = ???
 
     val request : HttpRequest = Put(baseUri.withPath( baseUri.path / packageId.name.get / packageId.version.get ), payload)
     handlePutResponse( Http().singleRequest( request ) )
