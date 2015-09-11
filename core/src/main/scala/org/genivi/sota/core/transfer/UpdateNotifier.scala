@@ -13,7 +13,7 @@ import scala.concurrent.ExecutionContext
 
 import scala.concurrent.Future
 
-case class PackageUpdate( packageId: PackageId, size: Long )
+case class PackageUpdate( `package`: PackageId, size: Long )
 
 object UpdateNotifier {
 
