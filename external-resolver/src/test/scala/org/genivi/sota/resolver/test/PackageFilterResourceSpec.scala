@@ -46,7 +46,6 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
 
     "not allow assignment of non-existing filters to existing packages " in {
       addPackageFilter(pkgName, pkgVersion, "nonexistant") ~> route ~> check {
-
         status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingFilter
       }
@@ -66,6 +65,19 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
       }
     }
 
+    "fail to list packages associated to empty filter names" in {
+      listPackagesForFilter("") ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
+      }
+    }
+
+    "fail to list packages associated to non-existant filters" in {
+      listPackagesForFilter("nonexistant") ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
+        responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingFilter
+      }
+    }
+
     "list filters associated to a package on GET requests to /filtersFor/:packageName" in {
       listFiltersForPackage(pkgName, pkgVersion) ~> route ~> check {
         status shouldBe StatusCodes.OK
@@ -79,8 +91,20 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
       }
     }
 
+    "fail to list filters associated to a package if a non-existant package name is given" in {
+      listFiltersForPackage("nonexistant", pkgVersion) ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
+      }
+    }
+
     "fail to list filters associated to a package if no package version is given" in {
       listFiltersForPackage(pkgName, "") ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
+      }
+    }
+
+    "fail to list filters associated to a package if a non-existant package version is given" in {
+      listFiltersForPackage(pkgName, "6.6.6") ~> route ~> check {
         status shouldBe StatusCodes.NotFound
       }
     }

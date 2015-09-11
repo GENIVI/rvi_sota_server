@@ -82,7 +82,16 @@ class Routing(db: Database)
     case err: PackageFilters.MissingPackageFilterException =>
       complete(StatusCodes.NotFound ->
         ErrorRepresentation(PackageFilter.MissingPackageFilter, "Package filter doesn't exist"))
-    case err: Filters.MissingFilterException         =>
+    case err: Filters.MissingFilterException.type   =>
+      complete(StatusCodes.NotFound ->
+        ErrorRepresentation(PackageFilter.MissingFilter, "Filter doesn't exist"))
+  }
+
+  def packageFiltersListingHandler: ExceptionHandler = ExceptionHandler {
+    case err: Packages.MissingPackageException.type =>
+      complete(StatusCodes.NotFound ->
+        ErrorRepresentation(PackageFilter.MissingPackage, "Package doesn't exist"))
+    case err: Filters.MissingFilterException.type =>
       complete(StatusCodes.NotFound ->
         ErrorRepresentation(PackageFilter.MissingFilter, "Filter doesn't exist"))
   }
@@ -132,12 +141,16 @@ class Routing(db: Database)
     } ~
     pathPrefix("packageFilters" / "packagesFor") {
       (get & refined[Filter.ValidName](Slash ~ Segment ~ PathEnd)) { fname =>
-        complete(db.run(PackageFilters.listPackagesForFilter(fname)))
+        handleExceptions(packageFiltersListingHandler) {
+          complete(db.run(PackageFilters.listPackagesForFilter(fname)))
+        }
       }
     } ~
     pathPrefix("packageFilters" / "filtersFor") {
       (get & refinedPackageId) { (pname, pversion) =>
-        complete(db.run(PackageFilters.listFiltersForPackage(pname, pversion)))
+        handleExceptions(packageFiltersListingHandler) {
+          complete(db.run(PackageFilters.listFiltersForPackage(pname, pversion)))
+        }
       }
     }
   }

@@ -31,13 +31,19 @@ object Filters {
   def add(filter: Filter)(implicit ec: ExecutionContext): DBIO[Filter] =
     (filters += filter).map(_ => filter)
 
-  class MissingFilterException extends Throwable with NoStackTrace
+  case object MissingFilterException extends Throwable with NoStackTrace
+
+  def exists(name: Filter.Name)(implicit ec: ExecutionContext): DBIO[Filter] =
+    filters
+      .filter(_.name === name)
+      .result
+      .map(fs => if(fs.isEmpty) throw MissingFilterException else fs.head)
 
   def update(filter: Filter)(implicit ec: ExecutionContext): DBIO[Filter] = {
     val q = for {
       f <- filters if f.name === filter.name
     } yield f.expression
-    q.update(filter.expression).map(i => if (i == 0) throw new MissingFilterException else filter)
+    q.update(filter.expression).map(i => if (i == 0) throw MissingFilterException else filter)
   }
 
   def deleteFilter(name: Filter.Name)(implicit ec: ExecutionContext): DBIO[String] =
@@ -46,7 +52,7 @@ object Filters {
       .delete
       .map(i =>
         if (i == 0)
-          throw new MissingFilterException
+          throw MissingFilterException
         else s"The filter named $name has been deleted.")
 
   def delete(name: Filter.Name)(implicit ec: ExecutionContext): DBIO[String] =

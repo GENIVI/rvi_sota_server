@@ -36,9 +36,9 @@ object Packages {
 
   case object MissingPackageException extends Throwable with NoStackTrace
 
-  def exists(name: Package.Name, version: Package.Version)(implicit ec: ExecutionContext): DBIO[Unit] =
+  def exists(name: Package.Name, version: Package.Version)(implicit ec: ExecutionContext): DBIO[Package] =
     packages
       .filter(p => p.name === name && p.version === version)
       .result
-      .map(pkgs => if (pkgs.isEmpty) throw MissingPackageException else ())
+      .map(ps => if(ps.isEmpty) throw MissingPackageException else ps.head)
 }
