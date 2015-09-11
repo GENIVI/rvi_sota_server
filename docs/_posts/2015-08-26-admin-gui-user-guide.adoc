@@ -30,6 +30,7 @@ You can search VINs by regular expression. As you type a regular expression in t
 
 You can create filters to powerfully select sub-groups of VINs. For example, you might wish to create a filter that matches only vehicles that have the hardware component **AcmeDVDPlayer**, so that you can send a firmware update to only the relevant vehicles.
 
+
 === Filter syntax
 
 SOTA has a filter syntax to create these filters; currently the valid terms are **vin_matches**, **has_package**, and **has_component**, and the boolean operators **NOT**, **AND**, and **OR**. **vin_matches**, **has_package**, and **has_component** take regular expressions (enclosed in quotes) as arguments.
@@ -40,9 +41,17 @@ Example: For a filter matching all VINs beginning with 12ABC, that have the Acme
 
 To create a new filter, click the *Filters* tab at the top of the page. Enter a unique name in the *Filter Name* field, and enter your expression in the *Filter Expression* field. Click the *Add Filter* button. If the filter was successfully created, you should see a message saying `Added Filter [filtername] successfully.` If the name you gave was already taken, or if the filter's syntax was invalid, you will see an error message instead.
 
+=== Editing a filter
+
+From the *Filters* tab, click on the filter you wish to edit. Edit the filter expression in the box, then click Edit Filter to save it.
+
+=== Deleting a filter
+
+From the *Filters* tab, click the X next to the filter you wish to delete.
+
 === Associating a filter with a package
 
-To actually associate your filter with a particular software package, go to the *Packages* tab and click on a package in the list at the bottom of the form to take you to that package's page. You can click on a filter name under *All Filters* to associate it with the package and click on a filter name under *Package Filters* to remove the association.
+To associate your filter with a particular software package, go to the *Packages* tab and click on a package in the list at the bottom of the form to take you to that package's page. You can click on a filter name under *All Filters* to associate it with the package and click on a filter name under *Package Filters* to remove the association.
 
 == Managing Software Packages
 
@@ -58,7 +67,7 @@ You can search for packages by regular expression. As you type a regular express
 
 === Associating a package with a filter
 
-To associate a software package with a filter, go to the *Packages* tab and click on a package in the list at the bottom of the form to take you to that package's page. You can click on a filter name under *All Filters* to associate it with the package and click on a filter name under *Package Filters* to remove the association.
+To associate a software package with a filter, go to the *Packages* tab and click on a package in the list at the bottom of the form to take you to that package's page. You can click on a filter name under *All Filters* to associate it with the package, or on a filter name under *Package Filters* to remove the association.
 
 == Managing Hardware Components
 
@@ -66,4 +75,6 @@ To associate a software package with a filter, go to the *Packages* tab and clic
 
 === Searching for vehicles by installed component
 
-== Triggering Updates
+== Creating Install Campaigns
+
+To create an install campaign for a package, go to the *Packages* tab, click on a package, and fill in the necessary information.

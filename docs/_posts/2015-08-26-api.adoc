@@ -40,7 +40,7 @@ a|
 [
   {
     "vin": "AAAAAAA1234567890"
-   },
+  },
   {
     "vin": "BBBBBBB1234567890"
   }
@@ -73,8 +73,14 @@ characters.
 |Error Response a|
 *Code:* 400
 
-*Content:* \{"code": "invalid_entity","description": "Predicate failed:
-(ABCDEFGHIJKLMNOP1234567890 isn't 17 letters or digits long)."}
+*Content:*
+[source,json]
+----
+{
+  "code": "invalid_entity",
+  "description": "Predicate failed:(ABCDEFGHIJKLMNOP1234567890 isn't 17 letters or digits long)."
+}
+----
 
 |=======================================================================
 
@@ -91,15 +97,17 @@ characters.
 
 [source,json]
 ----
-[{
- "name": "myPackage",
- "size": 11077,
- "description": "test package",
- "uri": "http://path/to/file",
- "version": "1.2.3",
- "checksum": "xgm98xdcsw22Cdr93oWKEZ7YLM0=",
- "vendor": "Acme Software"
-}]
+[
+  {
+    "name": "myPackage",
+    "size": 11077,
+    "description": "test package",
+    "uri": "http://path/to/file",
+    "version": "1.2.3",
+    "checksum": "xgm98xdcsw22Cdr93oWKEZ7YLM0=",
+    "vendor": "Acme Software"
+  }
+]
 ----
 
 Note: Currently, the resolver returns an empty list and a *204 No Content* code for this endpoint, even though it stores package information in its database.
@@ -259,10 +267,8 @@ _z_ must all contain only digits.
 |URL |/api/v1/filters
 
 |Data Parameters a|
-* *name* — `[string]` A unique identifying name for the filter, between
-2 and 100 alphanumeric characters in length.
-* *expression* — `[string]` A filter. See the filter syntax
-documentation at link:#[insert URL here].
+* *name* — A unique identifying name for the filter, between 2 and 100 alphanumeric characters in length.
+* *expression* — A filter. See the link:../doc/admin-gui-user-guide.html#filter-syntax[filter syntax documentation].
 
 |Success Response a|
 *Code:* 200
@@ -284,14 +290,27 @@ documentation at link:#[insert URL here].
 
 *Code:* 400
 
-*Content:* {"code": "invalid_entity","description": "Predicate failed: (Expression failed to parse)."}
+*Content:*
+[source,json]
+----
+{
+  "code": "invalid_entity",
+  "description": "Predicate failed: (Expression failed to parse)."
+}
+----
 
 * Filter name already exists
 
 *Code:* 409
 
-*Content:* \{"code": "duplicate_entry","description": "Entry already
-exists"}
+*Content:*
+[source,json]
+----
+{
+  "code": "duplicate_entry",
+  "description": "Entry already exists"
+}
+----
 
 |=======================================================================
 
@@ -309,7 +328,7 @@ exists"}
 * *:filter* — The name of an existing filter.
 
 |Data Parameters a|
-* `[string]` A filter. See the filter syntax documentation at link:#[insert URL here]. Note that this is a bare string being passed, not an object.
+* *expression* - A filter. See the link:../doc/admin-gui-user-guide.html#filter-syntax[filter syntax documentation].
 
 |Success Response a|
 *Code:* 200
@@ -331,13 +350,27 @@ exists"}
 
 *Code:* 400
 
-*Content:* {"code": "invalid_entity","description": "Predicate failed: (Expression failed to parse)."}
+*Content:*
+[source,json]
+----
+{
+  "code": "invalid_entity",
+  "description": "Predicate failed: (Expression failed to parse)."
+}
+----
 
 * Filter name doesn't exist
 
 *Code:* 400
 
-*Content:* {"code": "missing_filter", "description": "Filter doesn't exist"}
+*Content:*
+[source,json]
+----
+{
+  "code": "missing_filter",
+  "description": "Filter doesn't exist"
+}
+----
 
 |=======================================================================
 
@@ -352,9 +385,8 @@ exists"}
 |URL |/api/v1/filters/:filter
 
 |URL Parameters a|
-* *:filter* — `[string]` The name of an existing filter, between 2 and 100 alphanumeric characters in length.
-* *expression* — `[string]` A filter. See the filter syntax
-documentation at link:#[insert URL here].
+* *:filter* — The name of an existing filter, between 2 and 100 alphanumeric characters in length.
+* *expression* — A filter. See the link:../doc/admin-gui-user-guide.html#filter-syntax[filter syntax documentation].
 
 |Success Response a|
 *Code:* 200
@@ -366,7 +398,14 @@ documentation at link:#[insert URL here].
 
 *Code:* 400
 
-*Content:* {"code": "missing_filter", "description": "Filter doesn't exist"}
+*Content:*
+[source,json]
+----
+{
+  "code": "missing_filter",
+  "description": "Filter doesn't exist"
+}
+----
 
 |=======================================================================
 
@@ -382,10 +421,9 @@ documentation at link:#[insert URL here].
 |URL |/api/v1/validate/filter
 
 |Data Parameters a|
-* *name* — `[string]` A unique identifying name for the filter, between
+* *name* — A unique identifying name for the filter, between
 2 and 100 alphanumeric characters in length.
-* *expression* — `[string]` A filter. See the filter syntax
-documentation at link:#[insert URL here].
+* *expression* — A filter. See the link:../doc/admin-gui-user-guide.html#filter-syntax[filter syntax documentation].
 
 |Success Response a|
 *Code:* 200
@@ -400,8 +438,14 @@ whether a filter with this name already exists.
 |Error Responses a|
 *Code:* 400
 
-*Content:* {"code": "invalid_entity","description": "Predicate failed:
-(Expression failed to parse)."}
+*Content:*
+[source,json]
+----
+{
+  "code": "invalid_entity",
+  "description": "Predicate failed: (Expression failed to parse)."
+}
+----
 
 |=======================================================================
 
@@ -438,9 +482,9 @@ whether a filter with this name already exists.
 |Description |Associate a filter with a package
 |URL |/api/v1/packageFilters
 |Data Parameters a|
-* *packageName* - `[string]` The name of an existing package.
-* *packageVersion* - `[string]` A valid version number for that package.
-* *filterName* - `[string]` The name of an existing filter.
+* *packageName* - The name of an existing package.
+* *packageVersion* - A valid version number for that package.
+* *filterName* - The name of an existing filter.
 |Success Response a|
 *Code:* 200
 
@@ -460,7 +504,14 @@ whether a filter with this name already exists.
 |Error Response a|
 *Code:* 409
 
-*Content:* {"code":"duplicate_entry","description":"Entry already exists"}
+*Content:*
+[source,json]
+----
+{
+  "code": "duplicate_entry",
+  "description": "Entry already exists"
+}
+----
 |==================================================================
 
 === DELETE /packageFiltersDelete/:packageName/:packageVersion/:filterName
@@ -471,9 +522,9 @@ whether a filter with this name already exists.
 |Description |Delete a package -> filter association
 |URL |/api/v1/packageFiltersDelete/:packageName/:packageVersion/:filterName
 |URL Parameters a|
-* *packageName* - `[string]` The name of an existing package.
-* *packageVersion* - `[string]` A valid version number for that package.
-* *filterName* - `[string]` The name of an existing filter that is associated with that package name and version.
+* *packageName* - The name of an existing package.
+* *packageVersion* - A valid version number for that package.
+* *filterName* - The name of an existing filter that is associated with that package name and version.
 |Success Response a|
 *Code:* 200
 
@@ -482,7 +533,14 @@ whether a filter with this name already exists.
 |Error Response a|
 *Code:* 400
 
-*Content:* {"code":"missing_package_filter","description":"Package filter doesn't exist"}
+*Content:*
+[source,json]
+----
+{
+  "code": "missing_package_filter",
+  "description": "Package filter doesn't exist"
+}
+----
 |==================================================================
 
 
@@ -508,15 +566,29 @@ particular filter.
 [source,json]
 ----
 [
-  ["myPackage","1.2.3"],
-  ["myPackage2","2.3.4"]
+  [
+    "myPackage",
+    "1.2.3"
+  ],
+  [
+    "myPackage2",
+    "2.3.4"
+  ]
 ]
 ----
 
-* Note: if *:filter* does not match any existing filter, it is still a
-success response; an empty list is returned.
 
-|Error Response a|N/A
+|Error Response a|
+*Code:* 404
+
+*Content:*
+[source,json]
+----
+{
+  "code": "missing_filter",
+  "description": "Filter doesn't exist"
+}
+----
 |=======================================================================
 
 === GET /packageFilters/filtersFor/:name/:version
@@ -549,8 +621,79 @@ package.
 ]
 ----
 
-* Note: if *:name/:version* does not match any existing package, it is
-still a success response; an empty list is returned.
+|Error Response a|
+*Code:* 404
 
-|Error Response a|N/A
+*Content:*
+[source,json]
+----
+{
+  "code": "missing_package",
+  "description": "Package doesn't exist"
+}
+----
+|=======================================================================
+
+=== POST /install_campaigns
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+|Availability |core
+
+|Description |Create an install campaign for a package
+
+|URL |/api/v1/install_campaigns
+
+|Data Parameters a|
+* *packageId* — An object consisting of:
+  ** *:name* — A package name.
+  ** *:version* — A package version, in _x.y.z_ format. __x__, __y__, and __z__ must all exist, and contain only digits.
+* *priority* — `[int]` The priority order of the campaign. Lower numbers indicate higher priority.
+* *startAfter* — `[dateTime]` The date on which to begin attempting to install the package.
+* *endBefore* — `[dateTime]` The date before which all installations should be finished.
+
+*Example:*
+[source,json]
+----
+{
+  "packageId": {
+    "name": "myPackage",
+    "version": "1.2.3"
+  },
+  "priority": 5,
+  "startAfter": "2015-01-01T00:00:00+02:00",
+  "endBefore": "2015-12-31T12:59:00+02:00"
+}
+----
+|Success Response a|
+*Code:* 200
+
+*Content:* The created campaign, with times converted to UTC, along with a campaign ID.
+
+[source,json]
+----
+{
+  "priority": 5,
+  "endBefore": "2015-12-31T10:59:00Z",
+  "id": 10,
+  "startAfter": "2014-12-31T22:00:00Z",
+  "packageId": {
+    "name": "myPackage",
+    "version": "1.2.3"
+  }
+}
+----
+
+|Error Response a|
+Invalid package name:
+
+*Code:* 500
+
+*Content:*
+[source,json]
+----
+{
+  "error": "Cannot add or update a child row: a foreign key constraint fails (`sota_core`.`installcampaign`, CONSTRAINT `install_campaign_package_id_fk` FOREIGN KEY (`packageName`, `packageVersion`) REFERENCES `Package` (`name`, `version`))"
+}
+----
 |=======================================================================
