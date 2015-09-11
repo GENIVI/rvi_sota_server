@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.core.data
 
-import eu.timepit.refined._
+import eu.timepit.refined.{Predicate, Refined}
 
 case class Vehicle(vin: Vehicle.IdentificationNumber)
 

@@ -132,7 +132,7 @@ object Dependencies {
     "io.circe" %% "circe-jawn" % CirceVersion
   )
 
-  lazy val Refined = "eu.timepit" %% "refined" % "0.2.0"
+  lazy val Refined = "eu.timepit" %% "refined" % "0.2.3"
 
   lazy val Scalaz = "org.scalaz" %% "scalaz-core" % "7.1.3"
 
