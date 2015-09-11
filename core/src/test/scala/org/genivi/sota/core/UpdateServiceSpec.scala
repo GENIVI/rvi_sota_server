@@ -23,24 +23,14 @@ import scala.concurrent.{Await, Future}
 
 class UpdateServiceSpec extends PropSpec with PropertyChecks with Matchers with BeforeAndAfterAll {
 
-  def readPackage( src: Map[String, String] ) : Package = {
-    if( src.get( "Package").isEmpty ) println( src )
-    val maybePackage = for {
-      name        <- src.get( "Package" )
-      version     <- src.get( "Version" )
-      size        <- src.get("Size").map( _.toLong )
-      checkSum    <- src.get("SHA1")
-    } yield Package( PackageId( Refined(name), Refined(version)), size = size, description = src.get( "Description" ), checkSum = checkSum, uri = Uri.Empty, vendor = src.get( "Maintainer" ) )
-    maybePackage.get
-  }
-
   val databaseName = "test-database"
 
   implicit val db = Database.forConfig(databaseName)
 
-  val packages = readPackages().take(10)
+  val packages = PackagesReader.read().take(1000)
 
-  import scala.concurrent.ExecutionContext.Implicits.global
+  val system = akka.actor.ActorSystem("UpdateServiseSpec")
+  import system.dispatcher
 
   override def beforeAll() : Unit = {
     TestDatabase.resetDatabase( databaseName )
@@ -48,38 +38,15 @@ class UpdateServiceSpec extends PropSpec with PropertyChecks with Matchers with 
     Await.ready( Future.sequence( packages.map( p => db.run( Packages.create(p) ) )), 50.seconds)
   }
 
-  def readPackages() = {
-    val src = scala.io.Source.fromInputStream( this.getClass().getResourceAsStream("/Packages") )
-    src.getLines().foldLeft( List(Map.empty[String, String]) ){ (acc, str) =>
-      if( str.startsWith(" ") ) acc
-      else {
-        if( str.isEmpty ) Map.empty[String, String] :: acc
-        else {
-          val keyValue = str.split(": ").toList
-          acc.head.updated(keyValue.head, keyValue.tail.mkString(": ")) :: acc.tail
-        }
-      }
-    }.filter(_.nonEmpty).map(readPackage)
-  }
-
   import Generators._
 
-  val system = akka.actor.ActorSystem("UpdateServiseSpec")
 
   implicit val updateQueueLog = akka.event.Logging(system, "sota.core.updateQueue")
 
   val service = new UpdateService()
 
   import org.genivi.sota.core.data.UpdateRequest
-  import com.github.nscala_time.time.Imports._
   import org.scalatest.concurrent.ScalaFutures.{whenReady, PatienceConfig}
-
-  def updateRequestGen(packageIdGen : Gen[PackageId]) : Gen[UpdateRequest] = for {
-    packageId    <- packageIdGen
-    startAfter   <- Gen.choose(10, 100).map( DateTime.now + _.days)
-    finishBefore <- Gen.choose(10, 100).map(x => startAfter + x.days)
-    prio         <- Gen.choose(1, 10)
-  } yield UpdateRequest( UUID.randomUUID(), packageId, DateTime.now, startAfter to finishBefore, prio )
 
   val AvailablePackageIdGen = Gen.oneOf(packages).map( _.id )
 
@@ -119,29 +86,15 @@ class UpdateServiceSpec extends PropSpec with PropertyChecks with Matchers with 
     }
   }
 
-  property("upload spec covers all required packages") {
-    val vinDepGen : Gen[(Vehicle.IdentificationNumber, Set[PackageId])] = for {
-      vin               <- vehicleGen.map( _.vin )
-      m                 <- Gen.choose(1, 10)
-      packages          <- Gen.pick(m, packages).map( _.map(_.id) )
-    } yield vin -> packages.toSet
+  def createVehicles( vins: Set[Vehicle.IdentificationNumber] ) : Future[Unit] = {
+    import slick.driver.MySQLDriver.api._
+    db.run( DBIO.seq( vins.map( vin => Vehicles.create(Vehicle(vin))).toArray: _* ) )
+  }
 
-    val DependenciesGen : Gen[UpdateService.VinsToPackages] = for {
-      n <- Gen.choose(1, 10)
-      r <- Gen.listOfN(n, vinDepGen)
-    } yield r.toMap
-
-    forAll( updateRequestGen(AvailablePackageIdGen), DependenciesGen ) { (request, deps) =>
-      val vehicles : Set[Vehicle] = deps.keySet.map( Vehicle.apply )
-      import slick.driver.MySQLDriver.api._
-      val vehiclesCreated : Future[Unit] = db.run( DBIO.seq( vehicles.map( Vehicles.create).toArray: _* ) )
-
-      whenReady( vehiclesCreated.flatMap( _ => service.queueUpdate(request, _ => Future.successful(deps))) ) { specs =>
-        val requestedPackages : Set[PackageId] = deps.values.fold(Set.empty[PackageId])( (acc, x) => acc.union(x) )
-        val queuedPackages : Set[PackageId] = specs.map( spec => spec.downloads.map(_.packages.map(_.id).toSet)
-          .fold(Set.empty[PackageId])( (acc, x) => acc.union(x )) )
-          .fold(Set.empty[PackageId])( (acc, x) => acc.union(x ))
-        requestedPackages should contain theSameElementsAs(queuedPackages)
+  property("upload spec per vin") {
+    forAll( updateRequestGen(AvailablePackageIdGen), dependenciesGen(packages) ) { (request, deps) =>
+      whenReady( createVehicles(deps.keySet).flatMap( _ => service.queueUpdate(request, _ => Future.successful(deps))) ) { specs =>
+        specs.size shouldBe deps.size
       }
     }
   }

@@ -5,6 +5,9 @@
 package org.genivi.sota.core.rvi
 
 import akka.util.ByteString
+import org.joda.time.format.ISODateTimeFormat
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 import sun.misc.BASE64Encoder
 
 import org.genivi.sota.core.data.Package
@@ -13,6 +16,25 @@ import spray.json.{DefaultJsonProtocol, JsonFormat, RootJsonFormat}
 import scala.util.Random
 
 object Protocol {
+
+  import shapeless._
+  import shapeless.syntax.singleton._
+  import io.circe._
+  import io.circe.generic.auto._
+  import org.genivi.sota.core.jsonrpc.client
+  import shapeless.record._
+
+  import com.github.nscala_time.time.Imports._
+
+  implicit val dateTimeEncoder : Encoder[DateTime] = Encoder.instance[DateTime]( x =>  Json.string( ISODateTimeFormat.dateTime().print(x)) )
+
+  def sendMessage[A](service: String, message: A, expirationDate: DateTime)
+                (implicit encoder: Encoder[A], transport: Json => Future[Json], ec: ExecutionContext ) : Future[Int] = {
+    client.message.request( ('service_name ->> service) :: ('timeout ->> expirationDate.getMillis() / 1000) :: ('parameters ->> Seq(message)) :: HNil, 1 )
+      .run[Record.`'transaction_id -> Int`.T](transport)
+      .map( _.get('transaction_id))
+  }
+
   sealed trait Action
   case class Notify(retry: Int, packageName: String) extends Action
   object Notify extends DefaultJsonProtocol {

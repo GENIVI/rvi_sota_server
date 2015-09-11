@@ -21,9 +21,9 @@ object SotaBuild extends Build {
     libraryDependencies ++= Dependencies.TestFrameworks,
 
     testOptions in Test ++= Seq(
-      Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
-      Tests.Argument(TestFrameworks.ScalaTest, "-o"),
-      Tests.Argument(TestFrameworks.ScalaCheck, "-maxDiscardRatio", "10", "-minSuccessfulTests", "200")
+      Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports", "-l", "RequiresRvi"),
+      Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
+      Tests.Argument(TestFrameworks.ScalaCheck, "-maxDiscardRatio", "10", "-minSuccessfulTests", "100")
     ),
 
     dependencyOverrides ++= Set(

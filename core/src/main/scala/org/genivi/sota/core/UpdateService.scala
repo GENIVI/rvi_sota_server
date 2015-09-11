@@ -43,7 +43,6 @@ class UpdateService(implicit val log: LoggingAdapter) {
     def mapPackagesToIds( packages: Seq[Package] ) : Map[PackageId, Package] = packages.map( x => x.id -> x).toMap
 
     def missingPackages( required: Set[PackageId], found: Seq[Package] ) : Set[PackageId] = {
-      log.debug(s"Packages required: $required, available: $found")
       val result = required -- found.map( _.id )
       if( result.nonEmpty ) log.debug( s"Some of required packages not found: $result" )
       result
@@ -62,17 +61,15 @@ class UpdateService(implicit val log: LoggingAdapter) {
   def loadPackage( id : PackageId)
                  (implicit db: Database, ec: ExecutionContext): Future[Package] = {
     db.run(Packages.byId(id)).flatMap { x =>
-      log.debug(s"Package found: $x")
       x.fold[Future[Package]](FastFuture.failed( PackagesNotFound(id)) )(FastFuture.successful)
     }
   }
 
-  def mkUploadSpecs(request: UpdateRequest, vinsToPackageIds: VinsToPackages, idsToPackages: Map[PackageId, Package])
-                   (implicit conf: UploadConf ) : Set[UpdateSpec] = {
+  def mkUploadSpecs(request: UpdateRequest, vinsToPackageIds: VinsToPackages, idsToPackages: Map[PackageId, Package]): Set[UpdateSpec] = {
     vinsToPackageIds.map {
       case (vin, requiredPackageIds) =>
         val packages : Set[Package] = requiredPackageIds.map( idsToPackages.get ).map( _.get )
-        UpdateSpec( request, vin, conf.chunkSize, UpdateStatus.Pending, conf.downloadSplitStrategy(packages) )
+        UpdateSpec( request, vin, UpdateStatus.Pending, packages)
     }.toSet
   }
 
@@ -83,7 +80,6 @@ class UpdateService(implicit val log: LoggingAdapter) {
 
   def queueUpdate(request: UpdateRequest, resolver : DependencyResolver )
                  (implicit db: Database, ec: ExecutionContext): Future[Set[UpdateSpec]] = {
-    log.debug(s"New update request: $request")
     for {
       pckg           <- loadPackage(request.packageId)
       vinsToDeps     <- resolver(pckg)
