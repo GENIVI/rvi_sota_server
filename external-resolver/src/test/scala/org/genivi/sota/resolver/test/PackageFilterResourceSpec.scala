@@ -5,7 +5,6 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.unmarshalling._
 import eu.timepit.refined.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.CirceSupport._
@@ -58,7 +57,7 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
       }
     }
 
-    "list packages associated to a filter on GET requests to /packagesFor/:filterName" in {
+    "list packages associated to a filter on GET requests to /packageFilters?filter=:filterName" in {
       listPackagesForFilter(filterName) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[List[Tuple2[Package.Name, Package.Version]]] shouldBe List((Refined(pkgName), Refined(pkgVersion)))
@@ -67,7 +66,7 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
 
     "fail to list packages associated to empty filter names" in {
       listPackagesForFilter("") ~> route ~> check {
-        status shouldBe StatusCodes.NotFound
+        status shouldBe StatusCodes.BadRequest
       }
     }
 
@@ -78,7 +77,7 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
       }
     }
 
-    "list filters associated to a package on GET requests to /filtersFor/:packageName" in {
+    "list filters associated to a package on GET requests to /packageFilters?package=:packageName-:packageVersion" in {
       listFiltersForPackage(pkgName, pkgVersion) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Seq[Filter]] shouldBe List(Filter(Refined(filterName), Refined(filterExpr)))
@@ -87,7 +86,7 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
 
     "fail to list filters associated to a package if no package name is given" in {
       listFiltersForPackage("", pkgVersion) ~> route ~> check {
-        status shouldBe StatusCodes.NotFound
+        status shouldBe StatusCodes.BadRequest
       }
     }
 
@@ -99,7 +98,7 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
 
     "fail to list filters associated to a package if no package version is given" in {
       listFiltersForPackage(pkgName, "") ~> route ~> check {
-        status shouldBe StatusCodes.NotFound
+        status shouldBe StatusCodes.BadRequest
       }
     }
 
