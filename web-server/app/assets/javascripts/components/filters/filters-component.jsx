@@ -12,7 +12,7 @@ define(['react', '../../mixins/fluxbone', './filter-component', 'sota-dispatcher
     render: function() {
       var filters = this.props.Store.models.map(function(filter) {
         return (
-          <FilterComponent Filter={filter} />
+          <FilterComponent Store={this.props.Store} Filter={filter} />
         );
       }, this);
       return (

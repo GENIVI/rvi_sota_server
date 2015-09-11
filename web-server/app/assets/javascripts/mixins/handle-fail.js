@@ -19,6 +19,9 @@ define(['jquery'], function($) {
     sendPutRequest: function(url, data) {
       return this.sendRequest("PUT", url, data);
     },
+    sendDeleteRequest: function(url, data) {
+      return this.sendRequest("DELETE", url, data);
+    },
     sendRequest: function(type, url, data) {
       this.makeAjaxRequest(type, url, data)
         .success(this.onSuccess.bind(this))
