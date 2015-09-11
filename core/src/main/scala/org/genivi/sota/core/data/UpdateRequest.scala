@@ -5,6 +5,7 @@
 package org.genivi.sota.core.data
 
 import java.util.UUID
+import cats.Foldable
 import org.joda.time.{Interval, DateTime}
 
 case class UpdateRequest( id: UUID, packageId: PackageId, creationTime: DateTime, periodOfValidity: Interval, priority: Int )
@@ -17,6 +18,8 @@ object UpdateStatus extends Enumeration {
 
 import UpdateStatus._
 
-case class UpdateSpec( request: UpdateRequest, vin: Vehicle.IdentificationNumber, chunkSize: Int, status: UpdateStatus, downloads: Vector[Download] )
+case class UpdateSpec( request: UpdateRequest, vin: Vehicle.IdentificationNumber, status: UpdateStatus, dependencies: Set[Package] ) {
+  def size : Long = dependencies.foldLeft(0L)( _ + _.size)
+}
 
 case class Download( packages: Vector[Package] )

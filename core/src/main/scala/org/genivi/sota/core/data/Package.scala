@@ -13,8 +13,15 @@ case class PackageId( name: Package.Name, version: Package.Version )
 object PackageId {
   import spray.json.DefaultJsonProtocol._
   import org.genivi.sota.refined.SprayJsonRefined._
+  import org.genivi.sota.CirceSupport.{refinedEncoder, refinedDecoder}
+  import io.circe._
+  import io.circe.generic.semiauto._
+
 
   implicit val protocol = jsonFormat2(PackageId.apply)
+
+  implicit val encoderInstance : Encoder[PackageId] = deriveFor[PackageId].encoder
+  implicit val decoderInstance : Decoder[PackageId] = deriveFor[PackageId].decoder
 
   implicit val packageIdShow = cats.Show.show[PackageId]( packageId => s"${packageId.name}-${packageId.version}" )
 }

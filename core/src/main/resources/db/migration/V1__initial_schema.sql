@@ -35,7 +35,6 @@ CREATE TABLE UpdateRequests (
 CREATE TABLE UpdateSpecs (
     update_request_id BINARY(36) NOT NULL,
     vin varchar(64) NOT NULL,
-    chunk_size INT NOT NULL,
     status VARCHAR(200),
 
     PRIMARY KEY (update_request_id, vin),
@@ -43,15 +42,13 @@ CREATE TABLE UpdateSpecs (
     FOREIGN KEY fk_update_specs_vehicle (vin) REFERENCES Vehicle(vin)
 );
 
-CREATE TABLE Downloads (
+CREATE TABLE RequiredPackages (
   update_request_id BINARY(36) NOT NULL,
   vin varchar(64) NOT NULL,
-  download_index INT NOT NULL,
-  package_index INT NOT NULL,
   package_name VARCHAR(200) NOT NULL,
   package_version VARCHAR(200) NOT NULL,
 
-  PRIMARY KEY (update_request_id, vin, download_index, package_index),
+  PRIMARY KEY (update_request_id, vin, package_name, package_version),
   FOREIGN KEY fk_downloads_update_specs (update_request_id, vin) REFERENCES UpdateSpecs(update_request_id, vin),
   FOREIGN KEY fk_downloads_package (package_name, package_version) REFERENCES Package(name, version)
 );
