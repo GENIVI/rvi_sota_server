@@ -1,6 +1,7 @@
 package org.genivi.sota.core.transfer
 
 import akka.http.scaladsl.model.Uri
+import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.util.FastFuture
 import akka.testkit.TestKit
 import eu.timepit.refined.Refined
@@ -25,6 +26,7 @@ import scala.concurrent.Await
 import scala.concurrent.Future
 import slick.jdbc.JdbcBackend.Database
 import org.scalatest.time.{Millis, Seconds, Span}
+import org.genivi.sota.core.rvi.SotaServices
 
 class PackageUpdateSpec extends PropSpec with PropertyChecks with Matchers with BeforeAndAfterAll {
 
@@ -84,8 +86,12 @@ class PackageUpdateSpec extends PropSpec with PropertyChecks with Matchers with 
 
   property("updates should be transfered to device", RequiresRvi) {
     forAll( requestsGen(Refined("VINOOLAM0FAU2DEEP")) ) { (requests) =>
-      val updateSpecs = init( requests ).futureValue
-      Future.sequence(UpdateNotifier.notify(updateSpecs.toSeq)).isReadyWithin( Span( 5, Seconds ) )
+      val resultFuture = for {
+        serverServices <- SotaServices.register(Uri.from(host="localhost", port=8080, path = "/rvi"))
+        updateSpecs    <- init( requests )
+        result         <- Future.sequence(UpdateNotifier.notify(updateSpecs.toSeq, serverServices))
+      } yield result
+      resultFuture.isReadyWithin( Span( 5, Seconds ) )
     }
   }
 

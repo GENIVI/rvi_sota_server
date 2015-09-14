@@ -13,6 +13,7 @@ import org.scalatest.time.{Millis, Seconds, Span}
 import scala.concurrent.Future
 import slick.jdbc.JdbcBackend.Database
 import org.genivi.sota.core.RequiresRvi
+import org.genivi.sota.core.rvi.SotaServices
 
 class UpdateNotifierSpec extends PropSpec with PropertyChecks with Matchers with BeforeAndAfterAll {
   import org.genivi.sota.core.Generators.{vehicleGen, dependenciesGen, updateRequestGen, vinDepGen}
@@ -43,7 +44,11 @@ class UpdateNotifierSpec extends PropSpec with PropertyChecks with Matchers with
   property("notify about available updates", RequiresRvi) {
     import serverTransport.requestTransport
     forAll( updateSpecsGen(Gen.const( Refined("VINOOLAM0FAU2DEEP") ) )) { specs =>
-       Future.sequence( UpdateNotifier.notify(specs)).isReadyWithin( Span(5, Seconds) )  shouldBe true
+      val futureRes = for {
+        sotaServices    <- SotaServices.register( Uri("http://localhost:8080/rvi") )
+        notificationRes <- Future.sequence( UpdateNotifier.notify(specs, sotaServices) )
+      } yield notificationRes
+      futureRes.isReadyWithin( Span(5, Seconds) )  shouldBe true
     }
   }
 
