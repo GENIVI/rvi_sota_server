@@ -128,21 +128,21 @@ class Routing(db: Database)
 
   def packageFiltersRoute: Route = {
 
-    path("packageFilters") {
+    pathPrefix("packageFilters") {
       get {
         parameters('package.as[Package.NameVersion].?, 'filter.as[Filter.Name].?)
-        { case (Some(nameVersion), None)         =>
+        { case (Some(nameVersion), None)        =>
             handleExceptions(packageFiltersListingHandler) {
               complete(db.run(PackageFilters.listFiltersForPackage
                 (Refined(nameVersion.get.split("-").head), Refined(nameVersion.get.split("-").tail.head))))
             }
-          case (None,               Some(fname)) =>
+          case (None,              Some(fname)) =>
             handleExceptions(packageFiltersListingHandler) {
               complete(db.run(PackageFilters.listPackagesForFilter(fname)))
             }
-          case (None,               None)        =>
+          case (None,              None)        =>
             complete(db.run(PackageFilters.list))
-          case _                                 =>
+          case _                                =>
             complete(StatusCodes.NotFound)
         }
       } ~
@@ -150,25 +150,22 @@ class Routing(db: Database)
         handleExceptions(packageFiltersHandler) {
           complete(db.run(PackageFilters.add(pf)))
         }
-      }
-    }
-  }
-
-  def packageFilterDeleteRoute: Route =
-    pathPrefix("packageFiltersDelete") {
-      (delete & refined[Package.ValidName](Slash ~ Segment)
+      } ~
+      (delete & refined[Package.ValidName]   (Slash ~ Segment)
               & refined[Package.ValidVersion](Slash ~ Segment)
-              & refined[Filter.ValidName](Slash ~ Segment ~ PathEnd)) { (pname, pversion, fname) =>
+              & refined[Filter.ValidName]    (Slash ~ Segment ~ PathEnd))
+      { (pname, pversion, fname) =>
         handleExceptions(packageFiltersHandler) {
           complete(db.run(PackageFilters.delete(pname, pversion, fname)))
         }
       }
     }
+  }
 
   val route: Route = pathPrefix("api" / "v1") {
     handleRejections(rejectionHandler) {
       handleExceptions(exceptionHandler) {
-        vehiclesRoute ~ packagesRoute ~ resolveRoute ~ filterRoute ~ validateRoute ~ packageFiltersRoute ~ packageFilterDeleteRoute
+        vehiclesRoute ~ packagesRoute ~ resolveRoute ~ filterRoute ~ validateRoute ~ packageFiltersRoute
       }
     }
   }
