@@ -16,7 +16,7 @@ import scala.concurrent.Future
 import org.genivi.sota.core.db.{Packages, UpdateRequests, UpdateSpecs}
 import scala.util.control.NoStackTrace
 import slick.dbio.DBIO
-import slick.jdbc.JdbcBackend.Database
+import slick.driver.MySQLDriver.api.Database
 
 case class PackagesNotFound(packageIds: (Package.Id)*)(implicit show: Show[Package.Id]) extends Throwable(s"""Package(s) not found: ${packageIds.map(show.show).mkString(", ")}""") with NoStackTrace
 
@@ -89,6 +89,7 @@ class UpdateService(implicit val log: LoggingAdapter) {
     } yield uploadSpecs
   }
 
+  def all(implicit db: Database, ec: ExecutionContext): Future[Set[UpdateRequest]] = db.run(UpdateRequests.list).map(_.toSet)
 }
 
 object UpdateService {

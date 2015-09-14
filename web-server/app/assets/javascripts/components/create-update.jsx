@@ -10,6 +10,16 @@ define(function(require) {
       VehiclesToUpdate = require('components/vehicles-to-update-component'),
       VehiclesToUpdateStore = require('stores/vehicles-to-update');
 
+  function generateUUID(){
+    var d = new Date().getTime();
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = (d + Math.random()*16)%16 | 0;
+        d = Math.floor(d/16);
+        return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+    });
+    return uuid;
+  }
+
   var CreateUpdate = React.createClass({
     mixins: [HandleFailMixin],
     handleSubmit: function(e) {
@@ -24,13 +34,17 @@ define(function(require) {
       var endBeforeTimeZone = React.findDOMNode(this.refs.endBeforeTimeZone).value;
 
       var payload = {
+        id: generateUUID(),
         packageId : { name: this.props.packageName,
         version: this.props.packageVersion },
         priority: Number(React.findDOMNode(this.refs.priority).value),
-        startAfter: this.formatDate(startAfterDate, startAfterTime, startAfterTimeZone),
-        endBefore: this.formatDate(endBeforeDate, endBeforeTime, endBeforeTimeZone)
+        creationTime: this.formatDate(startAfterDate, startAfterTime, startAfterTimeZone),
+        periodOfValidity:
+          this.formatDate(startAfterDate, startAfterTime, startAfterTimeZone)
+          + '/'
+          + this.formatDate(endBeforeDate, endBeforeTime, endBeforeTimeZone)
       }
-      SendRequest.doPost("/api/v1/install_campaigns", payload)
+      SendRequest.doPost("/api/v1/updates", payload)
         .fail(_.bind(function(xhr) {
           this.trigger("error", this, xhr);
         }, this));

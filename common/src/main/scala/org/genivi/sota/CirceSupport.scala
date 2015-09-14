@@ -6,13 +6,16 @@ package org.genivi.sota
 
 import akka.http.scaladsl.marshalling.{ Marshaller, ToEntityMarshaller, ToResponseMarshaller }
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
-import akka.http.scaladsl.model.{ ContentTypes, HttpCharsets, MediaTypes }
+import akka.http.scaladsl.model.{ContentTypes, HttpCharsets, MediaTypes, Uri}
 import akka.http.scaladsl.unmarshalling.{ FromEntityUnmarshaller, FromRequestUnmarshaller, FromResponseUnmarshaller, Unmarshaller }
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.Materializer
 import cats.data.Xor
 import eu.timepit.refined.{Predicate, Refined, refineV}
 import io.circe._
+import java.util.UUID
+import org.joda.time.{Interval, DateTime}
+import org.joda.time.format.ISODateTimeFormat
 import scala.concurrent.ExecutionContext
 import scala.util.control.NoStackTrace
 
@@ -57,4 +60,34 @@ object CirceSupport {
   implicit def refinedEncoder[T, P](implicit encoder: Encoder[T]): Encoder[Refined[T, P]] =
     encoder.contramap(_.get)
 
+
+  implicit val uriEncoder : Encoder[Uri] = Encoder.instance { uri =>
+    Json.obj(("uri", Json.string(uri.toString)))
+  }
+  implicit val uriDecoder : Decoder[Uri] = Decoder.instance { c =>
+    c.focus.asObject match {
+      case None      => Xor.left(DecodingFailure("Uri", c.history))
+      case Some(obj) => obj.toMap.get("uri").flatMap(_.asString) match {
+        case None      => Xor.left(DecodingFailure("Uri", c.history))
+        case Some(uri) => Xor.right(Uri(uri))
+      }
+    }
+  }
+
+  implicit val uuidEncoder : Encoder[UUID] = Encoder[String].contramap(_.toString)
+  implicit val uuidDecoder : Decoder[UUID] = Decoder[String].map(UUID.fromString(_))
+
+  implicit val dateTimeEncoder : Encoder[DateTime] = Encoder.instance[DateTime]( x =>  Json.string( ISODateTimeFormat.dateTime().print(x)) )
+  implicit val dateTimeDecoder : Decoder[DateTime] = Decoder.instance { c =>
+    c.focus.asString match {
+      case None       => Xor.left(DecodingFailure("DataTime", c.history))
+      case Some(date) => try { Xor.right(ISODateTimeFormat.dateTimeNoMillis().parseDateTime(date)) }
+      catch {
+        case _: IllegalArgumentException => Xor.left(DecodingFailure("DateTime", c.history))
+      }
+      }
+    }
+
+  implicit val intervalEncoder : Encoder[Interval] = Encoder[String].contramap(_.toString)
+  implicit val intervalDecoder : Decoder[Interval] = Decoder[String].map(Interval.parse(_))
 }
