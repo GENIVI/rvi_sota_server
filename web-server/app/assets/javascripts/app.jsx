@@ -23,21 +23,30 @@ define(function(require) {
     render: function() {
       return (
       <div>
-        <ul className="nav nav-pills">
-          <li role="presentation">
-            <Link to="vehicles">Vehicles</Link>
-          </li>
-          <li role="presentation">
-            <Link to="packages">Packages</Link>
-          </li>
-          <li role="presentation">
-            <Link to="filters">Filters</Link>
-          </li>
-          <li role="presentation">
-            <Link to="updates">Updates</Link>
-          </li>
-        </ul>
-        <div>
+ 	<div className="navbar navbar-fixed-top top-nav">
+	  <div className="navbar-header">
+            <div className="top-logo">
+              <a href="#/" className="top-logo"></a>
+            </div>
+            <div className="top-icon">
+              <label>SOTA</label>
+            </div>
+	    <div className="navbar-collapse collapse">
+              <ul className="nav side-nav">
+                <li role="presentation">
+   	          <Link to="vehicles" className="vehicles">Vehicles</Link>
+   	        </li>
+                <li role="presentation">
+                  <Link to="packages" className="packages">Packages</Link>
+                </li>
+                <li role="presentation">
+                  <Link to="filters" className="filters">Filters</Link>
+                </li>
+              </ul>
+	    </div>
+          </div>
+        </div>
+        <div className="page wrapper">
           <RouteHandler />
         </div>
       </div>
