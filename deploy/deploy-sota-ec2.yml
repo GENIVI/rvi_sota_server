@@ -1,0 +1,138 @@
+---
+nodes:
+  - name: sota_server
+    group: sota_server
+    services:
+      - mysql
+      - resolver
+      - core
+      - webserver
+      - haproxy
+    size: c3.xlarge
+    count: 1
+
+security_groups:
+  - name: sota_server
+    description: "security group for sota server"
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 87.138.108.187/32
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 8888
+        to_port: 8888
+        cidr_ip: 87.138.108.187/32
+    rules_egress:
+      - proto: all
+        cidr_ip: 0.0.0.0/0
+
+services:
+  - name: haproxy
+    version: latest
+    repo: haproxy
+    ports:
+      - 80
+      - 443
+      - 3306
+      - 8888
+    files:
+      - src: haproxy.cfg.j2
+        dest: /etc/haproxy.cfg
+    volumes:
+      - /etc/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+
+  - name: mysql
+    repo: advancedtelematic/mariadb
+    ports:
+      - 3307:3306
+    env:
+      MYSQL_ROOT_PASSWORD: "{{ db_root_password }}"
+      MYSQL_USER: "{{ db_user }}"
+      MYSQL_PASSWORD: "{{ db_user_password }}"
+      MYSQL_DATABASES: "{{ db_resolver_name }} {{ db_core_name }}"
+
+  - name: rvi-server
+    repo: advancedtelematic/rvi
+    attach: true
+    ports:
+      - 8801
+      - 8805
+      - 8806
+      - 8807
+      - 8808
+    command: server
+
+  - name: rvi-client
+    repo: advancedtelematic/rvi
+    attach: true
+    ports:
+      - 8901
+      - 8905
+      - 8906
+      - 8907
+      - 8908
+    command: client
+
+  - name: sota-client
+    repo: advancedtelematic/sota-client
+    ports:
+      - 8090
+    links:
+      - rvi-client
+
+  - name: resolver
+    repo: advancedtelematic/sota-resolver
+    pull: false
+    ports:
+      - 8081
+    expose:
+      - "8081"
+    links:
+      - mysql
+    env:
+      HOST: 0.0.0.0
+      RESOLVER_DB_URL: "jdbc:mysql://{{ '{{' }}groups.haproxy[0] {{ '}}' }}:3307/{{ db_resolver_name }}"
+
+  - name: core
+    repo: advancedtelematic/sota-core
+    pull: false
+    ports:
+      - 8080
+    expose:
+      - "8080"
+    links:
+      - mysql
+      - resolver
+    env:
+      HOST: 0.0.0.0
+      CORE_DB_URL: "jdbc:mysql://{{ '{{' }}groups.haproxy[0] {{ '}}' }}:3307/{{ db_core_name }}"
+      RESOLVER_PORT: "8081"
+      RESOLVER_HOST: "resolver"
+      RESOLVER_URI: "http://{{ '{{' }} groups.haproxy[0] {{ '}}' }}:8081/api/v1/packages"
+
+  - name: webserver
+    repo: advancedtelematic/sota-webserver
+    links:
+      - resolver
+      - core
+    pull: false
+    ports:
+      - 9000
+    expose:
+      - "9000"
+    env:
+      CORE_PORT: "8080"
+      CORE_HOST: "core"
+      RESOLVER_PORT: "8081"
+      RESOLVER_HOST: "resolver"
+      PLAY_CRYPTO_SECRET: {{ play_crypto_secret }}
+
