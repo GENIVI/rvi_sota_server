@@ -1,7 +1,7 @@
 define(function(require) {
 
   var React = require('react'),
-      FilterableVehicleComponent = require('components/filterable-vehicle-component'),
+      VehiclesPageComponent = require('components/vehicles/vehicles-page-component'),
       FilterablePackageComponent = require('components/filterable-package-component'),
       SearchableFilterComponent = require('components/filters/searchable-filter-component'),
       ShowPackage = require('components/show-package-component'),
@@ -54,7 +54,7 @@ define(function(require) {
 
   var routes = (
     <Route handler={App} path="/">
-      <Route name="vehicles" handler={FilterableVehicleComponent}/>
+      <Route name="vehicles" handler={VehiclesPageComponent}/>
       <Route name="packages">
         <Route name="package" path="/packages/:name/:version" handler={wrapComponent(ShowPackage, {Store: Packages})}/>
         <DefaultRoute handler={FilterablePackageComponent}/>
