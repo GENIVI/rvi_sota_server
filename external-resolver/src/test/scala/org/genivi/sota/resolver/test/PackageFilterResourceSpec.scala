@@ -60,7 +60,7 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
     "list packages associated to a filter on GET requests to /packageFilters?filter=:filterName" in {
       listPackagesForFilter(filterName) ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[List[Tuple2[Package.Name, Package.Version]]] shouldBe List((Refined(pkgName), Refined(pkgVersion)))
+        responseAs[List[Package]] shouldBe List(Package(Package.Id(Refined(pkgName), Refined(pkgVersion)), None, None))
       }
     }
 

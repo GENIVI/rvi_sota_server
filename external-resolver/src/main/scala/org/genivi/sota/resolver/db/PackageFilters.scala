@@ -56,12 +56,14 @@ object PackageFilters {
 
   def listPackagesForFilter
     (fname: Filter.Name)
-    (implicit ec: ExecutionContext): DBIO[Seq[Tuple2[Package.Name, Package.Version]]] =
+    (implicit ec: ExecutionContext): DBIO[Seq[Package]] =
 
     Filters.exists(fname).andThen(
       packageFilters
         .filter(_.filterName === fname)
-        .map(pf => (pf.packageName, pf.packageVersion)).result
+        .flatMap(pf => packages
+          .filter(pkg => pkg.name === pf.packageName && pkg.version === pf.packageVersion))
+        .result
     )
 
   def listFiltersForPackage
