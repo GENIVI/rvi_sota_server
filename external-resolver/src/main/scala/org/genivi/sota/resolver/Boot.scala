@@ -16,6 +16,7 @@ import eu.timepit.refined.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.CirceSupport._
+import org.genivi.sota.refined.SprayJsonRefined.refinedUnmarshaller
 import org.genivi.sota.resolver.db._
 import org.genivi.sota.resolver.types.{Vehicle, Package, Filter, PackageFilter}
 import org.genivi.sota.rest.ErrorRepresentation.errorRepresentationEncoder
@@ -96,12 +97,10 @@ class Routing(db: Database)
         ErrorRepresentation(PackageFilter.MissingFilter, "Filter doesn't exist"))
   }
 
-  import org.genivi.sota.refined.SprayJsonRefined.refinedUnmarshaller
-
   def filterRoute: Route =
     pathPrefix("filters") {
       get {
-        parameters('regex.as[Refined[String, Regex]].?) { re =>
+        parameter('regex.as[Refined[String, Regex]].?) { re =>
           val query = re.fold(Filters.list)(r => Filters.searchByRegex(r.get))
           complete(db.run(query))
         }
@@ -129,47 +128,44 @@ class Routing(db: Database)
 
   def packageFiltersRoute: Route = {
 
-    path("packageFilters") {
+    pathPrefix("packageFilters") {
       get {
-        complete(db.run(PackageFilters.list))
+        parameters('package.as[Package.NameVersion].?, 'filter.as[Filter.Name].?)
+        { case (Some(nameVersion), None)        =>
+            handleExceptions(packageFiltersListingHandler) {
+              complete(db.run(PackageFilters.listFiltersForPackage
+                (Refined(nameVersion.get.split("-").head), Refined(nameVersion.get.split("-").tail.head))))
+            }
+          case (None,              Some(fname)) =>
+            handleExceptions(packageFiltersListingHandler) {
+              complete(db.run(PackageFilters.listPackagesForFilter(fname)))
+            }
+          case (None,              None)        =>
+            complete(db.run(PackageFilters.list))
+          case _                                =>
+            complete(StatusCodes.NotFound)
+        }
       } ~
       (post & entity(as[PackageFilter])) { pf =>
         handleExceptions(packageFiltersHandler) {
           complete(db.run(PackageFilters.add(pf)))
         }
-      }
-    } ~
-    pathPrefix("packageFilters" / "packagesFor") {
-      (get & refined[Filter.ValidName](Slash ~ Segment ~ PathEnd)) { fname =>
-        handleExceptions(packageFiltersListingHandler) {
-          complete(db.run(PackageFilters.listPackagesForFilter(fname)))
-        }
-      }
-    } ~
-    pathPrefix("packageFilters" / "filtersFor") {
-      (get & refinedPackageId) { (pname, pversion) =>
-        handleExceptions(packageFiltersListingHandler) {
-          complete(db.run(PackageFilters.listFiltersForPackage(pname, pversion)))
-        }
-      }
-    }
-  }
-
-  def packageFilterDeleteRoute: Route =
-    pathPrefix("packageFiltersDelete") {
-      (delete & refined[Package.ValidName](Slash ~ Segment)
+      } ~
+      (delete & refined[Package.ValidName]   (Slash ~ Segment)
               & refined[Package.ValidVersion](Slash ~ Segment)
-              & refined[Filter.ValidName](Slash ~ Segment ~ PathEnd)) { (pname, pversion, fname) =>
+              & refined[Filter.ValidName]    (Slash ~ Segment ~ PathEnd))
+      { (pname, pversion, fname) =>
         handleExceptions(packageFiltersHandler) {
           complete(db.run(PackageFilters.delete(pname, pversion, fname)))
         }
       }
     }
+  }
 
   val route: Route = pathPrefix("api" / "v1") {
     handleRejections(rejectionHandler) {
       handleExceptions(exceptionHandler) {
-        vehiclesRoute ~ packagesRoute ~ resolveRoute ~ filterRoute ~ validateRoute ~ packageFiltersRoute ~ packageFilterDeleteRoute
+        vehiclesRoute ~ packagesRoute ~ resolveRoute ~ filterRoute ~ validateRoute ~ packageFiltersRoute
       }
     }
   }
