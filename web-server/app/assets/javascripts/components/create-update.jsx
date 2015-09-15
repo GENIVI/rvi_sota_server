@@ -29,6 +29,26 @@ define(['jquery', 'react', '../mixins/handle-fail', '../mixins/serialize-form', 
       //TODO: Get seconds working with ReactJS
       return date + "T" + time + ":00" + timeZone;
     },
+    getTodaysDate: function() {
+      var today = new Date();
+      var dd = today.getDate();
+      var mm = today.getMonth()+1; //January is 0!
+
+      var yyyy = today.getFullYear();
+      if(dd<10){
+          dd='0'+dd
+      }
+      if(mm<10){
+          mm='0'+mm
+      }
+      return yyyy+"-"+mm+"-"+dd;
+    },
+    componentDidMount: function() {
+      React.findDOMNode(this.refs.startAfterDate).value = this.getTodaysDate();
+      React.findDOMNode(this.refs.endBeforeDate).value = this.getTodaysDate();
+      React.findDOMNode(this.refs.startAfterTime).value = "00:00";
+      React.findDOMNode(this.refs.endBeforeTime).value = "00:00";
+    },
     render: function() { return (
         <div>
           <h3>Create Install Campaign</h3>
@@ -53,7 +73,7 @@ define(['jquery', 'react', '../mixins/handle-fail', '../mixins/serialize-form', 
               <div className="col-xs-4">
                 <div className="form-group">
                   <label htmlFor="startAfterTimeZone">Start After Time Zone</label>
-                  <input type="text" className="form-control" name="startAfterTimeZone" ref="startAfterTimeZone" placeholder="+02:00" pattern="[+-](2[0-3]|[01][0-9]):[0-5][0-9]" required/>
+                  <input type="text" className="form-control" name="startAfterTimeZone" ref="startAfterTimeZone" defaultValue="+00:00" pattern="[+-](2[0-3]|[01][0-9]):[0-5][0-9]" required/>
                 </div>
               </div>
             </div>
@@ -74,7 +94,7 @@ define(['jquery', 'react', '../mixins/handle-fail', '../mixins/serialize-form', 
               <div className="col-xs-4">
                 <div className="form-group">
                   <label htmlFor="endBeforeTimeZone">End Before Time Zone</label>
-                  <input type="text" className="form-control" name="endBeforeTimeZone" ref="endBeforeTimeZone" placeholder="+02:00" pattern="[+-](2[0-3]|[01][0-9]):[0-5][0-9]" required/>
+                  <input type="text" className="form-control" name="endBeforeTimeZone" ref="endBeforeTimeZone" defaultValue="+00:00" pattern="[+-](2[0-3]|[01][0-9]):[0-5][0-9]" required/>
                 </div>
               </div>
             </div>
