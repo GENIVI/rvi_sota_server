@@ -20,7 +20,7 @@ define(['underscore', 'backbone', '../mixins/send-request', 'sota-dispatcher'], 
     },
 
     fetchFiltersForPackage: function(package) {
-      var options = { url: this.url + "/filtersFor/" + package.get('packageId') };
+      var options = { url: this.url + "?package=" + package.get('name') + "-" + package.get('version') };
       return Backbone.Model.prototype.fetch.call(this, options);
     },
 
@@ -41,7 +41,7 @@ define(['underscore', 'backbone', '../mixins/send-request', 'sota-dispatcher'], 
     },
 
     destroyFilterForPackage: function(package, filter) {
-      var pathPrefix = "/api/v1/packageFiltersDelete/";
+      var pathPrefix = "/api/v1/packageFilters/";
       var resourcePath = package.get('packageId') + "/" + filter.get('name');
       var url = pathPrefix + resourcePath;
 
