@@ -514,7 +514,7 @@ whether a filter with this name already exists.
 ----
 |==================================================================
 
-=== DELETE /packageFiltersDelete/:packageName/:packageVersion/:filterName
+=== DELETE /packageFilters/:packageName/:packageVersion/:filterName
 
 [width="100%",cols="18%,82%",]
 |==================================================================
@@ -544,7 +544,7 @@ whether a filter with this name already exists.
 |==================================================================
 
 
-=== GET /packageFilters/packagesFor/:filter
+=== GET /packageFilters?filter=:filter
 
 [width="100%",cols="18%,82%",]
 |=======================================================================
@@ -553,12 +553,14 @@ whether a filter with this name already exists.
 |Description |Returns a list of all packages associated with a
 particular filter.
 
-|URL |/api/v1/packageFilters/packagesFor/:filter
+|URL |/api/v1/packageFilters?filter=:filter
 
 |URL Parameters a|
 * *:filter* — A filter name.
 
 |Success Response a|
+A list of packages and their information.
+
 *Code:* 200
 
 *Content:*
@@ -566,14 +568,22 @@ particular filter.
 [source,json]
 ----
 [
-  [
-    "myPackage",
-    "1.2.3"
-  ],
-  [
-    "myPackage2",
-    "2.3.4"
-  ]
+  {
+    "vendor": "AcmeSoftware",
+    "description": "",
+    "id": {
+      "version": "1.2.3",
+      "name": "myPackage"
+    }
+  },
+  {
+    "vendor": "AcmeSoftware",
+    "description": "",
+    "id": {
+      "version": "2.3.4",
+      "name": "myPackage2"
+    }
+  }
 ]
 ----
 
@@ -591,7 +601,7 @@ particular filter.
 ----
 |=======================================================================
 
-=== GET /packageFilters/filtersFor/:name/:version
+=== GET /packageFilters?package=:name[-]:version
 
 [width="100%",cols="18%,82%",]
 |=======================================================================
@@ -600,13 +610,15 @@ particular filter.
 |Description |Returns a list of all filters associated with a particular
 package.
 
-|URL |/api/v1/packageFilters/filtersFor/:name/:version
+|URL |/api/v1/packageFilters?package=:name[-]:version
 
 |URL Parameters a|
 * *:name* — A package name.
 * *:version* — A package version, in _x.y.z_ format. __x__, __y__, and __z__ must all exist, and contain only digits.
 
 |Success Response a|
+*Example:* GET http://resolver/api/v1/packageFilters?package=myPackage-1.2.3
+
 *Code:* 200
 
 *Content:* A list of filters associated with the package.
