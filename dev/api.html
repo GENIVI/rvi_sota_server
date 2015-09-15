@@ -130,6 +130,7 @@
 <li><a href="#delete-packagefiltersdelete-packagename-packageversion-filtername">DELETE /packageFiltersDelete/:packageName/:packageVersion/:filterName</a></li>
 <li><a href="#get-packagefilters-packagesfor-filter">GET /packageFilters/packagesFor/:filter</a></li>
 <li><a href="#get-packagefilters-filtersfor-name-version">GET /packageFilters/filtersFor/:name/:version</a></li>
+<li><a href="#post-install_campaigns">POST /install_campaigns</a></li>
 </ul>
 </div>
 <div class="paragraph">
@@ -176,7 +177,7 @@ the Web Server, the Core Server, and the Resolver.</p>
 <pre class="pygments highlight"><code data-lang="json">[
   {
     <span style="color: #008000; font-weight: bold">&quot;vin&quot;</span>: <span style="color: #BA2121">&quot;AAAAAAA1234567890&quot;</span>
-   },
+  },
   {
     <span style="color: #008000; font-weight: bold">&quot;vin&quot;</span>: <span style="color: #BA2121">&quot;BBBBBBB1234567890&quot;</span>
   }
@@ -242,8 +243,15 @@ characters.</p>
 <p><strong>Code:</strong> 400</p>
 </div>
 <div class="paragraph">
-<p><strong>Content:</strong> \{"code": "invalid_entity","description": "Predicate failed:
-(ABCDEFGHIJKLMNOP1234567890 isn&#8217;t 17 letters or digits long)."}</p>
+<p><strong>Content:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">{
+  <span style="color: #008000; font-weight: bold">&quot;code&quot;</span>: <span style="color: #BA2121">&quot;invalid_entity&quot;</span>,
+  <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;Predicate failed:(ABCDEFGHIJKLMNOP1234567890 isn&#39;t 17 letters or digits long).&quot;</span>
+}</code></pre>
+</div>
 </div></div></td>
 </tr>
 </tbody>
@@ -280,15 +288,17 @@ characters.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="json">[{
- <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>: <span style="color: #BA2121">&quot;myPackage&quot;</span>,
- <span style="color: #008000; font-weight: bold">&quot;size&quot;</span>: <span style="color: #666666">11077</span>,
- <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;test package&quot;</span>,
- <span style="color: #008000; font-weight: bold">&quot;uri&quot;</span>: <span style="color: #BA2121">&quot;http://path/to/file&quot;</span>,
- <span style="color: #008000; font-weight: bold">&quot;version&quot;</span>: <span style="color: #BA2121">&quot;1.2.3&quot;</span>,
- <span style="color: #008000; font-weight: bold">&quot;checksum&quot;</span>: <span style="color: #BA2121">&quot;xgm98xdcsw22Cdr93oWKEZ7YLM0=&quot;</span>,
- <span style="color: #008000; font-weight: bold">&quot;vendor&quot;</span>: <span style="color: #BA2121">&quot;Acme Software&quot;</span>
-}]</code></pre>
+<pre class="pygments highlight"><code data-lang="json">[
+  {
+    <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>: <span style="color: #BA2121">&quot;myPackage&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;size&quot;</span>: <span style="color: #666666">11077</span>,
+    <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;test package&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;uri&quot;</span>: <span style="color: #BA2121">&quot;http://path/to/file&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;version&quot;</span>: <span style="color: #BA2121">&quot;1.2.3&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;checksum&quot;</span>: <span style="color: #BA2121">&quot;xgm98xdcsw22Cdr93oWKEZ7YLM0=&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;vendor&quot;</span>: <span style="color: #BA2121">&quot;Acme Software&quot;</span>
+  }
+]</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -612,12 +622,10 @@ VINs it applies to.</p></td>
 <td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
-<p><strong>name</strong> — <code>[string]</code> A unique identifying name for the filter, between
-2 and 100 alphanumeric characters in length.</p>
+<p><strong>name</strong> — A unique identifying name for the filter, between 2 and 100 alphanumeric characters in length.</p>
 </li>
 <li>
-<p><strong>expression</strong> — <code>[string]</code> A filter. See the filter syntax
-documentation at <a href="#">insert URL here</a>.</p>
+<p><strong>expression</strong> — A filter. See the <a href="../doc/admin-gui-user-guide.html#filter-syntax">filter syntax documentation</a>.</p>
 </li>
 </ul>
 </div></div></td>
@@ -654,7 +662,15 @@ documentation at <a href="#">insert URL here</a>.</p>
 <p><strong>Code:</strong> 400</p>
 </div>
 <div class="paragraph">
-<p><strong>Content:</strong> {"code": "invalid_entity","description": "Predicate failed: (Expression failed to parse)."}</p>
+<p><strong>Content:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">{
+  <span style="color: #008000; font-weight: bold">&quot;code&quot;</span>: <span style="color: #BA2121">&quot;invalid_entity&quot;</span>,
+  <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;Predicate failed: (Expression failed to parse).&quot;</span>
+}</code></pre>
+</div>
 </div>
 <div class="ulist">
 <ul>
@@ -667,8 +683,15 @@ documentation at <a href="#">insert URL here</a>.</p>
 <p><strong>Code:</strong> 409</p>
 </div>
 <div class="paragraph">
-<p><strong>Content:</strong> \{"code": "duplicate_entry","description": "Entry already
-exists"}</p>
+<p><strong>Content:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">{
+  <span style="color: #008000; font-weight: bold">&quot;code&quot;</span>: <span style="color: #BA2121">&quot;duplicate_entry&quot;</span>,
+  <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;Entry already exists&quot;</span>
+}</code></pre>
+</div>
 </div></div></td>
 </tr>
 </tbody>
@@ -711,7 +734,7 @@ exists"}</p>
 <td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
-<p><code>[string]</code> A filter. See the filter syntax documentation at <a href="#">insert URL here</a>. Note that this is a bare string being passed, not an object.</p>
+<p><strong>expression</strong> - A filter. See the <a href="../doc/admin-gui-user-guide.html#filter-syntax">filter syntax documentation</a>.</p>
 </li>
 </ul>
 </div></div></td>
@@ -748,7 +771,15 @@ exists"}</p>
 <p><strong>Code:</strong> 400</p>
 </div>
 <div class="paragraph">
-<p><strong>Content:</strong> {"code": "invalid_entity","description": "Predicate failed: (Expression failed to parse)."}</p>
+<p><strong>Content:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">{
+  <span style="color: #008000; font-weight: bold">&quot;code&quot;</span>: <span style="color: #BA2121">&quot;invalid_entity&quot;</span>,
+  <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;Predicate failed: (Expression failed to parse).&quot;</span>
+}</code></pre>
+</div>
 </div>
 <div class="ulist">
 <ul>
@@ -761,7 +792,15 @@ exists"}</p>
 <p><strong>Code:</strong> 400</p>
 </div>
 <div class="paragraph">
-<p><strong>Content:</strong> {"code": "missing_filter", "description": "Filter doesn&#8217;t exist"}</p>
+<p><strong>Content:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">{
+  <span style="color: #008000; font-weight: bold">&quot;code&quot;</span>: <span style="color: #BA2121">&quot;missing_filter&quot;</span>,
+  <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;Filter doesn&#39;t exist&quot;</span>
+}</code></pre>
+</div>
 </div></div></td>
 </tr>
 </tbody>
@@ -794,11 +833,10 @@ exists"}</p>
 <td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
-<p><strong>:filter</strong> — <code>[string]</code> The name of an existing filter, between 2 and 100 alphanumeric characters in length.</p>
+<p><strong>:filter</strong> — The name of an existing filter, between 2 and 100 alphanumeric characters in length.</p>
 </li>
 <li>
-<p><strong>expression</strong> — <code>[string]</code> A filter. See the filter syntax
-documentation at <a href="#">insert URL here</a>.</p>
+<p><strong>expression</strong> — A filter. See the <a href="../doc/admin-gui-user-guide.html#filter-syntax">filter syntax documentation</a>.</p>
 </li>
 </ul>
 </div></div></td>
@@ -825,7 +863,15 @@ documentation at <a href="#">insert URL here</a>.</p>
 <p><strong>Code:</strong> 400</p>
 </div>
 <div class="paragraph">
-<p><strong>Content:</strong> {"code": "missing_filter", "description": "Filter doesn&#8217;t exist"}</p>
+<p><strong>Content:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">{
+  <span style="color: #008000; font-weight: bold">&quot;code&quot;</span>: <span style="color: #BA2121">&quot;missing_filter&quot;</span>,
+  <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;Filter doesn&#39;t exist&quot;</span>
+}</code></pre>
+</div>
 </div></div></td>
 </tr>
 </tbody>
@@ -858,12 +904,11 @@ documentation at <a href="#">insert URL here</a>.</p>
 <td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
-<p><strong>name</strong> — <code>[string]</code> A unique identifying name for the filter, between
+<p><strong>name</strong> — A unique identifying name for the filter, between
 2 and 100 alphanumeric characters in length.</p>
 </li>
 <li>
-<p><strong>expression</strong> — <code>[string]</code> A filter. See the filter syntax
-documentation at <a href="#">insert URL here</a>.</p>
+<p><strong>expression</strong> — A filter. See the <a href="../doc/admin-gui-user-guide.html#filter-syntax">filter syntax documentation</a>.</p>
 </li>
 </ul>
 </div></div></td>
@@ -889,8 +934,15 @@ whether a filter with this name already exists.</p>
 <p><strong>Code:</strong> 400</p>
 </div>
 <div class="paragraph">
-<p><strong>Content:</strong> {"code": "invalid_entity","description": "Predicate failed:
-(Expression failed to parse)."}</p>
+<p><strong>Content:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">{
+  <span style="color: #008000; font-weight: bold">&quot;code&quot;</span>: <span style="color: #BA2121">&quot;invalid_entity&quot;</span>,
+  <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;Predicate failed: (Expression failed to parse).&quot;</span>
+}</code></pre>
+</div>
 </div></div></td>
 </tr>
 </tbody>
@@ -968,13 +1020,13 @@ whether a filter with this name already exists.</p>
 <td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
-<p><strong>packageName</strong> - <code>[string]</code> The name of an existing package.</p>
+<p><strong>packageName</strong> - The name of an existing package.</p>
 </li>
 <li>
-<p><strong>packageVersion</strong> - <code>[string]</code> A valid version number for that package.</p>
+<p><strong>packageVersion</strong> - A valid version number for that package.</p>
 </li>
 <li>
-<p><strong>filterName</strong> - <code>[string]</code> The name of an existing filter.</p>
+<p><strong>filterName</strong> - The name of an existing filter.</p>
 </li>
 </ul>
 </div></div></td>
@@ -1005,7 +1057,15 @@ whether a filter with this name already exists.</p>
 <p><strong>Code:</strong> 409</p>
 </div>
 <div class="paragraph">
-<p><strong>Content:</strong> {"code":"duplicate_entry","description":"Entry already exists"}</p>
+<p><strong>Content:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">{
+  <span style="color: #008000; font-weight: bold">&quot;code&quot;</span>: <span style="color: #BA2121">&quot;duplicate_entry&quot;</span>,
+  <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;Entry already exists&quot;</span>
+}</code></pre>
+</div>
 </div></div></td>
 </tr>
 </tbody>
@@ -1036,13 +1096,13 @@ whether a filter with this name already exists.</p>
 <td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
-<p><strong>packageName</strong> - <code>[string]</code> The name of an existing package.</p>
+<p><strong>packageName</strong> - The name of an existing package.</p>
 </li>
 <li>
-<p><strong>packageVersion</strong> - <code>[string]</code> A valid version number for that package.</p>
+<p><strong>packageVersion</strong> - A valid version number for that package.</p>
 </li>
 <li>
-<p><strong>filterName</strong> - <code>[string]</code> The name of an existing filter that is associated with that package name and version.</p>
+<p><strong>filterName</strong> - The name of an existing filter that is associated with that package name and version.</p>
 </li>
 </ul>
 </div></div></td>
@@ -1062,7 +1122,15 @@ whether a filter with this name already exists.</p>
 <p><strong>Code:</strong> 400</p>
 </div>
 <div class="paragraph">
-<p><strong>Content:</strong> {"code":"missing_package_filter","description":"Package filter doesn&#8217;t exist"}</p>
+<p><strong>Content:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">{
+  <span style="color: #008000; font-weight: bold">&quot;code&quot;</span>: <span style="color: #BA2121">&quot;missing_package_filter&quot;</span>,
+  <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;Package filter doesn&#39;t exist&quot;</span>
+}</code></pre>
+</div>
 </div></div></td>
 </tr>
 </tbody>
@@ -1112,24 +1180,33 @@ particular filter.</p></td>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="json">[
-  [<span style="color: #BA2121">&quot;myPackage&quot;</span>,<span style="color: #BA2121">&quot;1.2.3&quot;</span>],
-  [<span style="color: #BA2121">&quot;myPackage2&quot;</span>,<span style="color: #BA2121">&quot;2.3.4&quot;</span>]
+  [
+    <span style="color: #BA2121">&quot;myPackage&quot;</span>,
+    <span style="color: #BA2121">&quot;1.2.3&quot;</span>
+  ],
+  [
+    <span style="color: #BA2121">&quot;myPackage2&quot;</span>,
+    <span style="color: #BA2121">&quot;2.3.4&quot;</span>
+  ]
 ]</code></pre>
 </div>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Note: if <strong>:filter</strong> does not match any existing filter, it is still a
-success response; an empty list is returned.</p>
-</li>
-</ul>
 </div></div></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Error Response</p></td>
 <td class="tableblock halign-left valign-top"><div><div class="paragraph">
-<p>N/A</p>
+<p><strong>Code:</strong> 404</p>
+</div>
+<div class="paragraph">
+<p><strong>Content:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">{
+  <span style="color: #008000; font-weight: bold">&quot;code&quot;</span>: <span style="color: #BA2121">&quot;missing_filter&quot;</span>,
+  <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;Filter doesn&#39;t exist&quot;</span>
+}</code></pre>
+</div>
 </div></div></td>
 </tr>
 </tbody>
@@ -1188,20 +1265,135 @@ package.</p></td>
   }
 ]</code></pre>
 </div>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Note: if <strong>:name/:version</strong> does not match any existing package, it is
-still a success response; an empty list is returned.</p>
-</li>
-</ul>
 </div></div></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Error Response</p></td>
 <td class="tableblock halign-left valign-top"><div><div class="paragraph">
-<p>N/A</p>
+<p><strong>Code:</strong> 404</p>
+</div>
+<div class="paragraph">
+<p><strong>Content:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">{
+  <span style="color: #008000; font-weight: bold">&quot;code&quot;</span>: <span style="color: #BA2121">&quot;missing_package&quot;</span>,
+  <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;Package doesn&#39;t exist&quot;</span>
+}</code></pre>
+</div>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="post-install_campaigns">POST /install_campaigns</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Availability</th>
+<th class="tableblock halign-left valign-top">core</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Create an install campaign for a package</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/install_campaigns</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Data Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>packageId</strong> — An object consisting of:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>:name</strong> — A package name.</p>
+</li>
+<li>
+<p><strong>:version</strong> — A package version, in <em>x.y.z</em> format. <em>x</em>, <em>y</em>, and <em>z</em> must all exist, and contain only digits.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>priority</strong> — <code>[int]</code> The priority order of the campaign. Lower numbers indicate higher priority.</p>
+</li>
+<li>
+<p><strong>startAfter</strong> — <code>[dateTime]</code> The date on which to begin attempting to install the package.</p>
+</li>
+<li>
+<p><strong>endBefore</strong> — <code>[dateTime]</code> The date before which all installations should be finished.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Example:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">{
+  <span style="color: #008000; font-weight: bold">&quot;packageId&quot;</span>: {
+    <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>: <span style="color: #BA2121">&quot;myPackage&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;version&quot;</span>: <span style="color: #BA2121">&quot;1.2.3&quot;</span>
+  },
+  <span style="color: #008000; font-weight: bold">&quot;priority&quot;</span>: <span style="color: #666666">5</span>,
+  <span style="color: #008000; font-weight: bold">&quot;startAfter&quot;</span>: <span style="color: #BA2121">&quot;2015-01-01T00:00:00+02:00&quot;</span>,
+  <span style="color: #008000; font-weight: bold">&quot;endBefore&quot;</span>: <span style="color: #BA2121">&quot;2015-12-31T12:59:00+02:00&quot;</span>
+}</code></pre>
+</div>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div>
+<div class="paragraph">
+<p><strong>Content:</strong> The created campaign, with times converted to UTC, along with a campaign ID.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">{
+  <span style="color: #008000; font-weight: bold">&quot;priority&quot;</span>: <span style="color: #666666">5</span>,
+  <span style="color: #008000; font-weight: bold">&quot;endBefore&quot;</span>: <span style="color: #BA2121">&quot;2015-12-31T10:59:00Z&quot;</span>,
+  <span style="color: #008000; font-weight: bold">&quot;id&quot;</span>: <span style="color: #666666">10</span>,
+  <span style="color: #008000; font-weight: bold">&quot;startAfter&quot;</span>: <span style="color: #BA2121">&quot;2014-12-31T22:00:00Z&quot;</span>,
+  <span style="color: #008000; font-weight: bold">&quot;packageId&quot;</span>: {
+    <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>: <span style="color: #BA2121">&quot;myPackage&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;version&quot;</span>: <span style="color: #BA2121">&quot;1.2.3&quot;</span>
+  }
+}</code></pre>
+</div>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Error Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Invalid package name:</p>
+</div>
+<div class="paragraph">
+<p><strong>Code:</strong> 500</p>
+</div>
+<div class="paragraph">
+<p><strong>Content:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">{
+  <span style="color: #008000; font-weight: bold">&quot;error&quot;</span>: <span style="color: #BA2121">&quot;Cannot add or update a child row: a foreign key constraint fails (`sota_core`.`installcampaign`, CONSTRAINT `install_campaign_package_id_fk` FOREIGN KEY (`packageName`, `packageVersion`) REFERENCES `Package` (`name`, `version`))&quot;</span>
+}</code></pre>
+</div>
 </div></div></td>
 </tr>
 </tbody>
