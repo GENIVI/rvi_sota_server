@@ -10,20 +10,22 @@ import org.genivi.sota.core.data.{Vehicle, PackageId, UpdateSpec}
 import org.genivi.sota.core.rvi.Protocol
 import org.joda.time.DateTime
 import scala.concurrent.ExecutionContext
+import org.genivi.sota.core.rvi.ServerServices
 
 import scala.concurrent.Future
 
 case class PackageUpdate( `package`: PackageId, size: Long )
+case class UpdateNotification(packages: Seq[PackageUpdate], services: ServerServices)
 
 object UpdateNotifier {
 
-  def notify( updateSpecs: Seq[UpdateSpec] )
+  def notify(updateSpecs: Seq[UpdateSpec], services: ServerServices)
             (implicit transport: Json => Future[Json], ec: ExecutionContext): Iterable[Future[Int]] = {
     val updatesByVin : Map[Vehicle.IdentificationNumber, Seq[UpdateSpec]] = updateSpecs.groupBy( _.vin )
-    updatesByVin.map( (notifyVehicle _).tupled  )
+    updatesByVin.map( (notifyVehicle(services) _ ).tupled  )
   }
 
-  def notifyVehicle( vin: Vehicle.IdentificationNumber, updates: Seq[UpdateSpec] )
+  def notifyVehicle(services: ServerServices)( vin: Vehicle.IdentificationNumber, updates: Seq[UpdateSpec] )
                    ( implicit transport: Json => Future[Json], ec: ExecutionContext): Future[Int] = {
     import com.github.nscala_time.time.Imports._
     import io.circe.generic.auto._
@@ -34,7 +36,7 @@ object UpdateNotifier {
     }
 
     val earliestExpirationDate : DateTime = updates.map( _.request.periodOfValidity.getEnd ).min
-    Protocol.sendMessage( s"genivi.org/vin/${vin.get}/sota/notify", updates.map(toPackageUpdate), earliestExpirationDate )
+    Protocol.sendMessage( s"genivi.org/vin/${vin.get}/sota/notify", UpdateNotification(updates.map(toPackageUpdate), services), earliestExpirationDate )
   }
 
 }

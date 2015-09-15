@@ -13,6 +13,10 @@ import com.typesafe.sbt.web._
 
 object SotaBuild extends Build {
 
+  lazy val UnitTests = config("ut") extend Test
+
+  lazy val IntegrationTests = config("it") extend ( Test )
+
   lazy val basicSettings = Seq(
     organization := "org.genivi",
     scalaVersion := "2.11.7",
@@ -32,7 +36,9 @@ object SotaBuild extends Build {
       "org.scala-lang.modules" %% "scala-xml" % "1.0.4",
       "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
       "com.google.guava"  % "guava" % "18.0"
-    )
+    ),
+
+    shellPrompt in ThisBuild := { state => Project.extract(state).currentRef.project + "> " }
   )
 
   lazy val compilerSettings = Seq(
@@ -65,12 +71,17 @@ object SotaBuild extends Build {
   lazy val core = Project(id = "core", base = file("core"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
       libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Spray :+ Dependencies.NscalaTime :+ Dependencies.Scalaz,
+      testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RequiresRvi"),
+      testOptions in IntegrationTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RequiresRvi"),
       parallelExecution in Test := false,
       dockerExposedPorts := Seq(8080),
       flywayUrl := sys.env.get("CORE_DB_URL").orElse( sys.props.get("core.db.url") ).getOrElse("jdbc:mysql://localhost:3306/sota_core"),
       flywayUser := sys.env.get("CORE_DB_USER").orElse( sys.props.get("core.db.user") ).getOrElse("sota"),
       flywayPassword := sys.env.get("CORE_DB_PASSWORD").orElse( sys.props.get("core.db.password")).getOrElse("s0ta")
     ))
+    .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
+    .settings(inConfig(IntegrationTests)(Defaults.testTasks): _*)
+    .configs(IntegrationTests, UnitTests)
     .dependsOn(common)
     .enablePlugins(Packaging.plugins: _*)
 
