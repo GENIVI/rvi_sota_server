@@ -13,24 +13,73 @@ define(function(require) {
       this.props.Store.fetch();
     },
     render: function() {
-      var updates = this.props.Store.models.map(function(update) {
+      var rows = this.props.Store.models.map(function(update) {
         return (
-          <Router.Link to='update' params={{id: update.get('id'), Model: update}}>
-            <li className="list-group-item">
-              {update.get('packageId').name} - {update.get('packageId').version}
-            </li>
-          </Router.Link>
+          <tr>
+            <td>
+              {update.get('packageId').name}
+            </td>
+            <td>
+              {update.get('packageId').version}
+            </td>
+            <td>
+              {update.get('startAfter')}
+            </td>
+            <td>
+              {update.get('endBefore')}
+            </td>
+            <td>
+            </td>
+            <td>
+              <Router.Link to='update' params={{id: update.get('id'), Model: update}}>
+                Details
+              </Router.Link>
+            </td>
+          </tr>
         );
       });
 
       return (
         <div>
-          <h1>
-            Updates
-          </h1>
-          <ul className="list-group">
-            {updates}
-          </ul>
+          <div className="row">
+            <div className="col-md-12">
+              <h1>
+                Updates
+              </h1>
+            </div>
+          </div>
+          <div className="row">
+            <div className="col-md-8">
+              <p>
+              </p>
+            </div>
+          </div>
+          <table className="table table-striped table-bordered">
+            <thead>
+              <tr>
+                <td>
+                  Package
+                </td>
+                <td>
+                  Version
+                </td>
+                <td>
+                  Start
+                </td>
+                <td>
+                  End
+                </td>
+                <td>
+                  Status
+                </td>
+                <td>
+                </td>
+              </tr>
+            </thead>
+            <tbody>
+              { rows }
+            </tbody>
+          </table>
         </div>
       );
     }
