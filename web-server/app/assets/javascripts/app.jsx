@@ -43,6 +43,9 @@ define(function(require) {
                 <li role="presentation">
                   <Link to="filters" className="filters">Filters</Link>
                 </li>
+                <li role="presentation">
+                  <Link to="updates" className="updates">Updates</Link>
+                </li>
               </ul>
 	    </div>
           </div>
