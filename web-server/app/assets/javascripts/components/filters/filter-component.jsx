@@ -1,20 +1,19 @@
 define(['react', 'react-router', '../../mixins/fluxbone', 'sota-dispatcher'], function(React, Router, Fluxbone, SotaDispatcher) {
 
-  var floatRight = {
-    float: 'right'
-  };
-
   var FilterComponent = React.createClass({
     mixins: [
-      Fluxbone.Mixin('Filter')
+      Fluxbone.Mixin('Filter', 'sync')
     ],
     render: function() {
       return (
-        <li className="list-group-item">
-          <Router.Link to='filter' params={ {name: this.props.Filter.get('name')} }>
+        <tr>
+          <td>
             { this.props.Filter.get('name') }
-          </Router.Link>
-        </li>
+          </td>
+          <td>
+            { this.props.Filter.get('expression') }
+          </td>
+        </tr>
       );
     }
   });

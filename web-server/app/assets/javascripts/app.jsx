@@ -3,7 +3,7 @@ define(function(require) {
   var React = require('react'),
       VehiclesPageComponent = require('components/vehicles/vehicles-page-component'),
       PackagesPageComponent = require('components/packages/packages-page-component'),
-      SearchableFilterComponent = require('components/filters/searchable-filter-component'),
+      FiltersPageComponent = require('components/filters/filters-page-component'),
       ShowPackage = require('components/show-package-component'),
       ShowFilter = require('components/filters/show-filter-component'),
       Packages = require('stores/packages'),
@@ -72,7 +72,7 @@ define(function(require) {
       </Route>
       <Route name="filters">
         <Route name="filter" path="/filters/:name" handler={wrapComponent(ShowFilter, {Store: Filters})}/>
-        <DefaultRoute handler={SearchableFilterComponent} />
+        <DefaultRoute handler={FiltersPageComponent} />
       </Route>
       <Route name="updates">
         <Route name="update" path="/updates/:id" handler={wrapComponent(ShowUpdate, {Store: new Updates()})} />

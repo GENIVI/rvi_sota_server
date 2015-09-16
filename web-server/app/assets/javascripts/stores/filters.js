@@ -14,7 +14,7 @@ define(function(require) {
         case 'search-filters':
           this.fetch({ data: $.param({regex: payload.regex}) });
           break;
-        case 'create-filter':
+        case 'filter-add':
           this.createWithEvents(payload.filter);
           break;
         case 'update-filter':
