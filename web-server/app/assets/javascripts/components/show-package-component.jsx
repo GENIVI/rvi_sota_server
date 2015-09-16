@@ -1,4 +1,9 @@
-define(['underscore', 'react', '../mixins/show-model', 'components/create-update', './package-filters/add-package-filters'], function(_, React, showModel, CreateUpdate, AddPackageFilters) {
+define(function(require) {
+
+  var _ = require('underscore'),
+      Router = require('react-router'),
+      React = require('react'),
+      showModel = require('../mixins/show-model');
 
   var ShowPackageComponent = React.createClass({
     contextTypes: {
@@ -29,22 +34,34 @@ define(['underscore', 'react', '../mixins/show-model', 'components/create-update
           <p>
             {this.state.Model.get('description')}
           </p>
-          <table className="table table-striped table-bordered">
-            <thead>
-              <tr>
-                <td>
-                  {this.state.Model.get('name')}
-                </td>
-                <td>
-                </td>
-              </tr>
-            </thead>
-            <tbody>
-              { rows }
-            </tbody>
-          </table>
-          <AddPackageFilters Package={this.state.Model}/>
-          <CreateUpdate packageName={this.state.Model.get('name')} packageVersion={this.state.Model.get('version')}/>
+          <div className="row">
+            <div className="col-md-12">
+              <Router.Link to='new-campaign' params={{name: this.state.Model.get('name'), version: this.state.Model.get('version')}}>
+                <button className="btn btn-primary pull-right">
+                  NEW CAMPAIGN
+                </button>
+              </Router.Link>
+            </div>
+          </div>
+          <br/>
+          <div className="row">
+            <div className="col-md-12">
+              <table className="table table-striped table-bordered">
+                <thead>
+                  <tr>
+                    <td>
+                      {this.state.Model.get('name')}
+                    </td>
+                    <td>
+                    </td>
+                  </tr>
+                </thead>
+                <tbody>
+                  { rows }
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       );
     }
