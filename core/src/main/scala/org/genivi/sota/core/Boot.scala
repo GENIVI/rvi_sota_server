@@ -35,7 +35,11 @@ object Boot extends App with DatabaseConfig {
   } yield new files.Resolver(path, fileExt, checksumExt)).fold(err => throw new Exception(err), identity)
 
   val deviceCommunication = new DeviceCommunication(db, rviInterface, fileResolver, e => log.error(e, e.getMessage()))
-  val externalResolverClient = new DefaultExternalResolverClient( Uri(config.getString("resolver.baseUri")) )
+  val externalResolverClient = new DefaultExternalResolverClient(
+    Uri(config.getString("resolver.baseUri")),
+    Uri(config.getString("resolver.resolveUri")),
+    Uri(config.getString("resolver.packagesUri"))
+  )
 
   val service = new WebService( externalResolverClient, db )
 
