@@ -7,7 +7,7 @@ define(function(require) {
       showModel = require('../../mixins/show-model'),
       Fluxbone = require('../../mixins/fluxbone'),
       FiltersStore = require('../../stores/filters'),
-      FilterFormComponent = require('./filter-form');
+      AddFilterComponent = require('./add-filter-component');
 
   var ShowFilterComponent = React.createClass({
     contextTypes: {
@@ -51,7 +51,7 @@ define(function(require) {
           <h2>
             Edit filter
           </h2>
-          <FilterFormComponent
+          <AddFilterComponent
             Store={FiltersStore}
             Model={this.state.Model}
             event={"update-filter"}/>
