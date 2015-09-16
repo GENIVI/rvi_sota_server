@@ -20,7 +20,8 @@ define(function(require) {
       return (
         <div>
           <h1>
-            New Campaign
+            New Update Campaign for Package <br/>
+            {this.state.Model.get('name')}
           </h1>
           <AddPackageFilters Package={this.state.Model}/>
           <VehiclesToUpdate store={new VehiclesToUpdateStore({}, {pkgName: this.state.Model.get('name'), pkgVersion: this.state.Model.get('version')})}/>
