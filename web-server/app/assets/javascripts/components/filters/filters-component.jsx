@@ -20,6 +20,7 @@ define(['react', '../../mixins/fluxbone', './filter-component', 'sota-dispatcher
 	      <td>
 		Expression
 	      </td>
+              <td/>
             </tr>
           </thead>
           <tbody>
