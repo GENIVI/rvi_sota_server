@@ -1,7 +1,17 @@
-define(['jquery', 'react', '../mixins/serialize-form', '../mixins/fluxbone', '../mixins/request-status', './package-component', 'sota-dispatcher'], function($, React, serializeForm, Fluxbone, RequestStatus, PackageComponent, SotaDispatcher) {
+define(function(require) {
+
+  var $ = require('jquery'),
+      React = require('react'),
+      serializeForm = require('../../mixins/serialize-form'),
+      Fluxbone = require('../../mixins/fluxbone'),
+      toggleForm = require('../../mixins/toggle-form'),
+      RequestStatus = require('../../mixins/request-status'),
+      PackageComponent = require('./package-component'),
+      SotaDispatcher = require('sota-dispatcher');
 
   var AddPackageComponent = React.createClass({
     mixins: [
+      toggleForm,
       RequestStatus.Mixin("PackageStore")
     ],
     handleSubmit: function(e) {
@@ -17,7 +27,8 @@ define(['jquery', 'react', '../mixins/serialize-form', '../mixins/fluxbone', '..
         package: payload
       });
     },
-    render: function() {
+    buttonLabel: "NEW PACKAGE",
+    form: function() {
       return (
         <div>
           <form ref='form' onSubmit={this.handleSubmit} encType="multipart/form-data">
