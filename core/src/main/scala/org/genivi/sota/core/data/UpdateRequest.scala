@@ -8,7 +8,7 @@ import java.util.UUID
 import cats.Foldable
 import org.joda.time.{Interval, DateTime}
 
-case class UpdateRequest( id: UUID, packageId: PackageId, creationTime: DateTime, periodOfValidity: Interval, priority: Int )
+case class UpdateRequest( id: UUID, packageId: Package.Id, creationTime: DateTime, periodOfValidity: Interval, priority: Int )
 
 object UpdateStatus extends Enumeration {
   type UpdateStatus = Value

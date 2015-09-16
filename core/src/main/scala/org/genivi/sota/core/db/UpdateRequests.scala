@@ -6,7 +6,6 @@ package org.genivi.sota.core.db
 
 import java.util.UUID
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.core.data.PackageId
 import org.joda.time.DateTime
 import org.genivi.sota.generic.DeepHLister
 import scala.concurrent.ExecutionContext
@@ -36,12 +35,12 @@ object UpdateRequests {
       override def to(x : Interval) : Repr = x.start :: x.end :: HNil
 
       override def from( repr : Repr) : Interval = repr match {
-        case start :: end :: HNil => start to end 
+        case start :: end :: HNil => start to end
       }
     }
 
     def * = (id, packageName, packageVersion, creationTime, startAfter, finishBefore, priority).shaped <>
-      (x => UpdateRequest(x._1, PackageId(x._2, x._3), x._4, x._5 to x._6, x._7 ),
+      (x => UpdateRequest(x._1, Package.Id(x._2, x._3), x._4, x._5 to x._6, x._7 ),
       (x: UpdateRequest) => Some((x.id, x.packageId.name, x.packageId.version, x.creationTime, x.periodOfValidity.start, x.periodOfValidity.end, x.priority )))
 
 

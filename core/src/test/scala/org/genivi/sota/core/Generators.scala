@@ -8,7 +8,7 @@ import eu.timepit.refined.Refined
 import akka.http.scaladsl.model.Uri
 import java.util.UUID
 import org.genivi.sota.core.data.UpdateRequest
-import org.genivi.sota.core.data.{Vehicle, Package, PackageId}
+import org.genivi.sota.core.data.{Vehicle, Package}
 import org.scalacheck.{Arbitrary, Gen}
 
 trait Generators {
@@ -25,7 +25,7 @@ trait Generators {
   val PackageIdGen = for {
     name    <- PackageNameGen
     version <- PackageVersionGen
-  } yield PackageId( name, version )
+  } yield Package.Id( name, version )
 
   val PackageGen: Gen[Package] = for {
     id <- PackageIdGen
@@ -41,14 +41,14 @@ trait Generators {
 
   import com.github.nscala_time.time.Imports._
 
-  def updateRequestGen(packageIdGen : Gen[PackageId]) : Gen[UpdateRequest] = for {
+  def updateRequestGen(packageIdGen : Gen[Package.Id]) : Gen[UpdateRequest] = for {
     packageId    <- packageIdGen
     startAfter   <- Gen.choose(10, 100).map( DateTime.now + _.days)
     finishBefore <- Gen.choose(10, 100).map(x => startAfter + x.days)
     prio         <- Gen.choose(1, 10)
   } yield UpdateRequest( UUID.randomUUID(), packageId, DateTime.now, startAfter to finishBefore, prio )
 
-  def vinDepGen(packages: Seq[Package]) : Gen[(Vehicle.IdentificationNumber, Set[PackageId])] = for {
+  def vinDepGen(packages: Seq[Package]) : Gen[(Vehicle.IdentificationNumber, Set[Package.Id])] = for {
     vin               <- vehicleGen.map( _.vin )
     m                 <- Gen.choose(1, 10)
     packages          <- Gen.pick(m, packages).map( _.map(_.id) )

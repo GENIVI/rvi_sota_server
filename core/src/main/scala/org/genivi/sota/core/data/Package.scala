@@ -5,29 +5,12 @@
 package org.genivi.sota.core.data
 
 import akka.http.scaladsl.model.Uri
-import spray.json._
+import cats.data.Xor
 import eu.timepit.refined._
 
-case class PackageId( name: Package.Name, version: Package.Version )
-
-object PackageId {
-  import spray.json.DefaultJsonProtocol._
-  import org.genivi.sota.refined.SprayJsonRefined._
-  import org.genivi.sota.CirceSupport.{refinedEncoder, refinedDecoder}
-  import io.circe._
-  import io.circe.generic.semiauto._
-
-
-  implicit val protocol = jsonFormat2(PackageId.apply)
-
-  implicit val encoderInstance : Encoder[PackageId] = deriveFor[PackageId].encoder
-  implicit val decoderInstance : Decoder[PackageId] = deriveFor[PackageId].decoder
-
-  implicit val packageIdShow = cats.Show.show[PackageId]( packageId => s"${packageId.name}-${packageId.version}" )
-}
 
 case class Package(
-  id: PackageId,
+  id: Package.Id,
   uri: Uri,
   size: Long,
   checkSum: String,
@@ -36,6 +19,11 @@ case class Package(
 )
 
 object Package {
+
+  case class Id(
+    name: Package.Name,
+    version: Package.Version
+  )
 
   trait ValidName
   trait ValidVersion
@@ -49,35 +37,23 @@ object Package {
   implicit val validPackageVersion: Predicate[ValidVersion, String] =
     Predicate.instance( _.matches( """^\d+\.\d+\.\d+$""" ), _ => "Invalid version format")
 
+  implicit val packageIdShow = cats.Show.show[Package.Id]( packageId => s"${packageId.name}-${packageId.version}" )
 
-  def jsonOption(opt: Option[String]): String = {
-    opt match {
-      case Some(str) => str
-      case None => ""
-    }
+  import akka.http.scaladsl.model.Uri
+  import io.circe._
+  import Json._
+
+
+  implicit val uriEncoder : Encoder[Uri] = Encoder.instance { uri =>
+    obj(("uri", string(uri.toString)))
   }
 
-  implicit object PackageJsonFormat extends RootJsonFormat[Package] {
-    def write(pkg: Package) = {
-      val description = pkg.description match {
-        case Some(d) => d
-        case None => ""
-      }
-      JsObject(
-        "name" -> JsString(pkg.id.name.get),
-        "version" -> JsString(pkg.id.version.get),
-        "uri" -> JsString(pkg.uri.toString()),
-        "size" -> JsNumber(pkg.size),
-        "checksum" -> JsString(pkg.checkSum),
-        "description" -> JsString(jsonOption(pkg.description)),
-        "vendor" -> JsString(jsonOption(pkg.vendor))
-      )
-    }
-    def read(value: JsValue) = {
-      value.asJsObject.getFields("name", "version", "uri", "size", "checksum", "description", "vendor") match {
-        case Seq(JsString(name), JsString(version), JsString(uri), JsNumber(size), JsString(checksum), JsString(description), JsString(vendor)) =>
-          new Package(PackageId(Refined(name), Refined(version)), Uri(uri), size.toLong, checksum, Some(description), Some(vendor))
-        case _ => throw new DeserializationException("Package expected")
+  implicit val uriDecoder : Decoder[Uri] = Decoder.instance { c =>
+    c.focus.asObject match {
+      case None      => Xor.left(DecodingFailure("Uri", c.history))
+      case Some(obj) => obj.toMap.get("uri").flatMap(_.asString) match {
+        case None      => Xor.left(DecodingFailure("Uri", c.history))
+        case Some(uri) => Xor.right(Uri(uri))
       }
     }
   }

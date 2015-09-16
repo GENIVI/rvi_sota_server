@@ -9,7 +9,7 @@ import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.ActorMaterializer
-import org.genivi.sota.core.data.PackageId
+import org.genivi.sota.core.data.Package
 
 import scala.concurrent.{Future, ExecutionContext}
 
@@ -24,7 +24,7 @@ final case class ServerServices(start: String, cancel: String, ack: String, repo
 
 case class ClientServices( start: String, chunk: String, finish: String )
 
-case class StartDownload(packages: List[PackageId], services: ClientServices )
+case class StartDownload(packages: List[Package.Id], services: ClientServices )
 
 class SotaServices(implicit system: ActorSystem, mat: ActorMaterializer) {
   import Directives._

@@ -6,7 +6,7 @@ package org.genivi.sota.core.transfer
 
 import cats.Foldable
 import io.circe.Json
-import org.genivi.sota.core.data.{Vehicle, PackageId, UpdateSpec}
+import org.genivi.sota.core.data.{Vehicle, Package, UpdateSpec}
 import org.genivi.sota.core.rvi.Protocol
 import org.joda.time.DateTime
 import scala.concurrent.ExecutionContext
@@ -14,7 +14,7 @@ import org.genivi.sota.core.rvi.ServerServices
 
 import scala.concurrent.Future
 
-case class PackageUpdate( `package`: PackageId, size: Long )
+case class PackageUpdate( `package`: Package.Id, size: Long )
 case class UpdateNotification(packages: Seq[PackageUpdate], services: ServerServices)
 
 object UpdateNotifier {
