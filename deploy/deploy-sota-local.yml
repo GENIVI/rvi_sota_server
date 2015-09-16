@@ -65,9 +65,7 @@ services:
     env:
       HOST: 0.0.0.0
       CORE_DB_URL: "jdbc:mysql://mysql:3306/{{ db_core_name }}"
-      RESOLVER_PORT: "8081"
-      RESOLVER_HOST: "resolver"
-      RESOLVER_URI: "http://resolver:8081/api/v1/packages"
+      RESOLVER_API_URI: "http://resolver:8081"
 
   - name: webserver
     repo: sota-webserver

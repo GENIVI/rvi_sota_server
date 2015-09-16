@@ -115,9 +115,7 @@ services:
     env:
       HOST: 0.0.0.0
       CORE_DB_URL: "jdbc:mysql://{{ '{{' }}groups.haproxy[0] {{ '}}' }}:3307/{{ db_core_name }}"
-      RESOLVER_PORT: "8081"
-      RESOLVER_HOST: "resolver"
-      RESOLVER_URI: "http://{{ '{{' }} groups.haproxy[0] {{ '}}' }}:8081/api/v1/packages"
+      RESOLVER_API_URI: "http://{{ '{{' }} groups.haproxy[0] {{ '}}' }}:8081"
 
   - name: webserver
     repo: advancedtelematic/sota-webserver
@@ -130,9 +128,7 @@ services:
     expose:
       - "9000"
     env:
-      CORE_PORT: "8080"
-      CORE_HOST: "core"
-      RESOLVER_PORT: "8081"
-      RESOLVER_HOST: "resolver"
+      CORE_API_URI: "http://{{ '{{' }} groups.haproxy[0] {{ '}}' }}:8080"
+      RESOLVER_API_URI: "http://{{ '{{' }} groups.haproxy[0] {{ '}}' }}:8081"
       PLAY_CRYPTO_SECRET: {{ play_crypto_secret }}
 

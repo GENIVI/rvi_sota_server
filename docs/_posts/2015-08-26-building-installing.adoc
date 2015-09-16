@@ -84,9 +84,9 @@ ln -s /var/sota-build/webserver-target/ web-server/target
 Once flywayMigrate has run, open three consoles and run:
 
 -------------------------------------------------------------
-sbt core/run
 sbt resolver/run
-CORE_HOST=localhost RESOLVER_HOST=localhost sbt webserver/run
+sbt core/run
+sbt webserver/run
 -------------------------------------------------------------
 
 Now open http://localhost:9000/[localhost:9000] in a browser.

@@ -32,7 +32,10 @@ class PackageResourceWordSpec extends WordSpec
   val databaseName = "test-database"
 
   val config = system.settings.config
-  val externalResolverClient = new DefaultExternalResolverClient( Uri(config.getString("resolver.baseUri")) )
+  val externalResolverClient = new DefaultExternalResolverClient(
+    Uri(config.getString("resolver.baseUri")),
+    Uri(config.getString("resolver.resolveUri")),
+    Uri(config.getString("resolver.packagesUri")) )
   val db = Database.forConfig(databaseName)
   lazy val service = new PackagesResource(externalResolverClient, db)
 

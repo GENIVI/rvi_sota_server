@@ -32,8 +32,11 @@ object ExternalResolverRequestFailed {
   def apply( cause: Throwable ) : ExternalResolverRequestFailed = new ExternalResolverRequestFailed( "Request to external resolver failed.", cause )
 }
 
-class DefaultExternalResolverClient(baseUri : Uri)
-                                   (implicit system: ActorSystem, mat: ActorMaterializer) extends ExternalResolverClient {
+class DefaultExternalResolverClient(
+  baseUri : Uri,
+  resolveUri: Uri,
+  packagesUri: Uri)
+(implicit system: ActorSystem, mat: ActorMaterializer) extends ExternalResolverClient {
 
   import system.dispatcher
   import io.circe._
@@ -48,6 +51,9 @@ class DefaultExternalResolverClient(baseUri : Uri)
     implicit val responseDecoder : Decoder[Map[Vehicle.IdentificationNumber, Set[PackageId]]] =
       Decoder[Seq[(Vehicle.IdentificationNumber, Set[PackageId])]].map(_.toMap)
 
+      def request(packageId: PackageId): Future[HttpResponse] = {
+        Http().singleRequest(HttpRequest(uri = resolveUri.withPath(resolveUri.path / packageId.name.get / packageId.version.get)))
+}
 
     request(packageId).flatMap { response =>
       Unmarshal(response.entity).to[Map[Vehicle.IdentificationNumber, Set[PackageId]]].map { parsed =>
@@ -87,11 +93,8 @@ class DefaultExternalResolverClient(baseUri : Uri)
 
     //implicit val payloadEncoder : Encoder[Record.`'name -> String, 'version -> String, 'description -> Option[String], 'vendor -> Option[String]`.T] = ???
 
-    val request : HttpRequest = Put(baseUri.withPath( baseUri.path / packageId.name.get / packageId.version.get ), payload)
+    val request : HttpRequest = Put(packagesUri.withPath(packagesUri.path / packageId.name.get / packageId.version.get ), payload)
     handlePutResponse( Http().singleRequest( request ) )
   }
 
-  private def request(packageId: PackageId): Future[HttpResponse] = {
-    Http().singleRequest(HttpRequest(uri = baseUri.withPath( baseUri.path / packageId.name.get / packageId.version.get)))
-  }
 }
