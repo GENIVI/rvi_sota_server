@@ -103,7 +103,6 @@ define(['jquery', 'react', '../mixins/handle-fail', '../mixins/serialize-form', 
               { this.state.postStatus }
             </div>
           </form>
-          <VehiclesToUpdate store={new VehiclesToUpdateStore({}, {pkgName: this.props.packageName, pkgVersion: this.props.packageVersion})}/>
         </div>
       );}
   });

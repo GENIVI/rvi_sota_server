@@ -11,6 +11,7 @@ define(function(require) {
       Router = require('react-router'),
       Updates = require('stores/updates'),
       UpdatesComponent = require('components/updates/updates-component'),
+      CreateCampaign = require('components/create-campaign-page-component'),
       ShowUpdate = require('components/updates/show-update-component'),
       SotaDispatcher = require('sota-dispatcher');
 
@@ -66,6 +67,7 @@ define(function(require) {
       <Route name="vehicles" handler={VehiclesPageComponent}/>
       <Route name="packages">
         <Route name="package" path="/packages/:name/:version" handler={wrapComponent(ShowPackage, {Store: Packages})}/>
+        <Route name="new-campaign" path="/packages/:name/:version/new-campaign" handler={wrapComponent(CreateCampaign, {Store: Packages})}/>
         <DefaultRoute handler={PackagesPageComponent}/>
       </Route>
       <Route name="filters">
