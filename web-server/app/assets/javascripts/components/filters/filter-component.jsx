@@ -13,6 +13,9 @@ define(['react', 'react-router', '../../mixins/fluxbone', 'sota-dispatcher'], fu
           <td>
             { this.props.Filter.get('expression') }
           </td>
+          <td>
+              <Router.Link to='filter' params={ {name: this.props.Filter.get('name')} }>details</Router.Link>
+          </td>
         </tr>
       );
     }
