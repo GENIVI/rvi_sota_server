@@ -5,6 +5,7 @@ category: ref
 date: 2015-08-26 14:12:21
 order: 4
 ---
+:icons: font
 
 [[table-of-contents]]
 == Table of Contents

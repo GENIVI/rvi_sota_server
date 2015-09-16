@@ -4,13 +4,15 @@ title: "Dependencies"
 category: ref
 date: 2015-08-26 14:18:26
 ---
+:icons: font
+
 [[web-client]]
 == Web Client
 
 [[javascript-libraries]]
 === Javascript libraries
 
-[cols="3,3,2,2,4",options="header",word-wrap="break-word"]
+[#wraptable,cols="3,3,2,2,4",options="header",]
 |=======================================================================
 |Name
 |Description
@@ -38,7 +40,7 @@ date: 2015-08-26 14:18:26
 [[java-scala-libraries]]
 === Java / Scala Libraries
 
-[cols="3,2,1,2",options="header",]
+[#wraptable,cols="3,2,1,2",options="header",]
 |=======================================================================
 |Group |Artefact |Version |License
 |com.github.nscala-time |nscala-time_2.11 |2.0.0 |Apache

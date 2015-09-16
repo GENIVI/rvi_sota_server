@@ -5,6 +5,7 @@ category: sec
 date: 2015-08-26 10:34:14
 ---
 :toc: macro
+:icons: font
 
 This page details all currently whitelisted interactions. When creating
 stories in JIRA, you must note any interactions between components that
@@ -1229,10 +1230,10 @@ Server should reject the connection.
 [[wl-b6-11]]
 === WL-B6-11  External Resolver updates installed package list for the VIN in External Resolver Database
 
-The External Resolver can perform an update installed package lists operation for one or many VINS to the Resolver database in the Database Server over TCP on port 3306. 
+The External Resolver can perform an update installed package lists operation for one or many VINS to the Resolver database in the Database Server over TCP on port 3306.
 
-* If the External Resolver authenticates successfully with the correct Username/Password credentials, upon its request, the Database Server can perform an UPDATE operation with the given Package ID on the given VIN or VINs and if an entry is found, it will respond with the number of VINs update. 
-* If the External Resolver authenticates successfully with the correct Username/Password credentials, upon its request, the Database Server can perform an UPDATE operation with the given Package ID on the given VIN or VINs and if no entry is found, it will respond with a 'Record does not exists' message. 
+* If the External Resolver authenticates successfully with the correct Username/Password credentials, upon its request, the Database Server can perform an UPDATE operation with the given Package ID on the given VIN or VINs and if an entry is found, it will respond with the number of VINs update.
+* If the External Resolver authenticates successfully with the correct Username/Password credentials, upon its request, the Database Server can perform an UPDATE operation with the given Package ID on the given VIN or VINs and if no entry is found, it will respond with a 'Record does not exists' message.
 * If SOTA Server does not authenticate successfully due to incorrect Username/Password credentials against the Database Server, the Database Server should reject the connection.
 
 
@@ -1359,7 +1360,7 @@ Report and if the VIN is already marked as failed, it will respond with
 
 SOTA Core can send a "Get All Packages" notification to RVI Node Server the  using JSON on port 80 over HTTP.
 
-* Upon the SOTA Core's request, RVI Node Server can accept a "Get All Packages" request and if it has been responded without errors, it will respond with a list of installed package IDs in the response body and a 200 status code. 
+* Upon the SOTA Core's request, RVI Node Server can accept a "Get All Packages" request and if it has been responded without errors, it will respond with a list of installed package IDs in the response body and a 200 status code.
 * Upon the SOTA Core's request, RVI Node Server can accept a "Get All Packages" request if the response contained errors, it will respond with an error message in the response body and a 409 status code.
 
 
@@ -1498,7 +1499,7 @@ Report and if the VIN is already marked as failed, it will respond with
 
 RVI Node Client can send a "Get All Packages" notification to SOTA Client the using JSON on port 80 over HTTP.
 
-* Upon the RVI Node Client's request, SOTA Client can accept the "Get All Packages" notification and if it can retrieve all package information without errors, it will respond with a list of installed Package IDs in theresponse body and a 200 status code. 
+* Upon the RVI Node Client's request, SOTA Client can accept the "Get All Packages" notification and if it can retrieve all package information without errors, it will respond with a list of installed Package IDs in theresponse body and a 200 status code.
 * Upon the RVI Node Client's request, SOTA Client can accept the "Get All Packages" notification and if an error occurs, it will respond with the appropriate error code in the response body and a 409 status code.
 
 [[b-10]]
@@ -1612,7 +1613,7 @@ status code.
 
 SOTA Client can send an Install Report to Software Loading Manager the using JSON on port 80 over HTTP.
 
-* Upon the SOTA Client's request, Software Loading Manager can accept the "Get All Packages" notification and if no error occurs, it will respond with a list of installed Package IDs in the response body and a 200 status code. 
+* Upon the SOTA Client's request, Software Loading Manager can accept the "Get All Packages" notification and if no error occurs, it will respond with a list of installed Package IDs in the response body and a 200 status code.
 * Upon the SOTA Client's request, Software Loading Manager can accept the "Get All Packages" notification and if an error occurs, it will reply with the appropriate error code in the response body and a 409 status code.
 
 

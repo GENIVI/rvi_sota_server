@@ -4,6 +4,7 @@ title: "Architecture"
 category: dev
 date: 2015-08-26 14:14:23
 ---
+:icons: font
 
 [[sota-architecture]]
 = SOTA Architecture

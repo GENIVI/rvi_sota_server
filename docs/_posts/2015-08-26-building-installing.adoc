@@ -6,6 +6,7 @@ date: 2015-08-26 10:39:45
 order: 1
 ---
 :toc: macro
+:icons: font
 
 For the server-side components, this project includes a https://github.com/advancedtelematic/docker-launcher[docker-launcher] configuration file to allow the cluster of components to be deployed conveniently to a developer machine or to Amazon AWS. See link:../doc/deployment-with-docker-launcher.html[Deployment with Docker Launcher] for deploying development or production systems with Docker Launcher.
 

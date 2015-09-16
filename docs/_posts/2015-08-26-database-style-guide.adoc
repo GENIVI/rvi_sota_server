@@ -4,6 +4,7 @@ title: "Database Style Guide"
 category: dev
 date: 2015-08-26 10:40:49
 ---
+:icons: font
 
 [[table-names-are-uppercamelcase-singular.]]
 === Table names are UpperCamelCase Singular.

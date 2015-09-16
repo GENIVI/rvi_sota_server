@@ -5,6 +5,7 @@ category: doc
 date: 2015-08-26 10:41:08
 order: 6
 ---
+:icons: font
 
 This project is developed entirely in the open, on public mailing lists
 and with public code reviews. To participate in development discussions, please subscribe to the
