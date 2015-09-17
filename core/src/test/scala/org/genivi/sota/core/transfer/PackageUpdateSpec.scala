@@ -8,7 +8,6 @@ import eu.timepit.refined.Refined
 import org.genivi.sota.core.TestDatabase
 import org.genivi.sota.core.UpdateService
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.core.data.PackageId
 import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.core.data.UpdateSpec
 import org.genivi.sota.core.data.Vehicle
@@ -48,7 +47,7 @@ class PackageUpdateSpec extends PropSpec with PropertyChecks with Matchers with 
   import org.scalatest.concurrent.ScalaFutures.{convertScalaFuture, whenReady, PatienceConfig}
 
   def dependenciesGen(vin: Vehicle.IdentificationNumber) : Gen[UpdateService.VinsToPackages] = for {
-    requiredPackages <- Gen.nonEmptyContainerOf[Set, PackageId]( Gen.oneOf(packages ).map( _.id ))
+    requiredPackages <- Gen.nonEmptyContainerOf[Set, Package.Id]( Gen.oneOf(packages ).map( _.id ))
   } yield Map( vin -> requiredPackages )
 
 
@@ -71,7 +70,7 @@ class PackageUpdateSpec extends PropSpec with PropertyChecks with Matchers with 
                 case (request, deps) => updateService.queueUpdate(request, _ => FastFuture.successful(deps))
               })
     } yield specs.foldLeft(Set.empty[UpdateSpec])(_ union _)
-    
+
   }
 
   implicit val patience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))

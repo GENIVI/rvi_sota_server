@@ -6,7 +6,7 @@ import akka.testkit.TestKit
 import eu.timepit.refined.Refined
 import java.util.UUID
 import org.genivi.sota.core.data.Vehicle
-import org.genivi.sota.core.data.{PackageId, Package}
+import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db.Packages
 import org.genivi.sota.core.db.Vehicles
 import org.scalacheck.Arbitrary
@@ -63,7 +63,7 @@ class UpdateServiceSpec extends PropSpec with PropertyChecks with Matchers with 
   }
 
   property("decline if some of dependencies not found") {
-    def vinDepGen(missingPackages: Seq[PackageId]) : Gen[(Vehicle.IdentificationNumber, Set[PackageId])] = for {
+    def vinDepGen(missingPackages: Seq[Package.Id]) : Gen[(Vehicle.IdentificationNumber, Set[Package.Id])] = for {
       vin               <- vehicleGen.map( _.vin )
       m                 <- Gen.choose(1, 10)
       availablePackages <- Gen.pick(m, packages).map( _.map(_.id) )
@@ -71,7 +71,7 @@ class UpdateServiceSpec extends PropSpec with PropertyChecks with Matchers with 
       deps              <- Gen.pick(n, missingPackages).map( xs => Random.shuffle(availablePackages ++ xs).toSet )
     } yield vin -> deps
 
-    val resolverGen : Gen[(Seq[PackageId], UpdateService.DependencyResolver)] = for {
+    val resolverGen : Gen[(Seq[Package.Id], UpdateService.DependencyResolver)] = for {
       n                 <- Gen.choose(1, 10)
       missingPackages   <- Gen.listOfN(n, PackageIdGen).map( _.toSeq )
       m                 <- Gen.choose(1, 10)

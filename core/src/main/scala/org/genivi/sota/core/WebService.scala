@@ -18,6 +18,7 @@ import akka.parboiled2.util.Base64
 import akka.stream.ActorMaterializer
 import akka.stream.io.SynchronousFileSink
 import akka.util.ByteString
+import cats.data.Xor
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.{Packages, Vehicles, InstallRequests, InstallCampaigns}
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
@@ -27,9 +28,6 @@ import scala.concurrent.Future
 import Directives._
 import eu.timepit.refined._
 import eu.timepit.refined.string._
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-import spray.json.DefaultJsonProtocol._
-import org.genivi.sota.refined.SprayJsonRefined._
 
 object ErrorCodes {
   val ExternalResolverError = ErrorCode( "external_resolver_error" )
@@ -39,6 +37,8 @@ class VehiclesResource(db: Database)
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
 
   import system.dispatcher
+  import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+  import spray.json.DefaultJsonProtocol._
 
   val route = pathPrefix("vehicles") {
     (put & refined[Vehicle.Vin](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.PathEnd)) { vin =>
@@ -63,7 +63,7 @@ class CampaignsResource(resolver: ExternalResolverClient, db: Database)
   import system.dispatcher
 
   def createCampaign(campaign: InstallCampaign): Future[InstallCampaign] = {
-    def persistCampaign(dependencies: Map[Vehicle, Set[PackageId]]) = for {
+    def persistCampaign(dependencies: Map[Vehicle, Set[Package.Id]]) = for {
       persistedCampaign <- InstallCampaigns.create(campaign)
       _ <- InstallRequests.createRequests(InstallRequest.from(dependencies, persistedCampaign.id.head).toSeq)
     } yield persistedCampaign
@@ -75,6 +75,26 @@ class CampaignsResource(resolver: ExternalResolverClient, db: Database)
   }
 
   val route = path("install_campaigns") {
+
+    import org.genivi.sota.CirceSupport._
+    import org.genivi.sota.refined.SprayJsonRefined.{refinedUnmarshaller, refinedFromRequestUnmarshaller}
+    import io.circe._
+    import org.joda.time.DateTime
+    import org.joda.time.format.ISODateTimeFormat
+
+    implicit val dateTimeEncoder : Encoder[DateTime] = Encoder.instance[DateTime]( x =>  Json.string( ISODateTimeFormat.dateTime().print(x)) )
+    implicit val dateTimeDecoder : Decoder[DateTime] = Decoder.instance { c =>
+      c.focus.asString match {
+        case None       => Xor.left(DecodingFailure("DataTime", c.history))
+        case Some(date) => try { Xor.right(ISODateTimeFormat.dateTimeNoMillis().parseDateTime(date)) }
+          catch {
+            case _: IllegalArgumentException => Xor.left(DecodingFailure("DateTime", c.history))
+          }
+      }
+    }
+
+    import io.circe.generic.auto._
+
     (post & entity(as[InstallCampaign])) { campaign =>
       complete( createCampaign( campaign ) )
     }
@@ -110,7 +130,7 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
     }
   }
 
-  def savePackage( packageId: PackageId, fileData: StrictForm.FileData )(implicit system: ActorSystem, mat: ActorMaterializer) : Future[(Uri, Long, String)] = {
+  def savePackage( packageId: Package.Id, fileData: StrictForm.FileData )(implicit system: ActorSystem, mat: ActorMaterializer) : Future[(Uri, Long, String)] = {
     val fileName = fileData.filename.getOrElse(s"${packageId.name.get}-${packageId.version.get}")
     val file = new File(fileName)
     val data = fileData.entity.dataBytes
@@ -121,17 +141,23 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
   }
 
   val route = pathPrefix("packages") {
+    import org.genivi.sota.refined.SprayJsonRefined.refinedUnmarshaller
+
     get {
       parameters('regex.as[String Refined Regex].?) { (regex: Option[String Refined Regex]) =>
 
         val query = (regex) match {
           case Some(r) => Packages.searchByRegex(r.get)
           case None => Packages.list
-      }
+        }
+        import io.circe.generic.auto._
+        import org.genivi.sota.CirceSupport._
+        import Package._
+
         complete(db.run(query))
       }
     } ~
-    (put & refined[Package.ValidName]( Slash ~ Segment) & refined[Package.ValidVersion](Slash ~ Segment ~ PathEnd)).as(PackageId.apply _) { packageId =>
+    (put & refined[Package.ValidName]( Slash ~ Segment) & refined[Package.ValidVersion](Slash ~ Segment ~ PathEnd)).as(Package.Id.apply _) { packageId =>
       formFields('description.?, 'vendor.?, 'file.as[StrictForm.FileData]) { (description, vendor, fileData) =>
         completeOrRecoverWith(
           for {
@@ -143,7 +169,6 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
           case ExternalResolverRequestFailed(msg, cause) => {
             import org.genivi.sota.CirceSupport._
             import io.circe.generic.auto._
-            import akka.http.scaladsl.unmarshalling._
             log.error( cause, s"Unable to create/update package: $msg" )
             complete( StatusCodes.ServiceUnavailable -> ErrorRepresentation( ErrorCodes.ExternalResolverError, msg ) )
           }

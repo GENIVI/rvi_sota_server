@@ -3,7 +3,6 @@ package org.genivi.sota.core
 import akka.http.scaladsl.model.Uri
 import eu.timepit.refined.Refined
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.core.data.PackageId
 
 
 object PackagesReader {
@@ -15,7 +14,7 @@ object PackagesReader {
       version     <- src.get( "Version" )
       size        <- src.get("Size").map( _.toLong )
       checkSum    <- src.get("SHA1")
-    } yield Package( PackageId( Refined(name), Refined(version)), size = size, description = src.get( "Description" ), checkSum = checkSum, uri = Uri.Empty, vendor = src.get( "Maintainer" ) )
+    } yield Package( Package.Id( Refined(name), Refined(version)), size = size, description = src.get( "Description" ), checkSum = checkSum, uri = Uri.Empty, vendor = src.get( "Maintainer" ) )
     maybePackage.get
   }
 

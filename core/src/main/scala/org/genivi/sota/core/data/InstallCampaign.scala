@@ -8,13 +8,8 @@ import org.joda.time.DateTime
 
 case class InstallCampaign(
   id: Option[Long],
-  packageId: PackageId,
+  packageId: Package.Id,
   priority: Int,
   startAfter: DateTime,
   endBefore: DateTime
 )
-
-object InstallCampaign {
-  import org.genivi.sota.core.DateTimeJsonProtocol._
-  implicit val installCampaignFormat = jsonFormat5(InstallCampaign.apply)
-}

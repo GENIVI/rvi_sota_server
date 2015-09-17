@@ -10,7 +10,7 @@ import com.github.nscala_time.time.Imports._
 import eu.timepit.refined.Refined
 import java.util.concurrent.TimeUnit
 import org.genivi.sota.core._
-import org.genivi.sota.core.data.{InstallCampaign, InstallRequest, Package, Vehicle, PackageId}
+import org.genivi.sota.core.data.{InstallCampaign, InstallRequest, Package, Vehicle}
 import org.genivi.sota.core.db._
 import org.scalatest._
 import org.scalatest.prop.PropertyChecks

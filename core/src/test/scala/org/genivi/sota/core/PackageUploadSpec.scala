@@ -5,7 +5,7 @@ import akka.http.scaladsl.model.Multipart.FormData.BodyPart
 import akka.http.scaladsl.server.PathMatchers
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import java.io.File
-import org.genivi.sota.core.data.{Vehicle, PackageId, Package}
+import org.genivi.sota.core.data.{Vehicle, Package}
 import org.genivi.sota.rest.ErrorRepresentation
 import org.scalatest.{ PropSpec, Matchers }
 import org.scalatest.prop.PropertyChecks
@@ -31,9 +31,9 @@ class PackageUploadSpec extends PropSpec with PropertyChecks with Matchers with 
 
   class Service(resolverResult: Future[Unit] ) {
     val resolver = new ExternalResolverClient {
-      override def putPackage(packageId: PackageId, description: Option[String], vendor: Option[String]): Future[Unit] = resolverResult
+      override def putPackage(packageId: Package.Id, description: Option[String], vendor: Option[String]): Future[Unit] = resolverResult
 
-      override def resolve(packageId: PackageId): Future[Map[Vehicle, Set[PackageId]]] = ???
+      override def resolve(packageId: Package.Id): Future[Map[Vehicle, Set[Package.Id]]] = ???
     }
 
     val resource = new PackagesResource(resolver, db)

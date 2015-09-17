@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.core.db
 
-import org.genivi.sota.core.data.{InstallCampaign, Package, PackageId}
+import org.genivi.sota.core.data.{InstallCampaign, Package}
 import org.joda.time.DateTime
 import scala.concurrent.Future
 import slick.driver.MySQLDriver.api._
@@ -24,7 +24,7 @@ object InstallCampaigns {
     def endBefore = column[DateTime]("endBefore")
 
     def * = (id.?, packageName, packageVersion, priority, startAfter, endBefore).shaped <>
-      (row => InstallCampaign(row._1, PackageId(row._2, row._3), row._4, row._5, row._6),
+      (row => InstallCampaign(row._1, Package.Id(row._2, row._3), row._4, row._5, row._6),
       (x: InstallCampaign) => Some((x.id, x.packageId.name, x.packageId.version, x.priority, x.startAfter, x.endBefore)) )
   }
   // scalastyle:on

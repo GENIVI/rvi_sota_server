@@ -14,7 +14,7 @@ trait CodecInstances {
 
   implicit val vinDecoder : Decoder[Vehicle.IdentificationNumber] = deriveFor[Vehicle.IdentificationNumber].decoder
 
-  implicit val packageIdDecoder : Decoder[PackageId] = deriveFor[PackageId].decoder
+  implicit val packageIdDecoder : Decoder[Package.Id] = deriveFor[Package.Id].decoder
 
   implicit val errorRepresentationDecoder : Decoder[ErrorRepresentation] = deriveFor[ErrorRepresentation].decoder
 

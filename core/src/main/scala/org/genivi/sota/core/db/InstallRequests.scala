@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.core.db
 
-import org.genivi.sota.core.data.{Package, InstallRequest, Vehicle, PackageId}
+import org.genivi.sota.core.data.{Package, InstallRequest, Vehicle}
 import org.joda.time.DateTime
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -30,7 +30,7 @@ object InstallRequests {
     def statusCode = column[Status]("statusCode")
     def errorMessage = column[String]("errorMessage")
     def * = (id.?, installCampaignId, packageName, packageVersion, vin, statusCode, errorMessage.?).shaped <>
-      (row => InstallRequest(row._1, row._2, PackageId(row._3, row._4), row._5, row._6, row._7), (x: InstallRequest) => Some((x.id, x.installCampaignId, x.packageId.name, x.packageId.version, x.vin, x.statusCode, x.errorMessage)))
+      (row => InstallRequest(row._1, row._2, Package.Id(row._3, row._4), row._5, row._6, row._7), (x: InstallRequest) => Some((x.id, x.installCampaignId, x.packageId.name, x.packageId.version, x.vin, x.statusCode, x.errorMessage)))
 
   }
   // scalastyle:on
