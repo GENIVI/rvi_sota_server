@@ -2,12 +2,16 @@ define(['backbone', 'underscore', '../lib/backbone-model-file-upload', '../mixin
 
   var Package = Backbone.Model.extend({
     fileAttribute: 'file',
+    //The 'id' attribute is special to Backbone and can't be a complex object, which
+    //is what core/resolver gives us, so reassign the id attribute to a name which
+    //isn't used.
+    idAttribute: '_none',
     initialize: function() {
-      this.set({ packageId: this.get("name") + '/' + this.get("version")});
+      this.set({ packageId: this.get("id").name + '/' + this.get("id").version});
       SotaDispatcher.register(this.dispatchCallback.bind(this));
     },
     url: function() {
-      return '/api/v1/packages/' + this.get("name") + '/' + this.get("version");
+      return '/api/v1/packages/' + this.get("id").name + '/' + this.get("id").version;
     },
     dispatchCallback: function(payload) {
       switch(payload.actionType) {

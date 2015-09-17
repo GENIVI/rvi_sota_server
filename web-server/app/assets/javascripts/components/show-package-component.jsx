@@ -11,7 +11,7 @@ define(function(require) {
     },
     mixins: [showModel],
     whereClause: function() {
-      return this.context.router.getCurrentParams();
+      return {packageId: this.context.router.getCurrentParams().name + "/" + this.context.router.getCurrentParams().version};
     },
     showView: function() {
       var rows = _.map(this.state.Model.attributes, function(value, key) {
@@ -36,7 +36,7 @@ define(function(require) {
           </p>
           <div className="row">
             <div className="col-md-12">
-              <Router.Link to='new-campaign' params={{name: this.state.Model.get('name'), version: this.state.Model.get('version')}}>
+              <Router.Link to='new-campaign' params={{name: this.state.Model.get('id').name, version: this.state.Model.get('id').version}}>
                 <button className="btn btn-primary pull-right">
                   NEW CAMPAIGN
                 </button>

@@ -20,14 +20,14 @@ define(['underscore', 'backbone', '../mixins/send-request', 'sota-dispatcher'], 
     },
 
     fetchFiltersForPackage: function(package) {
-      var options = { url: this.url + "?package=" + package.get('name') + "-" + package.get('version') };
+      var options = { url: this.url + "?package=" + package.get('id').name + "-" + package.get('id').version };
       return Backbone.Model.prototype.fetch.call(this, options);
     },
 
     createFilterForPackage: function(package, filter) {
       var packageFilter = {
-        packageName: package.get('name'),
-        packageVersion: package.get('version'),
+        packageName: package.get('id').name,
+        packageVersion: package.get('id').version,
         filterName: filter.get('name')
       };
 
