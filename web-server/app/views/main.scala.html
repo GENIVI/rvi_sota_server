@@ -9,15 +9,10 @@
         <link rel='stylesheet' href='@routes.Assets.versioned("css/default.css")'>
     </head>
     <body>
-      <div class="container">
+      <div class="container sota">
         <div id="app">
         </div>
 
-        <div id="package">
-        </div>
-
-        <div id="updatePackage">
-        </div>
         <script>
           @Html(org.webjars.RequireJS.getSetupJavaScript(routes.WebJarAssets.at("").url))
         </script>
