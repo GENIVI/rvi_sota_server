@@ -36,9 +36,10 @@ object ErrorCodes {
 class VehiclesResource(db: Database)
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
 
+  import io.circe.generic.auto._
+  import org.genivi.sota.CirceSupport._
+  import org.genivi.sota.refined.SprayJsonRefined.{refinedUnmarshaller, refinedFromRequestUnmarshaller}
   import system.dispatcher
-  import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-  import spray.json.DefaultJsonProtocol._
 
   val route = pathPrefix("vehicles") {
     (put & refined[Vehicle.Vin](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.PathEnd)) { vin =>
