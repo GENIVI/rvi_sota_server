@@ -9,7 +9,7 @@ define(function(require) {
       FiltersStore = require('../../stores/filters'),
       PackagesComponent = require('../packages/packages-component'),
       PackageStore = require('../../stores/packages');
-      AddFilterComponent = require('./add-filter-component');
+      EditFilterComponent = require('./edit-filter-component');
 
   var ShowFilterComponent = React.createClass({
     contextTypes: {
@@ -55,10 +55,7 @@ define(function(require) {
           <h2>
             Edit filter
           </h2>
-          <AddFilterComponent
-            Store={FiltersStore}
-            Model={this.state.Model}
-            event={"update-filter"}/>
+          <EditFilterComponent Store={FiltersStore} Model={this.state.Model}/>
           <button type="button" className="btn btn-primary" onClick={this.removeFilter}>Delete Filter</button>
           <h3>Packages with this filter</h3>
           <PackagesComponent PackageStore={store}/>
