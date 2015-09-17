@@ -7,6 +7,8 @@ define(function(require) {
       showModel = require('../../mixins/show-model'),
       Fluxbone = require('../../mixins/fluxbone'),
       FiltersStore = require('../../stores/filters'),
+      PackagesComponent = require('../packages/packages-component'),
+      PackageStore = require('../../stores/packages');
       AddFilterComponent = require('./add-filter-component');
 
   var ShowFilterComponent = React.createClass({
@@ -40,6 +42,8 @@ define(function(require) {
           </li>
         );
       });
+      var store = PackageStore;
+      store.fetchForFilter(this.state.Model.get('name'));
       return (
         <div>
           <h1>
@@ -56,6 +60,8 @@ define(function(require) {
             Model={this.state.Model}
             event={"update-filter"}/>
           <button type="button" className="btn btn-primary" onClick={this.removeFilter}>Delete Filter</button>
+          <h3>Packages with this filter</h3>
+          <PackagesComponent PackageStore={store}/>
         </div>
       );
     }

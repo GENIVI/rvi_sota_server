@@ -12,7 +12,7 @@ define(function(require) {
     render: function() {
       var packages = this.props.PackageStore.models.map(function(package) {
         return (
-          <PackageComponent Package={ package } key={package.get('name') + package.get('version')}/>
+          <PackageComponent Package={ package } key={package.get('id').name + package.get('id').version}/>
         );
       });
       return (

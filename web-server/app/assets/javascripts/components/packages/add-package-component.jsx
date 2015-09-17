@@ -18,6 +18,8 @@ define(function(require) {
       e.preventDefault();
 
       var payload = serializeForm(this.refs.form);
+      //need to create this attribute since packages sent from core/resolver have it
+      payload.id = {name: payload.name, version: payload.version}
 
       var file = $('.file-upload')[0].files[0];
       payload.file = file;

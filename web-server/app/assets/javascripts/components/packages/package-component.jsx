@@ -13,15 +13,15 @@ define(function(require) {
       return (
         <tr>
           <td>
-            <Router.Link to='package' params={{name: this.props.Package.get('name'), version: this.props.Package.get('version')}}>
-              { this.props.Package.get('name') }
+            <Router.Link to='package' params={{name: this.props.Package.get('id').name, version: this.props.Package.get('id').version}}>
+              { this.props.Package.get('id').name }
             </Router.Link>
           </td>
           <td>
-            { this.props.Package.get('version') }
+            { this.props.Package.get('id').version }
           </td>
           <td>
-            <Router.Link to='new-campaign' params={{name: this.props.Package.get('name'), version: this.props.Package.get('version')}}>
+            <Router.Link to='new-campaign' params={{name: this.props.Package.get('id').name, version: this.props.Package.get('id').version}}>
               Create Campaign
             </Router.Link>
           </td>

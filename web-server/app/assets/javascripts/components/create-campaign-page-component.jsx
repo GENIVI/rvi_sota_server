@@ -14,18 +14,18 @@ define(function(require) {
     },
     mixins: [showModel],
     whereClause: function() {
-      return this.context.router.getCurrentParams();
+      return {packageId: this.context.router.getCurrentParams().name + "/" + this.context.router.getCurrentParams().version};
     },
     showView: function() {
       return (
         <div>
           <h1>
             New Update Campaign for Package <br/>
-            {this.state.Model.get('name')}
+            {this.state.Model.get('id').name}
           </h1>
           <AddPackageFilters Package={this.state.Model}/>
-          <VehiclesToUpdate store={new VehiclesToUpdateStore({}, {pkgName: this.state.Model.get('name'), pkgVersion: this.state.Model.get('version')})}/>
-          <CreateUpdate packageName={this.state.Model.get('name')} packageVersion={this.state.Model.get('version')}/>
+          <VehiclesToUpdate store={new VehiclesToUpdateStore({}, {pkgName: this.state.Model.get('id').name, pkgVersion: this.state.Model.get('id').version})}/>
+          <CreateUpdate packageName={this.state.Model.get('id').name} packageVersion={this.state.Model.get('id').version}/>
         </div>
       );
     }
