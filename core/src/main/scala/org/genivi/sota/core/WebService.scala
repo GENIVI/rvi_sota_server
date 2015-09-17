@@ -20,7 +20,7 @@ import akka.stream.io.SynchronousFileSink
 import akka.util.ByteString
 import cats.data.Xor
 import org.genivi.sota.core.data._
-import org.genivi.sota.core.db.{Packages, Vehicles, InstallRequests, InstallCampaigns}
+import org.genivi.sota.core.db.{Packages, Vehicles, InstallRequests}
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 import org.genivi.sota.rest.Validation._
 import slick.driver.MySQLDriver.api.Database
@@ -28,6 +28,7 @@ import scala.concurrent.Future
 import Directives._
 import eu.timepit.refined._
 import eu.timepit.refined.string._
+
 
 object ErrorCodes {
   val ExternalResolverError = ErrorCode( "external_resolver_error" )
@@ -59,45 +60,30 @@ class VehiclesResource(db: Database)
     }
 }
 
-class CampaignsResource(resolver: ExternalResolverClient, db: Database)
-                       (implicit system: ActorSystem, mat: ActorMaterializer) {
+class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, updateService: UpdateService)
+                            (implicit system: ActorSystem, mat: ActorMaterializer) {
   import system.dispatcher
 
-  def createCampaign(campaign: InstallCampaign): Future[InstallCampaign] = {
-    def persistCampaign(dependencies: Map[Vehicle, Set[Package.Id]]) = for {
-      persistedCampaign <- InstallCampaigns.create(campaign)
-      _ <- InstallRequests.createRequests(InstallRequest.from(dependencies, persistedCampaign.id.head).toSeq)
-    } yield persistedCampaign
+  import io.circe.generic.auto._
+  import org.genivi.sota.CirceSupport._
+  import UpdateSpec._
 
-    for {
-      dependencyMap <- resolver.resolve(campaign.packageId)
-      persistedCampaign <- db.run(persistCampaign(dependencyMap))
-    } yield persistedCampaign
-  }
-
-  val route = path("install_campaigns") {
-
-    import org.genivi.sota.CirceSupport._
-    import org.genivi.sota.refined.SprayJsonRefined.{refinedUnmarshaller, refinedFromRequestUnmarshaller}
-    import io.circe._
-    import org.joda.time.DateTime
-    import org.joda.time.format.ISODateTimeFormat
-
-    implicit val dateTimeEncoder : Encoder[DateTime] = Encoder.instance[DateTime]( x =>  Json.string( ISODateTimeFormat.dateTime().print(x)) )
-    implicit val dateTimeDecoder : Decoder[DateTime] = Decoder.instance { c =>
-      c.focus.asString match {
-        case None       => Xor.left(DecodingFailure("DataTime", c.history))
-        case Some(date) => try { Xor.right(ISODateTimeFormat.dateTimeNoMillis().parseDateTime(date)) }
-          catch {
-            case _: IllegalArgumentException => Xor.left(DecodingFailure("DateTime", c.history))
-          }
+  implicit val _db = db
+  val route = path("updates") {
+    get {
+      complete(updateService.all(db, system.dispatcher))
+    } ~
+    post {
+      entity(as[UpdateRequest]) { req =>
+        complete(
+          updateService.queueUpdate(
+            req,
+            pkg => resolver.resolve(pkg.id).map {
+              m => m.map { case (v, p) => (v.vin, p) }
+            }
+          )
+        )
       }
-    }
-
-    import io.circe.generic.auto._
-
-    (post & entity(as[InstallCampaign])) { campaign =>
-      complete( createCampaign( campaign ) )
     }
   }
 }
@@ -153,7 +139,6 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
         }
         import io.circe.generic.auto._
         import org.genivi.sota.CirceSupport._
-        import Package._
 
         complete(db.run(query))
       }
@@ -183,7 +168,7 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
 
 class WebService(resolver: ExternalResolverClient, db : Database)
                 (implicit system: ActorSystem, mat: ActorMaterializer) extends Directives {
-  val log = Logging(system, "webservice")
+  implicit val log = Logging(system, "webservice")
 
   import io.circe.Json
   import Json.{obj, string}
@@ -196,14 +181,13 @@ class WebService(resolver: ExternalResolverClient, db : Database)
         complete(HttpResponse(InternalServerError, entity = entity.toString()))
       }
   }
-
   val vehicles = new VehiclesResource( db )
-  val campaigns = new CampaignsResource(resolver, db)
   val packages = new PackagesResource(resolver, db)
+  val updateRequests = new UpdateRequestsResource(db, resolver, new UpdateService())
 
   val route = pathPrefix("api" / "v1") {
     handleExceptions(exceptionHandler) {
-       vehicles.route ~ campaigns.route ~ packages.route
+       vehicles.route ~ packages.route ~ updateRequests.route
     }
   }
 

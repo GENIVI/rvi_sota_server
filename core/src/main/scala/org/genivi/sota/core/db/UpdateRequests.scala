@@ -48,6 +48,8 @@ object UpdateRequests {
 
   val all = TableQuery[UpdateRequestsTable]
 
+  def list: DBIO[Seq[UpdateRequest]] = all.result
+
   def persist(request: UpdateRequest)
              (implicit ec: ExecutionContext): DBIO[UpdateRequest] = (all += request).map( _ => request)
 }
