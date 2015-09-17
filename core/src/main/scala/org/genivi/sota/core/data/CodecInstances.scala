@@ -27,4 +27,4 @@ trait CodecInstances {
   implicit val jsonRpcRequestDecoder : Decoder[Request] = deriveFor[Request].decoder
 }
 
-object CodecInstances// extends CodecInstances
+object CodecInstances extends CodecInstances

@@ -1,15 +1,23 @@
 package org.genivi.sota.core
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.{HttpResponse, StatusCodes, Uri}
+import akka.http.scaladsl.model.ContentTypes._
+import akka.http.scaladsl.model.{HttpEntity, HttpResponse, StatusCodes, Uri}
+import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
 import cats.data.Xor
 import eu.timepit.refined.Refined
+import io.circe.Json
+import io.circe.generic.auto._
+import io.circe.jawn._
+import org.genivi.sota.CirceSupport._
+import org.genivi.sota.core.data.{Vehicle, Package}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
-import org.genivi.sota.core.data.{Vehicle, Package}
-
+import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+
+
 
 /**
  * Created by vladimir on 20/08/15.
@@ -18,6 +26,7 @@ class ExternalResolverClientSpec extends PropSpec with Matchers with BeforeAndAf
 
   implicit val system = ActorSystem("test")
   implicit val materializer = ActorMaterializer()
+  implicit val excecutionCtx = ExecutionContext.Implicits.global
   val client = new DefaultExternalResolverClient( Uri.Empty, Uri.Empty, Uri.Empty )
 
   property("handles failed put requests") {
@@ -33,20 +42,34 @@ class ExternalResolverClientSpec extends PropSpec with Matchers with BeforeAndAf
     }
   }
 
-  val s: String = s"""[[{"get":"VINBEAGLEBOARD000"},[{"version":{"get":"23.5.2"},"name":{"get":"rust"}}]]]"""
+  val s: String = s"""[["VINBEAGLEBOARD000",[{"version":"23.5.2","name":"rust"}]]]"""
 
   val m: Map[Vehicle.IdentificationNumber, Set[Package.Id]] =
     Map(Refined("VINBEAGLEBOARD000") -> Set(Package.Id(Refined("rust"), Refined("23.5.2"))))
 
   property("parse the external resolver's response") {
 
-    import io.circe.generic.auto._
-    import io.circe.jawn._
-
     decode[Map[Vehicle.IdentificationNumber, Set[Package.Id]]](s) shouldBe Xor.Right(m)
+
   }
 
-  val s2: String = s"""[[{"get":"VINBEAGLEBOARD000"},[{"version":"23.5.2","name":"rust"}]]]"""
+  val resp: HttpResponse = HttpResponse(entity = HttpEntity(`application/json`, s))
+
+  property("parse from a HttpResponse as Json") {
+
+    ScalaFutures.whenReady(Unmarshal(resp.entity).to[Json]) { json =>
+      json.noSpaces shouldBe s
+    }
+
+  }
+
+  property("parse from a HttpResponse as a Map") {
+
+    ScalaFutures.whenReady(Unmarshal(resp.entity).to[Map[Vehicle.IdentificationNumber, Set[Package.Id]]]) { m2 =>
+      m2 shouldBe m
+    }
+
+  }
 
   override def afterAll(): Unit = {
     system.shutdown()
