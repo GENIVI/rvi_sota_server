@@ -14,6 +14,7 @@ define(function(require) {
     },
     render: function() {
       var rows = this.props.Store.models.map(function(update) {
+        var startend = update.get('periodOfValidity').split("/");
         return (
           <tr>
             <td>
@@ -23,12 +24,13 @@ define(function(require) {
               {update.get('packageId').version}
             </td>
             <td>
-              {update.get('startAfter')}
+              {startend[0]}
             </td>
             <td>
-              {update.get('endBefore')}
+              {startend[1]}
             </td>
             <td>
+              {update.get('priority')}
             </td>
             <td>
               <Router.Link to='update' params={{id: update.get('id'), Model: update}}>
@@ -70,7 +72,7 @@ define(function(require) {
                   End
                 </td>
                 <td>
-                  Status
+                  Priority
                 </td>
                 <td>
                 </td>
