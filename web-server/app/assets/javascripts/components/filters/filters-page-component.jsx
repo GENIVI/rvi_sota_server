@@ -11,7 +11,7 @@ define(function(require) {
       return (
       <div>
         <FiltersHeader/>
-        <SearchBar label="Search filters by regex" event="search-filters"/>
+        <SearchBar label="Filter" event="search-filters"/>
         <FiltersComponent Store={FiltersStore}/>
       </div>
     );}
