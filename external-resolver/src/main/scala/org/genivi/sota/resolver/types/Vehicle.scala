@@ -26,14 +26,4 @@ object Vehicle {
     override def compare(a: Vin, b: Vin): Int = a.get compare b.get
   }
 
-  implicit def vehicleMapEncoder[V]
-    (implicit valueEncoder: Encoder[V])
-      : Encoder[Map[Vehicle.Vin, V]]
-  = Encoder[Seq[(Vehicle.Vin, V)]].contramap((m: Map[Vehicle.Vin, V]) => m.toSeq)
-
-  implicit def vehicleMapDecoder[V]
-    (implicit valueDecoder: Decoder[V])
-      : Decoder[Map[Vehicle.Vin, V]]
-  = Decoder[Seq[(Vehicle.Vin, V)]].map(_.toMap)
-
 }

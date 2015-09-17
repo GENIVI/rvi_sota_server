@@ -73,7 +73,7 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
         status shouldBe StatusCodes.OK
 
         responseAs[io.circe.Json].noSpaces shouldBe
-          s"""[[{"get":"00RESOLVEVIN12345"},[{"version":"0.0.1","name":"resolve pkg"}]],[{"get":"01RESOLVEVIN12345"},[{"version":"0.0.1","name":"resolve pkg"}]]]"""
+          s"""[["00RESOLVEVIN12345",[{"version":"0.0.1","name":"resolve pkg"}]],["01RESOLVEVIN12345",[{"version":"0.0.1","name":"resolve pkg"}]]]"""
 
         responseAs[Map[Vehicle.Vin, Set[Package.Id]]] shouldBe
           Map(Refined("00RESOLVEVIN12345") -> Set(Package.Id(Refined("resolve pkg"), Refined("0.0.1"))),

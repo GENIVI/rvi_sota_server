@@ -49,6 +49,11 @@ object CirceSupport {
         case Right(r) => r
       })
 
+  implicit def mapDecoder[K, V]
+    (implicit keyDecoder: Decoder[K], valueDecoder: Decoder[V])
+      : Decoder[Map[K, V]]
+  = Decoder[Seq[(K, V)]].map(_.toMap)
+
   // Marshalling
 
   implicit def circeJsonMarshaller(implicit printer: Printer) : ToEntityMarshaller[Json] =
@@ -59,7 +64,6 @@ object CirceSupport {
 
   implicit def refinedEncoder[T, P](implicit encoder: Encoder[T]): Encoder[Refined[T, P]] =
     encoder.contramap(_.get)
-
 
   implicit val uriEncoder : Encoder[Uri] = Encoder.instance { uri =>
     Json.obj(("uri", Json.string(uri.toString)))
@@ -90,4 +94,10 @@ object CirceSupport {
 
   implicit val intervalEncoder : Encoder[Interval] = Encoder[String].contramap(_.toString)
   implicit val intervalDecoder : Decoder[Interval] = Decoder[String].map(Interval.parse(_))
+
+  implicit def mapEncoder[K, V]
+    (implicit keyEncoder: Encoder[K], valueEncoder: Encoder[V])
+      : Encoder[Map[K, V]]
+  = Encoder[Seq[(K, V)]].contramap((m: Map[K, V]) => m.toSeq)
+
 }
