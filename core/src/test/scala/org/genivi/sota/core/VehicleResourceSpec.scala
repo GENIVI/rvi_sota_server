@@ -9,6 +9,8 @@ import akka.http.scaladsl.model.{StatusCodes, Uri}
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import eu.timepit.refined.Refined
+import io.circe.generic.auto._
+import org.genivi.sota.CirceSupport._
 import org.genivi.sota.core.data.Vehicle
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
@@ -20,7 +22,6 @@ class VehicleResourceSpec extends PropSpec with PropertyChecks
     with ScalatestRouteTest
     with BeforeAndAfterAll {
 
-  import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
   val databaseName = "test-database"
 
   val db = Database.forConfig(databaseName)

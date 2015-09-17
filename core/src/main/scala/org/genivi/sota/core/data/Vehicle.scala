@@ -22,7 +22,4 @@ object Vehicle {
     override def compare( a: IdentificationNumber, b: IdentificationNumber ) : Int = a.get compare b.get
   }
 
-  import spray.json.DefaultJsonProtocol._
-  import org.genivi.sota.refined.SprayJsonRefined._
-  implicit val vehicleFormat = jsonFormat1(Vehicle.apply)
 }

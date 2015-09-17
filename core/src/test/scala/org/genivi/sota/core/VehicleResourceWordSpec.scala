@@ -9,21 +9,20 @@ import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import eu.timepit.refined.Refined
+import io.circe.generic.auto._
+import org.genivi.sota.CirceSupport._
 import org.genivi.sota.core.data.Vehicle
 import org.genivi.sota.core.db.Vehicles
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.{WordSpec, Matchers}
 import scala.concurrent.Await
 import slick.driver.MySQLDriver.api._
-import spray.json.DefaultJsonProtocol._
 
 
 class VinResourceWordSpec extends WordSpec
     with Matchers
     with ScalatestRouteTest
     with BeforeAndAfterAll {
-
-  import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 
   val databaseName = "test-database"
 
