@@ -85,8 +85,7 @@ class DefaultExternalResolverClient(
     import io.circe.generic.semiauto._
 
     val payload =
-      ('name ->> packageId.name.get) ::
-      ('version ->> packageId.version.get) ::
+      ('id ->> ('name ->> packageId.name.get :: 'version ->> packageId.version.get :: HNil)) ::
       ('description ->> description) ::
       ('vendor  ->> vendor) ::
       HNil
