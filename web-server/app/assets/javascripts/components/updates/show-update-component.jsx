@@ -15,21 +15,37 @@ define(function(require) {
       return {id: parseInt(params.id)};
     },
     showView: function() {
-      var listItems = _.map(this.state.Model.attributes, function(value, key) {
+      var rows = _.map(this.state.Model.attributes, function(value, key) {
         return (
-          <li>
-            {key}: {value}
-          </li>
+          <tr>
+            <td>
+              {key}
+            </td>
+            <td>
+              {value}
+            </td>
+          </tr>
         );
       });
       return (
         <div>
-          <h1>
-            Update {this.state.Model.get('id')}
-          </h1>
-          <ul>
-            {listItems}
-          </ul>
+          <div className="row">
+            <div className="col-md-12">
+              <h1>
+                Update ID: {this.state.Model.get('id')}
+              </h1>
+            </div>
+          </div>
+          <br/>
+          <div className="row">
+            <div className="col-md-12">
+              <table className="table table-striped table-bordered">
+                <tbody>
+                  { rows }
+                </tbody>
+              </table>
+            </div>
+          </div>
           <StatusComponent Model={new Status({}, {updateId: this.state.Model.get('id')})} />
         </div>
       );

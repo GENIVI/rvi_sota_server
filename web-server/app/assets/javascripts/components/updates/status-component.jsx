@@ -11,21 +11,37 @@ define(function(require) {
       Fluxbone.Mixin('Model', 'sync')
     ],
     render: function() {
-      var listItems = _.map(this.props.Model.attributes, function(value, key) {
+      var rows = _.map(this.props.Model.attributes, function(value, key) {
         return (
-          <li>
-            {key}: {value}
-          </li>
+          <tr>
+            <td>
+              {key}
+            </td>
+            <td>
+              {value}
+            </td>
+          </tr>
         );
       });
       return (
         <div>
-          <h2>
-            Status
-          </h2>
-          <ul>
-            {listItems}
-          </ul>
+          <div className="row">
+            <div className="col-md-12">
+              <h2>
+                Status
+              </h2>
+            </div>
+          </div>
+          <br/>
+          <div className="row">
+            <div className="col-md-12">
+              <table className="table table-striped table-bordered">
+                <tbody>
+                  { rows }
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       );
     }
