@@ -53,7 +53,7 @@ class DefaultExternalResolverClient(
 
       def request(packageId: Package.Id): Future[HttpResponse] = {
         Http().singleRequest(HttpRequest(uri = resolveUri.withPath(resolveUri.path / packageId.name.get / packageId.version.get)))
-}
+      }
 
     request(packageId).flatMap { response =>
       Unmarshal(response.entity).to[Map[Vehicle.IdentificationNumber, Set[Package.Id]]].map { parsed =>
