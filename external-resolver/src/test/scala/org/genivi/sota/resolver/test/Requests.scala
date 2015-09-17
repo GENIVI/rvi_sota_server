@@ -135,7 +135,6 @@ trait ResolveRequests extends Matchers { self: ScalatestRouteTest =>
 
 
     resolve(pname, pversion) ~> route ~> check {
-      import org.genivi.sota.resolver.types.Vehicle.vehicleMapEncoder
       status shouldBe StatusCodes.OK
       responseAs[Map[Vehicle.Vin, List[Package.Id]]] shouldBe
         makeFakeDependencyMap(Refined(pname), Refined(pversion), vins.map(s => Vehicle(Refined(s))))
