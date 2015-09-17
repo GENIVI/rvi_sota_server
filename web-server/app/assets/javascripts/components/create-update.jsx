@@ -1,4 +1,14 @@
-define(['jquery', 'react', '../mixins/handle-fail', '../mixins/serialize-form', 'sota-dispatcher', 'components/vehicles-to-update-component', 'stores/vehicles-to-update'], function($, React, HandleFailMixin, serializeForm, SotaDispatcher, VehiclesToUpdate, VehiclesToUpdateStore) {
+define(function(require) {
+
+  var $ = require('jquery'),
+      React = require('react'),
+      HandleFailMixin = require('../mixins/handle-fail'),
+      serializeForm = require('../mixins/serialize-form'),
+      SendRequest = require('../mixins/send-request'),
+      _ = require('underscore'),
+      SotaDispatcher = require('sota-dispatcher'),
+      VehiclesToUpdate = require('components/vehicles-to-update-component'),
+      VehiclesToUpdateStore = require('stores/vehicles-to-update');
 
   var CreateUpdate = React.createClass({
     mixins: [HandleFailMixin],
@@ -20,10 +30,10 @@ define(['jquery', 'react', '../mixins/handle-fail', '../mixins/serialize-form', 
         startAfter: this.formatDate(startAfterDate, startAfterTime, startAfterTimeZone),
         endBefore: this.formatDate(endBeforeDate, endBeforeTime, endBeforeTimeZone)
       }
-      SotaDispatcher.dispatch({
-        actionType: "package-updatePackage",
-        package: payload
-      });
+      SendRequest.doPost("/api/v1/install_campaigns", payload)
+        .fail(_.bind(function(xhr) {
+          this.trigger("error", this, xhr);
+        }, this));
     },
     formatDate: function(date, time, timeZone) {
       //TODO: Get seconds working with ReactJS
