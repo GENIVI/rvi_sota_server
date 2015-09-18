@@ -20,7 +20,7 @@ CREATE TABLE Package (
 );
 
 CREATE TABLE UpdateRequests (
-    update_request_id BINARY(36) NOT NULL,
+    update_request_id CHAR(36) NOT NULL,
     package_name VARCHAR(200) NOT NULL,
     package_version VARCHAR(200) NOT NULL,
     creation_time DATETIME NOT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE UpdateRequests (
 );
 
 CREATE TABLE UpdateSpecs (
-    update_request_id BINARY(36) NOT NULL,
+    update_request_id CHAR(36) NOT NULL,
     vin varchar(64) NOT NULL,
     status VARCHAR(200),
 
@@ -43,7 +43,7 @@ CREATE TABLE UpdateSpecs (
 );
 
 CREATE TABLE RequiredPackages (
-  update_request_id BINARY(36) NOT NULL,
+  update_request_id CHAR(36) NOT NULL,
   vin varchar(64) NOT NULL,
   package_name VARCHAR(200) NOT NULL,
   package_version VARCHAR(200) NOT NULL,
