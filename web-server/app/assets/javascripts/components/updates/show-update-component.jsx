@@ -12,7 +12,7 @@ define(function(require) {
     mixins: [showModel],
     whereClause: function() {
       var params = this.context.router.getCurrentParams();
-      return {id: parseInt(params.id)};
+      return {id: params.id};
     },
     showView: function() {
       var rows = _.map(this.state.Model.attributes, function(value, key) {
