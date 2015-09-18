@@ -19,6 +19,7 @@ object UpdateSpecs {
 
   import org.genivi.sota.refined.SlickRefined._
   import UpdateStatus._
+  import SlickExtensions._
 
   implicit val UpdateStatusColumn = MappedColumnType.base[UpdateStatus, String]( _.value.toString, UpdateStatus.withName )
 
@@ -58,9 +59,6 @@ object UpdateSpecs {
       requiredPackages ++= updateSpec.dependencies.map( dependencyProjection )
     )
   }
-
-  import SlickExtensions._
-  //import slick.lifted.StringColumnExtensionMethods._
 
   def load( vin: Vehicle.IdentificationNumber, packageIds: Set[Package.Id] )
           (implicit ec: ExecutionContext) : DBIO[Iterable[UpdateSpec]] = {

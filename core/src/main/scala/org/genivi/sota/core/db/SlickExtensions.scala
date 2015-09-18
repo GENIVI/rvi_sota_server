@@ -5,12 +5,15 @@
 package org.genivi.sota.core.db
 
 import akka.http.scaladsl.model.Uri
+import java.util.UUID
 import slick.ast.{Node, TypedType}
 import slick.driver.MySQLDriver.api._
 import slick.lifted.Rep
 
 object SlickExtensions {
   implicit val UriColumnType = MappedColumnType.base[Uri, String](_.toString(), Uri.apply)
+
+  implicit val uuidColumnType = MappedColumnType.base[UUID, String]( _.toString(), UUID.fromString )
 
   final class MappedExtensionMethods(val n: Node) extends AnyVal {
 
