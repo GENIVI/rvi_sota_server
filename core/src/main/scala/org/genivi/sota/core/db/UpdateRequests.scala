@@ -16,6 +16,7 @@ object UpdateRequests {
 
   import org.genivi.sota.refined.SlickRefined._
   import Mappings._
+  import SlickExtensions._
 
   class UpdateRequestsTable(tag: Tag) extends Table[UpdateRequest](tag, "UpdateRequests") {
     def id = column[UUID]("update_request_id", O.PrimaryKey)

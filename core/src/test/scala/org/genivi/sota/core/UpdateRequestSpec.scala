@@ -55,23 +55,6 @@ class UpdateRequestSpec extends PropSpec with PropertyChecks with Matchers with 
     }
   }
 
-  property("Update request associated to a specific id can be listed") {
-    new Service() {
-
-      val uuid = UUID.fromString("de305d54-75b4-431b-adb2-eb6b9e546014")
-      val requests2: Seq[UpdateRequest] = requests.map(r => r.copy(id = uuid))
-
-        Future.sequence(requests2.map(r => db.run(UpdateRequests.persist(r)))).map { _ =>
-          Get( Uri(path = UpdatesPath / uuid.toString / "status") ) ~> resource.route ~> check {
-            status shouldBe StatusCodes.OK
-            responseAs[Seq[UpdateRequest]] shouldBe requests
-          }
-        }
-      }
-      }
-    }
-  }
-
   override def afterAll() {
     system.shutdown()
     db.close()

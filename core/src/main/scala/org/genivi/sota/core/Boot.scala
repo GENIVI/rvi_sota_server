@@ -10,6 +10,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.jsonrpc.HttpTransport

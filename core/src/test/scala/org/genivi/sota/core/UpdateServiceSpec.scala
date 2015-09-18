@@ -7,8 +7,7 @@ import eu.timepit.refined.Refined
 import java.util.UUID
 import org.genivi.sota.core.data.Vehicle
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.core.db.Packages
-import org.genivi.sota.core.db.Vehicles
+import org.genivi.sota.core.db.{UpdateSpecs, Packages, Vehicles}
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 import org.scalatest.time.Millis
@@ -92,8 +91,11 @@ class UpdateServiceSpec extends PropSpec with PropertyChecks with Matchers with 
   }
 
   property("upload spec per vin") {
+    import slick.driver.MySQLDriver.api._
+    import scala.concurrent.duration.DurationInt
     forAll( updateRequestGen(AvailablePackageIdGen), dependenciesGen(packages) ) { (request, deps) =>
       whenReady( createVehicles(deps.keySet).flatMap( _ => service.queueUpdate(request, _ => Future.successful(deps))) ) { specs =>
+        val updates = Await.result( db.run( UpdateSpecs.listUpdatesById( Refined( request.id.toString ) ) ), 1.second)
         specs.size shouldBe deps.size
       }
     }
