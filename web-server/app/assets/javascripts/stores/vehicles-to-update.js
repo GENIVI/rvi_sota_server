@@ -8,8 +8,8 @@ define(['jquery', 'backbone', 'sota-dispatcher'], function($, Backbone, SotaDisp
     },
     getVINs: function() {
       var vins = [];
-      for(vin in this.attributes) {
-        vins.push(this.attributes[vin][0].get)
+      for (var vin in this.attributes) {
+        vins.push(this.attributes[vin][0]);
       }
       return vins;
     },
