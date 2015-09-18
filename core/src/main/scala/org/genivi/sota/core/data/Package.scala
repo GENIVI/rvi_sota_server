@@ -5,6 +5,7 @@
 package org.genivi.sota.core.data
 
 import akka.http.scaladsl.model.Uri
+import cats.Show
 import cats.data.Xor
 import eu.timepit.refined._
 
@@ -25,6 +26,18 @@ object Package {
     version: Package.Version
   )
 
+  object Id {
+    import io.circe.{Encoder, Decoder}
+    import io.circe.generic.semiauto._
+    import org.genivi.sota.CirceSupport._
+
+    implicit val encoder : Encoder[Id] = deriveFor[Id].encoder
+    implicit val decoder : Decoder[Id] = deriveFor[Id].decoder
+
+    implicit val showInstance : Show[Id] = Show.show( x => s"${x.name.get}-${x.version.get}" )
+  }
+
+
   trait ValidName
   trait ValidVersion
 
@@ -35,7 +48,6 @@ object Package {
     Predicate.instance( _.nonEmpty, _ => "Package name required" )
 
   implicit val validPackageVersion: Predicate[ValidVersion, String] =
-    Predicate.instance( _.matches( """^\d+\.\d+\.\d+$""" ), _ => "Invalid version format")
+    Predicate.instance( _.matches( """^\d+\.\d+(\.\d+)?(-\d+)?$""" ), _ => "Invalid version format")
 
-  implicit val packageIdShow = cats.Show.show[Package.Id]( packageId => s"${packageId.name}-${packageId.version}" )
 }

@@ -4,13 +4,11 @@
  */
 package org.genivi.sota.core.transfer
 
-import cats.Foldable
 import io.circe.Json
 import org.genivi.sota.core.data.{Vehicle, Package, UpdateSpec}
-import org.genivi.sota.core.rvi.Protocol
+import org.genivi.sota.core.rvi.{RviClient,ServerServices}
 import org.joda.time.DateTime
 import scala.concurrent.ExecutionContext
-import org.genivi.sota.core.rvi.ServerServices
 
 import scala.concurrent.Future
 
@@ -20,13 +18,13 @@ case class UpdateNotification(packages: Seq[PackageUpdate], services: ServerServ
 object UpdateNotifier {
 
   def notify(updateSpecs: Seq[UpdateSpec], services: ServerServices)
-            (implicit transport: Json => Future[Json], ec: ExecutionContext): Iterable[Future[Int]] = {
+            (implicit rviClient: RviClient, ec: ExecutionContext): Iterable[Future[Int]] = {
     val updatesByVin : Map[Vehicle.IdentificationNumber, Seq[UpdateSpec]] = updateSpecs.groupBy( _.vin )
     updatesByVin.map( (notifyVehicle(services) _ ).tupled  )
   }
 
   def notifyVehicle(services: ServerServices)( vin: Vehicle.IdentificationNumber, updates: Seq[UpdateSpec] )
-                   ( implicit transport: Json => Future[Json], ec: ExecutionContext): Future[Int] = {
+                   ( implicit rviClient: RviClient, ec: ExecutionContext): Future[Int] = {
     import com.github.nscala_time.time.Imports._
     import io.circe.generic.auto._
 
@@ -36,7 +34,7 @@ object UpdateNotifier {
     }
 
     val earliestExpirationDate : DateTime = updates.map( _.request.periodOfValidity.getEnd ).min
-    Protocol.sendMessage( s"genivi.org/vin/${vin.get}/sota/notify", UpdateNotification(updates.map(toPackageUpdate), services), earliestExpirationDate )
+    rviClient.sendMessage( s"genivi.org/vin/${vin.get}/sota/notify", UpdateNotification(updates.map(toPackageUpdate), services), earliestExpirationDate )
   }
 
 }

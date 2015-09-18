@@ -6,6 +6,7 @@ import eu.timepit.refined.Refined
 import org.genivi.sota.core.PackagesReader
 import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec, UpdateStatus, Vehicle}
 import org.genivi.sota.core.jsonrpc.HttpTransport
+import org.genivi.sota.core.rvi.JsonRpcRviClient
 import org.scalacheck.Gen
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, PropSpec}
 import org.scalatest.prop.PropertyChecks
@@ -30,6 +31,7 @@ class UpdateNotifierSpec extends PropSpec with PropertyChecks with Matchers with
 
   val rviUri = Uri(system.settings.config.getString( "rvi.endpoint" ))
   val serverTransport = HttpTransport( rviUri )
+  implicit val rviClient = new JsonRpcRviClient( serverTransport.requestTransport, system.dispatcher)
 
   def updateSpecGen(vinGen : Gen[Vehicle.IdentificationNumber]) : Gen[UpdateSpec] = for {
     updateRequest <- updateRequestGen(Gen.oneOf(packages).map( _.id) )
