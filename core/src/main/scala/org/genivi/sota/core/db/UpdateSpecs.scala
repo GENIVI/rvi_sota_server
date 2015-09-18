@@ -4,11 +4,13 @@
  */
 package org.genivi.sota.core.db
 
+import eu.timepit.refined.Refined
 import java.util.UUID
 import org.genivi.sota.core.data.Package.Id
 import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.core.data.UpdateSpec
 import scala.collection.GenTraversable
+import eu.timepit.refined.string.Uuid
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.core.data.{UpdateSpec, Download, Vehicle, UpdateStatus, Package}
@@ -74,4 +76,8 @@ object UpdateSpecs {
       case ((request, vin, status), xs) => UpdateSpec(request, vin, status, xs.map(_._4).toSet )
     })
   }
+
+  def listUpdatesById(uuid: Refined[String, Uuid]): DBIO[Seq[(UUID, Vehicle.IdentificationNumber, UpdateStatus)]] =
+    updateSpecs.filter(_.requestId === UUID.fromString(uuid.get)).result
+
 }

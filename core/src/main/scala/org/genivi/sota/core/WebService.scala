@@ -63,9 +63,11 @@ class VehiclesResource(db: Database)
 class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, updateService: UpdateService)
                             (implicit system: ActorSystem, mat: ActorMaterializer) {
   import system.dispatcher
-
+  import eu.timepit.refined.string.uuidPredicate
   import io.circe.generic.auto._
   import org.genivi.sota.CirceSupport._
+  import org.genivi.sota.core.db.UpdateSpecs
+  import org.genivi.sota.refined.SprayJsonRefined.refinedUnmarshaller
   import UpdateSpec._
 
   implicit val _db = db
@@ -83,6 +85,12 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
             }
           )
         )
+      }
+    }
+  } ~ pathPrefix("updates") {
+    (get & refined[Uuid](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.Slash)) { uuid =>
+      path("status") {
+        complete(db.run(UpdateSpecs.listUpdatesById(uuid)))
       }
     }
   }
