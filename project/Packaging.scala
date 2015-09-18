@@ -7,6 +7,7 @@ object Packaging {
   import com.typesafe.sbt.SbtGit.git
 
   lazy val settings = Seq(
+    dockerRepository in Docker := Some("advancedtelematic"),
     packageName in Docker := "sota-" + packageName.value,
     dockerBaseImage := "advancedtelematic/java:openjdk-8-jre",
     version in Docker := git.gitDescribedVersion.value.get,
