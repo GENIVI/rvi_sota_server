@@ -71,7 +71,12 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
   import UpdateSpec._
 
   implicit val _db = db
-  val route = path("updates") {
+  val route = pathPrefix("updates") {
+    (get & refined[Uuid](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.PathEnd)) { uuid =>
+      complete(db.run(UpdateSpecs.listUpdatesById(uuid)))
+    }
+  } ~
+  path("updates") {
     get {
       complete(updateService.all(db, system.dispatcher))
     } ~
@@ -85,12 +90,6 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
             }
           )
         )
-      }
-    }
-  } ~ pathPrefix("updates") {
-    (get & refined[Uuid](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.Slash)) { uuid =>
-      path("status") {
-        complete(db.run(UpdateSpecs.listUpdatesById(uuid)))
       }
     }
   }

@@ -5,6 +5,7 @@ import akka.event.Logging
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import java.util.UUID
 import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.core.db.UpdateRequests
 import org.scalacheck.Gen
@@ -50,6 +51,23 @@ class UpdateRequestSpec extends PropSpec with PropertyChecks with Matchers with 
             responseAs[Seq[UpdateRequest]] shouldBe requests
           }
         }
+      }
+    }
+  }
+
+  property("Update request associated to a specific id can be listed") {
+    new Service() {
+
+      val uuid = UUID.fromString("de305d54-75b4-431b-adb2-eb6b9e546014")
+      val requests2: Seq[UpdateRequest] = requests.map(r => r.copy(id = uuid))
+
+        Future.sequence(requests2.map(r => db.run(UpdateRequests.persist(r)))).map { _ =>
+          Get( Uri(path = UpdatesPath / uuid.toString / "status") ) ~> resource.route ~> check {
+            status shouldBe StatusCodes.OK
+            responseAs[Seq[UpdateRequest]] shouldBe requests
+          }
+        }
+      }
       }
     }
   }
