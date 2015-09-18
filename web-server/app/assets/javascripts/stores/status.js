@@ -2,7 +2,7 @@ define(['backbone', 'underscore', '../lib/backbone-model-file-upload', '../mixin
 
   var Status = Backbone.Model.extend({
     url: function() {
-      return "/api/v1/updates/" + this.get('updateId') + "/status";
+      return "/api/v1/updates/" + this.get('updateId');
     },
     initialize: function(attrs, opts) {
       this.set({

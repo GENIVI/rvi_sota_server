@@ -11,17 +11,19 @@ define(function(require) {
       Fluxbone.Mixin('Model', 'sync')
     ],
     render: function() {
-      var rows = _.map(this.props.Model.attributes, function(value, key) {
-        return (
-          <tr>
-            <td>
-              {key}
-            </td>
-            <td>
-              {value}
-            </td>
-          </tr>
-        );
+      var rows = _.map(this.props.Model.attributes, function(value) {
+        if(Array.isArray(value)) {
+          return (
+            <tr>
+              <td>
+                {value[1]}
+              </td>
+              <td>
+                {value[2]}
+              </td>
+            </tr>
+          );
+        }
       });
       return (
         <div>
