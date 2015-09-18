@@ -25,7 +25,7 @@ object SotaBuild extends Build {
     libraryDependencies ++= Dependencies.TestFrameworks,
 
     testOptions in Test ++= Seq(
-      Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports", "-l", "RequiresRvi"),
+      Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
       Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
       Tests.Argument(TestFrameworks.ScalaCheck, "-maxDiscardRatio", "10", "-minSuccessfulTests", "100")
     ),
@@ -53,7 +53,7 @@ object SotaBuild extends Build {
 
   lazy val common = Project(id = "common", base = file("common"))
     .settings(basicSettings ++ compilerSettings)
-    .settings( libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Spray :+ Dependencies.NscalaTime :+ Dependencies.Refined )
+    .settings( libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Spray  :+ Dependencies.NscalaTime :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
 
   lazy val externalResolver = Project(id = "resolver", base = file("external-resolver"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
@@ -166,6 +166,8 @@ object Dependencies {
   lazy val NscalaTime = "com.github.nscala-time" %% "nscala-time" % "2.0.0"
 
   lazy val ParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
+
+  lazy val CommonsCodec = "commons-codec" % "commons-codec" % "1.10"
 
   lazy val Rest = Akka ++ Slick
 

@@ -5,6 +5,11 @@
 package org.genivi.sota.core.db
 
 import java.util.UUID
+import org.genivi.sota.core.data.Package.Id
+import org.genivi.sota.core.data.UpdateRequest
+import org.genivi.sota.core.data.UpdateSpec
+import scala.collection.GenTraversable
+import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.core.data.{UpdateSpec, Download, Vehicle, UpdateStatus, Package}
 
@@ -52,4 +57,21 @@ object UpdateSpecs {
     )
   }
 
+  import SlickExtensions._
+  //import slick.lifted.StringColumnExtensionMethods._
+
+  def load( vin: Vehicle.IdentificationNumber, packageIds: Set[Package.Id] )
+          (implicit ec: ExecutionContext) : DBIO[Iterable[UpdateSpec]] = {
+    val requests = UpdateRequests.all.filter(r => r.packageName.mappedTo[String] ++ r.packageVersion.mappedTo[String] inSet packageIds.map( id => id.name.get + id.version.get ))
+    val specs = updateSpecs.filter(_.vin === vin)
+    val q = for {
+      r  <- requests
+      s  <- specs if (r.id === s.requestId)
+      rp <- requiredPackages if (rp.vin === vin && rp.requestId === s.requestId)
+      p  <- Packages.packages if (p.name === rp.packageName && p.version === rp.packageVersion)
+    } yield (r, s.vin, s.status, p)
+    q.result.map( _.groupBy(x => (x._1, x._2, x._3) ).map {
+      case ((request, vin, status), xs) => UpdateSpec(request, vin, status, xs.map(_._4).toSet )
+    })
+  }
 }

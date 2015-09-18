@@ -6,7 +6,12 @@ package org.genivi.sota.core
 
 import eu.timepit.refined.Refined
 import akka.http.scaladsl.model.Uri
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardOpenOption
+import java.security.MessageDigest
 import java.util.UUID
+import org.apache.commons.codec.binary.Hex
 import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.core.data.{Vehicle, Package}
 import org.scalacheck.{Arbitrary, Gen}
@@ -58,6 +63,33 @@ trait Generators {
     n <- Gen.choose(1, 10)
     r <- Gen.listOfN(n, vinDepGen(packages))
   } yield r.toMap
+
+  def generatePackageData( template: Package ) : Package = {
+    val path = Files.createTempFile(s"${template.id.name.get}-${template.id.version.get}", ".rpm" )
+    path.toFile().deleteOnExit();
+    val in = Files.newByteChannel(Paths.get("/dev/random"), StandardOpenOption.READ)
+    val out = Files.newByteChannel(path, StandardOpenOption.WRITE)
+
+    val buffer = java.nio.ByteBuffer.allocate(4096)
+    var toRead : Int = template.size.intValue()
+    val digest = MessageDigest.getInstance("SHA-1")
+
+    while( toRead > 0 ) {
+      buffer.clear()
+      if( toRead < 4096 ) buffer.limit(toRead)
+      val read = in.read(buffer)
+      toRead -= read
+      buffer.flip()
+      out.write(buffer)
+      buffer.flip()
+      digest.update(buffer)
+    }
+
+    in.close()
+    out.close()
+
+    template.copy( uri = Uri( path.toUri().toString() ), checkSum = Hex.encodeHexString( digest.digest() ))
+  }
 }
 
 object Generators extends Generators

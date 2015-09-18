@@ -45,7 +45,9 @@ object CirceSupport {
   implicit def refinedDecoder[T, P](implicit decoder: Decoder[T], predicate: Predicate[P, T]): Decoder[Refined[T, P]] =
     decoder.map(t =>
       refineV[P](t) match {
-        case Left(e)  => throw new DeserializationException(RefinementError(t, e))
+        case Left(e)  =>
+          println( e )
+          throw new DeserializationException(RefinementError(t, e))
         case Right(r) => r
       })
 

@@ -59,7 +59,8 @@ trait JsonRpcDirectives {
     import syntax.singleton._
 
     inDecoder.decodeJson( request.params ).map( fn ).fold[StandardRoute](
-      err => complete(ErrorResponse( PredefinedErrors.InvalidParams, request.id)),
+      err =>
+        complete(ErrorResponse( PredefinedErrors.InvalidParams, request.id)),
       res => complete( res.map( x => ResultResponse(x, request.id)  )))
   }
 
