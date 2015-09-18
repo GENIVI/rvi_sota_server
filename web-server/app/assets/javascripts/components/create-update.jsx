@@ -2,6 +2,7 @@ define(function(require) {
 
   var $ = require('jquery'),
       React = require('react'),
+      Router = require('react-router'),
       HandleFailMixin = require('../mixins/handle-fail'),
       serializeForm = require('../mixins/serialize-form'),
       SendRequest = require('../mixins/send-request'),
@@ -21,7 +22,7 @@ define(function(require) {
   }
 
   var CreateUpdate = React.createClass({
-    mixins: [HandleFailMixin],
+    mixins: [HandleFailMixin, Router.Navigation],
     handleSubmit: function(e) {
       e.preventDefault();
       this.setState({postStatus: ""});
@@ -45,6 +46,10 @@ define(function(require) {
           + this.formatDate(endBeforeDate, endBeforeTime, endBeforeTimeZone)
       }
       SendRequest.doPost("/api/v1/updates", payload)
+        .done(_.bind(function(data) {
+          var updateId = data[0].request.id;
+          this.transitionTo("/updates/" + updateId);
+        }, this))
         .fail(_.bind(function(xhr) {
           this.trigger("error", this, xhr);
         }, this));
