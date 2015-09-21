@@ -15,7 +15,7 @@ class ValidateResourceSpec extends ResourceWordSpec {
 
   "Validate resource" should {
 
-    val filter = Filter(Refined("myfilter"), Refined(s"""vin_matches "SAJNX5745SC??????""""))
+    val filter = Filter(Refined("myfilter"), Refined(s"""vin_matches "SAJNX5745SC......""""))
 
     "accept valid filters" in {
       validateFilter(filter) ~> route ~> check {
@@ -31,7 +31,7 @@ class ValidateResourceSpec extends ResourceWordSpec {
     }
 
     "reject filters with bad filter expressions" in {
-      validateFilter(filter.copy(expression = Refined(filter.expression + " AND ?"))) ~> route ~> check {
+      validateFilter(filter.copy(expression = Refined(filter.expression.get + " AND ?"))) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }

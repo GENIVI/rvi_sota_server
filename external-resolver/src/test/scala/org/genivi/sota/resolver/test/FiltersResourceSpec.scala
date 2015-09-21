@@ -19,7 +19,7 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
   "Filters resource" should {
 
     val filterName = "myfilter"
-    val filterExpr = s"""vin_matches "SAJNX5745SC??????""""
+    val filterExpr = s"""vin_matches "SAJNX5745SC......""""
     val filter     = Filter(Refined(filterName), Refined(filterExpr))
 
     "create a new resource on POST request" in {
@@ -41,7 +41,7 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
     }
 
     val filterName2 = "myfilter2"
-    val filterExpr2 = s"""vin_matches "TAJNX5745SC??????""""
+    val filterExpr2 = s"""vin_matches "TAJNX5745SC......""""
     val filter2     = Filter(Refined(filterName2), Refined(filterExpr2))
 
     "list available filters on a GET request" in {
