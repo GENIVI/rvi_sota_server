@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.resolver.test
 
+import eu.timepit.refined.Refined
 import org.scalacheck._
 import org.scalatest.FlatSpec
 import org.genivi.sota.resolver.types.FilterParser.parseFilter
@@ -16,17 +17,17 @@ import org.genivi.sota.resolver.types.
 class FilterParserSpec extends FlatSpec {
 
   val apaS = s"""vin_matches "apa""""
-  val apaF = VinMatches("apa")
+  val apaF = VinMatches(Refined("apa"))
 
   val bepaS = s"""vin_matches "bepa""""
-  val bepaF = VinMatches("bepa")
+  val bepaF = VinMatches(Refined("bepa"))
 
   "The filter parser" should "parse VIN matches" in {
     assert(parseFilter(apaS) == Right(apaF))
   }
 
   it should "parse has package matches" in {
-    assert(parseFilter(s"""has_package "cepa" "1.2.0"""") == Right(HasPackage("cepa", "1.2.0")))
+    assert(parseFilter(s"""has_package "cepa" "1.2.0"""") == Right(HasPackage(Refined("cepa"), Refined("1.2.0"))))
   }
 
   it should "not parse has package matches without a version" in {
@@ -66,6 +67,15 @@ class FilterParserSpec extends FlatSpec {
       && parseFilter(s"$apaS OR AND $apaS").isLeft)
   }
 
+  it should "not parse leaves with valid regexes" in {
+    assert(parseFilter(s"""vin_matches "SAJNX5745SC......"""") ===
+      Right(VinMatches(Refined("SAJNX5745SC......"))))
+  }
+
+  it should "not parse leaves with invalid regexes" in {
+    assert(parseFilter(s"""vin_matches "*" """).isLeft)
+  }
+
 }
 
 object ArbitraryFilterAST {
@@ -89,11 +99,11 @@ object ArbitraryFilterAST {
         for {
           s <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaNumChar)
           leaf <- Gen.oneOf(VinMatches, HasComponent)
-        } yield leaf(s.mkString),
+        } yield leaf(Refined(s.mkString)),
         for {
           s <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaNumChar)
           t <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaNumChar)
-        } yield HasPackage(s.mkString, t.mkString)
+        } yield HasPackage(Refined(s.mkString), Refined(t.mkString))
     )
 
     i match {

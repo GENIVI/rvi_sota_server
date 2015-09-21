@@ -8,7 +8,6 @@ import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model.{Uri, HttpRequest, StatusCode, StatusCodes}
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
-import akka.http.scaladsl.unmarshalling._
 import eu.timepit.refined.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.CirceSupport._

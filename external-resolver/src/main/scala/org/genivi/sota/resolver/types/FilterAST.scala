@@ -4,20 +4,22 @@
  */
 package org.genivi.sota.resolver.types
 
-import org.genivi.sota.resolver.types.Filter.Expression
+import eu.timepit.refined.Refined
+import eu.timepit.refined.string.{Regex, regexPredicate}
 import scala.util.parsing.combinator.syntactical.StandardTokenParsers
 import scala.util.parsing.combinator.{PackratParsers, ImplicitConversions}
 
-
 sealed abstract trait FilterAST
-case class VinMatches(vin: String)                   extends FilterAST
-case class HasPackage(name: String, version: String) extends FilterAST
-case class HasComponent(name: String)                extends FilterAST
-case class Not(f: FilterAST)                         extends FilterAST
-case class And(l: FilterAST, r: FilterAST)           extends FilterAST
-case class Or(l: FilterAST,  r: FilterAST)           extends FilterAST
-case object True                                     extends FilterAST
-case object False                                    extends FilterAST
+case class VinMatches(vin: Refined[String, Regex])    extends FilterAST
+case class HasPackage(
+  name   : Refined[String, Regex],
+  version: Refined[String, Regex])                    extends FilterAST
+case class HasComponent(name: Refined[String, Regex]) extends FilterAST
+case class Not(f: FilterAST)                          extends FilterAST
+case class And(l: FilterAST, r: FilterAST)            extends FilterAST
+case class Or(l: FilterAST,  r: FilterAST)            extends FilterAST
+case object True                                      extends FilterAST
+case object False                                     extends FilterAST
 
 
 object FilterParser extends StandardTokenParsers with PackratParsers with ImplicitConversions {
@@ -26,13 +28,13 @@ object FilterParser extends StandardTokenParsers with PackratParsers with Implic
   lexical.reserved   ++= List("vin_matches", "has_package", "has_component", "NOT", "AND", "OR", "TRUE", "FALSE")
 
   lazy val vinP: PackratParser[FilterAST] =
-    "vin_matches" ~> stringLit ^^ VinMatches
+    "vin_matches" ~> regexLit ^^ VinMatches
 
   lazy val pkgP: PackratParser[FilterAST] =
-    "has_package" ~> stringLit ~ stringLit ^^ HasPackage
+    "has_package" ~> regexLit ~ regexLit ^^ HasPackage
 
   lazy val compP: PackratParser[FilterAST] =
-    "has_component" ~> stringLit ^^ HasComponent
+    "has_component" ~> regexLit ^^ HasComponent
 
   lazy val trueP: PackratParser[FilterAST] =
     "TRUE" ^^^ True
@@ -54,11 +56,13 @@ object FilterParser extends StandardTokenParsers with PackratParsers with Implic
   lazy val orP: PackratParser[FilterAST] =
     (andP ~ ("OR" ~> orP)) ^^ Or | andP
 
+  def regexLit: Parser[Refined[String, Regex]] =
+    elem("regex", t => regexPredicate.isValid(t.chars)) ^^ (t => Refined(t.chars))
 
   def parseFilter(input: String): Either[String, FilterAST] =
     phrase(orP)(new lexical.Scanner(input)) match {
       case Success(f, _)        => Right(f)
-      case NoSuccess(msg, next) => Left(s"Could not parse '${input}' near '${next.pos.longString} : ${msg}")
+      case NoSuccess(msg, next) => Left(s"\n${next.pos.longString}: ${msg}")
     }
 
   def parseValidFilter(input: Filter.Expression): FilterAST =
@@ -88,7 +92,7 @@ object FilterPrinter {
 object FilterQuery {
 
   def query(f: FilterAST): Function1[Vehicle, Boolean] = (v: Vehicle) => f match {
-    case VinMatches(s)    => !s.r.findAllIn(v.vin.get).isEmpty
+    case VinMatches(re)   => !re.get.r.findAllIn(v.vin.get).isEmpty
     case HasPackage(s, t) => true           // XXX: FOR NOW
     case HasComponent(s)  => true           // XXX: FOR NOW
     case Not(f)           => !query(f)(v)
