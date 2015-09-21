@@ -6,12 +6,13 @@ date: 2015-08-26 10:30:27
 ---
 :toc: macro
 
+This is the documentation page for the REST API of SOTA, including the Web Server, the Core Server, and the Resolver.
+
+The content-type of all requests is `application/json` unless otherwise specified.
+
+The core, resolver, and web server all expose APIs. Calls to the web server's API are forwarded to the appropriate entity: core, resolver, or both. Thus, the documentation here documents the core and resolver APIs; the calls to the web server are the same, but must be sent with a session authorization cookie.
+
 toc::[]
-
-This is the draft documentation page for the REST API of SOTA, including
-the Web Server, the Core Server, and the Resolver.
-
-Note that all responses are sent as JSON.
 
 === GET /vehicles
 
@@ -47,7 +48,6 @@ a|
 ]
 ----
 
-|Error Response a|N/A
 |================================================================
 
 === PUT /vehicles/:vin
@@ -67,8 +67,6 @@ characters.
 
 |Success Response a|
 *Code:* 204
-
-*Content:* None
 
 |Error Response a|
 *Code:* 400
@@ -93,29 +91,56 @@ characters.
 |URL |/api/v1/packages
 |Parameters |None
 |Success Response a|
-*Code:* 200
+A list of package objects. Each contains:
+
+* *id* — The packageId of the package to be sent. Object consisting of:
+  ** *name* — Package name
+  ** *version* — _x.y.z_
+* *uri* — The URI of the package binary
+* *size* — Package size in bytes
+* *checkSum* — The package's checksum
+* *description* — The package's description text
+* *vendor* — The package's vendor
+
+Example:
 
 [source,json]
 ----
 [
   {
-    "name": "myPackage",
-    "size": 11077,
-    "description": "test package",
-    "uri": "http://path/to/file",
-    "version": "1.2.3",
-    "checksum": "xgm98xdcsw22Cdr93oWKEZ7YLM0=",
-    "vendor": "Acme Software"
+    "size": 35768,
+    "description": "testing",
+    "uri": {
+      "uri": "http://path/to/file"
+    },
+    "checkSum": "5tsJvSyE22ZTQQfaTvAOat3Muo4=",
+    "id": {
+      "version": "1.2.3",
+      "name": "myPackage"
+    },
+    "vendor": "AcmeSoftware"
+  },
+  {
+    "size": 35768,
+    "description": "testing",
+    "uri": {
+      "uri": "http://path/to/file"
+    },
+    "checkSum": "5tsJvSyE22ZTQQfaTvAOat3Muo4=",
+    "id": {
+      "version": "2.3.4",
+      "name": "myPackage"
+    },
+    "vendor": "AcmeSoftware"
   }
 ]
 ----
 
 Note: Currently, the resolver returns an empty list and a *204 No Content* code for this endpoint, even though it stores package information in its database.
 
-|Error Response a|N/A
 |==============================================================
 
-=== PUT /packages/:name/:version
+=== PUT /packages/:name/:version (core)
 
 [width="100%",cols="18%,82%",]
 |=======================================================================
@@ -123,12 +148,13 @@ Note: Currently, the resolver returns an empty list and a *204 No Content* code 
 
 |Description |Adds a package to the database.
 
+|Content-type a| `multipart/form-data`
+
 |URL |/api/v1/packages/:name/:version
 
 |URL Parameters a|
-* *:name* — The unique name of the software package.
-* *:version* — The package version, in _x.y.z_ format. __x__, __y__, and
-_z_ must all contain only digits.
+* *:name* — The name of the software package.
+* *:version* — The package version, in _x.y.z_ format. __x__, __y__, and _z_ must all contain only digits.
 
 |Data Parameters a|
 *Required:*
@@ -140,12 +166,12 @@ _z_ must all contain only digits.
 * *description* — A short description of the package.
 * *vendor* — The vendor for the software package.
 
-|Success Response a|unknown
+|Success Response a|
+*Code:* 204
 
-|Error Response a|unknown
 |=======================================================================
 
-=== PUT /packages/:name/:version
+=== PUT /packages/:name/:version (resolver)
 
 [width="100%",cols="18%,82%",]
 |=======================================================================
@@ -156,37 +182,13 @@ _z_ must all contain only digits.
 |URL |/api/v1/packages/:name/:version
 
 |URL Parameters a|
-* *:name* — The unique name of the software package.
-* *:version* — The package version, in _x.y.z_ format. __x__, __y__, and
-_z_ must all contain only digits.
+* *:name* — The name of the software package.
+* *:version* — The package version, in _x.y.z_ format. __x__, __y__, and _z_ must all contain only digits.
 
 |Data Parameters a|
 
-*Optional:*
-
 * *description* — A short description of the package.
 * *vendor* — The vendor for the software package.
-
-|Success Response a|unknown
-
-|Error Response a|unknown
-|=======================================================================
-
-=== GET /resolve/:name/:version
-
-[width="100%",cols="18%,82%",]
-|=======================================================================
-|Availability |resolver
-
-|Description |Takes a package name and version, and returns a list of
-VINs it applies to.
-
-|URL |/api/v1/resolve/:name/:version
-
-|URL Parameters a|
-* *:name* — The unique name of the software package.
-* *:version* — The package version, in _x.y.z_ format. __x__, __y__, and
-_z_ must all contain only digits.
 
 |Success Response a|
 *Code:* 200
@@ -195,34 +197,61 @@ _z_ must all contain only digits.
 
 [source,json]
 ----
+{
+  "vendor": "AcmeSoftware",
+  "description": "testing",
+  "id": {
+    "version": "3.4.5",
+    "name": "myPackage"
+  }
+}
+----
 
+|=======================================================================
+
+=== GET /resolve/:name/:version
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+|Availability |resolver
+
+|Description |Takes a package name and version, and returns a list of VINs it applies to, along with the packageId.
+
+|URL |/api/v1/resolve/:name/:version
+
+|URL Parameters a|
+* *:name* — The name of the software package.
+* *:version* — The package version, in _x.y.z_ format. __x__, __y__, and _z_ must all contain only digits.
+
+|Success Response a|
+*Code:* 200
+
+*Content:*
+
+[source,json]
+----
 [
   [
-    {
-      "get": "bbbbbbb0987054321"
-    },
+    "aaaaaaa1234567890",
     [
       {
-        "version":"4.5.6",
-        "name":"myPackage"
+        "version": "1.2.3",
+        "name": "myPackage"
       }
     ]
   ],
   [
-    {
-      "get":"abcdefg1234567890"
-    },
+    "abcdefg1234567890",
     [
       {
-        "version":"4.5.6",
-        "name":"myPackage"
+        "version": "1.2.3",
+        "name": "myPackage"
       }
     ]
   ]
 ]
 ----
 
-|Error Response a|N/A
 |=======================================================================
 
 === GET /filters
@@ -244,7 +273,6 @@ _z_ must all contain only digits.
 
 [source,json]
 ----
-
 [
   {
     "expression": "vin_matches \"^12ABC\" AND has_component \"AcmeDVDPlayer\"",
@@ -253,7 +281,6 @@ _z_ must all contain only digits.
 ]
 ----
 
-|Error Response a|N/A
 |=======================================================================
 
 === POST /filters
@@ -646,7 +673,7 @@ package.
 ----
 |=======================================================================
 
-=== POST /install_campaigns
+=== POST /updates
 
 [width="100%",cols="18%,82%",]
 |=======================================================================
@@ -654,46 +681,89 @@ package.
 
 |Description |Create an install campaign for a package
 
-|URL |/api/v1/install_campaigns
+|URL |/api/v1/updates
 
 |Data Parameters a|
+* *id* — A UUID; must not already exist in the database.
 * *packageId* — An object consisting of:
-  ** *:name* — A package name.
-  ** *:version* — A package version, in _x.y.z_ format. __x__, __y__, and __z__ must all exist, and contain only digits.
+  ** *name* — A package name.
+  ** *version* — A package version, in _x.y.z_ format. __x__, __y__, and __z__ must all exist, and contain only digits.
 * *priority* — `[int]` The priority order of the campaign. Lower numbers indicate higher priority.
-* *startAfter* — `[dateTime]` The date on which to begin attempting to install the package.
-* *endBefore* — `[dateTime]` The date before which all installations should be finished.
+* *creationTime* — `[dateTime]` The date and time the install campaign was created on.
+* *periodOfValidity* — `[dateTime]/[dateTime]` A string with campaign start and end `dateTime`s separated by a slash.
 
 *Example:*
 [source,json]
 ----
 {
+  "id": "7dacded2-911e-4c43-b5e3-f91870e79f05",
   "packageId": {
     "name": "myPackage",
     "version": "1.2.3"
   },
-  "priority": 5,
-  "startAfter": "2015-01-01T00:00:00+02:00",
-  "endBefore": "2015-12-31T12:59:00+02:00"
+  "priority": 3,
+  "creationTime": "2015-09-18T00:00:23+00:00",
+  "periodOfValidity": "2015-09-18T90:00:00+00:00/2015-09-19T00:00:00+00:00"
 }
 ----
 |Success Response a|
 *Code:* 200
 
-*Content:* The created campaign, with times converted to UTC, along with a campaign ID.
+*Content:* A list of VIN update objects. Each object contains:
+
+* *vin*
+* *status* — The status of the update for this VIN. Can be _Pending, InFlight, Canceled, Failed,_ or _Finished_.
+* *request* — An object containing information about the update campaign. Includes:
+  ** *packageId* — Object containing:
+    *** *name* — Package name
+    *** *version* — _x.y.z_
+  ** *id* — the UUID of the update campaign
+  ** *priority* — The priority of the campaign.
+  ** *periodOfValidity* — `[dateTime]/[dateTime]` The start and end time of the update campaign.
+  ** *creationTime* — `[dateTime]` — The date and time the campaign was created.
+* *dependencies* — A description of the package to be sent. Object containing:
+  ** *id* — The packageId of the package to be sent. Object consisting of:
+    *** *name* — Package name
+    *** *version* — _x.y.z_
+  ** *uri* — The URI of the package binary
+  ** *size* — Package size in bytes
+  ** *checkSum* — The package's checksum
+  ** *description* — The package's description text
+  ** *vendor* — The package's vendor
 
 [source,json]
 ----
-{
-  "priority": 5,
-  "endBefore": "2015-12-31T10:59:00Z",
-  "id": 10,
-  "startAfter": "2014-12-31T22:00:00Z",
-  "packageId": {
-    "name": "myPackage",
-    "version": "1.2.3"
+[
+  {
+    "dependencies": [
+      {
+        "size": 35768,
+        "description": "testing",
+        "uri": {
+          "uri": "http://sota_core/ghc-7.6.3-18.3.el7.x86_64.rpm"
+        },
+        "checkSum": "5tsJvSyE22ZTQQfaTvAOat3Muo4=",
+        "id": {
+          "version": "1.2.3",
+          "name": "myPackage"
+        },
+        "vendor": "AcmeSoftware"
+      }
+    ],
+    "status": "Pending",
+    "vin": "aaaaaaa1234567890",
+    "request": {
+      "periodOfValidity": "2015-09-18T02:00:00.000+02:00/2015-09-19T02:00:00.000+02:00",
+      "priority": 3,
+      "id": "7dacded2-911e-4c43-b5e3-f91870e79f07",
+      "packageId": {
+        "version": "1.2.3",
+        "name": "myPackage"
+      },
+      "creationTime": "2015-09-18T02:00:23.000+02:00"
+    }
   }
-}
+]
 ----
 
 |Error Response a|
@@ -709,3 +779,59 @@ Invalid package name:
 }
 ----
 |=======================================================================
+
+=== GET /updates
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+|Availability |core
+
+|Description |Create an install campaign for a package
+
+|URL |/api/v1/updates
+
+|Parameters a|
+
+None
+|Success Response a|
+*Code:* 200
+
+*Content:* A list of update campaign objects. Each object contains:
+
+* *packageId* — Object containing:
+  ** *name* — Package name
+  ** *version* — _x.y.z_
+* *id* — the UUID of the update campaign
+* *priority* — The priority of the campaign.
+* *periodOfValidity* — `[dateTime]/[dateTime]` The start and end time of the update campaign.
+* *creationTime* — `[dateTime]` — The date and time the campaign was created.
+
+[source,json]
+----
+[
+  {
+    "periodOfValidity": "2015-09-18T02:00:00.000+02:00/2015-09-19T02:00:00.000+02:00",
+    "priority": 3,
+    "id": "7dacded2-911e-4c43-b5e3-f91870e79f05",
+    "packageId": {
+      "version": "1.2.3",
+      "name": "myPackage"
+    },
+    "creationTime": "2015-09-18T02:00:23.000+02:00"
+  },
+  {
+    "periodOfValidity": "2015-09-18T02:00:00.000+02:00/2015-09-19T02:00:00.000+02:00",
+    "priority": 3,
+    "id": "7dacded2-911e-4c43-b5e3-f91870e79f06",
+    "packageId": {
+      "version": "2.3.4",
+      "name": "myPackage"
+    },
+    "creationTime": "2015-09-18T02:00:23.000+02:00"
+  }
+]
+----
+|=======================================================================
+
+
+
