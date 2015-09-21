@@ -88,6 +88,8 @@ services:
       - 8090
     links:
       - rvi-client
+    env:
+      SOTA_CLIENT_PORT: "8090"
 
   - name: resolver
     repo: advancedtelematic/sota-resolver
@@ -112,10 +114,12 @@ services:
     links:
       - mysql
       - resolver
+      - rvi-server
     env:
       HOST: 0.0.0.0
       CORE_DB_URL: "jdbc:mysql://{{ '{{' }}groups.haproxy[0] {{ '}}' }}:3307/{{ db_core_name }}"
       RESOLVER_API_URI: "http://{{ '{{' }} groups.haproxy[0] {{ '}}' }}:8081"
+      RVI_URI: "http://{{ '{{' }} groups.haproxy[0] {{ '}}' }}:8801"
 
   - name: webserver
     repo: advancedtelematic/sota-webserver
