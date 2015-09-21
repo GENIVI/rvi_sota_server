@@ -128,13 +128,13 @@
 <div class="sect2">
 <h3 id="adding-a-vin">Adding a VIN</h3>
 <div class="paragraph">
-<p>To add a VIN, click the <em>Vehicles</em> tab at the top of the page. Enter a valid VIN number (exactly 17 characters long and consisting only of alphanumeric characters) in the <strong>Vehicle Name</strong> field, and click the <strong>Add Vehicle</strong> button. If the addition was successful, the newly added VIN will appear in the list at the bottom of the page. If not, an error message will be displayed.</p>
+<p>To add a VIN, click the <em>Vehicles</em> tab at the left of the page. Enter a valid VIN number (exactly 17 characters long and consisting only of alphanumeric characters) in the <strong>Vehicle Name</strong> field, and click the <strong>Add Vehicle</strong> button. If the addition was successful, the newly added VIN will appear in the list at the bottom of the page.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="searching-for-vins">Searching for VINs</h3>
 <div class="paragraph">
-<p>You can search VINs by regular expression. As you type a regular expression in the <strong>Vehicle VIN Regex</strong> field, the list of VINs below is dynamically updated.</p>
+<p>You can search VINs by regular expression. As you type a regular expression in the <strong>Filter</strong> field, the list of VINs below is dynamically updated.</p>
 </div>
 </div>
 <div class="sect2">
@@ -165,25 +165,25 @@
 <div class="sect2">
 <h3 id="creating-a-filter">Creating a filter</h3>
 <div class="paragraph">
-<p>To create a new filter, click the <strong>Filters</strong> tab at the top of the page. Enter a unique name in the <strong>Filter Name</strong> field, and enter your expression in the <strong>Filter Expression</strong> field. Click the <strong>Add Filter</strong> button. If the filter was successfully created, you should see a message saying <code>Added Filter [filtername] successfully.</code> If the name you gave was already taken, or if the filter&#8217;s syntax was invalid, you will see an error message instead.</p>
+<p>To create a new filter, click the <strong>Filters</strong> tab at the left of the page. Enter a unique name in the <strong>Filter Name</strong> field, and enter your expression in the <strong>Filter Expression</strong> field. Click the <strong>Add Filter</strong> button. If the filter was successfully created, you should see the filter appear below.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="editing-a-filter">Editing a filter</h3>
 <div class="paragraph">
-<p>From the <strong>Filters</strong> tab, click on the filter you wish to edit. Edit the filter expression in the box, then click Edit Filter to save it.</p>
+<p>From the <strong>Filters</strong> tab, click details next to the filter you wish to edit. Edit the filter expression in the box, then click Update Filter to save it.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="deleting-a-filter">Deleting a filter</h3>
 <div class="paragraph">
-<p>From the <strong>Filters</strong> tab, click the X next to the filter you wish to delete.</p>
+<p>From the <strong>Filters</strong> tab, click details next to the filter you wish to delete. Click Delete Filter on the details page.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="associating-a-filter-with-a-package">Associating a filter with a package</h3>
 <div class="paragraph">
-<p>To associate your filter with a particular software package, go to the <strong>Packages</strong> tab and click on a package in the list at the bottom of the form to take you to that package&#8217;s page. You can click on a filter name under <strong>All Filters</strong> to associate it with the package and click on a filter name under <strong>Package Filters</strong> to remove the association.</p>
+<p>To associate your filter with a particular software package, go to the <strong>Packages</strong> tab and click on Create Campaign next to the package you wish to associate. You can click on a filter name under <strong>All Filters</strong> to associate it with the package. To remove a previously-associated filter, click on a filter name under <strong>Package Filters</strong>.</p>
 </div>
 </div>
 </div>
@@ -197,19 +197,19 @@
 <p>To add a software package, you will need to upload a package file and give it a unique <strong>Package ID</strong>. A package ID consists of a package name and a version number. The name must be alphanumeric, and the version must consist of three digits separated by periods. (For example, 3.0.4 and 0.115.33 are both valid version numbers, but 1.3 and 2.7.22b are not.)</p>
 </div>
 <div class="paragraph">
-<p>Click the <strong>Packages</strong> tab at the top of the page. Enter a Package Name, Version, and optionally a description and vendor name in the appropriate fields. Then, select a file to upload. Click <strong>Add Package</strong>. If the upload was successful, you will see a status message confirming it. If there was a problem, you will see an appropriate error message.</p>
+<p>Click the <strong>Packages</strong> tab at the top of the page. Enter a Package Name, Version, and optionally a description and vendor name in the appropriate fields. Then, select a file to upload. Click <strong>Add Package</strong>. If the upload was successful, you will see the package added to the list at the bottom of the page.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="searching-for-packages">Searching for packages</h3>
 <div class="paragraph">
-<p>You can search for packages by regular expression. As you type a regular expression in the <strong>Search packages by regex</strong> field, the list of packages below is dynamically updated.</p>
+<p>You can search for packages by regular expression. As you type a regular expression in the *Filter field, the list of packages below is dynamically updated.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="associating-a-package-with-a-filter">Associating a package with a filter</h3>
 <div class="paragraph">
-<p>To associate a software package with a filter, go to the <strong>Packages</strong> tab and click on a package in the list at the bottom of the form to take you to that package&#8217;s page. You can click on a filter name under <strong>All Filters</strong> to associate it with the package, or on a filter name under <strong>Package Filters</strong> to remove the association.</p>
+<p>To associate your package with a particular filter, go to the <strong>Packages</strong> tab and click on Create Campaign next to the package you wish to associate. You can click on a filter name under <strong>All Filters</strong> to associate it with the package. To remove a previously-associated filter, click on a filter name under <strong>Package Filters</strong>.</p>
 </div>
 </div>
 </div>
@@ -231,7 +231,37 @@
 <h2 id="creating-install-campaigns">Creating Install Campaigns</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>To create an install campaign for a package, go to the <strong>Packages</strong> tab, click on a package, and fill in the necessary information.</p>
+<p>To create an install campaign for a package, go to the <strong>Packages</strong> tab and click <strong>Create Campaign</strong> next to the package you wish to create a campaign for.</p>
+</div>
+<div class="paragraph">
+<p>You can associate filters with the package, and view which VINs will be affected.</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+If there are no filters associated with the package, it will affect all VINs.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Give the campaign a priority (an integer, lower numbers are higher priority), a start date, and an end date. Click <strong>Create Update</strong>. You will be taken to the details page for that campaign.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Tip</div>
+</td>
+<td class="content">
+You might need to manually refresh the details page.
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>

@@ -112,16 +112,26 @@
 </div>
 
 <div class="paragraph">
-<p>For the server-side components, this project includes a <a href="https://github.com/advancedtelematic/docker-launcher">docker-launcher</a> configuration file to allow the cluster of components to be deployed conveniently to a developer machine. In future versions, it will also include docker-launcher configuration files to deploy to an IaaS cloud (e.g. AWS).</p>
+<p>For the server-side components, this project includes a <a href="https://github.com/advancedtelematic/docker-launcher">docker-launcher</a> configuration file to allow the cluster of components to be deployed conveniently to a developer machine or to Amazon AWS. See <a href="../doc/deployment-with-docker-launcher.html">Deployment with Docker Launcher</a> for deploying development or production systems with Docker Launcher.</p>
 </div>
-<div class="paragraph">
-<p>For client build instructions, see <a href="https://github.com/advancedtelematic/rvi_sota_client/blob/master/README.md" class="bare">https://github.com/advancedtelematic/rvi_sota_client/blob/master/README.md</a>.</p>
-</div>
-<div class="paragraph">
-<p>See <a href="../doc/deployment-with-docker-launcher.html">Deployment with Docker Launcher</a> for deploying development or production systems with Docker Launcher.</p>
+<div id="toc" class="toc">
+<div id="toctitle" class="title">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#building-rvi_sota_server-locally">Building rvi_sota_server Locally</a>
+<ul class="sectlevel2">
+<li><a href="#database-migrations">Database Migrations</a></li>
+</ul>
+</li>
+<li><a href="#building-rvi_sota_client-locally">Building rvi_sota_client Locally</a>
+<ul class="sectlevel2">
+<li><a href="#building-and-running-rvi-nodes">Building and running RVI nodes</a></li>
+<li><a href="#building-and-running-sota-client">Building and running SOTA client</a></li>
+</ul>
+</li>
+</ul>
 </div>
 <div class="sect1">
-<h2 id="building-locally">Building Locally</h2>
+<h2 id="building-rvi_sota_server-locally">Building rvi_sota_server Locally</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>For local development, the following prerequisites are required:</p>
@@ -179,6 +189,18 @@ FLUSH <span style="color: #008000; font-weight: bold">PRIVILEGES</span>;</code><
 <div class="paragraph">
 <p>This will apply any new migrations in src/main/resources/db/migration, and keep your existing data. This command expects to find the databases on localhost with sota/s0ta for the username/password. The URL to the database and login details can be overridden with the <code>CORE_DB_URL</code>, <code>CORE_DB_USER</code> and <code>CORE_DB_PASSWORD</code> environment variables for the core and <code>RESOLVER_DB_URL</code>, <code>RESOLVER_DB_USER</code> and, <code>RESOLVER_DB_PASSWORD</code> for the external resolver. See <code>project/SotaBuild.scala</code> for the implementation.</p>
 </div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Tip</div>
+</td>
+<td class="content">
+If you are having trouble with flywayMigrate after an update, try deleting the sota_core, sota_core_test, sota_resolver, and sota_resolver_test databases, recreating them with the commands above, and running flywayMigrate again.
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>If you are using an encrypted home directory, you may get the following error when attempting a build. This is because scala/sbt tends to create long file names, and these get expanded even further by ecryptfs.</p>
 </div>
@@ -213,24 +235,95 @@ ln -s /var/sota-build/webserver-target/ web-server/target</pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>sbt core/run
-sbt resolver/run
-CORE_HOST=localhost RESOLVER_HOST=localhost sbt webserver/run</pre>
+<pre>sbt resolver/run
+sbt core/run
+sbt webserver/run</pre>
 </div>
 </div>
 <div class="paragraph">
 <p>Now open <a href="http://localhost:9000/">localhost:9000</a> in a browser.</p>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="database-migrations">Database Migrations</h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="database-migrations">Database Migrations</h3>
 <div class="paragraph">
 <p>Never make changes to migrations that already exist. Add columns by creating a new migration with an 'ALTER TABLE' statement.</p>
 </div>
 <div class="paragraph">
-<p>If someone else has added a migration, run <code>sbt core/flywayMigrate</code> to update your local database.</p>
+<p>If someone else has added a migration, run <code>sbt flywayMigrate</code> to update your local database.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="building-rvi_sota_client-locally">Building rvi_sota_client Locally</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To see the <a href="https://github.com/PDXostc/rvi_sota_client">SOTA client</a> in action, you will need some supporting components running. The general steps are:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Build and run RVI server and client nodes</p>
+</li>
+<li>
+<p>Build and run rvi_sota_client</p>
+</li>
+<li>
+<p>Build and run rvi_sota_demo</p>
+</li>
+</ol>
+</div>
+<div class="sect2">
+<h3 id="building-and-running-rvi-nodes">Building and running RVI nodes</h3>
+<div class="paragraph">
+<p>You can build RVI directly from <a href="https://github.com/PDXostc/rvi_core">its GitHub repo</a>, or simply run our docker image. These instructions assume you are running the docker image.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Pull the image: <code>docker pull advancedtelematic/rvi</code>.</p>
+</li>
+<li>
+<p>In two terminal windows, run the rvi client and server nodes</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Client: <code>docker run -it --name rvi-client --expose 8901 --expose 8905-8908 -p 8901:8901 -p 8905:8905 -p 8906:8906 -p 8907:8907 -p 8908:8908 advancedtelematic/rvi client</code></p>
+</li>
+<li>
+<p>Server: <code>docker run -it --name rvi-server --expose 8801 --expose 8805-8808 -p 8801:8801 -p 8805:8805 -p 8806:8806 -p 8807:8807 -p 8808:8808 advancedtelematic/rvi server</code></p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="building-and-running-sota-client">Building and running SOTA client</h3>
+<div class="paragraph">
+<p>The SOTA client builds as a docker container. As long as you have <code>rust</code> and <code>cargo</code> installed, <code>make docker</code> should build a docker image called <code>sota-client</code>.</p>
+</div>
+<div class="paragraph">
+<p>You can also build the SOTA client from within a docker container; this will be necessary if your build environment is not running linux. From the project root, run <code>docker run -it --rm -v $PWD:/build advancedtelematic/rust:1.2.0 /bin/bash</code>. Once you are at a bash prompt, run the following commands:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>apt-get install -y libssl-dev
+cd /build
+cargo build --release
+exit</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now you can run <code>make docker</code> from your normal build environment.</p>
+</div>
+<div class="paragraph">
+<p>Once the sota-client docker image is built (by either of the two methods above), you can run it with <code>docker run -it --name sota-client -p 9000:9000 --link rvi-client:rvi-client -e RUST_LOG=info advancedtelematic/sota-client</code>.</p>
+</div>
+<div class="paragraph">
+<p>The client will listen for an active campaign from the server, and download updates when they become available. It then directly calls <code>rpm -i</code> to install the package it received.</p>
+</div>
 </div>
 </div>
 </div>
