@@ -1,0 +1,872 @@
+---
+layout: page
+title: "API"
+category: dev
+date: 2015-08-26 10:30:27
+---
+:toc: macro
+
+This is the documentation page for the REST API of SOTA, including the Web Server, the Core Server, and the Resolver.
+
+The content-type of all requests is `application/json` unless otherwise specified.
+
+The core, resolver, and web server all expose APIs. Calls to the web server's API are forwarded to the appropriate entity: core, resolver, or both. Thus, the documentation here documents the core and resolver APIs; the calls to the web server are the same, but must be sent with a session authorization cookie.
+
+toc::[]
+
+=== GET /vehicles
+
+[width="100%",cols="18%,82%",]
+|================================================================
+|Availability
+|core, resolver
+
+|Description
+|Returns a list of all vehicle VINs in the database.
+
+|URL
+|/api/v1/vehicles
+
+|Parameters
+|None
+
+|Success Response
+a|
+*Code:* 200
+
+*Content:* A list of VINs.
+
+[source,json]
+----
+[
+  {
+    "vin": "AAAAAAA1234567890"
+  },
+  {
+    "vin": "BBBBBBB1234567890"
+  }
+]
+----
+
+|================================================================
+
+=== PUT /vehicles/:vin
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+|Availability |core, resolver
+
+|Description |Adds a vehicle VIN to the database.
+
+|URL |/api/v1/vehicles/:vin
+
+|URL Parameters a|
+* *:vin* — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.
+
+|Success Response a|
+*Code:* 204
+
+|Error Response a|
+*Code:* 400
+
+*Content:*
+[source,json]
+----
+{
+  "code": "invalid_entity",
+  "description": "Predicate failed:(ABCDEFGHIJKLMNOP1234567890 isn't 17 letters or digits long)."
+}
+----
+
+|=======================================================================
+
+=== GET /packages
+
+[width="100%",cols="18%,82%",]
+|==============================================================
+|Availability |core, resolver
+|Description |Returns a list of packages.
+|URL |/api/v1/packages
+|Parameters |None
+|Success Response a|
+A list of package objects. Each contains:
+
+* *id* — The packageId of the package to be sent. Object consisting of:
+  ** *name* — Package name
+  ** *version* — _x.y.z_
+* *uri* — The URI of the package binary
+* *size* — Package size in bytes
+* *checkSum* — The package's checksum
+* *description* — The package's description text
+* *vendor* — The package's vendor
+
+Example:
+
+[source,json]
+----
+[
+  {
+    "size": 35768,
+    "description": "testing",
+    "uri": {
+      "uri": "http://path/to/file"
+    },
+    "checkSum": "5tsJvSyE22ZTQQfaTvAOat3Muo4=",
+    "id": {
+      "version": "1.2.3",
+      "name": "myPackage"
+    },
+    "vendor": "AcmeSoftware"
+  },
+  {
+    "size": 35768,
+    "description": "testing",
+    "uri": {
+      "uri": "http://path/to/file"
+    },
+    "checkSum": "5tsJvSyE22ZTQQfaTvAOat3Muo4=",
+    "id": {
+      "version": "2.3.4",
+      "name": "myPackage"
+    },
+    "vendor": "AcmeSoftware"
+  }
+]
+----
+
+Note: Currently, the resolver returns an empty list and a *204 No Content* code for this endpoint, even though it stores package information in its database.
+
+|==============================================================
+
+=== PUT /packages/:name/:version (core)
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+|Availability |core
+
+|Description |Adds a package to the database.
+
+|Content-type a| `multipart/form-data`
+
+|URL |/api/v1/packages/:name/:version
+
+|URL Parameters a|
+* *:name* — The name of the software package.
+* *:version* — The package version, in _x.y.z_ format. __x__, __y__, and _z_ must all contain only digits.
+
+|Data Parameters a|
+*Required:*
+
+* *file* — The binary package file.
+
+*Optional:*
+
+* *description* — A short description of the package.
+* *vendor* — The vendor for the software package.
+
+|Success Response a|
+*Code:* 204
+
+|=======================================================================
+
+=== PUT /packages/:name/:version (resolver)
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+|Availability |resolver
+
+|Description |Adds a package to the database.
+
+|URL |/api/v1/packages/:name/:version
+
+|URL Parameters a|
+* *:name* — The name of the software package.
+* *:version* — The package version, in _x.y.z_ format. __x__, __y__, and _z_ must all contain only digits.
+
+|Data Parameters a|
+
+* *description* — A short description of the package.
+* *vendor* — The vendor for the software package.
+
+|Success Response a|
+*Code:* 200
+
+*Content:*
+
+[source,json]
+----
+{
+  "vendor": "AcmeSoftware",
+  "description": "testing",
+  "id": {
+    "version": "3.4.5",
+    "name": "myPackage"
+  }
+}
+----
+
+|=======================================================================
+
+=== GET /resolve/:name/:version
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+|Availability |resolver
+
+|Description |Takes a package name and version, and returns a list of VINs it applies to, along with the packageId.
+
+|URL |/api/v1/resolve/:name/:version
+
+|URL Parameters a|
+* *:name* — The name of the software package.
+* *:version* — The package version, in _x.y.z_ format. __x__, __y__, and _z_ must all contain only digits.
+
+|Success Response a|
+*Code:* 200
+
+*Content:*
+
+[source,json]
+----
+[
+  [
+    "aaaaaaa1234567890",
+    [
+      {
+        "version": "1.2.3",
+        "name": "myPackage"
+      }
+    ]
+  ],
+  [
+    "abcdefg1234567890",
+    [
+      {
+        "version": "1.2.3",
+        "name": "myPackage"
+      }
+    ]
+  ]
+]
+----
+
+|=======================================================================
+
+=== GET /filters
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+|Availability |resolver
+
+|Description |Returns a list of all filters in the database.
+
+|URL |/api/v1/filters
+
+|Parameters |None
+
+|Success Response a|
+*Code:* 200
+
+*Content:* A list of filters.
+
+[source,json]
+----
+[
+  {
+    "expression": "vin_matches \"^12ABC\" AND has_component \"AcmeDVDPlayer\"",
+    "name": "myFilter"
+  }
+]
+----
+
+|=======================================================================
+
+=== POST /filters
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+|Availability |resolver
+
+|Description |Adds a filter to the database.
+
+|URL |/api/v1/filters
+
+|Data Parameters a|
+* *name* — A unique identifying name for the filter, between 2 and 100 alphanumeric characters in length.
+* *expression* — A filter. See the link:../doc/admin-gui-user-guide.html#filter-syntax[filter syntax documentation].
+
+|Success Response a|
+*Code:* 200
+
+*Content:*
+
+[source,json]
+----
+[
+  {
+    "expression": "vin_matches \"^12ABC\" AND has_component \"AcmeDVDPlayer\"",
+    "name": "myFilter"
+  }
+]
+----
+
+|Error Responses a|
+* Invalid filter syntax
+
+*Code:* 400
+
+*Content:*
+[source,json]
+----
+{
+  "code": "invalid_entity",
+  "description": "Predicate failed: (Expression failed to parse)."
+}
+----
+
+* Filter name already exists
+
+*Code:* 409
+
+*Content:*
+[source,json]
+----
+{
+  "code": "duplicate_entry",
+  "description": "Entry already exists"
+}
+----
+
+|=======================================================================
+
+=== PUT /filters/:filter
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+|Availability |resolver
+
+|Description |Modifies an existing filter
+
+|URL |/api/v1/filters
+
+|URL Parameters a|
+* *:filter* — The name of an existing filter.
+
+|Data Parameters a|
+* *expression* - A filter. See the link:../doc/admin-gui-user-guide.html#filter-syntax[filter syntax documentation].
+
+|Success Response a|
+*Code:* 200
+
+*Content:*
+
+[source,json]
+----
+[
+  {
+    "expression": "vin_matches \"^12ABC\" AND has_component \"AcmeDVDPlayer\"",
+    "name": "myFilter"
+  }
+]
+----
+
+|Error Responses a|
+* Invalid filter syntax
+
+*Code:* 400
+
+*Content:*
+[source,json]
+----
+{
+  "code": "invalid_entity",
+  "description": "Predicate failed: (Expression failed to parse)."
+}
+----
+
+* Filter name doesn't exist
+
+*Code:* 400
+
+*Content:*
+[source,json]
+----
+{
+  "code": "missing_filter",
+  "description": "Filter doesn't exist"
+}
+----
+
+|=======================================================================
+
+=== DELETE /filters/:filter
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+|Availability |resolver
+
+|Description |Deletes an existing filter
+
+|URL |/api/v1/filters/:filter
+
+|URL Parameters a|
+* *:filter* — The name of an existing filter, between 2 and 100 alphanumeric characters in length.
+* *expression* — A filter. See the link:../doc/admin-gui-user-guide.html#filter-syntax[filter syntax documentation].
+
+|Success Response a|
+*Code:* 200
+
+*Content:* "The filter named Refined(myFilter) has been deleted."
+
+|Error Responses a|
+* Filter name doesn't exist
+
+*Code:* 400
+
+*Content:*
+[source,json]
+----
+{
+  "code": "missing_filter",
+  "description": "Filter doesn't exist"
+}
+----
+
+|=======================================================================
+
+
+=== POST /validate/filter
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+|Availability |resolver
+
+|Description |Validates the syntax of a filter.
+
+|URL |/api/v1/validate/filter
+
+|Data Parameters a|
+* *name* — A unique identifying name for the filter, between
+2 and 100 alphanumeric characters in length.
+* *expression* — A filter. See the link:../doc/admin-gui-user-guide.html#filter-syntax[filter syntax documentation].
+
+|Success Response a|
+*Code:* 200
+
+*Content:* "OK"
+
+*Note:* Only the _validity_ of the filter name is checked. As long as
+the filter syntax is correct and the name is between 2 and 100
+alphanumeric characters, a success response is returned, regardless of
+whether a filter with this name already exists.
+
+|Error Responses a|
+*Code:* 400
+
+*Content:*
+[source,json]
+----
+{
+  "code": "invalid_entity",
+  "description": "Predicate failed: (Expression failed to parse)."
+}
+----
+
+|=======================================================================
+
+=== GET /packageFilters
+
+[width="100%",cols="18%,82%",]
+|==================================================================
+|Availability |resolver
+|Description |Returns a list of all package —> filter associations.
+|URL |/api/v1/packageFilters
+|Parameters |None
+|Success Response a|
+*Code:* 200
+
+*Content:*
+
+[source,json]
+----
+[
+  {
+    "filterName": "myFilter",
+    "packageVersion": "4.5.6",
+    "packageName": "myPackage"
+  }
+]
+----
+|==================================================================
+
+=== POST /packageFilters
+
+[width="100%",cols="18%,82%",]
+|==================================================================
+|Availability |resolver
+|Description |Associate a filter with a package
+|URL |/api/v1/packageFilters
+|Data Parameters a|
+* *packageName* - The name of an existing package.
+* *packageVersion* - A valid version number for that package.
+* *filterName* - The name of an existing filter.
+|Success Response a|
+*Code:* 200
+
+*Content:*
+
+[source,json]
+----
+[
+  {
+    "filterName": "myFilter",
+    "packageVersion": "4.5.6",
+    "packageName": "myPackage"
+  }
+]
+----
+
+|Error Response a|
+*Code:* 409
+
+*Content:*
+[source,json]
+----
+{
+  "code": "duplicate_entry",
+  "description": "Entry already exists"
+}
+----
+|==================================================================
+
+=== DELETE /packageFilters/:packageName/:packageVersion/:filterName
+
+[width="100%",cols="18%,82%",]
+|==================================================================
+|Availability |resolver
+|Description |Delete a package -> filter association
+|URL |/api/v1/packageFiltersDelete/:packageName/:packageVersion/:filterName
+|URL Parameters a|
+* *packageName* - The name of an existing package.
+* *packageVersion* - A valid version number for that package.
+* *filterName* - The name of an existing filter that is associated with that package name and version.
+|Success Response a|
+*Code:* 200
+
+*Content:* 1
+
+|Error Response a|
+*Code:* 400
+
+*Content:*
+[source,json]
+----
+{
+  "code": "missing_package_filter",
+  "description": "Package filter doesn't exist"
+}
+----
+|==================================================================
+
+
+=== GET /packageFilters?filter=:filter
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+|Availability |web server, resolver
+
+|Description |Returns a list of all packages associated with a
+particular filter.
+
+|URL |/api/v1/packageFilters?filter=:filter
+
+|URL Parameters a|
+* *:filter* — A filter name.
+
+|Success Response a|
+A list of packages and their information.
+
+*Code:* 200
+
+*Content:*
+
+[source,json]
+----
+[
+  {
+    "vendor": "AcmeSoftware",
+    "description": "",
+    "id": {
+      "version": "1.2.3",
+      "name": "myPackage"
+    }
+  },
+  {
+    "vendor": "AcmeSoftware",
+    "description": "",
+    "id": {
+      "version": "2.3.4",
+      "name": "myPackage2"
+    }
+  }
+]
+----
+
+
+|Error Response a|
+*Code:* 404
+
+*Content:*
+[source,json]
+----
+{
+  "code": "missing_filter",
+  "description": "Filter doesn't exist"
+}
+----
+|=======================================================================
+
+=== GET /packageFilters?package=:name[-]:version
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+|Availability |resolver
+
+|Description |Returns a list of all filters associated with a particular
+package.
+
+|URL |/api/v1/packageFilters?package=:name[-]:version
+
+|URL Parameters a|
+* *:name* — A package name.
+* *:version* — A package version, in _x.y.z_ format. __x__, __y__, and __z__ must all exist, and contain only digits.
+
+|Success Response a|
+*Example:* GET http://resolver/api/v1/packageFilters?package=myPackage-1.2.3
+
+*Code:* 200
+
+*Content:* A list of filters associated with the package.
+
+[source,json]
+----
+[
+  {
+    "expression": "vin_matches \"^12ABC\" AND has_component \"AcmeDVDPlayer\"",
+    "name": "myFilter"
+  }
+]
+----
+
+|Error Response a|
+*Code:* 404
+
+*Content:*
+[source,json]
+----
+{
+  "code": "missing_package",
+  "description": "Package doesn't exist"
+}
+----
+|=======================================================================
+
+=== POST /updates
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+|Availability |core
+
+|Description |Create an install campaign for a package
+
+|URL |/api/v1/updates
+
+|Data Parameters a|
+* *id* — A UUID; must not already exist in the database.
+* *packageId* — An object consisting of:
+  ** *name* — A package name.
+  ** *version* — A package version, in _x.y.z_ format. __x__, __y__, and __z__ must all exist, and contain only digits.
+* *priority* — `[int]` The priority order of the campaign. Lower numbers indicate higher priority.
+* *creationTime* — `[dateTime]` The date and time the install campaign was created on.
+* *periodOfValidity* — `[dateTime]/[dateTime]` A string with campaign start and end `dateTime`s separated by a slash.
+
+*Example:*
+[source,json]
+----
+{
+  "id": "7dacded2-911e-4c43-b5e3-f91870e79f05",
+  "packageId": {
+    "name": "myPackage",
+    "version": "1.2.3"
+  },
+  "priority": 3,
+  "creationTime": "2015-09-18T00:00:23+00:00",
+  "periodOfValidity": "2015-09-18T90:00:00+00:00/2015-09-19T00:00:00+00:00"
+}
+----
+|Success Response a|
+*Code:* 200
+
+*Content:* A list of VIN update objects. Each object contains:
+
+* *vin*
+* *status* — The status of the update for this VIN. Can be _Pending, InFlight, Canceled, Failed,_ or _Finished_.
+* *request* — An object containing information about the update campaign. Includes:
+  ** *packageId* — Object containing:
+    *** *name* — Package name
+    *** *version* — _x.y.z_
+  ** *id* — the UUID of the update campaign
+  ** *priority* — The priority of the campaign.
+  ** *periodOfValidity* — `[dateTime]/[dateTime]` The start and end time of the update campaign.
+  ** *creationTime* — `[dateTime]` — The date and time the campaign was created.
+* *dependencies* — A description of the package to be sent. Object containing:
+  ** *id* — The packageId of the package to be sent. Object consisting of:
+    *** *name* — Package name
+    *** *version* — _x.y.z_
+  ** *uri* — The URI of the package binary
+  ** *size* — Package size in bytes
+  ** *checkSum* — The package's checksum
+  ** *description* — The package's description text
+  ** *vendor* — The package's vendor
+
+[source,json]
+----
+[
+  {
+    "dependencies": [
+      {
+        "size": 35768,
+        "description": "testing",
+        "uri": {
+          "uri": "http://sota_core/ghc-7.6.3-18.3.el7.x86_64.rpm"
+        },
+        "checkSum": "5tsJvSyE22ZTQQfaTvAOat3Muo4=",
+        "id": {
+          "version": "1.2.3",
+          "name": "myPackage"
+        },
+        "vendor": "AcmeSoftware"
+      }
+    ],
+    "status": "Pending",
+    "vin": "aaaaaaa1234567890",
+    "request": {
+      "periodOfValidity": "2015-09-18T02:00:00.000+02:00/2015-09-19T02:00:00.000+02:00",
+      "priority": 3,
+      "id": "7dacded2-911e-4c43-b5e3-f91870e79f07",
+      "packageId": {
+        "version": "1.2.3",
+        "name": "myPackage"
+      },
+      "creationTime": "2015-09-18T02:00:23.000+02:00"
+    }
+  }
+]
+----
+
+|Error Response a|
+Invalid package name:
+
+*Code:* 500
+
+*Content:*
+[source,json]
+----
+{
+  "error": "Cannot add or update a child row: a foreign key constraint fails (`sota_core`.`installcampaign`, CONSTRAINT `install_campaign_package_id_fk` FOREIGN KEY (`packageName`, `packageVersion`) REFERENCES `Package` (`name`, `version`))"
+}
+----
+|=======================================================================
+
+=== GET /updates
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+|Availability |core
+
+|Description |Create an install campaign for a package
+
+|URL |/api/v1/updates
+
+|Parameters a|
+
+None
+|Success Response a|
+*Code:* 200
+
+*Content:* A list of update campaign objects. Each object contains:
+
+* *packageId* — Object containing:
+  ** *name* — Package name
+  ** *version* — _x.y.z_
+* *id* — the UUID of the update campaign
+* *priority* — The priority of the campaign.
+* *periodOfValidity* — `[dateTime]/[dateTime]` The start and end time of the update campaign.
+* *creationTime* — `[dateTime]` — The date and time the campaign was created.
+
+[source,json]
+----
+[
+  {
+    "periodOfValidity": "2015-09-18T02:00:00.000+02:00/2015-09-19T02:00:00.000+02:00",
+    "priority": 3,
+    "id": "7dacded2-911e-4c43-b5e3-f91870e79f05",
+    "packageId": {
+      "version": "1.2.3",
+      "name": "myPackage"
+    },
+    "creationTime": "2015-09-18T02:00:23.000+02:00"
+  },
+  {
+    "periodOfValidity": "2015-09-18T02:00:00.000+02:00/2015-09-19T02:00:00.000+02:00",
+    "priority": 3,
+    "id": "7dacded2-911e-4c43-b5e3-f91870e79f06",
+    "packageId": {
+      "version": "2.3.4",
+      "name": "myPackage"
+    },
+    "creationTime": "2015-09-18T02:00:23.000+02:00"
+  }
+]
+----
+|=======================================================================
+
+=== GET /updates/:campaignId
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+|Availability |core
+
+|Description |Create an install campaign for a package
+
+|URL |/api/v1/updates/:campaignId
+
+|URL Parameters a|
+
+*:campaignId* — The UUID of an existing install campaign.
+
+|Success Response a|
+*Code:* 200
+
+*Content:* A list of VINs associated with the requested campaign, and their update status.
+
+[source,json]
+----
+[
+  [
+    "52930598-a624-4701-9bf9-dce1e9c4ac77",
+    "aaaaaaa1234567890",
+    "Pending"
+  ],
+  [
+    "52930598-a624-4701-9bf9-dce1e9c4ac77",
+    "abcdefg1234567890",
+    "Pending"
+  ]
+]
+----
+|=======================================================================
+
+

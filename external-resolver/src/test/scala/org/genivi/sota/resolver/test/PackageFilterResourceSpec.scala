@@ -5,7 +5,6 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.unmarshalling._
 import eu.timepit.refined.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.CirceSupport._
@@ -30,18 +29,23 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
       addPackageFilterOK(pkgName, pkgVersion, filterName)
     }
 
-    "not allow assignment of filters to non-existing packages " in {
+    "not allow assignment of filters to non-existing package names" in {
       addPackageFilter("nonexistant", pkgVersion, filterName) ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
+        responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingPackage
+      }
+    }
 
-        status shouldBe StatusCodes.BadRequest
+    "not allow assignment of filters to non-existing package versions" in {
+      addPackageFilter(pkgName, "0.0.9", filterName) ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingPackage
       }
     }
 
     "not allow assignment of non-existing filters to existing packages " in {
       addPackageFilter(pkgName, pkgVersion, "nonexistant") ~> route ~> check {
-
-        status shouldBe StatusCodes.BadRequest
+        status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingFilter
       }
     }
@@ -53,17 +57,54 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
       }
     }
 
-    "list packages associated to a filter on GET requests to /packagesFor/:filterName" in {
+    "list packages associated to a filter on GET requests to /packageFilters?filter=:filterName" in {
       listPackagesForFilter(filterName) ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[Seq[Package.Name]] shouldBe List(Refined(pkgName))
+        responseAs[List[Package]] shouldBe List(Package(Package.Id(Refined(pkgName), Refined(pkgVersion)), None, None))
       }
     }
 
-    "list filters associated to a package on GET requests to /filtersFor/:packageName" in {
+    "fail to list packages associated to empty filter names" in {
+      listPackagesForFilter("") ~> route ~> check {
+        status shouldBe StatusCodes.BadRequest
+      }
+    }
+
+    "fail to list packages associated to non-existant filters" in {
+      listPackagesForFilter("nonexistant") ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
+        responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingFilter
+      }
+    }
+
+    "list filters associated to a package on GET requests to /packageFilters?package=:packageName-:packageVersion" in {
       listFiltersForPackage(pkgName, pkgVersion) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Seq[Filter]] shouldBe List(Filter(Refined(filterName), Refined(filterExpr)))
+      }
+    }
+
+    "fail to list filters associated to a package if no package name is given" in {
+      listFiltersForPackage("", pkgVersion) ~> route ~> check {
+        status shouldBe StatusCodes.BadRequest
+      }
+    }
+
+    "fail to list filters associated to a package if a non-existant package name is given" in {
+      listFiltersForPackage("nonexistant", pkgVersion) ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
+      }
+    }
+
+    "fail to list filters associated to a package if no package version is given" in {
+      listFiltersForPackage(pkgName, "") ~> route ~> check {
+        status shouldBe StatusCodes.BadRequest
+      }
+    }
+
+    "fail to list filters associated to a package if a non-existant package version is given" in {
+      listFiltersForPackage(pkgName, "6.6.6") ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
       }
     }
 
@@ -79,7 +120,7 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
 
     "fail if package filter does not exist" in {
       deletePackageFilter("nonexistant", pkgVersion, filterName) ~> route ~> check {
-        status shouldBe StatusCodes.BadRequest
+        status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingPackageFilter
       }
     }

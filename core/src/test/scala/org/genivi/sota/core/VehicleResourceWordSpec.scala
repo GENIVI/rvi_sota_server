@@ -8,21 +8,21 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import eu.timepit.refined.Refined
+import io.circe.generic.auto._
+import org.genivi.sota.CirceSupport._
 import org.genivi.sota.core.data.Vehicle
 import org.genivi.sota.core.db.Vehicles
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.{WordSpec, Matchers}
 import scala.concurrent.Await
 import slick.driver.MySQLDriver.api._
-import spray.json.DefaultJsonProtocol._
 
 
 class VinResourceWordSpec extends WordSpec
     with Matchers
     with ScalatestRouteTest
     with BeforeAndAfterAll {
-
-  import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 
   val databaseName = "test-database"
 
@@ -34,7 +34,7 @@ class VinResourceWordSpec extends WordSpec
   override def beforeAll {
     TestDatabase.resetDatabase( databaseName )
     import scala.concurrent.duration._
-    Await.ready( db.run( DBIO.seq( testVins.map( v => Vehicles.create(new Vehicle(new Vehicle.IdentificationNumber(v)))): _*) ), 2.seconds )
+    Await.ready( db.run( DBIO.seq( testVins.map( v => Vehicles.create(Vehicle(Refined(v)))): _*) ), 2.seconds )
   }
 
   val VinsUri  = Uri( "/vehicles" )
@@ -46,7 +46,7 @@ class VinResourceWordSpec extends WordSpec
         assert(status === StatusCodes.OK)
         val vins = responseAs[Seq[Vehicle]]
         assert(vins.nonEmpty)
-        assert(vins.filter(v => v.vin === new Vehicle.IdentificationNumber("12345678901234500")).nonEmpty)
+        assert(vins.filter(v => v.vin === Refined("12345678901234500")).nonEmpty)
         assert(vins.length === 3)
       }
     }

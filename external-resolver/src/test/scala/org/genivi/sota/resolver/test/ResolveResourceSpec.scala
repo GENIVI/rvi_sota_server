@@ -1,5 +1,13 @@
 package org.genivi.sota.resolver.test
 
+import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.unmarshalling._
+import eu.timepit.refined.Refined
+import io.circe.generic.auto._
+import org.genivi.sota.CirceSupport._
+import org.genivi.sota.resolver.types.{Vehicle, Package, PackageFilter}
+import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
+
 
 class ResolveResourceWordSpec extends ResourceWordSpec {
 
@@ -38,6 +46,40 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
 
       resolveOK("resolve pkg", "0.0.1", List())
 
+    }
+  }
+
+  "fail if a non-existing package name is given" in {
+
+    resolve("resolve pkg2", "0.0.1") ~> route ~> check {
+      status shouldBe StatusCodes.NotFound
+      responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingPackage
+    }
+  }
+
+  "fail if a non-existing package version is given" in {
+
+    resolve("resolve pkg", "0.0.2") ~> route ~> check {
+      status shouldBe StatusCodes.NotFound
+      responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingPackage
+    }
+  }
+
+  "return a string that the core server can parse" in {
+
+    deletePackageFilter("resolve pkg", "0.0.1", "falseFilter") ~> route ~> check {
+      status shouldBe StatusCodes.OK
+      resolve("resolve pkg", "0.0.1") ~> route ~> check {
+        status shouldBe StatusCodes.OK
+
+        responseAs[io.circe.Json].noSpaces shouldBe
+          s"""[["00RESOLVEVIN12345",[{"version":"0.0.1","name":"resolve pkg"}]],["01RESOLVEVIN12345",[{"version":"0.0.1","name":"resolve pkg"}]]]"""
+
+        responseAs[Map[Vehicle.Vin, Set[Package.Id]]] shouldBe
+          Map(Refined("00RESOLVEVIN12345") -> Set(Package.Id(Refined("resolve pkg"), Refined("0.0.1"))),
+              Refined("01RESOLVEVIN12345") -> Set(Package.Id(Refined("resolve pkg"), Refined("0.0.1"))))
+
+      }
     }
   }
 

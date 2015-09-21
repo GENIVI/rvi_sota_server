@@ -7,11 +7,14 @@ import sbt._
 import sbt.Keys._
 import sbtbuildinfo.{BuildInfoPlugin, BuildInfoKey}
 import sbtbuildinfo.BuildInfoKeys._
-import spray.revolver.RevolverPlugin._
 import com.typesafe.sbt.packager.Keys.dockerExposedPorts
 import com.typesafe.sbt.web._
 
 object SotaBuild extends Build {
+
+  lazy val UnitTests = config("ut") extend Test
+
+  lazy val IntegrationTests = config("it") extend ( Test )
 
   lazy val basicSettings = Seq(
     organization := "org.genivi",
@@ -22,8 +25,8 @@ object SotaBuild extends Build {
 
     testOptions in Test ++= Seq(
       Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
-      Tests.Argument(TestFrameworks.ScalaTest, "-o"),
-      Tests.Argument(TestFrameworks.ScalaCheck, "-maxDiscardRatio", "10", "-minSuccessfulTests", "200")
+      Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
+      Tests.Argument(TestFrameworks.ScalaCheck, "-maxDiscardRatio", "10", "-minSuccessfulTests", "100")
     ),
 
     dependencyOverrides ++= Set(
@@ -32,7 +35,9 @@ object SotaBuild extends Build {
       "org.scala-lang.modules" %% "scala-xml" % "1.0.4",
       "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
       "com.google.guava"  % "guava" % "18.0"
-    )
+    ),
+
+    shellPrompt in ThisBuild := { state => Project.extract(state).currentRef.project + "> " }
   )
 
   lazy val compilerSettings = Seq(
@@ -40,14 +45,14 @@ object SotaBuild extends Build {
     javacOptions in compile ++= Seq("-encoding", "UTF-8", "-source", "1.6", "-target", "1.6", "-Xlint:unchecked", "-Xlint:deprecation")
   )
 
-  lazy val commonSettings = basicSettings ++ compilerSettings ++ Packaging.settings ++ Revolver.settings ++ Seq(
+  lazy val commonSettings = basicSettings ++ compilerSettings ++ Packaging.settings ++ Seq(
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
     buildInfoPackage := organization.value + ".sota." + name.value
   )
 
   lazy val common = Project(id = "common", base = file("common"))
     .settings(basicSettings ++ compilerSettings)
-    .settings( libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Spray :+ Dependencies.Refined )
+    .settings( libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.NscalaTime :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
 
   lazy val externalResolver = Project(id = "resolver", base = file("external-resolver"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
@@ -64,13 +69,18 @@ object SotaBuild extends Build {
 
   lazy val core = Project(id = "core", base = file("core"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Spray :+ Dependencies.NscalaTime :+ Dependencies.Scalaz,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.NscalaTime :+ Dependencies.Scalaz,
+      testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RequiresRvi"),
+      testOptions in IntegrationTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RequiresRvi"),
       parallelExecution in Test := false,
       dockerExposedPorts := Seq(8080),
       flywayUrl := sys.env.get("CORE_DB_URL").orElse( sys.props.get("core.db.url") ).getOrElse("jdbc:mysql://localhost:3306/sota_core"),
       flywayUser := sys.env.get("CORE_DB_USER").orElse( sys.props.get("core.db.user") ).getOrElse("sota"),
       flywayPassword := sys.env.get("CORE_DB_PASSWORD").orElse( sys.props.get("core.db.password")).getOrElse("s0ta")
     ))
+    .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
+    .settings(inConfig(IntegrationTests)(Defaults.testTasks): _*)
+    .configs(IntegrationTests, UnitTests)
     .dependsOn(common)
     .enablePlugins(Packaging.plugins: _*)
 
@@ -124,15 +134,13 @@ object Dependencies {
     "ch.qos.logback" % "logback-classic" % "1.0.13"
   )
 
-  lazy val Spray = "com.typesafe.akka" %% "akka-http-spray-json-experimental" % AkkaHttpVersion
-
   lazy val Circe = Seq(
     "io.circe" %% "circe-core" % CirceVersion,
     "io.circe" %% "circe-generic" % CirceVersion,
     "io.circe" %% "circe-jawn" % CirceVersion
   )
 
-  lazy val Refined = "eu.timepit" %% "refined" % "0.2.0"
+  lazy val Refined = "eu.timepit" %% "refined" % "0.2.3"
 
   lazy val Scalaz = "org.scalaz" %% "scalaz-core" % "7.1.3"
 
@@ -145,7 +153,7 @@ object Dependencies {
   lazy val TestFrameworks = Seq( ScalaTest, ScalaCheck )
 
   lazy val Database = Seq (
-    "com.typesafe.slick" %% "slick" % "3.0.0",
+    "com.typesafe.slick" %% "slick" % "3.0.2",
     "com.zaxxer" % "HikariCP" % "2.3.8",
     "org.mariadb.jdbc" % "mariadb-java-client" % "1.2.0"
   )
@@ -155,6 +163,8 @@ object Dependencies {
   lazy val NscalaTime = "com.github.nscala-time" %% "nscala-time" % "2.0.0"
 
   lazy val ParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
+
+  lazy val CommonsCodec = "commons-codec" % "commons-codec" % "1.10"
 
   lazy val Rest = Akka ++ Slick
 

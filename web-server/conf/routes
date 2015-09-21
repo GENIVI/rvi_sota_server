@@ -3,22 +3,17 @@
 # ~~~~
 
 # Home page
-GET     /                           org.genivi.webserver.controllers.Application.index
+GET     /                                       org.genivi.webserver.controllers.Application.index
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
-GET     /webjars/*file              controllers.WebJarAssets.at(file)
+GET     /assets/*file                           controllers.Assets.versioned(path="/public", file: Asset)
+GET     /webjars/*file                          controllers.WebJarAssets.at(file)
 
-POST    /api/v1/packageFilters      org.genivi.webserver.controllers.Application.resolverProxy
-POST    /api/v1/install_campaigns   org.genivi.webserver.controllers.Application.coreProxy(path: String)
-PUT     /api/v1/packages/*path      org.genivi.webserver.controllers.Application.coreProxy(path: String)
-GET     /api/v1/packages            org.genivi.webserver.controllers.Application.coreProxy(path: String = "")
+GET     /login                                  org.genivi.webserver.controllers.Application.login
+GET     /logout                                 org.genivi.webserver.controllers.Application.logout
+POST    /authenticate                           org.genivi.webserver.controllers.Application.authenticate
 
-POST    /api/v1/*path               org.genivi.webserver.controllers.Application.reverseProxy(path: String)
-PUT     /api/v1/*path               org.genivi.webserver.controllers.Application.reverseProxy(path: String)
-GET     /api/v1/*path               org.genivi.webserver.controllers.Application.reverseProxyNoBody(path: String)
-
-GET     /login                      org.genivi.webserver.controllers.Application.login
-GET     /logout                     org.genivi.webserver.controllers.Application.logout
-POST    /authenticate               org.genivi.webserver.controllers.Application.authenticate
-
+GET     /api/v1/*path                           org.genivi.webserver.controllers.Application.apiProxy(path: String)
+PUT     /api/v1/*path                           org.genivi.webserver.controllers.Application.apiProxy(path: String)
+POST    /api/v1/*path                           org.genivi.webserver.controllers.Application.apiProxy(path: String)
+DELETE  /api/v1/*path                           org.genivi.webserver.controllers.Application.apiProxy(path: String)

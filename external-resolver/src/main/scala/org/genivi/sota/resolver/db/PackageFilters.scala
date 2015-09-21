@@ -38,8 +38,6 @@ object PackageFilters {
 
   val packageFilters = TableQuery[PackageFilterTable]
 
-  class MissingPackageException extends Throwable with NoStackTrace
-
   def add(pf: PackageFilter)(implicit ec: ExecutionContext): DBIO[PackageFilter] = {
 
     def failIfEmpty[X](io: DBIO[Seq[X]], t: => Throwable)(implicit ec: ExecutionContext): DBIO[Unit] =
@@ -47,9 +45,8 @@ object PackageFilters {
 
     for {
       _ <- failIfEmpty(packages.filter(p => p.name === pf.packageName
-               && p.version === pf.packageVersion).result,
-             new MissingPackageException)
-      _ <- failIfEmpty(filters.filter(_.name === pf.filterName).result, new Filters.MissingFilterException)
+               && p.version === pf.packageVersion).result, Packages.MissingPackageException)
+      _ <- failIfEmpty(filters.filter(_.name === pf.filterName).result, Filters.MissingFilterException)
       _ <- packageFilters += pf
     } yield pf
   }
@@ -57,18 +54,29 @@ object PackageFilters {
   def list: DBIO[Seq[PackageFilter]] =
     packageFilters.result
 
-  def listPackagesForFilter(fname: Filter.Name)(implicit ec: ExecutionContext): DBIO[Seq[Package.Name]] =
-    packageFilters.filter(_.filterName === fname).map(_.packageName).result
+  def listPackagesForFilter
+    (fname: Filter.Name)
+    (implicit ec: ExecutionContext): DBIO[Seq[Package]] =
+
+    Filters.exists(fname).andThen(
+      packageFilters
+        .filter(_.filterName === fname)
+        .flatMap(pf => packages
+          .filter(pkg => pkg.name === pf.packageName && pkg.version === pf.packageVersion))
+        .result
+    )
 
   def listFiltersForPackage
     (pname: Package.Name, pversion: Package.Version)
-    (implicit ec: ExecutionContext)
-      : DBIO[Seq[Filter]]
-  = packageFilters
+    (implicit ec: ExecutionContext): DBIO[Seq[Filter]] =
+
+  Packages.exists(pname, pversion).andThen(
+    packageFilters
       .filter(p => p.packageName === pname && p.packageVersion === pversion)
       .map(_.filterName)
       .flatMap(fname => filters.filter(_.name === fname))
       .result
+  )
 
   def deleteByFilterName(fname: Filter.Name)(implicit ec: ExecutionContext): DBIO[Int] =
     packageFilters

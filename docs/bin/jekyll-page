@@ -74,8 +74,8 @@ end
 today=Date.today().strftime('%F')
 now=DateTime.now().strftime('%F %T')
 
-filepath = "#{POSTS_DIR}/#{today}-#{filename}.md"
-symlink = "#{PAGES_DIR}/#{filename}.md"
+filepath = "#{POSTS_DIR}/#{today}-#{filename}.adoc"
+symlink = "#{PAGES_DIR}/#{filename}.adoc"
 
 if File.exists?(filepath)
     puts "File #{filepath} already exists"
@@ -97,7 +97,7 @@ File.open(filepath, 'w') do |file|
     file.puts content
 end
 
-File.symlink("../_posts/#{today}-#{filename}.md", symlink)
+File.symlink("../_posts/#{today}-#{filename}.adoc", symlink)
 
 if options[:edit]
     if not ENV['EDITOR']

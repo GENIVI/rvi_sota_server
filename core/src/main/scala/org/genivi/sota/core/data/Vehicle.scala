@@ -4,7 +4,9 @@
  */
 package org.genivi.sota.core.data
 
-import eu.timepit.refined._
+import eu.timepit.refined.{Predicate, Refined}
+import io.circe.{Encoder, Decoder}
+import io.circe.generic.auto._
 
 case class Vehicle(vin: Vehicle.IdentificationNumber)
 
@@ -22,7 +24,4 @@ object Vehicle {
     override def compare( a: IdentificationNumber, b: IdentificationNumber ) : Int = a.get compare b.get
   }
 
-  import spray.json.DefaultJsonProtocol._
-  import org.genivi.sota.refined.SprayJsonRefined._
-  implicit val vehicleFormat = jsonFormat1(Vehicle.apply)
 }

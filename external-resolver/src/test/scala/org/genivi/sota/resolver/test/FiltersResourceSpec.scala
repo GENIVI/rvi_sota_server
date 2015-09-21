@@ -19,7 +19,7 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
   "Filters resource" should {
 
     val filterName = "myfilter"
-    val filterExpr = s"""vin_matches "SAJNX5745SC??????""""
+    val filterExpr = s"""vin_matches "SAJNX5745SC......""""
     val filter     = Filter(Refined(filterName), Refined(filterExpr))
 
     "create a new resource on POST request" in {
@@ -41,7 +41,7 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
     }
 
     val filterName2 = "myfilter2"
-    val filterExpr2 = s"""vin_matches "TAJNX5745SC??????""""
+    val filterExpr2 = s"""vin_matches "TAJNX5745SC......""""
     val filter2     = Filter(Refined(filterName2), Refined(filterExpr2))
 
     "list available filters on a GET request" in {
@@ -51,27 +51,33 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
       }
     }
 
-    "Posting the same filter twice should fail" in {
+    "allow regex search on listing filters" in {
+      listFiltersRegex("^.*2$") ~> route ~> check {
+        responseAs[Seq[Filter]] shouldBe List(filter2)
+      }
+    }
+
+    "fail if the same filter is posted twice" in {
       addFilter(filterName, filterExpr) ~> route ~> check {
         status shouldBe StatusCodes.Conflict
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.DuplicateEntry
       }
     }
 
-    "Putting an existing filter name should update the expression" in {
+    "update the expression of existing filter on PUT request" in {
       updateFilter(filterName, filterExpr) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
     }
 
-    "Putting an non-existing filter name should fail" in {
+    "fail on trying to update non-existing filters" in {
       updateFilter("nonexistant", filterExpr) ~> route ~> check {
-        status shouldBe StatusCodes.BadRequest
+        status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingFilter
       }
     }
 
-    "DELETE requests should delete filters" in {
+    "delete filters on DELETE requests" in {
       deleteFilterOK(filterName)
 
       listFilters ~> route ~> check {
@@ -80,9 +86,9 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
       }
     }
 
-    "Deleting non-existant filters should fail" in {
+    "fail on trying to delete non-existing filters" in {
       deleteFilter("nonexistant") ~> route ~> check {
-        status shouldBe StatusCodes.BadRequest
+        status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingFilter
       }
     }

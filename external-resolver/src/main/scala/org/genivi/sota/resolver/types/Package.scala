@@ -27,14 +27,26 @@ object Package {
 
   trait ValidName
   trait ValidVersion
+  trait ValidId
 
-  type Name    = String Refined ValidName
-  type Version = String Refined ValidVersion
+  type Name        = Refined[String, ValidName]
+  type Version     = Refined[String, ValidVersion]
+  type NameVersion = Refined[String, ValidId]
 
   implicit val validPackageName: Predicate[ValidName, String] =
     Predicate.instance( _.nonEmpty, _ => "Package name required" )
 
   implicit val validPackageVersion: Predicate[ValidVersion, String] =
     Predicate.instance( _.matches( """^\d+\.\d+\.\d+$""" ), _ => "Invalid version format")
+
+  implicit val validPackageId: Predicate[ValidId, String] =
+    Predicate.instance(s =>
+      {
+        val nv = s.split("-")
+        nv.length == 2 &&
+          validPackageName.isValid(nv.head) &&
+          validPackageVersion.isValid(nv.tail.head)
+      }
+      , s => s"Invalid package id (should be package name dash package version): $s")
 
 }

@@ -1,15 +1,16 @@
-These are the source files for the static documentation site hosted on GitHub Pages. The site builds with [Jekyll](http://jekyllrb.com/), using [pandoc](http://pandoc.org/) and a Jekyll plugin called [jekyll-pandoc-multiple-formats](https://github.com/fauno/jekyll-pandoc-multiple-formats). The theme is [jekyll-docs-template](http://bruth.github.io/jekyll-docs-template).
+These are the source files for the static documentation site hosted on GitHub Pages. The site builds with [Jekyll](http://jekyllrb.com/), using [asciidoctor](http://asciidoctor.org/) and the [asciidoctor Jekyll plugin](https://github.com/asciidoctor/jekyll-asciidoc). The theme is [jekyll-docs-template](http://bruth.github.io/jekyll-docs-template).
 
-To get it up and running, you'll need the pandoc executable available on your system, plus the Jekyll and jekyll-pandoc-multiple-formats ruby gems:
+To get set up to build the site:
 
 ```
 gem install jekyll
-git clone git@github.com:fauno/jekyll-pandoc-multiple-formats.git
-cd jekyll-pandoc-multiple-formats
-gem build jekyll-pandoc-multiple-formats.gemspec
-gem install --local jekyll-pandoc-multiple-formats.gem
+gem install jekyll-asciidoc
 ```
 
 To see a local version of the site, run `jekyll serve`, then open a browser at <http://localhost:4000/rvi_sota_server/>.
 
-To build the site without the server, run `jekyll build`; it will output to `./_site/`. The live version of the generated site lives on the `gh-pages` branch; it is a special orphan branch that only exists to hold the static files for the GitHub Pages site.
+To simply build the site without running the local server, run `jekyll build`; it will output to `./_site/`.
+
+To update the site on Github Pages, build the site with `jekyll build`, then copy the complete generated static site to the gh-pages branch, commit, and push.
+
+You can also just run `make` to build the site using docker. It will output the static site to `./output`.

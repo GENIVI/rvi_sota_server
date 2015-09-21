@@ -6,6 +6,10 @@ define(['backbone', 'sota-dispatcher', './package'], function(Backbone, SotaDisp
     initialize: function() {
       SotaDispatcher.register(this.dispatchCallback.bind(this));
     },
+    fetchForFilter: function(filterName) {
+      var options = { url: "/api/v1/packageFilters?filter=" + filterName};
+      return Backbone.Model.prototype.fetch.call(this, options);
+    },
     dispatchCallback: function(payload) {
       switch(payload.actionType) {
         case 'package-add':

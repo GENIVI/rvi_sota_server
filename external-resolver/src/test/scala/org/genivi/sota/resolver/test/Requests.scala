@@ -8,7 +8,6 @@ import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model.{Uri, HttpRequest, StatusCode, StatusCodes}
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
-import akka.http.scaladsl.unmarshalling._
 import eu.timepit.refined.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.CirceSupport._
@@ -66,7 +65,7 @@ trait FilterRequests extends Matchers { self: ScalatestRouteTest =>
     Post(Resource.uri("filters"), Filter(Refined(name), Refined(expr)))
 
   def updateFilter(name: String, expr: String): HttpRequest =
-    Put(Resource.uri("filters", name), expr)
+    Put(Resource.uri("filters", name), Filter.ExpressionWrapper(Refined(expr)))
 
   def addFilterOK(name: String, expr: String)(implicit route: Route): Unit = {
 
@@ -92,6 +91,9 @@ trait FilterRequests extends Matchers { self: ScalatestRouteTest =>
       status shouldBe StatusCodes.OK
     }
 
+  def listFiltersRegex(re: String): HttpRequest =
+    Get(Resource.uri("filters") + "?regex=" + re)
+
   def listFilters: HttpRequest =
     Get(Resource.uri("filters"))
 
@@ -114,13 +116,13 @@ trait PackageFilterRequests extends Matchers { self: ScalatestRouteTest =>
     Get(Resource.uri("packageFilters"))
 
   def listPackagesForFilter(fname: String): HttpRequest =
-    Get(Resource.uri("packageFilters", "packagesFor", fname))
+    Get(Resource.uri("packageFilters") + s"?filter=$fname")
 
   def listFiltersForPackage(pname: String, pversion: String): HttpRequest =
-    Get(Resource.uri("packageFilters", "filtersFor", pname, pversion))
+    Get(Resource.uri("packageFilters") + s"?package=$pname-$pversion")
 
   def deletePackageFilter(pname: String, pversion: String, fname: String): HttpRequest =
-    Delete(Resource.uri("packageFiltersDelete", pname, pversion, fname))
+    Delete(Resource.uri("packageFilters", pname, pversion, fname))
 }
 
 trait ResolveRequests extends Matchers { self: ScalatestRouteTest =>
@@ -132,7 +134,6 @@ trait ResolveRequests extends Matchers { self: ScalatestRouteTest =>
 
 
     resolve(pname, pversion) ~> route ~> check {
-      import org.genivi.sota.resolver.types.Vehicle.vehicleMapEncoder
       status shouldBe StatusCodes.OK
       responseAs[Map[Vehicle.Vin, List[Package.Id]]] shouldBe
         makeFakeDependencyMap(Refined(pname), Refined(pversion), vins.map(s => Vehicle(Refined(s))))

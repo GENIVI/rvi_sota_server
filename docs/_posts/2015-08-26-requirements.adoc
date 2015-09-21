@@ -1,0 +1,1199 @@
+---
+layout: page
+title: "Requirements"
+category: ref
+date: 2015-08-26 14:12:21
+order: 4
+---
+
+[[table-of-contents]]
+== Table of Contents
+
+1.  link:#implementation-phases[Implementation Phases]
+2.  link:#requirements-by-component[Requirements by component]
+* link:#SRV[SRV] Server General Requirements
+** link:#SRV-VIN[SRV-VIN] Server VIN provisioning
+** link:#SRV-PACKAGE[SRV-PACKAGE] Software packages
+** link:#SRV-PACKAGE-QUEUE[SRV-PACKAGE-QUEUE] Software packages queuing
+** [line-through]#link:#SRV-PACKAGE-DEPS[SRV-PACKAGE-DEPS] Package dependency# Moved to link:#EXT-RESOLV[EXT-RESOLV]
+** link:#SRV-TRAFFIC-SHAPING[SRV-TRAFFIC-SHAPING] Server - Device Traffic control and shaping
+** link:#SRV-PACKAGE-TRANSMIT[SRV-PACKAGE-TRANSMIT] Software package transmission
+* link:#DEV[DEV] Device requirements
+* link:#API[API] Server Web API
+** link:#API-VIN[API-VIN] VIN management
+** link:#API-PACKAGE[API-PACKAGE] Package management
+** link:#API-QUEUE[API-QUEUE] Package queuing
+** link:#API-TRAFFIC-SHAPING[API-TRAFFIC-SHAPING] Traffic shaping and control
+* link:#WEB[WEB] Web system requirements
+** link:#WEB-VIN[WEB-VIN] Web VIN management requirements
+** link:#WEB-PACKAGE[WEB-PACKAGE] Web software package management requirements
+** link:#WEB-QUEUE[WEB-QUEUE] Web queue management system
+** link:#WEB-TRAFFIC-SHAPING[WEB-TRAFFIC-SHAPING] Web Traffic shaping and control
+** link:#WEB-RESOLV-FILTER[WEB-RESOLV-FILTER] External resolver filter web UI
+** link:#WEB-RESOLV-COMP[WEB-RESOLV-COMP] External resolver component web UI
+* link:#EXT-RESOLV[EXT-RESOLV] External package to VIN resolver
+** link:#EXT-RESOLV-API[EXT-RESOLV-API] External software package to VIN resolver API
+** link:#EXT-RESOLV-FILTER[EXT-RESOLV-FILTER] Resolver filter management
+** link:#EXT-RESOLV-FILTER-API[EXT-RESOLV-FILTER-API] Resolver filter management API
+** link:#EXT-RESOLV-VIN[EXT-RESOLV-VIN] External resolver VIN management
+** link:#EXT-RESOLV-VIN-API[EXT-RESOLV-VIN-API] External resolver VIN management API
+** link:#EXT-RESOLV-DEPS[EXT-RESOLV-DEPS] External resolver package dependency
+** link:#EXT-RESOLV-DEPS-API[EXT-RESOLV-DEPS-API] External resolver package dependency API
+** link:#EXT-RESOLV-COMP[EXT-RESOLV-COMP] External resolver component management
+** link:#EXT-RESOLV-COMP-API[EXT-RESOLV-COMP-API] External resolver component management API
+** link:#EXT-RESOLV-PACKAGE[EXT-RESOLV-PACKAGE] External resolver package management
+** link:#EXT-RESOLV-PACKAGE-API[EXT-RESOLV-PACKAGE-API] External resolver package management API
+* [line-through]*link:#SRV-CAPACITY[SRV-CAPACITY] Capacity of Server and External Resolver*
+* [line-through]*link:#SRV-BACKUP[SRV-BACKUP] Backup of Server and External Resolver*
+* [line-through]*link:#SRV-UPGRADE[SRV-UPGRADE] Upgrade of Server and External Resolver*
+* [line-through]*link:#SRV-LOGGING[SRV-LOGGING] Logging of Server and External Resolver*
+* [line-through]*link:#SRV-MON[SRV-MON] Monitoring of Server and External Resolver*
+3.  link:#requirements-by-phase[Requirements by Implementation Phase]
+
+* link:#requirements-first[FIRST] Initial version
+* link:#requirements-comp[COMP] Component management
+* link:#requirements-inst[INST] Installation tracking
+* link:#requirements-deps[DEPS] Package dependency tracking
+* link:#requirements-sched[SCHED] Installation scheduling
+* link:#requirements-shape[SHAPE] Traffic shaping
+* [line-through]*link:#requirements-scale[SCALE] Capacity for production deployment*
+
+[[implementation-phases]]
+== Implementation Phases
+
+The implementation of the SOTA project is split into seven phases:
+
+* link:#requirements-first[FIRST] Initial version of SOTA system
+* link:#requirements-comp[COMP] Adds component management, associating one ore more components with a specific VIN
+* link:#requirements-inst[INST] Installation tracking to record which packages are currently installed on which VINs / components
+* link:#requirements-deps[DEPS] Package dependency tracking to create a per-vehicle update with necessary packages.
+* link:#requirements-sched[SCHED] Installation scheduling, allows for priorities of updates and install period windows.
+* link:#requirements-shape[SHAPE] Traffic shaping allowing the integration of data plans and billing cycles to avoid data overrun costs
+* [line-through]*link:#requirements-scale[SCALE] Adds capacity for production deployment*
+
+[[requirements-by-component]]
+== Requirements by Component
+
+[[srv-server-general-requirements]]
+=== link:#SRV[SRV] Server General Requirements
+
+* link:#SRV-1[SRV-1] _FIRST_ The system shall use Remote Vehicle Interaction (RVI) for all device communication
+* link:#SRV-2[SRV-2] _FIRST_ The design implemented by SOTA Server and the Resolver shall be prepared for a production environment in regards to availability and capacity
+* link:#SRV-3[SRV-3] _FIRST_ The design shall be future expandable with failover sites
+* link:#SRV-4[SRV-4] _FIRST_ The design shall be future expandable with load sharing across multiple nodes
+* link:#SRV-5[SRV-5] _FIRST_ The design shall be future expandable with monitoring and alarm management using SNMP, Graphite, or similar
+* link:#SRV-6[SRV-6] _FIRST_ The design shall be future expandable with backup routines
+* link:#SRV-7[SRV-7] _FIRST_ The design shall be future expandable with runtime upgrade and downgrade procedures
+
+[[srv-vin-server-vin-provisioning]]
+=== link:#SRV-VIN[SRV-VIN] Server VIN provisioning
+
+* [line-through]*link:#SRV-VIN-1[SRV-VIN-1] _SCALE_ The system shall manage up to 100 million VINs*
+* link:#SRV-VIN-2[SRV-VIN-2] _FIRST_ A VIN shall be identified by an 1-64 byte string (VIN). Improved wording
+* [line-through]*link:#SRV-VIN-3[SRV-VIN-3] _COMP_ A VIN shall be able to ber associated to up to 1000 components. Each component is a potential target for software images*
+* [line-through]*link:#SRV-VIN-4[SRV-VIN-4] _INST_ Each component associated with a VIN shall have a reference to its currently installed software image.*
+* [line-through]*link:#SRV-VIN-5[SRV-VIN-5] _INST_ The component reference to the software image shall be the ID string and version number*
+* [line-through]*link:#SRV-VIN-6[SRV-VIN-6] _SCALE_ A VIN shall be able to manage up to 5000 installed software images*
+* link:#SRV-VIN-7[SRV-VIN-7] _SHAPE_ The VIN shall be associated with one data plan ID. Ties the VIN to a data plan, allowing us to control traffic to it
+
+[[srv-package-software-packages]]
+=== link:#SRV-PACKAGE[SRV-PACKAGE] Software packages
+
+* [line-through]*link:#SRV-PACKAGE-1[SRV-PACKAGE-1] _SCALE_ The system shall manage up to 10 million software packages*
+* link:#SRV-PACKAGE-2[SRV-PACKAGE-2] _FIRST_ A software package shall have an ID string
+* link:#SRV-PACKAGE-3[SRV-PACKAGE-3] _FIRST_ A software package shall have a major.minor.patch formatted version number. The ID string plus version is the unique identifier of the package
+* link:#SRV-PACKAGE-4[SRV-PACKAGE-4] _FIRST_ A software package shall have a description
+* link:#SRV-PACKAGE-5[SRV-PACKAGE-5] _FIRST_ A software package shall have a vendor
+* link:#SRV-PACKAGE-6[SRV-PACKAGE-6] _COMP_ The software ID string shall support regexp matching when searching
+* link:#SRV-PACKAGE-7[SRV-PACKAGE-7] _COMP_ The software version number shall support regexp matching when searching
+* [line-through]*link:#SRV-PACKAGE-8[SRV-PACKAGE-8] _INST_ Each software package shall be maintain a list of all VINs it is installed on*
+
+[[srv-package-queue-software-packages-queuing]]
+=== link:#SRV-PACKAGE-QUEUE[SRV-PACKAGE-QUEUE] Software packages queuing
+
+* link:#SRV-PACKAGE-QUEUE-1[SRV-PACKAGE-QUEUE-1] _FIRST_ The system shall be able to request a software package to be installed on a subset of all managed VINs
+* link:#SRV-PACKAGE-QUEUE-2[SRV-PACKAGE-QUEUE-2] _SCHED_ The request shall have an earliest start date. Do not install before 2016-01-01.
+* link:#SRV-PACKAGE-QUEUE-3[SRV-PACKAGE-QUEUE-3] _SCHED_ The request shall have a latest install completion date. Do not install after 2016-04-01
+* link:#SRV-PACKAGE-QUEUE-4[SRV-PACKAGE-QUEUE-4] _SCHED_ If a software package cannot be installed on one ore more targeted VINs within the specified period, they failed VINs shall be logged
+* link:#SRV-PACKAGE-QUEUE-5[SRV-PACKAGE-QUEUE-5] _SCHED_ The request shall have a priority from 1 to 100. Used when updates are queued to individual vehicles. See below
+* link:#SRV-PACKAGE-QUEUE-6[SRV-PACKAGE-QUEUE-6] _FIRST_ A list of currently queued updates shall be maintained. One update consist of one or more software packages targeting a specific VIN.
+* link:#SRV-PACKAGE-QUEUE-7[SRV-PACKAGE-QUEUE-7] _FIRST_ Each queued update shall maintain a list of completed VINs that have received the update
+* link:#SRV-PACKAGE-QUEUE-8[SRV-PACKAGE-QUEUE-8] _FIRST_ Each queued update shall maintain a list of pending VINs that have not yet received the update
+* link:#SRV-PACKAGE-QUEUE-9[SRV-PACKAGE-QUEUE-9] _DEPS_ Each VIN targeted by a queued update shall maintain a list of packages that are rolled into the update for that specvific vin. All packages to be added to original package in order to satisfy dependencies are provided by EXT-RESOLV
+* link:#SRV-PACKAGE-QUEUE-10[SRV-PACKAGE-QUEUE-10] _SCHED_ Updates queued for a specific VIN shall be sorted primarily on ascending request priority. Allows high-priority updates to skip the queue and be pushed out earlier to the vehicle
+* link:#SRV-PACKAGE-QUEUE-11[SRV-PACKAGE-QUEUE-11] _FIRST_ Updates queued for a specific VIN shall be sorted secondarily on the time when the request was made.
+* link:#SRV-PACKAGE-QUEUE-12[SRV-PACKAGE-QUEUE-12] _SHAPE_ The software package install request shall have a data pool usage threshold
+* link:#SRV-PACKAGE-QUEUE-13[SRV-PACKAGE-QUEUE-13] _SHAPE_ The data plan usage threshold shall be specified as a decimal percentage
+* link:#SRV-PACKAGE-QUEUE-14[SRV-PACKAGE-QUEUE-14] _SHAPE_ The data plan usage threshold shall specify the maximum percentage of the data pool assigned to a VIN that can be used when the package transfer starts.
+* link:#SRV-PACKAGE-QUEUE-15[SRV-PACKAGE-QUEUE-15] _SHAPE_ If the data pool associated with a targeted VIN has a usage is greater than the specified threshold for the request, the update for the targeted VIN shall be rescheduled to the next billing cycle.
+* [line-through]*link:#SRV-PACKAGE-QUEUE-16[SRV-PACKAGE-QUEUE-16] _SHAPE_ Updates queued for a specific VIN shall have an individual earliest start date, forcing it to be transmitted within a specific billing cycle.* Duplicate of SRV-PACKAGE-QUEUE-2
+* link:#SRV-PACKAGE-QUEUE-17[SRV-PACKAGE-QUEUE-17] _SHAPE_ The individual earliest start date shall not be later than the lastest install completion date specified in SRV-PACKAGE-QUEUE-3
+* link:#SRV-PACKAGE-QUEUE-18[SRV-PACKAGE-QUEUE-18] _SHAPE_ If the update for a specific VIN cannot be rescheduled to a billing cycle before the specified latest install competion date, the update shall fail.
+* link:#SRV-PACKAGE-QUEUE-19[SRV-PACKAGE-QUEUE-19] _FIRST_ The system shall send a resolve package ID to VIN request to the external resolver system in order to retrieve the VINs and dependencies that should have the package installed. See EXT-RESOLV for details
+* link:#SRV-PACKAGE-QUEUE-20[SRV-PACKAGE-QUEUE-20] _INST_ The system shall use EXT-RESOLV-PACKAGE-API to update the resolver with packages installed and removed from each VIN targeted by an update, as reported back by the device. Allows resolver to keep track of which packages are installed on which VIN.
+* link:#SRV-PACKAGE-QUEUE-21[SRV-PACKAGE-QUEUE-21] _INST_ "The system shall be able to queue a ""Get All Installed Packages"" command to a device in order to retrieve its currently installed packages". Used to synchronize Resolver's list of installed packages on a VIN with reality
+* link:#SRV-PACKAGE-QUEUE-22[SRV-PACKAGE-QUEUE-22] _INST_ "When a ""Get All Installed Packages"" result is received from a device, the EXT-RESOLV-PACKAGE-API shall be used to reset the resolver's list of installed packages for the given VIN."
+
+[[srv-package-deps-package-dependency-moved-to-ext-resolv]]
+=== [line-through]*link:#SRV-PACKAGE-DEPS[SRV-PACKAGE-DEPS] Package dependency* Moved to link:#EXT-RESOLV[EXT-RESOLV]
+
+* [line-through]*link:#SRV-PACKAGE-DEPS-1[SRV-PACKAGE-DEPS-1] _DEPS_ Each VIN, as returned by the external resolver, shall be have a dependency check done for the package that is to be installed*
+* [line-through]*link:#SRV-PACKAGE-DEPS-2[SRV-PACKAGE-DEPS-2] _DEPS_ The depency check shall compare the list of packages already installed on the VIN with the dependency graph of the new package to be installed. Which packages does the package about to be installed need on this specific VIN in order to function.*
+* [line-through]*link:#SRV-PACKAGE-DEPS-3[SRV-PACKAGE-DEPS-3] _DEPS_ If an dependent package, required by the package to be installed, is currently not installed on the VIN, the required package will be added to the update for that specific VIN.*
+* [line-through]*link:#SRV-PACKAGE-DEPS-4[SRV-PACKAGE-DEPS-4] _DEPS_ If installing one or more of the packages in an update on a VIN would break dependencies for packages already installed on that VIN, the update shall fail for the given VIN and be reported back to the server*
+* [line-through]*link:#SRV-PACKAGE-DEPS-5[SRV-PACKAGE-DEPS-5] _DEPS_ A software package shall be dependent on up to 100 other software packages*
+* [line-through]*link:#SRV-PACKAGE-DEPS-6[SRV-PACKAGE-DEPS-6] _DEPS_ Software package depencies shall form a graph of sub dependencies. A requires B, which requires C and D.*
+* [line-through]*link:#SRV-PACKAGE-DEPS-7[SRV-PACKAGE-DEPS-7] _DEPS_ A dependency shall be identified by a software package ID string and a version number*
+
+[[srv-traffic-shaping-server---device-traffic-control-and-shaping]]
+=== link:#SRV-TRAFFIC-SHAPING[SRV-TRAFFIC-SHAPING] Server - Device Traffic control and shaping
+
+* link:#SRV-TRAFFIC-SHAPING-1[SRV-TRAFFIC-SHAPING-1] ** Server - Device Traffic control and shaping
+* link:#SRV-TRAFFIC-SHAPING-1[SRV-TRAFFIC-SHAPING-1] _SHAPE_ The SOTA server shall be manage data plans used to control when updates are to be sent to their targeted VINs
+* link:#SRV-TRAFFIC-SHAPING-2[SRV-TRAFFIC-SHAPING-2] _SHAPE_ Up to 1,000 data plans shall be managed by the SOTA server
+* link:#SRV-TRAFFIC-SHAPING-3[SRV-TRAFFIC-SHAPING-3] _SHAPE_ A data plan shall specify a system-wide unique a data plan ID
+* link:#SRV-TRAFFIC-SHAPING-4[SRV-TRAFFIC-SHAPING-4] _SHAPE_ A single data plan profile shall manage up to 1000 billing cycles . One week billing cycles x 1000 is 20 years of billing
+* link:#SRV-TRAFFIC-SHAPING-5[SRV-TRAFFIC-SHAPING-5] _SHAPE_ The data plan shall specify if the data pool for each billing cycle is per VIN, or if it is shared across all VINs associated with the profile. Removed until further notice. For now all billing cycles will be pooled across all VINs
+* link:#SRV-TRAFFIC-SHAPING-6[SRV-TRAFFIC-SHAPING-6] _SHAPE_ Each billing cycle shall specify a date and time stamp when it starts
+* link:#SRV-TRAFFIC-SHAPING-7[SRV-TRAFFIC-SHAPING-7] _SHAPE_ Each billing cycle shall specify a data pool size in kilobytes
+* link:#SRV-TRAFFIC-SHAPING-8[SRV-TRAFFIC-SHAPING-8] _SHAPE_ A billing cycle shall become active when the start date/time stamp occurrs.
+* link:#SRV-TRAFFIC-SHAPING-9[SRV-TRAFFIC-SHAPING-9] _SHAPE_ A billing cycle shall be deactivated when the next consecutive billing cycle is activated.
+* link:#SRV-TRAFFIC-SHAPING-10[SRV-TRAFFIC-SHAPING-10] _SHAPE_ The SOTA server shall be able to read data usage reports from an external source
+* link:#SRV-TRAFFIC-SHAPING-11[SRV-TRAFFIC-SHAPING-11] _SHAPE_ The SOTA server shall deduct data usage from the pool of the currently active billing cycle
+* link:#SRV-TRAFFIC-SHAPING-12[SRV-TRAFFIC-SHAPING-12] _SHAPE_ The SOTA server shall at all times know how data is left in a pool at any given time
+* link:#SRV-TRAFFIC-SHAPING-13[SRV-TRAFFIC-SHAPING-13] _SHAPE_ When a billing cycle becomes deactive, it shall be archived
+* link:#SRV-TRAFFIC-SHAPING-14[SRV-TRAFFIC-SHAPING-14] _SHAPE_ The architved billing cycle shall contain the number of bytes transmitted during the cycle
+* link:#SRV-TRAFFIC-SHAPING-15[SRV-TRAFFIC-SHAPING-15] _SHAPE_ Each billing cycle under a data plan shall be shared across all VINs using the given plan. Replaces SRV-TRAFFIC-SHAPING-5
+
+[[srv-package-transmit-software-package-transmission]]
+=== link:#SRV-PACKAGE-TRANSMIT[SRV-PACKAGE-TRANSMIT] Software package transmission
+
+* link:#SRV-PACKAGE-TRANSMIT-1[SRV-PACKAGE-TRANSMIT-1] _FIRST_ The Server shall be able to send a wakeup / shoulder tap SMS message to the vehicle, triggering it to connect back to it. Moved from SCHED to FIRST
+* link:#SRV-PACKAGE-TRANSMIT-2[SRV-PACKAGE-TRANSMIT-2] _FIRST_ When the vehicle connects back and identifies itself all updates queued for the VIN shall be transmitted. Moved from SCHED to FIRST
+* link:#SRV-PACKAGE-TRANSMIT-3[SRV-PACKAGE-TRANSMIT-3] _FIRST_ The updates shall be transmitted in the order they are sorted. Allows the server to keep track of which packages are installed where
+* [line-through]*link:#SRV-PACKAGE-TRANSMIT-4[SRV-PACKAGE-TRANSMIT-4] _FIRST_ The update shall be downloadable in chunks.* Replaced by SRV-PACKAGE-TRANSMIT-10 - SRV-PACKAGE-TRANSMIT-XXX
+* [line-through]*link:#SRV-PACKAGE-TRANSMIT-5[SRV-PACKAGE-TRANSMIT-5] _FIRST_ The package transfer shall be restartable in case the data link is interrupted*
+* [line-through]*link:#SRV-PACKAGE-TRANSMIT-6[SRV-PACKAGE-TRANSMIT-6] _FIRST_ The package transfer restart shall continue at the point the transmission was interrupted*
+* [line-through]*link:#SRV-PACKAGE-TRANSMIT-7[SRV-PACKAGE-TRANSMIT-7] _INST_ Once installed on a VIN, an installation acknolwedgement shall be sent back to the SOTA server*
+* link:#SRV-PACKAGE-TRANSMIT-8[SRV-PACKAGE-TRANSMIT-8] _INST_ The installation acknowledgement shall be used to update the association between a VINs components and their installed software packages and versions
+* link:#SRV-PACKAGE-TRANSMIT-9[SRV-PACKAGE-TRANSMIT-9] _INST_ In case of an installation failure, there shall be an error code and error text returned to the SOTA server. Executes SRC-PACKAGE-QUEUE-22
+* link:#SRV-PACKAGE-TRANSMIT-10[SRV-PACKAGE-TRANSMIT-10] _FIRST_ "The Server shall send an ""Software Packages Available"" to a vehicle connected for which updates are queued."
+* link:#SRV-PACKAGE-TRANSMIT-11[SRV-PACKAGE-TRANSMIT-11] _FIRST_ "The ""Software Packages Available"" command shall contain a list of package IDs, descriptive text, and size of the update"
+* link:#SRV-PACKAGE-TRANSMIT-12[SRV-PACKAGE-TRANSMIT-12] _FIRST_ "The Server shall support an incoming ""Initiate Download"" received from the device."
+* link:#SRV-PACKAGE-TRANSMIT-13[SRV-PACKAGE-TRANSMIT-13] _FIRST_ "The ""Initiate Software Download"" command shall contain a list of package IDs to send to the device"
+* link:#SRV-PACKAGE-TRANSMIT-14[SRV-PACKAGE-TRANSMIT-14] _FIRST_ "The Server shall send a ""Start Download"" command to the device to initiate a new download"
+* link:#SRV-PACKAGE-TRANSMIT-15[SRV-PACKAGE-TRANSMIT-15] _FIRST_ "The ""Start Download"" command shall contain a list of package ID contained in the download, a download index, a file size, a chunk size, a target unit, and an install/upgrade/remove command."
+* link:#SRV-PACKAGE-TRANSMIT-16[SRV-PACKAGE-TRANSMIT-16] _FIRST_ "The Server shall send ""Package Chunk"" command containing a fragment (chunk) of a package"
+* link:#SRV-PACKAGE-TRANSMIT-17[SRV-PACKAGE-TRANSMIT-17] _FIRST_ "The ""Package Chunk"" command shall contain a data payload, a chunk index, and an download index refering to the the index provided by the ""Start Download"" command"
+* link:#SRV-PACKAGE-TRANSMIT-18[SRV-PACKAGE-TRANSMIT-18] _FIRST_
+* link:#SRV-PACKAGE-TRANSMIT-19[SRV-PACKAGE-TRANSMIT-19] _FIRST_ "The Server shall support an incoming ""Chunks Received"" command sent by the device"
+* link:#SRV-PACKAGE-TRANSMIT-20[SRV-PACKAGE-TRANSMIT-20] _FIRST_ "The ""Chunk Received"" shall contain a download index, and a list of successfully received and stored chunks for that package."
+* link:#SRV-PACKAGE-TRANSMIT-21[SRV-PACKAGE-TRANSMIT-21] _FIRST_ The Server shall inspect the list of successfully received chunks and select as the next chunk to send the lowest indexed chunk not yet received by the device.
+* link:#SRV-PACKAGE-TRANSMIT-22[SRV-PACKAGE-TRANSMIT-22] _FIRST_ "The Server shall send a ""Finalize Download"" command when a ""Chunks Received"" is received from the device indicating that all chunks have been received and stored."
+* link:#SRV-PACKAGE-TRANSMIT-23[SRV-PACKAGE-TRANSMIT-23] _INST_ "The ""Finalize Download"" command shall contain a download index."
+* link:#SRV-PACKAGE-TRANSMIT-24[SRV-PACKAGE-TRANSMIT-24] _INST_ "The Server shall support an incoming ""Installation report"" command sent by the device"
+* link:#SRV-PACKAGE-TRANSMIT-25[SRV-PACKAGE-TRANSMIT-25] _INST_ "The ""Installation Report"" shall contain a package ID, a status code indicating success or failure, the currently running version of the package, and a descriptive text of the outcome.". Forwarded by SOTA Server to external resolver so that it can keep track of which packages are installed on which VINs
+* link:#SRV-PACKAGE-TRANSMIT-26[SRV-PACKAGE-TRANSMIT-26] _INST_ The Server shall forward the Installation report to the external resolver. As specified by SRV-PACKAGE-QUEUE-20
+* link:#SRV-PACKAGE-TRANSMIT-27[SRV-PACKAGE-TRANSMIT-27] _FIRST_ "If a chunk has been sent 5 times, but has not shown up as successfully received in subsequent ""Chunks Received"" reports, the download shall abort."
+* link:#SRV-PACKAGE-TRANSMIT-28[SRV-PACKAGE-TRANSMIT-28] _FIRST_ "If a chunk has been sent 5 times with no subsequent ""Chunks Received"" command being received at all within a given period of time, the download shall abort."
+* link:#SRV-PACKAGE-TRANSMIT-29[SRV-PACKAGE-TRANSMIT-29] _INST_ An aborted download shall be reported to thee external resolver
+* link:#SRV-PACKAGE-TRANSMIT-30[SRV-PACKAGE-TRANSMIT-30] _INST_ "An aborted download shall trigger a ""Abort Download"" command being sent to the device"
+* link:#SRV-PACKAGE-TRANSMIT-31[SRV-PACKAGE-TRANSMIT-31] _INST_ "An ""Abort Download"" command shall contain the download index of the failed download". Either the device receives it and cancels the download, or the device will time out the download and cancel it.
+
+[[dev-device-requirements]]
+=== link:#DEV[DEV] Device requirements
+
+* link:#DEV-1[DEV-1] _FIRST_ The device shall receive and process wakeup / shoulder tap SMS. Please see Appendix B, Use Cases DEV___, TRANSFER___, and INSTALL_* for a detailed description of protocol flow.
+* link:#DEV-2[DEV-2] _FIRST_ The device shall, when a shoulder tap SMS is received, connect back to the SOTA server. Moved from SCHED to FIRST
+* link:#DEV-3[DEV-3] _FIRST_ The device shall identify itself to the SOTA server
+* link:#DEV-4[DEV-4] _FIRST_ The device shall receive chunks for an update
+* link:#DEV-5[DEV-5] _FIRST_ The device shall acknolwedge the reception and local storage of each received chunk
+* link:#DEV-6[DEV-6] _FIRST_ The device shall reassemble the chunks for an update
+* link:#DEV-7[DEV-7] _FIRST_ The device shall validate the integrity of the update. Will be covered by RVI
+* link:#DEV-8[DEV-8] _FIRST_ The device shall authenticate the identity of the sender. Will be covered by RVI
+* link:#DEV-9[DEV-9] _FIRST_ The device shall authorize the sender. Will be covered by RVI
+* [line-through]*link:#DEV-10[DEV-10] _FIRST_ The device shall interface with the local package manager*
+* [line-through]*link:#DEV-11[DEV-11] _INST_ The device shall report installation success back to the SOTA server. Forwarded by SOTA Server to external resolver so that it can maintain a list of currently installed packages.*
+* link:#DEV-12[DEV-12] _INST_ The device shall report installation failure back to the SOTA server. Installa
+* link:#DEV-13[DEV-13] _INST_ In case of installation failure, the device shall report an error code and an error text back to the server
+* link:#DEV-14[DEV-14] _INST_ "The device shall support a ""Get currently installed packages command"" (GetCurrentPackages)". Needed sync up a mismatch between a device's view of installed packages and that of the backend server.
+* link:#DEV-15[DEV-15] _INST_ When a GetCurrentPackages command is received, the device shall report back a list of currently installed packages
+* link:#DEV-16[DEV-16] _INST_ Each package in a report shall be identified by its package ID string and version number
+* link:#DEV-17[DEV-17] _INST_ There shall be a resend attempt in case reporting of package installation results or currently installed packages fails
+* link:#DEV-18[DEV-18] _INST_ The device shall, when it connects to the SOTA server, validate the authenticity of the SOTA server. Both client and server side validation are needed.
+* link:#DEV-19[DEV-19] _FIRST_ The device shall use RVI for all server communication.
+* link:#DEV-20[DEV-20] _FIRST_ The device software shall execute on top of the latest version of Genivi Demo Platform
+* link:#DEV-21[DEV-21] _FIRST_ The device software shall execute on top of the latest version of Automotive Grade Linux Distribution
+* link:#DEV-22[DEV-22] _FIRST_ The device shall interact with the local Genivi Software Loading Manager (GSLM) through DBUS using a protocol supplied by Genivi. Package manager renamed to Genivi Software Loading Manager
+* link:#DEV-23[DEV-23] _FIRST_ There shall be a DBUS command to send an install command to the local GSLM. Package manager renamed to Genivi Software Loading Manager
+* link:#DEV-24[DEV-24] _FIRST_ There shall be a DBUS command to send an upgrade command to the local GSLM. Package manager renamed to Genivi Software Loading Manager
+* link:#DEV-25[DEV-25] _FIRST_ There shall be a DBUS command to send a remove command to the local GSLM. Package manager renamed to Genivi Software Loading Manager
+* link:#DEV-26[DEV-26] _FIRST_ There shall ba a DBUS command to retrieve a list of all currently installed software from the local GSLM
+* link:#DEV-27[DEV-27] _FIRST_ All DBUS commands shall return an error/success code and a descriptive text that can be forwarded to SOTA Serevr.
+* link:#DEV-28[DEV-28] _INST_ The device shall be able to report locally changed software packages to the SOTA Server
+* link:#DEV-29[DEV-29] _INST_ The device shall receive information about locally changed packages through a DBUS command
+* link:#DEV-30[DEV-30] _INST_ The report shall contain the package ID, timestamp, and operation (install, upgrade, remove) carried out locally.
+* link:#DEV-31[DEV-31] _FIRST_ All DBUS commands shall be compliant with call structure of the Genivi Software Loading Manager. Protocol will be specified by Genivi
+* link:#DEV-32[DEV-32] _FIRST_ The device shall use RVI to communicate with the server
+* link:#DEV-33[DEV-33] _FIRST_ The device shall use the JSON Data Link and JSON Protocol supplied by the RVI project for its server communication to ensure JSON-based traffic. All traffic sent between server and client will be JSON formatted, regardless of communication channel (SMS, WiFi, 3G, etc). Other protocols (HTTP, OMA-DM FUMA, etc) can be implemented as RVI plugins.
+* link:#DEV-34[DEV-34] _FIRST_ "The device shall support an incoming ""Software Packages Available"" command received from the server"
+* link:#DEV-35[DEV-35] _FIRST_ "The ""Software Packages Available"" command shall contain a list of package IDs, descriptive text, and size of the download"
+* link:#DEV-36[DEV-36] _FIRST_ "The device shall forward the ""Software Packages Available"" command through DBUS to the GSLM ". The Software Loader Manager will interface the HMI to pop a confirmation dialog
+* link:#DEV-37[DEV-37] _FIRST_ "The device shall support an incoming ""Initiate Download"" received through DBUS from the GSLM.". The user selected one or more packages on the HMI and clicked ok
+* link:#DEV-38[DEV-38] _FIRST_ "The ""Initiate Software Download"" command shall contain a list of package IDs to download and install". "Package IDs are selected from those provided by the ""Software Packages Available"""
+* link:#DEV-39[DEV-39] _FIRST_ "The ""Initiate Software Download"" command received from the GSLM shall be forwarded to the SOTA server to initiate the download.". "Will result in a ""Start Download"" command being sent from the Server"
+* link:#DEV-40[DEV-40] _FIRST_ "The device shall support an incoming ""Start Download"" command to initiate a new download"
+* link:#DEV-41[DEV-41] _FIRST_ "The ""Start Download"" command shall contain a list of package ID contained in the download, a download index, a file size, a chunk size, a target unit, and an install/upgrade/remove command.". "Multple packages may be contained in a single download. Packages can either be dependencies, or bundled packages from the ""Initiate Software Download"" package. Target tells the GSLM if this is a local package, or if it is destined for a module managed by the Module Loader."
+* link:#DEV-42[DEV-42] _FIRST_ "The device shall support an incoming ""Package Chunk"" command containing a fragment (chunk) of a package"
+* link:#DEV-43[DEV-43] _FIRST_ "The ""Package Chunk"" command shall contain a data payload, a chunk index, and an download index refering to the the index provided by the ""Start Download"" command". "Download index allows multiple donwloads to happen in parallell. payload size is specified by chunk size in ""Start Download"""
+* link:#DEV-44[DEV-44] _FIRST_ The device shall store each received chunk on in secondary storage. Downloaded images are reassembled, chunk by chunk on the device side.
+* link:#DEV-45[DEV-45] _FIRST_ "The device shall send a ""Chunks Received"" report back to the SOTA Server"
+* link:#DEV-46[DEV-46] _FIRST_ "The ""Chunk Received"" shall contain a download index, and a list of successfully received and stored chunks for that package.". [1-10,12-15,21,23,25,27-30]
+* link:#DEV-47[DEV-47] _FIRST_ "The ""Chunk Received"" command shall be sent at after ""Package Chunk"" command has been successfully stored.". Overkill, but increases robustness.
+* link:#DEV-48[DEV-48] _FIRST_ "The device shall support an incoming ""Finalize Download command to finish the download". "Will only be sent when ""Chunks received"" reports that all chunks have been received."
+* link:#DEV-49[DEV-49] _FIRST_ "The ""Finalize Download"" command shall contain a download index.". Clears the device to start the installation process.
+* link:#DEV-50[DEV-50] _FIRST_ The device shall verify that all chunks have been received when a download is finalized.
+* link:#DEV-51[DEV-51] _FIRST_ The device shall verify the source and authenticity of the download
+* link:#DEV-52[DEV-52] _FIRST_ If either verification fails, an install failure shall be sent back to the SOTA server for all Package IDs in the download
+* link:#DEV-53[DEV-53] _FIRST_ "The device shall forward the finalized download to the GSLM together with the install/upgrade/remove command and target unit specified in the ""Start Download"" command.". Commands to be sent are specified by DEV-23 - DEV-27
+* link:#DEV-54[DEV-54] _INST_ "The device shall support an incoming DBUS ""Installation Report' command from the local GSLM."
+* link:#DEV-55[DEV-55] _INST_ "The ""Installation Report"" shall contain a package ID, a status code indicating success or failure, the currently running version of the package, and a descriptive text of the outcome.". The running version can either be the new version, the existing version, or a reverted factory version.
+* link:#DEV-56[DEV-56] _INST_ The device shall forward the installation report to the SOTA Server. SOTA Server will forward it to the external resolver, allowing it to maintain its database of installed packages.
+* link:#DEV-57[DEV-57] _INST_ "If no additional ""Package Chunks"" are received for an ongoing download within a given timeout period, the download shall abort"
+* link:#DEV-58[DEV-58] _INST_ "If a ""Start Download"" command is received with a download index equal to that of an ongoing download, the ongoing download shall be aborted to make way for the new download.". Allows timed out downloads to be restarted.
+* link:#DEV-59[DEV-59] _INST_ "The device shall support an incoming ""Abort Download"" command "
+* link:#DEV-60[DEV-60] _INST_ "The ""Abort Download"" command shall contain the download index"
+* link:#DEV-61[DEV-61] _INST_ An aborted download shall delete any stored data on the device.
+* link:#DEV-62[DEV-62] _INST_ "If the download index of an ""Abort Download"" command cannot be found, the command shall silently be ignored.". """Start Download"" command was lost and never received by client"
+
+[[api-server-web-api]]
+=== link:#API[API] Server Web API
+
+* link:#API-1[API-1] _FIRST_ The Server shall support an API, allowing its functionality to be accessed by external apps and services
+* link:#API-2[API-2] _FIRST_ The API shall be based on Restful HTTP with JSON.bodies
+
+[[api-vin-server-web-api---vin-management]]
+=== link:#API-VIN[API-VIN] Server Web API - VIN management
+
+* link:#API-VIN-1[API-VIN-1] _FIRST_ The API shall have a command to add VINs
+* link:#API-VIN-2[API-VIN-2] _FIRST_ The API shall have a command to delete VINs
+* [line-through]*link:#API-VIN-3[API-VIN-3] _FIRST_ The API shall have a call to search for and return VINs using regexp wildcards.* Duplicate of API-VIN-7 - 8
+* [line-through]*link:#API-VIN-4[API-VIN-4] _COMP_ The API shall have a call to associate a component to an existing VIN. Moved to Resolver*
+* [line-through]*link:#API-VIN-5[API-VIN-5] _INST_ The API shall have a call to associate an software image to a VIN. Moved to Resolver*
+* [line-through]*link:#API-VIN-6[API-VIN-6] _INST_ The software image associated with a VIN shall be associated with a specific component installed on that VIN. Removed association between package and specific component. Packages are now generically installed on a VIN without component association.*
+* link:#API-VIN-7[API-VIN-7] _FIRST_ The API shall have a VIN search command
+* link:#API-VIN-8[API-VIN-8] _FIRST_ The search command shall support a VIN regexp to match against
+* [line-through]*link:#API-VIN-9[API-VIN-9] _COMP_ The VINs returned by the search shall each have their associated components listed.* Moved to Resolver
+* link:#API-VIN-10[API-VIN-10] _INST_ The VINs returned by the search shall each have their associated installed software packages listed
+* link:#API-VIN-11[API-VIN-11] _INST_ The API shall have a command to list all historic package updates sent to a VIN since the VIN was created
+* link:#API-VIN-12[API-VIN-12] _INST_ Each update returned by a historic list command shall contain a result code reflecting success or failure of installing the package
+* link:#API-VIN-13[API-VIN-13] _INST_ Each update returned by a historic list command shall contain all dependent-upon packages transmitted with the original package in order to satisfy all dependencies of the installed package
+* link:#API-VIN-14[API-VIN-14] _INST_ Each update returned by a historic list command shall contain a time stamp of when the update completed or failed
+
+[[api-package-server-web-api---package-management]]
+=== link:#API-PACKAGE[API-PACKAGE] Server Web API - package management
+
+* link:#API-PACKAGE-1[API-PACKAGE-1] _FIRST_ The API shall have a command to upload packages to the system
+* link:#API-PACKAGE-2[API-PACKAGE-2] _FIRST_ Each package shall have an ID string specified
+* link:#API-PACKAGE-3[API-PACKAGE-3] _FIRST_ Each package shall have a version number specified so that ID string plus version number creates a unique queue.
+* [line-through]*link:#API-PACKAGE-4[API-PACKAGE-4] _DEPS_ Each package shall have an optional list of dependencies specified.* Moved to resolver
+* link:#API-PACKAGE-5[API-PACKAGE-5] _FIRST_ The API shall have a command to list search for software packages
+* link:#API-PACKAGE-6[API-PACKAGE-6] _FIRST_ The search command shall support regexp matching for the ID string and the version number
+* [line-through]*link:#API-PACKAGE-7[API-PACKAGE-7] _INST_ The API shall have a command to list all the VINs that a specific version of a software package is installed on.* Database of which packages are installed on which VIN now handled by resolver
+* [line-through]*link:#API-PACKAGE-8[API-PACKAGE-8] _INST_ The API shall have a command to list all the VINs that a specific version of a software package is queued for installation on.* Duplicate of API-QUEUE-7
+* [line-through]*link:#API-PACKAGE-9[API-PACKAGE-9] _DEPS_ The API shall have a command to list the dependencies for a specific package.* Moved to resolver
+
+[[api-queue-server-web-api---package-queuing]]
+=== link:#API-QUEUE[API-QUEUE] Server Web API - package queuing
+
+* link:#API-QUEUE-1[API-QUEUE-1] _FIRST_ The API shall have a command to request that an package is to be installed
+* [line-through]*link:#API-QUEUE-2[API-QUEUE-2] _FIRST_ The install command shall provide a filter label to be applied to the request. Not necessary with external resolver*
+* link:#API-QUEUE-3[API-QUEUE-3] _FIRST_ The install command shall return a unique install ID for the install request
+* link:#API-QUEUE-4[API-QUEUE-4] _SCHED_ The API shall have a command to cancel a previously queued install request
+* link:#API-QUEUE-5[API-QUEUE-5] _SCHED_ Canceling an install request will delete any pending updates that have yet to be transmitted to their targeted VINs.
+* link:#API-QUEUE-6[API-QUEUE-6] _SCHED_ Canceling an install request shall not affect any packages already installed on their targeted VINs.
+* link:#API-QUEUE-7[API-QUEUE-7] _SCHED_ The API shall have a command to list all VINs targeted by a specific install request, identified by the install ID
+* link:#API-QUEUE-8[API-QUEUE-8] _SCHED_ The list command shall return all VINs which the install request was successfully completed on
+* link:#API-QUEUE-9[API-QUEUE-9] _SCHED_ The success report for a VIN shall include a date and time stamp.
+* link:#API-QUEUE-10[API-QUEUE-10] _SCHED_ The list command shall return all VINs for which the install request is still pending on the server
+* link:#API-QUEUE-11[API-QUEUE-11] _SCHED_ The list command shall return all VINs for which the install request failed
+* link:#API-QUEUE-12[API-QUEUE-12] _SCHED_ The failure report for a VIN shall include a date and time stramp.
+* link:#API-QUEUE-13[API-QUEUE-13] _SCHED_ The failure report for a VIN shall include a reason code such as time out, dependency failure, etc.
+* link:#API-QUEUE-14[API-QUEUE-14] _SCHED_ The failure report for a VIN shall include a reason text.
+* link:#API-QUEUE-15[API-QUEUE-15] _SCHED_ The list command shall, for each returned VIN, list the software packages included in the update, including dependencies
+* link:#API-QUEUE-16[API-QUEUE-16] _SCHED_ The list command shall return all VINs for which the install request has started transmission, but has not yet completed
+* link:#API-QUEUE-17[API-QUEUE-17] _FIRST_ "The API shall have a command to queue an ""Get All Installed Packages"" command for a given VIN"
+
+[[api-traffic-shaping-server-web-api---traffic-shaping-and-control]]
+=== link:#API-TRAFFIC-SHAPING[API-TRAFFIC-SHAPING] Server Web API - Traffic shaping and control
+
+* link:#API-TRAFFIC-SHAPING-1[API-TRAFFIC-SHAPING-1] _SHAPE_ The API shall have a command to add a data plan
+* link:#API-TRAFFIC-SHAPING-2[API-TRAFFIC-SHAPING-2] _SHAPE_ The added data plan shall have a unique data plan ID
+* [line-through]*link:#API-TRAFFIC-SHAPING-3[API-TRAFFIC-SHAPING-3] _SHAPE_ The added data plan shall specify if the billing cycles' data pools are shared across all VIN or is specified per VIN.* All plans will be pooled across all VINs for now
+* [line-through]*link:#API-TRAFFIC-SHAPING-4[API-TRAFFIC-SHAPING-4] _SHAPE_ The API shall have a command to delete an existing data plan and its billing cycles.* Not necessary at a first implementation
+* link:#API-TRAFFIC-SHAPING-5[API-TRAFFIC-SHAPING-5] _SHAPE_ The API shall have a command to add a billing cycle to an existing data plan
+* link:#API-TRAFFIC-SHAPING-6[API-TRAFFIC-SHAPING-6] _SHAPE_ The added billing cycle shall have a start date and time stamp
+* link:#API-TRAFFIC-SHAPING-7[API-TRAFFIC-SHAPING-7] _SHAPE_ The added billing cycle shall have a data pool size, specified in kilobytes.
+* link:#API-TRAFFIC-SHAPING-8[API-TRAFFIC-SHAPING-8] _SHAPE_ The billing cycle shall be identified by its associated data plan and start date/time stamp.
+* [line-through]*link:#API-TRAFFIC-SHAPING-9[API-TRAFFIC-SHAPING-9] _SHAPE_ The API shall have a command to delete an existing billing cycle.* Not necessary at a first implementation
+* link:#API-TRAFFIC-SHAPING-10[API-TRAFFIC-SHAPING-10] _SHAPE_ The API shall have a command to add transmitted bytes to the currently active billing cycle of a specific data plan. Increases usage of the given billing cycle
+* link:#API-TRAFFIC-SHAPING-11[API-TRAFFIC-SHAPING-11] _SHAPE_ The API shall have a command to retrieve the data pool size of the current billing cycle of a specific data plan
+* link:#API-TRAFFIC-SHAPING-12[API-TRAFFIC-SHAPING-12] _SHAPE_ The API shall have a command to retrieve the number of used bytes in the current billing cycle of a specific data plan
+* link:#API-TRAFFIC-SHAPING-13[API-TRAFFIC-SHAPING-13] _SHAPE_ The API shall have a command to list all billing cycles created under a data plan
+
+[[web-web-system-requirements]]
+=== link:#WEB[WEB] Web system requirements
+
+* link:#WEB-1[WEB-1] _FIRST_ The web system shall act as a front end toward the SOTA system
+* link:#WEB-2[WEB-2] _FIRST_ The web system shall use the Web API of the SOTA system
+* [line-through]*link:#WEB-3[WEB-3] _SCALE_ The web system shall have a provisioning system for adding users*
+* [line-through]*link:#WEB-4[WEB-4] _SCALE_ The web system shall have a provisioning system for deleting users*
+* [line-through]*link:#WEB-5[WEB-5] _SCALE_ Each user shall have a username*
+* [line-through]*link:#WEB-6[WEB-6] _SCALE_ Each user shall have a password*
+* [line-through]*link:#WEB-7[WEB-7] _SCALE_ The web system shall have a pre-configured admin user with a pre-configured password.*
+* [line-through]*link:#WEB-8[WEB-8] _SCALE_ Only the admin user shall be able to add and delete other users*
+* [line-through]*link:#WEB-9[WEB-9] _SCALE_ All users in the system shall have full access to all web functions, except add/delete users. For now. Different access levels will come later.*
+
+[[web-vin-web-vin-management-requirements]]
+=== link:#WEB-VIN[WEB-VIN] Web VIN management requirements
+
+* link:#WEB-VIN-1[WEB-VIN-1] _FIRST_ The web system shall have a UI to add VINs
+* link:#WEB-VIN-2[WEB-VIN-2] _SCHED_ The web system shall have a UI to delete VINs
+* link:#WEB-VIN-3[WEB-VIN-3] _SCHED_ The web system shall have a UI to search for VINs
+* link:#WEB-VIN-4[WEB-VIN-4] _SCHED_ The web system's VINs shall be searchable by regular expressions
+* link:#WEB-VIN-5[WEB-VIN-5] _SCHED_ Each VIN by a search shall be clickable
+* link:#WEB-VIN-6[WEB-VIN-6] _SCHED_ Clicking on a VIN from the search result shall bring up a property screen for the VIN
+* link:#WEB-VIN-7[WEB-VIN-7] _COMP_ The VIN property screen shall list all components installed on the VIN, as retrieved from the external resolver
+* [line-through]*link:#WEB-VIN-8[WEB-VIN-8] _INST_ Each component on a VIN property screen shall be listed with its currently installed software image and version.* Packages no longer associated with target components on a VIN.
+* link:#WEB-VIN-9[WEB-VIN-9] _INST_ The VIN property screen shall list all installed software packages (including dependencies), as retrieved from the external resolver
+* [line-through]*link:#WEB-VIN-10[WEB-VIN-10] _COMP_ The VIN property screen shall have a button for adding a component on the external Resolver.* Duplicate of WEB-RESOLV-COMP-1
+* [line-through]*link:#WEB-VIN-11[WEB-VIN-11] _COMP_ Adding a component shall specify the component part number.* Duplicate of WEB-RESOLV-COMP-1
+* link:#WEB-VIN-12[WEB-VIN-12] _INST_ The VIN property screen shall have a button for adding a (manually installed) software package on a VIN. API Call sent to the Resolver
+* link:#WEB-VIN-13[WEB-VIN-13] _INST_ The software package added to the system shall be specified with a ID string
+* link:#WEB-VIN-14[WEB-VIN-14] _INST_ The software package added to the system shall be specified with a version number
+* link:#WEB-VIN-15[WEB-VIN-15] _INST_ The software package added to the system shall be specified with a description
+* [line-through]*link:#WEB-VIN-16[WEB-VIN-16] _INST_ The software package shall be assocaited with a component installed on the VIN.* Packages no longer associated with target components on a VIN.
+* link:#WEB-VIN-17[WEB-VIN-17] _INST_ The VIN property screen shall have a button to list all software packages currently queued to it
+* link:#WEB-VIN-18[WEB-VIN-18] _FIRST_ A VIN added, deleted, or modified by the web system shall update both the server and the external resolver
+* link:#WEB-VIN-19[WEB-VIN-19] _INST_ The VIN property screen shall have a button to re-synchronize the list of installed packages with those actually installed on device
+
+[[web-package-web-software-package-management-requirements]]
+=== link:#WEB-PACKAGE[WEB-PACKAGE] Web software package management requirements
+
+* link:#WEB-PACKAGE-1[WEB-PACKAGE-1] _FIRST_ The web system shall have a UI to upload packages to the system.
+* link:#WEB-PACKAGE-2[WEB-PACKAGE-2] _FIRST_ The upload screen shall have a software package ID string
+* link:#WEB-PACKAGE-3[WEB-PACKAGE-3] _FIRST_ The upload screen shall have a software version
+* link:#WEB-PACKAGE-4[WEB-PACKAGE-4] _FIRST_ The upload screen shall have a description
+* link:#WEB-PACKAGE-5[WEB-PACKAGE-5] _FIRST_ The upload screen shall have a vendor
+* link:#WEB-PACKAGE-6[WEB-PACKAGE-6] _DEPS_ The upload screen shall allow to specify dependencies on one or more exisiting software packages. Interfaces resolver to handle dependencies
+* link:#WEB-PACKAGE-7[WEB-PACKAGE-7] _FIRST_ The web system shall have a UI to search for software packages
+* link:#WEB-PACKAGE-8[WEB-PACKAGE-8] _FIRST_ The search command shall support regexp matching for the ID string and the version number
+* link:#WEB-PACKAGE-9[WEB-PACKAGE-9] _FIRST_ Each software package in the returned search result list shall be clickable
+* link:#WEB-PACKAGE-10[WEB-PACKAGE-10] _FIRST_ Clicking on an package from the search result shall bring up a property screen for the package
+* link:#WEB-PACKAGE-11[WEB-PACKAGE-11] _FIRST_ The package property screen shall show the package ID string
+* link:#WEB-PACKAGE-12[WEB-PACKAGE-12] _FIRST_ The package property screen shall show the version number
+* link:#WEB-PACKAGE-13[WEB-PACKAGE-13] _FIRST_ The package property screen shall show the description
+* link:#WEB-PACKAGE-14[WEB-PACKAGE-14] _FIRST_ The package property screen shall show the vendor
+* link:#WEB-PACKAGE-15[WEB-PACKAGE-15] _DEPS_ The package property screen shall show all the software package dependencies the shown package has. Interfaces resolver to handle dependencies
+* link:#WEB-PACKAGE-16[WEB-PACKAGE-16] _INST_ The package property screen shall have a button to list all VINs that the package is installed on. Interfaces resolver to retrieve lsit
+* link:#WEB-PACKAGE-17[WEB-PACKAGE-17] _INST_ Clicking on the installed VIN button shall bring up a list of all VINs with the package installed
+* link:#WEB-PACKAGE-18[WEB-PACKAGE-18] _INST_ The package property screen shall have a button to list all VINs that the package is queued for
+* link:#WEB-PACKAGE-19[WEB-PACKAGE-19] _FIRST_ A package added, deleted, or modified by the web system shall update both the server and the external resolver
+* link:#WEB-PACKAGE-20[WEB-PACKAGE-20] _FIRST_ The package property screen shall have a button to list all filters that will be executed when the package is resolved to VINs. "Will queue a ""Get All Installed Packages"" command to the given VIN, using API-QUEUE-17"
+
+[[web-queue-web-queue-management-system]]
+=== link:#WEB-QUEUE[WEB-QUEUE] Web queue management system
+
+* link:#WEB-QUEUE-1[WEB-QUEUE-1] _FIRST_ The web system shall have a user interface for creating an update to be pushed to one or more VINs
+* link:#WEB-QUEUE-2[WEB-QUEUE-2] _FIRST_ The create update screen shall specify the software package and version to push
+* [line-through]*link:#WEB-QUEUE-3[WEB-QUEUE-3] _FIRST_ The create update screen shall specify the filter tag to apply.* Not applicable with external resolver
+* link:#WEB-QUEUE-4[WEB-QUEUE-4] _SCHED_ The create update screen shall specify the earliest start date for the update to be installed
+* link:#WEB-QUEUE-5[WEB-QUEUE-5] _SCHED_ The create update screen shall specify the latest end date for the update to be installed
+* link:#WEB-QUEUE-6[WEB-QUEUE-6] _SCHED_ The create update screen shall specify a priority
+* link:#WEB-QUEUE-7[WEB-QUEUE-7] _FIRST_ The create update screen shall have a button to contact external resolver and list all VINs that would receive the update. Will invoke external resolver to map package ID to VINs
+* link:#WEB-QUEUE-8[WEB-QUEUE-8] _FIRST_ The web system shall have a user interface to list all created updates in the system
+* link:#WEB-QUEUE-9[WEB-QUEUE-9] _FIRST_ Each listed update shall be shown with its software package and filter label
+* link:#WEB-QUEUE-10[WEB-QUEUE-10] _FIRST_ Each listed update shall be clickable
+* link:#WEB-QUEUE-11[WEB-QUEUE-11] _FIRST_ Clicking on the update shall bring up the update property screen
+* link:#WEB-QUEUE-12[WEB-QUEUE-12] _FIRST_ The update property screen shall show the information provided by WEB-QUEUE-[2-6]
+* link:#WEB-QUEUE-13[WEB-QUEUE-13] _FIRST_ The update property screen shall show the total number of VINs targeted by the update
+* link:#WEB-QUEUE-14[WEB-QUEUE-14] _INST_ The update property screen shall show the total number of VINs that have had the update successfully installed
+* link:#WEB-QUEUE-15[WEB-QUEUE-15] _INST_ The update property screen shall show the total number of VINs that have failed to have the update installed
+* link:#WEB-QUEUE-16[WEB-QUEUE-16] _INST_ The update property screen shall show the total number of VINs that are still waiting to receive the update
+* link:#WEB-QUEUE-17[WEB-QUEUE-17] _INST_ The update property screen shall be able to list all VINs that have had the update succsessfully installed
+* link:#WEB-QUEUE-18[WEB-QUEUE-18] _INST_ The update property screen shall be able to list all VINs that failed to have the update installed
+* link:#WEB-QUEUE-19[WEB-QUEUE-19] _FIRST_ The update property screen shall be able to list all VINs that are still waiting to recveive the update
+* link:#WEB-QUEUE-20[WEB-QUEUE-20] _FIRST_ Each VIN listed in WEB-QUEUE-[17-19] shall be clickable
+* link:#WEB-QUEUE-21[WEB-QUEUE-21] _COMP_ Clicking on a VIN shall list all software packages and version included in the update for the given VIN
+* link:#WEB-QUEUE-22[WEB-QUEUE-22] _SCHED_ "The update property screen shall have a ""cancel update"" button."
+* link:#WEB-QUEUE-23[WEB-QUEUE-23] _SCHED_ "Clicking on the ""cancel update"" button shall cancel any updates to VINs that are not yet complete"
+* link:#WEB-QUEUE-24[WEB-QUEUE-24] _SCHED_ "Clicking on the ""cancel update"" button shall delete the update itself."
+
+[[web-traffic-shaping-web---traffic-shaping-and-control]]
+=== link:#WEB-TRAFFIC-SHAPING[WEB-TRAFFIC-SHAPING] Web - Traffic shaping and control
+
+* link:#WEB-TRAFFIC-SHAPING-1[WEB-TRAFFIC-SHAPING-1] _SHAPE_ The web system shall have a user interface to add a data plan
+* link:#WEB-TRAFFIC-SHAPING-2[WEB-TRAFFIC-SHAPING-2] _SHAPE_ The add data plan screen shall have a unique data plan ID
+* [line-through]*link:#WEB-TRAFFIC-SHAPING-3[WEB-TRAFFIC-SHAPING-3] _SHAPE_ The add data plan screen shall specify if the data pool size is per VIN or is shared across all participating VINs.* Not needed in a first implenentation
+* link:#WEB-TRAFFIC-SHAPING-4[WEB-TRAFFIC-SHAPING-4] _SHAPE_ The add data plan shall have a command to delete an existing data plan and its billing cycles. Was previously erroneously removed instead of the line above.
+* link:#WEB-TRAFFIC-SHAPING-5[WEB-TRAFFIC-SHAPING-5] _SHAPE_ The web system shall have a user interface to add billing cycles to a data plan
+* link:#WEB-TRAFFIC-SHAPING-6[WEB-TRAFFIC-SHAPING-6] _SHAPE_ An added billing cycle shall be entered with a start date / time stamp
+* link:#WEB-TRAFFIC-SHAPING-7[WEB-TRAFFIC-SHAPING-7] _SHAPE_ An added billing cycle shall be entered with a data pool size in kilobytes
+* link:#WEB-TRAFFIC-SHAPING-8[WEB-TRAFFIC-SHAPING-8] _SHAPE_ The web system shall be able to list all data plans and their properties
+* link:#WEB-TRAFFIC-SHAPING-9[WEB-TRAFFIC-SHAPING-9] _SHAPE_ The web system shall be able to list all billing cycles added to a data plan and their properties
+* [line-through]*link:#WEB-TRAFFIC-SHAPING-10[WEB-TRAFFIC-SHAPING-10] _SHAPE_ The web system shall be able to delete an existing billing cycle under a data plan.* Not needed in a first implementation
+* link:#WEB-TRAFFIC-SHAPING-11[WEB-TRAFFIC-SHAPING-11] _SHAPE_ The web system shall be able to show the current data pool usage for an existing billing cycle
+* link:#WEB-TRAFFIC-SHAPING-12[WEB-TRAFFIC-SHAPING-12] _SHAPE_ The web system shall be able to update the data pool usage for an existing billing cycle by setting a kilobyte value
+
+[[web-resolv-filter-external-resolver-filter-web-ui]]
+=== link:#WEB-RESOLV-FILTER[WEB-RESOLV-FILTER] External resolver filter web UI
+
+* link:#WEB-RESOLV-FILTER-1[WEB-RESOLV-FILTER-1] _FIRST_ The web system shall have a user interface for adding install filters on the external resolver
+* link:#WEB-RESOLV-FILTER-2[WEB-RESOLV-FILTER-2] _FIRST_ The add install filter screen shall have a filter label
+* link:#WEB-RESOLV-FILTER-3[WEB-RESOLV-FILTER-3] _FIRST_ The add install filter screen shall have a text field for a boolean expression
+* link:#WEB-RESOLV-FILTER-4[WEB-RESOLV-FILTER-4] _FIRST_ The add install filter screen shall have a button to syntax check the boolean expression
+* link:#WEB-RESOLV-FILTER-5[WEB-RESOLV-FILTER-5] _FIRST_ In case the syntax check fails, an error code and text should be showed
+* link:#WEB-RESOLV-FILTER-6[WEB-RESOLV-FILTER-6] _FIRST_ The web system shall have a button to list all filters on the external resolver
+* link:#WEB-RESOLV-FILTER-7[WEB-RESOLV-FILTER-7] _FIRST_ Each filter returned in the list result shall be clicklable
+* link:#WEB-RESOLV-FILTER-8[WEB-RESOLV-FILTER-8] _FIRST_ Clicking on a filter in the list result shall bring up the filter property screen retrieved from the external resolver
+* link:#WEB-RESOLV-FILTER-9[WEB-RESOLV-FILTER-9] _FIRST_ The property screen shall be able to edit all filter properties
+* link:#WEB-RESOLV-FILTER-10[WEB-RESOLV-FILTER-10] _FIRST_ The property screen shall support syntax checking of changed boolean expression
+* link:#WEB-RESOLV-FILTER-11[WEB-RESOLV-FILTER-11] _FIRST_ "The property screen shall have a ""delete filter"" to remove a filter from the external resolver"
+* link:#WEB-RESOLV-FILTER-12[WEB-RESOLV-FILTER-12] _FIRST_ "The property screen shall have a ""list associated packages"" to list all packages that will have the filter executed when resolved"
+* link:#WEB-RESOLV-FILTER-13[WEB-RESOLV-FILTER-13] _FIRST_ The property screen shall be able to add a filter to a package. The filter(s) associated with a package will be run over all VINs when the given package is resolved.
+* link:#WEB-RESOLV-FILTER-14[WEB-RESOLV-FILTER-14] _FIRST_ The property screen shall be able to delete a filter from a package
+
+[[web-resolv-comp-external-resolver-component-web-ui]]
+=== link:#WEB-RESOLV-COMP[WEB-RESOLV-COMP] External resolver component web UI
+
+* link:#WEB-RESOLV-COMP-1[WEB-RESOLV-COMP-1] _COMP_ The web system shall have a UI to add components to the external resolver using a component part number
+* link:#WEB-RESOLV-COMP-2[WEB-RESOLV-COMP-2] _COMP_ The web system shall have a UI to delete components from the external resolver
+* link:#WEB-RESOLV-COMP-3[WEB-RESOLV-COMP-3] _COMP_ The web system shall have a UI to search for components in the external resolver
+* link:#WEB-RESOLV-COMP-4[WEB-RESOLV-COMP-4] _COMP_ The web system's components shall be searchable by part number regular expressions
+* link:#WEB-RESOLV-COMP-5[WEB-RESOLV-COMP-5] _COMP_ The componens returned by a search shall be clickable
+* link:#WEB-RESOLV-COMP-6[WEB-RESOLV-COMP-6] _COMP_ Clicking on a component from the search result shall bring up a property screen for the component
+* link:#WEB-RESOLV-COMP-7[WEB-RESOLV-COMP-7] _COMP_ The component property screen shall show the part number
+* link:#WEB-RESOLV-COMP-8[WEB-RESOLV-COMP-8] _COMP_ The component property screen shall show the description
+* link:#WEB-RESOLV-COMP-9[WEB-RESOLV-COMP-9] _COMP_ The component property screen shall have a button to list all VINs that the component is installed on
+* link:#WEB-RESOLV-COMP-10[WEB-RESOLV-COMP-10] _COMP_ The web system shall have a UI to add a component to a specific VIN using the external resolver.
+
+[[ext-resolv-external-package-to-vin-resolver]]
+=== link:#EXT-RESOLV[EXT-RESOLV] External package to VIN resolver
+
+* link:#EXT-RESOLV[EXT-RESOLV] ** External package to VIN resolver
+* link:#EXT-RESOLV-1[EXT-RESOLV-1] _FIRST_ The system shall rely on an external system, the Resolver, to translate a software package to VINs that are to have the package installed.
+* link:#EXT-RESOLV-2[EXT-RESOLV-2] _FIRST_ The resolver shall have a server-side WebAPI to handle resolve requests.
+* link:#EXT-RESOLV-3[EXT-RESOLV-3] _FIRST_ A resolve request, sent to the external resolver by the system, shall contain a software package ID string.
+* link:#EXT-RESOLV-4[EXT-RESOLV-4] _FIRST_ A resolve request shall return a list of zero or more VIN numbers that the sofware package should be installed on
+
+[[ext-resolv-api-external-software-package-to-vin-resolver-api]]
+=== link:#EXT-RESOLV-API[EXT-RESOLV-API] External software package to VIN resolver API
+
+* link:#EXT-RESOLV-API-1[EXT-RESOLV-API-1] _FIRST_ The Resolver shall support an API, allowing its functionality to be accessed by external apps and services
+* link:#EXT-RESOLV-API-2[EXT-RESOLV-API-2] _FIRST_ The API shall be based on Restful HTTP with JSON.bodies
+
+[[ext-resolv-filter-resolver-filter-management]]
+=== link:#EXT-RESOLV-FILTER[EXT-RESOLV-FILTER] Resolver filter management
+
+* link:#EXT-RESOLV-FILTER-1[EXT-RESOLV-FILTER-1] _FIRST_ A resolve request shall retrieve the VINs to install an package on by executing one or more filters
+* link:#EXT-RESOLV-FILTER-2[EXT-RESOLV-FILTER-2] _FIRST_ A single filter shall be associated with zero or more software package IDs
+* link:#EXT-RESOLV-FILTER-3[EXT-RESOLV-FILTER-3] _FIRST_ The software package ID string of a resolve request shall be used retrieve the all filters associated with the package ID.
+* link:#EXT-RESOLV-FILTER-4[EXT-RESOLV-FILTER-4] _FIRST_ Each filter retrieved for an package ID in a resolve request shall be run on all VINs in order to filter out those VINs that should receive the update. All filters are AND-ed together.
+* link:#EXT-RESOLV-FILTER-5[EXT-RESOLV-FILTER-5] _FIRST_ Only VINs that pass all filters associated with the software package ID shall be returned by the resolve request
+* link:#EXT-RESOLV-FILTER-6[EXT-RESOLV-FILTER-6] _FIRST_ The filter shall specify a boolean expression that has to be true for a specific VIN in order for the software package to be queued to that VIN.
++
+"vin_matches(""SAJNX5745SC??????"")
++
+Install if: If the VIN starts with the ""SAJNX5745SC"""
+* link:#EXT-RESOLV-FILTER-7[EXT-RESOLV-FILTER-7] _COMP_ The boolean expression shall have operands that identify specific components by their part number
++
+"vin_matches(""SAJNX5745SC??????"") AND has_component(""IVI_hardware_4711_rev_a"")
++
+Install if: VIN starts with ""SAJNX5745SC"" and ""IVI_board_4711_rev_a"" is installed"
+* link:#EXT-RESOLV-FILTER-8[EXT-RESOLV-FILTER-8] _COMP_ The component part number in the expression shall support regexp matching
++
+"vin_matches(""SAJNX5745SC??????"") AND has_component(""IVI_hardware_4711_rev_*"")
++
+Install if: VIN starts with ""SAJNX5745SC"" and ""IVI_board_4711_rev"" is installed, regardless of its revision suffix."
+* link:#EXT-RESOLV-FILTER-9[EXT-RESOLV-FILTER-9] _INST_ The boolean expression shall have operands that identify the currently installed packages packages.
++
+"vin_matches(""SAJNX5745SC??????"") OR (has_package(""IVI_image"", ""1.[1-3].*) AND has_component(""IVI_backseat_screen_rev_1""))
++
+Install if
++
+VIN starts with ""SAJNX5745SC"", or package IVI_image 1.1.0 - 1.3.9 is installed together with component ""IVI_backseat_screen_rev_1"".
+* link:#EXT-RESOLV-FILTER-10[EXT-RESOLV-FILTER-10] _INST_ The currently installed package is identified by its ID string and version number
+* link:#EXT-RESOLV-FILTER-11[EXT-RESOLV-FILTER-11] _INST_ The ID string and version number of the currently installed package shall support regexp matching
+* link:#EXT-RESOLV-FILTER-12[EXT-RESOLV-FILTER-12] _FIRST_ The VIN operand shall support regexp matching
+* link:#EXT-RESOLV-FILTER-13[EXT-RESOLV-FILTER-13] _FIRST_ The finished boolean expression shall be labeled and stored as a named, reusable filter
+
+[[ext-resolv-filter-api-external-resolver-feature-management-api]]
+=== link:#EXT-RESOLV-FILTER-API[EXT-RESOLV-FILTER-API] External resolver feature management API
+
+* link:#EXT-RESOLV-FILTER-API-1[EXT-RESOLV-FILTER-API-1] _FIRST_ The API shall have a command to add new filters
+* link:#EXT-RESOLV-FILTER-API-2[EXT-RESOLV-FILTER-API-2] _FIRST_ The added filter shall have a boolean expression
+* link:#EXT-RESOLV-FILTER-API-3[EXT-RESOLV-FILTER-API-3] _FIRST_ The added filter shall have a unique label
+* link:#EXT-RESOLV-FILTER-API-4[EXT-RESOLV-FILTER-API-4] _FIRST_ The API shall havea a command to check the syntax of a boolean expression
+* link:#EXT-RESOLV-FILTER-API-5[EXT-RESOLV-FILTER-API-5] _FIRST_ The syntax check shall return ok or an error code and text
+* link:#EXT-RESOLV-FILTER-API-6[EXT-RESOLV-FILTER-API-6] _COMP_ The API shall have a command to delete filters identified by their label
+* link:#EXT-RESOLV-FILTER-API-7[EXT-RESOLV-FILTER-API-7] _FIRST_ The API shall have a command to associate a package ID string to a filter. Used during resolve package -> VINs to figure out which filter to apply to th egiven VINs
+* link:#EXT-RESOLV-FILTER-API-8[EXT-RESOLV-FILTER-API-8] _FIRST_ The API shall have a command to dis-associate a package ID string from a filter
+* link:#EXT-RESOLV-FILTER-API-9[EXT-RESOLV-FILTER-API-9] _FIRST_ The API shall have a command to list all filters associated with a package ID string
+* link:#EXT-RESOLV-FILTER-API-10[EXT-RESOLV-FILTER-API-10] _FIRST_ The filters associated with the given package ID shall have their filter labels returned
+* link:#EXT-RESOLV-FILTER-API-11[EXT-RESOLV-FILTER-API-11] _FIRST_ The API shall have a command to list all packages associated with a filter label.
+* link:#EXT-RESOLV-FILTER-API-12[EXT-RESOLV-FILTER-API-12] _FIRST_ The packages associated with the given filter label shall have their package ID strings returned.
+
+[[ext-resolv-vin-external-resolver-vin-management]]
+=== link:#EXT-RESOLV-VIN[EXT-RESOLV-VIN] External resolver VIN management
+
+* link:#EXT-RESOLV-VIN-1[EXT-RESOLV-VIN-1] _SCALE_ The resolver shall manage up to 100 million VINs
+* link:#EXT-RESOLV-VIN-2[EXT-RESOLV-VIN-2] _FIRST_ A VIN shall use a VIN number as its primary identifier
+* link:#EXT-RESOLV-VIN-3[EXT-RESOLV-VIN-3] _COMP_ A VIN shall be able to ber associated to up to 1000 components
+* link:#EXT-RESOLV-VIN-4[EXT-RESOLV-VIN-4] _INST_ A VIN shall be able to handle up to 5000 installed software packages
+
+[[ext-resolv-vin-api-external-resolver-vin-api-management]]
+=== link:#EXT-RESOLV-VIN-API[EXT-RESOLV-VIN-API] External resolver VIN API management
+
+* link:#EXT-RESOLV-VIN-API-1[EXT-RESOLV-VIN-API-1] _FIRST_ The API shall have a command to add VINs
+* link:#EXT-RESOLV-VIN-API-2[EXT-RESOLV-VIN-API-2] _FIRST_ The API shall have a command to delete VINs
+* link:#EXT-RESOLV-VIN-API-3[EXT-RESOLV-VIN-API-3] _COMP_ The API shall have a call to specify a component has been installed in an VIN
+
+[[ext-resolv-deps-external-resolver-package-dependency]]
+=== link:#EXT-RESOLV-DEPS[EXT-RESOLV-DEPS] External resolver package dependency
+
+* link:#EXT-RESOLV-DEPS-1[EXT-RESOLV-DEPS-1] _DEPS_ Each VIN returned by a resolver for a specific package shall have a dependency check done for that package
+* link:#EXT-RESOLV-DEPS-2[EXT-RESOLV-DEPS-2] _DEPS_ The depency check shall compare the list of packages already installed on the VIN with the dependency graph of the new package to be installed Which packages does the package about to be installed need on this specific VIN in order to function.
+* link:#EXT-RESOLV-DEPS-3[EXT-RESOLV-DEPS-3] _DEPS_ If an dependent package, required by the package to be installed, is currently not installed on the VIN, the required package will be provided with the given VIN when returned to the SOTA Server.
+* link:#EXT-RESOLV-DEPS-4[EXT-RESOLV-DEPS-4] _DEPS_ If installing one or more of the packages in an update on a VIN would break dependencies for packages already installed on that VIN, an error will be logged for the given update by the resolver and the VIN is removed from the set of VINs returned by the resolver
+* link:#EXT-RESOLV-DEPS-5[EXT-RESOLV-DEPS-5] _DEPS_ A software package shall be dependent on up to 100 other software packages
+* link:#EXT-RESOLV-DEPS-6[EXT-RESOLV-DEPS-6] _DEPS_ Software package depencies shall form a graph of sub dependencies. A requires B, which requires C and D.
+* link:#EXT-RESOLV-DEPS-7[EXT-RESOLV-DEPS-7] _DEPS_ A dependency shall be identified by a software package ID string and a version number
+
+[[ext-resolv-deps-api-external-resolver-package-dependency-api]]
+=== link:#EXT-RESOLV-DEPS-API[EXT-RESOLV-DEPS-API] External resolver package dependency API
+
+* link:#EXT-RESOLV-DEPS-API-1[EXT-RESOLV-DEPS-API-1] _DEPS_ The resolver shall have a command to add a dependency from one package toward another
+* link:#EXT-RESOLV-DEPS-API-2[EXT-RESOLV-DEPS-API-2] _DEPS_ The resolver shall have a command to delete a dependency from one package toward another
+* link:#EXT-RESOLV-DEPS-API-3[EXT-RESOLV-DEPS-API-3] _DEPS_ The resolver shall have a command to list all dependencies of a package. Can be called recursively to get entire dependency graph
+
+[[ext-resolv-comp-external-resolver-component-management]]
+=== link:#EXT-RESOLV-COMP[EXT-RESOLV-COMP] External resolver component management
+
+* link:#EXT-RESOLV-COMP-1[EXT-RESOLV-COMP-1] _COMP_ The resolver system shall manage up to 1 million components. Used by filtering process to require that specific components are installed in order for a package to be installed
+* link:#EXT-RESOLV-COMP-2[EXT-RESOLV-COMP-2] _COMP_ A component has a part number. Main identifier used by software packages.
+* link:#EXT-RESOLV-COMP-3[EXT-RESOLV-COMP-3] _COMP_ A component has a description
+* link:#EXT-RESOLV-COMP-4[EXT-RESOLV-COMP-4] _COMP_ A component can have one or more VINs associated with it. Each VIN has zero or more components installed on it.
+
+[[ext-resolv-comp-api-external-resolver-component-management-api]]
+=== link:#EXT-RESOLV-COMP-API[EXT-RESOLV-COMP-API] External resolver component management API
+
+* link:#EXT-RESOLV-COMP-API-1[EXT-RESOLV-COMP-API-1] _COMP_ The API shall have a command to add a component to the system with a part number
+* link:#EXT-RESOLV-COMP-API-2[EXT-RESOLV-COMP-API-2] _COMP_ The API shall have a command to specify that a component is installed on a specific VIN. "Will make has_component(""xxx"") return true in a filter run over the given VIN."
+* link:#EXT-RESOLV-COMP-API-3[EXT-RESOLV-COMP-API-3] _COMP_ The API shall have a command to search for and return components using regexp wildcards
+* link:#EXT-RESOLV-COMP-API-4[EXT-RESOLV-COMP-API-4] _COMP_ The returned components shall be listed with their part number
+* link:#EXT-RESOLV-COMP-API-5[EXT-RESOLV-COMP-API-5] _COMP_ The returned components shall be listed with their descriptions
+* link:#EXT-RESOLV-COMP-API-6[EXT-RESOLV-COMP-API-6] _COMP_ The API shall have a command to list all VINs that a component is installed on
+
+[[ext-resolv-package-external-resolver-package-management]]
+=== link:#EXT-RESOLV-PACKAGE[EXT-RESOLV-PACKAGE] External resolver package management
+
+* [line-through]*link:#EXT-RESOLV-PACKAGE-1[EXT-RESOLV-PACKAGE-1] _SCALE_ The resolver shall manage up to 10 million software packages*
+* link:#EXT-RESOLV-PACKAGE-2[EXT-RESOLV-PACKAGE-2] _FIRST_ A software package shall have an ID string
+* link:#EXT-RESOLV-PACKAGE-3[EXT-RESOLV-PACKAGE-3] _FIRST_ A software package shall have a major.minor.patch formatted version number. The ID string plus version is the unique identifier of the package
+* link:#EXT-RESOLV-PACKAGE-4[EXT-RESOLV-PACKAGE-4] _FIRST_ A software package shall have a description
+* link:#EXT-RESOLV-PACKAGE-5[EXT-RESOLV-PACKAGE-5] _FIRST_ A software package shall have a vendor
+* link:#EXT-RESOLV-PACKAGE-6[EXT-RESOLV-PACKAGE-6] _INST_ Each software package shall be maintain a list of all VINs it is installed on. Used by filter has_package() operand
+
+[[ext-resolv-package-api-external-resolver-package-api]]
+=== link:#EXT-RESOLV-PACKAGE-API[EXT-RESOLV-PACKAGE-API] External resolver package API
+
+* link:#EXT-RESOLV-PACKAGE-API-1[EXT-RESOLV-PACKAGE-API-1] _FIRST_ The API shall have a command to specify a package to the external resolver
+* link:#EXT-RESOLV-PACKAGE-API-2[EXT-RESOLV-PACKAGE-API-2] _FIRST_ Each package shall have an ID string specified
+* link:#EXT-RESOLV-PACKAGE-API-3[EXT-RESOLV-PACKAGE-API-3] _FIRST_ Each software package shall have a major.minor.patch formatted version number. The ID string plus version is the unique identifier of the package
+* link:#EXT-RESOLV-PACKAGE-API-4[EXT-RESOLV-PACKAGE-API-4] _FIRST_ Each package shall have a version number specified so that ID string plus version number creates a unique queue.
+* link:#EXT-RESOLV-PACKAGE-API-5[EXT-RESOLV-PACKAGE-API-5] _INST_ The resolver shall have a command to specify that a given package has been installed on a VIN. Called by the SOTA Server when a device reports that an update has been installed.
+* link:#EXT-RESOLV-PACKAGE-API-6[EXT-RESOLV-PACKAGE-API-6] _INST_ The resolver shall have a command to specify that a given package has been deleted from a VIN. Called by the SOTA Server when a device reports that an update has been updated/removed
+* link:#EXT-RESOLV-PACKAGE-API-7[EXT-RESOLV-PACKAGE-API-7] _INST_ The resolver shall have a command to search for all packages installed on a VIN
+* link:#EXT-RESOLV-PACKAGE-API-8[EXT-RESOLV-PACKAGE-API-8] _INST_ The resolver shall have a command to search for all VINs that a package is installed on.
+
+[[srv-capacity-capacity-of-server-and-external-resolver]]
+=== [line-through]*link:#SRV-CAPACITY[SRV-CAPACITY] Capacity of Server and External resolver*
+
+* [line-through]*link:#SRV-CAPACITY-1[SRV-CAPACITY-1] _SCALE_ The system shall support a cold standby*
+* [line-through]*link:#SRV-CAPACITY-2[SRV-CAPACITY-2] _SCALE_ The system shall provide 99.9% uptime, yielding a maximum of 43.8 minutes downtime per month.*
+* [line-through]*link:#SRV-CAPACITY-3[SRV-CAPACITY-3] _SCALE_ The uptime includes maintenance, upgrades, backup, and other administrative routines*
+* [line-through]*link:#SRV-CAPACITY-4[SRV-CAPACITY-4] _SCALE_ The system shall handle a load capacity of 200 chunks of package data being transmitted per second to vehicles*
+* [line-through]*link:#SRV-CAPACITY-5[SRV-CAPACITY-5] _SCALE_ Each chunk shall be 100KBytes, rendering the total chunking bandwidth to 20MByte/Sec.*
+* [line-through]*link:#SRV-CAPACITY-6[SRV-CAPACITY-6] _SCALE_ The system shall queue at least 100 packages per seconds to their target VINs*
+* [line-through]*link:#SRV-CAPACITY-7[SRV-CAPACITY-7] _SCALE_ The target VINs shall be selected from a fleet of 1,000,000 VINs.*
+* [line-through]*link:#SRV-CAPACITY-8[SRV-CAPACITY-8] _SCALE_ The VINs filtered out by a queueing operation shall be 100,000, rendering the total queuing time to 1000 seconds for all targbeted VINs*
+* [line-through]*link:#SRV-CAPACITY-9[SRV-CAPACITY-9] _SCALE_ At no time shall transactional latency be greater than 500 msec.*
+* [line-through]*link:#SRV-CAPACITY-10[SRV-CAPACITY-10] _SCALE_ Transactional latency is defined as the number of milliseconds elasped from that the transaction was read from the NIC to the time the result was sent back over the NIC.*
+* [line-through]*link:#SRV-CAPACITY-11[SRV-CAPACITY-11] _SCALE_ A transaction is defined as a request sent from either a vehicle, an external system, or the Web UI to the system*
+* [line-through]*link:#SRV-CAPACITY-12[SRV-CAPACITY-12] _SCALE_ SRV-CAPCITY-4 to SRV-CAPACITY-11 shall be handled in parallel.*
+* [line-through]*link:#SRV-CAPACITY-13[SRV-CAPACITY-13] _SCALE_ SRV-CAPACITY-1 - 12 applies both to the server and the external resolver.*
+
+[[srv-backup-backup-of-server-and-external-resolver]]
+=== [line-through]*link:#SRV-BACKUP[SRV-BACKUP] Backup of Server and External Resolver*
+
+* [line-through]*link:#SRV-BACKUP-1[SRV-BACKUP-1] _SCALE_ The system shall have backup routines*
+* [line-through]*link:#SRV-BACKUP-2[SRV-BACKUP-2] _SCALE_ The backup shall be documented as a part of the maintenance instructions*
+* [line-through]*link:#SRV-BACKUP-3[SRV-BACKUP-3] _SCALE_ A freshly installed SOTA system with the backup applied shall render a system identical to the originally backed up system*
+* [line-through]*link:#SRV-BACKUP-4[SRV-BACKUP-4] _SCALE_ The backup system shall be able to selectively restore only VINs in both the external Resolver and the Server. Modifed wording to cover both resolver and system*
+* [line-through]*link:#SRV-BACKUP-5[SRV-BACKUP-5] _SCALE_ The backup system shall be able to selectively restore only components in both the external Resolver and the server. Modifed wording to cover both resolver and system*
+* [line-through]*link:#SRV-BACKUP-6[SRV-BACKUP-6] _SCALE_ The backup system shall be able to selectively restore only packages*
+* [line-through]*link:#SRV-BACKUP-7[SRV-BACKUP-7] _SCALE_ The backup system shall be able to selectively restore only the package queues and package transmission status*
+* [line-through]*link:#SRV-BACKUP-8[SRV-BACKUP-8] _SCALE_ The backup system shall be able to selectively restore only data plans and billing cycles*
+* [line-through]*link:#SRV-BACKUP-9[SRV-BACKUP-9] _SCALE_ The backup system shall be able to selectively restore only filters*
+* [line-through]*link:#SRV-BACKUP-10[SRV-BACKUP-10] _SCALE_ SRV-BACKUP-1 - 10 applies both to the server and the external resolver.*
+
+[[srv-upgrade-upgrade-of-server-and-external-resolver]]
+=== [line-through]*link:#SRV-UPGRADE[SRV-UPGRADE] Upgrade of Server and External Resolver*
+
+* [line-through]*link:#SRV-UPGRADE-1[SRV-UPGRADE-1] _SCALE_ The system shall be upgradable.*
+* [line-through]*link:#SRV-UPGRADE-2[SRV-UPGRADE-2] _SCALE_ The upgrade shall support a rollback to its previous state*
+* [line-through]*link:#SRV-UPGRADE-3[SRV-UPGRADE-3] _SCALE_ The upgrade shall be done with no uptime impact.*
+* [line-through]*link:#SRV-UPGRADE-4[SRV-UPGRADE-4] _SCALE_ The upgrade can be done with capacity degradation if, for example, one side of a cluster is upgraded at the time. Negative requirement. Removed.*
+* [line-through]*link:#SRV-UPGRADE-5[SRV-UPGRADE-5] _SCALE_ The capacity during an upgrade shall at all times stay above 40% of the whole system's capacity.*
+* [line-through]*link:#SRV-UPGRADE-6[SRV-UPGRADE-6] _SCALE_ SRV-UPGRADE-1 - 5 applies both to the server and the external resolver.*
+
+[[srv-logging-logging-of-server-and-external-resolver]]
+=== [line-through]*link:#SRV-LOGGING[SRV-LOGGING] Logging of Server and External Resolver*
+
+* [line-through]*link:#SRV-LOGGING-1[SRV-LOGGING-1] _SCALE_ The system shall support logging.*
+* [line-through]*link:#SRV-LOGGING-2[SRV-LOGGING-2] _SCALE_ Logging shall have at least 5 different log levels.*
+* [line-through]*link:#SRV-LOGGING-3[SRV-LOGGING-3] _SCALE_ Log levels shall be settable while the system is running*
+* [line-through]*link:#SRV-LOGGING-4[SRV-LOGGING-4] _SCALE_ Logs shall rotate so that they never consume more than a given amount of disk space*
+* [line-through]*link:#SRV-LOGGING-5[SRV-LOGGING-5] _SCALE_ The amount of disk space consumed by logs shall be settable while the system is running*
+* [line-through]*link:#SRV-LOGGING-6[SRV-LOGGING-6] _SCALE_ SRV-LOGGING-1 - 5 applies both to the server and the external resolver.*
+
+[[srv-mon-monitoring-of-server-and-external-resolver]]
+=== [line-through]*link:#SRV-MON[SRV-MON] Monitoring of Server and External Resolver*
+
+* [line-through]*link:#SRV-MON-1[SRV-MON-1] _SCALE_ The system shall be monitorable via SNMP, graphite, or similar open standard*
+* [line-through]*link:#SRV-MON-2[SRV-MON-2] _SCALE_ All SRV-MON requirements above and below applies both to the server and the extrernal resolver.*
+* [line-through]*link:#SRV-MON-ALARM-1[SRV-MON-ALARM-1] _SCALE_ Monitoring shall provide alarms*
+* [line-through]*link:#SRV-MON-ALARM-2[SRV-MON-ALARM-2] _SCALE_ Alarms shall be triggered by resource exhaustion*
+* [line-through]*link:#SRV-MON-ALARM-3[SRV-MON-ALARM-3] _SCALE_ Alarms shall be triggered by software component failures and restarts*
+* [line-through]*link:#SRV-MON-ALARM-4[SRV-MON-ALARM-4] _SCALE_ Alarms shall be triggered by excessive latency*
+* [line-through]*link:#SRV-MON-ALARM-5[SRV-MON-ALARM-5] _SCALE_ Alarms shall be triggered by failed external systems such as provisioning*
+* [line-through]*link:#SRV-MON-ALARM-6[SRV-MON-ALARM-6] _SCALE_ Alarms shall be triggered by hardware failures*
+* [line-through]*link:#SRV-MON-ALARM-7[SRV-MON-ALARM-7] _SCALE_ Alarms shall be manually acknolwedged by an operator action*
+* [line-through]*link:#SRV-MON-COUNT-1[SRV-MON-COUNT-1] _SCALE_ Monitoring shall provide counters*
+* [line-through]*link:#SRV-MON-COUNT-2[SRV-MON-COUNT-2] _SCALE_ Counters shall be persistent across system restarts*
+* [line-through]*link:#SRV-MON-COUNT-3[SRV-MON-COUNT-3] _SCALE_ Counters shall be kept for number of transactions processed by the system*
+* [line-through]*link:#SRV-MON-COUNT-4[SRV-MON-COUNT-4] _SCALE_ Counters shall be kept for number of packages sent to vehicles*
+* [line-through]*link:#SRV-MON-COUNT-5[SRV-MON-COUNT-5] _SCALE_ Counters shall be kept for number of kilobytes sent to vehicles*
+* [line-through]*link:#SRV-MON-COUNT-6[SRV-MON-COUNT-6] _SCALE_ Counters shall be kept for number of kilobytes received from vehicles*
+* [line-through]*link:#SRV-MON-COUNT-7[SRV-MON-COUNT-7] _SCALE_ Counters shall be kept for number of sessions from vehicles*
+* [line-through]*link:#SRV-MON-GAUGE-1[SRV-MON-GAUGE-1] _SCALE_ Monitoring shall provide gauges*
+* [line-through]*link:#SRV-MON-GAUGE-2[SRV-MON-GAUGE-2] _SCALE_ Each gauge shall provide an average value over the last 10 seconds*
+* [line-through]*link:#SRV-MON-GAUGE-3[SRV-MON-GAUGE-3] _SCALE_ Each gauge shall provide an average value over the last 60 seconds*
+* [line-through]*link:#SRV-MON-GAUGE-4[SRV-MON-GAUGE-4] _SCALE_ Each gauge shall provide an average value over the last 600 seconds*
+* [line-through]*link:#SRV-MON-GAUGE-5[SRV-MON-GAUGE-5] _SCALE_ Each gauge shall provide an average value over the last 3600 seconds*
+* [line-through]*link:#SRV-MON-GAUGE-6[SRV-MON-GAUGE-6] _SCALE_ Each gauge shall provide an average value over the last 86400 seconds*
+* [line-through]*link:#SRV-MON-GAUGE-7[SRV-MON-GAUGE-7] _SCALE_ Each gauge shall provide a min and max measured value over the last 10 seconds*
+* [line-through]*link:#SRV-MON-GAUGE-8[SRV-MON-GAUGE-8] _SCALE_ Each gauge shall provide a min and max measured value over the last 60 seconds*
+* [line-through]*link:#SRV-MON-GAUGE-9[SRV-MON-GAUGE-9] _SCALE_ Each gauge shall provide a min and max measured value over the last 600 seconds*
+* [line-through]*link:#SRV-MON-GAUGE-10[SRV-MON-GAUGE-10] _SCALE_ Each gauge shall provide a min and max measured value over the last 3600 seconds*
+* [line-through]*link:#SRV-MON-GAUGE-11[SRV-MON-GAUGE-11] _SCALE_ Each gauge shall provide a min and max measured value over the last 86400 seconds*
+* [line-through]*link:#SRV-MON-GAUGE-12[SRV-MON-GAUGE-12] _SCALE_ Monitoring shall gauge transactions per second*
+* [line-through]*link:#SRV-MON-GAUGE-13[SRV-MON-GAUGE-13] _SCALE_ Monitoring shall gauge transactional latency*
+* [line-through]*link:#SRV-MON-GAUGE-14[SRV-MON-GAUGE-14] _SCALE_ Monitoring shall gauge disk consumption*
+* [line-through]*link:#SRV-MON-GAUGE-15[SRV-MON-GAUGE-15] _SCALE_ Monitoring shall gauge virtual memory consumption*
+* [line-through]*link:#SRV-MON-GAUGE-16[SRV-MON-GAUGE-16] _SCALE_ Monitoring shall gauge bytes/second transmitted to all vehicles*
+* [line-through]*link:#SRV-MON-GAUGE-17[SRV-MON-GAUGE-17] _SCALE_ Monitoring shall gauge bytes/second transmitted from all vehicles*
+
+[[requirements-by-implementation-phase]]
+== Requirements by Implementation Phase
+
+[[first---initial-version-of-sota-system]]
+=== link:#requirements-first[FIRST] - Initial version of SOTA system
+
+* link:#SRV-1[SRV-1] The system shall use Remote Vehicle Interaction (RVI) for all device communication
+* link:#SRV-2[SRV-2] The design implemented by SOTA Server and the Resolver shall be prepared for a production environment in regards to availability and capacity
+* link:#SRV-3[SRV-3] The design shall be future expandable with failover sites
+* link:#SRV-4[SRV-4] The design shall be future expandable with load sharing across multiple nodes
+* link:#SRV-5[SRV-5] The design shall be future expandable with monitoring and alarm management using SNMP, Graphite, or similar
+* link:#SRV-6[SRV-6] The design shall be future expandable with backup routines
+* link:#SRV-7[SRV-7] The design shall be future expandable with runtime upgrade and downgrade procedures
+* link:#SRV-VIN-2[SRV-VIN-2] A VIN shall be identified by an 1-64 byte string (VIN). Improved wording
+* link:#SRV-PACKAGE-2[SRV-PACKAGE-2] A software package shall have an ID string
+* link:#SRV-PACKAGE-3[SRV-PACKAGE-3] A software package shall have a major.minor.patch formatted version number. The ID string plus version is the unique identifier of the package
+* link:#SRV-PACKAGE-4[SRV-PACKAGE-4] A software package shall have a description
+* link:#SRV-PACKAGE-5[SRV-PACKAGE-5] A software package shall have a vendor
+* link:#SRV-PACKAGE-QUEUE-1[SRV-PACKAGE-QUEUE-1] The system shall be able to request a software package to be installed on a subset of all managed VINs
+* link:#SRV-PACKAGE-QUEUE-6[SRV-PACKAGE-QUEUE-6] A list of currently queued updates shall be maintained. One update consist of one or more software packages targeting a specific VIN.
+* link:#SRV-PACKAGE-QUEUE-7[SRV-PACKAGE-QUEUE-7] Each queued update shall maintain a list of completed VINs that have received the update
+* link:#SRV-PACKAGE-QUEUE-8[SRV-PACKAGE-QUEUE-8] Each queued update shall maintain a list of pending VINs that have not yet received the update
+* link:#SRV-PACKAGE-QUEUE-11[SRV-PACKAGE-QUEUE-11] Updates queued for a specific VIN shall be sorted secondarily on the time when the request was made.
+* link:#SRV-PACKAGE-QUEUE-19[SRV-PACKAGE-QUEUE-19] The system shall send a resolve package ID to VIN request to the external resolver system in order to retrieve the VINs and dependencies that should have the package installed. See EXT-RESOLV for details
+* link:#SRV-PACKAGE-TRANSMIT-1[SRV-PACKAGE-TRANSMIT-1] The Server shall be able to send a wakeup / shoulder tap SMS message to the vehicle, triggering it to connect back to it. Moved from SCHED to FIRST
+* link:#SRV-PACKAGE-TRANSMIT-2[SRV-PACKAGE-TRANSMIT-2] When the vehicle connects back and identifies itself all updates queued for the VIN shall be transmitted. Moved from SCHED to FIRST
+* link:#SRV-PACKAGE-TRANSMIT-3[SRV-PACKAGE-TRANSMIT-3] The updates shall be transmitted in the order they are sorted. Allows the server to keep track of which packages are installed where
+* [line-through]*link:#SRV-PACKAGE-TRANSMIT-4[SRV-PACKAGE-TRANSMIT-4] The update shall be downloadable in chunks.* Replaced by SRV-PACKAGE-TRANSMIT-10 - SRV-PACKAGE-TRANSMIT-XXX
+* [line-through]*link:#SRV-PACKAGE-TRANSMIT-5[SRV-PACKAGE-TRANSMIT-5] The package transfer shall be restartable in case the data link is interrupted*
+* [line-through]*link:#SRV-PACKAGE-TRANSMIT-6[SRV-PACKAGE-TRANSMIT-6] The package transfer restart shall continue at the point the transmission was interrupted*
+* link:#SRV-PACKAGE-TRANSMIT-10[SRV-PACKAGE-TRANSMIT-10] "The Server shall send an ""Software Packages Available"" to a vehicle connected for which updates are queued."
+* link:#SRV-PACKAGE-TRANSMIT-11[SRV-PACKAGE-TRANSMIT-11] "The ""Software Packages Available"" command shall contain a list of package IDs, descriptive text, and size of the update"
+* link:#SRV-PACKAGE-TRANSMIT-12[SRV-PACKAGE-TRANSMIT-12] "The Server shall support an incoming ""Initiate Download"" received from the device."
+* link:#SRV-PACKAGE-TRANSMIT-13[SRV-PACKAGE-TRANSMIT-13] "The ""Initiate Software Download"" command shall contain a list of package IDs to send to the device"
+* link:#SRV-PACKAGE-TRANSMIT-14[SRV-PACKAGE-TRANSMIT-14] "The Server shall send a ""Start Download"" command to the device to initiate a new download"
+* link:#SRV-PACKAGE-TRANSMIT-15[SRV-PACKAGE-TRANSMIT-15] "The ""Start Download"" command shall contain a list of package ID contained in the download, a download index, a file size, a chunk size, a target unit, and an install/upgrade/remove command."
+* link:#SRV-PACKAGE-TRANSMIT-16[SRV-PACKAGE-TRANSMIT-16] "The Server shall send ""Package Chunk"" command containing a fragment (chunk) of a package"
+* link:#SRV-PACKAGE-TRANSMIT-17[SRV-PACKAGE-TRANSMIT-17] "The ""Package Chunk"" command shall contain a data payload, a chunk index, and an download index refering to the the index provided by the ""Start Download"" command"
+* link:#SRV-PACKAGE-TRANSMIT-18[SRV-PACKAGE-TRANSMIT-18]
+* link:#SRV-PACKAGE-TRANSMIT-19[SRV-PACKAGE-TRANSMIT-19] "The Server shall support an incoming ""Chunks Received"" command sent by the device"
+* link:#SRV-PACKAGE-TRANSMIT-20[SRV-PACKAGE-TRANSMIT-20] "The ""Chunk Received"" shall contain a download index, and a list of successfully received and stored chunks for that package."
+* link:#SRV-PACKAGE-TRANSMIT-21[SRV-PACKAGE-TRANSMIT-21] The Server shall inspect the list of successfully received chunks and select as the next chunk to send the lowest indexed chunk not yet received by the device.
+* link:#SRV-PACKAGE-TRANSMIT-22[SRV-PACKAGE-TRANSMIT-22] "The Server shall send a ""Finalize Download"" command when a ""Chunks Received"" is received from the device indicating that all chunks have been received and stored."
+* link:#SRV-PACKAGE-TRANSMIT-27[SRV-PACKAGE-TRANSMIT-27] "If a chunk has been sent 5 times, but has not shown up as successfully received in subsequent ""Chunks Received"" reports, the download shall abort."
+* link:#SRV-PACKAGE-TRANSMIT-28[SRV-PACKAGE-TRANSMIT-28] "If a chunk has been sent 5 times with no subsequent ""Chunks Received"" command being received at all within a given period of time, the download shall abort."
+* link:#DEV-1[DEV-1] The device shall receive and process wakeup / shoulder tap SMS. Please see Appendix B, Use Cases DEV___, TRANSFER___, and INSTALL_* for a detailed description of protocol flow.
+* link:#DEV-2[DEV-2] The device shall, when a shoulder tap SMS is received, connect back to the SOTA server. Moved from SCHED to FIRST
+* link:#DEV-3[DEV-3] The device shall identify itself to the SOTA server
+* link:#DEV-4[DEV-4] The device shall receive chunks for an update
+* link:#DEV-5[DEV-5] The device shall acknolwedge the reception and local storage of each received chunk
+* link:#DEV-6[DEV-6] The device shall reassemble the chunks for an update
+* link:#DEV-7[DEV-7] The device shall validate the integrity of the update. Will be covered by RVI
+* link:#DEV-8[DEV-8] The device shall authenticate the identity of the sender. Will be covered by RVI
+* link:#DEV-9[DEV-9] The device shall authorize the sender. Will be covered by RVI
+* [line-through]*link:#DEV-10[DEV-10] The device shall interface with the local package manager*
+* link:#DEV-19[DEV-19] The device shall use RVI for all server communication.
+* link:#DEV-20[DEV-20] The device software shall execute on top of the latest version of Genivi Demo Platform
+* link:#DEV-21[DEV-21] The device software shall execute on top of the latest version of Automotive Grade Linux Distribution
+* link:#DEV-22[DEV-22] The device shall interact with the local Genivi Software Loading Manager (GSLM) through DBUS using a protocol supplied by Genivi. Package manager renamed to Genivi Software Loading Manager
+* link:#DEV-23[DEV-23] There shall be a DBUS command to send an install command to the local GSLM. Package manager renamed to Genivi Software Loading Manager
+* link:#DEV-24[DEV-24] There shall be a DBUS command to send an upgrade command to the local GSLM. Package manager renamed to Genivi Software Loading Manager
+* link:#DEV-25[DEV-25] There shall be a DBUS command to send a remove command to the local GSLM. Package manager renamed to Genivi Software Loading Manager
+* link:#DEV-26[DEV-26] There shall ba a DBUS command to retrieve a list of all currently installed software from the local GSLM
+* link:#DEV-27[DEV-27] All DBUS commands shall return an error/success code and a descriptive text that can be forwarded to SOTA Serevr.
+* link:#DEV-31[DEV-31] All DBUS commands shall be compliant with call structure of the Genivi Software Loading Manager. Protocol will be specified by Genivi
+* link:#DEV-32[DEV-32] The device shall use RVI to communicate with the server
+* link:#DEV-33[DEV-33] The device shall use the JSON Data Link and JSON Protocol supplied by the RVI project for its server communication to ensure JSON-based traffic. All traffic sent between server and client will be JSON formatted, regardless of communication channel (SMS, WiFi, 3G, etc). Other protocols (HTTP, OMA-DM FUMA, etc) can be implemented as RVI plugins.
+* link:#DEV-34[DEV-34] "The device shall support an incoming ""Software Packages Available"" command received from the server"
+* link:#DEV-35[DEV-35] "The ""Software Packages Available"" command shall contain a list of package IDs, descriptive text, and size of the download"
+* link:#DEV-36[DEV-36] "The device shall forward the ""Software Packages Available"" command through DBUS to the GSLM ". The Software Loader Manager will interface the HMI to pop a confirmation dialog
+* link:#DEV-37[DEV-37] "The device shall support an incoming ""Initiate Download"" received through DBUS from the GSLM.". The user selected one or more packages on the HMI and clicked ok
+* link:#DEV-38[DEV-38] "The ""Initiate Software Download"" command shall contain a list of package IDs to download and install". "Package IDs are selected from those provided by the ""Software Packages Available"""
+* link:#DEV-39[DEV-39] "The ""Initiate Software Download"" command received from the GSLM shall be forwarded to the SOTA server to initiate the download.". "Will result in a ""Start Download"" command being sent from the Server"
+* link:#DEV-40[DEV-40] "The device shall support an incoming ""Start Download"" command to initiate a new download"
+* link:#DEV-41[DEV-41] "The ""Start Download"" command shall contain a list of package ID contained in the download, a download index, a file size, a chunk size, a target unit, and an install/upgrade/remove command.". "Multple packages may be contained in a single download. Packages can either be dependencies, or bundled packages from the ""Initiate Software Download"" package. Target tells the GSLM if this is a local package, or if it is destined for a module managed by the Module Loader."
+* link:#DEV-42[DEV-42] "The device shall support an incoming ""Package Chunk"" command containing a fragment (chunk) of a package"
+* link:#DEV-43[DEV-43] "The ""Package Chunk"" command shall contain a data payload, a chunk index, and an download index refering to the the index provided by the ""Start Download"" command". "Download index allows multiple donwloads to happen in parallell. payload size is specified by chunk size in ""Start Download"""
+* link:#DEV-44[DEV-44] The device shall store each received chunk on in secondary storage. Downloaded images are reassembled, chunk by chunk on the device side.
+* link:#DEV-45[DEV-45] "The device shall send a ""Chunks Received"" report back to the SOTA Server"
+* link:#DEV-46[DEV-46] "The ""Chunk Received"" shall contain a download index, and a list of successfully received and stored chunks for that package.". [1-10,12-15,21,23,25,27-30]
+* link:#DEV-47[DEV-47] "The ""Chunk Received"" command shall be sent at after ""Package Chunk"" command has been successfully stored.". Overkill, but increases robustness.
+* link:#DEV-48[DEV-48] "The device shall support an incoming ""Finalize Download command to finish the download". "Will only be sent when ""Chunks received"" reports that all chunks have been received."
+* link:#DEV-49[DEV-49] "The ""Finalize Download"" command shall contain a download index.". Clears the device to start the installation process.
+* link:#DEV-50[DEV-50] The device shall verify that all chunks have been received when a download is finalized.
+* link:#DEV-51[DEV-51] The device shall verify the source and authenticity of the download
+* link:#DEV-52[DEV-52] If either verification fails, an install failure shall be sent back to the SOTA server for all Package IDs in the download
+* link:#DEV-53[DEV-53] "The device shall forward the finalized download to the GSLM together with the install/upgrade/remove command and target unit specified in the ""Start Download"" command.". Commands to be sent are specified by DEV-23 - DEV-27
+* link:#API-1[API-1] The Server shall support an API, allowing its functionality to be accessed by external apps and services
+* link:#API-2[API-2] The API shall be based on Restful HTTP with JSON.bodies
+* link:#API-VIN-1[API-VIN-1] The API shall have a command to add VINs
+* link:#API-VIN-2[API-VIN-2] The API shall have a command to delete VINs
+* [line-through]*link:#API-VIN-3[API-VIN-3] The API shall have a call to search for and return VINs using regexp wildcards.* Duplicate of API-VIN-7 - 8
+* link:#API-VIN-7[API-VIN-7] The API shall have a VIN search command
+* link:#API-VIN-8[API-VIN-8] The search command shall support a VIN regexp to match against
+* link:#API-PACKAGE-1[API-PACKAGE-1] The API shall have a command to upload packages to the system
+* link:#API-PACKAGE-2[API-PACKAGE-2] Each package shall have an ID string specified
+* link:#API-PACKAGE-3[API-PACKAGE-3] Each package shall have a version number specified so that ID string plus version number creates a unique queue.
+* link:#API-PACKAGE-5[API-PACKAGE-5] The API shall have a command to list search for software packages
+* link:#API-PACKAGE-6[API-PACKAGE-6] The search command shall support regexp matching for the ID string and the version number
+* link:#API-QUEUE-1[API-QUEUE-1] The API shall have a command to request that an package is to be installed
+* [line-through]*link:#API-QUEUE-2[API-QUEUE-2] The install command shall provide a filter label to be applied to the request. Not necessary with external resolver*
+* link:#API-QUEUE-3[API-QUEUE-3] The install command shall return a unique install ID for the install request
+* link:#API-QUEUE-17[API-QUEUE-17] "The API shall have a command to queue an ""Get All Installed Packages"" command for a given VIN"
+* link:#WEB-1[WEB-1] The web system shall act as a front end toward the SOTA system
+* link:#WEB-2[WEB-2] The web system shall use the Web API of the SOTA system
+* link:#WEB-VIN-1[WEB-VIN-1] The web system shall have a UI to add VINs
+* link:#WEB-VIN-18[WEB-VIN-18] A VIN added, deleted, or modified by the web system shall update both the server and the external resolver
+* link:#WEB-PACKAGE-1[WEB-PACKAGE-1] The web system shall have a UI to upload packages to the system.
+* link:#WEB-PACKAGE-2[WEB-PACKAGE-2] The upload screen shall have a software package ID string
+* link:#WEB-PACKAGE-3[WEB-PACKAGE-3] The upload screen shall have a software version
+* link:#WEB-PACKAGE-4[WEB-PACKAGE-4] The upload screen shall have a description
+* link:#WEB-PACKAGE-5[WEB-PACKAGE-5] The upload screen shall have a vendor
+* link:#WEB-PACKAGE-7[WEB-PACKAGE-7] The web system shall have a UI to search for software packages
+* link:#WEB-PACKAGE-8[WEB-PACKAGE-8] The search command shall support regexp matching for the ID string and the version number
+* link:#WEB-PACKAGE-9[WEB-PACKAGE-9] Each software package in the returned search result list shall be clickable
+* link:#WEB-PACKAGE-10[WEB-PACKAGE-10] Clicking on an package from the search result shall bring up a property screen for the package
+* link:#WEB-PACKAGE-11[WEB-PACKAGE-11] The package property screen shall show the package ID string
+* link:#WEB-PACKAGE-12[WEB-PACKAGE-12] The package property screen shall show the version number
+* link:#WEB-PACKAGE-13[WEB-PACKAGE-13] The package property screen shall show the description
+* link:#WEB-PACKAGE-14[WEB-PACKAGE-14] The package property screen shall show the vendor
+* link:#WEB-PACKAGE-19[WEB-PACKAGE-19] A package added, deleted, or modified by the web system shall update both the server and the external resolver
+* link:#WEB-PACKAGE-20[WEB-PACKAGE-20] The package property screen shall have a button to list all filters that will be executed when the package is resolved to VINs. "Will queue a ""Get All Installed Packages"" command to the given VIN, using API-QUEUE-17"
+* link:#WEB-QUEUE-1[WEB-QUEUE-1] The web system shall have a user interface for creating an update to be pushed to one or more VINs
+* link:#WEB-QUEUE-2[WEB-QUEUE-2] The create update screen shall specify the software package and version to push
+* [line-through]*link:#WEB-QUEUE-3[WEB-QUEUE-3] The create update screen shall specify the filter tag to apply.* Not applicable with external resolver
+* link:#WEB-QUEUE-7[WEB-QUEUE-7] The create update screen shall have a button to contact external resolver and list all VINs that would receive the update. Will invoke external resolver to map package ID to VINs
+* link:#WEB-QUEUE-8[WEB-QUEUE-8] The web system shall have a user interface to list all created updates in the system
+* link:#WEB-QUEUE-9[WEB-QUEUE-9] Each listed update shall be shown with its software package and filter label
+* link:#WEB-QUEUE-10[WEB-QUEUE-10] Each listed update shall be clickable
+* link:#WEB-QUEUE-11[WEB-QUEUE-11] Clicking on the update shall bring up the update property screen
+* link:#WEB-QUEUE-12[WEB-QUEUE-12] The update property screen shall show the information provided by WEB-QUEUE-[2-6]
+* link:#WEB-QUEUE-13[WEB-QUEUE-13] The update property screen shall show the total number of VINs targeted by the update
+* link:#WEB-QUEUE-19[WEB-QUEUE-19] The update property screen shall be able to list all VINs that are still waiting to recveive the update
+* link:#WEB-QUEUE-20[WEB-QUEUE-20] Each VIN listed in WEB-QUEUE-[17-19] shall be clickable
+* link:#WEB-RESOLV-FILTER-1[WEB-RESOLV-FILTER-1] The web system shall have a user interface for adding install filters on the external resolver
+* link:#WEB-RESOLV-FILTER-2[WEB-RESOLV-FILTER-2] The add install filter screen shall have a filter label
+* link:#WEB-RESOLV-FILTER-3[WEB-RESOLV-FILTER-3] The add install filter screen shall have a text field for a boolean expression
+* link:#WEB-RESOLV-FILTER-4[WEB-RESOLV-FILTER-4] The add install filter screen shall have a button to syntax check the boolean expression
+* link:#WEB-RESOLV-FILTER-5[WEB-RESOLV-FILTER-5] In case the syntax check fails, an error code and text should be showed
+* link:#WEB-RESOLV-FILTER-6[WEB-RESOLV-FILTER-6] The web system shall have a button to list all filters on the external resolver
+* link:#WEB-RESOLV-FILTER-7[WEB-RESOLV-FILTER-7] Each filter returned in the list result shall be clicklable
+* link:#WEB-RESOLV-FILTER-8[WEB-RESOLV-FILTER-8] Clicking on a filter in the list result shall bring up the filter property screen retrieved from the external resolver
+* link:#WEB-RESOLV-FILTER-9[WEB-RESOLV-FILTER-9] The property screen shall be able to edit all filter properties
+* link:#WEB-RESOLV-FILTER-10[WEB-RESOLV-FILTER-10] The property screen shall support syntax checking of changed boolean expression
+* link:#WEB-RESOLV-FILTER-11[WEB-RESOLV-FILTER-11] "The property screen shall have a ""delete filter"" to remove a filter from the external resolver"
+* link:#WEB-RESOLV-FILTER-12[WEB-RESOLV-FILTER-12] "The property screen shall have a ""list associated packages"" to list all packages that will have the filter executed when resolved"
+* link:#WEB-RESOLV-FILTER-13[WEB-RESOLV-FILTER-13] The property screen shall be able to add a filter to a package. The filter(s) associated with a package will be run over all VINs when the given package is resolved.
+* link:#WEB-RESOLV-FILTER-14[WEB-RESOLV-FILTER-14] The property screen shall be able to delete a filter from a package
+* link:#EXT-RESOLV-1[EXT-RESOLV-1] The system shall rely on an external system, the Resolver, to translate a software package to VINs that are to have the package installed.
+* link:#EXT-RESOLV-2[EXT-RESOLV-2] The resolver shall have a server-side WebAPI to handle resolve requests.
+* link:#EXT-RESOLV-3[EXT-RESOLV-3] A resolve request, sent to the external resolver by the system, shall contain a software package ID string.
+* link:#EXT-RESOLV-4[EXT-RESOLV-4] A resolve request shall return a list of zero or more VIN numbers that the sofware package should be installed on
+* link:#EXT-RESOLV-API-1[EXT-RESOLV-API-1] The Resolver shall support an API, allowing its functionality to be accessed by external apps and services
+* link:#EXT-RESOLV-API-2[EXT-RESOLV-API-2] The API shall be based on Restful HTTP with JSON.bodies
+* link:#EXT-RESOLV-FILTER-1[EXT-RESOLV-FILTER-1] A resolve request shall retrieve the VINs to install an package on by executing one or more filters
+* link:#EXT-RESOLV-FILTER-2[EXT-RESOLV-FILTER-2] A single filter shall be associated with zero or more software package IDs
+* link:#EXT-RESOLV-FILTER-3[EXT-RESOLV-FILTER-3] The software package ID string of a resolve request shall be used retrieve the all filters associated with the package ID.
+* link:#EXT-RESOLV-FILTER-4[EXT-RESOLV-FILTER-4] Each filter retrieved for an package ID in a resolve request shall be run on all VINs in order to filter out those VINs that should receive the update. All filters are AND-ed together.
+* link:#EXT-RESOLV-FILTER-5[EXT-RESOLV-FILTER-5] Only VINs that pass all filters associated with the software package ID shall be returned by the resolve request
+* link:#EXT-RESOLV-FILTER-6[EXT-RESOLV-FILTER-6] The filter shall specify a boolean expression that has to be true for a specific VIN in order for the software package to be queued to that VIN.
+* link:#EXT-RESOLV-FILTER-12[EXT-RESOLV-FILTER-12] The VIN operand shall support regexp matching
+* link:#EXT-RESOLV-FILTER-13[EXT-RESOLV-FILTER-13] The finished boolean expression shall be labeled and stored as a named, reusable filter
+* link:#EXT-RESOLV-FILTER-API-1[EXT-RESOLV-FILTER-API-1] The API shall have a command to add new filters
+* link:#EXT-RESOLV-FILTER-API-2[EXT-RESOLV-FILTER-API-2] The added filter shall have a boolean expression
+* link:#EXT-RESOLV-FILTER-API-3[EXT-RESOLV-FILTER-API-3] The added filter shall have a unique label
+* link:#EXT-RESOLV-FILTER-API-4[EXT-RESOLV-FILTER-API-4] The API shall havea a command to check the syntax of a boolean expression
+* link:#EXT-RESOLV-FILTER-API-5[EXT-RESOLV-FILTER-API-5] The syntax check shall return ok or an error code and text
+* link:#EXT-RESOLV-FILTER-API-7[EXT-RESOLV-FILTER-API-7] The API shall have a command to associate a package ID string to a filter. Used during resolve package -> VINs to figure out which filter to apply to th egiven VINs
+* link:#EXT-RESOLV-FILTER-API-8[EXT-RESOLV-FILTER-API-8] The API shall have a command to dis-associate a package ID string from a filter
+* link:#EXT-RESOLV-FILTER-API-9[EXT-RESOLV-FILTER-API-9] The API shall have a command to list all filters associated with a package ID string
+* link:#EXT-RESOLV-FILTER-API-10[EXT-RESOLV-FILTER-API-10] The filters associated with the given package ID shall have their filter labels returned
+* link:#EXT-RESOLV-FILTER-API-11[EXT-RESOLV-FILTER-API-11] The API shall have a command to list all packages associated with a filter label.
+* link:#EXT-RESOLV-FILTER-API-12[EXT-RESOLV-FILTER-API-12] The packages associated with the given filter label shall have their package ID strings returned.
+* link:#EXT-RESOLV-VIN-2[EXT-RESOLV-VIN-2] A VIN shall use a VIN number as its primary identifier
+* link:#EXT-RESOLV-VIN-API-1[EXT-RESOLV-VIN-API-1] The API shall have a command to add VINs
+* link:#EXT-RESOLV-VIN-API-2[EXT-RESOLV-VIN-API-2] The API shall have a command to delete VINs
+* link:#EXT-RESOLV-PACKAGE-2[EXT-RESOLV-PACKAGE-2] A software package shall have an ID string
+* link:#EXT-RESOLV-PACKAGE-3[EXT-RESOLV-PACKAGE-3] A software package shall have a major.minor.patch formatted version number. The ID string plus version is the unique identifier of the package
+* link:#EXT-RESOLV-PACKAGE-4[EXT-RESOLV-PACKAGE-4] A software package shall have a description
+* link:#EXT-RESOLV-PACKAGE-5[EXT-RESOLV-PACKAGE-5] A software package shall have a vendor
+* link:#EXT-RESOLV-PACKAGE-API-1[EXT-RESOLV-PACKAGE-API-1] The API shall have a command to specify a package to the external resolver
+* link:#EXT-RESOLV-PACKAGE-API-2[EXT-RESOLV-PACKAGE-API-2] Each package shall have an ID string specified
+* link:#EXT-RESOLV-PACKAGE-API-3[EXT-RESOLV-PACKAGE-API-3] Each software package shall have a major.minor.patch formatted version number. The ID string plus version is the unique identifier of the package
+* link:#EXT-RESOLV-PACKAGE-API-4[EXT-RESOLV-PACKAGE-API-4] Each package shall have a version number specified so that ID string plus version number creates a unique queue.
+
+[[comp---adds-component-management-associating-one-ore-more-components-with-a-specific-vin]]
+=== link:#requirements-comp[COMP] - Adds component management, associating one ore more components with a specific VIN
+
+* [line-through]*link:#SRV-VIN-3[SRV-VIN-3] A VIN shall be able to ber associated to up to 1000 components. Each component is a potential target for software images*
+* link:#SRV-PACKAGE-6[SRV-PACKAGE-6] The software ID string shall support regexp matching when searching
+* link:#SRV-PACKAGE-7[SRV-PACKAGE-7] The software version number shall support regexp matching when searching
+* [line-through]*link:#API-VIN-4[API-VIN-4] The API shall have a call to associate a component to an existing VIN. Moved to Resolver*
+* [line-through]*link:#API-VIN-9[API-VIN-9] The VINs returned by the search shall each have their associated components listed.* Moved to Resolver
+* link:#WEB-VIN-7[WEB-VIN-7] The VIN property screen shall list all components installed on the VIN, as retrieved from the external resolver
+* [line-through]*link:#WEB-VIN-10[WEB-VIN-10] The VIN property screen shall have a button for adding a component on the external Resolver.* Duplicate of WEB-RESOLV-COMP-1
+* [line-through]*link:#WEB-VIN-11[WEB-VIN-11] Adding a component shall specify the component part number.* Duplicate of WEB-RESOLV-COMP-1
+* link:#WEB-QUEUE-21[WEB-QUEUE-21] Clicking on a VIN shall list all software packages and version included in the update for the given VIN
+* link:#WEB-RESOLV-COMP-1[WEB-RESOLV-COMP-1] The web system shall have a UI to add components to the external resolver using a component part number
+* link:#WEB-RESOLV-COMP-2[WEB-RESOLV-COMP-2] The web system shall have a UI to delete components from the external resolver
+* link:#WEB-RESOLV-COMP-3[WEB-RESOLV-COMP-3] The web system shall have a UI to search for components in the external resolver
+* link:#WEB-RESOLV-COMP-4[WEB-RESOLV-COMP-4] The web system's components shall be searchable by part number regular expressions
+* link:#WEB-RESOLV-COMP-5[WEB-RESOLV-COMP-5] The componens returned by a search shall be clickable
+* link:#WEB-RESOLV-COMP-6[WEB-RESOLV-COMP-6] Clicking on a component from the search result shall bring up a property screen for the component
+* link:#WEB-RESOLV-COMP-7[WEB-RESOLV-COMP-7] The component property screen shall show the part number
+* link:#WEB-RESOLV-COMP-8[WEB-RESOLV-COMP-8] The component property screen shall show the description
+* link:#WEB-RESOLV-COMP-9[WEB-RESOLV-COMP-9] The component property screen shall have a button to list all VINs that the component is installed on
+* link:#WEB-RESOLV-COMP-10[WEB-RESOLV-COMP-10] The web system shall have a UI to add a component to a specific VIN using the external resolver.
+* link:#EXT-RESOLV-FILTER-7[EXT-RESOLV-FILTER-7] The boolean expression shall have operands that identify specific components by their part number
+* link:#EXT-RESOLV-FILTER-8[EXT-RESOLV-FILTER-8] The component part number in the expression shall support regexp matching
+* link:#EXT-RESOLV-FILTER-API-6[EXT-RESOLV-FILTER-API-6] The API shall have a command to delete filters identified by their label
+* link:#EXT-RESOLV-VIN-3[EXT-RESOLV-VIN-3] A VIN shall be able to ber associated to up to 1000 components
+* link:#EXT-RESOLV-VIN-API-3[EXT-RESOLV-VIN-API-3] The API shall have a call to specify a component has been installed in an VIN
+* link:#EXT-RESOLV-COMP-1[EXT-RESOLV-COMP-1] The resolver system shall manage up to 1 million components. Used by filtering process to require that specific components are installed in order for a package to be installed
+* link:#EXT-RESOLV-COMP-2[EXT-RESOLV-COMP-2] A component has a part number. Main identifier used by software packages.
+* link:#EXT-RESOLV-COMP-3[EXT-RESOLV-COMP-3] A component has a description
+* link:#EXT-RESOLV-COMP-4[EXT-RESOLV-COMP-4] A component can have one or more VINs associated with it. Each VIN has zero or more components installed on it.
+* link:#EXT-RESOLV-COMP-API-1[EXT-RESOLV-COMP-API-1] The API shall have a command to add a component to the system with a part number
+* link:#EXT-RESOLV-COMP-API-2[EXT-RESOLV-COMP-API-2] The API shall have a command to specify that a component is installed on a specific VIN. "Will make has_component(""xxx"") return true in a filter run over the given VIN."
+* link:#EXT-RESOLV-COMP-API-3[EXT-RESOLV-COMP-API-3] The API shall have a command to search for and return components using regexp wildcards
+* link:#EXT-RESOLV-COMP-API-4[EXT-RESOLV-COMP-API-4] The returned components shall be listed with their part number
+* link:#EXT-RESOLV-COMP-API-5[EXT-RESOLV-COMP-API-5] The returned components shall be listed with their descriptions
+* link:#EXT-RESOLV-COMP-API-6[EXT-RESOLV-COMP-API-6] The API shall have a command to list all VINs that a component is installed on
+
+[[inst---installation-tracking-to-record-which-packages-are-currently-installed-on-which-vins-components.]]
+=== INST - Installation tracking to record which packages are currently installed on which VINs / components.
+
+* [line-through]*link:#SRV-VIN-4[SRV-VIN-4] Each component associated with a VIN shall have a reference to its currently installed software image.*
+* [line-through]*link:#SRV-VIN-5[SRV-VIN-5] The component reference to the software image shall be the ID string and version number*
+* [line-through]*link:#SRV-PACKAGE-8[SRV-PACKAGE-8] Each software package shall be maintain a list of all VINs it is installed on*
+* link:#SRV-PACKAGE-QUEUE-20[SRV-PACKAGE-QUEUE-20] The system shall use EXT-RESOLV-PACKAGE-API to update the resolver with packages installed and removed from each VIN targeted by an update, as reported back by the device. Allows resolver to keep track of which packages are installed on which VIN.
+* link:#SRV-PACKAGE-QUEUE-21[SRV-PACKAGE-QUEUE-21] "The system shall be able to queue a ""Get All Installed Packages"" command to a device in order to retrieve its currently installed packages". Used to synchronize Resolver's list of installed packages on a VIN with reality
+* link:#SRV-PACKAGE-QUEUE-22[SRV-PACKAGE-QUEUE-22] "When a ""Get All Installed Packages"" result is received from a device, the EXT-RESOLV-PACKAGE-API shall be used to reset the resolver's list of installed packages for the given VIN."
+* [line-through]*link:#SRV-PACKAGE-TRANSMIT-7[SRV-PACKAGE-TRANSMIT-7] Once installed on a VIN, an installation acknolwedgement shall be sent back to the SOTA server*
+* link:#SRV-PACKAGE-TRANSMIT-8[SRV-PACKAGE-TRANSMIT-8] The installation acknowledgement shall be used to update the association between a VINs components and their installed software packages and versions
+* link:#SRV-PACKAGE-TRANSMIT-9[SRV-PACKAGE-TRANSMIT-9] In case of an installation failure, there shall be an error code and error text returned to the SOTA server. Executes SRC-PACKAGE-QUEUE-22
+* link:#SRV-PACKAGE-TRANSMIT-23[SRV-PACKAGE-TRANSMIT-23] "The ""Finalize Download"" command shall contain a download index."
+* link:#SRV-PACKAGE-TRANSMIT-24[SRV-PACKAGE-TRANSMIT-24] "The Server shall support an incoming ""Installation report"" command sent by the device"
+* link:#SRV-PACKAGE-TRANSMIT-25[SRV-PACKAGE-TRANSMIT-25] "The ""Installation Report"" shall contain a package ID, a status code indicating success or failure, the currently running version of the package, and a descriptive text of the outcome.". Forwarded by SOTA Server to external resolver so that it can keep track of which packages are installed on which VINs
+* link:#SRV-PACKAGE-TRANSMIT-26[SRV-PACKAGE-TRANSMIT-26] The Server shall forward the Installation report to the external resolver. As specified by SRV-PACKAGE-QUEUE-20
+* link:#SRV-PACKAGE-TRANSMIT-29[SRV-PACKAGE-TRANSMIT-29] An aborted download shall be reported to thee external resolver
+* link:#SRV-PACKAGE-TRANSMIT-30[SRV-PACKAGE-TRANSMIT-30] "An aborted download shall trigger a ""Abort Download"" command being sent to the device"
+* link:#SRV-PACKAGE-TRANSMIT-31[SRV-PACKAGE-TRANSMIT-31] "An ""Abort Download"" command shall contain the download index of the failed download". Either the device receives it and cancels the download, or the device will time out the download and cancel it.
+* link:#DEV-1[DEV-1] _FIRST_ The device shall receive and process wakeup / shoulder tap SMS. Please see Appendix B, Use Cases DEV___, TRANSFER___, and INSTALL_* for a detailed description of protocol flow.
+* [line-through]*link:#DEV-11[DEV-11] The device shall report installation success back to the SOTA server. Forwarded by SOTA Server to external resolver so that it can maintain a list of currently installed packages.*
+* link:#DEV-12[DEV-12] The device shall report installation failure back to the SOTA server. Installa
+* link:#DEV-13[DEV-13] In case of installation failure, the device shall report an error code and an error text back to the server
+* link:#DEV-14[DEV-14] "The device shall support a ""Get currently installed packages command"" (GetCurrentPackages)". Needed sync up a mismatch between a device's view of installed packages and that of the backend server.
+* link:#DEV-15[DEV-15] When a GetCurrentPackages command is received, the device shall report back a list of currently installed packages
+* link:#DEV-16[DEV-16] Each package in a report shall be identified by its package ID string and version number
+* link:#DEV-17[DEV-17] There shall be a resend attempt in case reporting of package installation results or currently installed packages fails
+* link:#DEV-18[DEV-18] The device shall, when it connects to the SOTA server, validate the authenticity of the SOTA server. Both client and server side validation are needed.
+* link:#DEV-28[DEV-28] The device shall be able to report locally changed software packages to the SOTA Server
+* link:#DEV-29[DEV-29] The device shall receive information about locally changed packages through a DBUS command
+* link:#DEV-30[DEV-30] The report shall contain the package ID, timestamp, and operation (install, upgrade, remove) carried out locally.
+* link:#DEV-54[DEV-54] "The device shall support an incoming DBUS ""Installation Report' command from the local GSLM."
+* link:#DEV-55[DEV-55] "The ""Installation Report"" shall contain a package ID, a status code indicating success or failure, the currently running version of the package, and a descriptive text of the outcome.". The running version can either be the new version, the existing version, or a reverted factory version.
+* link:#DEV-56[DEV-56] The device shall forward the installation report to the SOTA Server. SOTA Server will forward it to the external resolver, allowing it to maintain its database of installed packages.
+* link:#DEV-57[DEV-57] "If no additional ""Package Chunks"" are received for an ongoing download within a given timeout period, the download shall abort"
+* link:#DEV-58[DEV-58] "If a ""Start Download"" command is received with a download index equal to that of an ongoing download, the ongoing download shall be aborted to make way for the new download.". Allows timed out downloads to be restarted.
+* link:#DEV-59[DEV-59] "The device shall support an incoming ""Abort Download"" command "
+* link:#DEV-60[DEV-60] "The ""Abort Download"" command shall contain the download index"
+* link:#DEV-61[DEV-61] An aborted download shall delete any stored data on the device.
+* link:#DEV-62[DEV-62] "If the download index of an ""Abort Download"" command cannot be found, the command shall silently be ignored.". """Start Download"" command was lost and never received by client"
+* [line-through]*link:#API-VIN-5[API-VIN-5] The API shall have a call to associate an software image to a VIN. Moved to Resolver*
+* [line-through]*link:#API-VIN-6[API-VIN-6] The software image associated with a VIN shall be associated with a specific component installed on that VIN. Removed association between package and specific component. Packages are now generically installed on a VIN without component association.*
+* link:#API-VIN-10[API-VIN-10] The VINs returned by the search shall each have their associated installed software packages listed
+* link:#API-VIN-11[API-VIN-11] The API shall have a command to list all historic package updates sent to a VIN since the VIN was created
+* link:#API-VIN-12[API-VIN-12] Each update returned by a historic list command shall contain a result code reflecting success or failure of installing the package
+* link:#API-VIN-13[API-VIN-13] Each update returned by a historic list command shall contain all dependent-upon packages transmitted with the original package in order to satisfy all dependencies of the installed package
+* link:#API-VIN-14[API-VIN-14] Each update returned by a historic list command shall contain a time stamp of when the update completed or failed
+* [line-through]*link:#API-PACKAGE-7[API-PACKAGE-7] The API shall have a command to list all the VINs that a specific version of a software package is installed on.* Database of which packages are installed on which VIN now handled by resolver
+* [line-through]*link:#API-PACKAGE-8[API-PACKAGE-8] The API shall have a command to list all the VINs that a specific version of a software package is queued for installation on.* Duplicate of API-QUEUE-7
+* [line-through]*link:#WEB-VIN-8[WEB-VIN-8] Each component on a VIN property screen shall be listed with its currently installed software image and version.* Packages no longer associated with target components on a VIN.
+* link:#WEB-VIN-9[WEB-VIN-9] The VIN property screen shall list all installed software packages (including dependencies), as retrieved from the external resolver
+* link:#WEB-VIN-12[WEB-VIN-12] The VIN property screen shall have a button for adding a (manually installed) software package on a VIN. API Call sent to the Resolver
+* link:#WEB-VIN-13[WEB-VIN-13] The software package added to the system shall be specified with a ID string
+* link:#WEB-VIN-14[WEB-VIN-14] The software package added to the system shall be specified with a version number
+* link:#WEB-VIN-15[WEB-VIN-15] The software package added to the system shall be specified with a description
+* [line-through]*link:#WEB-VIN-16[WEB-VIN-16] The software package shall be assocaited with a component installed on the VIN.* Packages no longer associated with target components on a VIN.
+* link:#WEB-VIN-17[WEB-VIN-17] The VIN property screen shall have a button to list all software packages currently queued to it
+* link:#WEB-VIN-19[WEB-VIN-19] The VIN property screen shall have a button to re-synchronize the list of installed packages with those actually installed on device
+* link:#WEB-PACKAGE-16[WEB-PACKAGE-16] The package property screen shall have a button to list all VINs that the package is installed on. Interfaces resolver to retrieve lsit
+* link:#WEB-PACKAGE-17[WEB-PACKAGE-17] Clicking on the installed VIN button shall bring up a list of all VINs with the package installed
+* link:#WEB-PACKAGE-18[WEB-PACKAGE-18] The package property screen shall have a button to list all VINs that the package is queued for
+* link:#WEB-QUEUE-14[WEB-QUEUE-14] The update property screen shall show the total number of VINs that have had the update successfully installed
+* link:#WEB-QUEUE-15[WEB-QUEUE-15] The update property screen shall show the total number of VINs that have failed to have the update installed
+* link:#WEB-QUEUE-16[WEB-QUEUE-16] The update property screen shall show the total number of VINs that are still waiting to receive the update
+* link:#WEB-QUEUE-17[WEB-QUEUE-17] The update property screen shall be able to list all VINs that have had the update succsessfully installed
+* link:#WEB-QUEUE-18[WEB-QUEUE-18] The update property screen shall be able to list all VINs that failed to have the update installed
+* link:#EXT-RESOLV-FILTER-9[EXT-RESOLV-FILTER-9] The boolean expression shall have operands that identify the currently installed packages packages.
+* link:#EXT-RESOLV-FILTER-10[EXT-RESOLV-FILTER-10] The currently installed package is identified by its ID string and version number
+* link:#EXT-RESOLV-FILTER-11[EXT-RESOLV-FILTER-11] The ID string and version number of the currently installed package shall support regexp matching
+* link:#EXT-RESOLV-VIN-4[EXT-RESOLV-VIN-4] A VIN shall be able to handle up to 5000 installed software packages
+* link:#EXT-RESOLV-PACKAGE-6[EXT-RESOLV-PACKAGE-6] Each software package shall be maintain a list of all VINs it is installed on. Used by filter has_package() operand
+* link:#EXT-RESOLV-PACKAGE-API-5[EXT-RESOLV-PACKAGE-API-5] The resolver shall have a command to specify that a given package has been installed on a VIN. Called by the SOTA Server when a device reports that an update has been installed.
+* link:#EXT-RESOLV-PACKAGE-API-6[EXT-RESOLV-PACKAGE-API-6] The resolver shall have a command to specify that a given package has been deleted from a VIN. Called by the SOTA Server when a device reports that an update has been updated/removed
+* link:#EXT-RESOLV-PACKAGE-API-7[EXT-RESOLV-PACKAGE-API-7] The resolver shall have a command to search for all packages installed on a VIN
+* link:#EXT-RESOLV-PACKAGE-API-8[EXT-RESOLV-PACKAGE-API-8] The resolver shall have a command to search for all VINs that a package is installed on.
+
+[[deps-package-dependency-tracking-to-create-a-per-vehicle-update-with-necessary-packages]]
+=== link:#requirements-deps[DEPS] Package dependency tracking to create a per-vehicle update with necessary packages
+
+* link:#SRV-PACKAGE-QUEUE-9[SRV-PACKAGE-QUEUE-9] Each VIN targeted by a queued update shall maintain a list of packages that are rolled into the update for that specvific vin. All packages to be added to original package in order to satisfy dependencies are provided by EXT-RESOLV
+* [line-through]*link:#SRV-PACKAGE-DEPS-1[SRV-PACKAGE-DEPS-1] Each VIN, as returned by the external resolver, shall be have a dependency check done for the package that is to be installed*
+* [line-through]*link:#SRV-PACKAGE-DEPS-2[SRV-PACKAGE-DEPS-2] The depency check shall compare the list of packages already installed on the VIN with the dependency graph of the new package to be installed. Which packages does the package about to be installed need on this specific VIN in order to function.*
+* [line-through]*link:#SRV-PACKAGE-DEPS-3[SRV-PACKAGE-DEPS-3] If an dependent package, required by the package to be installed, is currently not installed on the VIN, the required package will be added to the update for that specific VIN.*
+* [line-through]*link:#SRV-PACKAGE-DEPS-4[SRV-PACKAGE-DEPS-4] If installing one or more of the packages in an update on a VIN would break dependencies for packages already installed on that VIN, the update shall fail for the given VIN and be reported back to the server*
+* [line-through]*link:#SRV-PACKAGE-DEPS-5[SRV-PACKAGE-DEPS-5] A software package shall be dependent on up to 100 other software packages*
+* [line-through]*link:#SRV-PACKAGE-DEPS-6[SRV-PACKAGE-DEPS-6] Software package depencies shall form a graph of sub dependencies. A requires B, which requires C and D.*
+* [line-through]*link:#SRV-PACKAGE-DEPS-7[SRV-PACKAGE-DEPS-7] A dependency shall be identified by a software package ID string and a version number*
+* [line-through]*link:#API-PACKAGE-4[API-PACKAGE-4] Each package shall have an optional list of dependencies specified.* Moved to resolver
+* [line-through]*link:#API-PACKAGE-9[API-PACKAGE-9] The API shall have a command to list the dependencies for a specific package.* Moved to resolver
+* link:#WEB-PACKAGE-6[WEB-PACKAGE-6] The upload screen shall allow to specify dependencies on one or more exisiting software packages. Interfaces resolver to handle dependencies
+* link:#WEB-PACKAGE-15[WEB-PACKAGE-15] The package property screen shall show all the software package dependencies the shown package has. Interfaces resolver to handle dependencies
+* link:#EXT-RESOLV-DEPS-1[EXT-RESOLV-DEPS-1] Each VIN returned by a resolver for a specific package shall have a dependency check done for that package
+* link:#EXT-RESOLV-DEPS-2[EXT-RESOLV-DEPS-2] The depency check shall compare the list of packages already installed on the VIN with the dependency graph of the new package to be installed
+* link:#EXT-RESOLV-DEPS-3[EXT-RESOLV-DEPS-3] If an dependent package, required by the package to be installed, is currently not installed on the VIN, the required package will be provided with the given VIN when returned to the SOTA Server.
+* link:#EXT-RESOLV-DEPS-4[EXT-RESOLV-DEPS-4] If installing one or more of the packages in an update on a VIN would break dependencies for packages already installed on that VIN, an error will be logged for the given update by the resolver and the VIN is removed from the set of VINs returned by the resolver
+* link:#EXT-RESOLV-DEPS-5[EXT-RESOLV-DEPS-5] A software package shall be dependent on up to 100 other software packages
+* link:#EXT-RESOLV-DEPS-6[EXT-RESOLV-DEPS-6] Software package depencies shall form a graph of sub dependencies.
+* link:#EXT-RESOLV-DEPS-7[EXT-RESOLV-DEPS-7] A dependency shall be identified by a software package ID string and a version number
+* link:#EXT-RESOLV-DEPS-API-1[EXT-RESOLV-DEPS-API-1] The resolver shall have a command to add a dependency from one package toward another
+* link:#EXT-RESOLV-DEPS-API-2[EXT-RESOLV-DEPS-API-2] The resolver shall have a command to delete a dependency from one package toward another
+* link:#EXT-RESOLV-DEPS-API-3[EXT-RESOLV-DEPS-API-3] The resolver shall have a command to list all dependencies of a package. Can be called recursively to get entire dependency graph
+
+[[sched-installation-scheduling-allows-for-priorities-of-updates-and-install-period-windows.]]
+=== link:#requirements-sched[SCHED] Installation scheduling, allows for priorities of updates and install period windows.
+
+* link:#SRV-PACKAGE-QUEUE-2[SRV-PACKAGE-QUEUE-2] The request shall have an earliest start date. Do not install before 2016-01-01.
+* link:#SRV-PACKAGE-QUEUE-3[SRV-PACKAGE-QUEUE-3] The request shall have a latest install completion date. Do not install after 2016-04-01
+* link:#SRV-PACKAGE-QUEUE-4[SRV-PACKAGE-QUEUE-4] If a software package cannot be installed on one ore more targeted VINs within the specified period, they failed VINs shall be logged
+* link:#SRV-PACKAGE-QUEUE-5[SRV-PACKAGE-QUEUE-5] The request shall have a priority from 1 to 100. Used when updates are queued to individual vehicles. See below
+* link:#SRV-PACKAGE-QUEUE-10[SRV-PACKAGE-QUEUE-10] Updates queued for a specific VIN shall be sorted primarily on ascending request priority. Allows high-priority updates to skip the queue and be pushed out earlier to the vehicle
+* link:#API-QUEUE-4[API-QUEUE-4] The API shall have a command to cancel a previously queued install request
+* link:#API-QUEUE-5[API-QUEUE-5] Canceling an install request will delete any pending updates that have yet to be transmitted to their targeted VINs.
+* link:#API-QUEUE-6[API-QUEUE-6] Canceling an install request shall not affect any packages already installed on their targeted VINs.
+* link:#API-QUEUE-7[API-QUEUE-7] The API shall have a command to list all VINs targeted by a specific install request, identified by the install ID
+* link:#API-QUEUE-8[API-QUEUE-8] The list command shall return all VINs which the install request was successfully completed on
+* link:#API-QUEUE-9[API-QUEUE-9] The success report for a VIN shall include a date and time stamp.
+* link:#API-QUEUE-10[API-QUEUE-10] The list command shall return all VINs for which the install request is still pending on the server
+* link:#API-QUEUE-11[API-QUEUE-11] The list command shall return all VINs for which the install request failed
+* link:#API-QUEUE-12[API-QUEUE-12] The failure report for a VIN shall include a date and time stramp.
+* link:#API-QUEUE-13[API-QUEUE-13] The failure report for a VIN shall include a reason code such as time out, dependency failure, etc.
+* link:#API-QUEUE-14[API-QUEUE-14] The failure report for a VIN shall include a reason text.
+* link:#API-QUEUE-15[API-QUEUE-15] The list command shall, for each returned VIN, list the software packages included in the update, including dependencies
+* link:#API-QUEUE-16[API-QUEUE-16] The list command shall return all VINs for which the install request has started transmission, but has not yet completed
+* link:#WEB-VIN-2[WEB-VIN-2] The web system shall have a UI to delete VINs
+* link:#WEB-VIN-3[WEB-VIN-3] The web system shall have a UI to search for VINs
+* link:#WEB-VIN-4[WEB-VIN-4] The web system's VINs shall be searchable by regular expressions
+* link:#WEB-VIN-5[WEB-VIN-5] Each VIN by a search shall be clickable
+* link:#WEB-VIN-6[WEB-VIN-6] Clicking on a VIN from the search result shall bring up a property screen for the VIN
+* link:#WEB-QUEUE-4[WEB-QUEUE-4] The create update screen shall specify the earliest start date for the update to be installed
+* link:#WEB-QUEUE-5[WEB-QUEUE-5] The create update screen shall specify the latest end date for the update to be installed
+* link:#WEB-QUEUE-6[WEB-QUEUE-6] The create update screen shall specify a priority
+* link:#WEB-QUEUE-22[WEB-QUEUE-22] "The update property screen shall have a ""cancel update"" button."
+* link:#WEB-QUEUE-23[WEB-QUEUE-23] "Clicking on the ""cancel update"" button shall cancel any updates to VINs that are not yet complete"
+* link:#WEB-QUEUE-24[WEB-QUEUE-24] "Clicking on the ""cancel update"" button shall delete the update itself."
+
+[[shape-traffic-shaping-allowing-the-integration-of-data-plans-and-billing-cycles-to-avoid-data-overrun-costs.]]
+== link:#requirements-shape[SHAPE] Traffic shaping allowing the integration of data plans and billing cycles to avoid data overrun costs.
+
+* link:#SRV-VIN-7[SRV-VIN-7] The VIN shall be associated with one data plan ID. Ties the VIN to a data plan, allowing us to control traffic to it
+* link:#SRV-PACKAGE-QUEUE-12[SRV-PACKAGE-QUEUE-12] The software package install request shall have a data pool usage threshold
+* link:#SRV-PACKAGE-QUEUE-13[SRV-PACKAGE-QUEUE-13] The data plan usage threshold shall be specified as a decimal percentage
+* link:#SRV-PACKAGE-QUEUE-14[SRV-PACKAGE-QUEUE-14] The data plan usage threshold shall specify the maximum percentage of the data pool assigned to a VIN that can be used when the package transfer starts.
+* link:#SRV-PACKAGE-QUEUE-15[SRV-PACKAGE-QUEUE-15] If the data pool associated with a targeted VIN has a usage is greater than the specified threshold for the request, the update for the targeted VIN shall be rescheduled to the next billing cycle.
+* [line-through]*link:#SRV-PACKAGE-QUEUE-16[SRV-PACKAGE-QUEUE-16] Updates queued for a specific VIN shall have an individual earliest start date, forcing it to be transmitted within a specific billing cycle.* Duplicate of SRV-PACKAGE-QUEUE-2
+* link:#SRV-PACKAGE-QUEUE-17[SRV-PACKAGE-QUEUE-17] The individual earliest start date shall not be later than the lastest install completion date specified in SRV-PACKAGE-QUEUE-3
+* link:#SRV-PACKAGE-QUEUE-18[SRV-PACKAGE-QUEUE-18] If the update for a specific VIN cannot be rescheduled to a billing cycle before the specified latest install competion date, the update shall fail.
+* link:#SRV-TRAFFIC-SHAPING-1[SRV-TRAFFIC-SHAPING-1] The SOTA server shall be manage data plans used to control when updates are to be sent to their targeted VINs
+* link:#SRV-TRAFFIC-SHAPING-2[SRV-TRAFFIC-SHAPING-2] Up to 1,000 data plans shall be managed by the SOTA server
+* link:#SRV-TRAFFIC-SHAPING-3[SRV-TRAFFIC-SHAPING-3] A data plan shall specify a system-wide unique a data plan ID
+* link:#SRV-TRAFFIC-SHAPING-4[SRV-TRAFFIC-SHAPING-4] A single data plan profile shall manage up to 1000 billing cycles . One week billing cycles x 1000 is 20 years of billing
+* link:#SRV-TRAFFIC-SHAPING-5[SRV-TRAFFIC-SHAPING-5] The data plan shall specify if the data pool for each billing cycle is per VIN, or if it is shared across all VINs associated with the profile. Removed until further notice. For now all billing cycles will be pooled across all VINs
+* link:#SRV-TRAFFIC-SHAPING-6[SRV-TRAFFIC-SHAPING-6] Each billing cycle shall specify a date and time stamp when it starts
+* link:#SRV-TRAFFIC-SHAPING-7[SRV-TRAFFIC-SHAPING-7] Each billing cycle shall specify a data pool size in kilobytes
+* link:#SRV-TRAFFIC-SHAPING-8[SRV-TRAFFIC-SHAPING-8] A billing cycle shall become active when the start date/time stamp occurrs.
+* link:#SRV-TRAFFIC-SHAPING-9[SRV-TRAFFIC-SHAPING-9] A billing cycle shall be deactivated when the next consecutive billing cycle is activated.
+* link:#SRV-TRAFFIC-SHAPING-10[SRV-TRAFFIC-SHAPING-10] The SOTA server shall be able to read data usage reports from an external source
+* link:#SRV-TRAFFIC-SHAPING-11[SRV-TRAFFIC-SHAPING-11] The SOTA server shall deduct data usage from the pool of the currently active billing cycle
+* link:#SRV-TRAFFIC-SHAPING-12[SRV-TRAFFIC-SHAPING-12] The SOTA server shall at all times know how data is left in a pool at any given time
+* link:#SRV-TRAFFIC-SHAPING-13[SRV-TRAFFIC-SHAPING-13] When a billing cycle becomes deactive, it shall be archived
+* link:#SRV-TRAFFIC-SHAPING-14[SRV-TRAFFIC-SHAPING-14] The architved billing cycle shall contain the number of bytes transmitted during the cycle
+* link:#SRV-TRAFFIC-SHAPING-15[SRV-TRAFFIC-SHAPING-15] Each billing cycle under a data plan shall be shared across all VINs using the given plan. Replaces SRV-TRAFFIC-SHAPING-5
+* link:#API-TRAFFIC-SHAPING-1[API-TRAFFIC-SHAPING-1] The API shall have a command to add a data plan
+* link:#API-TRAFFIC-SHAPING-2[API-TRAFFIC-SHAPING-2] The added data plan shall have a unique data plan ID
+* [line-through]*link:#API-TRAFFIC-SHAPING-3[API-TRAFFIC-SHAPING-3] The added data plan shall specify if the billing cycles' data pools are shared across all VIN or is specified per VIN.* All plans will be pooled across all VINs for now
+* [line-through]*link:#API-TRAFFIC-SHAPING-4[API-TRAFFIC-SHAPING-4] The API shall have a command to delete an existing data plan and its billing cycles.* Not necessary at a first implementation
+* link:#API-TRAFFIC-SHAPING-5[API-TRAFFIC-SHAPING-5] The API shall have a command to add a billing cycle to an existing data plan
+* link:#API-TRAFFIC-SHAPING-6[API-TRAFFIC-SHAPING-6] The added billing cycle shall have a start date and time stamp
+* link:#API-TRAFFIC-SHAPING-7[API-TRAFFIC-SHAPING-7] The added billing cycle shall have a data pool size, specified in kilobytes.
+* link:#API-TRAFFIC-SHAPING-8[API-TRAFFIC-SHAPING-8] The billing cycle shall be identified by its associated data plan and start date/time stamp.
+* [line-through]*link:#API-TRAFFIC-SHAPING-9[API-TRAFFIC-SHAPING-9] The API shall have a command to delete an existing billing cycle.* Not necessary at a first implementation
+* link:#API-TRAFFIC-SHAPING-10[API-TRAFFIC-SHAPING-10] The API shall have a command to add transmitted bytes to the currently active billing cycle of a specific data plan. Increases usage of the given billing cycle
+* link:#API-TRAFFIC-SHAPING-11[API-TRAFFIC-SHAPING-11] The API shall have a command to retrieve the data pool size of the current billing cycle of a specific data plan
+* link:#API-TRAFFIC-SHAPING-12[API-TRAFFIC-SHAPING-12] The API shall have a command to retrieve the number of used bytes in the current billing cycle of a specific data plan
+* link:#API-TRAFFIC-SHAPING-13[API-TRAFFIC-SHAPING-13] The API shall have a command to list all billing cycles created under a data plan
+* link:#WEB-TRAFFIC-SHAPING-1[WEB-TRAFFIC-SHAPING-1] The web system shall have a user interface to add a data plan
+* link:#WEB-TRAFFIC-SHAPING-2[WEB-TRAFFIC-SHAPING-2] The add data plan screen shall have a unique data plan ID
+* [line-through]*link:#WEB-TRAFFIC-SHAPING-3[WEB-TRAFFIC-SHAPING-3] The add data plan screen shall specify if the data pool size is per VIN or is shared across all participating VINs.* Not needed in a first implenentation
+* link:#WEB-TRAFFIC-SHAPING-4[WEB-TRAFFIC-SHAPING-4] The add data plan shall have a command to delete an existing data plan and its billing cycles. Was previously erroneously removed instead of the line above.
+* link:#WEB-TRAFFIC-SHAPING-5[WEB-TRAFFIC-SHAPING-5] The web system shall have a user interface to add billing cycles to a data plan
+* link:#WEB-TRAFFIC-SHAPING-6[WEB-TRAFFIC-SHAPING-6] An added billing cycle shall be entered with a start date / time stamp
+* link:#WEB-TRAFFIC-SHAPING-7[WEB-TRAFFIC-SHAPING-7] An added billing cycle shall be entered with a data pool size in kilobytes
+* link:#WEB-TRAFFIC-SHAPING-8[WEB-TRAFFIC-SHAPING-8] The web system shall be able to list all data plans and their properties
+* link:#WEB-TRAFFIC-SHAPING-9[WEB-TRAFFIC-SHAPING-9] The web system shall be able to list all billing cycles added to a data plan and their properties
+* [line-through]*link:#WEB-TRAFFIC-SHAPING-10[WEB-TRAFFIC-SHAPING-10] The web system shall be able to delete an existing billing cycle under a data plan.* Not needed in a first implementation
+* link:#WEB-TRAFFIC-SHAPING-11[WEB-TRAFFIC-SHAPING-11] The web system shall be able to show the current data pool usage for an existing billing cycle
+* link:#WEB-TRAFFIC-SHAPING-12[WEB-TRAFFIC-SHAPING-12] The web system shall be able to update the data pool usage for an existing billing cycle by setting a kilobyte value
+
+[[scale-adds-capacity-for-production-deployment]]
+== [line-through]*link:#requirements-scale[SCALE] Adds capacity for production deployment *
+
+* [line-through]*link:#SRV-VIN-1[SRV-VIN-1] The system shall manage up to 100 million VINs*
+* [line-through]*link:#SRV-VIN-6[SRV-VIN-6] A VIN shall be able to manage up to 5000 installed software images*
+* [line-through]*link:#SRV-PACKAGE-1[SRV-PACKAGE-1] The system shall manage up to 10 million software packages*
+* [line-through]*link:#WEB-3[WEB-3] The web system shall have a provisioning system for adding users*
+* [line-through]*link:#WEB-4[WEB-4] The web system shall have a provisioning system for deleting users*
+* [line-through]*link:#WEB-5[WEB-5] Each user shall have a username*
+* [line-through]*link:#WEB-6[WEB-6] Each user shall have a password*
+* [line-through]*link:#WEB-7[WEB-7] The web system shall have a pre-configured admin user with a pre-configured password.*
+* [line-through]*link:#WEB-8[WEB-8] Only the admin user shall be able to add and delete other users*
+* [line-through]*link:#WEB-9[WEB-9] All users in the system shall have full access to all web functions, except add/delete users. For now. Different access levels will come later.*
+* link:#EXT-RESOLV-VIN-1[EXT-RESOLV-VIN-1] The resolver shall manage up to 100 million VINs
+* [line-through]*link:#EXT-RESOLV-PACKAGE-1[EXT-RESOLV-PACKAGE-1] The resolver shall manage up to 10 million software packages*
+* [line-through]*link:#SRV-CAPACITY-1[SRV-CAPACITY-1] The system shall support a cold standby*
+* [line-through]*link:#SRV-CAPACITY-2[SRV-CAPACITY-2] The system shall provide 99.9% uptime, yielding a maximum of 43.8 minutes downtime per month.*
+* [line-through]*link:#SRV-CAPACITY-3[SRV-CAPACITY-3] The uptime includes maintenance, upgrades, backup, and other administrative routines*
+* [line-through]*link:#SRV-CAPACITY-4[SRV-CAPACITY-4] The system shall handle a load capacity of 200 chunks of package data being transmitted per second to vehicles*
+* [line-through]*link:#SRV-CAPACITY-5[SRV-CAPACITY-5] Each chunk shall be 100KBytes, rendering the total chunking bandwidth to 20MByte/Sec.*
+* [line-through]*link:#SRV-CAPACITY-6[SRV-CAPACITY-6] The system shall queue at least 100 packages per seconds to their target VINs*
+* [line-through]*link:#SRV-CAPACITY-7[SRV-CAPACITY-7] The target VINs shall be selected from a fleet of 1,000,000 VINs.*
+* [line-through]*link:#SRV-CAPACITY-8[SRV-CAPACITY-8] The VINs filtered out by a queueing operation shall be 100,000, rendering the total queuing time to 1000 seconds for all targbeted VINs*
+* [line-through]*link:#SRV-CAPACITY-9[SRV-CAPACITY-9] At no time shall transactional latency be greater than 500 msec.*
+* [line-through]*link:#SRV-CAPACITY-10[SRV-CAPACITY-10] Transactional latency is defined as the number of milliseconds elasped from that the transaction was read from the NIC to the time the result was sent back over the NIC.*
+* [line-through]*link:#SRV-CAPACITY-11[SRV-CAPACITY-11] A transaction is defined as a request sent from either a vehicle, an external system, or the Web UI to the system*
+* [line-through]*link:#SRV-CAPACITY-12[SRV-CAPACITY-12] SRV-CAPCITY-4 to SRV-CAPACITY-11 shall be handled in parallel.*
+* [line-through]*link:#SRV-CAPACITY-13[SRV-CAPACITY-13] SRV-CAPACITY-1 - 12 applies both to the server and the external resolver.*
+* [line-through]*link:#SRV-BACKUP-1[SRV-BACKUP-1] The system shall have backup routines*
+* [line-through]*link:#SRV-BACKUP-2[SRV-BACKUP-2] The backup shall be documented as a part of the maintenance instructions*
+* [line-through]*link:#SRV-BACKUP-3[SRV-BACKUP-3] A freshly installed SOTA system with the backup applied shall render a system identical to the originally backed up system*
+* [line-through]*link:#SRV-BACKUP-4[SRV-BACKUP-4] The backup system shall be able to selectively restore only VINs in both the external Resolver and the Server. Modifed wording to cover both resolver and system*
+* [line-through]*link:#SRV-BACKUP-5[SRV-BACKUP-5] The backup system shall be able to selectively restore only components in both the external Resolver and the server. Modifed wording to cover both resolver and system*
+* [line-through]*link:#SRV-BACKUP-6[SRV-BACKUP-6] The backup system shall be able to selectively restore only packages*
+* [line-through]*link:#SRV-BACKUP-7[SRV-BACKUP-7] The backup system shall be able to selectively restore only the package queues and package transmission status*
+* [line-through]*link:#SRV-BACKUP-8[SRV-BACKUP-8] The backup system shall be able to selectively restore only data plans and billing cycles*
+* [line-through]*link:#SRV-BACKUP-9[SRV-BACKUP-9] The backup system shall be able to selectively restore only filters*
+* [line-through]*link:#SRV-BACKUP-10[SRV-BACKUP-10] SRV-BACKUP-1 - 10 applies both to the server and the external resolver.*
+* [line-through]*link:#SRV-UPGRADE-1[SRV-UPGRADE-1] The system shall be upgradable.*
+* [line-through]*link:#SRV-UPGRADE-2[SRV-UPGRADE-2] The upgrade shall support a rollback to its previous state*
+* [line-through]*link:#SRV-UPGRADE-3[SRV-UPGRADE-3] The upgrade shall be done with no uptime impact.*
+* [line-through]*link:#SRV-UPGRADE-4[SRV-UPGRADE-4] The upgrade can be done with capacity degradation if, for example, one side of a cluster is upgraded at the time. Negative requirement. Removed.*
+* [line-through]*link:#SRV-UPGRADE-5[SRV-UPGRADE-5] The capacity during an upgrade shall at all times stay above 40% of the whole system's capacity.*
+* [line-through]*link:#SRV-UPGRADE-6[SRV-UPGRADE-6] SRV-UPGRADE-1 - 5 applies both to the server and the external resolver.*
+* [line-through]*link:#SRV-LOGGING-1[SRV-LOGGING-1] The system shall support logging.*
+* [line-through]*link:#SRV-LOGGING-2[SRV-LOGGING-2] Logging shall have at least 5 different log levels.*
+* [line-through]*link:#SRV-LOGGING-3[SRV-LOGGING-3] Log levels shall be settable while the system is running*
+* [line-through]*link:#SRV-LOGGING-4[SRV-LOGGING-4] Logs shall rotate so that they never consume more than a given amount of disk space*
+* [line-through]*link:#SRV-LOGGING-5[SRV-LOGGING-5] The amount of disk space consumed by logs shall be settable while the system is running*
+* [line-through]*link:#SRV-LOGGING-6[SRV-LOGGING-6] SRV-LOGGING-1 - 5 applies both to the server and the external resolver.*
+* [line-through]*link:#SRV-MON-1[SRV-MON-1] The system shall be monitorable via SNMP, graphite, or similar open standard*
+* [line-through]*link:#SRV-MON-2[SRV-MON-2] All SRV-MON requirements above and below applies both to the server and the extrernal resolver.*
+* [line-through]*link:#SRV-MON-ALARM-1[SRV-MON-ALARM-1] Monitoring shall provide alarms*
+* [line-through]*link:#SRV-MON-ALARM-2[SRV-MON-ALARM-2] Alarms shall be triggered by resource exhaustion*
+* [line-through]*link:#SRV-MON-ALARM-3[SRV-MON-ALARM-3] Alarms shall be triggered by software component failures and restarts*
+* [line-through]*link:#SRV-MON-ALARM-4[SRV-MON-ALARM-4] Alarms shall be triggered by excessive latency*
+* [line-through]*link:#SRV-MON-ALARM-5[SRV-MON-ALARM-5] Alarms shall be triggered by failed external systems such as provisioning*
+* [line-through]*link:#SRV-MON-ALARM-6[SRV-MON-ALARM-6] Alarms shall be triggered by hardware failures*
+* [line-through]*link:#SRV-MON-ALARM-7[SRV-MON-ALARM-7] Alarms shall be manually acknolwedged by an operator action*
+* [line-through]*link:#SRV-MON-COUNT-1[SRV-MON-COUNT-1] Monitoring shall provide counters*
+* [line-through]*link:#SRV-MON-COUNT-2[SRV-MON-COUNT-2] Counters shall be persistent across system restarts*
+* [line-through]*link:#SRV-MON-COUNT-3[SRV-MON-COUNT-3] Counters shall be kept for number of transactions processed by the system*
+* [line-through]*link:#SRV-MON-COUNT-4[SRV-MON-COUNT-4] Counters shall be kept for number of packages sent to vehicles*
+* [line-through]*link:#SRV-MON-COUNT-5[SRV-MON-COUNT-5] Counters shall be kept for number of kilobytes sent to vehicles*
+* [line-through]*link:#SRV-MON-COUNT-6[SRV-MON-COUNT-6] Counters shall be kept for number of kilobytes received from vehicles*
+* [line-through]*link:#SRV-MON-COUNT-7[SRV-MON-COUNT-7] Counters shall be kept for number of sessions from vehicles*
+* [line-through]*link:#SRV-MON-GAUGE-1[SRV-MON-GAUGE-1] Monitoring shall provide gauges*
+* [line-through]*link:#SRV-MON-GAUGE-2[SRV-MON-GAUGE-2] Each gauge shall provide an average value over the last 10 seconds*
+* [line-through]*link:#SRV-MON-GAUGE-3[SRV-MON-GAUGE-3] Each gauge shall provide an average value over the last 60 seconds*
+* [line-through]*link:#SRV-MON-GAUGE-4[SRV-MON-GAUGE-4] Each gauge shall provide an average value over the last 600 seconds*
+* [line-through]*link:#SRV-MON-GAUGE-5[SRV-MON-GAUGE-5] Each gauge shall provide an average value over the last 3600 seconds*
+* [line-through]*link:#SRV-MON-GAUGE-6[SRV-MON-GAUGE-6] Each gauge shall provide an average value over the last 86400 seconds*
+* [line-through]*link:#SRV-MON-GAUGE-7[SRV-MON-GAUGE-7] Each gauge shall provide a min and max measured value over the last 10 seconds*
+* [line-through]*link:#SRV-MON-GAUGE-8[SRV-MON-GAUGE-8] Each gauge shall provide a min and max measured value over the last 60 seconds*
+* [line-through]*link:#SRV-MON-GAUGE-9[SRV-MON-GAUGE-9] Each gauge shall provide a min and max measured value over the last 600 seconds*
+* [line-through]*link:#SRV-MON-GAUGE-10[SRV-MON-GAUGE-10] Each gauge shall provide a min and max measured value over the last 3600 seconds*
+* [line-through]*link:#SRV-MON-GAUGE-11[SRV-MON-GAUGE-11] Each gauge shall provide a min and max measured value over the last 86400 seconds*
+* [line-through]*link:#SRV-MON-GAUGE-12[SRV-MON-GAUGE-12] Monitoring shall gauge transactions per second*
+* [line-through]*link:#SRV-MON-GAUGE-13[SRV-MON-GAUGE-13] Monitoring shall gauge transactional latency*
+* [line-through]*link:#SRV-MON-GAUGE-14[SRV-MON-GAUGE-14] Monitoring shall gauge disk consumption*
+* [line-through]*link:#SRV-MON-GAUGE-15[SRV-MON-GAUGE-15] Monitoring shall gauge virtual memory consumption*
+* [line-through]*link:#SRV-MON-GAUGE-16[SRV-MON-GAUGE-16] Monitoring shall gauge bytes/second transmitted to all vehicles*
+* [line-through]*link:#SRV-MON-GAUGE-17[SRV-MON-GAUGE-17] Monitoring shall gauge bytes/second transmitted from all vehicles*

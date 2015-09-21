@@ -1,0 +1,170 @@
+---
+layout: page
+title: "Deployment with Docker Launcher"
+category: doc
+date: 2015-08-26 14:09:53
+order: 2
+---
+
+Docker Launcher launches projects using Docker and Ansible. It is a prerequisite for deploying the SOTA server, and can be installed from https://github.com/advancedtelematic/docker-launcher[its GitHub repository.] *Please ensure you are using the latest version of Docker Launcher. Older versions may not correctly deploy the SOTA Server.*
+
+== Prerequisites
+
+=== Basic Software Packages
+
+You will need curl, python, and the following three python packages: `ansible`, `boto`, and `docker-py`. The python packages may be installed by running `sudo pip install ansible boto docker-py`
+
+=== Docker Hub
+
+You will need a Docker Hub account (https://hub.docker.com/).
+
+
+
+== Deploying a Development System
+
+**Caution:** When deploying the Web UI using Docker, it will run in 'production mode' by default. In this mode of operation, an SSL certificate is required to log into the Web UI. As a workaround, you can set the `cookieSecureOption` on line 106 of the file `app/org/genivi/webserver/controllers/AuthConfigImpl.scala` to `false`.
+
+As a prerequisite to deploying a local development system, you must run
+
+[source,sh]
+-------------------------
+./sbt docker:publishLocal
+-------------------------
+
+Once this completes successfully, you may deploy with https://github.com/advancedtelematic/docker-launcher[Docker Launcher.] For deploying a development system to your local machine, make sure you have Docker Launcher and Docker installed and configured to your liking. Docker Launcher currently requires Docker >= v.1.6.1 and Ansible v.1.9.2. Ansible 2.x has not yet been tested, and is not guaranteed to work.
+
+First, enter the `deploy` directory, and copy the example Docker Launcher configuration file, then edit it to match your preferences. The only values you should need to change are the `user` and `email` fields in `docker-launcher.yml`. These should be a valid username and associated email address for Docker Hub.
+
+[source,sh]
+--------------------------------------------------
+cd deploy
+cp docker-launcher.yml.example docker-launcher.yml
+--------------------------------------------------
+
+You can then deploy a development system with
+
+[source,sh]
+------------------------------------------------------------
+
+docker-launcher -c docker-launcher.yml deploy-sota-local.yml
+------------------------------------------------------------
+
+For a local deployment, a Docker Hub password is not actually required. When prompted for one, you can just press enter to continue.
+
+To stop the running system run
+
+[source,sh]
+-----------------------------------------------------------------------
+
+docker-launcher --teardown -c docker-launcher.yml deploy-sota-local.yml
+-----------------------------------------------------------------------
+
+[[cistaging-remote-system]]
+=== CI/Staging remote system
+
+For deploying a remote system for staging and CI, with a docker daemon accessible from a single IP run
+
+[source,sh]
+---------------------------------------------------
+cd deploy/sota-docker-hub
+ansible-playbook -i inventory launch-docker-hub.yml
+---------------------------------------------------
+
+You'll get prompted for the IP you want to allow to connect to the docker daemon.
+
+*NOTE:* This depends on a properly configured `docker-launcher.yml`, even though it is not using Docker Launcher.
+
+To connect to the remote instance, find its IP from AWS Console and prepend your docker commands with `-H tcp://<Address-of-staging-system>:2375` like this
+
+[source,sh]
+---------------------------------------------------------------------
+
+docker -H tcp://<Address-of-staging-system>:2375 build -t something .
+---------------------------------------------------------------------
+
+[[deploying-against-the-staging-system]]
+=== Deploying against the staging system
+
+[source,sh]
+--------------------------------------------------------------------------
+
+export DOCKER_HOST=tcp://<Address-of-staging-system>:2375
+docker-launcher -c deploy/docker-launcher.yml deploy/deploy-sota-local.yml
+--------------------------------------------------------------------------
+
+For migrations you need to tell flyway the connection details like so:
+
+[source,sh]
+----------------------------------------------------------------------------------------------------------------
+
+CORE_DB_USER=<user> CORE_DB_PASSWORD=<password> CORE_DB_URL=jdbc:mysql://<host>:3306/sota sbt core/flywayMigrate
+----------------------------------------------------------------------------------------------------------------
+
+With `<user>`, `<password>` and `<host>` replaced with suitable values.
+
+== Deploying to Amazon AWS
+
+**Caution:** When deploying the Web UI using Docker, it will run in 'production mode' by default. In this mode of operation, an SSL certificate is required to log into the Web UI. As a workaround, you can set the `cookieSecureOption` on line 106 of the file `app/org/genivi/webserver/controllers/AuthConfigImpl.scala` to `false`.
+
+=== AWS Prerequisites
+
+Deployment of rvi-sota-server requires valid AWS administrator credentials, as well as an SSH key to administer any instances launched by the vw-garage deployment scripts.
+
+==== Create New User for Deployment
+
+For security purposes, we recommend creating a new IAM user to manage the deployment. This user will have full access to the AWS services, but will not have the capability to create new users. If the credentials for the *deploy* user are compromised, they can be reset using the root AWS account.
+
+===== Save User Credentials
+
+Once the user has been created, you should download the credentials. Be careful! You will only have one opportunity to do this. Once you have them, create a file in your home directory called `~/.boto`. It should look like this (with the angle brackets omitted):
+
+--------------------------------------------------------------
+[Credentials]
+aws_access_key_id = <your deploy user's access key id>
+aws_secret_access_key = <your deploy user's secret access key>
+--------------------------------------------------------------
+
+===== Set User Security Policy
+
+We recommend attaching the `PowerUserAccess` policy to the *deploy* user.
+
+==== SSH Keypair
+
+You will need an SSH keypair available in the AWS region you wish to install to (eu-west-1 by default). Full documentation for key pairs is available from the https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html[AWS Website].
+
+=== Deploying with docker-launcher
+
+To deploy to AWS, you will need to configure `docker-launcher.yml`.
+
+[source,yaml]
+----
+reboot_strategy: 'best-effort'
+registry:
+  user: atsjenkins // <1>
+  email: jenkins@advancedtelematic.com // <2>
+ec2:
+  key: tauron // <3>
+  image: ami-07fd8270 <4>
+  region: eu-west-1 <5>
+
+vars:
+  db_root_password: "sota-test"
+  db_user: "sota"
+  db_user_password: "s0ta"
+  db_resolver_name: "sota_resolver"
+  db_core_name: "sota_core"
+  play_crypto_secret: "YM5B6o<ywKn4tTyA;tOZ<2xUEajF4DDi=O/PPm1Q^w2LqtKISd9oqYT6b>>C1gQa"
+----
+
+You will need to change at least three values from the example file:
+
+<1> Your username at Docker Hub
+<2> The email address associated with your Docker Hub account
+<3> The name of an SSH keypair associated with your AWS account
+
+You may wish to also change the region (5). Note that if you do so, you will need to select a CoreOS image (4) valid for `c3.xlarge` instances in your chosen region. If you don't change the region, the default from the example file should work.
+
+Once you've configured `docker-launcher.yml` to your liking, you can run `docker-launcher -c docker-launcher.yml deploy-sota-ec2.yml` to deploy to AWS. Note that this may take quite some time. You can set debug verbosity in docker-launcher with `-vvv`.
+
+
+

@@ -10,13 +10,12 @@ define(['react', 'underscore', 'sota-dispatcher'], function(React, _, SotaDispat
     },
     render: function() {
       return (
-        <form>
+        <form className="form-inline pull-right search-bar">
           <div className="form-group">
             <label htmlFor="regex">{this.props.label}</label>
             <input
               type="text"
               name="regex"
-              placeholder="Search..."
               value={this.props.filterText}
               ref="filterTextInput"
               className="form-control"

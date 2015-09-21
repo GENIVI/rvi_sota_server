@@ -9,48 +9,61 @@ import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.Directives
+import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
-import eu.timepit.refined._
-import eu.timepit.refined.string.{Uri => RUri}
 import org.genivi.sota.core.db._
-import org.genivi.sota.core.files.Types.ValidExtension
+import org.genivi.sota.core.jsonrpc.HttpTransport
 import org.genivi.sota.core.rvi._
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 object Boot extends App with DatabaseConfig {
+
+  import slick.driver.MySQLDriver.api.Database
+  def startSotaServices(db: Database) : Route = {
+    val transferProtocolProps = TransferProtocolActor.props(db, PackageTransferActor.props( rviClient ))
+    val updateController = system.actorOf( UpdateController.props(transferProtocolProps ), "update-controller")
+    new rvi.SotaServices(updateController).route
+  }
+
   implicit val system = ActorSystem("sota-core-service")
   implicit val materializer = ActorMaterializer()
   implicit val exec = system.dispatcher
   implicit val log = Logging(system, "boot")
   val config = system.settings.config
 
-  val rviHost = config.getString("rvi.host")
-  val rviPort = config.getInt("rvi.port")
-  val rviInterface = new JsonRpcRviInterface(rviHost, rviPort)
-  val fileResolver = (for {
-    path <- refineV[RUri](config.getString("packages.absolutePath")).right
-    fileExt <- refineV[ValidExtension](config.getString("packages.extension")).right
-    checksumExt <- refineV[ValidExtension](config.getString("packages.checksumExtension")).right
-  } yield new files.Resolver(path, fileExt, checksumExt)).fold(err => throw new Exception(err), identity)
-
-  val deviceCommunication = new DeviceCommunication(db, rviInterface, fileResolver, e => log.error(e, e.getMessage()))
-  val externalResolverClient = new DefaultExternalResolverClient( Uri(config.getString("resolver.baseUri")) )
-
-  val service = new WebService( externalResolverClient, db )
-
-  import scala.concurrent.duration._
-  val cancellable = system.scheduler.schedule(50.millis, 1.second) { deviceCommunication.runCurrentCampaigns() }
+  val externalResolverClient = new DefaultExternalResolverClient(
+    Uri(config.getString("resolver.baseUri")),
+    Uri(config.getString("resolver.resolveUri")),
+    Uri(config.getString("resolver.packagesUri"))
+  )
 
   val host = config.getString("server.host")
   val port = config.getInt("server.port")
 
   import Directives._
-  val routes = service.route ~ new rvi.WebService().route(deviceCommunication)
+  import org.genivi.sota.core.rvi.ServerServices
+  def routes(rviServices: ServerServices) = {
+    new WebService( rviServices, externalResolverClient, db ).route ~ startSotaServices(db)
+  }
 
-  val bindingFuture = Http().bindAndHandle(routes, host, port)
+  val rviUri = Uri(system.settings.config.getString( "rvi.endpoint" ))
+  implicit val requestTransport = HttpTransport(rviUri).requestTransport
+  implicit val rviClient = new JsonRpcRviClient( requestTransport, system.dispatcher )
 
-  log.info(s"Server online at http://$host:$port")
+  val sotaServicesFuture = for {
+    sotaServices <- SotaServices.register( Uri(config.getString("rvi.sotaServicesUri")) )
+    binding      <- Http().bindAndHandle(routes(sotaServices), host, port)
+  } yield sotaServices
+
+  sotaServicesFuture.onComplete {
+    case Success(services) =>
+      log.info(s"Server online at http://$host:$port")
+    case Failure(e) =>
+      log.error(e, "Unable to start")
+      sys.exit(-1)
+  }
 
   sys.addShutdownHook {
     Try( db.close()  )

@@ -1,0 +1,135 @@
+---
+layout: page
+title: "Building & Deploying"
+category: doc
+date: 2015-08-26 10:39:45
+order: 1
+---
+:toc: macro
+
+For the server-side components, this project includes a https://github.com/advancedtelematic/docker-launcher[docker-launcher] configuration file to allow the cluster of components to be deployed conveniently to a developer machine or to Amazon AWS. See link:../doc/deployment-with-docker-launcher.html[Deployment with Docker Launcher] for deploying development or production systems with Docker Launcher.
+
+toc::[]
+
+== Building rvi_sota_server Locally
+
+For local development, the following prerequisites are required:
+
+1.  Java 8
+2.  mysql (with appropriate databases created)
+
+The other dependencies are managed using Scala's `sbt`. If you have sbt installed then use it, otherwise the `./sbt` script in the root of the project will bootstrap everything you need beyond Java 8.
+
+To check the version of java installed, run:
+
+---------------------------------------------------------------
+# java -version
+java version "1.8.0_45"
+Java(TM) SE Runtime Environment (build 1.8.0_45-b14)
+Java HotSpot(TM) 64-Bit Server VM (build 25.45-b02, mixed mode)
+---------------------------------------------------------------
+
+For development, a local MariaDB install is required. (Note that this is *not* required for deployment, as Docker Launcher will handle the creation of the database. If a Docker Launcher local deployment is attempted on a machine already running a database instance, there may be conflicts.) Create two databases called 'sota_core' and 'sota_resolver':
+
+[source,sql]
+---------------------------------------------------------------------
+mysql -u root -p
+CREATE DATABASE sota_core;
+CREATE DATABASE sota_core_test;
+CREATE DATABASE sota_resolver;
+CREATE DATABASE sota_resolver_test;
+CREATE USER 'sota'@'localhost' IDENTIFIED BY 's0ta';
+GRANT ALL PRIVILEGES ON sota_core . * TO 'sota'@'localhost';
+GRANT ALL PRIVILEGES ON sota_core_test . * TO 'sota'@'localhost';
+GRANT ALL PRIVILEGES ON sota_resolver . * TO 'sota'@'localhost';
+GRANT ALL PRIVILEGES ON sota_resolver_test . * TO 'sota'@'localhost';
+FLUSH PRIVILEGES;
+---------------------------------------------------------------------
+
+To update the database schema, run:
+
+--------------------------
+sbt flywayMigrate
+--------------------------
+
+This will apply any new migrations in src/main/resources/db/migration, and keep your existing data. This command expects to find the databases on localhost with sota/s0ta for the username/password. The URL to the database and login details can be overridden with the `CORE_DB_URL`, `CORE_DB_USER` and `CORE_DB_PASSWORD` environment variables for the core and `RESOLVER_DB_URL`, `RESOLVER_DB_USER` and, `RESOLVER_DB_PASSWORD` for the external resolver. See `project/SotaBuild.scala` for the implementation.
+
+TIP: If you are having trouble with flywayMigrate after an update, try deleting the sota_core, sota_core_test, sota_resolver, and sota_resolver_test databases, recreating them with the commands above, and running flywayMigrate again.
+
+If you are using an encrypted home directory, you may get the following error when attempting a build. This is because scala/sbt tends to create long file names, and these get expanded even further by ecryptfs.
+
+------------------------------------------------------------
+[error] File name too long
+[error] one error found
+[error] (core/compile:compileIncremental) Compilation failed
+[error] Total time: 9 s, completed Jul 24, 2015 9:10:13 AM
+------------------------------------------------------------
+
+The solution is to point the build directories to somewhere outside ecryptfs:
+
+--------------------------------------------------------------
+sudo mkdir /var/sota-build
+sudo chown `whoami` /var/sota-build/
+mkdir /var/sota-build/core-target
+mkdir /var/sota-build/resolver-target
+mkdir /var/sota-build/webserver-target
+rm -r core/target/
+rm -r external-resolver/target
+rm -r web-server/target
+ln -s /var/sota-build/core-target/ core/target
+ln -s /var/sota-build/resolver-target external-resolver/target
+ln -s /var/sota-build/webserver-target/ web-server/target
+--------------------------------------------------------------
+
+Once flywayMigrate has run, open three consoles and run:
+
+-------------------------------------------------------------
+sbt resolver/run
+sbt core/run
+sbt webserver/run
+-------------------------------------------------------------
+
+Now open http://localhost:9000/[localhost:9000] in a browser.
+
+=== Database Migrations
+
+Never make changes to migrations that already exist. Add columns by creating a new migration with an 'ALTER TABLE' statement.
+
+If someone else has added a migration, run `sbt flywayMigrate` to update your local database.
+
+== Building rvi_sota_client Locally
+
+To see the link:https://github.com/PDXostc/rvi_sota_client[SOTA client] in action, you will need some supporting components running. The general steps are:
+
+1.  Build and run RVI server and client nodes
+2.  Build and run rvi_sota_client
+3.  Build and run rvi_sota_demo
+
+=== Building and running RVI nodes
+
+You can build RVI directly from https://github.com/PDXostc/rvi_core[its GitHub repo], or simply run our docker image. These instructions assume you are running the docker image.
+
+1.  Pull the image: `docker pull advancedtelematic/rvi`.
+2.  In two terminal windows, run the rvi client and server nodes
+
+* Client: `docker run -it --name rvi-client --expose 8901 --expose 8905-8908 -p 8901:8901 -p 8905:8905 -p 8906:8906 -p 8907:8907 -p 8908:8908 advancedtelematic/rvi client`
+* Server: `docker run -it --name rvi-server --expose 8801 --expose 8805-8808 -p 8801:8801 -p 8805:8805 -p 8806:8806 -p 8807:8807 -p 8808:8808 advancedtelematic/rvi server`
+
+=== Building and running SOTA client
+
+The SOTA client builds as a docker container. As long as you have `rust` and `cargo` installed, `make docker` should build a docker image called `sota-client`.
+
+You can also build the SOTA client from within a docker container; this will be necessary if your build environment is not running linux. From the project root, run `docker run -it --rm -v $PWD:/build advancedtelematic/rust:1.2.0 /bin/bash`. Once you are at a bash prompt, run the following commands:
+
+-----------------------------
+apt-get install -y libssl-dev
+cd /build
+cargo build --release
+exit
+-----------------------------
+
+Now you can run `make docker` from your normal build environment.
+
+Once the sota-client docker image is built (by either of the two methods above), you can run it with `docker run -it --name sota-client -p 9000:9000 --link rvi-client:rvi-client -e RUST_LOG=info advancedtelematic/sota-client`.
+
+The client will listen for an active campaign from the server, and download updates when they become available. It then directly calls `rpm -i` to install the package it received.

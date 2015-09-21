@@ -8,7 +8,7 @@ services:
       MYSQL_ROOT_PASSWORD: "{{ db_root_password }}"
       MYSQL_USER: "{{ db_user }}"
       MYSQL_PASSWORD: "{{ db_user_password }}"
-      MYSQL_DATABASES: "{{ db_resolver_name }} {{ db_core_name }}"
+      MYSQL_DATABASES: "{{ db_resolver_name }} {{ db_core_name }} {{ db_core_name }}_test {{ db_resolver_name }}_test"
 
   - name: rvi-server
     repo: advancedtelematic/rvi
@@ -38,9 +38,11 @@ services:
       - 8090
     links:
       - rvi-client
+    env:
+      SOTA_CLIENT_PORT: "8090"
 
   - name: resolver
-    repo: sota-resolver
+    repo: advancedtelematic/sota-resolver
     pull: false
     ports:
       - 8081
@@ -53,7 +55,7 @@ services:
       RESOLVER_DB_URL: "jdbc:mysql://mysql:3306/{{ db_resolver_name }}"
 
   - name: core
-    repo: sota-core
+    repo: advancedtelematic/sota-core
     pull: false
     ports:
       - 8080
@@ -62,15 +64,15 @@ services:
     links:
       - mysql
       - resolver
+      - rvi-server
     env:
       HOST: 0.0.0.0
       CORE_DB_URL: "jdbc:mysql://mysql:3306/{{ db_core_name }}"
-      RESOLVER_PORT: "8081"
-      RESOLVER_HOST: "resolver"
-      RESOLVER_URI: "http://resolver:8081/api/v1/packages"
+      RESOLVER_API_URI: "http://resolver:8081"
+      RVI_URI: "http://rvi-server:8801"
 
   - name: webserver
-    repo: sota-webserver
+    repo: advancedtelematic/sota-webserver
     links:
       - resolver
       - core
@@ -78,9 +80,7 @@ services:
     ports:
       - 80:9000
     env:
-      CORE_PORT: "8080"
-      CORE_HOST: "core"
-      RESOLVER_PORT: "8081"
-      RESOLVER_HOST: "resolver"
+      CORE_API_URI: "http://core:8080"
+      RESOLVER_API_URI: "http://resolver:8081"
       PLAY_CRYPTO_SECRET: {{ play_crypto_secret }}
 

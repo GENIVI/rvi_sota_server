@@ -5,20 +5,13 @@
 package org.genivi.sota.core.data
 
 import akka.http.scaladsl.model.Uri
-import spray.json._
-import eu.timepit.refined._
+import cats.Show
+import cats.data.Xor
+import eu.timepit.refined.{Refined, Predicate}
 
-case class PackageId( name: Package.Name, version: Package.Version )
-
-object PackageId {
-  import spray.json.DefaultJsonProtocol._
-  import org.genivi.sota.refined.SprayJsonRefined._
-
-  implicit val protocol = jsonFormat2(PackageId.apply)
-}
 
 case class Package(
-  id: PackageId,
+  id: Package.Id,
   uri: Uri,
   size: Long,
   checkSum: String,
@@ -27,6 +20,15 @@ case class Package(
 )
 
 object Package {
+
+  case class Id(
+    name: Package.Name,
+    version: Package.Version
+  )
+
+  object Id {
+    implicit val showInstance : Show[Id] = Show.show( x => s"${x.name.get}-${x.version.get}" )
+  }
 
   trait ValidName
   trait ValidVersion
@@ -38,39 +40,6 @@ object Package {
     Predicate.instance( _.nonEmpty, _ => "Package name required" )
 
   implicit val validPackageVersion: Predicate[ValidVersion, String] =
-    Predicate.instance( _.matches( """^\d+\.\d+\.\d+$""" ), _ => "Invalid version format")
-
-
-  def jsonOption(opt: Option[String]): String = {
-    opt match {
-      case Some(str) => str
-      case None => ""
-    }
-  }
-
-  implicit object PackageJsonFormat extends RootJsonFormat[Package] {
-    def write(pkg: Package) = {
-      val description = pkg.description match {
-        case Some(d) => d
-        case None => ""
-      }
-      JsObject(
-        "name" -> JsString(pkg.id.name.get),
-        "version" -> JsString(pkg.id.version.get),
-        "uri" -> JsString(pkg.uri.toString()),
-        "size" -> JsNumber(pkg.size),
-        "checksum" -> JsString(pkg.checkSum),
-        "description" -> JsString(jsonOption(pkg.description)),
-        "vendor" -> JsString(jsonOption(pkg.vendor))
-      )
-    }
-    def read(value: JsValue) = {
-      value.asJsObject.getFields("name", "version", "uri", "size", "checksum", "description", "vendor") match {
-        case Seq(JsString(name), JsString(version), JsString(uri), JsNumber(size), JsString(checksum), JsString(description), JsString(vendor)) =>
-          new Package(PackageId(Refined(name), Refined(version)), Uri(uri), size.toLong, checksum, Some(description), Some(vendor))
-        case _ => throw new DeserializationException("Package expected")
-      }
-    }
-  }
+    Predicate.instance( _.matches( """^\d+\.\d+(\.\d+)?(-\d+)?$""" ), _ => "Invalid version format")
 
 }

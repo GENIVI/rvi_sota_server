@@ -10,15 +10,14 @@ import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.server.MalformedQueryParamRejection
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import eu.timepit.refined._
-import org.genivi.sota.core.data.PackageId
 import org.genivi.sota.core.data.{ Package => DataPackage }
 import org.genivi.sota.core.db.Packages
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.{WordSpec, Matchers}
 import org.scalatest.ShouldMatchers
+import org.scalatest.{WordSpec, Matchers}
 import scala.concurrent.Await
 import slick.driver.MySQLDriver.api._
-import spray.json.DefaultJsonProtocol._
+import DataPackage._
 
 
 class PackageResourceWordSpec extends WordSpec
@@ -27,18 +26,22 @@ class PackageResourceWordSpec extends WordSpec
     with ShouldMatchers
     with BeforeAndAfterAll {
 
-  import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
+  import io.circe.generic.auto._
+  import org.genivi.sota.CirceSupport._
 
   val databaseName = "test-database"
 
   val config = system.settings.config
-  val externalResolverClient = new DefaultExternalResolverClient( Uri(config.getString("resolver.baseUri")) )
+  val externalResolverClient = new DefaultExternalResolverClient(
+    Uri(config.getString("resolver.baseUri")),
+    Uri(config.getString("resolver.resolveUri")),
+    Uri(config.getString("resolver.packagesUri")) )
   val db = Database.forConfig(databaseName)
   lazy val service = new PackagesResource(externalResolverClient, db)
 
   val testPackagesParams = List(("vim", "7.0.1"), ("vim", "7.1.1"), ("go", "1.4.0"), ("go", "1.5.0"), ("scala", "2.11.0"))
   val testPackages:List[DataPackage] = testPackagesParams.map { pkg =>
-    DataPackage(PackageId(Refined(pkg._1), Refined(pkg._2)), Uri("www.example.com"), 123, "123", None, None)
+    DataPackage(DataPackage.Id(Refined(pkg._1), Refined(pkg._2)), Uri("www.example.com"), 123, "123", None, None)
   }
 
   override def beforeAll {
@@ -56,7 +59,7 @@ class PackageResourceWordSpec extends WordSpec
         assert(status === StatusCodes.OK)
         val packages = responseAs[Seq[DataPackage]]
         assert(packages.nonEmpty)
-        assert(packages.filter(pkg => pkg.id === PackageId(Refined("scala"), Refined("2.11.0"))).nonEmpty)
+        assert(packages.filter(pkg => pkg.id === DataPackage.Id(Refined("scala"), Refined("2.11.0"))).nonEmpty)
         assert(packages.length === 5)
       }
     }
@@ -78,7 +81,7 @@ class PackageResourceWordSpec extends WordSpec
       println(PackagesUri + "?regex=)")
       Get(PackagesUri + "?regex=)" ) ~> service.route ~> check {
         rejection shouldBe a [MalformedQueryParamRejection]
-        assert(rejection === MalformedQueryParamRejection("regex", "Predicate isValidRegex(\")\") failed: Unmatched closing \')\'\n)", None))
+        assert(rejection === MalformedQueryParamRejection("regex", "Regex predicate failed: Unmatched closing \')\'\n)", None))
       }
     }
   }
