@@ -1,18 +1,20 @@
 package org.genivi.sota.core
 
-import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.Multipart.FormData.BodyPart
+import akka.http.scaladsl.model.Uri.Path
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.PathMatchers
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import akka.http.scaladsl.unmarshalling._
+import io.circe.generic.auto._
 import java.io.File
 import org.genivi.sota.core.data.{Vehicle, Package}
 import org.genivi.sota.rest.ErrorRepresentation
-import org.scalatest.{ PropSpec, Matchers }
 import org.scalatest.prop.PropertyChecks
-import akka.http.scaladsl.model.Uri.Path
+import org.scalatest.{ PropSpec, Matchers }
+import scala.concurrent.Future
 import slick.jdbc.JdbcBackend.Database
 
-import scala.concurrent.Future
 
 /**
  * Created by vladimir on 14/08/15.
@@ -49,7 +51,7 @@ class PackageUploadSpec extends PropSpec with PropertyChecks with Matchers with 
     Put( Uri( path = PackagesPath / pckg.id.name.get / pckg.id.version.get ), form )
   }
 
-  property("Package can be uploaded using POST request")  {
+  property("Package can be uploaded using PUT request")  {
     new Service( Future.successful(())) {
       forAll { (pckg: Package) =>
         mkRequest(pckg) ~> resource.route ~> check {
@@ -59,13 +61,9 @@ class PackageUploadSpec extends PropSpec with PropertyChecks with Matchers with 
     }
   }
 
-  import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
-
   property("Returns service unavailable if request to external resolver fails") {
+    import org.genivi.sota.CirceSupport._
     new Service( Future.failed( ExternalResolverRequestFailed( StatusCodes.InternalServerError ) ) ) {
-      import org.genivi.sota.CirceSupport._
-      import io.circe.generic.auto._
-      import akka.http.scaladsl.unmarshalling._
       forAll { (pckg: Package) =>
         mkRequest( pckg ) ~> resource.route ~> check {
           status shouldBe StatusCodes.ServiceUnavailable

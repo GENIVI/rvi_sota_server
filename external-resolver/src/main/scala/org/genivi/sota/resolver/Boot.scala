@@ -16,7 +16,6 @@ import eu.timepit.refined.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.CirceSupport._
-import org.genivi.sota.refined.SprayJsonRefined.refinedUnmarshaller
 import org.genivi.sota.resolver.db._
 import org.genivi.sota.resolver.types.{Vehicle, Package, Filter, PackageFilter}
 import org.genivi.sota.rest.ErrorRepresentation.errorRepresentationEncoder
