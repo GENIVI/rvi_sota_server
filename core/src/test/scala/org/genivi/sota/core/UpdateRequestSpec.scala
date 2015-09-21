@@ -50,8 +50,6 @@ class UpdateRequestSpec extends PropSpec with PropertyChecks with Matchers with 
   }
 
   import UpdateRequest._
-  import spray.json.DefaultJsonProtocol._
-  import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 
   property("Update requests can be listed")  {
     new Service() {

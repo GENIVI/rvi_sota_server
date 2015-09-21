@@ -7,7 +7,6 @@ import sbt._
 import sbt.Keys._
 import sbtbuildinfo.{BuildInfoPlugin, BuildInfoKey}
 import sbtbuildinfo.BuildInfoKeys._
-import spray.revolver.RevolverPlugin._
 import com.typesafe.sbt.packager.Keys.dockerExposedPorts
 import com.typesafe.sbt.web._
 
@@ -46,14 +45,14 @@ object SotaBuild extends Build {
     javacOptions in compile ++= Seq("-encoding", "UTF-8", "-source", "1.6", "-target", "1.6", "-Xlint:unchecked", "-Xlint:deprecation")
   )
 
-  lazy val commonSettings = basicSettings ++ compilerSettings ++ Packaging.settings ++ Revolver.settings ++ Seq(
+  lazy val commonSettings = basicSettings ++ compilerSettings ++ Packaging.settings ++ Seq(
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
     buildInfoPackage := organization.value + ".sota." + name.value
   )
 
   lazy val common = Project(id = "common", base = file("common"))
     .settings(basicSettings ++ compilerSettings)
-    .settings( libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Spray  :+ Dependencies.NscalaTime :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
+    .settings( libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.NscalaTime :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
 
   lazy val externalResolver = Project(id = "resolver", base = file("external-resolver"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
@@ -70,7 +69,7 @@ object SotaBuild extends Build {
 
   lazy val core = Project(id = "core", base = file("core"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Spray :+ Dependencies.NscalaTime :+ Dependencies.Scalaz,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.NscalaTime :+ Dependencies.Scalaz,
       testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RequiresRvi"),
       testOptions in IntegrationTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RequiresRvi"),
       parallelExecution in Test := false,
@@ -134,8 +133,6 @@ object Dependencies {
     "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion,
     "ch.qos.logback" % "logback-classic" % "1.0.13"
   )
-
-  lazy val Spray = "com.typesafe.akka" %% "akka-http-spray-json-experimental" % AkkaHttpVersion
 
   lazy val Circe = Seq(
     "io.circe" %% "circe-core" % CirceVersion,

@@ -7,7 +7,7 @@ package org.genivi.sota.core.data
 import akka.http.scaladsl.model.Uri
 import cats.Show
 import cats.data.Xor
-import eu.timepit.refined._
+import eu.timepit.refined.{Refined, Predicate}
 
 
 case class Package(
@@ -27,16 +27,8 @@ object Package {
   )
 
   object Id {
-    import io.circe.{Encoder, Decoder}
-    import io.circe.generic.semiauto._
-    import org.genivi.sota.CirceSupport._
-
-    implicit val encoder : Encoder[Id] = deriveFor[Id].encoder
-    implicit val decoder : Decoder[Id] = deriveFor[Id].decoder
-
     implicit val showInstance : Show[Id] = Show.show( x => s"${x.name.get}-${x.version.get}" )
   }
-
 
   trait ValidName
   trait ValidVersion

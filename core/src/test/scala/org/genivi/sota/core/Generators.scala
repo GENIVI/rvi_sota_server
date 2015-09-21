@@ -35,12 +35,10 @@ trait Generators {
   val PackageGen: Gen[Package] = for {
     id <- PackageIdGen
     size    <- Gen.choose(1000L, 999999999)
-    cs      <- Gen.alphaStr
-    // This should be changed back to arbitrary strings once we
-    // figured out where this encoding bug happens.
-    desc    <- Gen.option(Gen.alphaStr)
+    cs      <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaChar)
+    desc    <- Gen.option(Arbitrary.arbitrary[String])
     vendor  <- Gen.option(Gen.alphaStr)
-  } yield Package(id, Uri(path = Uri.Path / "tmp" / s"${id.name.get}-${id.version.get}.rpm"), size, cs, desc, vendor)
+  } yield Package(id, Uri(path = Uri.Path / "tmp" / s"${id.name.get}-${id.version.get}.rpm"), size, cs.mkString, desc, vendor)
 
   implicit val arbitrayPackage: Arbitrary[Package] = Arbitrary( PackageGen )
 

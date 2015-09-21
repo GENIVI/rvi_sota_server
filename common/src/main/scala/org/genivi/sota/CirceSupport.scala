@@ -7,7 +7,7 @@ package org.genivi.sota
 import akka.http.scaladsl.marshalling.{ Marshaller, ToEntityMarshaller }
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.http.scaladsl.model.{ContentTypes, HttpCharsets, MediaTypes, Uri}
-import akka.http.scaladsl.unmarshalling.{ FromEntityUnmarshaller, FromRequestUnmarshaller, FromResponseUnmarshaller, Unmarshaller }
+import akka.http.scaladsl.unmarshalling._
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.Materializer
 import cats.data.Xor
@@ -55,6 +55,28 @@ object CirceSupport {
     (implicit keyDecoder: Decoder[K], valueDecoder: Decoder[V])
       : Decoder[Map[K, V]]
   = Decoder[Seq[(K, V)]].map(_.toMap)
+
+  implicit def refinedUnmarshaller[P]
+    (implicit p: Predicate[P, String])
+      : FromStringUnmarshaller[Refined[String, P]]
+  = Unmarshaller.strict[String, Refined[String, P]] { string =>
+      refineV[P](string) match {
+        case Left(e)  => throw new IllegalArgumentException(e)
+        case Right(r) => r
+      }
+  }
+
+  implicit def refinedFromRequestUnmarshaller[T, P]
+    (implicit um: FromEntityUnmarshaller[T], p: Predicate[P, T])
+      : FromRequestUnmarshaller[Refined[T, P]]
+  = Unmarshaller { implicit ec => request =>
+      um(request.entity).flatMap { (t: T) =>
+        refineV[P](t) match {
+          case Left(e)  => throw new DeserializationException(RefinementError(t, e))
+          case Right(r) => FastFuture.successful(r)
+        }
+      }
+  }
 
   // Marshalling
 

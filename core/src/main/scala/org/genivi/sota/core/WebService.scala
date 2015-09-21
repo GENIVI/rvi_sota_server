@@ -10,24 +10,25 @@ import java.security.MessageDigest
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.common.StrictForm
-import akka.http.scaladsl.model.{StatusCodes, Uri, HttpResponse}
 import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.server.PathMatchers.Slash
+import akka.http.scaladsl.model.{StatusCodes, Uri, HttpResponse}
 import akka.http.scaladsl.server.{PathMatchers, ExceptionHandler, Directives}
+import akka.http.scaladsl.server.PathMatchers.Slash
+import Directives._
 import akka.parboiled2.util.Base64
 import akka.stream.ActorMaterializer
 import akka.stream.io.SynchronousFileSink
 import akka.util.ByteString
 import cats.data.Xor
-import org.genivi.sota.core.data._
-import org.genivi.sota.core.db.{Packages, Vehicles, InstallRequests}
-import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
-import org.genivi.sota.rest.Validation._
-import slick.driver.MySQLDriver.api.Database
-import scala.concurrent.Future
-import Directives._
 import eu.timepit.refined._
 import eu.timepit.refined.string._
+import io.circe.generic.auto._
+import org.genivi.sota.core.data._
+import org.genivi.sota.core.db.{Packages, Vehicles, InstallRequests}
+import org.genivi.sota.rest.Validation._
+import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
+import scala.concurrent.Future
+import slick.driver.MySQLDriver.api.Database
 
 
 object ErrorCodes {
@@ -37,13 +38,11 @@ object ErrorCodes {
 class VehiclesResource(db: Database)
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
 
-  import io.circe.generic.auto._
-  import org.genivi.sota.CirceSupport._
-  import org.genivi.sota.refined.SprayJsonRefined.{refinedUnmarshaller, refinedFromRequestUnmarshaller}
   import system.dispatcher
+  import org.genivi.sota.CirceSupport._
 
   val route = pathPrefix("vehicles") {
-    (put & refined[Vehicle.Vin](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.PathEnd)) { vin =>
+    (put & refined[Vehicle.Vin](Slash ~ Segment ~ PathEnd)) { vin =>
           complete(db.run( Vehicles.create(Vehicle(vin)) ).map(_ => NoContent))
         }
     } ~
@@ -64,15 +63,13 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
                             (implicit system: ActorSystem, mat: ActorMaterializer) {
   import system.dispatcher
   import eu.timepit.refined.string.uuidPredicate
-  import io.circe.generic.auto._
-  import org.genivi.sota.CirceSupport._
   import org.genivi.sota.core.db.UpdateSpecs
-  import org.genivi.sota.refined.SprayJsonRefined.refinedUnmarshaller
   import UpdateSpec._
+  import org.genivi.sota.CirceSupport._
 
   implicit val _db = db
   val route = pathPrefix("updates") {
-    (get & refined[Uuid](PathMatchers.Slash ~ PathMatchers.Segment ~ PathMatchers.PathEnd)) { uuid =>
+    (get & refined[Uuid](Slash ~ Segment ~ PathEnd)) { uuid =>
       complete(db.run(UpdateSpecs.listUpdatesById(uuid)))
     }
   } ~
@@ -135,18 +132,14 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
   }
 
   val route = pathPrefix("packages") {
-    import org.genivi.sota.refined.SprayJsonRefined.refinedUnmarshaller
-
     get {
+      import org.genivi.sota.CirceSupport._
       parameters('regex.as[String Refined Regex].?) { (regex: Option[String Refined Regex]) =>
-
+        import org.genivi.sota.CirceSupport._
         val query = (regex) match {
           case Some(r) => Packages.searchByRegex(r.get)
           case None => Packages.list
         }
-        import io.circe.generic.auto._
-        import org.genivi.sota.CirceSupport._
-
         complete(db.run(query))
       }
     } ~
@@ -161,7 +154,6 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
         ) {
           case ExternalResolverRequestFailed(msg, cause) => {
             import org.genivi.sota.CirceSupport._
-            import io.circe.generic.auto._
             log.error( cause, s"Unable to create/update package: $msg" )
             complete( StatusCodes.ServiceUnavailable -> ErrorRepresentation( ErrorCodes.ExternalResolverError, msg ) )
           }
