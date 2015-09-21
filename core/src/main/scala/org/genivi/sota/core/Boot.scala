@@ -22,7 +22,7 @@ object Boot extends App with DatabaseConfig {
 
   import slick.driver.MySQLDriver.api.Database
   def startSotaServices(db: Database) : Route = {
-    val transferProtocolProps = TransferProtocolActor.props(db, PackageTransferActor.props( new JsonRpcRviClient( requestTransport, system.dispatcher )))
+    val transferProtocolProps = TransferProtocolActor.props(db, PackageTransferActor.props( rviClient ))
     val updateController = system.actorOf( UpdateController.props(transferProtocolProps ), "update-controller")
     new rvi.SotaServices(updateController).route
   }
@@ -39,20 +39,22 @@ object Boot extends App with DatabaseConfig {
     Uri(config.getString("resolver.packagesUri"))
   )
 
-  val service = new WebService( externalResolverClient, db )
-
   val host = config.getString("server.host")
   val port = config.getInt("server.port")
 
   import Directives._
-  val routes = service.route ~ startSotaServices(db)
+  import org.genivi.sota.core.rvi.ServerServices
+  def routes(rviServices: ServerServices) = {
+    new WebService( rviServices, externalResolverClient, db ).route ~ startSotaServices(db)
+  }
 
   val rviUri = Uri(system.settings.config.getString( "rvi.endpoint" ))
   implicit val requestTransport = HttpTransport(rviUri).requestTransport
+  implicit val rviClient = new JsonRpcRviClient( requestTransport, system.dispatcher )
 
   val sotaServicesFuture = for {
-    binding      <- Http().bindAndHandle(routes, host, port)
     sotaServices <- SotaServices.register( Uri(config.getString("rvi.sotaServicesUri")) )
+    binding      <- Http().bindAndHandle(routes(sotaServices), host, port)
   } yield sotaServices
 
   sotaServicesFuture.onComplete {

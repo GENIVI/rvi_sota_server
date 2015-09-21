@@ -10,6 +10,7 @@ import cats.Show
 import java.util.UUID
 import org.genivi.sota.core.data.{Package, Vehicle}
 import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec, Download, UpdateStatus}
+import org.genivi.sota.core.transfer.UpdateNotifier
 import scala.concurrent.ExecutionContext
 
 import scala.concurrent.Future
@@ -33,7 +34,8 @@ object UploadConf {
 
 }
 
-class UpdateService(implicit val log: LoggingAdapter) {
+import org.genivi.sota.core.rvi.{ServerServices, RviClient}
+class UpdateService(registeredServices: ServerServices)(implicit val log: LoggingAdapter, rviClient: RviClient) {
   import UpdateService._
 
   def checkVins( dependencies: VinsToPackages ) : Future[Boolean] = FastFuture.successful( true )
@@ -84,9 +86,10 @@ class UpdateService(implicit val log: LoggingAdapter) {
       pckg           <- loadPackage(request.packageId)
       vinsToDeps     <- resolver(pckg)
       packages       <- mapIdsToPackages(vinsToDeps)
-      uploadSpecs    = mkUploadSpecs(request, vinsToDeps, packages)
-      _              <- persistRequest(request, uploadSpecs)
-    } yield uploadSpecs
+      updateSpecs    = mkUploadSpecs(request, vinsToDeps, packages)
+      _              <- persistRequest(request, updateSpecs)
+      _              <- Future.successful( UpdateNotifier.notify(updateSpecs.toSeq, registeredServices) )
+    } yield updateSpecs
   }
 
   def all(implicit db: Database, ec: ExecutionContext): Future[Set[UpdateRequest]] = db.run(UpdateRequests.list).map(_.toSet)

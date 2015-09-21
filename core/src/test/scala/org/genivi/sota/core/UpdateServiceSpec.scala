@@ -42,7 +42,17 @@ class UpdateServiceSpec extends PropSpec with PropertyChecks with Matchers with 
 
   implicit val updateQueueLog = akka.event.Logging(system, "sota.core.updateQueue")
 
-  val service = new UpdateService()
+  import org.genivi.sota.core.rvi.{RviClient, ServerServices}
+  implicit val rviClient =  new RviClient {
+
+    import org.joda.time.DateTime
+    import io.circe.Encoder
+    def sendMessage[A](service: String, message: A, expirationDate: DateTime)
+      (implicit encoder: Encoder[A] ) : Future[Int] = FastFuture.successful(0)
+
+  }
+
+  val service = new UpdateService( ServerServices("", "", "", "") )
 
   import org.genivi.sota.core.data.UpdateRequest
   import org.scalatest.concurrent.ScalaFutures.{whenReady, PatienceConfig}

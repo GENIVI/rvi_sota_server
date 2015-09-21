@@ -142,12 +142,14 @@ trait  SotaCore {
   val databaseName = "test-database"
   implicit val db = Database.forConfig(databaseName)
 
-  val updateService = new UpdateService()( akka.event.Logging(system, "sota.core.updateQueue") )
+  import org.genivi.sota.core.rvi.{RviClient, ServerServices}
 
   val rviUri = Uri(system.settings.config.getString( "rvi.endpoint" ))
   implicit val serverTransport = HttpTransport( rviUri ).requestTransport
 
   implicit val rviClient = new JsonRpcRviClient( serverTransport, system.dispatcher )
+
+  val updateService = new UpdateService( ServerServices("", "", "", "") )( akka.event.Logging(system, "sota.core.updateQueue"), rviClient )
 
   def sotaRviServices() : Route = {
     val transferProtocolProps = TransferProtocolActor.props(db, PackageTransferActor.props( rviClient ))
