@@ -43,10 +43,10 @@ object Release {
       releaseStepCommand(ExtraReleaseCommands.initialVcsChecksCommand),
       inquireVersions,
       setReleaseVersion,
+      tagRelease,
       releaseStepCommand("core/docker:publish"),
       releaseStepCommand("resolver/docker:publish"),
       releaseStepCommand("webserver/docker:publish"),
-      tagRelease,
       pushChanges
     )
   )
