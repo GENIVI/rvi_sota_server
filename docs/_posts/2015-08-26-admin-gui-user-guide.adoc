@@ -16,11 +16,11 @@ Once the SOTA server is link:../doc/building-installing.html[built] and running,
 
 === Adding a VIN
 
-To add a VIN, click the _Vehicles_ tab at the top of the page. Enter a valid VIN number (exactly 17 characters long and consisting only of alphanumeric characters) in the *Vehicle Name* field, and click the *Add Vehicle* button. If the addition was successful, the newly added VIN will appear in the list at the bottom of the page. If not, an error message will be displayed.
+To add a VIN, click the _Vehicles_ tab at the left of the page. Enter a valid VIN number (exactly 17 characters long and consisting only of alphanumeric characters) in the *Vehicle Name* field, and click the *Add Vehicle* button. If the addition was successful, the newly added VIN will appear in the list at the bottom of the page.
 
 === Searching for VINs
 
-You can search VINs by regular expression. As you type a regular expression in the **Vehicle VIN Regex** field, the list of VINs below is dynamically updated.
+You can search VINs by regular expression. As you type a regular expression in the *Filter* field, the list of VINs below is dynamically updated.
 
 === Adding a software package to a VIN
 
@@ -30,7 +30,6 @@ You can search VINs by regular expression. As you type a regular expression in t
 
 You can create filters to powerfully select sub-groups of VINs. For example, you might wish to create a filter that matches only vehicles that have the hardware component **AcmeDVDPlayer**, so that you can send a firmware update to only the relevant vehicles.
 
-
 === Filter syntax
 
 SOTA has a filter syntax to create these filters; currently the valid terms are **vin_matches**, **has_package**, and **has_component**, and the boolean operators **NOT**, **AND**, and **OR**. **vin_matches**, **has_package**, and **has_component** take regular expressions (enclosed in quotes) as arguments.
@@ -39,19 +38,19 @@ Example: For a filter matching all VINs beginning with 12ABC, that have the Acme
 
 === Creating a filter
 
-To create a new filter, click the *Filters* tab at the top of the page. Enter a unique name in the *Filter Name* field, and enter your expression in the *Filter Expression* field. Click the *Add Filter* button. If the filter was successfully created, you should see a message saying `Added Filter [filtername] successfully.` If the name you gave was already taken, or if the filter's syntax was invalid, you will see an error message instead.
+To create a new filter, click the *Filters* tab at the left of the page. Enter a unique name in the *Filter Name* field, and enter your expression in the *Filter Expression* field. Click the *Add Filter* button. If the filter was successfully created, you should see the filter appear below.
 
 === Editing a filter
 
-From the *Filters* tab, click on the filter you wish to edit. Edit the filter expression in the box, then click Edit Filter to save it.
+From the *Filters* tab, click details next to the filter you wish to edit. Edit the filter expression in the box, then click Update Filter to save it.
 
 === Deleting a filter
 
-From the *Filters* tab, click the X next to the filter you wish to delete.
+From the *Filters* tab, click details next to the filter you wish to delete. Click Delete Filter on the details page.
 
 === Associating a filter with a package
 
-To associate your filter with a particular software package, go to the *Packages* tab and click on a package in the list at the bottom of the form to take you to that package's page. You can click on a filter name under *All Filters* to associate it with the package and click on a filter name under *Package Filters* to remove the association.
+To associate your filter with a particular software package, go to the *Packages* tab and click on Create Campaign next to the package you wish to associate. You can click on a filter name under *All Filters* to associate it with the package. To remove a previously-associated filter, click on a filter name under *Package Filters*.
 
 == Managing Software Packages
 
@@ -59,15 +58,15 @@ To associate your filter with a particular software package, go to the *Packages
 
 To add a software package, you will need to upload a package file and give it a unique **Package ID**. A package ID consists of a package name and a version number. The name must be alphanumeric, and the version must consist of three digits separated by periods. (For example, 3.0.4 and 0.115.33 are both valid version numbers, but 1.3 and 2.7.22b are not.)
 
-Click the *Packages* tab at the top of the page. Enter a Package Name, Version, and optionally a description and vendor name in the appropriate fields. Then, select a file to upload. Click **Add Package**. If the upload was successful, you will see a status message confirming it. If there was a problem, you will see an appropriate error message.
+Click the *Packages* tab at the top of the page. Enter a Package Name, Version, and optionally a description and vendor name in the appropriate fields. Then, select a file to upload. Click **Add Package**. If the upload was successful, you will see the package added to the list at the bottom of the page.
 
 === Searching for packages
 
-You can search for packages by regular expression. As you type a regular expression in the **Search packages by regex** field, the list of packages below is dynamically updated.
+You can search for packages by regular expression. As you type a regular expression in the *Filter field, the list of packages below is dynamically updated.
 
 === Associating a package with a filter
 
-To associate a software package with a filter, go to the *Packages* tab and click on a package in the list at the bottom of the form to take you to that package's page. You can click on a filter name under *All Filters* to associate it with the package, or on a filter name under *Package Filters* to remove the association.
+To associate your package with a particular filter, go to the *Packages* tab and click on Create Campaign next to the package you wish to associate. You can click on a filter name under *All Filters* to associate it with the package. To remove a previously-associated filter, click on a filter name under *Package Filters*.
 
 == Managing Hardware Components
 
@@ -77,4 +76,12 @@ To associate a software package with a filter, go to the *Packages* tab and clic
 
 == Creating Install Campaigns
 
-To create an install campaign for a package, go to the *Packages* tab, click on a package, and fill in the necessary information.
+To create an install campaign for a package, go to the *Packages* tab and click *Create Campaign* next to the package you wish to create a campaign for.
+
+You can associate filters with the package, and view which VINs will be affected.
+
+IMPORTANT: If there are no filters associated with the package, it will affect all VINs.
+
+Give the campaign a priority (an integer, lower numbers are higher priority), a start date, and an end date. Click *Create Update*. You will be taken to the details page for that campaign.
+
+TIP: You might need to manually refresh the details page.
