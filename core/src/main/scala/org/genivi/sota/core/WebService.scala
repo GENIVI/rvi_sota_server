@@ -172,9 +172,9 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
   }
 
 }
-
-class WebService(resolver: ExternalResolverClient, db : Database)
-                (implicit system: ActorSystem, mat: ActorMaterializer) extends Directives {
+import org.genivi.sota.core.rvi.{ServerServices, RviClient}
+class WebService(registeredServices: ServerServices, resolver: ExternalResolverClient, db : Database)
+                (implicit system: ActorSystem, mat: ActorMaterializer, rviClient: RviClient) extends Directives {
   implicit val log = Logging(system, "webservice")
 
   import io.circe.Json
@@ -190,7 +190,7 @@ class WebService(resolver: ExternalResolverClient, db : Database)
   }
   val vehicles = new VehiclesResource( db )
   val packages = new PackagesResource(resolver, db)
-  val updateRequests = new UpdateRequestsResource(db, resolver, new UpdateService())
+  val updateRequests = new UpdateRequestsResource(db, resolver, new UpdateService(registeredServices))
 
   val route = pathPrefix("api" / "v1") {
     handleExceptions(exceptionHandler) {

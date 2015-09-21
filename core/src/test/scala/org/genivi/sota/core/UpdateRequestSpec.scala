@@ -5,6 +5,8 @@ import akka.event.Logging
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import akka.http.scaladsl.util.FastFuture
+import io.circe.Encoder
 import java.util.UUID
 import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.core.db.UpdateRequests
@@ -15,6 +17,7 @@ import scala.concurrent.Future
 import slick.jdbc.JdbcBackend.Database
 import io.circe.generic.auto._
 import org.genivi.sota.CirceSupport._
+import org.genivi.sota.core.rvi.{ServerServices, RviClient}
 
 class UpdateRequestSpec extends PropSpec with PropertyChecks with Matchers with Generators with ScalatestRouteTest {
 
@@ -29,13 +32,21 @@ class UpdateRequestSpec extends PropSpec with PropertyChecks with Matchers with 
     Uri(config.getString("resolver.packagesUri")) )
   val db = Database.forConfig(databaseName)
 
-  override def beforeAll {
+  override def beforeAll() : Unit = {
     TestDatabase.resetDatabase( databaseName )
   }
 
   class Service(implicit system: ActorSystem) {
     implicit val log = Logging(system, "updateRequestsSpec")
-    val resource = new UpdateRequestsResource(db, externalResolverClient, new UpdateService())
+    implicit val rviClient = new RviClient {
+
+      import org.joda.time.DateTime
+      override def sendMessage[A](service: String, message: A, expirationDate: DateTime)
+        (implicit encoder: Encoder[A] ) : Future[Int] = FastFuture.successful(0)
+
+    }
+
+    val resource = new UpdateRequestsResource(db, externalResolverClient, new UpdateService( ServerServices("", "", "", "")))
   }
 
   import UpdateRequest._
@@ -55,7 +66,7 @@ class UpdateRequestSpec extends PropSpec with PropertyChecks with Matchers with 
     }
   }
 
-  override def afterAll() {
+  override def afterAll() : Unit = {
     system.shutdown()
     db.close()
   }
