@@ -11,6 +11,7 @@
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="/rvi_sota_server/css/syntax.css">
         <link rel="stylesheet" href="/rvi_sota_server/css/main.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css">
     </head>
     <body>
 
@@ -208,6 +209,7 @@ not be merged</strong> if it contains non-whitelisted interactions.</p>
 <li><a href="#b-5">B-5 SOTA Core - External Resolver</a>
 <ul class="sectlevel2">
 <li><a href="#wl-b5-1">WL-B5-1 SOTA Core sends Resolve VIN Request to External Resolver</a></li>
+<li><a href="#wl-b5-2">WL-B5-2 SOTA Core sends install report result code to External Resolver</a></li>
 </ul>
 </li>
 <li><a href="#b-6">B-6 External Resolver - External Resolver Database</a>
@@ -222,6 +224,7 @@ not be merged</strong> if it contains non-whitelisted interactions.</p>
 <li><a href="#wl-b6-8">WL-B6-8 External Resolver looks up Filters in External Resolver Database</a></li>
 <li><a href="#wl-b6-9">WL-B6-9 External Resolver updates Filters in External Resolver Database</a></li>
 <li><a href="#wl-b6-10">WL-B6-10 External Resolver deletes Filters in External Resolver Database</a></li>
+<li><a href="#wl-b6-11">WL-B6-11  External Resolver updates installed package list for the VIN in External Resolver Database</a></li>
 </ul>
 </li>
 <li><a href="#b-7">B-7 SOTA Core - RVI Node Server</a>
@@ -233,6 +236,7 @@ not be merged</strong> if it contains non-whitelisted interactions.</p>
 <li><a href="#wl-b7-5">WL-B7-5 SOTA Core sends lowest numbered data block to RVI Node Server</a></li>
 <li><a href="#wl-b7-6">WL-B7-6 SOTA Core sends “Finalise Download” notification to RVI Node Server</a></li>
 <li><a href="#wl-b7-7">WL-B7-7 SOTA Core sends Install Report to RVI Node Client</a></li>
+<li><a href="#wl-b7-8">WL-B7-8 SOTA Core sends a "Get All Packages" notification to RVI Node Server</a></li>
 </ul>
 </li>
 <li><a href="#b-8">B-8 RVI Node Server - RVI Node Client</a>
@@ -243,6 +247,7 @@ not be merged</strong> if it contains non-whitelisted interactions.</p>
 <li><a href="#wl-b8-4">WL-B8-4 RVI Node Server sends “Finalise Download” notification to RVI Node Client</a></li>
 <li><a href="#wl-b8-5">WL-B8-5 RVI Node Client sends Install Report to RVI Node Server</a></li>
 <li><a href="#wl-b8-6">WL-B8-6 RVI Node Client sends “Initiate Software Download” notification to RVI Node Server</a></li>
+<li><a href="#wl-b8-7">WL-B8-7 RVI Node Server sends a "Get All Packages" notification to RVI Node Client</a></li>
 </ul>
 </li>
 <li><a href="#b-9">B-9 RVI Node Client - SOTA Client</a>
@@ -253,6 +258,7 @@ not be merged</strong> if it contains non-whitelisted interactions.</p>
 <li><a href="#wl-b9-4">WL-B9-4 RVI Node Client sends lowest numbered data block to SOTA Client</a></li>
 <li><a href="#wl-b9-5">WL-B9-5 RVI Node Client sends “Finalize Download” notification to SOTA Client</a></li>
 <li><a href="#wl-b9-6">WL-B9-6 SOTA Client sends Install Report to RVI Node Client</a></li>
+<li><a href="#wl-b9-7">WL-B9-7 RVI Node Client sends a "Get All Packages" notification to SOTA Client</a></li>
 </ul>
 </li>
 <li><a href="#b-10">B-10 SOTA Client - Software Loading Manager</a>
@@ -263,6 +269,7 @@ not be merged</strong> if it contains non-whitelisted interactions.</p>
 <li><a href="#wl-b10-4">WL-B10-4 SOTA Client sends “Start Download” notification to Software Loading Manager</a></li>
 <li><a href="#wl-b10-5">WL-B10-5 SOTA Client sends lowest numbered data block to Software Loading Manager</a></li>
 <li><a href="#wl-b10-6">WL-B10-6 Software Loading Manager sends Install Report to SOTA Client</a></li>
+<li><a href="#wl-b10-7">WL-B10-7 SOTA Client sends a "Get All Packages" notification to Software Loading Manager</a></li>
 </ul>
 </li>
 <li><a href="#b-11">B-11 Charging &amp; Billing API - SOTA Core</a></li>
@@ -1815,6 +1822,26 @@ message in the response body and a 404 status code.</p>
 </ul>
 </div>
 </div>
+<div class="sect2">
+<h3 id="wl-b5-2">WL-B5-2 SOTA Core sends install report result code to External Resolver</h3>
+<div class="paragraph">
+<p>SOTA Core can send the result code of a install report to the External Resolver using JSON over HTTP on port 80.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Upon SOTA Core&#8217;s request, the External Resolver can update the External Resolver Database with the result of
+the install report and if the result code is SUCCESS it will update the installed package list and reply with a
+'package installed' message in the response body and a 200 status code.</p>
+</li>
+<li>
+<p>Upon SOTA Core&#8217;s request, the External Resolver can update the External Resolver Database with the result of
+the install report and if the result code is not SUCCESS, reply with a 'package installation failed' message in
+the response body and a 500 status code.</p>
+</li>
+</ul>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -2126,6 +2153,25 @@ Server should reject the connection.</p>
 </ul>
 </div>
 </div>
+<div class="sect2">
+<h3 id="wl-b6-11">WL-B6-11  External Resolver updates installed package list for the VIN in External Resolver Database</h3>
+<div class="paragraph">
+<p>The External Resolver can perform an update installed package lists operation for one or many VINS to the Resolver database in the Database Server over TCP on port 3306.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If the External Resolver authenticates successfully with the correct Username/Password credentials, upon its request, the Database Server can perform an UPDATE operation with the given Package ID on the given VIN or VINs and if an entry is found, it will respond with the number of VINs update.</p>
+</li>
+<li>
+<p>If the External Resolver authenticates successfully with the correct Username/Password credentials, upon its request, the Database Server can perform an UPDATE operation with the given Package ID on the given VIN or VINs and if no entry is found, it will respond with a 'Record does not exists' message.</p>
+</li>
+<li>
+<p>If SOTA Server does not authenticate successfully due to incorrect Username/Password credentials against the Database Server, the Database Server should reject the connection.</p>
+</li>
+</ul>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -2312,6 +2358,22 @@ Report and if the VIN is already marked as failed, it will respond with
 </ul>
 </div>
 </div>
+<div class="sect2">
+<h3 id="wl-b7-8">WL-B7-8 SOTA Core sends a "Get All Packages" notification to RVI Node Server</h3>
+<div class="paragraph">
+<p>SOTA Core can send a "Get All Packages" notification to RVI Node Server the  using JSON on port 80 over HTTP.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Upon the SOTA Core&#8217;s request, RVI Node Server can accept a "Get All Packages" request and if it has been responded without errors, it will respond with a list of installed package IDs in the response body and a 200 status code.</p>
+</li>
+<li>
+<p>Upon the SOTA Core&#8217;s request, RVI Node Server can accept a "Get All Packages" request if the response contained errors, it will respond with an error message in the response body and a 409 status code.</p>
+</li>
+</ul>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -2357,6 +2419,10 @@ Client.</p>
 <p>The RVI Node Client can send “Initiate Software Download” notification
 to RVI Node Server.</p>
 </div>
+</div>
+<div class="sect2">
+<h3 id="wl-b8-7">WL-B8-7 RVI Node Server sends a "Get All Packages" notification to RVI Node Client</h3>
+
 </div>
 </div>
 </div>
@@ -2492,6 +2558,22 @@ with ‘<em>Package ID</em> failed’ in the response body and a 409 status code
 <p>Upon the SOTA Client’s request, RVI Node Client can accept the Install
 Report and if the VIN is already marked as failed, it will respond with
 ‘<em>Package ID</em> failed’ in the response body and a 409 status code.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="wl-b9-7">WL-B9-7 RVI Node Client sends a "Get All Packages" notification to SOTA Client</h3>
+<div class="paragraph">
+<p>RVI Node Client can send a "Get All Packages" notification to SOTA Client the using JSON on port 80 over HTTP.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Upon the RVI Node Client&#8217;s request, SOTA Client can accept the "Get All Packages" notification and if it can retrieve all package information without errors, it will respond with a list of installed Package IDs in theresponse body and a 200 status code.</p>
+</li>
+<li>
+<p>Upon the RVI Node Client&#8217;s request, SOTA Client can accept the "Get All Packages" notification and if an error occurs, it will respond with the appropriate error code in the response body and a 409 status code.</p>
 </li>
 </ul>
 </div>
@@ -2656,6 +2738,22 @@ status code.</p>
 the Install Report and if the VIN is already marked as failed, it will
 respond with ‘<em>Package ID</em> failed’ in the response body and a 409
 status code.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="wl-b10-7">WL-B10-7 SOTA Client sends a "Get All Packages" notification to Software Loading Manager</h3>
+<div class="paragraph">
+<p>SOTA Client can send an Install Report to Software Loading Manager the using JSON on port 80 over HTTP.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Upon the SOTA Client&#8217;s request, Software Loading Manager can accept the "Get All Packages" notification and if no error occurs, it will respond with a list of installed Package IDs in the response body and a 200 status code.</p>
+</li>
+<li>
+<p>Upon the SOTA Client&#8217;s request, Software Loading Manager can accept the "Get All Packages" notification and if an error occurs, it will reply with the appropriate error code in the response body and a 409 status code.</p>
 </li>
 </ul>
 </div>

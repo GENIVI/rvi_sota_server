@@ -11,6 +11,7 @@
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="/rvi_sota_server/css/syntax.css">
         <link rel="stylesheet" href="/rvi_sota_server/css/main.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css">
     </head>
     <body>
 
@@ -276,12 +277,12 @@ aws_secret_access_key = &lt;your deploy user's secret access key&gt;</pre>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="yaml">reboot_strategy: <span style="color: #BA2121">&#39;best-effort&#39;</span>
 registry:
-  user: atsjenkins <b class="conum">(1)</b>
-  email: jenkins@advancedtelematic.com <b class="conum">(2)</b>
+  user: atsjenkins <i class="conum" data-value="1"></i><b>(1)</b>
+  email: jenkins@advancedtelematic.com <i class="conum" data-value="2"></i><b>(2)</b>
 ec2:
-  key: tauron <b class="conum">(3)</b>
-  image: ami-07fd8270 <b class="conum">(4)</b>
-  region: eu-west-1 <b class="conum">(5)</b>
+  key: tauron <i class="conum" data-value="3"></i><b>(3)</b>
+  image: ami-07fd8270 <i class="conum" data-value="4"></i><b>(4)</b>
+  region: eu-west-1 <i class="conum" data-value="5"></i><b>(5)</b>
 
 vars:
   db_root_password: <span style="color: #BA2121">&quot;sota-test&quot;</span>
@@ -295,18 +296,21 @@ vars:
 <div class="paragraph">
 <p>You will need to change at least three values from the example file:</p>
 </div>
-<div class="colist arabic">
-<ol>
-<li>
-<p>Your username at Docker Hub</p>
-</li>
-<li>
-<p>The email address associated with your Docker Hub account</p>
-</li>
-<li>
-<p>The name of an SSH keypair associated with your AWS account</p>
-</li>
-</ol>
+<div id="code_list" class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Your username at Docker Hub</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>The email address associated with your Docker Hub account</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>The name of an SSH keypair associated with your AWS account</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>You may wish to also change the region (5). Note that if you do so, you will need to select a CoreOS image (4) valid for <code>c3.xlarge</code> instances in your chosen region. If you don&#8217;t change the region, the default from the example file should work.</p>

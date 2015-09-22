@@ -11,6 +11,7 @@
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="/rvi_sota_server/css/syntax.css">
         <link rel="stylesheet" href="/rvi_sota_server/css/main.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css">
     </head>
     <body>
 
@@ -114,464 +115,334 @@
 <div class="sect1">
 <h2 id="potential-security-threats">Potential Security Threats</h2>
 <div class="sectionbody">
-<table class="tableblock frame-all grid-all spread">
+<table id="security_table" class="tableblock frame-all grid-all spread">
 <colgroup>
-<col style="width: 7%;">
-<col style="width: 9%;">
-<col style="width: 9%;">
-<col style="width: 9%;">
-<col style="width: 9%;">
-<col style="width: 9%;">
-<col style="width: 9%;">
-<col style="width: 9%;">
-<col style="width: 9%;">
-<col style="width: 9%;">
-<col style="width: 9%;">
+<col style="width: %;">
+<col style="width: %;">
+<col style="width: %;">
+<col style="width: %;">
+<col style="width: %;">
+<col style="width: %;">
+<col style="width: %;">
+<col style="width: %;">
 </colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-center valign-middle">ID</th>
+<th class="tableblock halign-center valign-middle">Label</th>
+<th class="tableblock halign-center valign-middle">STRIDE Attribute</th>
+<th class="tableblock halign-center valign-middle">Assets</th>
+<th class="tableblock halign-center valign-middle">Interactions</th>
+<th class="tableblock halign-center valign-middle">Attack potential vector/rating</th>
+<th class="tableblock halign-center valign-middle">Damage potential vector/rating</th>
+<th class="tableblock halign-center valign-middle">Risk</th>
+</tr>
+</thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ID</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Label</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">STRIDE Attribute</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Assets</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Interactions</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Attack potential
-vector</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Attack potential rating</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Damage potential vector</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Damage
-potential rating</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Risk</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Diagram</p></td>
+<td class="tableblock halign-left valign-top" colspan="8"><p class="tableblock">––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t01">T01</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Spoofing of Admin UI</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Spoofing</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Client credentials</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Anyone &#8594; Web API</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">exp:pro acc:unl tim:day equ:std kno:pub</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">fin:xxx
-ope:xxx saf:xxx</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Anyone → Web API</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;exp:pro/acc:unl/tim:day/equ:std/kno:pub&gt;/4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;fin:xxx/ope:xxx/saf:xxx&gt;/0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-0-Context-Diagram.svg">Level
-0 - Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t02">T02</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Node sniffing</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Information Disclosure</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Client
-credentials</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Anyone &#8594; Web API</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">exp:exp acc:unl tim:wee equ:std kno:pub</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">11</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">fin:xxx ope:xxx saf:xxx</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Client credentials</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Anyone → Web API</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;exp:exp/acc:unl/tim:wee/equ:std/kno:pub&gt;/11</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;fin:xxx/ope:xxx/saf:xxx&gt;/0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t03">T03</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Invalid package configuration injection</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Tampering</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Vehicle installed software state</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Admin UI &#8594; Web API</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Admin UI → Web API</p></td>
+<td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t04">T04</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Repudiation of vehicle SW configuration</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Repudiation</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Vehicle installed software state</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Admin UI &#8594; Web API</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Admin UI → Web API</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t05">T05</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Web API Denial of Service attack</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Denial of service</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Quality of Service</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Anyone &#8594; Web API</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Anyone → Web API</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t06">T06</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Brute force password cracking</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Elevation of Privilege</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Acces to vehicle data, vehicle installed software state</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Admin UI &#8594;
-Web API</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Admin UI → Web API</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-0-Context-Diagram.svg">Level 0 -
-Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t07">T07</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Spoofing of External Resolver</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Spoofing</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Vehicle
-installed software state</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">External Resolver &#8594; SOTA Server</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Vehicle installed software state</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">External Resolver → SOTA Server</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t08">T08</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Tampering of package dependencies</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Tampering</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Vehicle
-installed software state, vehicle software security</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">External Resolver
-&#8594; SOTA Server</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Vehicle installed software state, vehicle software security</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">External Resolver → SOTA Server</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t09">T09</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Information leak of installed packages per VIN</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Information Disclosure</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Vehicle installed software state</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">External
-Resolver &#8594; SOTA Server</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">External Resolver → SOTA Server</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t10">T10</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">RVI node spoofing</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Spoofing</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Information on vehicle
-software state</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">SOTA Server &#8594; RVI Node</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Information on vehicle software state</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SOTA Server → RVI Node</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t11">T11</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Retrieving false package installation results</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Tampering</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Package information, software configuration per VIN</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">RVI
-Node &#8594; SOTA Server</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RVI Node → SOTA Server</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t12">T12</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Denying the installation of a software package</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Repudiation</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Vehicle software security</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">RVI Node &#8594; SOTA Server</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RVI Node → SOTA Server</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context
-Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t13">T13</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">RVI node sniffing</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Information Disclosure</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Vehicle
-installed software state</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">SOTA Server &#8594; RVI Node</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Vehicle installed software state</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SOTA Server → RVI Node</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t14">T14</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">RVI node Denial of Service attack</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Denial of service</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Service Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Anyone &#8594; RVI Node</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Anyone → RVI Node</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t15">T15</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Logistics &amp; Provisioning API Spoofing</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Spoofing</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Vehicle software security</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Logistics &amp; Provisioning &#8594; SOTA Server</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Logistics &amp; Provisioning → SOTA Server</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context
-Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t16">T16</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Associating a part number with a malicious package</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Tampering</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Vehicle software security</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Logistics &amp; Provisioning &#8594; SOTA
-Server</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Logistics &amp; Provisioning → SOTA Server</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-0-Context-Diagram.svg">Level 0 -
-Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t17">T17</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">VIN, part number, configurations compromise</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Information Disclosure</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Corporate data, vehicle software configuration,
-vehicle software security.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Logistics &amp; Provisioning &#8594; SOTA Server</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Corporate data, vehicle software configuration, vehicle software security.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Logistics &amp; Provisioning → SOTA Server</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t18">T18</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Charging &amp; Billing API Spoofing</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Spoofing</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Financial
-loss</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Charging &amp; Billing &#8594; SOTA Server</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Financial loss</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Charging &amp; Billing → SOTA Server</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t19">T19</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Associating an update with the wrong cost</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Tampering</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Financial loss</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Charging &amp; Billing &#8594; SOTA Server</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Charging &amp; Billing → SOTA Server</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-0-Context-Diagram.svg">Level 0 - Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t20">T20</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">VIN, configurations, financial information compromise</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Information Disclosure</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Financial loss</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Charging &amp; Billing &#8594; SOTA
-Server</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Charging &amp; Billing → SOTA Server</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-0-Context-Diagram.svg">Level 0 -
-Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t21">T21</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Spoofing SOTA Core Server</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Spoofing</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">User data, VINs,
-Package information, Vehicle configurations</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">SOTA Core Server &#8594; MariaDB</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">User data, VINs, Package information, Vehicle configurations</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SOTA Core Server → MariaDB</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-1-SOTA-Server-Context-Diagram.svg">Level
-1 - SOTA Server Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t22">T22</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Persistence of false data</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Tampering</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">User data, VINs,
-Package information, Vehicle configurations</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Anyone &#8594; MariaDB</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">User data, VINs, Package information, Vehicle configurations</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Anyone → MariaDB</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-1-SOTA-Server-Context-Diagram.svg">Level 1 -
-SOTA Server Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t23">T23</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Compromise of sensitive data</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Information Disclosure</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">User data, VINs, Package information, Vehicle configurations</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Anyone &#8594;
-MariaDB</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Anyone → MariaDB</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-1-SOTA-Server-Context-Diagram.svg">Level 1 - SOTA
-Server Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t24">T24</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">MariaDB Denial of Service attack</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Denial of service</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Service Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Anyone &#8594; MariaDB</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Anyone → MariaDB</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-1-SOTA-Server-Context-Diagram.svg">Level 1 - SOTA
-Server Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t25">T25</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Getting admin rights</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Elevation of Privilege</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">User
-data, VINs, Package information, Vehicle configurations, data store
-state</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Anyone &#8594; MariaDB</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">User data, VINs, Package information, Vehicle configurations, data store state</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Anyone → MariaDB</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-1-SOTA-Server-Context-Diagram.svg">Level 1 - SOTA
-Server Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t26">T26</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Spoofing External Resolver</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Spoofing</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">User data, VINs,
-Package information, Vehicle configurations</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">External Resolver &#8594;
-MariaDB</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">User data, VINs, Package information, Vehicle configurations</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">External Resolver → MariaDB</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-1-SOTA-Server-Context-Diagram.svg">Level 1 - SOTA
-Server Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t27">T27</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">In-vehicle process spoofing</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Spoofing</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VINs, Package
-information</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Anyone &#8594; SOTA Client</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VINs, Package information</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Anyone → SOTA Client</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-1-SOTA-Server-Context-Diagram.svg">Level 1 - SOTA
-Server Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t28">T28</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">SOTA Client sniffing</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Tampering</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VINs, Package
-information</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">In vehicle process &#8594; SOTA Client</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VINs, Package information</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">In vehicle process → SOTA Client</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-1-SOTA-Server-Context-Diagram.svg">Level 1 - SOTA
-Server Context Diagram</a></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#t29">T29</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">SOTA Client Denial of Service attack</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Denial of service</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Service Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Anyone &#8594; SOTA Client</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Anyone → SOTA Client</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="../images/Level-1-SOTA-Server-Context-Diagram.svg">Level 1 - SOTA
-Server Context Diagram</a></p></td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t01">T01</h2>
+<h2 id="t01">T01 — Spoofing of Admin UI</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> A malicious person may try to gain administrator-level
-access to the web server&#8217;s admin console to gain information about the
-system&#8217;s structure.</p>
+<p><strong>Description:</strong> A malicious person may try to gain administrator-level access to the web server’s admin console to gain information about the system’s structure.</p>
 </li>
 <li>
 <p><strong>Rationale:</strong></p>
@@ -597,18 +468,15 @@ system&#8217;s structure.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t02">T02</h2>
+<h2 id="t02">T02 — Node sniffing</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> Sniffing software installed on the load balancing node
-may lead to the leak of the credentials of all clients connecting to the
-given cluster.</p>
+<p><strong>Description:</strong> Sniffing software installed on the load balancing node may lead to the leak of the credentials of all clients connecting to the given cluster.</p>
 </li>
 <li>
-<p><strong>Rationale:</strong> A node sniffer could intercept the credentials of all
-incoming client connections.</p>
+<p><strong>Rationale:</strong> A node sniffer could intercept the credentials of all incoming client connections.</p>
 </li>
 <li>
 <p><strong>Mitigations:</strong></p>
@@ -621,8 +489,7 @@ incoming client connections.</p>
 <p><a href="#c03">C03</a> - Enforce only SSL connections</p>
 </li>
 <li>
-<p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public
-Internet</p>
+<p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</p>
 </li>
 </ul>
 </div>
@@ -632,14 +499,12 @@ Internet</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t03">T03</h2>
+<h2 id="t03">T03 — Invalid package configuration injection</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> An invalid combination of software packages or versions
-may be attempted to be installed in order to create exploits or
-vulnerabilities.</p>
+<p><strong>Description:</strong> An invalid combination of software packages or versions may be attempted to be installed in order to create exploits or vulnerabilities.</p>
 </li>
 <li>
 <p><strong>Rationale:</strong></p>
@@ -658,14 +523,10 @@ vulnerabilities.</p>
 <p><a href="#c09">C09</a> - Verify the VIN/package filter sanity</p>
 </li>
 <li>
-<p><a href="#c14">C14</a> - SOTA Server-supplied checksum for every package
-send, recalculated it and verify it locally</p>
+<p><a href="#c14">C14</a> - SOTA Server-supplied checksum for every package send, recalculated it and verify it locally</p>
 </li>
 <li>
-<p><a href="#c15">C15</a> - In case that the SOTA Server is unavailable and a
-package download has been interrupted, set the download&#8217;s state as
-erroneous and update the Server with the information upon the next
-notification</p>
+<p><a href="#c15">C15</a> - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification</p>
 </li>
 </ul>
 </div>
@@ -675,19 +536,15 @@ notification</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t04">T04</h2>
+<h2 id="t04">T04 — Repudiation of vehicle SW configuration</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> A configuration that may create exploits or
-vulnerabilities on the vehicle&#8217;s software environment may be injected
-and a modified web interface may be used to repudiate the traces of the
-installation of the malicious configuration to a group of vehicles.</p>
+<p><strong>Description:</strong> A configuration that may create exploits or vulnerabilities on the vehicle’s software environment may be injected and a modified web interface may be used to repudiate the traces of the installation of the malicious configuration to a group of vehicles.</p>
 </li>
 <li>
-<p><strong>Rationale:</strong> Javascript code running on the browser can be modified
-and a repudiation attack against a group of vehicles may be attempted.</p>
+<p><strong>Rationale:</strong> Javascript code running on the browser can be modified and a repudiation attack against a group of vehicles may be attempted.</p>
 </li>
 <li>
 <p><strong>Mitigations:</strong></p>
@@ -704,30 +561,25 @@ and a repudiation attack against a group of vehicles may be attempted.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t05">T05</h2>
+<h2 id="t05">T05 — Web API Denial of Service attack</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> A large amount of false or dummy requests from a
-malicious group may saturate the load balancer and prevent the service
-of legitimate clients.</p>
+<p><strong>Description:</strong> A large amount of false or dummy requests from a malicious group may saturate the load balancer and prevent the service of legitimate clients.</p>
 </li>
 <li>
-<p><strong>Rationale:</strong> An easy to orchestrate DOS attack may disrupt the
-system&#8217;s operations.</p>
+<p><strong>Rationale:</strong> An easy to orchestrate DOS attack may disrupt the system’s operations.</p>
 </li>
 <li>
 <p><strong>Mitigations:</strong></p>
 <div class="ulist">
 <ul>
 <li>
-<p><a href="#c05">C05</a> - Notify administrators for suspicious traffic
-patterns</p>
+<p><a href="#c05">C05</a> - Notify administrators for suspicious traffic patterns</p>
 </li>
 <li>
-<p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public
-Internet</p>
+<p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</p>
 </li>
 </ul>
 </div>
@@ -737,17 +589,15 @@ Internet</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t06">T06</h2>
+<h2 id="t06">T06 — Brute force password cracking</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> A password cracker may break an account and provide
-access to a malicious, unauthorized user.</p>
+<p><strong>Description:</strong> A password cracker may break an account and provide access to a malicious, unauthorized user.</p>
 </li>
 <li>
-<p><strong>Rationale:</strong> Weak passwords may be cracked in a short amount of time
-with a password cracker.</p>
+<p><strong>Rationale:</strong> Weak passwords may be cracked in a short amount of time with a password cracker.</p>
 </li>
 <li>
 <p><strong>Mitigations:</strong></p>
@@ -757,8 +607,7 @@ with a password cracker.</p>
 <p><a href="#c01">C01</a> - Password complexity check</p>
 </li>
 <li>
-<p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public
-Internet</p>
+<p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</p>
 </li>
 </ul>
 </div>
@@ -768,18 +617,15 @@ Internet</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t07">T07</h2>
+<h2 id="t07">T07 — Spoofing of External Resolver</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> A malicious person may use a fake external resolver to
-gain information about the workings of the SOTA server and leak
-information about VINs and the software packages they have installed.</p>
+<p><strong>Description:</strong> A malicious person may use a fake external resolver to gain information about the workings of the SOTA server and leak information about VINs and the software packages they have installed.</p>
 </li>
 <li>
-<p><strong>Rationale:</strong> A fake external resolver may be used to gain information
-about the SOTA server which may be used in a composite attack vector.</p>
+<p><strong>Rationale:</strong> A fake external resolver may be used to gain information about the SOTA server which may be used in a composite attack vector.</p>
 </li>
 <li>
 <p><strong>Mitigations:</strong></p>
@@ -799,32 +645,25 @@ about the SOTA server which may be used in a composite attack vector.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t08">T08</h2>
+<h2 id="t08">T08 — Tampering of package dependencies</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> A maliciously compiled dependency tree may include
-dependencies that open vulnerabilities or provide access to attackers,
-or it sets package versions known to have bugs or open vulnerabilities.</p>
+<p><strong>Description:</strong> A maliciously compiled dependency tree may include dependencies that open vulnerabilities or provide access to attackers, or it sets package versions known to have bugs or open vulnerabilities.</p>
 </li>
 <li>
-<p><strong>Rationale:</strong> A package that may open a backdoor, or that functions as
-a Trojan can be added as a package dependency.</p>
+<p><strong>Rationale:</strong> A package that may open a backdoor, or that functions as a Trojan can be added as a package dependency.</p>
 </li>
 <li>
 <p><strong>Mitigations:</strong></p>
 <div class="ulist">
 <ul>
 <li>
-<p><a href="#c14">C14</a> - SOTA Server-supplied checksum for every package
-send, recalculated it and verify it locally</p>
+<p><a href="#c14">C14</a> - SOTA Server-supplied checksum for every package send, recalculated it and verify it locally</p>
 </li>
 <li>
-<p><a href="#c15">C15</a> - In case that the SOTA Server is unavailable and a
-package download has been interrupted, set the download&#8217;s state as
-erroneous and update the Server with the information upon the next
-notification</p>
+<p><a href="#c15">C15</a> - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification</p>
 </li>
 </ul>
 </div>
@@ -834,14 +673,12 @@ notification</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t09">T09</h2>
+<h2 id="t09">T09 — Information leak of installed packages per VIN</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> A verbose API may reveal information on which software
-packages are installed on which vehicle, which is unnecessary on a
-need-to-know basis.</p>
+<p><strong>Description:</strong> A verbose API may reveal information on which software packages are installed on which vehicle, which is unnecessary on a need-to-know basis.</p>
 </li>
 <li>
 <p><strong>Rationale:</strong></p>
@@ -861,17 +698,15 @@ need-to-know basis.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t10">T10</h2>
+<h2 id="t10">T10 — RVI node spoofing</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> An RVI node may be spoofed and become a leaking sink
-for vehicle and package data.</p>
+<p><strong>Description:</strong> An RVI node may be spoofed and become a leaking sink for vehicle and package data.</p>
 </li>
 <li>
-<p><strong>Rationale:</strong> A spoofed RVI node may cause a huge leak of sensitive
-information.</p>
+<p><strong>Rationale:</strong> A spoofed RVI node may cause a huge leak of sensitive information.</p>
 </li>
 <li>
 <p><strong>Mitigations:</strong></p>
@@ -881,8 +716,7 @@ information.</p>
 <p><a href="#c02">C02</a> - TLS Transport Integrity, Confidentiality</p>
 </li>
 <li>
-<p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public
-Internet</p>
+<p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</p>
 </li>
 </ul>
 </div>
@@ -892,33 +726,25 @@ Internet</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t11">T11</h2>
+<h2 id="t11">T11 — Retrieving false package installation results</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> A compromised RVI node may send incorrect status
-reports for package installation in order to skip the installation of
-bugfixes or exploit fixes, intercept packages, and acquire information
-about VINs and their software configuration.</p>
+<p><strong>Description:</strong> A compromised RVI node may send incorrect status reports for package installation in order to skip the installation of bugfixes or exploit fixes, intercept packages, and acquire information about VINs and their software configuration.</p>
 </li>
 <li>
-<p><strong>Rationale:</strong> Knowing or sending over to a spoofed vehicle software
-packages may help to analyze them and find potential attack vectors.</p>
+<p><strong>Rationale:</strong> Knowing or sending over to a spoofed vehicle software packages may help to analyze them and find potential attack vectors.</p>
 </li>
 <li>
 <p><strong>Mitigations:</strong></p>
 <div class="ulist">
 <ul>
 <li>
-<p><a href="#c14">C14</a> - SOTA Server-supplied checksum for every package
-send, recalculated it and verify it locally</p>
+<p><a href="#c14">C14</a> - SOTA Server-supplied checksum for every package send, recalculated it and verify it locally</p>
 </li>
 <li>
-<p><a href="#c15">C15</a> - In case that the SOTA Server is unavailable and a
-package download has been interrupted, set the download&#8217;s state as
-erroneous and update the Server with the information upon the next
-notification</p>
+<p><a href="#c15">C15</a> - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification</p>
 </li>
 </ul>
 </div>
@@ -928,18 +754,15 @@ notification</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t12">T12</h2>
+<h2 id="t12">T12 — Denying the installation of a software package</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> A compromised RVI node may block the installation of
-security-critical software packages and return a false status that they
-were installed, leaving open security vulnerabilities.</p>
+<p><strong>Description:</strong> A compromised RVI node may block the installation of security-critical software packages and return a false status that they were installed, leaving open security vulnerabilities.</p>
 </li>
 <li>
-<p><strong>Rationale:</strong> A non-installed package may leave backdoors and exploits
-open for attackers.</p>
+<p><strong>Rationale:</strong> A non-installed package may leave backdoors and exploits open for attackers.</p>
 </li>
 <li>
 <p><strong>Mitigations:</strong> None</p>
@@ -949,18 +772,15 @@ open for attackers.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t13">T13</h2>
+<h2 id="t13">T13 — RVI node sniffing</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> Sniffing software installed on a RVI node can intercept
-VINs, their configuration, and the latest package configuration for
-every VIN.</p>
+<p><strong>Description:</strong> Sniffing software installed on a RVI node can intercept VINs, their configuration, and the latest package configuration for every VIN.</p>
 </li>
 <li>
-<p><strong>Rationale:</strong> A node sniffer may intercept all VINs and their
-associated software packages.</p>
+<p><strong>Rationale:</strong> A node sniffer may intercept all VINs and their associated software packages.</p>
 </li>
 <li>
 <p><strong>Mitigations:</strong></p>
@@ -977,30 +797,25 @@ associated software packages.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t14">T14</h2>
+<h2 id="t14">T14 — RVI node Denial of Service attack</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> A Denial-Of-Service (DOS) attack may block the
-installation of software packages or updates.</p>
+<p><strong>Description:</strong> A Denial-Of-Service (DOS) attack may block the installation of software packages or updates.</p>
 </li>
 <li>
-<p><strong>Rationale:</strong> A DOS attack on the RVI node/s may block the installation
-of zero-days or other crucial updates and leave vehicles vulnerable for
-a prolonged period of time.</p>
+<p><strong>Rationale:</strong> A DOS attack on the RVI node/s may block the installation of zero-days or other crucial updates and leave vehicles vulnerable for a prolonged period of time.</p>
 </li>
 <li>
 <p><strong>Mitigations:</strong></p>
 <div class="ulist">
 <ul>
 <li>
-<p><a href="#c05">C05</a> - Notify administrators for suspicious traffic
-patterns</p>
+<p><a href="#c05">C05</a> - Notify administrators for suspicious traffic patterns</p>
 </li>
 <li>
-<p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public
-Internet</p>
+<p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</p>
 </li>
 </ul>
 </div>
@@ -1010,17 +825,15 @@ Internet</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t15">T15</h2>
+<h2 id="t15">T15 — Logistics &amp; Provisioning API Spoofing</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> An attacker may use a spoofed Logistics API to install
-trojans or packages with known vulnerabilities.</p>
+<p><strong>Description:</strong> An attacker may use a spoofed Logistics API to install trojans or packages with known vulnerabilities.</p>
 </li>
 <li>
-<p><strong>Rationale:</strong> Responses from a spoofed Logistics API may lead to the
-installation of malicious or vulnerable packages.</p>
+<p><strong>Rationale:</strong> Responses from a spoofed Logistics API may lead to the installation of malicious or vulnerable packages.</p>
 </li>
 <li>
 <p><strong>Mitigations:</strong></p>
@@ -1043,18 +856,15 @@ installation of malicious or vulnerable packages.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t16">T16</h2>
+<h2 id="t16">T16 — Associating a part number with a malicious package</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> An attacker may assign a valid part number to a
-malicious package which may provide backdoor or related system
-vulnerabilities after being installed.</p>
+<p><strong>Description:</strong> An attacker may assign a valid part number to a malicious package which may provide backdoor or related system vulnerabilities after being installed.</p>
 </li>
 <li>
-<p><strong>Rationale:</strong> A malicious packaged related with a valid part number
-will be installed without any warning or any alarm raised.</p>
+<p><strong>Rationale:</strong> A malicious packaged related with a valid part number will be installed without any warning or any alarm raised.</p>
 </li>
 <li>
 <p><strong>Mitigations:</strong></p>
@@ -1071,17 +881,15 @@ will be installed without any warning or any alarm raised.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t17">T17</h2>
+<h2 id="t17">T17 — VIN, part number, configurations compromise</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> A malicious person may try to intercept the data
-exchanged between the SOTA server and the Logistics &amp; Provisioning API.</p>
+<p><strong>Description:</strong> A malicious person may try to intercept the data exchanged between the SOTA server and the Logistics &amp; Provisioning API.</p>
 </li>
 <li>
-<p><strong>Rationale:</strong> Information leak may compromise sensitive corporate and
-vehicle data.</p>
+<p><strong>Rationale:</strong> Information leak may compromise sensitive corporate and vehicle data.</p>
 </li>
 <li>
 <p><strong>Mitigations:</strong></p>
@@ -1104,17 +912,15 @@ vehicle data.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t18">T18</h2>
+<h2 id="t18">T18 — Charging &amp; Billing API Spoofing</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> An attacker may used a spoofed Billing API to install
-updates without being charged or by charging a third person excessively.</p>
+<p><strong>Description:</strong> An attacker may used a spoofed Billing API to install updates without being charged or by charging a third person excessively.</p>
 </li>
 <li>
-<p><strong>Rationale:</strong> Responses from a spoofed Billing API may lead to the
-installation of updates for no or excessive cost.</p>
+<p><strong>Rationale:</strong> Responses from a spoofed Billing API may lead to the installation of updates for no or excessive cost.</p>
 </li>
 <li>
 <p><strong>Mitigations:</strong></p>
@@ -1130,8 +936,7 @@ installation of updates for no or excessive cost.</p>
 <p><a href="#c06">C06</a> - Limit login attempts per session</p>
 </li>
 <li>
-<p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public
-Internet</p>
+<p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</p>
 </li>
 </ul>
 </div>
@@ -1141,13 +946,12 @@ Internet</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t19">T19</h2>
+<h2 id="t19">T19 — Associating an update with the wrong cost</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> A compromised Charging &amp; Billing endpoint may provide
-false charging information.</p>
+<p><strong>Description:</strong> A compromised Charging &amp; Billing endpoint may provide false charging information.</p>
 </li>
 <li>
 <p><strong>Rationale:</strong></p>
@@ -1160,17 +964,15 @@ false charging information.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t20">T20</h2>
+<h2 id="t20">T20 — VIN, configurations, financial information compromise</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> A malicious person may try to intercept the data
-exchanged between the SOTA server and the Charging &amp; Billing API.</p>
+<p><strong>Description:</strong> A malicious person may try to intercept the data exchanged between the SOTA server and the Charging &amp; Billing API.</p>
 </li>
 <li>
-<p><strong>Rationale:</strong> Information leak may compromise sensitive corporate and
-vehicle data.</p>
+<p><strong>Rationale:</strong> Information leak may compromise sensitive corporate and vehicle data.</p>
 </li>
 <li>
 <p><strong>Mitigations:</strong></p>
@@ -1183,8 +985,7 @@ vehicle data.</p>
 <p><a href="#c03">C03</a> - Enforce only SSL connections</p>
 </li>
 <li>
-<p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public
-Internet</p>
+<p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</p>
 </li>
 </ul>
 </div>
@@ -1194,17 +995,15 @@ Internet</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t21">T21</h2>
+<h2 id="t21">T21 — Spoofing SOTA Core Server</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> A spoofed SOTA Server may retrieve most of the
-sensitive data stored in the data store.</p>
+<p><strong>Description:</strong> A spoofed SOTA Server may retrieve most of the sensitive data stored in the data store.</p>
 </li>
 <li>
-<p><strong>Rationale:</strong> A spoofed SOTA Server may retrieve most of the sensitive
-data stored in the datastore.</p>
+<p><strong>Rationale:</strong> A spoofed SOTA Server may retrieve most of the sensitive data stored in the datastore.</p>
 </li>
 <li>
 <p><strong>Mitigations:</strong> None</p>
@@ -1214,17 +1013,15 @@ data stored in the datastore.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t22">T22</h2>
+<h2 id="t22">T22 — Persistence of false data</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> A MariaDB client with access to the data store can
-manipulate the persisted data.</p>
+<p><strong>Description:</strong> A MariaDB client with access to the data store can manipulate the persisted data.</p>
 </li>
 <li>
-<p><strong>Rationale:</strong> Persisting false data in the datastore may open the door
-for more pervasive attack vectors.</p>
+<p><strong>Rationale:</strong> Persisting false data in the datastore may open the door for more pervasive attack vectors.</p>
 </li>
 <li>
 <p><strong>Mitigations:</strong></p>
@@ -1234,14 +1031,13 @@ for more pervasive attack vectors.</p>
 <p><a href="#c01">C01</a> - Password complexity check</p>
 </li>
 <li>
-<p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public
-Internet</p>
+<p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</p>
 </li>
 <li>
 <p><a href="#c10">C10</a> - Allow only Intranet/VPN connections to MariaDB</p>
 </li>
 <li>
-<p><a href="#c11">C11</a> - Don&#8217;t use Admin account with MariaDB</p>
+<p><a href="#c11">C11</a> - Don’t use Admin account with MariaDB</p>
 </li>
 </ul>
 </div>
@@ -1251,13 +1047,12 @@ Internet</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t23">T23</h2>
+<h2 id="t23">T23 — Compromise of sensitive data</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> A MariaDB client with access to the data store can
-retrieve all of the sensitive data stored in it.</p>
+<p><strong>Description:</strong> A MariaDB client with access to the data store can retrieve all of the sensitive data stored in it.</p>
 </li>
 <li>
 <p><strong>Rationale:</strong></p>
@@ -1276,14 +1071,13 @@ retrieve all of the sensitive data stored in it.</p>
 <p><a href="#c03">C03</a> - Enforce only SSL connections</p>
 </li>
 <li>
-<p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public
-Internet</p>
+<p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</p>
 </li>
 <li>
 <p><a href="#c10">C10</a> - Allow only Intranet/VPN connections to MariaDB</p>
 </li>
 <li>
-<p><a href="#c11">C11</a> - Don&#8217;t use Admin account with MariaDB</p>
+<p><a href="#c11">C11</a> - Don’t use Admin account with MariaDB</p>
 </li>
 </ul>
 </div>
@@ -1293,14 +1087,12 @@ Internet</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t24">T24</h2>
+<h2 id="t24">T24 — MariaDB Denial of Service attack</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> An attacker may orchestrate a Denial-Of-Service (DOS)
-attack to interrupt the system&#8217;s operation or as part of a phishing
-attack.</p>
+<p><strong>Description:</strong> An attacker may orchestrate a Denial-Of-Service (DOS) attack to interrupt the system’s operation or as part of a phishing attack.</p>
 </li>
 <li>
 <p><strong>Rationale:</strong></p>
@@ -1313,18 +1105,16 @@ attack.</p>
 <p><a href="#c01">C01</a> - Password complexity check</p>
 </li>
 <li>
-<p><a href="#c05">C05</a> - Notify administrators for suspicious traffic
-patterns</p>
+<p><a href="#c05">C05</a> - Notify administrators for suspicious traffic patterns</p>
 </li>
 <li>
-<p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public
-Internet</p>
+<p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</p>
 </li>
 <li>
 <p><a href="#c10">C10</a> - Allow only Intranet/VPN connections to MariaDB</p>
 </li>
 <li>
-<p><a href="#c11">C11</a> - Don&#8217;t use Admin account with MariaDB</p>
+<p><a href="#c11">C11</a> - Don’t use Admin account with MariaDB</p>
 </li>
 </ul>
 </div>
@@ -1334,18 +1124,15 @@ Internet</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t25">T25</h2>
+<h2 id="t25">T25 — Getting admin rights</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> A malicious user may pursue elevating his access rights
-to administrator or superuser, allowing him to perform any arbitrary
-operation on the data store.</p>
+<p><strong>Description:</strong> A malicious user may pursue elevating his access rights to administrator or superuser, allowing him to perform any arbitrary operation on the data store.</p>
 </li>
 <li>
-<p><strong>Rationale:</strong> Getting administrator rights can lead to data theft,
-tampering and complete loss of data.</p>
+<p><strong>Rationale:</strong> Getting administrator rights can lead to data theft, tampering and complete loss of data.</p>
 </li>
 <li>
 <p><strong>Mitigations:</strong></p>
@@ -1361,7 +1148,7 @@ tampering and complete loss of data.</p>
 <p><a href="#c10">C10</a> - Allow only Intranet/VPN connections to MariaDB</p>
 </li>
 <li>
-<p><a href="#c11">C11</a> - Don&#8217;t use Admin account with MariaDB</p>
+<p><a href="#c11">C11</a> - Don’t use Admin account with MariaDB</p>
 </li>
 </ul>
 </div>
@@ -1371,17 +1158,15 @@ tampering and complete loss of data.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t26">T26</h2>
+<h2 id="t26">T26 — Spoofing External Resolver</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> A spoofed External Resolver may retrieve most of the
-sensitive data stored in the data store.</p>
+<p><strong>Description:</strong> A spoofed External Resolver may retrieve most of the sensitive data stored in the data store.</p>
 </li>
 <li>
-<p><strong>Rationale:</strong> A spoofed External Resolver may retrieve most of the data
-stored in the datastore.</p>
+<p><strong>Rationale:</strong> A spoofed External Resolver may retrieve most of the data stored in the datastore.</p>
 </li>
 <li>
 <p><strong>Mitigations:</strong></p>
@@ -1391,8 +1176,7 @@ stored in the datastore.</p>
 <p><a href="#c02">C02</a> - TLS Transport Integrity, Confidentiality</p>
 </li>
 <li>
-<p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public
-Internet</p>
+<p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</p>
 </li>
 </ul>
 </div>
@@ -1402,30 +1186,25 @@ Internet</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t27">T27</h2>
+<h2 id="t27">T27 — In-vehicle process spoofing</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> A malicious in-vehicle process can attempt to exchange
-data with the SOTA Client and intercept information about the vehicle&#8217;s
-software state.</p>
+<p><strong>Description:</strong> A malicious in-vehicle process can attempt to exchange data with the SOTA Client and intercept information about the vehicle’s software state.</p>
 </li>
 <li>
-<p><strong>Rationale:</strong> A third party process can intercept information about
-every package installed from an unsecured client.</p>
+<p><strong>Rationale:</strong> A third party process can intercept information about every package installed from an unsecured client.</p>
 </li>
 <li>
 <p><strong>Mitigations:</strong></p>
 <div class="ulist">
 <ul>
 <li>
-<p><a href="#c12">C12</a> - SOTA Client should not accept any calls or requests
-from in-vehicle processes</p>
+<p><a href="#c12">C12</a> - SOTA Client should not accept any calls or requests from in-vehicle processes</p>
 </li>
 <li>
-<p><a href="#c13">C13</a> - SOTA Client should authenticate and communicate only
-with the Software Loading Manager (from in-vehicle software)</p>
+<p><a href="#c13">C13</a> - SOTA Client should authenticate and communicate only with the Software Loading Manager (from in-vehicle software)</p>
 </li>
 </ul>
 </div>
@@ -1435,41 +1214,31 @@ with the Software Loading Manager (from in-vehicle software)</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t28">T28</h2>
+<h2 id="t28">T28 — SOTA Client sniffing</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> A malicious in-vehicle process can attempt to intercept
-the communication between the SOTA Client and the RVI Node and alter the
-contents of the messages before delivering them to the SOTA Client.</p>
+<p><strong>Description:</strong> A malicious in-vehicle process can attempt to intercept the communication between the SOTA Client and the RVI Node and alter the contents of the messages before delivering them to the SOTA Client.</p>
 </li>
 <li>
-<p><strong>Rationale:</strong> A third party process may attempt to intercept the
-communication between the SOTA Client and the RVI node and alter the
-contents of the received data.</p>
+<p><strong>Rationale:</strong> A third party process may attempt to intercept the communication between the SOTA Client and the RVI node and alter the contents of the received data.</p>
 </li>
 <li>
 <p><strong>Mitigations:</strong></p>
 <div class="ulist">
 <ul>
 <li>
-<p><a href="#c12">C12</a> - SOTA Client should not accept any calls or requests
-from in-vehicle processes</p>
+<p><a href="#c12">C12</a> - SOTA Client should not accept any calls or requests from in-vehicle processes</p>
 </li>
 <li>
-<p><a href="#c13">C13</a> - SOTA Client should authenticate and communicate only
-with the Software Loading Manager (from in-vehicle software)</p>
+<p><a href="#c13">C13</a> - SOTA Client should authenticate and communicate only with the Software Loading Manager (from in-vehicle software)</p>
 </li>
 <li>
-<p><a href="#c14">C14</a> - SOTA Server-supplied checksum for every package
-send, recalculated it and verify it locally</p>
+<p><a href="#c14">C14</a> - SOTA Server-supplied checksum for every package send, recalculated it and verify it locally</p>
 </li>
 <li>
-<p><a href="#c15">C15</a> - In case that the SOTA Server is unavailable and a
-package download has been interrupted, set the download&#8217;s state as
-erroneous and update the Server with the information upon the next
-notification</p>
+<p><a href="#c15">C15</a> - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification</p>
 </li>
 </ul>
 </div>
@@ -1479,14 +1248,12 @@ notification</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="t29">T29</h2>
+<h2 id="t29">T29 — SOTA Client Denial of Service attack</h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Description:</strong> An attacker may orchestrate a Denial-Of-Service (DOS)
-attack to interrupt the system&#8217;s operation or as part of a phishing
-attack.</p>
+<p><strong>Description:</strong> An attacker may orchestrate a Denial-Of-Service (DOS) attack to interrupt the system’s operation or as part of a phishing attack.</p>
 </li>
 <li>
 <p><strong>Rationale:</strong></p>
@@ -1496,8 +1263,7 @@ attack.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><a href="#c12">C12</a> - SOTA Client should not accept any calls or requests
-from in-vehicle processes</p>
+<p><a href="#c12">C12</a> - SOTA Client should not accept any calls or requests from in-vehicle processes</p>
 </li>
 </ul>
 </div>
@@ -1939,7 +1705,7 @@ from in-vehicle processes</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="c11">C11 Don&#8217;t use Admin account with MariaDB</h2>
+<h2 id="c11">C11 Don’t use Admin account with MariaDB</h2>
 <div class="sectionbody">
 <div class="sect4">
 <h5 id="applicable-threats-11">Applicable threats</h5>
@@ -2091,7 +1857,7 @@ from in-vehicle processes</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="c15">C15 In case that the SOTA Server is unavailable and a package download has been interrupted, set the download&#8217;s state as erroneous and update the Server with the information upon the next notification</h2>
+<h2 id="c15">C15 In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification</h2>
 <div class="sectionbody">
 <div class="sect4">
 <h5 id="applicable-threats-15">Applicable threats</h5>
@@ -2124,7 +1890,9 @@ from in-vehicle processes</p>
 </div>
 <div class="sect4">
 <h5 id="depends-15">Depends</h5>
-
+<div class="paragraph">
+<p>Last updated 2015-09-22 15:21:40 CEST</p>
+</div>
 </div>
 </div>
 </div>
