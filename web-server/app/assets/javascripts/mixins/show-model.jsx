@@ -1,11 +1,9 @@
 define(['jquery', 'react'], function($, React) {
   var showModel = {
     getStateFromStore: function () {
-      if (this.props.Store.length === 0) {
-        this.props.Store.once('sync', function(collection) {
-          this.stateFromStore();
-        }, this);
-      }
+      this.props.Store.once('sync', function(collection) {
+        this.stateFromStore();
+      }, this);
       return this.whereClause();
     },
     componentWillReceiveProps: function(props, context) {
