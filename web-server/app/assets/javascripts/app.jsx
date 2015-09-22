@@ -5,7 +5,7 @@ define(function(require) {
       PackagesPageComponent = require('components/packages/packages-page-component'),
       FiltersPageComponent = require('components/filters/filters-page-component'),
       ShowPackage = require('components/show-package-component'),
-      ShowFilter = require('components/filters/show-filter-component'),
+      ShowFilter = require('components/filters/show-filter'),
       Packages = require('stores/packages'),
       Filters = require('stores/filters'),
       Router = require('react-router'),
@@ -78,7 +78,7 @@ define(function(require) {
         <DefaultRoute handler={PackagesPageComponent}/>
       </Route>
       <Route name="filters">
-        <Route name="filter" path="/filters/:name" handler={wrapComponent(ShowFilter, {Store: Filters})}/>
+        <Route name="filter" path="/filters/:name" handler={wrapComponent(ShowFilter, {Filter: db.showFilter})}/>
         <DefaultRoute handler={FiltersPageComponent} />
       </Route>
       <Route name="updates">

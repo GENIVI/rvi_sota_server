@@ -15,6 +15,9 @@ define(['jquery'], function($) {
     doPost: function(url, data) {
       return this.jsonAjax("POST", url, data);
     },
+    doPut: function(url, data) {
+      return this.jsonAjax("PUT", url, data);
+    },
     doDelete: function(url, data) {
       return this.jsonAjax("DELETE", url, data);
     }
