@@ -2,11 +2,10 @@ define(function(require) {
 
   var _ = require('underscore'),
       React = require('react'),
-      showModel = require('../mixins/show-model'),
-      VehiclesToUpdate = require('components/vehicles-to-update-component'),
       VehiclesToUpdateStore = require('stores/vehicles-to-update'),
-      CreateUpdate = require('components/create-update'),
-      AddPackageFilters = require('./package-filters/add-package-filters');
+      VehiclesToUpdate = require('components/vehicles-to-update-component'),
+      showModel = require('../mixins/show-model'),
+      CreateUpdate = require('components/create-update');
 
   var ShowPackageComponent = React.createClass({
     contextTypes: {
@@ -23,7 +22,6 @@ define(function(require) {
             New Update Campaign for Package <br/>
             {this.state.Model.get('id').name}
           </h1>
-          <AddPackageFilters Package={this.state.Model}/>
           <VehiclesToUpdate store={new VehiclesToUpdateStore({}, {pkgName: this.state.Model.get('id').name, pkgVersion: this.state.Model.get('id').version})}/>
           <CreateUpdate packageName={this.state.Model.get('id').name} packageVersion={this.state.Model.get('id').version}/>
         </div>

@@ -3,6 +3,9 @@ define(function(require) {
   var _ = require('underscore'),
       Router = require('react-router'),
       React = require('react'),
+      VehiclesToUpdate = require('components/vehicles-to-update-component'),
+      VehiclesToUpdateStore = require('stores/vehicles-to-update'),
+      AddPackageFilters = require('./package-filters/add-package-filters'),
       showModel = require('../mixins/show-model');
 
   var ShowPackageComponent = React.createClass({
@@ -62,6 +65,8 @@ define(function(require) {
               </table>
             </div>
           </div>
+          <AddPackageFilters Package={this.state.Model}/>
+          <VehiclesToUpdate store={new VehiclesToUpdateStore({}, {pkgName: this.state.Model.get('id').name, pkgVersion: this.state.Model.get('id').version})}/>
         </div>
       );
     }
