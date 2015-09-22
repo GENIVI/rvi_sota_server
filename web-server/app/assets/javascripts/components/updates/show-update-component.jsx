@@ -1,21 +1,25 @@
 define(function(require) {
   var _ = require('underscore'),
       React = require('react'),
-      Status = require('../../stores/status'),
-      StatusComponent = require('../../components/updates/status-component'),
-      showModel = require('../../mixins/show-model');
+      db = require('stores/db'),
+      ShowStatus = require('./show-status');
 
   var ShowUpdateComponent = React.createClass({
     contextTypes: {
       router: React.PropTypes.func
     },
-    mixins: [showModel],
-    whereClause: function() {
-      var params = this.context.router.getCurrentParams();
-      return {id: params.id};
+    componentWillUnmount: function(){
+      this.props.Update.removeWatch("poll-update");
     },
-    showView: function() {
-      var rows = _.map(this.state.Model.attributes, function(value, key) {
+    componentWillMount: function(){
+      SotaDispatcher.dispatch({
+        actionType: 'get-update',
+        id: this.context.router.getCurrentParams().id
+      });
+      this.props.Update.addWatch("poll-update", _.bind(this.forceUpdate, this, null));
+    },
+    render: function() {
+      var rows = _.map(this.props.Update.deref(), function(value, key) {
         return (
           <tr>
             <td>
@@ -32,7 +36,7 @@ define(function(require) {
           <div className="row">
             <div className="col-md-12">
               <h1>
-                Update ID: {this.state.Model.get('id')}
+                Update ID: {this.props.Update.deref().id}
               </h1>
             </div>
           </div>
@@ -46,7 +50,7 @@ define(function(require) {
               </table>
             </div>
           </div>
-          <StatusComponent Model={new Status({}, {updateId: this.state.Model.get('id')})} />
+          <ShowStatus UpdateStatus={db.updateStatus}/>
         </div>
       );
     }
