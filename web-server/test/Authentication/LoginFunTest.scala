@@ -27,6 +27,6 @@ class LoginFunTest extends PlaySpec with OneServerPerSuite {
       "email" -> Seq("admin@genivi.org"),
       "password" -> Seq("genivirocks!"))))
     response.status mustBe (OK)
-    response.body must include("SOTA Web Admin")
+    response.body must include("SOTA")
   }
 }
