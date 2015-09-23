@@ -5,6 +5,7 @@ category: doc
 date: 2015-08-26 14:09:53
 order: 2
 ---
+:icons: font
 
 Docker Launcher launches projects using Docker and Ansible. It is a prerequisite for deploying the SOTA server, and can be installed from https://github.com/advancedtelematic/docker-launcher[its GitHub repository.] *Please ensure you are using the latest version of Docker Launcher. Older versions may not correctly deploy the SOTA Server.*
 
@@ -158,6 +159,7 @@ vars:
 
 You will need to change at least three values from the example file:
 
+[#code_list]
 <1> Your username at Docker Hub
 <2> The email address associated with your Docker Hub account
 <3> The name of an SSH keypair associated with your AWS account
