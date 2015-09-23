@@ -46,313 +46,373 @@ date: 2015-08-26 10:36:37
 |link:#t29[T29] |SOTA Client Denial of Service attack |Denial of service |Service Availability |Anyone → SOTA Client | | |[acc:lay/acc:unl/tim:hou/equ:std/kno:res]/41
 |====
 
-[[t01]]
-== T01 — Spoofing of Admin UI
+image:../images/Whitelisted-Interactions-Reference-Diagram.svg[WhitelistedInteractions Reference Diagram]
 
-* *Description:* A malicious person may try to gain administrator-level access to the web server’s admin console to gain information about the system’s structure.
-* *Rationale:*
-* *Mitigations:*
-+
-** link:#c01[C01] - Password complexity check
-** link:#c06[C06] - Limit login attempts per session
-** link:#c07[C07] - Log VIN and package creations
+[[t01]]
+=== T01 — Spoofing of Admin UI
+
+|====
+^.^h| Description a| A malicious person may try to gain administrator-level access to the web server’s admin console to gain information about the system’s structure.
+^.^h| Rationale a|
+^.^h| Mitigations a|
+
+* link:#c01[C01] - Password complexity check
+* link:#c06[C06] - Limit login attempts per session
+* link:#c07[C07] - Log VIN and package creations
+|====
 
 [[t02]]
-== T02 — Node sniffing
+=== T02 — Node sniffing
 
-* *Description:* Sniffing software installed on the load balancing node may lead to the leak of the credentials of all clients connecting to the given cluster.
-* *Rationale:* A node sniffer could intercept the credentials of all incoming client connections.
-* *Mitigations:*
-+
-** link:#c02[C02] - TLS Transport Integrity, Confidentiality
-** link:#c03[C03] - Enforce only SSL connections
-** link:#c08[C08] - Avoid exposing unnecessary interfaces to public Internet
+|====
+^.^h| Description a| Sniffing software installed on the load balancing node may lead to the leak of the credentials of all clients connecting to the given cluster.
+^.^h| Rationale a| A node sniffer could intercept the credentials of all incoming client connections.
+^.^h| Mitigations a|
+
+* link:#c02[C02] - TLS Transport Integrity, Confidentiality
+* link:#c03[C03] - Enforce only SSL connections
+* link:#c08[C08] - Avoid exposing unnecessary interfaces to public Internet
+|====
 
 [[t03]]
-== T03 — Invalid package configuration injection
+=== T03 — Invalid package configuration injection
 
-* *Description:* An invalid combination of software packages or versions may be attempted to be installed in order to create exploits or vulnerabilities.
-* *Rationale:*
-* *Mitigations:*
-+
-** link:#c01[C01] - Password complexity check
-** link:#c07[C07] - Log VIN and package creations
-** link:#c09[C09] - Verify the VIN/package filter sanity
-** link:#c14[C14] - SOTA Server-supplied checksum for every package send, recalculated it and verify it locally
-** link:#c15[C15] - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification
+|====
+^.^h| Description a| An invalid combination of software packages or versions may be attempted to be installed in order to create exploits or vulnerabilities.
+^.^h| Rationale a|
+^.^h| Mitigations a|
+
+* link:#c01[C01] - Password complexity check
+* link:#c07[C07] - Log VIN and package creations
+* link:#c09[C09] - Verify the VIN/package filter sanity
+* link:#c14[C14] - SOTA Server-supplied checksum for every package send, recalculated it and verify it locally
+* link:#c15[C15] - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification
+|====
 
 [[t04]]
-== T04 — Repudiation of vehicle SW configuration
+=== T04 — Repudiation of vehicle SW configuration
 
-* *Description:* A configuration that may create exploits or vulnerabilities on the vehicle’s software environment may be injected and a modified web interface may be used to repudiate the traces of the installation of the malicious configuration to a group of vehicles.
-* *Rationale:* Javascript code running on the browser can be modified and a repudiation attack against a group of vehicles may be attempted.
-* *Mitigations:*
-+
-** link:#c01[C01] - Password complexity check
+|====
+^.^h| Description a| A configuration that may create exploits or vulnerabilities on the vehicle’s software environment may be injected and a modified web interface may be used to repudiate the traces of the installation of the malicious configuration to a group of vehicles.
+^.^h| Rationale a| Javascript code running on the browser can be modified and a repudiation attack against a group of vehicles may be attempted.
+^.^h| Mitigations a|
+
+* link:#c01[C01] - Password complexity check
+|====
 
 [[t05]]
-== T05 — Web API Denial of Service attack
+=== T05 — Web API Denial of Service attack
 
-* *Description:* A large amount of false or dummy requests from a malicious group may saturate the load balancer and prevent the service of legitimate clients.
-* *Rationale:* An easy to orchestrate DOS attack may disrupt the system’s operations.
-* *Mitigations:*
-+
-** link:#c05[C05] - Notify administrators for suspicious traffic patterns
-** link:#c08[C08] - Avoid exposing unnecessary interfaces to public Internet
+|====
+^.^h| Description a| A large amount of false or dummy requests from a malicious group may saturate the load balancer and prevent the service of legitimate clients.
+^.^h| Rationale a| An easy to orchestrate DOS attack may disrupt the system’s operations.
+^.^h| Mitigations a|
+
+* link:#c05[C05] - Notify administrators for suspicious traffic patterns
+* link:#c08[C08] - Avoid exposing unnecessary interfaces to public Internet
+|====
 
 [[t06]]
-== T06 — Brute force password cracking
+=== T06 — Brute force password cracking
 
-* *Description:* A password cracker may break an account and provide access to a malicious, unauthorized user.
-* *Rationale:* Weak passwords may be cracked in a short amount of time with a password cracker.
-* *Mitigations:*
-+
-** link:#c01[C01] - Password complexity check
-** link:#c08[C08] - Avoid exposing unnecessary interfaces to public Internet
+|====
+^.^h| Description a| A password cracker may break an account and provide access to a malicious, unauthorized user.
+^.^h| Rationale a| Weak passwords may be cracked in a short amount of time with a password cracker.
+^.^h| Mitigations a|
+
+* link:#c01[C01] - Password complexity check
+* link:#c08[C08] - Avoid exposing unnecessary interfaces to public Internet
+|====
 
 [[t07]]
-== T07 — Spoofing of External Resolver
+=== T07 — Spoofing of External Resolver
 
-* *Description:* A malicious person may use a fake external resolver to gain information about the workings of the SOTA server and leak information about VINs and the software packages they have installed.
-* *Rationale:* A fake external resolver may be used to gain information about the SOTA server which may be used in a composite attack vector.
-* *Mitigations:*
-+
-** link:#c02[C02] - TLS Transport Integrity, Confidentiality
-** link:#c04[C04] - Log transactions to and from SOTA Server
+|====
+^.^h| Description a| A malicious person may use a fake external resolver to gain information about the workings of the SOTA server and leak information about VINs and the software packages they have installed.
+^.^h| Rationale a| A fake external resolver may be used to gain information about the SOTA server which may be used in a composite attack vector.
+^.^h| Mitigations a|
+
+* link:#c02[C02] - TLS Transport Integrity, Confidentiality
+* link:#c04[C04] - Log transactions to and from SOTA Server
+|====
 
 [[t08]]
-== T08 — Tampering of package dependencies
+=== T08 — Tampering of package dependencies
 
-* *Description:* A maliciously compiled dependency tree may include dependencies that open vulnerabilities or provide access to attackers, or it sets package versions known to have bugs or open vulnerabilities.
-* *Rationale:* A package that may open a backdoor, or that functions as a Trojan can be added as a package dependency.
-* *Mitigations:*
-+
-** link:#c14[C14] - SOTA Server-supplied checksum for every package send, recalculated it and verify it locally
-** link:#c15[C15] - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification
+|====
+^.^h| Description a| A maliciously compiled dependency tree may include dependencies that open vulnerabilities or provide access to attackers, or it sets package versions known to have bugs or open vulnerabilities.
+^.^h| Rationale a| A package that may open a backdoor, or that functions as a Trojan can be added as a package dependency.
+^.^h| Mitigations a|
+
+* link:#c14[C14] - SOTA Server-supplied checksum for every package send, recalculated it and verify it locally
+* link:#c15[C15] - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification
+|====
 
 [[t09]]
-== T09 — Information leak of installed packages per VIN
+=== T09 — Information leak of installed packages per VIN
 
-* *Description:* A verbose API may reveal information on which software packages are installed on which vehicle, which is unnecessary on a need-to-know basis.
-* *Rationale:*
-* *Mitigations:*
-+
-** link:#c03[C03] - Enforce only SSL connections
+|====
+^.^h| Description a| A verbose API may reveal information on which software packages are installed on which vehicle, which is unnecessary on a need-to-know basis.
+^.^h| Rationale a|
+^.^h| Mitigations a|
+
+* link:#c03[C03] - Enforce only SSL connections
+|====
 
 [[t10]]
-== T10 — RVI node spoofing
+=== T10 — RVI node spoofing
 
-* *Description:* An RVI node may be spoofed and become a leaking sink for vehicle and package data.
-* *Rationale:* A spoofed RVI node may cause a huge leak of sensitive information.
-* *Mitigations:*
-+
-** link:#c02[C02] - TLS Transport Integrity, Confidentiality
-** link:#c08[C08] - Avoid exposing unnecessary interfaces to public Internet
+|====
+^.^h| Description a| An RVI node may be spoofed and become a leaking sink for vehicle and package data.
+^.^h| Rationale a| A spoofed RVI node may cause a huge leak of sensitive information.
+^.^h| Mitigations a|
+
+* link:#c02[C02] - TLS Transport Integrity, Confidentiality
+* link:#c08[C08] - Avoid exposing unnecessary interfaces to public Internet
+|====
 
 [[t11]]
-== T11 — Retrieving false package installation results
+=== T11 — Retrieving false package installation results
 
-* *Description:* A compromised RVI node may send incorrect status reports for package installation in order to skip the installation of bugfixes or exploit fixes, intercept packages, and acquire information about VINs and their software configuration.
-* *Rationale:* Knowing or sending over to a spoofed vehicle software packages may help to analyze them and find potential attack vectors.
-* *Mitigations:*
-+
-** link:#c14[C14] - SOTA Server-supplied checksum for every package send, recalculated it and verify it locally
-** link:#c15[C15] - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification
+|====
+^.^h| Description a| A compromised RVI node may send incorrect status reports for package installation in order to skip the installation of bugfixes or exploit fixes, intercept packages, and acquire information about VINs and their software configuration.
+^.^h| Rationale a| Knowing or sending over to a spoofed vehicle software packages may help to analyze them and find potential attack vectors.
+^.^h| Mitigations a|
+
+* link:#c14[C14] - SOTA Server-supplied checksum for every package send, recalculated it and verify it locally
+* link:#c15[C15] - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification
+|====
 
 [[t12]]
-== T12 — Denying the installation of a software package
+=== T12 — Denying the installation of a software package
 
-* *Description:* A compromised RVI node may block the installation of security-critical software packages and return a false status that they were installed, leaving open security vulnerabilities.
-* *Rationale:* A non-installed package may leave backdoors and exploits open for attackers.
-* *Mitigations:* None
+|====
+^.^h| Description a| A compromised RVI node may block the installation of security-critical software packages and return a false status that they were installed, leaving open security vulnerabilities.
+^.^h| Rationale a| A non-installed package may leave backdoors and exploits open for attackers.
+^.^h| Mitigations a| None
+|====
 
 [[t13]]
-== T13 — RVI node sniffing
+=== T13 — RVI node sniffing
 
-* *Description:* Sniffing software installed on a RVI node can intercept VINs, their configuration, and the latest package configuration for every VIN.
-* *Rationale:* A node sniffer may intercept all VINs and their associated software packages.
-* *Mitigations:*
-+
-** link:#c03[C03] - Enforce only SSL connections
+|====
+^.^h| Description a| Sniffing software installed on a RVI node can intercept VINs, their configuration, and the latest package configuration for every VIN.
+^.^h| Rationale a| A node sniffer may intercept all VINs and their associated software packages.
+^.^h| Mitigations a|
+
+* link:#c03[C03] - Enforce only SSL connections
+|====
 
 [[t14]]
-== T14 — RVI node Denial of Service attack
+=== T14 — RVI node Denial of Service attack
 
-* *Description:* A Denial-Of-Service (DOS) attack may block the installation of software packages or updates.
-* *Rationale:* A DOS attack on the RVI node/s may block the installation of zero-days or other crucial updates and leave vehicles vulnerable for a prolonged period of time.
-* *Mitigations:*
-+
-** link:#c05[C05] - Notify administrators for suspicious traffic patterns
-** link:#c08[C08] - Avoid exposing unnecessary interfaces to public Internet
+|====
+^.^h| Description a| A Denial-Of-Service (DOS) attack may block the installation of software packages or updates.
+^.^h| Rationale a| A DOS attack on the RVI node/s may block the installation of zero-days or other crucial updates and leave vehicles vulnerable for a prolonged period of time.
+^.^h| Mitigations a|
+
+* link:#c05[C05] - Notify administrators for suspicious traffic patterns
+* link:#c08[C08] - Avoid exposing unnecessary interfaces to public Internet
+|====
 
 [[t15]]
-== T15 — Logistics & Provisioning API Spoofing
+=== T15 — Logistics & Provisioning API Spoofing
 
-* *Description:* An attacker may use a spoofed Logistics API to install trojans or packages with known vulnerabilities.
-* *Rationale:* Responses from a spoofed Logistics API may lead to the installation of malicious or vulnerable packages.
-* *Mitigations:*
-+
-** link:#c02[C02] - TLS Transport Integrity, Confidentiality
-** link:#c04[C04] - Log transactions to and from SOTA Server
-** link:#c06[C06] - Limit login attempts per session
+|====
+^.^h| Description a| An attacker may use a spoofed Logistics API to install trojans or packages with known vulnerabilities.
+^.^h| Rationale a| Responses from a spoofed Logistics API may lead to the installation of malicious or vulnerable packages.
+^.^h| Mitigations a|
+
+* link:#c02[C02] - TLS Transport Integrity, Confidentiality
+* link:#c04[C04] - Log transactions to and from SOTA Server
+* link:#c06[C06] - Limit login attempts per session
+|====
 
 [[t16]]
-== T16 — Associating a part number with a malicious package
+=== T16 — Associating a part number with a malicious package
 
-* *Description:* An attacker may assign a valid part number to a malicious package which may provide backdoor or related system vulnerabilities after being installed.
-* *Rationale:* A malicious packaged related with a valid part number will be installed without any warning or any alarm raised.
-* *Mitigations:*
-+
-** link:#c04[C04] - Log transactions to and from SOTA Server
+|====
+^.^h| Description a| An attacker may assign a valid part number to a malicious package which may provide backdoor or related system vulnerabilities after being installed.
+^.^h| Rationale a| A malicious packaged related with a valid part number will be installed without any warning or any alarm raised.
+^.^h| Mitigations a|
+
+* link:#c04[C04] - Log transactions to and from SOTA Server
+|====
 
 [[t17]]
-== T17 — VIN, part number, configurations compromise
+=== T17 — VIN, part number, configurations compromise
 
-* *Description:* A malicious person may try to intercept the data exchanged between the SOTA server and the Logistics & Provisioning API.
-* *Rationale:* Information leak may compromise sensitive corporate and vehicle data.
-* *Mitigations:*
-+
-** link:#c02[C02] - TLS Transport Integrity, Confidentiality
-** link:#c03[C03] - Enforce only SSL connections
-** link:#c04[C04] - Log transactions to and from SOTA Server
+|====
+^.^h| Description a| A malicious person may try to intercept the data exchanged between the SOTA server and the Logistics & Provisioning API.
+^.^h| Rationale a| Information leak may compromise sensitive corporate and vehicle data.
+^.^h| Mitigations a|
+
+* link:#c02[C02] - TLS Transport Integrity, Confidentiality
+* link:#c03[C03] - Enforce only SSL connections
+* link:#c04[C04] - Log transactions to and from SOTA Server
+|====
 
 [[t18]]
-== T18 — Charging & Billing API Spoofing
+=== T18 — Charging & Billing API Spoofing
 
-* *Description:* An attacker may used a spoofed Billing API to install updates without being charged or by charging a third person excessively.
-* *Rationale:* Responses from a spoofed Billing API may lead to the installation of updates for no or excessive cost.
-* *Mitigations:*
-+
-** link:#c02[C02] - TLS Transport Integrity, Confidentiality
-** link:#c04[C04] - Log transactions to and from SOTA Server
-** link:#c06[C06] - Limit login attempts per session
-** link:#c08[C08] - Avoid exposing unnecessary interfaces to public Internet
+|====
+^.^h| Description a| An attacker may used a spoofed Billing API to install updates without being charged or by charging a third person excessively.
+^.^h| Rationale a| Responses from a spoofed Billing API may lead to the installation of updates for no or excessive cost.
+^.^h| Mitigations a|
+
+* link:#c02[C02] - TLS Transport Integrity, Confidentiality
+* link:#c04[C04] - Log transactions to and from SOTA Server
+* link:#c06[C06] - Limit login attempts per session
+* link:#c08[C08] - Avoid exposing unnecessary interfaces to public Internet
+|====
 
 [[t19]]
-== T19 — Associating an update with the wrong cost
+=== T19 — Associating an update with the wrong cost
 
-* *Description:* A compromised Charging & Billing endpoint may provide false charging information.
-* *Rationale:*
-* *Mitigations:* None
+|====
+^.^h| Description a| A compromised Charging & Billing endpoint may provide false charging information.
+^.^h| Rationale a|
+^.^h| Mitigations a| None
+|====
 
 [[t20]]
-== T20 — VIN, configurations, financial information compromise
+=== T20 — VIN, configurations, financial information compromise
 
-* *Description:* A malicious person may try to intercept the data exchanged between the SOTA server and the Charging & Billing API.
-* *Rationale:* Information leak may compromise sensitive corporate and vehicle data.
-* *Mitigations:*
-+
-** link:#c02[C02] - TLS Transport Integrity, Confidentiality
-** link:#c03[C03] - Enforce only SSL connections
-** link:#c08[C08] - Avoid exposing unnecessary interfaces to public Internet
+|====
+^.^h| Description a| A malicious person may try to intercept the data exchanged between the SOTA server and the Charging & Billing API.
+^.^h| Rationale a| Information leak may compromise sensitive corporate and vehicle data.
+^.^h| Mitigations a|
+
+* link:#c02[C02] - TLS Transport Integrity, Confidentiality
+* link:#c03[C03] - Enforce only SSL connections
+* link:#c08[C08] - Avoid exposing unnecessary interfaces to public Internet
+|====
 
 [[t21]]
-== T21 — Spoofing SOTA Core Server
+=== T21 — Spoofing SOTA Core Server
 
-* *Description:* A spoofed SOTA Server may retrieve most of the sensitive data stored in the data store.
-* *Rationale:* A spoofed SOTA Server may retrieve most of the sensitive data stored in the datastore.
-* *Mitigations:* None
+|====
+^.^h| Description a| A spoofed SOTA Server may retrieve most of the sensitive data stored in the data store.
+^.^h| Rationale a| A spoofed SOTA Server may retrieve most of the sensitive data stored in the datastore.
+^.^h| Mitigations a| None
+|====
 
 [[t22]]
-== T22 — Persistence of false data
+=== T22 — Persistence of false data
 
-* *Description:* A MariaDB client with access to the data store can manipulate the persisted data.
-* *Rationale:* Persisting false data in the datastore may open the door for more pervasive attack vectors.
-* *Mitigations:*
-+
-** link:#c01[C01] - Password complexity check
-** link:#c08[C08] - Avoid exposing unnecessary interfaces to public Internet
-** link:#c10[C10] - Allow only Intranet/VPN connections to MariaDB
-** link:#c11[C11] - Don’t use Admin account with MariaDB
+|====
+^.^h| Description a| A MariaDB client with access to the data store can manipulate the persisted data.
+^.^h| Rationale a| Persisting false data in the datastore may open the door for more pervasive attack vectors.
+^.^h| Mitigations a|
+
+* link:#c01[C01] - Password complexity check
+* link:#c08[C08] - Avoid exposing unnecessary interfaces to public Internet
+* link:#c10[C10] - Allow only Intranet/VPN connections to MariaDB
+* link:#c11[C11] - Don’t use Admin account with MariaDB
+|====
 
 [[t23]]
-== T23 — Compromise of sensitive data
+=== T23 — Compromise of sensitive data
 
-* *Description:* A MariaDB client with access to the data store can retrieve all of the sensitive data stored in it.
-* *Rationale:*
-* *Mitigations:*
-+
-** link:#c01[C01] - Password complexity check
-** link:#c02[C02] - TLS Transport Integrity, Confidentiality
-** link:#c03[C03] - Enforce only SSL connections
-** link:#c08[C08] - Avoid exposing unnecessary interfaces to public Internet
-** link:#c10[C10] - Allow only Intranet/VPN connections to MariaDB
-** link:#c11[C11] - Don’t use Admin account with MariaDB
+|====
+^.^h| Description a| A MariaDB client with access to the data store can retrieve all of the sensitive data stored in it.
+^.^h| Rationale a|
+^.^h| Mitigations a|
+
+* link:#c01[C01] - Password complexity check
+* link:#c02[C02] - TLS Transport Integrity, Confidentiality
+* link:#c03[C03] - Enforce only SSL connections
+* link:#c08[C08] - Avoid exposing unnecessary interfaces to public Internet
+* link:#c10[C10] - Allow only Intranet/VPN connections to MariaDB
+* link:#c11[C11] - Don’t use Admin account with MariaDB
+|====
 
 [[t24]]
-== T24 — MariaDB Denial of Service attack
+=== T24 — MariaDB Denial of Service attack
 
-* *Description:* An attacker may orchestrate a Denial-Of-Service (DOS) attack to interrupt the system’s operation or as part of a phishing attack.
-* *Rationale:*
-* *Mitigations:*
-+
-** link:#c01[C01] - Password complexity check
-** link:#c05[C05] - Notify administrators for suspicious traffic patterns
-** link:#c08[C08] - Avoid exposing unnecessary interfaces to public Internet
-** link:#c10[C10] - Allow only Intranet/VPN connections to MariaDB
-** link:#c11[C11] - Don’t use Admin account with MariaDB
+|====
+^.^h| Description a| An attacker may orchestrate a Denial-Of-Service (DOS) attack to interrupt the system’s operation or as part of a phishing attack.
+^.^h| Rationale a|
+^.^h| Mitigations a|
+
+* link:#c01[C01] - Password complexity check
+* link:#c05[C05] - Notify administrators for suspicious traffic patterns
+* link:#c08[C08] - Avoid exposing unnecessary interfaces to public Internet
+* link:#c10[C10] - Allow only Intranet/VPN connections to MariaDB
+* link:#c11[C11] - Don’t use Admin account with MariaDB
+|====
 
 [[t25]]
-== T25 — Getting admin rights
+=== T25 — Getting admin rights
 
-* *Description:* A malicious user may pursue elevating his access rights to administrator or superuser, allowing him to perform any arbitrary operation on the data store.
-* *Rationale:* Getting administrator rights can lead to data theft, tampering and complete loss of data.
-* *Mitigations:*
-+
-** link:#c01[C01] - Password complexity check
-** link:#c02[C02] - TLS Transport Integrity, Confidentiality
-** link:#c10[C10] - Allow only Intranet/VPN connections to MariaDB
-** link:#c11[C11] - Don’t use Admin account with MariaDB
+|====
+^.^h| Description a| A malicious user may pursue elevating his access rights to administrator or superuser, allowing him to perform any arbitrary operation on the data store.
+^.^h| Rationale a| Getting administrator rights can lead to data theft, tampering and complete loss of data.
+^.^h| Mitigations a|
+
+* link:#c01[C01] - Password complexity check
+* link:#c02[C02] - TLS Transport Integrity, Confidentiality
+* link:#c10[C10] - Allow only Intranet/VPN connections to MariaDB
+* link:#c11[C11] - Don’t use Admin account with MariaDB
+|====
 
 [[t26]]
-== T26 — Spoofing External Resolver
+=== T26 — Spoofing External Resolver
 
-* *Description:* A spoofed External Resolver may retrieve most of the sensitive data stored in the data store.
-* *Rationale:* A spoofed External Resolver may retrieve most of the data stored in the datastore.
-* *Mitigations:*
-+
-** link:#c02[C02] - TLS Transport Integrity, Confidentiality
-** link:#c08[C08] - Avoid exposing unnecessary interfaces to public Internet
+|====
+^.^h| Description a| A spoofed External Resolver may retrieve most of the sensitive data stored in the data store.
+^.^h| Rationale a| A spoofed External Resolver may retrieve most of the data stored in the datastore.
+^.^h| Mitigations a|
+
+* link:#c02[C02] - TLS Transport Integrity, Confidentiality
+* link:#c08[C08] - Avoid exposing unnecessary interfaces to public Internet
+|====
 
 [[t27]]
-== T27 — In-vehicle process spoofing
+=== T27 — In-vehicle process spoofing
 
-* *Description:* A malicious in-vehicle process can attempt to exchange data with the SOTA Client and intercept information about the vehicle’s software state.
-* *Rationale:* A third party process can intercept information about every package installed from an unsecured client.
-* *Mitigations:*
-+
-** link:#c12[C12] - SOTA Client should not accept any calls or requests from in-vehicle processes
-** link:#c13[C13] - SOTA Client should authenticate and communicate only with the Software Loading Manager (from in-vehicle software)
+|====
+^.^h| Description a| A malicious in-vehicle process can attempt to exchange data with the SOTA Client and intercept information about the vehicle’s software state.
+^.^h| Rationale a| A third party process can intercept information about every package installed from an unsecured client.
+^.^h| Mitigations a|
+
+* link:#c12[C12] - SOTA Client should not accept any calls or requests from in-vehicle processes
+* link:#c13[C13] - SOTA Client should authenticate and communicate only with the Software Loading Manager (from in-vehicle software)
+|====
 
 [[t28]]
-== T28 — SOTA Client sniffing
+=== T28 — SOTA Client sniffing
 
-* *Description:* A malicious in-vehicle process can attempt to intercept the communication between the SOTA Client and the RVI Node and alter the contents of the messages before delivering them to the SOTA Client.
-* *Rationale:* A third party process may attempt to intercept the communication between the SOTA Client and the RVI node and alter the contents of the received data.
-* *Mitigations:*
-+
-** link:#c12[C12] - SOTA Client should not accept any calls or requests from in-vehicle processes
-** link:#c13[C13] - SOTA Client should authenticate and communicate only with the Software Loading Manager (from in-vehicle software)
-** link:#c14[C14] - SOTA Server-supplied checksum for every package send, recalculated it and verify it locally
-** link:#c15[C15] - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification
+|====
+^.^h| Description a| A malicious in-vehicle process can attempt to intercept the communication between the SOTA Client and the RVI Node and alter the contents of the messages before delivering them to the SOTA Client.
+^.^h| Rationale a| A third party process may attempt to intercept the communication between the SOTA Client and the RVI node and alter the contents of the received data.
+^.^h| Mitigations a|
+
+* link:#c12[C12] - SOTA Client should not accept any calls or requests from in-vehicle processes
+* link:#c13[C13] - SOTA Client should authenticate and communicate only with the Software Loading Manager (from in-vehicle software)
+* link:#c14[C14] - SOTA Server-supplied checksum for every package send, recalculated it and verify it locally
+* link:#c15[C15] - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification
+|====
 
 [[t29]]
-== T29 — SOTA Client Denial of Service attack
+=== T29 — SOTA Client Denial of Service attack
 
-* *Description:* An attacker may orchestrate a Denial-Of-Service (DOS) attack to interrupt the system’s operation or as part of a phishing attack.
-* *Rationale:*
-* *Mitigations:*
-+
-** link:#c12[C12] - SOTA Client should not accept any calls or requests from in-vehicle processes
+|====
+^.^h| Description a| An attacker may orchestrate a Denial-Of-Service (DOS) attack to interrupt the system’s operation or as part of a phishing attack.
+^.^h| Rationale a|
+^.^h| Mitigations a|
+
+* link:#c12[C12] - SOTA Client should not accept any calls or requests from in-vehicle processes
+|====
 
 [[mitigations]]
-= Mitigations
+== Mitigations
 
 [[c01]]
-== C01 Password complexity check
+=== C01 Password complexity check
 
-===== Applicable threats
-
+|====
+^.^h| Applicable threats a|
 * link:#t01[T01] - Spoofing of Admin UI
 * link:#t03[T03] - Invalid package configuration injection
 * link:#t04[T04] - Repudiation of vehicle SW configuration
@@ -362,19 +422,20 @@ date: 2015-08-26 10:36:37
 * link:#t24[T24] - MariaDB Denial of Service attack
 * link:#t25[T25] - Getting admin rights
 
-===== Purpose
+^.^h| Purpose a|
 
 deterrence
 
-===== Goal
+^.^h| Goal a|
 
-===== Depends
+^.^h| Depends a|
+|====
 
 [[c02]]
-== C02 TLS Transport Integrity, Confidentiality
+=== C02 TLS Transport Integrity, Confidentiality
 
-===== Applicable threats
-
+|====
+^.^h| Applicable threats a|
 * link:#t02[T02] - Node sniffing
 * link:#t07[T07] - Spoofing of External Resolver
 * link:#t10[T10] - RVI node spoofing
@@ -386,19 +447,20 @@ deterrence
 * link:#t25[T25] - Getting admin rights
 * link:#t26[T26] - Spoofing External Resolver
 
-===== Purpose
+^.^h| Purpose a|
 
 prevention
 
-===== Goal
+^.^h| Goal a|
 
-===== Depends
+^.^h| Depends a|
+|====
 
 [[c03]]
-== C03 Enforce only SSL connections
+=== C03 Enforce only SSL connections
 
-===== Applicable threats
-
+|====
+^.^h| Applicable threats a|
 * link:#t02[T02] - Node sniffing
 * link:#t09[T09] - Information leak of installed packages per VIN
 * link:#t13[T13] - RVI node sniffing
@@ -406,19 +468,20 @@ prevention
 * link:#t20[T20] - VIN, configurations, financial information compromise
 * link:#t23[T23] - Compromise of sensitive data
 
-===== Purpose
+^.^h| Purpose a|
 
 deterrence
 
-===== Goal
+^.^h| Goal a|
 
-===== Depends
+^.^h| Depends a|
+|====
 
 [[c04]]
-== C04 Log transactions to and from SOTA Server
+=== C04 Log transactions to and from SOTA Server
 
-===== Applicable threats
-
+|====
+^.^h| Applicable threats a|
 * link:#t07[T07] - Spoofing of External Resolver
 * link:#t15[T15] - Logistics & Provisioning API Spoofing
 * link:#t16[T16] - Associating a part number with a malicious package
@@ -432,69 +495,73 @@ deterrence
 * link:#t08[T08] - Tampering of package dependencies
 * link:#t12[T12] - Denying the installation of a software package
 
-===== Purpose
+^.^h| Purpose a|
 
 monitoring
 
-===== Goal
+^.^h| Goal a|
 
-===== Depends
+^.^h| Depends a|
+|====
 
 [[c05]]
-== C05 Notify administrators for suspicious traffic patterns
+=== C05 Notify administrators for suspicious traffic patterns
 
-===== Applicable threats
-
+|====
+^.^h| Applicable threats a|
 * link:#t05[T05] - Web API Denial of Service attack
 * link:#t14[T14] - RVI Node Denial of Service attack
 * link:#t24[T24] - MariaDB Denial of Service attack
 
-===== Purpose
+^.^h| Purpose a|
 
 monitoring
 
-===== Goal
+^.^h| Goal a|
 
-===== Depends
+^.^h| Depends a|
+|====
 
 [[c06]]
-== C06 Limit login attempts per session
+=== C06 Limit login attempts per session
 
-===== Applicable threats
-
+|====
+^.^h| Applicable threats a|
 * link:#t01[T01] - Spoofing of Admin UI
 * link:#t15[T15] - Logistics & Provisioning API Spoofing
 * link:#t18[T18] - Charging & Billing API Spoofing
 
-===== Purpose
+^.^h| Purpose a|
 
 deterrence
 
-===== Goal
+^.^h| Goal a|
 
-===== Depends
+^.^h| Depends a|
+|====
 
 [[c07]]
-== C07 Log VIN and package creations
+=== C07 Log VIN and package creations
 
-===== Applicable threats
-
+|====
+^.^h| Applicable threats a|
 * link:#t01[T01] - Spoofing of Admin UI
 * link:#t03[T03] - Invalid package configuration injection
 
-===== Purpose
+^.^h| Purpose a|
 
 monitoring
 
-===== Goal
+^.^h| Goal a|
 
-===== Depends
+^.^h| Depends a|
+|====
 
 [[c08]]
-== C08 Avoid exposing unnecessary interfaces to public Internet
+=== C08 Avoid exposing unnecessary interfaces to public Internet
 
-===== Applicable threats
-
+|====
+^.^h| Applicable threats a|
 * link:#t02[T02] - Node sniffing
 * link:#t05[T05] - Web API Denial of Service attack
 * link:#t06[T06] - Brute force password cracking
@@ -507,138 +574,145 @@ monitoring
 * link:#t24[T24] - MariaDB Denial of Service attack
 * link:#t26[T26] - Spoofing External Resolver
 
-===== Purpose
+^.^h| Purpose a|
 
 prevention
 
-===== Goal
+^.^h| Goal a|
 
-===== Depends
+^.^h| Depends a|
+|====
 
 [[c09]]
-== C09 Verify the VIN/package filter sanity
+=== C09 Verify the VIN/package filter sanity
 
-===== Applicable threats
-
+|====
+^.^h| Applicable threats a|
 T03
 
-===== Purpose
+^.^h| Purpose a|
 
 deterrence
 
-===== Goal
+^.^h| Goal a|
 
-===== Depends
+^.^h| Depends a|
+|====
 
 [[c10]]
-== C10 Allow only Intranet/VPN connections to MariaDB
+=== C10 Allow only Intranet/VPN connections to MariaDB
 
-===== Applicable threats
-
+|====
+^.^h| Applicable threats a|
 * link:#t22[T22] - Persistence of false data
 * link:#t23[T23] - Compromise of sensitive data
 * link:#t24[T24] - MariaDB Denial of Service attack
 * link:#t25[T25] - Getting admin rights
 
-===== Purpose
+^.^h| Purpose a|
 
 deterrence
 
-===== Goal
+^.^h| Goal a|
 
-===== Depends
+^.^h| Depends a|
+|====
 
 [[c11]]
-== C11 Don’t use Admin account with MariaDB
+=== C11 Don’t use Admin account with MariaDB
 
-===== Applicable threats
-
+|====
+^.^h| Applicable threats a|
 * link:#t22[T22] - Persistence of false data
 * link:#t23[T23] - Compromise of sensitive data
 * link:#t24[T24] - MariaDB Denial of Service attack
 * link:#t25[T25] - Getting admin rights
 
-===== Purpose
+^.^h| Purpose a|
 
 deterrence
 
-===== Goal
+^.^h| Goal a|
 
-===== Depends
+^.^h| Depends a|
+|====
 
 [[c12]]
-== C12 SOTA Client should not accept any calls or requests from in-vehicle
+=== C12 SOTA Client should not accept any calls or requests from in-vehicle
 
 processes
 
-===== Applicable threats
-
+|====
+^.^h| Applicable threats a|
 * link:#t27[T27] - In-vehicle process spoofing
 * link:#t28[T28] - SOTA Client sniffing
 * link:#t29[T29] - SOTA Client Denial of Service attack
 
-===== Purpose
+^.^h| Purpose a|
 
 prevention
 
-===== Goal
+^.^h| Goal a|
 
-===== Depends
+^.^h| Depends a|
+|====
 
 [[c13]]
-== C13 SOTA Client should authenticate and communicate only with the
+=== C13 SOTA Client should authenticate and communicate only with the
 
 Software Loading Manager (from in-vehicle software)
 
-===== Applicable threats
-
+|====
+^.^h| Applicable threats a|
 * link:#t27[T27] - In-vehicle process spoofing
 * link:#t28[T28] - SOTA Client sniffing
 
-===== Purpose
+^.^h| Purpose a|
 
 prevention
 
-===== Goal
+^.^h| Goal a|
 
-===== Depends
+^.^h| Depends a|
+|====
 
 [[c14]]
-== C14 SOTA Server-supplied checksum for every package send, recalculated
+=== C14 SOTA Server-supplied checksum for every package send, recalculated
 
 it and verify it locally.
 
-===== Applicable threats
-
+|====
+^.^h| Applicable threats a|
 * link:#t28[T28] - SOTA Client sniffing
 * link:#t11[T11] - Retrieving false package installation results
 * link:#t08[T08] - Tampering of package dependencies
 * link:#t03[T03] - Invalid package configuration injection
 
-===== Purpose
+^.^h| Purpose a|
 
 deterrence
 
-===== Goal
+^.^h| Goal a|
 
-===== Depends
+^.^h| Depends a|
+|====
 
 [[c15]]
-== C15 In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification
+=== C15 In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification
 
-===== Applicable threats
-
+|====
+^.^h| Applicable threats a|
 * link:#t28[T28] - SOTA Client sniffing
 * link:#t11[T11] - Retrieving false package installation results
 * link:#t08[T08] - Tampering of package dependencies
 * link:#t03[T03] - Invalid package configuration injection
 
-===== Purpose
+^.^h| Purpose a|
 
 deterrence
 
-===== Goal
+^.^h| Goal a|
 
-===== Depends
+^.^h| Depends a|
+|====
 
-Last updated 2015-09-22 15:21:40 CEST
