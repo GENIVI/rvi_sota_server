@@ -20,7 +20,7 @@ date: 2015-08-26 10:36:37
 |link:#t03[T03] |Invalid package configuration injection |Tampering |Vehicle installed software state |Admin UI → Web API | /0| /0|[spe:mul/acc:mod/tim:wee/equ:std/kno:res]/19
 |link:#t04[T04] |Repudiation of vehicle SW configuration |Repudiation |Vehicle installed software state |Admin UI → Web API | | |[spe:mul/acc:eas/ela:wee/equ:spe/kno:sen]/15
 |link:#t05[T05] |Web API Denial of Service attack |Denial of service |Quality of Service |Anyone → Web API | /0|/0 |[acc:lay/acc:unl/tim:hou/equ:std/kno:res]/41
-|link:#t06[T06] |Brute force password cracking |Elevation of Privilege |Acces to vehicle data, vehicle installed software state |Admin UI → Web API | | |[spe:lay/acc:unl/tim:wee/equ:std/kno:pub]/39
+|link:#t06[T06] |Brute force password cracking |Elevation of Privilege |Access to vehicle data, vehicle installed software state |Admin UI → Web API | | |[spe:lay/acc:unl/tim:wee/equ:std/kno:pub]/39
 |link:#t07[T07] |Spoofing of External Resolver |Spoofing |Vehicle installed software state |External Resolver → SOTA Server | | |[spe:mul/acc:eas/tim:wee/equ:spe/kno:sen]/15
 |link:#t08[T08] |Tampering of package dependencies |Tampering |Vehicle installed software state, vehicle software security |External Resolver → SOTA Server | | |[spe:mul/acc:eas/ela:wee/equ:spe/kno:sen]/15
 |link:#t09[T09] |Information leak of installed packages per VIN |Information Disclosure |Vehicle installed software state |External Resolver → SOTA Server | | |[spe:exp/acc:unl/equ:std/tim:day/kno:res]/32
