@@ -441,22 +441,30 @@
 </tr>
 </tbody>
 </table>
+<div class="paragraph">
+<p><span class="image"><img src="../images/Whitelisted-Interactions-Reference-Diagram.svg" alt="WhitelistedInteractions Reference Diagram"></span></p>
 </div>
-</div>
-<div class="sect1">
-<h2 id="t01">T01 — Spoofing of Admin UI</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> A malicious person may try to gain administrator-level access to the web server’s admin console to gain information about the system’s structure.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong></p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t01">T01 — Spoofing of Admin UI</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A malicious person may try to gain administrator-level access to the web server’s admin console to gain information about the system’s structure.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c01">C01</a> - Password complexity check</p>
@@ -468,26 +476,34 @@
 <p><a href="#c07">C07</a> - Log VIN and package creations</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t02">T02 — Node sniffing</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> Sniffing software installed on the load balancing node may lead to the leak of the credentials of all clients connecting to the given cluster.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong> A node sniffer could intercept the credentials of all incoming client connections.</p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t02">T02 — Node sniffing</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Sniffing software installed on the load balancing node may lead to the leak of the credentials of all clients connecting to the given cluster.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A node sniffer could intercept the credentials of all incoming client connections.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c02">C02</a> - TLS Transport Integrity, Confidentiality</p>
@@ -499,26 +515,32 @@
 <p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t03">T03 — Invalid package configuration injection</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> An invalid combination of software packages or versions may be attempted to be installed in order to create exploits or vulnerabilities.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong></p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t03">T03 — Invalid package configuration injection</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>An invalid combination of software packages or versions may be attempted to be installed in order to create exploits or vulnerabilities.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c01">C01</a> - Password complexity check</p>
@@ -536,51 +558,67 @@
 <p><a href="#c15">C15</a> - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t04">T04 — Repudiation of vehicle SW configuration</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> A configuration that may create exploits or vulnerabilities on the vehicle’s software environment may be injected and a modified web interface may be used to repudiate the traces of the installation of the malicious configuration to a group of vehicles.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong> Javascript code running on the browser can be modified and a repudiation attack against a group of vehicles may be attempted.</p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t04">T04 — Repudiation of vehicle SW configuration</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A configuration that may create exploits or vulnerabilities on the vehicle’s software environment may be injected and a modified web interface may be used to repudiate the traces of the installation of the malicious configuration to a group of vehicles.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Javascript code running on the browser can be modified and a repudiation attack against a group of vehicles may be attempted.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c01">C01</a> - Password complexity check</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t05">T05 — Web API Denial of Service attack</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> A large amount of false or dummy requests from a malicious group may saturate the load balancer and prevent the service of legitimate clients.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong> An easy to orchestrate DOS attack may disrupt the system’s operations.</p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t05">T05 — Web API Denial of Service attack</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A large amount of false or dummy requests from a malicious group may saturate the load balancer and prevent the service of legitimate clients.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>An easy to orchestrate DOS attack may disrupt the system’s operations.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c05">C05</a> - Notify administrators for suspicious traffic patterns</p>
@@ -589,26 +627,34 @@
 <p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t06">T06 — Brute force password cracking</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> A password cracker may break an account and provide access to a malicious, unauthorized user.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong> Weak passwords may be cracked in a short amount of time with a password cracker.</p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t06">T06 — Brute force password cracking</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A password cracker may break an account and provide access to a malicious, unauthorized user.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Weak passwords may be cracked in a short amount of time with a password cracker.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c01">C01</a> - Password complexity check</p>
@@ -617,26 +663,34 @@
 <p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t07">T07 — Spoofing of External Resolver</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> A malicious person may use a fake external resolver to gain information about the workings of the SOTA server and leak information about VINs and the software packages they have installed.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong> A fake external resolver may be used to gain information about the SOTA server which may be used in a composite attack vector.</p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t07">T07 — Spoofing of External Resolver</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A malicious person may use a fake external resolver to gain information about the workings of the SOTA server and leak information about VINs and the software packages they have installed.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A fake external resolver may be used to gain information about the SOTA server which may be used in a composite attack vector.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c02">C02</a> - TLS Transport Integrity, Confidentiality</p>
@@ -645,26 +699,34 @@
 <p><a href="#c04">C04</a> - Log transactions to and from SOTA Server</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t08">T08 — Tampering of package dependencies</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> A maliciously compiled dependency tree may include dependencies that open vulnerabilities or provide access to attackers, or it sets package versions known to have bugs or open vulnerabilities.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong> A package that may open a backdoor, or that functions as a Trojan can be added as a package dependency.</p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t08">T08 — Tampering of package dependencies</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A maliciously compiled dependency tree may include dependencies that open vulnerabilities or provide access to attackers, or it sets package versions known to have bugs or open vulnerabilities.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A package that may open a backdoor, or that functions as a Trojan can be added as a package dependency.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c14">C14</a> - SOTA Server-supplied checksum for every package send, recalculated it and verify it locally</p>
@@ -673,51 +735,65 @@
 <p><a href="#c15">C15</a> - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t09">T09 — Information leak of installed packages per VIN</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> A verbose API may reveal information on which software packages are installed on which vehicle, which is unnecessary on a need-to-know basis.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong></p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t09">T09 — Information leak of installed packages per VIN</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A verbose API may reveal information on which software packages are installed on which vehicle, which is unnecessary on a need-to-know basis.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c03">C03</a> - Enforce only SSL connections</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t10">T10 — RVI node spoofing</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> An RVI node may be spoofed and become a leaking sink for vehicle and package data.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong> A spoofed RVI node may cause a huge leak of sensitive information.</p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t10">T10 — RVI node spoofing</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>An RVI node may be spoofed and become a leaking sink for vehicle and package data.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A spoofed RVI node may cause a huge leak of sensitive information.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c02">C02</a> - TLS Transport Integrity, Confidentiality</p>
@@ -726,26 +802,34 @@
 <p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t11">T11 — Retrieving false package installation results</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> A compromised RVI node may send incorrect status reports for package installation in order to skip the installation of bugfixes or exploit fixes, intercept packages, and acquire information about VINs and their software configuration.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong> Knowing or sending over to a spoofed vehicle software packages may help to analyze them and find potential attack vectors.</p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t11">T11 — Retrieving false package installation results</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A compromised RVI node may send incorrect status reports for package installation in order to skip the installation of bugfixes or exploit fixes, intercept packages, and acquire information about VINs and their software configuration.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Knowing or sending over to a spoofed vehicle software packages may help to analyze them and find potential attack vectors.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c14">C14</a> - SOTA Server-supplied checksum for every package send, recalculated it and verify it locally</p>
@@ -754,69 +838,96 @@
 <p><a href="#c15">C15</a> - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
+<div class="sect2">
+<h3 id="t12">T12 — Denying the installation of a software package</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A compromised RVI node may block the installation of security-critical software packages and return a false status that they were installed, leaving open security vulnerabilities.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A non-installed package may leave backdoors and exploits open for attackers.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>None</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t12">T12 — Denying the installation of a software package</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> A compromised RVI node may block the installation of security-critical software packages and return a false status that they were installed, leaving open security vulnerabilities.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong> A non-installed package may leave backdoors and exploits open for attackers.</p>
-</li>
-<li>
-<p><strong>Mitigations:</strong> None</p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t13">T13 — RVI node sniffing</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> Sniffing software installed on a RVI node can intercept VINs, their configuration, and the latest package configuration for every VIN.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong> A node sniffer may intercept all VINs and their associated software packages.</p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t13">T13 — RVI node sniffing</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Sniffing software installed on a RVI node can intercept VINs, their configuration, and the latest package configuration for every VIN.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A node sniffer may intercept all VINs and their associated software packages.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c03">C03</a> - Enforce only SSL connections</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t14">T14 — RVI node Denial of Service attack</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> A Denial-Of-Service (DOS) attack may block the installation of software packages or updates.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong> A DOS attack on the RVI node/s may block the installation of zero-days or other crucial updates and leave vehicles vulnerable for a prolonged period of time.</p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t14">T14 — RVI node Denial of Service attack</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A Denial-Of-Service (DOS) attack may block the installation of software packages or updates.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A DOS attack on the RVI node/s may block the installation of zero-days or other crucial updates and leave vehicles vulnerable for a prolonged period of time.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c05">C05</a> - Notify administrators for suspicious traffic patterns</p>
@@ -825,26 +936,34 @@
 <p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t15">T15 — Logistics &amp; Provisioning API Spoofing</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> An attacker may use a spoofed Logistics API to install trojans or packages with known vulnerabilities.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong> Responses from a spoofed Logistics API may lead to the installation of malicious or vulnerable packages.</p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t15">T15 — Logistics &amp; Provisioning API Spoofing</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>An attacker may use a spoofed Logistics API to install trojans or packages with known vulnerabilities.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Responses from a spoofed Logistics API may lead to the installation of malicious or vulnerable packages.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c02">C02</a> - TLS Transport Integrity, Confidentiality</p>
@@ -856,51 +975,67 @@
 <p><a href="#c06">C06</a> - Limit login attempts per session</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t16">T16 — Associating a part number with a malicious package</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> An attacker may assign a valid part number to a malicious package which may provide backdoor or related system vulnerabilities after being installed.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong> A malicious packaged related with a valid part number will be installed without any warning or any alarm raised.</p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t16">T16 — Associating a part number with a malicious package</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>An attacker may assign a valid part number to a malicious package which may provide backdoor or related system vulnerabilities after being installed.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A malicious packaged related with a valid part number will be installed without any warning or any alarm raised.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c04">C04</a> - Log transactions to and from SOTA Server</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t17">T17 — VIN, part number, configurations compromise</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> A malicious person may try to intercept the data exchanged between the SOTA server and the Logistics &amp; Provisioning API.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong> Information leak may compromise sensitive corporate and vehicle data.</p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t17">T17 — VIN, part number, configurations compromise</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A malicious person may try to intercept the data exchanged between the SOTA server and the Logistics &amp; Provisioning API.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Information leak may compromise sensitive corporate and vehicle data.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c02">C02</a> - TLS Transport Integrity, Confidentiality</p>
@@ -912,26 +1047,34 @@
 <p><a href="#c04">C04</a> - Log transactions to and from SOTA Server</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t18">T18 — Charging &amp; Billing API Spoofing</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> An attacker may used a spoofed Billing API to install updates without being charged or by charging a third person excessively.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong> Responses from a spoofed Billing API may lead to the installation of updates for no or excessive cost.</p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t18">T18 — Charging &amp; Billing API Spoofing</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>An attacker may used a spoofed Billing API to install updates without being charged or by charging a third person excessively.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Responses from a spoofed Billing API may lead to the installation of updates for no or excessive cost.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c02">C02</a> - TLS Transport Integrity, Confidentiality</p>
@@ -946,44 +1089,61 @@
 <p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
+<div class="sect2">
+<h3 id="t19">T19 — Associating an update with the wrong cost</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A compromised Charging &amp; Billing endpoint may provide false charging information.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>None</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t19">T19 — Associating an update with the wrong cost</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> A compromised Charging &amp; Billing endpoint may provide false charging information.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong></p>
-</li>
-<li>
-<p><strong>Mitigations:</strong> None</p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t20">T20 — VIN, configurations, financial information compromise</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> A malicious person may try to intercept the data exchanged between the SOTA server and the Charging &amp; Billing API.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong> Information leak may compromise sensitive corporate and vehicle data.</p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t20">T20 — VIN, configurations, financial information compromise</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A malicious person may try to intercept the data exchanged between the SOTA server and the Charging &amp; Billing API.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Information leak may compromise sensitive corporate and vehicle data.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c02">C02</a> - TLS Transport Integrity, Confidentiality</p>
@@ -995,44 +1155,63 @@
 <p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
+<div class="sect2">
+<h3 id="t21">T21 — Spoofing SOTA Core Server</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A spoofed SOTA Server may retrieve most of the sensitive data stored in the data store.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A spoofed SOTA Server may retrieve most of the sensitive data stored in the datastore.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>None</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t21">T21 — Spoofing SOTA Core Server</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> A spoofed SOTA Server may retrieve most of the sensitive data stored in the data store.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong> A spoofed SOTA Server may retrieve most of the sensitive data stored in the datastore.</p>
-</li>
-<li>
-<p><strong>Mitigations:</strong> None</p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t22">T22 — Persistence of false data</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> A MariaDB client with access to the data store can manipulate the persisted data.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong> Persisting false data in the datastore may open the door for more pervasive attack vectors.</p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t22">T22 — Persistence of false data</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A MariaDB client with access to the data store can manipulate the persisted data.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Persisting false data in the datastore may open the door for more pervasive attack vectors.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c01">C01</a> - Password complexity check</p>
@@ -1047,26 +1226,32 @@
 <p><a href="#c11">C11</a> - Don’t use Admin account with MariaDB</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t23">T23 — Compromise of sensitive data</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> A MariaDB client with access to the data store can retrieve all of the sensitive data stored in it.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong></p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t23">T23 — Compromise of sensitive data</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A MariaDB client with access to the data store can retrieve all of the sensitive data stored in it.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c01">C01</a> - Password complexity check</p>
@@ -1087,26 +1272,32 @@
 <p><a href="#c11">C11</a> - Don’t use Admin account with MariaDB</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t24">T24 — MariaDB Denial of Service attack</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> An attacker may orchestrate a Denial-Of-Service (DOS) attack to interrupt the system’s operation or as part of a phishing attack.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong></p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t24">T24 — MariaDB Denial of Service attack</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>An attacker may orchestrate a Denial-Of-Service (DOS) attack to interrupt the system’s operation or as part of a phishing attack.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c01">C01</a> - Password complexity check</p>
@@ -1124,26 +1315,34 @@
 <p><a href="#c11">C11</a> - Don’t use Admin account with MariaDB</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t25">T25 — Getting admin rights</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> A malicious user may pursue elevating his access rights to administrator or superuser, allowing him to perform any arbitrary operation on the data store.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong> Getting administrator rights can lead to data theft, tampering and complete loss of data.</p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t25">T25 — Getting admin rights</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A malicious user may pursue elevating his access rights to administrator or superuser, allowing him to perform any arbitrary operation on the data store.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Getting administrator rights can lead to data theft, tampering and complete loss of data.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c01">C01</a> - Password complexity check</p>
@@ -1158,26 +1357,34 @@
 <p><a href="#c11">C11</a> - Don’t use Admin account with MariaDB</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t26">T26 — Spoofing External Resolver</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> A spoofed External Resolver may retrieve most of the sensitive data stored in the data store.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong> A spoofed External Resolver may retrieve most of the data stored in the datastore.</p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t26">T26 — Spoofing External Resolver</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A spoofed External Resolver may retrieve most of the sensitive data stored in the data store.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A spoofed External Resolver may retrieve most of the data stored in the datastore.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c02">C02</a> - TLS Transport Integrity, Confidentiality</p>
@@ -1186,26 +1393,34 @@
 <p><a href="#c08">C08</a> - Avoid exposing unnecessary interfaces to public Internet</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t27">T27 — In-vehicle process spoofing</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> A malicious in-vehicle process can attempt to exchange data with the SOTA Client and intercept information about the vehicle’s software state.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong> A third party process can intercept information about every package installed from an unsecured client.</p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t27">T27 — In-vehicle process spoofing</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A malicious in-vehicle process can attempt to exchange data with the SOTA Client and intercept information about the vehicle’s software state.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A third party process can intercept information about every package installed from an unsecured client.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c12">C12</a> - SOTA Client should not accept any calls or requests from in-vehicle processes</p>
@@ -1214,26 +1429,34 @@
 <p><a href="#c13">C13</a> - SOTA Client should authenticate and communicate only with the Software Loading Manager (from in-vehicle software)</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t28">T28 — SOTA Client sniffing</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> A malicious in-vehicle process can attempt to intercept the communication between the SOTA Client and the RVI Node and alter the contents of the messages before delivering them to the SOTA Client.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong> A third party process may attempt to intercept the communication between the SOTA Client and the RVI node and alter the contents of the received data.</p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t28">T28 — SOTA Client sniffing</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A malicious in-vehicle process can attempt to intercept the communication between the SOTA Client and the RVI Node and alter the contents of the messages before delivering them to the SOTA Client.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A third party process may attempt to intercept the communication between the SOTA Client and the RVI node and alter the contents of the received data.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c12">C12</a> - SOTA Client should not accept any calls or requests from in-vehicle processes</p>
@@ -1248,44 +1471,58 @@
 <p><a href="#c15">C15</a> - In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="t29">T29 — SOTA Client Denial of Service attack</h2>
-<div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p><strong>Description:</strong> An attacker may orchestrate a Denial-Of-Service (DOS) attack to interrupt the system’s operation or as part of a phishing attack.</p>
-</li>
-<li>
-<p><strong>Rationale:</strong></p>
-</li>
-<li>
-<p><strong>Mitigations:</strong></p>
-<div class="ulist">
+<div class="sect2">
+<h3 id="t29">T29 — SOTA Client Denial of Service attack</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Description</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>An attacker may orchestrate a Denial-Of-Service (DOS) attack to interrupt the system’s operation or as part of a phishing attack.</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Rationale</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Mitigations</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#c12">C12</a> - SOTA Client should not accept any calls or requests from in-vehicle processes</p>
 </li>
 </ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</li>
-</ul>
 </div>
 </div>
-</div>
-<h1 id="mitigations" class="sect0">Mitigations</h1>
 <div class="sect1">
-<h2 id="c01">C01 Password complexity check</h2>
+<h2 id="mitigations">Mitigations</h2>
 <div class="sectionbody">
-<div class="sect4">
-<h5 id="applicable-threats">Applicable threats</h5>
-<div class="ulist">
+<div class="sect2">
+<h3 id="c01">C01 Password complexity check</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Applicable threats</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#t01">T01</a> - Spoofing of Admin UI</p>
@@ -1312,30 +1549,36 @@
 <p><a href="#t25">T25</a> - Getting admin rights</p>
 </li>
 </ul>
-</div>
-</div>
-<div class="sect4">
-<h5 id="purpose">Purpose</h5>
-<div class="paragraph">
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Purpose</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
 <p>deterrence</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Goal</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Depends</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</div>
-<div class="sect4">
-<h5 id="goal">Goal</h5>
-
-</div>
-<div class="sect4">
-<h5 id="depends">Depends</h5>
-
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="c02">C02 TLS Transport Integrity, Confidentiality</h2>
-<div class="sectionbody">
-<div class="sect4">
-<h5 id="applicable-threats-2">Applicable threats</h5>
-<div class="ulist">
+<div class="sect2">
+<h3 id="c02">C02 TLS Transport Integrity, Confidentiality</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Applicable threats</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#t02">T02</a> - Node sniffing</p>
@@ -1368,30 +1611,36 @@
 <p><a href="#t26">T26</a> - Spoofing External Resolver</p>
 </li>
 </ul>
-</div>
-</div>
-<div class="sect4">
-<h5 id="purpose-2">Purpose</h5>
-<div class="paragraph">
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Purpose</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
 <p>prevention</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Goal</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Depends</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</div>
-<div class="sect4">
-<h5 id="goal-2">Goal</h5>
-
-</div>
-<div class="sect4">
-<h5 id="depends-2">Depends</h5>
-
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="c03">C03 Enforce only SSL connections</h2>
-<div class="sectionbody">
-<div class="sect4">
-<h5 id="applicable-threats-3">Applicable threats</h5>
-<div class="ulist">
+<div class="sect2">
+<h3 id="c03">C03 Enforce only SSL connections</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Applicable threats</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#t02">T02</a> - Node sniffing</p>
@@ -1412,30 +1661,36 @@
 <p><a href="#t23">T23</a> - Compromise of sensitive data</p>
 </li>
 </ul>
-</div>
-</div>
-<div class="sect4">
-<h5 id="purpose-3">Purpose</h5>
-<div class="paragraph">
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Purpose</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
 <p>deterrence</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Goal</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Depends</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</div>
-<div class="sect4">
-<h5 id="goal-3">Goal</h5>
-
-</div>
-<div class="sect4">
-<h5 id="depends-3">Depends</h5>
-
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="c04">C04 Log transactions to and from SOTA Server</h2>
-<div class="sectionbody">
-<div class="sect4">
-<h5 id="applicable-threats-4">Applicable threats</h5>
-<div class="ulist">
+<div class="sect2">
+<h3 id="c04">C04 Log transactions to and from SOTA Server</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Applicable threats</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#t07">T07</a> - Spoofing of External Resolver</p>
@@ -1454,7 +1709,6 @@
 </li>
 </ul>
 </div>
-</div>
 <div class="sect4">
 <h5 id="potentially-applicable-threats">Potentially applicable threats</h5>
 <div class="ulist">
@@ -1470,29 +1724,36 @@
 </li>
 </ul>
 </div>
-</div>
-<div class="sect4">
-<h5 id="purpose-4">Purpose</h5>
-<div class="paragraph">
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Purpose</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
 <p>monitoring</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Goal</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Depends</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</div>
-<div class="sect4">
-<h5 id="goal-4">Goal</h5>
-
-</div>
-<div class="sect4">
-<h5 id="depends-4">Depends</h5>
-
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="c05">C05 Notify administrators for suspicious traffic patterns</h2>
-<div class="sectionbody">
-<div class="sect4">
-<h5 id="applicable-threats-5">Applicable threats</h5>
-<div class="ulist">
+<div class="sect2">
+<h3 id="c05">C05 Notify administrators for suspicious traffic patterns</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Applicable threats</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#t05">T05</a> - Web API Denial of Service attack</p>
@@ -1504,30 +1765,36 @@
 <p><a href="#t24">T24</a> - MariaDB Denial of Service attack</p>
 </li>
 </ul>
-</div>
-</div>
-<div class="sect4">
-<h5 id="purpose-5">Purpose</h5>
-<div class="paragraph">
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Purpose</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
 <p>monitoring</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Goal</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Depends</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</div>
-<div class="sect4">
-<h5 id="goal-5">Goal</h5>
-
-</div>
-<div class="sect4">
-<h5 id="depends-5">Depends</h5>
-
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="c06">C06 Limit login attempts per session</h2>
-<div class="sectionbody">
-<div class="sect4">
-<h5 id="applicable-threats-6">Applicable threats</h5>
-<div class="ulist">
+<div class="sect2">
+<h3 id="c06">C06 Limit login attempts per session</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Applicable threats</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#t01">T01</a> - Spoofing of Admin UI</p>
@@ -1539,30 +1806,36 @@
 <p><a href="#t18">T18</a> - Charging &amp; Billing API Spoofing</p>
 </li>
 </ul>
-</div>
-</div>
-<div class="sect4">
-<h5 id="purpose-6">Purpose</h5>
-<div class="paragraph">
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Purpose</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
 <p>deterrence</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Goal</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Depends</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</div>
-<div class="sect4">
-<h5 id="goal-6">Goal</h5>
-
-</div>
-<div class="sect4">
-<h5 id="depends-6">Depends</h5>
-
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="c07">C07 Log VIN and package creations</h2>
-<div class="sectionbody">
-<div class="sect4">
-<h5 id="applicable-threats-7">Applicable threats</h5>
-<div class="ulist">
+<div class="sect2">
+<h3 id="c07">C07 Log VIN and package creations</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Applicable threats</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#t01">T01</a> - Spoofing of Admin UI</p>
@@ -1571,30 +1844,36 @@
 <p><a href="#t03">T03</a> - Invalid package configuration injection</p>
 </li>
 </ul>
-</div>
-</div>
-<div class="sect4">
-<h5 id="purpose-7">Purpose</h5>
-<div class="paragraph">
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Purpose</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
 <p>monitoring</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Goal</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Depends</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</div>
-<div class="sect4">
-<h5 id="goal-7">Goal</h5>
-
-</div>
-<div class="sect4">
-<h5 id="depends-7">Depends</h5>
-
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="c08">C08 Avoid exposing unnecessary interfaces to public Internet</h2>
-<div class="sectionbody">
-<div class="sect4">
-<h5 id="applicable-threats-8">Applicable threats</h5>
-<div class="ulist">
+<div class="sect2">
+<h3 id="c08">C08 Avoid exposing unnecessary interfaces to public Internet</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Applicable threats</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#t02">T02</a> - Node sniffing</p>
@@ -1630,55 +1909,67 @@
 <p><a href="#t26">T26</a> - Spoofing External Resolver</p>
 </li>
 </ul>
-</div>
-</div>
-<div class="sect4">
-<h5 id="purpose-8">Purpose</h5>
-<div class="paragraph">
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Purpose</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
 <p>prevention</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Goal</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Depends</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</div>
-<div class="sect4">
-<h5 id="goal-8">Goal</h5>
-
-</div>
-<div class="sect4">
-<h5 id="depends-8">Depends</h5>
-
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="c09">C09 Verify the VIN/package filter sanity</h2>
-<div class="sectionbody">
-<div class="sect4">
-<h5 id="applicable-threats-9">Applicable threats</h5>
-<div class="paragraph">
+<div class="sect2">
+<h3 id="c09">C09 Verify the VIN/package filter sanity</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Applicable threats</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
 <p>T03</p>
-</div>
-</div>
-<div class="sect4">
-<h5 id="purpose-9">Purpose</h5>
-<div class="paragraph">
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Purpose</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
 <p>deterrence</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Goal</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Depends</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</div>
-<div class="sect4">
-<h5 id="goal-9">Goal</h5>
-
-</div>
-<div class="sect4">
-<h5 id="depends-9">Depends</h5>
-
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="c10">C10 Allow only Intranet/VPN connections to MariaDB</h2>
-<div class="sectionbody">
-<div class="sect4">
-<h5 id="applicable-threats-10">Applicable threats</h5>
-<div class="ulist">
+<div class="sect2">
+<h3 id="c10">C10 Allow only Intranet/VPN connections to MariaDB</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Applicable threats</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#t22">T22</a> - Persistence of false data</p>
@@ -1693,30 +1984,36 @@
 <p><a href="#t25">T25</a> - Getting admin rights</p>
 </li>
 </ul>
-</div>
-</div>
-<div class="sect4">
-<h5 id="purpose-10">Purpose</h5>
-<div class="paragraph">
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Purpose</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
 <p>deterrence</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Goal</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Depends</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</div>
-<div class="sect4">
-<h5 id="goal-10">Goal</h5>
-
-</div>
-<div class="sect4">
-<h5 id="depends-10">Depends</h5>
-
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="c11">C11 Don’t use Admin account with MariaDB</h2>
-<div class="sectionbody">
-<div class="sect4">
-<h5 id="applicable-threats-11">Applicable threats</h5>
-<div class="ulist">
+<div class="sect2">
+<h3 id="c11">C11 Don’t use Admin account with MariaDB</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Applicable threats</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#t22">T22</a> - Persistence of false data</p>
@@ -1731,33 +2028,39 @@
 <p><a href="#t25">T25</a> - Getting admin rights</p>
 </li>
 </ul>
-</div>
-</div>
-<div class="sect4">
-<h5 id="purpose-11">Purpose</h5>
-<div class="paragraph">
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Purpose</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
 <p>deterrence</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Goal</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Depends</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</div>
-<div class="sect4">
-<h5 id="goal-11">Goal</h5>
-
-</div>
-<div class="sect4">
-<h5 id="depends-11">Depends</h5>
-
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="c12">C12 SOTA Client should not accept any calls or requests from in-vehicle</h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="c12">C12 SOTA Client should not accept any calls or requests from in-vehicle</h3>
 <div class="paragraph">
 <p>processes</p>
 </div>
-<div class="sect4">
-<h5 id="applicable-threats-12">Applicable threats</h5>
-<div class="ulist">
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Applicable threats</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#t27">T27</a> - In-vehicle process spoofing</p>
@@ -1769,33 +2072,39 @@
 <p><a href="#t29">T29</a> - SOTA Client Denial of Service attack</p>
 </li>
 </ul>
-</div>
-</div>
-<div class="sect4">
-<h5 id="purpose-12">Purpose</h5>
-<div class="paragraph">
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Purpose</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
 <p>prevention</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Goal</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Depends</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</div>
-<div class="sect4">
-<h5 id="goal-12">Goal</h5>
-
-</div>
-<div class="sect4">
-<h5 id="depends-12">Depends</h5>
-
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="c13">C13 SOTA Client should authenticate and communicate only with the</h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="c13">C13 SOTA Client should authenticate and communicate only with the</h3>
 <div class="paragraph">
 <p>Software Loading Manager (from in-vehicle software)</p>
 </div>
-<div class="sect4">
-<h5 id="applicable-threats-13">Applicable threats</h5>
-<div class="ulist">
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Applicable threats</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#t27">T27</a> - In-vehicle process spoofing</p>
@@ -1804,33 +2113,39 @@
 <p><a href="#t28">T28</a> - SOTA Client sniffing</p>
 </li>
 </ul>
-</div>
-</div>
-<div class="sect4">
-<h5 id="purpose-13">Purpose</h5>
-<div class="paragraph">
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Purpose</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
 <p>prevention</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Goal</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Depends</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</div>
-<div class="sect4">
-<h5 id="goal-13">Goal</h5>
-
-</div>
-<div class="sect4">
-<h5 id="depends-13">Depends</h5>
-
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="c14">C14 SOTA Server-supplied checksum for every package send, recalculated</h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="c14">C14 SOTA Server-supplied checksum for every package send, recalculated</h3>
 <div class="paragraph">
 <p>it and verify it locally.</p>
 </div>
-<div class="sect4">
-<h5 id="applicable-threats-14">Applicable threats</h5>
-<div class="ulist">
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Applicable threats</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#t28">T28</a> - SOTA Client sniffing</p>
@@ -1845,30 +2160,36 @@
 <p><a href="#t03">T03</a> - Invalid package configuration injection</p>
 </li>
 </ul>
-</div>
-</div>
-<div class="sect4">
-<h5 id="purpose-14">Purpose</h5>
-<div class="paragraph">
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Purpose</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
 <p>deterrence</p>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Goal</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Depends</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
-</div>
-<div class="sect4">
-<h5 id="goal-14">Goal</h5>
-
-</div>
-<div class="sect4">
-<h5 id="depends-14">Depends</h5>
-
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="c15">C15 In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification</h2>
-<div class="sectionbody">
-<div class="sect4">
-<h5 id="applicable-threats-15">Applicable threats</h5>
-<div class="ulist">
+<div class="sect2">
+<h3 id="c15">C15 In case that the SOTA Server is unavailable and a package download has been interrupted, set the download’s state as erroneous and update the Server with the information upon the next notification</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Applicable threats</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
 <p><a href="#t28">T28</a> - SOTA Client sniffing</p>
@@ -1883,23 +2204,24 @@
 <p><a href="#t03">T03</a> - Invalid package configuration injection</p>
 </li>
 </ul>
-</div>
-</div>
-<div class="sect4">
-<h5 id="purpose-15">Purpose</h5>
-<div class="paragraph">
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Purpose</p></th>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
 <p>deterrence</p>
-</div>
-</div>
-<div class="sect4">
-<h5 id="goal-15">Goal</h5>
-
-</div>
-<div class="sect4">
-<h5 id="depends-15">Depends</h5>
-<div class="paragraph">
-<p>Last updated 2015-09-22 15:21:40 CEST</p>
-</div>
+</div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Goal</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+<tr>
+<th class="tableblock halign-center valign-middle"><p class="tableblock">Depends</p></th>
+<td class="tableblock halign-left valign-top"><div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>
