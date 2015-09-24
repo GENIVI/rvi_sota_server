@@ -1,25 +1,21 @@
 define(function(require) {
 
-    var $ = require('jquery'),
-        React = require('react'),
+    var React = require('react'),
         serializeForm = require('../../mixins/serialize-form'),
         SotaDispatcher = require('sota-dispatcher'),
-        Fluxbone = require('../../mixins/fluxbone'),
-	    FilterComponent = require('./filter-component'),
 	    toggleForm = require('../../mixins/toggle-form'),
         RequestStatus = require('../../mixins/request-status');
 
     var AddFilterComponent = React.createClass({
 	mixins: [
-	  toggleForm,
-	  RequestStatus.Mixin("Store")
+	  toggleForm
 	],
     handleSubmit: function(e) {
         e.preventDefault();
 
         var payload = serializeForm(this.refs.form);
         SotaDispatcher.dispatch({
-            actionType: 'filter-add',
+            actionType: 'create-filter',
             filter: payload
         });
     },
@@ -34,7 +30,7 @@ define(function(require) {
   		    </div>
             <div className="form-group">
               <label htmlFor="expression">Filter Expression</label>
-                <textarea type="text" className="form-control" id="expression" ref="expression" name="expression" placeholder="Vin(1234)" defaultValue={this.state.expression}/>
+                <textarea type="text" className="form-control" id="expression" ref="expression" name="expression" placeholder='vin_matches "678$"' />
 		    </div>
 	        <div className="form-group">
               <button type="submit" className="btn btn-primary">Add Filter</button>
