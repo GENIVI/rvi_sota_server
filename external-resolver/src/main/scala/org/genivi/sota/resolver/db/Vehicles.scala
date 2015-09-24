@@ -24,10 +24,10 @@ object Vehicles {
 
   val vehicles = TableQuery[VinTable]
 
-  def add(vehicle: Vehicle)
-         (implicit ec: ExecutionContext): DBIO[Vehicle] =
-    vehicles.insertOrUpdate(vehicle).map(_ => vehicle)
+  def add(vehicle: Vehicle): DBIO[Int] =
+    vehicles.insertOrUpdate(vehicle)
 
   def list: DBIO[Seq[Vehicle]] =
     vehicles.result
+
 }

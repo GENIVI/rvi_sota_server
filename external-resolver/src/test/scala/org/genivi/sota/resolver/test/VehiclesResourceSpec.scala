@@ -7,13 +7,14 @@ package org.genivi.sota.resolver.test
 import akka.http.scaladsl.model.StatusCodes
 import cats.data.Xor
 import eu.timepit.refined.Refined
-import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import CirceMarshallingSupport._
-import org.genivi.sota.resolver.types.Vehicle
+import org.genivi.sota.resolver.Errors.Codes
+import org.genivi.sota.resolver.types.{Vehicle, Package, PackageFilter}
+import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 import org.scalacheck._
-import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
+
 
 object ArbitraryVehicle {
 
@@ -109,5 +110,66 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
       }
     }
 
+    /*
+     * Tests related to installing packages on VINs.
+     */
+
+    "install a package on a VIN on PUT request to /vehicles/:vin/package/:packageName/:packageVersion" in {
+      addPackageOK("apa", "1.0.1", None, None)
+      Put(Resource.uri("vehicles", "VINOOLAM0FAU2DEEP", "package", "apa", "1.0.1")) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+      }
+    }
+
+    "fail to install a package on a non-existing VIN" in {
+      Put(Resource.uri("vehicles", "VINOOLAM0FAU2DEEB", "package", "bepa", "1.0.1")) ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
+        responseAs[ErrorRepresentation].code shouldBe Vehicle.MissingVehicle
+      }
+    }
+
+    "fail to install a non-existing package on a VIN" in {
+      Put(Resource.uri("vehicles", "VINOOLAM0FAU2DEEP", "package", "bepa", "1.0.1")) ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
+        responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
+      }
+    }
+
+    "list installed packages on a VIN on GET request to /vehicles/:vin/package" in {
+      Get(Resource.uri("vehicles", "VINOOLAM0FAU2DEEP", "package")) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+        responseAs[Seq[Package.Id]] shouldBe List(Package.Id(Refined("apa"), Refined("1.0.1")))
+      }
+    }
+
+    "fail to list installed packages on VINs that don't exist" in {
+      Get(Resource.uri("vehicles", "VINOOLAM0FAU2DEEB", "package")) ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
+      }
+    }
+
+    "uninstall a package on a VIN on DELETE request to /vehicles/:vin/package/:packageName/:packageVersion" in {
+      Delete(Resource.uri("vehicles", "VINOOLAM0FAU2DEEP", "package", "apa", "1.0.1")) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+      }
+      Get(Resource.uri("vehicles", "VINOOLAM0FAU2DEEP", "package")) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+        responseAs[Seq[Package.Id]] shouldBe List()
+      }
+    }
+
+    "fail to uninstall a package from a non-existing VIN" in {
+      Delete(Resource.uri("vehicles", "VINOOLAM0FAU2DEEB", "package", "apa", "1.0.1")) ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
+        responseAs[ErrorRepresentation].code shouldBe Vehicle.MissingVehicle
+      }
+    }
+
+    "fail to uninstall a package that isn't installed on a VIN" in {
+      Delete(Resource.uri("vehicles", "VINOOLAM0FAU2DEEP", "package", "bepa", "1.0.1")) ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
+        responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
+      }
+    }
   }
 }
