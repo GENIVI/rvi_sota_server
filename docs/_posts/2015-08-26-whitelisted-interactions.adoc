@@ -432,6 +432,23 @@ and a 200 status code.
 Components Request process and if an error occurs, it will respond with
 an error message in the response body and a 404 status code.
 
+[[wl-b1-31]]
+=== WL-B1-31 Web Browser sends "Get Install Request Completed" Request to Web Server
+
+The Web Browser can send a "Get Install Request Completed" to the Web Server using JSON over HTTP on port 80.
+
+* Upon the Web Browser's request, the Web Server can send a "Get Install Request
+Completed" and if the request has been processed without errors, it will respond
+with a list of VINs where the Install Request was successfully  completed and the
+associated timestamp when the Request was finished in the response body and a 200
+response code.
+* Upon the Web Browser's request, the Web Server can send a "Get Install Request
+Completed" and if no VINs have been returned, it will return an empty list in the response body and a 200 response code.
+* Upon the Web Browser's request, the Web Server can send a "Get Install Request
+Completed" and if the request has been processed with errors, it will respond
+with the apropriate error message in the response body and a 200 response code.
+
+
 [[b-2]]
 == B-2 Web Server - SOTA Core
 
@@ -638,6 +655,23 @@ criteria, it will respond with an empty list in the response body and a
 * Upon the Web Server’s request, SOTA Core can start a Search Components
 Request process and if an error occurs, it will respond with an error
 message in the response body and a 404 status code.
+
+[[wl-b2-14]]
+=== WL-B2-14 Web Server sends "Get Install Request Completed" Request to SOTA Core
+
+The Web Server can send a "Get Install Request Completed" to the SOTA Core using JSON over HTTP on port 80.
+
+* Upon the Web Server's request, the SOTA Core can send a "Get Install Request
+Completed" and if the request has been processed without errors, it will respond
+with a list of VINs where the Install Request was successfully  completed and the
+associated timestamp when the Request was finished in the response body and a 200
+response code.
+* Upon the Web Server's request, the SOTA Core can send a "Get Install Request
+Completed" and if no VINs have been returned, it will return an empty list in the response body and a 200 response code.
+* Upon the Web Server's request, the SOTA Core can send a "Get Install Request
+Completed" and if the request has been processed with errors, it will respond
+with the apropriate error message in the response body and a 200 response code.
+
 
 [[b-3]]
 == B-3 Web Server - External Resolver
@@ -976,7 +1010,7 @@ Server should reject the connection.
 === WL-B4-10 SOTA Core looks up Component ID in SOTA Core Database
 
 SOTA Core can perform a regex-based lookup operation for a Component or
-Componets in the SOTAServer database in the Database Server over TCP on
+Componets in the SOTA Server database in the Database Server over TCP on
 port 3306.
 
 * If SOTA Core authenticates successfully with the correct
@@ -990,6 +1024,26 @@ is found, it will respond with a ‘Record does not exists’ message.
 * If SOTA Server does not authenticate successfully due to incorrect
 Username/Password credentials against the Database Server, the Database
 Server should reject the connection.
+
+[[wl-b4-11]]
+=== WL-B4-11 SOTA Core looks ip the given Install Request ID in SOTA Core Database
+
+SOTA Core can perform a look up operation for a given Install Request ID in the
+SOAT Server database in the Database Server over TCP on port 3306.
+
+* If SOTA Core authenticates successfully with the correct
+Username/Password credentials, upon its request, the Database Server can
+perform a SELECT operation with the given Install Request ID and if one or more
+VINs with the a successful installation for the given Install Request ID is found,
+it will respond with the VINs and the timestamp the installation has been completed data.
+* If SOTA Core authenticates successfully with the correct
+Username/Password credentials, upon its request, the Database Server can
+perform an SELECT operation with the given Install Request ID and if no entry
+is found, it will respond with a ‘Record does not exists’ message.
+* If SOTA Server does not authenticate successfully due to incorrect
+Username/Password credentials against the Database Server, the Database
+Server should reject the connection.
+
 
 [[b-5]]
 == B-5 SOTA Core - External Resolver
