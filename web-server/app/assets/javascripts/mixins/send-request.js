@@ -9,6 +9,9 @@ define(['jquery'], function($) {
         contentType: "application/json"
       });
     },
+    doGet: function(url) {
+      return $.get(url);
+    },
     doPost: function(url, data) {
       return this.jsonAjax("POST", url, data);
     },

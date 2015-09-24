@@ -9,11 +9,15 @@ define(function(require) {
       Packages = require('stores/packages'),
       Filters = require('stores/filters'),
       Router = require('react-router'),
-      Updates = require('stores/updates'),
-      UpdatesComponent = require('components/updates/updates-component'),
       CreateCampaign = require('components/create-campaign-page-component'),
+      ListOfUpdates = require('components/updates/list-of-updates'),
       ShowUpdate = require('components/updates/show-update-component'),
       SotaDispatcher = require('sota-dispatcher');
+
+  // set up db
+  var db = require('stores/db');
+  // set up handlers
+  var Handler = require('handlers/handler');
 
   var Link = Router.Link;
   var Route = Router.Route;
@@ -78,8 +82,8 @@ define(function(require) {
         <DefaultRoute handler={FiltersPageComponent} />
       </Route>
       <Route name="updates">
-        <Route name="update" path="/updates/:id" handler={wrapComponent(ShowUpdate, {Store: new Updates()})} />
-        <DefaultRoute handler={wrapComponent(UpdatesComponent, {Store: new Updates()})} />
+        <Route name="update" path="/updates/:id" handler={wrapComponent(ShowUpdate, {Update: db.showUpdate})} />
+        <DefaultRoute handler={wrapComponent(ListOfUpdates, {Updates: db.updates})} />
       </Route>
     </Route>
   );

@@ -1,17 +1,23 @@
 define(function(require) {
   var _ = require('underscore'),
-      React = require('react'),
-      Fluxbone = require('../../mixins/fluxbone');
+      React = require('react');
 
   var StatusComponent = React.createClass({
     contextTypes: {
       router: React.PropTypes.func
     },
-    mixins: [
-      Fluxbone.Mixin('Model', 'sync')
-    ],
+    componentWillUnmount: function(){
+      this.props.UpdateStatus.removeWatch("poll-update-status");
+    },
+    componentWillMount: function(){
+      SotaDispatcher.dispatch({
+        actionType: 'get-update-status',
+        id: this.context.router.getCurrentParams().id
+      });
+      this.props.UpdateStatus.addWatch("poll-update-status", _.bind(this.forceUpdate, this, null));
+    },
     render: function() {
-      var rows = _.map(this.props.Model.attributes, function(value) {
+      var rows = _.map(this.props.UpdateStatus.deref(), function(value) {
         if(Array.isArray(value)) {
           return (
             <tr>

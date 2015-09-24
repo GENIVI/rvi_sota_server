@@ -1,27 +1,31 @@
 define(function(require) {
-
-  var React = require('react'),
+  var _ = require('underscore'),
+      SotaDispatcher = require('sota-dispatcher'),
       Router = require('react-router'),
-      Fluxbone = require('../../mixins/fluxbone'),
-      SotaDispatcher = require('sota-dispatcher');
+      db = require('../../stores/db'),
+      React = require('react');
 
-  var Updates = React.createClass({
-    mixins: [
-      Fluxbone.Mixin("Store", "sync")
-    ],
-    componentDidMount: function(props, context) {
-      this.props.Store.fetch();
+  var ListOfUpdates = React.createClass({
+    contextTypes: {
+      router: React.PropTypes.func
+    },
+    componentWillUnmount: function(){
+      this.props.Updates.removeWatch("poll-updates");
+    },
+    componentWillMount: function(){
+      SotaDispatcher.dispatch({actionType: 'get-updates'});
+      this.props.Updates.addWatch("poll-updates", _.bind(this.forceUpdate, this, null));
     },
     render: function() {
-      var rows = this.props.Store.models.map(function(update) {
-        var startend = update.get('periodOfValidity').split("/");
+      var rows = _.map(this.props.Updates.deref(), function(update) {
+        var startend = update.periodOfValidity.split("/");
         return (
           <tr>
             <td>
-              {update.get('packageId').name}
+              {update.packageId.name}
             </td>
             <td>
-              {update.get('packageId').version}
+              {update.packageId.version}
             </td>
             <td>
               {startend[0]}
@@ -30,17 +34,16 @@ define(function(require) {
               {startend[1]}
             </td>
             <td>
-              {update.get('priority')}
+              {update.priority}
             </td>
             <td>
-              <Router.Link to='update' params={{id: update.get('id'), Model: update}}>
+              <Router.Link to='update' params={{id: update.id}}>
                 Details
               </Router.Link>
             </td>
           </tr>
         );
       });
-
       return (
         <div>
           <div className="row">
@@ -87,5 +90,5 @@ define(function(require) {
     }
   });
 
-  return Updates;
+  return ListOfUpdates;
 });
