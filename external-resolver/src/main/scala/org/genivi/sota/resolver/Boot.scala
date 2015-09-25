@@ -9,43 +9,84 @@ import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.StatusCodes.NoContent
-import akka.http.scaladsl.server.{Directives, ExceptionHandler, Route, PathMatchers}
-import akka.http.scaladsl.server.PathMatchers.Slash
+import akka.http.scaladsl.server.{Directives, ExceptionHandler, Route}
+import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.Refined
-import eu.timepit.refined.string.Regex
+import cats.data.Xor
 import io.circe.generic.auto._
-import org.genivi.sota.CirceSupport._
 import org.genivi.sota.resolver.db._
 import org.genivi.sota.resolver.types.{Vehicle, Package, Filter, PackageFilter}
-import org.genivi.sota.rest.ErrorRepresentation.errorRepresentationEncoder
+import org.genivi.sota.rest.ErrorCode
+import org.genivi.sota.rest.ErrorRepresentation
 import org.genivi.sota.rest.Handlers.{rejectionHandler, exceptionHandler}
 import org.genivi.sota.rest.Validation._
-import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{Future, ExecutionContext}
 import scala.util.Try
+import org.genivi.sota.rest.SotaError
+import org.genivi.sota.rest.SotaError._
 import slick.jdbc.JdbcBackend.Database
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
+
+object Errors {
+  import Directives.complete
+  import akka.http.scaladsl.server.ExceptionHandler.PF
+
+  object MissingPackageException extends SotaError
+
+  object MissingFilterException extends SotaError
+
+  def onMissingFilter : PF = {
+    case Errors.MissingFilterException => complete( StatusCodes.NotFound -> ErrorRepresentation( ErrorCode("filter_not_found"), s"Filter not found") )
+  }
+
+  def onMissingPackage : PF = {
+    case Errors.MissingPackageException => complete( StatusCodes.NotFound -> ErrorRepresentation( ErrorCode("package_not_found"), "Package not found") )
+  }
 
 
-class Routing(db: Database)
-  (implicit system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext) extends Directives {
+}
 
-  def vehiclesRoute: Route = {
+object VehicleDirectives {
+  import Directives._
+
+  def route(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Route = {
     pathPrefix("vehicles") {
       get {
         complete(db.run(Vehicles.list))
       } ~
-      (put & refined[Vehicle.ValidVin](Slash ~ Segment ~ PathEnd)) { vin =>
+        (put & refined[Vehicle.ValidVin](Slash ~ Segment ~ PathEnd)) { vin =>
         complete(db.run( Vehicles.add(Vehicle(vin)) ).map(_ => NoContent))
       }
     }
   }
 
-  def refinedPackageId =
-    refined[Package.ValidName](Slash ~ Segment) &
-      refined[Package.ValidVersion](Slash ~ Segment ~ PathEnd)
+}
 
-  def packagesRoute: Route = {
+object RefinementDirectives {
+  import Directives._
+
+  def refinedPackageId =
+    refined[Package.ValidName](Slash ~ Segment) & refined[Package.ValidVersion](Slash ~ Segment ~ PathEnd)
+}
+
+object FutureSupport {
+
+  implicit class FutureOps[T]( x: Future[Option[T]] ) {
+
+    def failIfNone( t: Throwable )
+                  (implicit ec: ExecutionContext): Future[T] =
+      x.flatMap( _.fold[Future[T]]( FastFuture.failed(t) )(FastFuture.successful) )
+
+  }
+
+}
+
+object PackageDirectives {
+  import Directives._
+  import RefinementDirectives._
+
+  def route(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Route = {
 
     pathPrefix("packages") {
       get {
@@ -58,113 +99,43 @@ class Routing(db: Database)
       }
     }
   }
+}
 
-  def resolveHandler: ExceptionHandler = ExceptionHandler {
-    case err: Packages.MissingPackageException.type =>
-      complete(StatusCodes.NotFound ->
-        ErrorRepresentation(PackageFilter.MissingPackage, "Package doesn't exist"))
-  }
+object DependenciesDirectives {
+  import Directives._
+  import RefinementDirectives._
+  import FutureSupport._
+  import scala.concurrent.Future
+  import org.genivi.sota.resolver.types.{True, And}
+  import org.genivi.sota.resolver.types.{Vehicle, Package, FilterAST}
+  import org.genivi.sota.resolver.types.FilterParser.parseValidFilter
+  import org.genivi.sota.resolver.types.FilterQuery.query
 
-  def resolveRoute: Route = {
+  def resolve(name: Package.Name, version: Package.Version)
+              (implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Future[Map[Vehicle.Vin, Seq[Package.Id]]] = for {
+    _       <- db.run(Packages.load(name, version)).failIfNone( Errors.MissingPackageException )
+    (p, fs) <- db.run(PackageFilters.listFiltersForPackage(Package.Id(name, version)))
+    vs      <- db.run(Vehicles.list)
+  } yield Resolve.makeFakeDependencyMap(name, version, vs.filter(query(fs.map(_.expression).map(parseValidFilter).foldLeft[FilterAST](True)(And))))
+
+  def route(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Route = {
     pathPrefix("resolve") {
       (get & refinedPackageId) { (name, version) =>
-        handleExceptions(resolveHandler) {
-          complete(db.run(Resolve.resolve(name, version)))
+        completeOrRecoverWith(resolve(name, version)) {
+          Errors.onMissingPackage
         }
       }
     }
   }
+}
 
-  def packageFiltersHandler: ExceptionHandler = ExceptionHandler {
-    case err: Packages.MissingPackageException.type =>
-      complete(StatusCodes.NotFound ->
-        ErrorRepresentation(PackageFilter.MissingPackage, "Package doesn't exist"))
-    case err: PackageFilters.MissingPackageFilterException =>
-      complete(StatusCodes.NotFound ->
-        ErrorRepresentation(PackageFilter.MissingPackageFilter, "Package filter doesn't exist"))
-    case err: Filters.MissingFilterException.type   =>
-      complete(StatusCodes.NotFound ->
-        ErrorRepresentation(PackageFilter.MissingFilter, "Filter doesn't exist"))
-  }
-
-  def packageFiltersListingHandler: ExceptionHandler = ExceptionHandler {
-    case err: Packages.MissingPackageException.type =>
-      complete(StatusCodes.NotFound ->
-        ErrorRepresentation(PackageFilter.MissingPackage, "Package doesn't exist"))
-    case err: Filters.MissingFilterException.type =>
-      complete(StatusCodes.NotFound ->
-        ErrorRepresentation(PackageFilter.MissingFilter, "Filter doesn't exist"))
-  }
-
-  def filterRoute: Route =
-    pathPrefix("filters") {
-      get {
-        parameter('regex.as[Refined[String, Regex]].?) { re =>
-          val query = re.fold(Filters.list)(r => Filters.searchByRegex(r.get))
-          complete(db.run(query))
-        }
-      } ~
-      (post & entity(as[Filter])) { filter => complete(db.run(Filters.add(filter)))
-      } ~
-      (put  & refined[Filter.ValidName](Slash ~ Segment ~ PathEnd)
-            & entity(as[Filter.ExpressionWrapper])) { (fname, expr) =>
-        handleExceptions(packageFiltersHandler) {
-          complete(db.run(Filters.update(Filter(fname, expr.expression))))
-        }
-      } ~
-      (delete & refined[Filter.ValidName](Slash ~ Segment ~ PathEnd)) { fname =>
-        handleExceptions(packageFiltersHandler) {
-          complete(db.run(Filters.delete(fname)))
-        }
-      }
-    }
-
-  def validateRoute: Route = {
-    pathPrefix("validate") {
-      path("filter") ((post & entity(as[Filter])) (_ => complete("OK")))
-    }
-  }
-
-  def packageFiltersRoute: Route = {
-
-    pathPrefix("packageFilters") {
-      get {
-        parameters('package.as[Package.NameVersion].?, 'filter.as[Filter.Name].?)
-        { case (Some(nameVersion), None)        =>
-            handleExceptions(packageFiltersListingHandler) {
-              complete(db.run(PackageFilters.listFiltersForPackage
-                (Refined(nameVersion.get.split("-").head), Refined(nameVersion.get.split("-").tail.head))))
-            }
-          case (None,              Some(fname)) =>
-            handleExceptions(packageFiltersListingHandler) {
-              complete(db.run(PackageFilters.listPackagesForFilter(fname)))
-            }
-          case (None,              None)        =>
-            complete(db.run(PackageFilters.list))
-          case _                                =>
-            complete(StatusCodes.NotFound)
-        }
-      } ~
-      (post & entity(as[PackageFilter])) { pf =>
-        handleExceptions(packageFiltersHandler) {
-          complete(db.run(PackageFilters.add(pf)))
-        }
-      } ~
-      (delete & refined[Package.ValidName]   (Slash ~ Segment)
-              & refined[Package.ValidVersion](Slash ~ Segment)
-              & refined[Filter.ValidName]    (Slash ~ Segment ~ PathEnd))
-      { (pname, pversion, fname) =>
-        handleExceptions(packageFiltersHandler) {
-          complete(db.run(PackageFilters.delete(pname, pversion, fname)))
-        }
-      }
-    }
-  }
+class Routing(implicit db: Database, system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext)
+    extends Directives {
 
   val route: Route = pathPrefix("api" / "v1") {
     handleRejections(rejectionHandler) {
       handleExceptions(exceptionHandler) {
-        vehiclesRoute ~ packagesRoute ~ resolveRoute ~ filterRoute ~ validateRoute ~ packageFiltersRoute
+        VehicleDirectives.route ~ PackageDirectives.route ~ new FilterDirectives().routes() ~ DependenciesDirectives.route
       }
     }
   }
@@ -179,9 +150,9 @@ object Boot extends App {
 
   log.info(org.genivi.sota.resolver.BuildInfo.toString)
 
-  val db = Database.forConfig("database")
+  implicit val db   = Database.forConfig("database")
 
-  val route         = new Routing(db)
+  val route         = new Routing
   val host          = system.settings.config.getString("server.host")
   val port          = system.settings.config.getInt("server.port")
   val bindingFuture = Http().bindAndHandle(route.route, host, port)

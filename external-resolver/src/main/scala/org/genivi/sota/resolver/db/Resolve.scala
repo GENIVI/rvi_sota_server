@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.resolver.db
 
+import cats.data.Xor
 import org.genivi.sota.resolver.db.PackageFilters.listFiltersForPackage
 import org.genivi.sota.resolver.db.Vehicles.vehicles
 import org.genivi.sota.resolver.types.FilterParser.parseValidFilter
@@ -16,17 +17,19 @@ import slick.driver.MySQLDriver.api._
 
 object Resolve {
 
+/*
   def resolve
     (name: Package.Name, version: Package.Version)
     (implicit ec: ExecutionContext)
-      : DBIO[Map[Vehicle.Vin, Seq[Package.Id]]]
+      : DBIO[Xor[PackageFilters.MissingPackageException, Map[Vehicle.Vin, Seq[Package.Id]]]]
   = for {
-      _  <- Packages.exists(name, version)
+      _  <- Packages.exists2(name, version)
       fs <- listFiltersForPackage(name, version)
-      vs <- vehicles.result
+      vs <- vehicles.result.map(Xor.right(_))
     } yield
       makeFakeDependencyMap(name, version,
         vs.filter(query(fs.map(_.expression).map(parseValidFilter).foldLeft[FilterAST](True)(And))))
+ */
 
   def makeFakeDependencyMap
     (name: Package.Name, version: Package.Version, vs: Seq[Vehicle])

@@ -4,6 +4,8 @@
  */
 package org.genivi.sota.resolver.types
 
+import org.genivi.sota.marshalling.CirceMarshallingSupport
+
 
 case class PackageFilter(
   packageName   : Package.Name,
@@ -12,10 +14,8 @@ case class PackageFilter(
 )
 
 object PackageFilter {
-
-  import org.genivi.sota.rest.ErrorCode
-
-  val MissingPackage       = new ErrorCode("missing_package")
-  val MissingFilter        = new ErrorCode("missing_filter")
-  val MissingPackageFilter = new ErrorCode("missing_package_filter")
+  import io.circe.generic.semiauto._
+  import CirceMarshallingSupport._
+  implicit val encoderInstance = deriveFor[PackageFilter].encoder
+  implicit val decoderInstance = deriveFor[PackageFilter].decoder
 }

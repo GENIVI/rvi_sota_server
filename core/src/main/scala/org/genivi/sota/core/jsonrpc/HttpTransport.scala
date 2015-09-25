@@ -10,7 +10,8 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.client.RequestBuilding._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import io.circe.Json
-import org.genivi.sota.CirceSupport._
+import org.genivi.sota.marshalling.CirceMarshallingSupport
+import CirceMarshallingSupport._
 import scala.concurrent.ExecutionContext
 
 import scala.concurrent.Future

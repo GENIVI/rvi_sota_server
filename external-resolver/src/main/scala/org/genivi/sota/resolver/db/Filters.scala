@@ -5,11 +5,13 @@
 package org.genivi.sota.resolver.db
 
 import org.genivi.sota.db.Operators.regex
+import cats.data.Xor
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.types.Filter
 import scala.concurrent.ExecutionContext
 import scala.util.control.NoStackTrace
 import slick.driver.MySQLDriver.api._
+import org.genivi.sota.rest.SotaError
 
 
 object Filters {
@@ -31,32 +33,26 @@ object Filters {
   def add(filter: Filter)(implicit ec: ExecutionContext): DBIO[Filter] =
     (filters += filter).map(_ => filter)
 
-  case object MissingFilterException extends Throwable with NoStackTrace
-
-  def exists(name: Filter.Name)(implicit ec: ExecutionContext): DBIO[Filter] =
+  def load(name: Filter.Name)(implicit ec: ExecutionContext): DBIO[Option[Filter]] =
     filters
       .filter(_.name === name)
-      .result
-      .map(fs => if(fs.isEmpty) throw MissingFilterException else fs.head)
+      .result.headOption
 
-  def update(filter: Filter)(implicit ec: ExecutionContext): DBIO[Filter] = {
+  def update(filter: Filter)(implicit ec: ExecutionContext): DBIO[Option[Filter]] = {
     val q = for {
       f <- filters if f.name === filter.name
     } yield f.expression
-    q.update(filter.expression).map(i => if (i == 0) throw MissingFilterException else filter)
+    q.update(filter.expression).map(i => if (i == 0) None else Some(filter))
   }
 
-  def deleteFilter(name: Filter.Name)(implicit ec: ExecutionContext): DBIO[String] =
-    filters
-      .filter(_.name === name)
-      .delete
-      .map(i =>
-        if (i == 0)
-          throw MissingFilterException
-        else s"The filter named $name has been deleted.")
+  def deleteFilter(name: Filter.Name)(implicit ec: ExecutionContext): DBIO[Int] =
+    filters.filter(_.name === name).delete
 
-  def delete(name: Filter.Name)(implicit ec: ExecutionContext): DBIO[String] =
-    PackageFilters.deleteByFilterName(name).andThen(deleteFilter(name))
+  def delete(name: Filter.Name)(implicit ec: ExecutionContext): DBIO[Int] =
+    (for {
+      _ <- PackageFilters.delete(name)
+      filtersDeleted <- deleteFilter(name)
+    } yield filtersDeleted).transactionally
 
   def list: DBIO[Seq[Filter]] =
     filters.result

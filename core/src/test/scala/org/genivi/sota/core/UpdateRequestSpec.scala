@@ -8,6 +8,7 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.http.scaladsl.util.FastFuture
 import io.circe.Encoder
 import java.util.UUID
+import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.core.db.UpdateRequests
 import org.scalacheck.Gen
@@ -16,7 +17,7 @@ import org.scalatest.prop.PropertyChecks
 import scala.concurrent.Future
 import slick.jdbc.JdbcBackend.Database
 import io.circe.generic.auto._
-import org.genivi.sota.CirceSupport._
+import CirceMarshallingSupport._
 import org.genivi.sota.core.rvi.{ServerServices, RviClient}
 
 class UpdateRequestSpec extends PropSpec with PropertyChecks with Matchers with Generators with ScalatestRouteTest {

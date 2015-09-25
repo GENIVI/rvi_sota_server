@@ -10,6 +10,7 @@ import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
+import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.core.data.{Package, Vehicle}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -29,7 +30,7 @@ class SotaServices(updateController: ActorRef)
   import system.dispatcher
 
   import io.circe.generic.auto._
-  import org.genivi.sota.CirceSupport._
+  import CirceMarshallingSupport._
 
   val log = Logging( system, "sota.core.sotaService" )
 
