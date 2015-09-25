@@ -7,11 +7,15 @@ package org.genivi.sota.resolver.db
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server._
+import cats.data.{Xor, XorT}
+import io.circe.{Encoder, Decoder, Json}
+import Json.{obj, string}
 import org.genivi.sota.resolver.db.Filters.filters
 import org.genivi.sota.resolver.db.Packages.packages
 import org.genivi.sota.resolver.types.PackageFilter
 import org.genivi.sota.resolver.types.{Filter, Package}
-import scala.concurrent.ExecutionContext
+import org.genivi.sota.rest.SotaError
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
 import scala.util.{Try, Success, Failure}
 import slick.driver.MySQLDriver.api._
@@ -38,63 +42,44 @@ object PackageFilters {
 
   val packageFilters = TableQuery[PackageFilterTable]
 
-  def add(pf: PackageFilter)(implicit ec: ExecutionContext): DBIO[PackageFilter] = {
+  def add(pf: PackageFilter)(implicit ec: ExecutionContext): DBIO[PackageFilter] =
+    (packageFilters += pf).map(_ => pf)
 
-    def failIfEmpty[X](io: DBIO[Seq[X]], t: => Throwable)(implicit ec: ExecutionContext): DBIO[Unit] =
-      io flatMap { xs => if (xs.isEmpty) DBIO.failed(t) else DBIO.successful(()) }
+  def load(name: Package.Name, version: Package.Version)(implicit ec: ExecutionContext): DBIO[Option[Package]] =
+    packages.filter(p => p.name === name && p.version === version).result.headOption
 
-    for {
-      _ <- failIfEmpty(packages.filter(p => p.name === pf.packageName
-               && p.version === pf.packageVersion).result, Packages.MissingPackageException)
-      _ <- failIfEmpty(filters.filter(_.name === pf.filterName).result, Filters.MissingFilterException)
-      _ <- packageFilters += pf
-    } yield pf
+  def list: DBIO[Seq[PackageFilter]] = packageFilters.result
+
+  def listPackagesForFilter(fname: Filter.Name)
+                           (implicit ec: ExecutionContext): DBIO[Seq[Package]] = {
+    val q = for {
+      pf <- packageFilters.filter(_.filterName === fname)
+      f  <- packages.filter(pkg => pkg.name === pf.packageName && pkg.version === pf.packageVersion)
+    } yield f
+    q.result
   }
 
-  def list: DBIO[Seq[PackageFilter]] =
-    packageFilters.result
+  def listFiltersForPackage(packageId: Package.Id)
+                           (implicit ec: ExecutionContext): DBIO[(Option[Package], Seq[Filter])] = { 
+    val qFilters = for {
+      pf  <- packageFilters if pf.packageName === packageId.name && pf.packageVersion === packageId.version
+      f   <- Filters.filters if f.name === pf.filterName 
+    } yield f
+    
+    for {
+      p  <- Packages.packages.filter( x => x.name === packageId.name && x.version === packageId.version ).result.headOption
+      fs <- qFilters.result
+    } yield (p, fs)
+  }
 
-  def listPackagesForFilter
-    (fname: Filter.Name)
-    (implicit ec: ExecutionContext): DBIO[Seq[Package]] =
+  def delete(fname: Filter.Name)(implicit ec: ExecutionContext): DBIO[Int] =
+    packageFilters.filter(_.filterName === fname).delete
 
-    Filters.exists(fname).andThen(
-      packageFilters
-        .filter(_.filterName === fname)
-        .flatMap(pf => packages
-          .filter(pkg => pkg.name === pf.packageName && pkg.version === pf.packageVersion))
-        .result
-    )
-
-  def listFiltersForPackage
-    (pname: Package.Name, pversion: Package.Version)
-    (implicit ec: ExecutionContext): DBIO[Seq[Filter]] =
-
-  Packages.exists(pname, pversion).andThen(
+  def delete(pname: Package.Name, pversion: Package.Version, fname: Filter.Name)
+    (implicit ec: ExecutionContext) : DBIO[Int] =
     packageFilters
-      .filter(p => p.packageName === pname && p.packageVersion === pversion)
-      .map(_.filterName)
-      .flatMap(fname => filters.filter(_.name === fname))
-      .result
-  )
-
-  def deleteByFilterName(fname: Filter.Name)(implicit ec: ExecutionContext): DBIO[Int] =
-    packageFilters
-      .filter(_.filterName === fname)
-      .delete
-
-  class MissingPackageFilterException extends Throwable with NoStackTrace
-
-  def delete
-    (pname: Package.Name, pversion: Package.Version, fname: Filter.Name)
-    (implicit ec: ExecutionContext)
-      : DBIO[Int]
-  = packageFilters
       .filter(pf => pf.packageName    === pname
                  && pf.packageVersion === pversion
                  && pf.filterName     === fname)
       .delete
-      .map(i =>
-        if (i == 0) throw new MissingPackageFilterException else i)
-
 }

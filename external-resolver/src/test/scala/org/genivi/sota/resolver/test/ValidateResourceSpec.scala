@@ -1,17 +1,18 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.unmarshalling._
+import cats.data.Xor
 import eu.timepit.refined.Refined
+import io.circe.Json
+import io.circe.generic.auto._
+import org.genivi.sota.marshalling.CirceMarshallingSupport
+import CirceMarshallingSupport._
 import org.genivi.sota.resolver.types.Filter
-import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
+import org.genivi.sota.rest.SotaError._
 
 
 class ValidateResourceSpec extends ResourceWordSpec {
-
-  import akka.http.scaladsl.unmarshalling._
-  import io.circe.generic.auto._
-  import org.genivi.sota.CirceSupport._
-
 
   "Validate resource" should {
 
@@ -26,14 +27,14 @@ class ValidateResourceSpec extends ResourceWordSpec {
     "reject filters with empty names" in {
       validateFilter(filter.copy(name = Refined(""))) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
-        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
+        errorCode(responseAs[Json]) shouldBe Xor.Right("InvalidEntity")
       }
     }
 
     "reject filters with bad filter expressions" in {
       validateFilter(filter.copy(expression = Refined(filter.expression.get + " AND ?"))) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
-        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
+        errorCode(responseAs[Json]) shouldBe Xor.Right("InvalidEntity")
       }
     }
 

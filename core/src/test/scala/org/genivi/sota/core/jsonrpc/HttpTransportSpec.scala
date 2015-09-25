@@ -8,10 +8,11 @@ import akka.http.scaladsl.model.StatusCode
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.Uri
 import io.circe._
+import org.genivi.sota.marshalling.{DeserializationException, CirceMarshallingSupport}
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 import org.scalatest.{PropSpec, Matchers}
-import org.genivi.sota.CirceSupport._
+import CirceMarshallingSupport._
 import org.scalatest.concurrent.ScalaFutures._
 
 class HttpTransportSpec extends JsonRpcSpecBase {

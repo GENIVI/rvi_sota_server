@@ -10,6 +10,7 @@ import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.server.MalformedQueryParamRejection
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import eu.timepit.refined._
+import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.core.data.{ Package => DataPackage }
 import org.genivi.sota.core.db.Packages
 import org.scalatest.BeforeAndAfterAll
@@ -27,7 +28,7 @@ class PackageResourceWordSpec extends WordSpec
     with BeforeAndAfterAll {
 
   import io.circe.generic.auto._
-  import org.genivi.sota.CirceSupport._
+  import CirceMarshallingSupport._
 
   val databaseName = "test-database"
 

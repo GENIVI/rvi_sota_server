@@ -10,7 +10,8 @@ import eu.timepit.refined.Refined
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.jawn._
-import org.genivi.sota.CirceSupport._
+import org.genivi.sota.marshalling.CirceMarshallingSupport
+import CirceMarshallingSupport._
 import org.genivi.sota.core.data.{Vehicle, Package}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}

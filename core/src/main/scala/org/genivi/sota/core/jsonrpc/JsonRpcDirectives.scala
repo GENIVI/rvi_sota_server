@@ -9,6 +9,7 @@ import akka.http.scaladsl.server._
 import cats.data.Xor
 import io.circe.DecodingFailure
 import io.circe._
+import org.genivi.sota.marshalling.CirceMarshallingSupport
 import scala.concurrent.ExecutionContext
 import shapeless.HList
 
@@ -43,8 +44,7 @@ private[this] object ResultResponse {
 trait JsonRpcDirectives {
 
   import akka.http.scaladsl.server.Directives._
-  import org.genivi.sota.core.data.CodecInstances._
-  import org.genivi.sota.CirceSupport._
+  import CirceMarshallingSupport._
   import io.circe.generic.auto._
   import io.circe.syntax._
 

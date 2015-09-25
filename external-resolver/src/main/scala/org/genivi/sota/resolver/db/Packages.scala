@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.resolver.db
 
+import cats.data.{Xor, XorT}
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.types.Package
 import scala.concurrent.ExecutionContext
@@ -34,11 +35,7 @@ object Packages {
   def add(pkg: Package)(implicit ec: ExecutionContext): DBIO[Package] =
     packages.insertOrUpdate(pkg).map(_ => pkg)
 
-  case object MissingPackageException extends Throwable with NoStackTrace
-
-  def exists(name: Package.Name, version: Package.Version)(implicit ec: ExecutionContext): DBIO[Package] =
-    packages
-      .filter(p => p.name === name && p.version === version)
-      .result
-      .map(ps => if(ps.isEmpty) throw MissingPackageException else ps.head)
+  def load(name: Package.Name, version: Package.Version)
+          (implicit ec: ExecutionContext): DBIO[Option[Package]] =
+    packages.filter(p => p.name === name && p.version === version).result.headOption
 }

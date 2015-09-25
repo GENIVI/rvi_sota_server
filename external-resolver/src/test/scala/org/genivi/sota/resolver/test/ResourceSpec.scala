@@ -23,8 +23,8 @@ trait ResourceSpec extends
     with BeforeAndAfterAll { self: Suite =>
 
   // Database
-  val name = "test-database"
-  val db = Database.forConfig(name)
+  val name        = "test-database"
+  implicit val db = Database.forConfig(name)
 
   override def beforeAll() = {
     val dbConfig = system.settings.config.getConfig(name)
@@ -45,7 +45,7 @@ trait ResourceSpec extends
   }
 
   // Route
-  lazy implicit val route: Route = new Routing(db).route
+  lazy implicit val route: Route = new Routing().route
 
 }
 

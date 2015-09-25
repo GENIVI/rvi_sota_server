@@ -23,6 +23,7 @@ import cats.data.Xor
 import eu.timepit.refined._
 import eu.timepit.refined.string._
 import io.circe.generic.auto._
+import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.{Packages, Vehicles, InstallRequests}
 import org.genivi.sota.rest.Validation._
@@ -39,7 +40,7 @@ class VehiclesResource(db: Database)
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
 
   import system.dispatcher
-  import org.genivi.sota.CirceSupport._
+  import CirceMarshallingSupport._
 
   val route = pathPrefix("vehicles") {
     (put & refined[Vehicle.Vin](Slash ~ Segment ~ PathEnd)) { vin =>
@@ -65,7 +66,7 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
   import eu.timepit.refined.string.uuidPredicate
   import org.genivi.sota.core.db.UpdateSpecs
   import UpdateSpec._
-  import org.genivi.sota.CirceSupport._
+  import CirceMarshallingSupport._
 
   implicit val _db = db
   val route = pathPrefix("updates") {
@@ -131,11 +132,11 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
     } yield (file.toURI().toString(), size, digest)
   }
 
+  import org.genivi.sota.marshalling.RefinedMarshallingSupport._
   val route = pathPrefix("packages") {
     get {
-      import org.genivi.sota.CirceSupport._
       parameters('regex.as[String Refined Regex].?) { (regex: Option[String Refined Regex]) =>
-        import org.genivi.sota.CirceSupport._
+        import CirceMarshallingSupport._
         val query = (regex) match {
           case Some(r) => Packages.searchByRegex(r.get)
           case None => Packages.list
@@ -153,7 +154,7 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
           } yield NoContent
         ) {
           case ExternalResolverRequestFailed(msg, cause) => {
-            import org.genivi.sota.CirceSupport._
+            import CirceMarshallingSupport._
             log.error( cause, s"Unable to create/update package: $msg" )
             complete( StatusCodes.ServiceUnavailable -> ErrorRepresentation( ErrorCodes.ExternalResolverError, msg ) )
           }
