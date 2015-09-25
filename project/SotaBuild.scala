@@ -25,10 +25,11 @@ object SotaBuild extends Build {
 
     testOptions in Test ++= Seq(
       Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
-      Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
-      Tests.Argument(TestFrameworks.ScalaCheck, "-maxDiscardRatio", "10", "-minSuccessfulTests", "100")
+      Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
     ),
 
+    testFrameworks := Seq(sbt.TestFrameworks.ScalaTest),
+  
     dependencyOverrides ++= Set(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       "org.scala-lang" % "scala-library" % scalaVersion.value,
