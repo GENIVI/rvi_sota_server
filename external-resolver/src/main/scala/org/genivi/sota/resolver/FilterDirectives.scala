@@ -22,7 +22,7 @@ import org.genivi.sota.rest.Validation._
 
 class FilterDirectives()(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
   import FutureSupport._
-  import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation, SotaError}
+  import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
   import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 
   def filterRoute: Route =
@@ -103,14 +103,7 @@ class FilterDirectives()(implicit db: Database, mat: ActorMaterializer, ec: Exec
     filterRoute ~ packageFiltersRoute ~ validateRoute
   }
   
-
-  type MissingPackageFilterException = MissingPackageFilterException.type
-
-  case object MissingPackageFilterException extends SotaError {
-    override def getMessage() = "The package filter doesn't exist"
-  }
-
-  import scala.concurrent.Future
+  case object MissingPackageFilterException extends Throwable
 
   def deletePackageFilter(pname: Package.Name, pversion: Package.Version, fname: Filter.Name)
             (implicit db: Database) : Future[Unit] =

@@ -11,8 +11,6 @@ import org.genivi.sota.resolver.types.Filter
 import scala.concurrent.ExecutionContext
 import scala.util.control.NoStackTrace
 import slick.driver.MySQLDriver.api._
-import org.genivi.sota.rest.SotaError
-
 
 object Filters {
 

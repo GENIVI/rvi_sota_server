@@ -5,7 +5,6 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.unmarshalling._
 import cats.data.Xor
 import eu.timepit.refined.Refined
 import io.circe.Json
@@ -13,9 +12,8 @@ import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import CirceMarshallingSupport._
 import org.genivi.sota.resolver.types.Vehicle
-import org.genivi.sota.rest.SotaError._
 import org.scalacheck._
-
+import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
 
 object ArbitraryVehicle {
 
@@ -83,21 +81,21 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
     "not accept too long Vins" in {
       addVehicle("VINOOLAM0FAU2DEEP1") ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
-        errorCode(responseAs[Json]) shouldBe Xor.Right("InvalidEntity")
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
     "not accept too short Vins" in {
       addVehicle("VINOOLAM0FAU2DEE") ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
-        errorCode(responseAs[Json]) shouldBe Xor.Right("InvalidEntity")
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
     "not accept Vins which aren't alpha num" in {
       addVehicle("VINOOLAM0FAU2DEE!") ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
-        errorCode(responseAs[Json]) shouldBe Xor.Right("InvalidEntity")
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 

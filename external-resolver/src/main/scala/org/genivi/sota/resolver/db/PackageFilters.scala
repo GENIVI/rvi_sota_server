@@ -14,7 +14,6 @@ import org.genivi.sota.resolver.db.Filters.filters
 import org.genivi.sota.resolver.db.Packages.packages
 import org.genivi.sota.resolver.types.PackageFilter
 import org.genivi.sota.resolver.types.{Filter, Package}
-import org.genivi.sota.rest.SotaError
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
 import scala.util.{Try, Success, Failure}

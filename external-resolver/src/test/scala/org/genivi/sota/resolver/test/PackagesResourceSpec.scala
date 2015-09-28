@@ -11,12 +11,11 @@ import cats.data.Xor
 import eu.timepit.refined.Refined
 import io.circe.Json
 import io.circe.generic.auto._
-import org.genivi.sota.marshalling.CirceMarshallingSupport
-import CirceMarshallingSupport._
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.types.Package
 import org.genivi.sota.resolver.types.Package._
-import org.genivi.sota.rest.SotaError._
 import org.scalacheck._
+import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
 
 
 object ArbitraryPackage {
@@ -72,7 +71,7 @@ class PackagesResourcePropSpec extends ResourcePropSpec {
     forAll { (p: Package, version: String) =>
       addPackage(p.id.name.get, version + ".0", p.description, p.vendor) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
-        errorCode(responseAs[Json]) shouldBe Xor.Right("InvalidEntity")
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
 
         // XXX: Fix
         // error.description shouldBe "Predicate failed: Invalid version format."
