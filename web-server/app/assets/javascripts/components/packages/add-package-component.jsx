@@ -2,31 +2,34 @@ define(function(require) {
 
   var $ = require('jquery'),
       React = require('react'),
+      _ = require('underscore'),
       serializeForm = require('../../mixins/serialize-form'),
-      Fluxbone = require('../../mixins/fluxbone'),
       toggleForm = require('../../mixins/toggle-form'),
-      RequestStatus = require('../../mixins/request-status'),
-      PackageComponent = require('./package-component'),
       SotaDispatcher = require('sota-dispatcher');
 
   var AddPackageComponent = React.createClass({
     mixins: [
-      toggleForm,
-      RequestStatus.Mixin("PackageStore")
+      toggleForm
     ],
     handleSubmit: function(e) {
       e.preventDefault();
 
       var payload = serializeForm(this.refs.form);
       //need to create this attribute since packages sent from core/resolver have it
-      payload.id = {name: payload.name, version: payload.version}
+      payload.id = {name: payload.name, version: payload.version};
+
+      var data = new FormData();
+      _.each(payload, function(k,v) {
+        data.append(k, v);
+      });
 
       var file = $('.file-upload')[0].files[0];
-      payload.file = file;
+      data.append('file', file);
 
       SotaDispatcher.dispatch({
-        actionType: 'package-add',
-        package: payload
+        actionType: 'create-package',
+        package: payload,
+        data: data
       });
     },
     buttonLabel: "NEW PACKAGE",
@@ -56,9 +59,6 @@ define(function(require) {
             </div>
             <div className="form-group">
               <button type="submit" className="btn btn-primary">Add PACKAGE</button>
-            </div>
-            <div className="form-group">
-              { this.state.postStatus }
             </div>
           </form>
         </div>

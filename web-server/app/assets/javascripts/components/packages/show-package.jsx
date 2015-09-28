@@ -2,22 +2,31 @@ define(function(require) {
 
   var _ = require('underscore'),
       Router = require('react-router'),
-      React = require('react'),
+      PackageFilterAssociation = require('../package-filters/package-filter-association'),
       VehiclesToUpdate = require('components/vehicles-to-update-component'),
       VehiclesToUpdateStore = require('stores/vehicles-to-update'),
-      AddPackageFilters = require('./package-filters/add-package-filters'),
-      showModel = require('../mixins/show-model');
+      SotaDispatcher = require('sota-dispatcher'),
+      React = require('react');
 
   var ShowPackageComponent = React.createClass({
     contextTypes: {
       router: React.PropTypes.func
     },
-    mixins: [showModel],
-    whereClause: function() {
-      return {packageId: this.context.router.getCurrentParams().name + "/" + this.context.router.getCurrentParams().version};
+    componentWillUnmount: function(){
+      this.props.Package.removeWatch("poll-package");
     },
-    showView: function() {
-      var rows = _.map(this.state.Model.attributes, function(value, key) {
+    componentWillMount: function(){
+      var params = this.context.router.getCurrentParams();
+      SotaDispatcher.dispatch({
+        actionType: 'get-package',
+        name: params.name,
+        version: params.version
+      });
+      this.props.Package.addWatch("poll-package", _.bind(this.forceUpdate, this, null));
+    },
+    render: function() {
+      var params = this.context.router.getCurrentParams();
+      var rows = _.map(this.props.Package.deref(), function(value, key) {
         return (
           <tr>
             <td>
@@ -35,11 +44,11 @@ define(function(require) {
             Package Details
           </h1>
           <p>
-            {this.state.Model.get('description')}
+            {this.props.Package.description}
           </p>
           <div className="row">
             <div className="col-md-12">
-              <Router.Link to='new-campaign' params={{name: this.state.Model.get('id').name, version: this.state.Model.get('id').version}}>
+              <Router.Link to='new-campaign' params={{name: params.name, version: params.version}}>
                 <button className="btn btn-primary pull-right" name="new-campaign">
                   NEW CAMPAIGN
                 </button>
@@ -53,7 +62,7 @@ define(function(require) {
                 <thead>
                   <tr>
                     <td>
-                      {this.state.Model.get('name')}
+                      {params.name}
                     </td>
                     <td>
                     </td>
@@ -65,8 +74,14 @@ define(function(require) {
               </table>
             </div>
           </div>
-          <AddPackageFilters Package={this.state.Model}/>
-          <VehiclesToUpdate store={new VehiclesToUpdateStore({}, {pkgName: this.state.Model.get('id').name, pkgVersion: this.state.Model.get('id').version})}/>
+          <PackageFilterAssociation
+            Resource={this.props.Package}
+            CreateList={db.filters}
+            DeleteList={db.filtersForPackage}
+            getCreateList="get-filters"
+            createResourceName="Filters"
+            getDeleteList={{actionType: 'get-filters-for-package', name: params.name, version: params.version}}/>
+          <VehiclesToUpdate store={new VehiclesToUpdateStore({}, {pkgName: params.name, pkgVersion: params.version})}/>
         </div>
       );
     }
