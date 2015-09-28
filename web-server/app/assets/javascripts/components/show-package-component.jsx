@@ -40,7 +40,7 @@ define(function(require) {
           <div className="row">
             <div className="col-md-12">
               <Router.Link to='new-campaign' params={{name: this.state.Model.get('id').name, version: this.state.Model.get('id').version}}>
-                <button className="btn btn-primary pull-right">
+                <button className="btn btn-primary pull-right" name="new-campaign">
                   NEW CAMPAIGN
                 </button>
               </Router.Link>

@@ -45,7 +45,7 @@ define(function(require) {
             Edit filter
           </h2>
           <EditFilterComponent Filter={this.props.Filter}/>
-          <button type="button" className="btn btn-primary" onClick={this.removeFilter}>Delete Filter</button>
+          <button type="button" className="btn btn-primary" onClick={this.removeFilter} name="delete-filter">Delete Filter</button>
           <PackagesForFilter Filter={this.props.Filter} Packages={db.packages} PackagesForFilter={db.packagesForFilter}/>
         </div>
       );
