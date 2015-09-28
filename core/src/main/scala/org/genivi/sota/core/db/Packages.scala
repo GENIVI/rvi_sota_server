@@ -7,6 +7,7 @@ package org.genivi.sota.core.db
 import akka.http.scaladsl.model.Uri
 import eu.timepit.refined.Refined
 import org.genivi.sota.core.data.Package
+import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.generic.DeepHLister
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
@@ -17,7 +18,6 @@ import slick.lifted.{LiteralColumn, ExtensionMethods, Rep, StringColumnExtension
 object Packages {
 
   import org.genivi.sota.refined.SlickRefined._
-  import SlickExtensions._
   import shapeless._
 
   // scalastyle:off

@@ -9,6 +9,7 @@ import java.util.UUID
 import org.genivi.sota.core.data.Package.Id
 import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.core.data.UpdateSpec
+import org.genivi.sota.db.SlickExtensions
 import scala.collection.GenTraversable
 import eu.timepit.refined.string.Uuid
 import scala.concurrent.ExecutionContext

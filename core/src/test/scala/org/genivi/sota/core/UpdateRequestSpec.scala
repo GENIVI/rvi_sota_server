@@ -30,7 +30,9 @@ class UpdateRequestSpec extends PropSpec with PropertyChecks with Matchers with 
   val externalResolverClient = new DefaultExternalResolverClient(
     Uri(config.getString("resolver.baseUri")),
     Uri(config.getString("resolver.resolveUri")),
-    Uri(config.getString("resolver.packagesUri")) )
+    Uri(config.getString("resolver.packagesUri")),
+    Uri(config.getString("resolver.vehiclesUri"))
+  )
   val db = Database.forConfig(databaseName)
 
   override def beforeAll() : Unit = {

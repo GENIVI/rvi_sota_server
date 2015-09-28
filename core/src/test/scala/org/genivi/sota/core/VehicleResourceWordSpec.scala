@@ -32,7 +32,7 @@ class VinResourceWordSpec extends WordSpec
 
   val testVins = List("12345678901234500", "1234567WW0123AAAA", "123456789012345WW")
 
-  override def beforeAll {
+  override def beforeAll() : Unit = {
     TestDatabase.resetDatabase( databaseName )
     import scala.concurrent.duration._
     Await.ready( db.run( DBIO.seq( testVins.map( v => Vehicles.create(Vehicle(Refined(v)))): _*) ), 2.seconds )
@@ -68,7 +68,7 @@ class VinResourceWordSpec extends WordSpec
 
   }
 
-  override def afterAll() {
+  override def afterAll() : Unit = {
     system.shutdown()
     db.close()
   }

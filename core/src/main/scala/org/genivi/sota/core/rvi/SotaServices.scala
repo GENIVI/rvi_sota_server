@@ -10,10 +10,11 @@ import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
-import org.genivi.sota.marshalling.CirceMarshallingSupport
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.core.data.{Package, Vehicle}
-
+import io.circe.Json
 import scala.concurrent.{ExecutionContext, Future}
+import org.genivi.sota.core.ExternalResolverClient
 
 final case class ServerServices(start: String, cancel: String, ack: String, report: String)
 
@@ -23,16 +24,17 @@ case class StartDownload(vin: Vehicle.IdentificationNumber, packages: List[Packa
 
 case class RviParameters[T](parameters: List[T], service_name: String )
 
-class SotaServices(updateController: ActorRef)
+case class InstalledPackages(vin: Vehicle.IdentificationNumber, packages: Json )
+
+class SotaServices(updateController: ActorRef, resolverClient: ExternalResolverClient)
                   (implicit system: ActorSystem, mat: ActorMaterializer) {
   import Directives._
   import org.genivi.sota.core.jsonrpc.JsonRpcDirectives._
   import system.dispatcher
 
   import io.circe.generic.auto._
-  import CirceMarshallingSupport._
 
-  val log = Logging( system, "sota.core.sotaService" )
+  val log = Logging( system, "org.genivi.sota.core.SotaServices" )
 
   def forwardMessage[T](actor: ActorRef)(msg: RviParameters[T]) : Future[Unit] = {
     val payload = msg.parameters.head
@@ -47,7 +49,14 @@ class SotaServices(updateController: ActorRef)
     } ~
     path("ack") {
       service( "message" -> lift[RviParameters[ChunksReceived], Unit](forwardMessage(updateController)))
+    } ~
+    path("packages") {
+      service( "message" -> lift[RviParameters[InstalledPackages], Unit](forwardMessage(updateController)))
     }
+  }
+
+  def updatePackagesInResolver( message: InstalledPackages ) : Future[Unit] = {
+    resolverClient.setInstalledPackages(message.vin, message.packages)
   }
 
 }

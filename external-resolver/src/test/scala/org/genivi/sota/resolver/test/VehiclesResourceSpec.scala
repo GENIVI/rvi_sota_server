@@ -8,8 +8,7 @@ import akka.http.scaladsl.model.StatusCodes
 import cats.data.Xor
 import eu.timepit.refined.Refined
 import io.circe.generic.auto._
-import org.genivi.sota.marshalling.CirceMarshallingSupport
-import CirceMarshallingSupport._
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
 import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.vehicles.Vehicle
@@ -48,7 +47,8 @@ object ArbitraryVehicle {
 
 class VehiclesResourcePropSpec extends ResourcePropSpec {
 
-  import ArbitraryVehicle.{arbVehicle, genInvalidVehicle}
+  import ArbitraryVehicle.{genVehicle, arbVehicle, genInvalidVehicle}
+  import Generators.genPackage
 
   property("Vehicles resource should create new resource on PUT request") {
     forAll { vehicle: Vehicle =>
@@ -68,6 +68,53 @@ class VehiclesResourcePropSpec extends ResourcePropSpec {
     forAll { vehicle: Vehicle  =>
       addVehicleOK(vehicle.vin.get)
       addVehicleOK(vehicle.vin.get)
+    }
+  }
+
+  import org.scalacheck.Shrink
+  implicit val noShrink: Shrink[List[Package]] = Shrink.shrinkAny
+
+  property("fail to set installed packages if vin does not exist") {
+    forAll(genVehicle, Gen.nonEmptyListOf(genPackage)) { (vehicle, packages) =>
+      Put( Resource.uri("vehicles", vehicle.vin.get, "packages"),  packages.map( _.id )) ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
+        responseAs[ErrorRepresentation].code shouldBe Codes.MissingVehicle
+      }
+    }
+  }
+
+  property("fail to set installed packages if some of them does not exist") {
+    val stateGen : Gen[(Set[Package], Set[Package])] = for {
+      beforeUpdate <- Gen.nonEmptyContainerOf[Set, Package](genPackage)
+      added        <- Gen.nonEmptyContainerOf[Set, Package](genPackage)
+      removed      <- Gen.someOf(beforeUpdate)
+    } yield beforeUpdate -> (beforeUpdate -- removed ++ added)
+
+    forAll(genVehicle, stateGen) { (vehicle, state) =>
+      val (installedBefore, update) = state
+      addVehicleOK(vehicle.vin.get)
+      installedBefore.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
+      Put( Resource.uri("vehicles", vehicle.vin.get, "packages"),  update.map( _.id )) ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
+        responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
+      }
+    }
+  }
+
+  property("updates installed packages") {
+    val stateGen : Gen[(Set[Package], Set[Package])] = for {
+      beforeUpdate <- Gen.nonEmptyContainerOf[Set, Package](genPackage)
+      added        <- Gen.nonEmptyContainerOf[Set, Package](genPackage)
+      removed      <- Gen.someOf(beforeUpdate)
+    } yield (beforeUpdate ++ added, beforeUpdate -- removed ++ added)
+
+    forAll(genVehicle, stateGen) { (vehicle, state) =>
+      val (availablePackages, update) = state
+      addVehicleOK(vehicle.vin.get)
+      availablePackages.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
+      Put( Resource.uri("vehicles", vehicle.vin.get, "packages"),  update.map( _.id )) ~> route ~> check {
+        status shouldBe StatusCodes.NoContent
+      }
     }
   }
 
@@ -124,7 +171,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
     "fail to install a package on a non-existing VIN" in {
       installPackage("VINOOLAM0FAU2DEEB", "bepa", "1.0.1") ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        responseAs[ErrorRepresentation].code shouldBe Vehicle.MissingVehicle
+        responseAs[ErrorRepresentation].code shouldBe Codes.MissingVehicle
       }
     }
 
@@ -161,7 +208,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
     "fail to uninstall a package from a non-existing VIN" in {
       Delete(Resource.uri("vehicles", "VINOOLAM0FAU2DEEB", "package", "apa", "1.0.1")) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        responseAs[ErrorRepresentation].code shouldBe Vehicle.MissingVehicle
+        responseAs[ErrorRepresentation].code shouldBe Codes.MissingVehicle
       }
     }
 

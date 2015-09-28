@@ -28,7 +28,7 @@ class ExternalResolverClientSpec extends PropSpec with Matchers with BeforeAndAf
   implicit val system = ActorSystem("test")
   implicit val materializer = ActorMaterializer()
   implicit val excecutionCtx = ExecutionContext.Implicits.global
-  val client = new DefaultExternalResolverClient( Uri.Empty, Uri.Empty, Uri.Empty )
+  val client = new DefaultExternalResolverClient( Uri.Empty, Uri.Empty, Uri.Empty, Uri.Empty )
 
   property("handles failed put requests") {
     val error = new Throwable("ups")

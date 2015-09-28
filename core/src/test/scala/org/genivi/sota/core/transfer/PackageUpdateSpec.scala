@@ -9,6 +9,7 @@ import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import akka.testkit.{TestKit, TestProbe}
 import eu.timepit.refined.Refined
+import org.genivi.sota.core.DefaultExternalResolverClient
 import org.genivi.sota.core.{PackagesReader, RequiresRvi, TestDatabase, UpdateService}
 import org.genivi.sota.core.Generators
 import org.genivi.sota.core.Generators.updateRequestGen
@@ -154,8 +155,9 @@ trait  SotaCore {
   def sotaRviServices() : Route = {
     val transferProtocolProps = TransferProtocolActor.props(db, PackageTransferActor.props( rviClient ))
     val updateController = system.actorOf( UpdateController.props(transferProtocolProps ), "update-controller")
-    new SotaServices(updateController).route
-  } 
+    val client = new DefaultExternalResolverClient( Uri.Empty, Uri.Empty, Uri.Empty, Uri.Empty )
+    new SotaServices(updateController, client).route
+  }
 
 }
 

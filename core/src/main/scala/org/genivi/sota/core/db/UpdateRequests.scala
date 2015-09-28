@@ -6,6 +6,7 @@ package org.genivi.sota.core.db
 
 import java.util.UUID
 import org.genivi.sota.core.data.Package
+import org.genivi.sota.db.SlickExtensions
 import org.joda.time.DateTime
 import org.genivi.sota.generic.DeepHLister
 import scala.concurrent.ExecutionContext

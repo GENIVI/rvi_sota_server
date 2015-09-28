@@ -6,9 +6,9 @@ package org.genivi.sota.resolver.vehicles
 
 import eu.timepit.refined.{Refined, Predicate}
 import org.genivi.sota.rest.ErrorCode
+import org.genivi.sota.resolver.packages.Package
 
-
-case class Vehicle(vin: Vehicle.Vin)
+case class Vehicle(vin: Vehicle.Vin)//, installedPackages: Set[Package.Id])
 
 object Vehicle {
 
@@ -25,6 +25,6 @@ object Vehicle {
     override def compare(a: Vin, b: Vin): Int = a.get compare b.get
   }
 
-  val MissingVehicle = new ErrorCode("missing_vehicle")
+  //def apply( vin: Vehicle.Vin ) : Vehicle = new Vehicle( vin, Set.empty )
 
 }
