@@ -9,45 +9,98 @@ import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.StatusCodes.NoContent
-import akka.http.scaladsl.server.{Directives, ExceptionHandler, Route}
 import akka.http.scaladsl.util.FastFuture
+import akka.http.scaladsl.server.ExceptionHandler.PF
+import akka.http.scaladsl.server.{Directives, ExceptionHandler, Route, PathMatchers, Directive1}
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.Refined
 import cats.data.Xor
 import io.circe.generic.auto._
 import org.genivi.sota.resolver.db._
+import org.genivi.sota.resolver.route._
 import org.genivi.sota.resolver.types.{Vehicle, Package, Filter, PackageFilter}
 import org.genivi.sota.rest.ErrorCode
 import org.genivi.sota.rest.ErrorRepresentation
 import org.genivi.sota.rest.Handlers.{rejectionHandler, exceptionHandler}
 import org.genivi.sota.rest.Validation._
-import scala.concurrent.{Future, ExecutionContext}
+import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 import scala.util.control.NoStackTrace
 import slick.jdbc.JdbcBackend.Database
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 
-object VehicleDirectives {
-  import Directives._
-
-  def route(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Route = {
-    pathPrefix("vehicles") {
-      get {
-        complete(db.run(Vehicles.list))
-      } ~
-        (put & refined[Vehicle.ValidVin](Slash ~ Segment ~ PathEnd)) { vin =>
-        complete(db.run( Vehicles.add(Vehicle(vin)) ).map(_ => NoContent))
-      }
-    }
-  }
-
-}
 
 object RefinementDirectives {
   import Directives._
 
-  def refinedPackageId =
-    refined[Package.ValidName](Slash ~ Segment) & refined[Package.ValidVersion](Slash ~ Segment ~ PathEnd)
+  def refinedPackageId: Directive1[Package.Id] =
+    (refined[Package.ValidName]   (Slash ~ Segment) &
+     refined[Package.ValidVersion](Slash ~ Segment ~ PathEnd))
+       .as[Package.Id](Package.Id.apply _)
+
+}
+
+object VehicleDirectives {
+  import Directives._
+  import RefinementDirectives._
+
+  def installedPackagesHandler: PF = {
+    case VehicleRoute.MissingVehicle =>
+      complete(StatusCodes.NotFound ->
+        ErrorRepresentation(Vehicle.MissingVehicle, "Vehicle doesn't exist"))
+
+    case VehicleRoute.MissingPackage =>
+      complete(StatusCodes.NotFound ->
+        ErrorRepresentation(Errors.Codes.PackageNotFound, "Package doesn't exist"))
+  }
+
+  def route(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Route = {
+    pathPrefix("vehicles") {
+      get {
+        pathEnd {
+          complete(db.run(Vehicles.list))
+        }
+      } ~
+      (put & refined[Vehicle.ValidVin](Slash ~ Segment ~ PathEnd)) { vin =>
+        pathEnd {
+          complete(db.run( Vehicles.add(Vehicle(vin)) ).map(_ => NoContent))
+        }
+      } ~
+      (get & refined[Vehicle.ValidVin](Slash ~ Segment))
+      { vin =>
+        path("package") {
+          completeOrRecoverWith(VehicleRoute.packagesOnVin(vin)) {
+            case VehicleRoute.MissingVehicle =>
+              complete(StatusCodes.NotFound ->
+                ErrorRepresentation(Vehicle.MissingVehicle, "Vehicle doesn't exist"))
+          }
+        }
+      } ~
+      (put & refined[Vehicle.ValidVin](Slash ~ Segment))
+      { vin =>
+        (pathPrefix("package") & refinedPackageId)
+        { pkgId =>
+          pathEnd {
+            completeOrRecoverWith(VehicleRoute.installPackage(vin, pkgId)) {
+              installedPackagesHandler
+            }
+          }
+        }
+      } ~
+      (delete & refined[Vehicle.ValidVin](Slash ~ Segment))
+      { vin =>
+        (pathPrefix("package") & refinedPackageId)
+        { pkgId =>
+          pathEnd {
+            completeOrRecoverWith(VehicleRoute.uninstallPackage(vin, pkgId)) {
+              installedPackagesHandler
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 object FutureSupport {
@@ -74,8 +127,8 @@ object PackageDirectives {
           NoContent
         }
       } ~
-      (put & refinedPackageId & entity(as[Package.Metadata])) { (name, version, metadata) =>
-        complete(db.run(Packages.add(Package(Package.Id(name, version), metadata.description, metadata.vendor))))
+      (put & refinedPackageId & entity(as[Package.Metadata])) { (id, metadata) =>
+        complete(db.run(Packages.add(Package(id, metadata.description, metadata.vendor))))
       }
     }
   }
@@ -100,8 +153,8 @@ object DependenciesDirectives {
 
   def route(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Route = {
     pathPrefix("resolve") {
-      (get & refinedPackageId) { (name, version) =>
-        completeOrRecoverWith(resolve(name, version)) {
+      (get & refinedPackageId) { id =>
+        completeOrRecoverWith(resolve(id.name, id.version)) {
           Errors.onMissingPackage
         }
       }
@@ -130,7 +183,7 @@ object Boot extends App {
 
   log.info(org.genivi.sota.resolver.BuildInfo.toString)
 
-  implicit val db   = Database.forConfig("database")
+  implicit val db = Database.forConfig("database")
 
   val route         = new Routing
   val host          = system.settings.config.getString("server.host")

@@ -38,4 +38,8 @@ object Packages {
   def load(name: Package.Name, version: Package.Version)
           (implicit ec: ExecutionContext): DBIO[Option[Package]] =
     packages.filter(p => p.name === name && p.version === version).result.headOption
+
+  def list: DBIO[Seq[Package]] =
+    packages.result
+
 }
