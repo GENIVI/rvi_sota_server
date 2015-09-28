@@ -79,7 +79,6 @@ class PackageResourceWordSpec extends WordSpec
       }
     }
     "returns 400 for bad request" in {
-      println(PackagesUri + "?regex=)")
       Get(PackagesUri + "?regex=)" ) ~> service.route ~> check {
         rejection shouldBe a [MalformedQueryParamRejection]
         assert(rejection === MalformedQueryParamRejection("regex", "Regex predicate failed: Unmatched closing \')\'\n)", None))

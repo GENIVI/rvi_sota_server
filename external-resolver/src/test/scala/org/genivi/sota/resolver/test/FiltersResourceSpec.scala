@@ -10,11 +10,10 @@ import cats.data.Xor
 import eu.timepit.refined.Refined
 import io.circe._
 import io.circe.generic.auto._
-import org.genivi.sota.marshalling.CirceMarshallingSupport
-import CirceMarshallingSupport._
+import org.genivi.sota.rest.ErrorCodes
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.types.{Filter, PackageFilter}
-import org.genivi.sota.rest.SotaError._
-
+import org.genivi.sota.rest.{ErrorRepresentation, ErrorCode}
 
 class FiltersResourceWordSpec extends ResourceWordSpec {
 
@@ -31,14 +30,14 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
     "not accept empty filter names" in {
        addFilter("", filterExpr) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
-        errorCode(responseAs[Json]) shouldBe Xor.Right("InvalidEntity")
+          responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
     "not accept grammatically wrong expressions" in {
       addFilter(filterName, filterExpr + " AND") ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
-        errorCode(responseAs[Json]) shouldBe Xor.Right("InvalidEntity")
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
@@ -62,7 +61,7 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
     "fail if the same filter is posted twice" in {
       addFilter(filterName, filterExpr) ~> route ~> check {
         status shouldBe StatusCodes.Conflict
-        errorCode(responseAs[Json]) shouldBe Xor.Right("DuplicateEntry")
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.DuplicateEntry
       }
     }
 
@@ -75,7 +74,7 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
     "fail on trying to update non-existing filters" in {
       updateFilter("nonexistant", filterExpr) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        errorCode(responseAs[Json]) shouldBe Xor.Right("filter_not_found")
+        responseAs[ErrorRepresentation].code shouldBe ErrorCode("filter_not_found")
       }
     }
 
@@ -91,7 +90,7 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
     "fail on trying to delete non-existing filters" in {
       deleteFilter("nonexistant") ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        errorCode(responseAs[Json]) shouldBe Xor.Right("filter_not_found")
+        responseAs[ErrorRepresentation].code shouldBe ErrorCode("filter_not_found")
       }
     }
 

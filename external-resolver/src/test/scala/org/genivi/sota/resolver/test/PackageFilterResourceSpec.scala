@@ -10,13 +10,12 @@ import cats.data.Xor
 import eu.timepit.refined.Refined
 import io.circe._
 import io.circe.generic.auto._
-import org.genivi.sota.marshalling.CirceMarshallingSupport
-import CirceMarshallingSupport._
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.db.PackageFilters._
 import org.genivi.sota.resolver.types.Package.Metadata
 import org.genivi.sota.resolver.types.{Package, Filter, PackageFilter}
-import org.genivi.sota.rest.SotaError._
-
+import org.genivi.sota.resolver.Errors.Codes
+import org.genivi.sota.rest.{ErrorRepresentation, ErrorCode}
 
 class PackageFilterResourceWordSpec extends ResourceWordSpec {
 
@@ -37,21 +36,21 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
     "not allow assignment of filters to non-existing package names" in {
       addPackageFilter("nonexistant", pkgVersion, filterName) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        errorCode(responseAs[Json]) shouldBe Xor.Right("package_not_found")
+        responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
       }
     }
 
     "not allow assignment of filters to non-existing package versions" in {
       addPackageFilter(pkgName, "0.0.9", filterName) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        errorCode(responseAs[Json]) shouldBe Xor.Right("package_not_found")
+        responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
       }
     }
 
     "not allow assignment of non-existing filters to existing packages " in {
       addPackageFilter(pkgName, pkgVersion, "nonexistant") ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        errorCode(responseAs[Json]) shouldBe Xor.Right("filter_not_found")
+        responseAs[ErrorRepresentation].code shouldBe Codes.FilterNotFound
       }
     }
 
@@ -78,7 +77,7 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
     "fail to list packages associated to non-existant filters" in {
       listPackagesForFilter("nonexistant") ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        errorCode(responseAs[Json]) shouldBe Xor.Right("filter_not_found")
+        responseAs[ErrorRepresentation].code shouldBe Codes.FilterNotFound
       }
     }
 
@@ -126,7 +125,7 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
     "fail if package filter does not exist" in {
       deletePackageFilter("nonexistant", pkgVersion, filterName) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        errorCode(responseAs[Json]) shouldBe Xor.Right("filter_not_found")
+        responseAs[ErrorRepresentation].code shouldBe Codes.FilterNotFound
       }
     }
 

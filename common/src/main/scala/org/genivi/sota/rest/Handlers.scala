@@ -10,29 +10,24 @@ import akka.http.scaladsl.server._
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.{RefinementError, CirceMarshallingSupport}
 import CirceMarshallingSupport._
-import org.genivi.sota.rest.SotaError._
-
 
 object Handlers {
 
-  case class InvalidEntity(msg: String) extends SotaError {
-    override def getMessage() = msg
-  }
+  case class InvalidEntity(msg: String) extends Throwable(msg)
 
-  case object DuplicateEntry extends SotaError {
-    override def getMessage = "Entry already exists"
-  }
+  case object DuplicateEntry extends Throwable("Entry already exists")
 
   def rejectionHandler : RejectionHandler = RejectionHandler.newBuilder().handle {
     case ValidationRejection(msg, None) =>
-      complete(StatusCodes.BadRequest -> InvalidEntity(msg))
+      complete( StatusCodes.BadRequest -> ErrorRepresentation(ErrorCodes.InvalidEntity, msg) )
   }.handle{
     case MalformedRequestContentRejection(_, Some(RefinementError(_, msg))) =>
-      complete(StatusCodes.BadRequest -> InvalidEntity(msg))
+      complete(StatusCodes.BadRequest -> ErrorRepresentation(ErrorCodes.InvalidEntity, msg))
   }.result().withFallback(RejectionHandler.default)
 
   def exceptionHandler: ExceptionHandler = ExceptionHandler {
     case err: java.sql.SQLIntegrityConstraintViolationException if err.getErrorCode == 1062 =>
-      complete(StatusCodes.Conflict -> DuplicateEntry)
+      complete(StatusCodes.Conflict ->
+        ErrorRepresentation(ErrorCodes.DuplicateEntry, "Entry already exists"))
   }
 }

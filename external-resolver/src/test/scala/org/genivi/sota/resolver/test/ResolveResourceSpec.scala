@@ -6,11 +6,10 @@ import eu.timepit.refined.Refined
 import cats.data.Xor
 import io.circe.Json
 import io.circe.generic.auto._
-import org.genivi.sota.marshalling.CirceMarshallingSupport
-import CirceMarshallingSupport._
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.types.{Vehicle, Package, PackageFilter}
-import org.genivi.sota.rest.SotaError._
-
+import org.genivi.sota.resolver.Errors.Codes
+import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
 
 class ResolveResourceWordSpec extends ResourceWordSpec {
 
@@ -56,7 +55,7 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
 
     resolve("resolve pkg2", "0.0.1") ~> route ~> check {
       status shouldBe StatusCodes.NotFound
-      errorCode(responseAs[Json]) shouldBe Xor.Right("package_not_found")
+      responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
     }
   }
 
@@ -64,7 +63,7 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
 
     resolve("resolve pkg", "0.0.2") ~> route ~> check {
       status shouldBe StatusCodes.NotFound
-      errorCode(responseAs[Json]) shouldBe Xor.Right("package_not_found")
+      responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
     }
   }
 

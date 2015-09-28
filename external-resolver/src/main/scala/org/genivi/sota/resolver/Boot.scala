@@ -23,29 +23,9 @@ import org.genivi.sota.rest.Handlers.{rejectionHandler, exceptionHandler}
 import org.genivi.sota.rest.Validation._
 import scala.concurrent.{Future, ExecutionContext}
 import scala.util.Try
-import org.genivi.sota.rest.SotaError
-import org.genivi.sota.rest.SotaError._
+import scala.util.control.NoStackTrace
 import slick.jdbc.JdbcBackend.Database
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-
-object Errors {
-  import Directives.complete
-  import akka.http.scaladsl.server.ExceptionHandler.PF
-
-  object MissingPackageException extends SotaError
-
-  object MissingFilterException extends SotaError
-
-  def onMissingFilter : PF = {
-    case Errors.MissingFilterException => complete( StatusCodes.NotFound -> ErrorRepresentation( ErrorCode("filter_not_found"), s"Filter not found") )
-  }
-
-  def onMissingPackage : PF = {
-    case Errors.MissingPackageException => complete( StatusCodes.NotFound -> ErrorRepresentation( ErrorCode("package_not_found"), "Package not found") )
-  }
-
-
-}
 
 object VehicleDirectives {
   import Directives._
