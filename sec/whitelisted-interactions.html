@@ -87,7 +87,7 @@
             
                 <li class="nav-header">Developers</li>
             
-            <li data-order=""><a href="/rvi_sota_server/dev/architecture.html">Architecture</a></li>
+            <li data-order=""><a href="/rvi_sota_server/dev/architecture.html">SOTA Architecture</a></li>
         
             
             <li data-order=""><a href="/rvi_sota_server/dev/database-style-guide.html">Database Style Guide</a></li>
@@ -124,7 +124,7 @@ not be merged</strong> if it contains non-whitelisted interactions.</p>
 <div class="paragraph">
 <p>Whitelisted interactions are organized by boundary:</p>
 </div>
-<div class="paragraph">
+<div id="boundary-diagram" class="paragraph">
 <p><span class="image"><img src="../images/Whitelisted-Interactions-Reference-Diagram.svg" alt="Whitelisted Interactions Reference Diagram"></span></p>
 </div>
 <div id="toc" class="toc">
@@ -161,6 +161,7 @@ not be merged</strong> if it contains non-whitelisted interactions.</p>
 <li><a href="#wl-b1-28">WL-B1-28 Web Browser sends View VINs per Package Request to Web Server</a></li>
 <li><a href="#wl-b1-29">WL-B1-29 Web Browser sends New Component Request to Web Server</a></li>
 <li><a href="#wl-b1-30">WL-B1-30 Web Browser sends Search Components Request to Web Server</a></li>
+<li><a href="#wl-b1-31">WL-B1-31 Web Browser sends "Get Install Request Completed" Request to Web Server</a></li>
 </ul>
 </li>
 <li><a href="#b-2">B-2 Web Server - SOTA Core</a>
@@ -177,6 +178,7 @@ not be merged</strong> if it contains non-whitelisted interactions.</p>
 <li><a href="#wl-b2-11">WL-B2-11 Web Server sends View VINs per Package Request to SOTA Core</a></li>
 <li><a href="#wl-b2-12">WL-B2-12 Web Server sends new component data to SOTA Core</a></li>
 <li><a href="#wl-b2-13">WL-B2-13 Web Server sends Search Component Request to SOTA Core</a></li>
+<li><a href="#wl-b2-14">WL-B2-14 Web Server sends "Get Install Request Completed" Request to SOTA Core</a></li>
 </ul>
 </li>
 <li><a href="#b-3">B-3 Web Server - External Resolver</a>
@@ -204,6 +206,7 @@ not be merged</strong> if it contains non-whitelisted interactions.</p>
 <li><a href="#wl-b4-8">WL-B4-8 SOTA Core looks up VINs per Package in SOTA Core Database</a></li>
 <li><a href="#wl-b4-9">WL-B4-9 SOTA Core persists new Component to SOTA Core Database</a></li>
 <li><a href="#wl-b4-10">WL-B4-10 SOTA Core looks up Component ID in SOTA Core Database</a></li>
+<li><a href="#wl-b4-11">WL-B4-11 SOTA Core looks ip the given Install Request ID in SOTA Core Database</a></li>
 </ul>
 </li>
 <li><a href="#b-5">B-5 SOTA Core - External Resolver</a>
@@ -931,6 +934,32 @@ an error message in the response body and a 404 status code.</p>
 </ul>
 </div>
 </div>
+<div class="sect2">
+<h3 id="wl-b1-31">WL-B1-31 Web Browser sends "Get Install Request Completed" Request to Web Server</h3>
+<div class="paragraph">
+<p>The Web Browser can send a "Get Install Request Completed" to the Web Server using JSON over HTTP on port 80.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Upon the Web Browser&#8217;s request, the Web Server can send a "Get Install Request
+Completed" and if the request has been processed without errors, it will respond
+with a list of VINs where the Install Request was successfully  completed and the
+associated timestamp when the Request was finished in the response body and a 200
+response code.</p>
+</li>
+<li>
+<p>Upon the Web Browser&#8217;s request, the Web Server can send a "Get Install Request
+Completed" and if no VINs have been returned, it will return an empty list in the response body and a 200 response code.</p>
+</li>
+<li>
+<p>Upon the Web Browser&#8217;s request, the Web Server can send a "Get Install Request
+Completed" and if the request has been processed with errors, it will respond
+with the apropriate error message in the response body and a 200 response code.</p>
+</li>
+</ul>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -1248,6 +1277,32 @@ criteria, it will respond with an empty list in the response body and a
 <p>Upon the Web Server’s request, SOTA Core can start a Search Components
 Request process and if an error occurs, it will respond with an error
 message in the response body and a 404 status code.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="wl-b2-14">WL-B2-14 Web Server sends "Get Install Request Completed" Request to SOTA Core</h3>
+<div class="paragraph">
+<p>The Web Server can send a "Get Install Request Completed" to the SOTA Core using JSON over HTTP on port 80.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Upon the Web Server&#8217;s request, the SOTA Core can send a "Get Install Request
+Completed" and if the request has been processed without errors, it will respond
+with a list of VINs where the Install Request was successfully  completed and the
+associated timestamp when the Request was finished in the response body and a 200
+response code.</p>
+</li>
+<li>
+<p>Upon the Web Server&#8217;s request, the SOTA Core can send a "Get Install Request
+Completed" and if no VINs have been returned, it will return an empty list in the response body and a 200 response code.</p>
+</li>
+<li>
+<p>Upon the Web Server&#8217;s request, the SOTA Core can send a "Get Install Request
+Completed" and if the request has been processed with errors, it will respond
+with the apropriate error message in the response body and a 200 response code.</p>
 </li>
 </ul>
 </div>
@@ -1769,7 +1824,7 @@ Server should reject the connection.</p>
 <h3 id="wl-b4-10">WL-B4-10 SOTA Core looks up Component ID in SOTA Core Database</h3>
 <div class="paragraph">
 <p>SOTA Core can perform a regex-based lookup operation for a Component or
-Componets in the SOTAServer database in the Database Server over TCP on
+Componets in the SOTA Server database in the Database Server over TCP on
 port 3306.</p>
 </div>
 <div class="ulist">
@@ -1784,6 +1839,35 @@ is found, it will respond with the Package’s data.</p>
 <p>If SOTA Core authenticates successfully with the correct
 Username/Password credentials, upon its request, the Database Server can
 perform an SELECT operation with the given Component ID and if no entry
+is found, it will respond with a ‘Record does not exists’ message.</p>
+</li>
+<li>
+<p>If SOTA Server does not authenticate successfully due to incorrect
+Username/Password credentials against the Database Server, the Database
+Server should reject the connection.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="wl-b4-11">WL-B4-11 SOTA Core looks ip the given Install Request ID in SOTA Core Database</h3>
+<div class="paragraph">
+<p>SOTA Core can perform a look up operation for a given Install Request ID in the
+SOAT Server database in the Database Server over TCP on port 3306.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If SOTA Core authenticates successfully with the correct
+Username/Password credentials, upon its request, the Database Server can
+perform a SELECT operation with the given Install Request ID and if one or more
+VINs with the a successful installation for the given Install Request ID is found,
+it will respond with the VINs and the timestamp the installation has been completed data.</p>
+</li>
+<li>
+<p>If SOTA Core authenticates successfully with the correct
+Username/Password credentials, upon its request, the Database Server can
+perform an SELECT operation with the given Install Request ID and if no entry
 is found, it will respond with a ‘Record does not exists’ message.</p>
 </li>
 <li>

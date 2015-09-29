@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <meta name="viewport" content="width=device-width">
 
-        <title>GENIVI SOTA Project : Architecture</title>
+        <title>GENIVI SOTA Project : SOTA Architecture</title>
         <meta name="description" content="Software Updates Over the Air">
 
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
@@ -87,7 +87,7 @@
             
                 <li class="nav-header">Developers</li>
             
-            <li data-order=""><a href="/rvi_sota_server/dev/architecture.html">Architecture</a></li>
+            <li data-order=""><a href="/rvi_sota_server/dev/architecture.html">SOTA Architecture</a></li>
         
             
             <li data-order=""><a href="/rvi_sota_server/dev/database-style-guide.html">Database Style Guide</a></li>
@@ -107,52 +107,22 @@
 
                     <div id="content" class="col-sm-10">
                         <div class="page-header">
-    <h2>Architecture
+    <h2>SOTA Architecture
         
     </h2>
 </div>
 
-<h1 id="sota-architecture">SOTA Architecture</h1>
-<div id="preamble">
-<div class="sectionbody">
 <div class="paragraph">
-<p>The SOTA System includes a client and server, communicating using the
-RVI protocol. The SOTA Server is comprised of three sub-modules:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="https://github.com/PDXostc/rvi_sota_server/tree/master/core">core</a> -
-The central component of the SOTA server that implements package queuing
-and distribution</p>
-</li>
-<li>
-<p><a href="https://github.com/PDXostc/rvi_sota_server/tree/master/external-resolver">external-resolver</a></p>
-<div class="ulist">
-<ul>
-<li>
-<p>An implementation of a package resolution server, which maps VINs to a
-list of software components to be installed on a vehicle</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><a href="https://github.com/PDXostc/rvi_sota_server/tree/master/web-server">web-server</a></p>
-<div class="ulist">
-<ul>
-<li>
-<p>The web interface to the SOTA server, allowing administration of
-vehicles and software components</p>
-</li>
-</ul>
-</div>
-</li>
-</ul>
+<p>The RVI SOTA system is designed to be a complete, end-to-end solution for managing software updates in a fleet of vehicles. It includes <a href="https://github.com/PDXostc/rvi_sota_server">a server infrastructure</a> to manage vehicles, update campaigns, and software components, and <a href="https://github.com/PDXostc/rvi_sota_client">a client</a> that is installed on an in-vehichle GENIVI system. The server can push updates to the client, as well as notify clients via SMS when there is an update available. The server also implements dependency management, powerful targeting and filtering tools, and more.</p>
 </div>
 <div class="paragraph">
-<p>The client is a standalone project hosted
-<a href="https://github.com/PDXostc/rvi_sota_client">here</a>.</p>
+<p>The server is split up into three main components. There is a <a href="https://github.com/PDXostc/rvi_sota_server/tree/master/web-server">web server</a>, which exposes all server-side functionality, both via a web GUI to get up and running quickly, and via a REST API to interface with OEM logistics and provisioning systems, billing systems, authorization servers, or independent GUI implementations. The <a href="https://github.com/PDXostc/rvi_sota_server/tree/master/core">SOTA core server</a> is what takes care of the actual communication with the client: it notifies the client of updates, sends the package binaries and metadata, keeps track of the status of ongoing, pending, and completed updates, and so on. The <a href="https://github.com/PDXostc/rvi_sota_server/tree/master/external-resolver">resolver</a> is the component that takes care of the business logic of which updates apply to which vehicles, based on administrator-defined filters, dependencies, or whatever else might be required.</p>
+</div>
+<div class="paragraph">
+<p>Both the core and the resolver implement REST APIs internally, but are only exposed to the outside world through the web API.</p>
+</div>
+<div class="paragraph">
+<p>This project includes a fully functional and feature-complete resolver component, but the reason the resolver is architecturally separate from the core is to allow independent implementations by individual OEMs suitable to their own needs.</p>
 </div>
 <div class="paragraph">
 <p>The system architecture is illustrated here:</p>
@@ -161,16 +131,17 @@ vehicles and software components</p>
 <p><span class="image"><img src="../images/System-Architecture-Diagram.svg" alt="System Architecture Diagram"></span></p>
 </div>
 <div class="paragraph">
-<p>The data model for the system is illustrated here:</p>
+<p>The data model for the system is illustrated here (click to enlarge):</p>
 </div>
 <div class="paragraph">
-<p><span class="image"><img src="../images/Data-Model.svg" alt="Data Model Diagram"></span></p>
-</div>
-</div>
+<p><a href="../images/Data-Model.svg"><span class="image"><img src="../images/Data-Model.svg" alt="Data Model Diagram"></span></a></p>
 </div>
 <div class="sect1">
 <h2 id="context-diagrams">Context Diagrams</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>RVI SOTA is designed with security in mind. You can read a lot more about our security processes on the <a href="../doc/contributing.html">contributing</a>, <a href="../sec/whitelisted-interactions.html">whitelisted interactions</a>, and <a href="../sec/security-threats-mitigations.html">security threats/mitigations</a> pages, but for a broad view of how the architectural design of the project helps keep it secure, you can take a look at these context diagrams.</p>
+</div>
 <div class="sect2">
 <h3 id="level-0">Level 0</h3>
 <div class="paragraph">
@@ -189,8 +160,7 @@ vehicles and software components</p>
 <h2 id="requirements">Requirements</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>You can find a complete list of the
-<a href="../ref/requirements.html">software requirements here</a></p>
+<p>You can find a complete list of the <a href="../ref/requirements.html">software requirements here</a></p>
 </div>
 </div>
 </div>
@@ -198,8 +168,7 @@ vehicles and software components</p>
 <h2 id="dependencies">Dependencies</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>You can find a complete list of <a href="../ref/dependencies.html">software
-dependencies here</a></p>
+<p>You can find a complete list of <a href="../ref/dependencies.html">software dependencies here</a></p>
 </div>
 </div>
 </div>
