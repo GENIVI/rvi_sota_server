@@ -9,18 +9,24 @@ define(function(require) {
     contextTypes: {
       router: React.PropTypes.func
     },
+    refreshLists: function() {
+      SotaDispatcher.dispatch(this.props.getDeleteList);
+      SotaDispatcher.dispatch({actionType: this.props.getCreateList});
+    },
     componentWillUnmount: function(){
       this.props.DeleteList.removeWatch("watch-delete-list");
       this.props.CreateList.removeWatch("watch-create-list");
       this.props.Resource.removeWatch("watch-resource");
     },
     componentWillMount: function(){
+      this.refreshLists();
       var filterName = this.context.router.getCurrentParams().name;
-      SotaDispatcher.dispatch(this.props.getDeleteList);
-      SotaDispatcher.dispatch({actionType: this.props.getCreateList});
       this.props.DeleteList.addWatch("watch-delete-list", _.bind(this.forceUpdate, this, null));
       this.props.CreateList.addWatch("watch-create-list", _.bind(this.forceUpdate, this, null));
       this.props.Resource.addWatch("watch-resource", _.bind(this.forceUpdate, this, null));
+    },
+    componentDidMount: function(){
+      this.refreshLists();
     },
 
     payload: function(model) {

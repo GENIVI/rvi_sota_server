@@ -2,7 +2,7 @@ define(function(require) {
   var _ = require('underscore'),
       React = require('react'),
       EditFilterComponent = require('./edit-filter-component'),
-      PackagesForFilter = require('./packages-for-filter'),
+      PackageFilterAssociation = require('../package-filters/package-filter-association'),
       db = require('stores/db');
 
   var ShowUpdateComponent = React.createClass({
@@ -26,6 +26,7 @@ define(function(require) {
       });
     },
     render: function() {
+      var params = this.context.router.getCurrentParams();
       var listItems = _.map(this.props.Filter.deref(), function(value, key) {
         return (
           <li>
@@ -46,7 +47,13 @@ define(function(require) {
           </h2>
           <EditFilterComponent Filter={this.props.Filter}/>
           <button type="button" className="btn btn-primary" onClick={this.removeFilter} name="delete-filter">Delete Filter</button>
-          <PackagesForFilter Filter={this.props.Filter} Packages={db.packages} PackagesForFilter={db.packagesForFilter}/>
+          <PackageFilterAssociation
+            Resource={this.props.Filter}
+            CreateList={db.packages}
+            DeleteList={db.packagesForFilter}
+            getCreateList="get-packages"
+            createResourceName="Packages"
+            getDeleteList={{actionType: 'get-packages-for-filter', filter: params.name}}/>
         </div>
       );
     }
