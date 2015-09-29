@@ -3,6 +3,7 @@ define(function(require) {
       React = require('react'),
       EditFilterComponent = require('./edit-filter-component'),
       PackageFilterAssociation = require('../package-filters/package-filter-association'),
+      SotaDispatcher = require('sota-dispatcher'),
       db = require('stores/db');
 
   var ShowUpdateComponent = React.createClass({
