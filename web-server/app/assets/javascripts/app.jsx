@@ -37,8 +37,8 @@ define(function(require) {
 	    <div className="navbar-collapse collapse">
               <ul className="nav side-nav">
                 <li role="presentation">
-   	          <Link to="vehicles" className="vehicles">Vehicles</Link>
-   	        </li>
+                  <Link to="vehicles" className="vehicles">Vehicles</Link>
+                </li>
                 <li role="presentation">
                   <Link to="packages" className="packages">Packages</Link>
                 </li>

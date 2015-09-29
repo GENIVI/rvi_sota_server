@@ -7,9 +7,7 @@ define(function(require) {
       serializeForm = require('../mixins/serialize-form'),
       SendRequest = require('../mixins/send-request'),
       _ = require('underscore'),
-      SotaDispatcher = require('sota-dispatcher'),
-      VehiclesToUpdate = require('components/vehicles-to-update-component'),
-      VehiclesToUpdateStore = require('stores/vehicles-to-update');
+      SotaDispatcher = require('sota-dispatcher');
 
   function generateUUID(){
     var d = new Date().getTime();
