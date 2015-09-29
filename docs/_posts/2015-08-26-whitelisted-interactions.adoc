@@ -17,6 +17,7 @@ not be merged* if it contains non-whitelisted interactions.
 
 Whitelisted interactions are organized by boundary:
 
+[[boundary-diagram]]
 image:../images/Whitelisted-Interactions-Reference-Diagram.svg[Whitelisted
 Interactions Reference Diagram]
 
