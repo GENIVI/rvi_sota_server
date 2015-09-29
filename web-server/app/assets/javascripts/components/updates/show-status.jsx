@@ -1,5 +1,6 @@
 define(function(require) {
   var _ = require('underscore'),
+      SotaDispatcher = require('sota-dispatcher'),
       React = require('react');
 
   var StatusComponent = React.createClass({

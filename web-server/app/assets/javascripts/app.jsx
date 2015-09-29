@@ -6,7 +6,6 @@ define(function(require) {
       FiltersPageComponent = require('components/filters/filters-page-component'),
       ShowPackage = require('components/packages/show-package'),
       ShowFilter = require('components/filters/show-filter'),
-      Filters = require('stores/filters'),
       Router = require('react-router'),
       CreateCampaign = require('components/create-campaign-page-component'),
       ListOfUpdates = require('components/updates/list-of-updates'),

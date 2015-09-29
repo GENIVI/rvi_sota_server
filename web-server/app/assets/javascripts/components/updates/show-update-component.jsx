@@ -2,6 +2,7 @@ define(function(require) {
   var _ = require('underscore'),
       React = require('react'),
       db = require('stores/db'),
+      SotaDispatcher = require('sota-dispatcher'),
       ShowStatus = require('./show-status');
 
   var ShowUpdateComponent = React.createClass({
