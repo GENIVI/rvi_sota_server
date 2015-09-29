@@ -2,6 +2,7 @@ define(function(require) {
 
     var React = require('react'),
         _ = require('underscore'),
+        db = require('../../stores/db'),
         serializeForm = require('../../mixins/serialize-form'),
         SotaDispatcher = require('sota-dispatcher');
 
@@ -28,11 +29,19 @@ define(function(require) {
     componentWillUnmount: function(){
       this.props.Filter.removeWatch("poll-filterer");
     },
+    getInitialState: function() {
+        return {postStatus: ""};
+    },
     componentWillMount: function(){
       this.props.Filter.addWatch("poll-filterer", _.bind(this.forceUpdate, this, null));
+      db.postStatus.addWatch("poll-filterer", _.bind(function() {
+        this.setState({postStatus: db.postStatus.deref()});
+      }, this));
     },
     handleSubmit: function(e) {
         e.preventDefault();
+
+        this.setState({postStatus: ""});
 
         var expression = serializeForm(this.refs.form);
         var payload = _.extend({name: this.props.Filter.deref().name}, expression);
@@ -52,6 +61,7 @@ define(function(require) {
 	        <div className="form-group">
               <button type="submit" className="btn btn-primary">Update Filter</button>
 		    </div>
+		    <span>{this.state.postStatus}</span>
           </form>
 	    </div>
         );}
