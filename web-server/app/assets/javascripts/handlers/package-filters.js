@@ -11,9 +11,15 @@ define(function(require) {
           db.packagesForFilter.reset(packages);
         });
     },
+    getFiltersForPackage: function(payload) {
+      sendRequest.doGet('/api/v1/packageFilters?package=' + payload.name + '-' + payload.version)
+        .success(function(filters) {
+          db.filtersForPackage.reset(filters);
+        });
+    },
     addPackageFilter: function(payload) {
       sendRequest.doPost('/api/v1/packageFilters', payload.packageFilter)
-        .success(_.bind(this.refreshPackagesForFilter, this, payload));
+        .success(_.bind(this.refreshPackageFilters, this, payload));
     },
     destroyPackageFilter: function(payload){
       var packageFilter = payload.packageFilter;
@@ -22,12 +28,17 @@ define(function(require) {
         '/' + packageFilter.packageVersion +
         '/' + packageFilter.filterName;
       sendRequest.doDelete(deleteUrl)
-        .success(_.bind(this.refreshPackagesForFilter, this, payload));
+        .success(_.bind(this.refreshPackageFilters, this, payload));
     },
-    refreshPackagesForFilter: function(payload) {
+    refreshPackageFilters: function(payload) {
       SotaDispatcher.dispatch({
         actionType: 'get-packages-for-filter',
         filter: payload.packageFilter.filterName
+      });
+      SotaDispatcher.dispatch({
+        actionType: 'get-filters-for-package',
+        name: payload.packageFilter.packageName,
+        version: payload.packageFilter.packageVersion
       });
     }
   };
@@ -37,6 +48,9 @@ define(function(require) {
         switch(payload.actionType) {
           case 'get-packages-for-filter':
             handlers.getPackagesForFilter(payload);
+          break;
+          case 'get-filters-for-package':
+            handlers.getFiltersForPackage(payload);
           break;
           case 'add-package-filter':
             handlers.addPackageFilter(payload);
