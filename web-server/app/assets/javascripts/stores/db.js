@@ -14,6 +14,8 @@ define(function(require) {
       this.filters = atom.createAtom([]);
       this.searchableFilters = atom.createAtom([]);
       this.showFilter = atom.createAtom({});
+
+      this.postStatus = atom.createAtom([]);
     }
 
     return DB;

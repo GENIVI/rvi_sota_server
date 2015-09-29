@@ -13,6 +13,10 @@ define(function(require) {
         console.log(payload.actionType, payload);
       };
       SotaDispatcher.register(this.dispatchCallback.bind(this));
+      $(document).ajaxError(function(event, xhr) {
+        var result = JSON.parse(xhr.responseText);
+        db.postStatus.reset(result.description);
+      });
   });
 
   return new Handler();
