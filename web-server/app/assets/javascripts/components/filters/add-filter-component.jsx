@@ -2,6 +2,7 @@ define(function(require) {
 
     var React = require('react'),
         serializeForm = require('../../mixins/serialize-form'),
+        db = require('../../stores/db'),
         SotaDispatcher = require('sota-dispatcher'),
 	    toggleForm = require('../../mixins/toggle-form'),
         RequestStatus = require('../../mixins/request-status');
@@ -13,11 +14,18 @@ define(function(require) {
     handleSubmit: function(e) {
         e.preventDefault();
 
+        this.setState({postStatus: ""});
+
         var payload = serializeForm(this.refs.form);
         SotaDispatcher.dispatch({
             actionType: 'create-filter',
             filter: payload
         });
+    },
+    componentWillMount: function(){
+      db.postStatus.addWatch("poll-filterer", _.bind(function() {
+        this.setState({postStatus: db.postStatus.deref()});
+      }, this));
     },
 	buttonLabel: "NEW FILTER",
     form: function() {
