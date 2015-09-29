@@ -51,9 +51,10 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
       val updateCount = rowCountResult.getInt("update_count")
       if(updateCount > 0) {
         val result = coreDb.createStatement().executeQuery("select * from UpdateRequests where package_name = '" + testPackageName + "'")
-        result.next()
-        val reqId = result.getString("update_request_id")
-        coreDb.createStatement().executeQuery("delete from UpdateSpecs where update_request_id = '" + reqId + "'")
+        while(result.next()) {
+          val reqId = result.getString("update_request_id")
+          coreDb.createStatement().executeQuery("delete from UpdateSpecs where update_request_id = '" + reqId + "'")
+        }
       }
       coreDb.createStatement().executeQuery("delete from UpdateRequests where package_name = '" + testPackageName + "'")
       coreDb.createStatement().executeQuery("delete from Vehicle where vin = '" + testVinName + "'")
@@ -188,11 +189,8 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
           click on linkText("Filters")
           textField("regex").value = "^" + testFilterName + "$"
           click on linkText("Details")
-          println("before setting")
           textField("expression").value = alternateFilterExpression
-          println("before submission")
           submit()
-          println("after submission")
           eventually {
             findElementContainingText("Predicate failed:", "div") mustBe true
           }
