@@ -13,7 +13,7 @@ define(['react', '../../mixins/fluxbone', 'sota-dispatcher'], function(React, Fl
     },
     render: function() {
       return (
-        <li className="list-group-item" onClick={this.handleClick}>
+        <li className="list-group-item" onClick={this.handleClick} name={this.props.Filter.get('name')}>
           { this.props.Filter.get('name') }
         </li>
       );

@@ -22,6 +22,7 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
   val testVinName = "TESTVIN0123456789"
   val testFilterName = "TestFilter"
   val testFilterExpression = "vin_matches '.*'"
+  val testDeleteFilterName = "TestDeleteFilter"
   val testPackageName = "Testpkg"
   val userName = "admin@genivi.org"
   val password = "genivirocks!"
@@ -40,6 +41,7 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
     try {
       resolverDb.createStatement().executeQuery("delete from PackageFilters where filterName ='" + testFilterName + "'")
       resolverDb.createStatement().executeQuery("delete from Filter where name ='" + testFilterName + "'")
+      resolverDb.createStatement().executeQuery("delete from Filter where name ='" + testDeleteFilterName + "'")
       resolverDb.createStatement().executeQuery("delete from Vehicle where vin = '" + testVinName + "'")
       coreDb.createStatement().executeQuery("delete from RequiredPackages where vin = '" + testVinName + "'")
       coreDb.createStatement().executeQuery("delete from RequiredPackages where package_name = '" + testPackageName + "'")
@@ -66,7 +68,7 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
   def findElementWithText(text: String, selector: String): Boolean = {
     val elems = webDriver.findElements(By.cssSelector(selector))
     var contains = false
-    for (n <- elems) if (n.getText.equals(text)) contains = true
+    for (n <- elems) if (n.getText.equalsIgnoreCase(text)) contains = true
     contains
   }
 
@@ -147,22 +149,13 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
         submit()
         eventually {
           click on linkText("Packages")
+          click on linkText(testPackageName)
+          click on testFilterName
+          click on "new-campaign"
+          numberField("priority").value = "1"
+          submit()
           eventually {
-            click on linkText(testPackageName)
-            eventually {
-              val filters = webDriver.findElements(By.cssSelector(".list-group-item"))
-              for (n <- filters) if (n.getText.equals(testFilterName)) n.click()
-
-              val buttons = webDriver.findElements(By.cssSelector("button"))
-              for (n <- buttons) if (n.getText.equals("NEW CAMPAIGN")) n.click()
-              eventually {
-                numberField("priority").value = "1"
-                submit()
-                eventually {
-                  pageSource must contain("Update ID:")
-                }
-              }
-            }
+            findElementContainingText("Update ID:", "span") mustBe true
           }
         }
       }
@@ -175,19 +168,12 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
         submit()
         eventually {
           click on linkText("Filters")
+          textField("regex").value = "^" + testFilterName + "$"
+          click on linkText("Details")
+          textField("expression").value = alternateFilterExpression
+          submit()
           eventually {
-            textField("regex").value = "^" + testFilterName + "$"
-            eventually {
-              val links = webDriver.findElements(By.cssSelector("a"))
-              for (n <- links) if (n.getText.equals("details")) n.click()
-              eventually {
-                textField("expression").value = alternateFilterExpression
-                submit()
-                eventually {
-                  findElementWithText(alternateFilterExpression, "span") mustBe true
-                }
-              }
-            }
+            findElementWithText(alternateFilterExpression, "span") mustBe true
           }
         }
       }
@@ -200,25 +186,20 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
         submit()
         eventually {
           click on linkText("Filters")
+          textField("regex").value = "^" + testFilterName + "$"
+          click on linkText("Details")
+          println("before setting")
+          textField("expression").value = alternateFilterExpression
+          println("before submission")
+          submit()
+          println("after submission")
           eventually {
-            textField("regex").value = "^" + testFilterName + "$"
-            eventually {
-              val links = webDriver.findElements(By.cssSelector("a"))
-              for (n <- links) if (n.getText.equals("details")) n.click()
-              eventually {
-                textField("expression").value = alternateFilterExpression
-                submit()
-                eventually {
-                  findElementContainingText("Predicate failed:", "div") mustBe true
-                }
-              }
-            }
+            findElementContainingText("Predicate failed:", "div") mustBe true
           }
         }
       }
 
       "allow users to delete filters " + browser.name in {
-        val testDeleteFilterName = "TestDeleteFilter"
         go to (s"http://$webHost:$webPort/login")
         emailField("email").value = userName
         pwdField("password").value = password
@@ -231,23 +212,17 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
           submit()
           eventually {
             textField("regex").value = "^" + testDeleteFilterName + "$"
+            click on linkText("Details")
+            click on "delete-filter"
             eventually {
-              val links = webDriver.findElements(By.cssSelector("a"))
-              for (n <- links) if (n.getText.equals("details")) n.click()
-
-              val buttons = webDriver.findElements(By.cssSelector("button"))
-              for (n <- buttons) if (n.getText.equals("Delete Filter")) n.click()
+              textField("regex").value = "^" + testDeleteFilterName + "$"
               eventually {
-                textField("regex").value = "^" + testDeleteFilterName + "$"
-                eventually {
-                  findElementWithText(testDeleteFilterName, "td") mustBe false
-                }
+                findElementWithText(testDeleteFilterName, "td") mustBe false
               }
             }
           }
         }
       }
-
     }
   }
 }

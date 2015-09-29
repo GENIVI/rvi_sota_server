@@ -47,7 +47,7 @@ define(function(require) {
           <form ref='form' onSubmit={this.handleSubmit} encType="multipart/form-data">
             <div className="form-group">
               <label htmlFor="name">Filter Expression</label>
-          <TextInput value={this.props.Filter.deref().expression}/>
+              <TextInput value={this.props.Filter.deref().expression}/>
   		    </div>
 	        <div className="form-group">
               <button type="submit" className="btn btn-primary">Update Filter</button>
