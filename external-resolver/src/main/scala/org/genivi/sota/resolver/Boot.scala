@@ -146,12 +146,18 @@ object DependenciesDirectives {
   import org.genivi.sota.resolver.types.FilterParser.parseValidFilter
   import org.genivi.sota.resolver.types.FilterQuery.query
 
+  def makeFakeDependencyMap
+    (name: Package.Name, version: Package.Version, vs: Seq[Vehicle])
+      : Map[Vehicle.Vin, List[Package.Id]] =
+    vs.map(vehicle => Map(vehicle.vin -> List(Package.Id(name, version))))
+      .foldRight(Map[Vehicle.Vin, List[Package.Id]]())(_++_)
+
   def resolve(name: Package.Name, version: Package.Version)
               (implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Future[Map[Vehicle.Vin, Seq[Package.Id]]] = for {
     _       <- VehicleRoute.existsPackage(Package.Id(name, version))
     (p, fs) <- db.run(PackageFilters.listFiltersForPackage(Package.Id(name, version)))
     vs      <- db.run(Vehicles.list)
-  } yield Resolve.makeFakeDependencyMap(name, version, vs.filter(query(fs.map(_.expression).map(parseValidFilter).foldLeft[FilterAST](True)(And))))
+  } yield makeFakeDependencyMap(name, version, vs.filter(query(fs.map(_.expression).map(parseValidFilter).foldLeft[FilterAST](True)(And))))
 
   def route(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Route = {
     pathPrefix("resolve") {
