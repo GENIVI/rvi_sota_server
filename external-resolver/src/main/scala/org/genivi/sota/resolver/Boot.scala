@@ -9,13 +9,14 @@ import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.StatusCodes.NoContent
-import akka.http.scaladsl.util.FastFuture
 import akka.http.scaladsl.server.ExceptionHandler.PF
 import akka.http.scaladsl.server.{Directives, ExceptionHandler, Route, PathMatchers, Directive1}
+import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
-import eu.timepit.refined.Refined
 import cats.data.Xor
+import eu.timepit.refined.Refined
 import io.circe.generic.auto._
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.db._
 import org.genivi.sota.resolver.route._
 import org.genivi.sota.resolver.types.{Vehicle, Package, Filter, PackageFilter}
@@ -28,7 +29,6 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 import scala.util.control.NoStackTrace
 import slick.jdbc.JdbcBackend.Database
-import org.genivi.sota.marshalling.CirceMarshallingSupport._
 
 
 object RefinementDirectives {
@@ -50,7 +50,7 @@ object VehicleDirectives {
       complete(StatusCodes.NotFound ->
         ErrorRepresentation(Vehicle.MissingVehicle, "Vehicle doesn't exist"))
 
-    case VehicleRoute.MissingPackage =>
+    case Errors.MissingPackageException =>
       complete(StatusCodes.NotFound ->
         ErrorRepresentation(Errors.Codes.PackageNotFound, "Package doesn't exist"))
   }
@@ -127,8 +127,10 @@ object PackageDirectives {
           NoContent
         }
       } ~
-      (put & refinedPackageId & entity(as[Package.Metadata])) { (id, metadata) =>
-        complete(db.run(Packages.add(Package(id, metadata.description, metadata.vendor))))
+      (put & refinedPackageId & entity(as[Package.Metadata]))
+      { (id, metadata) =>
+        val pkg = Package(id, metadata.description, metadata.vendor)
+        complete(db.run(Packages.add(pkg).map(_ => pkg)))
       }
     }
   }
@@ -146,7 +148,7 @@ object DependenciesDirectives {
 
   def resolve(name: Package.Name, version: Package.Version)
               (implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Future[Map[Vehicle.Vin, Seq[Package.Id]]] = for {
-    _       <- db.run(Packages.load(name, version)).failIfNone( Errors.MissingPackageException )
+    _       <- VehicleRoute.existsPackage(Package.Id(name, version))
     (p, fs) <- db.run(PackageFilters.listFiltersForPackage(Package.Id(name, version)))
     vs      <- db.run(Vehicles.list)
   } yield Resolve.makeFakeDependencyMap(name, version, vs.filter(query(fs.map(_.expression).map(parseValidFilter).foldLeft[FilterAST](True)(And))))
@@ -180,10 +182,9 @@ object Boot extends App {
   implicit val materializer = ActorMaterializer()
   implicit val exec         = system.dispatcher
   implicit val log          = Logging(system, "boot")
+  implicit val db           = Database.forConfig("database")
 
   log.info(org.genivi.sota.resolver.BuildInfo.toString)
-
-  implicit val db = Database.forConfig("database")
 
   val route         = new Routing
   val host          = system.settings.config.getString("server.host")

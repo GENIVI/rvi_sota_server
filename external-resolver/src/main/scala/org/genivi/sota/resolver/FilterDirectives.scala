@@ -5,20 +5,22 @@
 package org.genivi.sota.resolver
 
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server._
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.Refined
 import eu.timepit.refined.string.Regex
-import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.generic.auto._
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.genivi.sota.resolver.db.{Packages, Filters, PackageFilters}
+import org.genivi.sota.resolver.route._
+import org.genivi.sota.resolver.types.{Package, Filter, PackageFilter}
+import org.genivi.sota.rest.Validation._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import slick.jdbc.JdbcBackend.Database
-import org.genivi.sota.resolver.types.{Package, Filter, PackageFilter}
-import org.genivi.sota.resolver.db.{Packages, Filters, PackageFilters}
-import org.genivi.sota.rest.Validation._
+
 
 class FilterDirectives()(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
   import FutureSupport._
@@ -43,13 +45,13 @@ class FilterDirectives()(implicit db: Database, mat: ActorMaterializer, ec: Exec
       (delete & refined[Filter.ValidName](Slash ~ Segment ~ PathEnd)) { fname =>
         complete( db.run(Filters.delete(fname)).flatMap(x => if(x == 0) FastFuture.failed( Errors.MissingFilterException ) else FastFuture.successful(()) ) )
       }
-      
+
     }
 
 
   def add(pf: PackageFilter) : Future[PackageFilter] = {
     for {
-      _ <- db.run(Packages.load(pf.packageName, pf.packageVersion)).failIfNone( Errors.MissingPackageException )
+      _ <- VehicleRoute.existsPackage(Package.Id(pf.packageName, pf.packageVersion))
       _ <- db.run(Filters.load(pf.filterName)).failIfNone( Errors.MissingFilterException )
       _ <- db.run(PackageFilters.add(pf))
     } yield pf
@@ -85,8 +87,6 @@ class FilterDirectives()(implicit db: Database, mat: ActorMaterializer, ec: Exec
       } ~
       (post & entity(as[PackageFilter])) { pf =>
         complete(add(pf))
-          //.value.map(withStatusCode(_,
-          //(_: Xor[PackageFilters.MissingPackageException, Filters.MissingFilterException]) => StatusCodes.NotFound)))
       } ~
       (delete & refined[Package.ValidName]   (Slash ~ Segment)
               & refined[Package.ValidVersion](Slash ~ Segment)
@@ -102,7 +102,7 @@ class FilterDirectives()(implicit db: Database, mat: ActorMaterializer, ec: Exec
   def routes() = handleExceptions( ExceptionHandler( Errors.onMissingFilter orElse Errors.onMissingPackage ) ) {
     filterRoute ~ packageFiltersRoute ~ validateRoute
   }
-  
+
   case object MissingPackageFilterException extends Throwable
 
   def deletePackageFilter(pname: Package.Name, pversion: Package.Version, fname: Filter.Name)

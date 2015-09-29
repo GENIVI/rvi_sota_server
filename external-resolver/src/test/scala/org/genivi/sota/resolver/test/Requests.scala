@@ -38,7 +38,7 @@ trait VehicleRequests extends Matchers { self: ScalatestRouteTest =>
     addVehicle(vin) ~> route ~> check {
       status shouldBe StatusCodes.NoContent
     }
-}
+  }
 
   def listVehicles: HttpRequest =
     Get(Resource.uri("vehicles"))
