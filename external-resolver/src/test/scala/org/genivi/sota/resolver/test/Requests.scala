@@ -14,7 +14,8 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport
 import CirceMarshallingSupport._
 import org.genivi.sota.resolver.DependenciesDirectives.makeFakeDependencyMap
 import org.genivi.sota.resolver.types.Package.Metadata
-import org.genivi.sota.resolver.types.{Vehicle, Filter, Package, PackageFilter}
+import org.genivi.sota.resolver.vehicle.Vehicle
+import org.genivi.sota.resolver.types.{Filter, Package, PackageFilter}
 import org.scalatest.Matchers
 import scala.concurrent.duration._
 

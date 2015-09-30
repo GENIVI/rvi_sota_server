@@ -9,19 +9,15 @@ import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.StatusCodes.NoContent
-import akka.http.scaladsl.server.ExceptionHandler.PF
 import akka.http.scaladsl.server.{Directives, ExceptionHandler, Route, PathMatchers, Directive1}
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
-import cats.data.Xor
 import eu.timepit.refined.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.db._
-import org.genivi.sota.resolver.route._
-import org.genivi.sota.resolver.types.{Vehicle, Package, Filter, PackageFilter}
-import org.genivi.sota.rest.ErrorCode
-import org.genivi.sota.rest.ErrorRepresentation
+import org.genivi.sota.resolver.types.{Package, Filter, PackageFilter}
+import org.genivi.sota.resolver.vehicle._
 import org.genivi.sota.rest.Handlers.{rejectionHandler, exceptionHandler}
 import org.genivi.sota.rest.Validation._
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
@@ -29,83 +25,11 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 import scala.util.control.NoStackTrace
 import slick.jdbc.JdbcBackend.Database
+import org.genivi.sota.resolver.common.RefinementDirectives.refinedPackageId
 
-
-object RefinementDirectives {
-  import Directives._
-
-  def refinedPackageId: Directive1[Package.Id] =
-    (refined[Package.ValidName]   (Slash ~ Segment) &
-     refined[Package.ValidVersion](Slash ~ Segment ~ PathEnd))
-       .as[Package.Id](Package.Id.apply _)
-
-}
-
-object VehicleDirectives {
-  import Directives._
-  import RefinementDirectives._
-
-  def installedPackagesHandler: PF = {
-    case VehicleRoute.MissingVehicle =>
-      complete(StatusCodes.NotFound ->
-        ErrorRepresentation(Vehicle.MissingVehicle, "Vehicle doesn't exist"))
-
-    case Errors.MissingPackageException =>
-      complete(StatusCodes.NotFound ->
-        ErrorRepresentation(Errors.Codes.PackageNotFound, "Package doesn't exist"))
-  }
-
-  def route(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Route = {
-    pathPrefix("vehicles") {
-      get {
-        pathEnd {
-          complete(db.run(Vehicles.list))
-        }
-      } ~
-      (put & refined[Vehicle.ValidVin](Slash ~ Segment ~ PathEnd)) { vin =>
-        pathEnd {
-          complete(db.run( Vehicles.add(Vehicle(vin)) ).map(_ => NoContent))
-        }
-      } ~
-      (get & refined[Vehicle.ValidVin](Slash ~ Segment))
-      { vin =>
-        path("package") {
-          completeOrRecoverWith(VehicleRoute.packagesOnVin(vin)) {
-            case VehicleRoute.MissingVehicle =>
-              complete(StatusCodes.NotFound ->
-                ErrorRepresentation(Vehicle.MissingVehicle, "Vehicle doesn't exist"))
-          }
-        }
-      } ~
-      (put & refined[Vehicle.ValidVin](Slash ~ Segment))
-      { vin =>
-        (pathPrefix("package") & refinedPackageId)
-        { pkgId =>
-          pathEnd {
-            completeOrRecoverWith(VehicleRoute.installPackage(vin, pkgId)) {
-              installedPackagesHandler
-            }
-          }
-        }
-      } ~
-      (delete & refined[Vehicle.ValidVin](Slash ~ Segment))
-      { vin =>
-        (pathPrefix("package") & refinedPackageId)
-        { pkgId =>
-          pathEnd {
-            completeOrRecoverWith(VehicleRoute.uninstallPackage(vin, pkgId)) {
-              installedPackagesHandler
-            }
-          }
-        }
-      }
-    }
-  }
-}
 
 object PackageDirectives {
   import Directives._
-  import RefinementDirectives._
 
   def route(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Route = {
 
@@ -126,10 +50,9 @@ object PackageDirectives {
 
 object DependenciesDirectives {
   import Directives._
-  import RefinementDirectives._
   import scala.concurrent.Future
   import org.genivi.sota.resolver.types.{True, And}
-  import org.genivi.sota.resolver.types.{Vehicle, Package, FilterAST}
+  import org.genivi.sota.resolver.types.{Package, FilterAST}
   import org.genivi.sota.resolver.types.FilterParser.parseValidFilter
   import org.genivi.sota.resolver.types.FilterQuery.query
 
@@ -141,10 +64,10 @@ object DependenciesDirectives {
 
   def resolve(name: Package.Name, version: Package.Version)
               (implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Future[Map[Vehicle.Vin, Seq[Package.Id]]] = for {
-    _       <- VehicleRoute.existsPackage(Package.Id(name, version))
+    _       <- VehicleFunctions.existsPackage(Package.Id(name, version))
     (p, fs) <- db.run(PackageFilters.listFiltersForPackage(Package.Id(name, version)))
-    vs      <- db.run(Vehicles.list)
-    ps : Seq[Seq[Package.Id]]                   <- Future.sequence(vs.map(v => VehicleRoute.packagesOnVin(v.vin)))
+    vs      <- db.run(VehicleDAO.list)
+    ps : Seq[Seq[Package.Id]]                   <- Future.sequence(vs.map(v => VehicleFunctions.packagesOnVin(v.vin)))
     vps: Seq[Tuple2[Vehicle, Seq[Package.Id]]]  =  vs.zip(ps)
   } yield makeFakeDependencyMap(name, version,
             vps.filter(query(fs.map(_.expression).map(parseValidFilter).foldLeft[FilterAST](True)(And)))
@@ -167,7 +90,7 @@ class Routing(implicit db: Database, system: ActorSystem, mat: ActorMaterializer
   val route: Route = pathPrefix("api" / "v1") {
     handleRejections(rejectionHandler) {
       handleExceptions(exceptionHandler) {
-        VehicleDirectives.route ~ PackageDirectives.route ~ new FilterDirectives().routes() ~ DependenciesDirectives.route
+        new VehicleDirectives().route ~ PackageDirectives.route ~ new FilterDirectives().routes() ~ DependenciesDirectives.route
       }
     }
   }
