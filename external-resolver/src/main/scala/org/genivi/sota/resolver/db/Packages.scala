@@ -4,18 +4,15 @@
  */
 package org.genivi.sota.resolver.db
 
-import cats.data.{Xor, XorT}
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.types.Package
-import scala.concurrent.ExecutionContext
-import scala.util.control.NoStackTrace
 import slick.driver.MySQLDriver.api._
 
 
 object Packages {
 
   // scalastyle:off
-  class PackageTable(tag: Tag) extends Table[Package](tag, "Package") {
+  private[db] class PackageTable(tag: Tag) extends Table[Package](tag, "Package") {
 
     def name        = column[Package.Name]("name")
     def version     = column[Package.Version]("version")
@@ -32,12 +29,8 @@ object Packages {
 
   val packages = TableQuery[PackageTable]
 
-  def add(pkg: Package)(implicit ec: ExecutionContext): DBIO[Package] =
-    packages.insertOrUpdate(pkg).map(_ => pkg)
-
-  def load(name: Package.Name, version: Package.Version)
-          (implicit ec: ExecutionContext): DBIO[Option[Package]] =
-    packages.filter(p => p.name === name && p.version === version).result.headOption
+  def add(pkg: Package): DBIO[Int] =
+    packages.insertOrUpdate(pkg)
 
   def list: DBIO[Seq[Package]] =
     packages.result

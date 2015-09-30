@@ -4,17 +4,16 @@
  */
 package org.genivi.sota.resolver.route
 
-import cats.data.Xor
-import scala.concurrent.{ExecutionContext, Future}
-import org.genivi.sota.resolver.types.{Vehicle, Package}
+import org.genivi.sota.resolver.Errors
 import org.genivi.sota.resolver.db.{Vehicles, Packages, InstalledPackages}
+import org.genivi.sota.resolver.types.{Vehicle, Package}
+import scala.concurrent.{ExecutionContext, Future}
 import slick.jdbc.JdbcBackend.Database
 
 
 object VehicleRoute {
 
   case object MissingVehicle extends Throwable
-  case object MissingPackage extends Throwable
 
   def exists
     (vin: Vehicle.Vin)
@@ -36,7 +35,7 @@ object VehicleRoute {
         .filter(_.id == pkgId)
         .headOption
         .fold[Future[Package]]
-          (Future.failed(MissingPackage))(Future.successful(_)))
+          (Future.failed(Errors.MissingPackageException))(Future.successful(_)))
 
   def installPackage
     (vin: Vehicle.Vin, pkgId: Package.Id)

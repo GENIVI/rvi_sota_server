@@ -116,20 +116,18 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
 
     "install a package on a VIN on PUT request to /vehicles/:vin/package/:packageName/:packageVersion" in {
       addPackageOK("apa", "1.0.1", None, None)
-      Put(Resource.uri("vehicles", "VINOOLAM0FAU2DEEP", "package", "apa", "1.0.1")) ~> route ~> check {
-        status shouldBe StatusCodes.OK
-      }
+      installPackageOK("VINOOLAM0FAU2DEEP", "apa", "1.0.1")
     }
 
     "fail to install a package on a non-existing VIN" in {
-      Put(Resource.uri("vehicles", "VINOOLAM0FAU2DEEB", "package", "bepa", "1.0.1")) ~> route ~> check {
+      installPackage("VINOOLAM0FAU2DEEB", "bepa", "1.0.1") ~> route ~> check {
         status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe Vehicle.MissingVehicle
       }
     }
 
     "fail to install a non-existing package on a VIN" in {
-      Put(Resource.uri("vehicles", "VINOOLAM0FAU2DEEP", "package", "bepa", "1.0.1")) ~> route ~> check {
+      installPackage("VINOOLAM0FAU2DEEP", "bepa", "1.0.1") ~> route ~> check {
         status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
       }

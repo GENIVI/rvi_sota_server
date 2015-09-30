@@ -91,14 +91,18 @@ object FilterPrinter {
 
 object FilterQuery {
 
-  def query(f: FilterAST): Function1[Vehicle, Boolean] = (v: Vehicle) => f match {
-    case VinMatches(re)   => !re.get.r.findAllIn(v.vin.get).isEmpty
-    case HasPackage(s, t) => true           // XXX: FOR NOW
-    case HasComponent(s)  => true           // XXX: FOR NOW
-    case Not(f)           => !query(f)(v)
-    case And(l, r)        => query(l)(v) && query(r)(v)
-    case Or (l, r)        => query(l)(v) || query(r)(v)
-    case True             => true
-    case False            => false
+  def query(f: FilterAST): Function1[Tuple2[Vehicle, Seq[Package.Id]], Boolean] =
+  { case ((v: Vehicle, ps: Seq[Package.Id])) => f match {
+      case VinMatches(re)       => !re.get.r.findAllIn(v.vin.get).isEmpty
+      case HasPackage(re1, re2) => ps.map(p => !re1.get.r.findAllIn(p.name   .get).isEmpty &&
+                                               !re2.get.r.findAllIn(p.version.get).isEmpty)
+                                     .exists(_== true)
+      case HasComponent(s)      => true           // XXX: FOR NOW
+      case Not(f)               => !query(f)((v, ps))
+      case And(l, r)            => query(l)((v, ps)) && query(r)((v, ps))
+      case Or (l, r)            => query(l)((v, ps)) || query(r)((v, ps))
+      case True                 => true
+      case False                => false
+    }
   }
 }
