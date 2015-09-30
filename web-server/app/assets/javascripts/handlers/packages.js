@@ -25,8 +25,9 @@ define(function(require) {
           case 'create-package':
             var url = '/api/v1/packages/' + payload.package.name + '/' + payload.package.version;
             sendRequest.doPut(url, payload.data, {form: true})
-              .success(function(packages) {
-                db.packages.reset(packages);
+              .success(function() {
+                SotaDispatcher.dispatch({actionType: 'get-packages'});
+                SotaDispatcher.dispatch({actionType: 'search-packages-by-regex'});
               });
           break;
           case 'search-packages-by-regex':
