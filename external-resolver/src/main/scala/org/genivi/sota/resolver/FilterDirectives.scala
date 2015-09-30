@@ -21,6 +21,17 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import slick.jdbc.JdbcBackend.Database
 
+object FutureSupport {
+
+  implicit class FutureOps[T]( x: Future[Option[T]] ) {
+
+    def failIfNone( t: Throwable )
+                  (implicit ec: ExecutionContext): Future[T] =
+      x.flatMap( _.fold[Future[T]]( FastFuture.failed(t) )(FastFuture.successful) )
+
+  }
+
+}
 
 class FilterDirectives()(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
   import FutureSupport._

@@ -42,6 +42,15 @@ trait VehicleRequests extends Matchers { self: ScalatestRouteTest =>
 
   def listVehicles: HttpRequest =
     Get(Resource.uri("vehicles"))
+
+  def installPackage(vin: String, pname: String, pversion: String): HttpRequest =
+    Put(Resource.uri("vehicles", vin, "package", pname, pversion))
+
+  def installPackageOK(vin: String, pname: String, pversion: String)(implicit route: Route): Unit =
+    installPackage(vin, pname, pversion) ~> route ~> check {
+      status shouldBe StatusCodes.OK
+    }
+
 }
 
 trait PackageRequests extends Matchers { self: ScalatestRouteTest =>
@@ -124,6 +133,11 @@ trait PackageFilterRequests extends Matchers { self: ScalatestRouteTest =>
 
   def deletePackageFilter(pname: String, pversion: String, fname: String): HttpRequest =
     Delete(Resource.uri("packageFilters", pname, pversion, fname))
+
+  def deletePackageFilterOK(pname: String, pversion: String, fname: String)(implicit route: Route): Unit =
+    deletePackageFilter(pname, pversion, fname) ~> route ~> check {
+      status shouldBe StatusCodes.OK
+    }
 }
 
 trait ResolveRequests extends Matchers { self: ScalatestRouteTest =>

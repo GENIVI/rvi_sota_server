@@ -103,18 +103,6 @@ object VehicleDirectives {
   }
 }
 
-object FutureSupport {
-
-  implicit class FutureOps[T]( x: Future[Option[T]] ) {
-
-    def failIfNone( t: Throwable )
-                  (implicit ec: ExecutionContext): Future[T] =
-      x.flatMap( _.fold[Future[T]]( FastFuture.failed(t) )(FastFuture.successful) )
-
-  }
-
-}
-
 object PackageDirectives {
   import Directives._
   import RefinementDirectives._
@@ -139,7 +127,6 @@ object PackageDirectives {
 object DependenciesDirectives {
   import Directives._
   import RefinementDirectives._
-  import FutureSupport._
   import scala.concurrent.Future
   import org.genivi.sota.resolver.types.{True, And}
   import org.genivi.sota.resolver.types.{Vehicle, Package, FilterAST}
@@ -157,7 +144,11 @@ object DependenciesDirectives {
     _       <- VehicleRoute.existsPackage(Package.Id(name, version))
     (p, fs) <- db.run(PackageFilters.listFiltersForPackage(Package.Id(name, version)))
     vs      <- db.run(Vehicles.list)
-  } yield makeFakeDependencyMap(name, version, vs.filter(query(fs.map(_.expression).map(parseValidFilter).foldLeft[FilterAST](True)(And))))
+    ps : Seq[Seq[Package.Id]]                   <- Future.sequence(vs.map(v => VehicleRoute.packagesOnVin(v.vin)))
+    vps: Seq[Tuple2[Vehicle, Seq[Package.Id]]]  =  vs.zip(ps)
+  } yield makeFakeDependencyMap(name, version,
+            vps.filter(query(fs.map(_.expression).map(parseValidFilter).foldLeft[FilterAST](True)(And)))
+               .map(_._1))
 
   def route(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Route = {
     pathPrefix("resolve") {

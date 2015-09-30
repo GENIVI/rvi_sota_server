@@ -1,10 +1,7 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.unmarshalling._
 import eu.timepit.refined.Refined
-import cats.data.Xor
-import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.types.{Vehicle, Package, PackageFilter}
@@ -15,7 +12,7 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
 
   "Resolve resource" should {
 
-    "give back a list of vehicles onto which the supplied package should be installed" in {
+    "return all VINs if the filter is trivially true" in {
 
       // Add some vehicles.
       val vins = List(
@@ -34,6 +31,9 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
       addPackageFilterOK("resolve pkg", "0.0.1", "truefilter")
 
       resolveOK("resolve pkg", "0.0.1", vins)
+    }
+
+    "support filtering by VIN" in {
 
       // Add another filter.
       addFilterOK("0xfilter", s"""vin_matches "^00.*" OR vin_matches "^01.*"""")
@@ -41,13 +41,32 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
 
       resolveOK("resolve pkg", "0.0.1",
         List("00RESOLVEVIN12345", "01RESOLVEVIN12345"))
+    }
+
+    "support filtering by installed packages on VIN" in {
+
+      // Delete the previous filter and add another one which uses
+      // has_package instead.
+
+      deletePackageFilterOK("resolve pkg", "0.0.1", "0xfilter")
+      addPackageOK("apa",  "1.0.0", None, None)
+      addPackageOK("bepa", "1.0.0", None, None)
+      installPackageOK("10RESOLVEVIN12345", "apa", "1.0.0")
+      installPackageOK("11RESOLVEVIN12345", "apa", "1.0.0")
+      installPackageOK("00RESOLVEVIN12345", "bepa", "1.0.0")
+      addFilterOK("1xfilter", s"""has_package "^a.*" "1.*"""")
+      addPackageFilterOK("resolve pkg", "0.0.1", "1xfilter")
+      resolveOK("resolve pkg", "0.0.1",
+        List("10RESOLVEVIN12345", "11RESOLVEVIN12345"))
+    }
+
+    "return no VINs if the filter is trivially false" in {
 
       // Add trivially false filter.
       addFilterOK("falsefilter", "FALSE")
       addPackageFilterOK("resolve pkg", "0.0.1", "falsefilter")
 
       resolveOK("resolve pkg", "0.0.1", List())
-
     }
   }
 
@@ -75,18 +94,17 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
         status shouldBe StatusCodes.OK
 
         responseAs[io.circe.Json].noSpaces shouldBe
-          s"""[["00RESOLVEVIN12345",[{"version":"0.0.1","name":"resolve pkg"}]],["01RESOLVEVIN12345",[{"version":"0.0.1","name":"resolve pkg"}]]]"""
+          s"""[["10RESOLVEVIN12345",[{"version":"0.0.1","name":"resolve pkg"}]],["11RESOLVEVIN12345",[{"version":"0.0.1","name":"resolve pkg"}]]]"""
 
         responseAs[Map[Vehicle.Vin, Set[Package.Id]]] shouldBe
-          Map(Refined("00RESOLVEVIN12345") -> Set(Package.Id(Refined("resolve pkg"), Refined("0.0.1"))),
-              Refined("01RESOLVEVIN12345") -> Set(Package.Id(Refined("resolve pkg"), Refined("0.0.1"))))
+          Map(Refined("10RESOLVEVIN12345") -> Set(Package.Id(Refined("resolve pkg"), Refined("0.0.1"))),
+              Refined("11RESOLVEVIN12345") -> Set(Package.Id(Refined("resolve pkg"), Refined("0.0.1"))))
 
       }
     }
   }
 
 }
-/*
 
 class ResolveResourcePropSpec extends ResourcePropSpec {
 
@@ -94,16 +112,14 @@ class ResolveResourcePropSpec extends ResourcePropSpec {
   import ArbitraryPackage.arbPackage
   import ArbitraryVehicle.arbVehicle
   import akka.http.scaladsl.model.StatusCodes
-  import org.genivi.sota.resolver.db.Resolve.makeFakeDependencyMap
+  import org.genivi.sota.resolver.DependenciesDirectives.makeFakeDependencyMap
   import org.genivi.sota.resolver.types.FilterParser.parseValidFilter
   import org.genivi.sota.resolver.types._
   import org.scalacheck.Prop.{True => _, _}
-  import org.genivi.sota.CirceSupport._
   import io.circe.generic.auto._
-  import akka.http.scaladsl.unmarshalling._
 
 
-  property("Resolve should give back the same thing as if we filtered with the filters") {
+  ignore("Resolve should give back the same thing as if we filtered with the filters") {
 
     forAll() { (
       vs: Seq[Vehicle],   // The available vehicles.
@@ -139,9 +155,11 @@ class ResolveResourcePropSpec extends ResourcePropSpec {
                     // ... we filtered the list of all VINs by the boolean
                     // predicate that arises from the combined filter
                     // queries.
-                    allVehicles.filter(FilterQuery.query
+
+                    // XXX: Deal with installed packages properly.
+                    allVehicles.map(v => (v, List[Package.Id]())).filter(FilterQuery.query
                       (fs.map(_.expression).map(parseValidFilter)
-                         .foldLeft[FilterAST](True)(And))))
+                         .foldLeft[FilterAST](True)(And))).map(_._1))
               }
             }
           }
@@ -152,5 +170,3 @@ class ResolveResourcePropSpec extends ResourcePropSpec {
   }
 
 }
-
- */
