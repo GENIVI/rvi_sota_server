@@ -1,4 +1,8 @@
-define(['react', '../mixins/fluxbone', './vehicles/vehicle-component', 'sota-dispatcher'], function(React, Fluxbone, VehicleComponent, SotaDispatcher) {
+define(function(require) {
+
+  var React = require('react'),
+      Fluxbone = require('../mixins/fluxbone'),
+      SotaDispatcher = require('sota-dispatcher');
 
   var VehiclesToUpdate = React.createClass({
     mixins: [
