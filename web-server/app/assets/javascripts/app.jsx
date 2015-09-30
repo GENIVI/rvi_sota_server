@@ -6,6 +6,7 @@ define(function(require) {
       FiltersPageComponent = require('components/filters/filters-page-component'),
       ShowPackage = require('components/packages/show-package'),
       ShowFilter = require('components/filters/show-filter'),
+      VehiclePageComponent = require('components/vehicles/vehicle-page-component'),
       Router = require('react-router'),
       CreateCampaign = require('components/create-campaign-page-component'),
       ListOfUpdates = require('components/updates/list-of-updates'),
@@ -70,6 +71,7 @@ define(function(require) {
   var routes = (
     <Route handler={App} path="/">
       <Route name="vehicles" handler={VehiclesPageComponent}/>
+      <Route name="vehicle" path="vehicles/:vin" handler={VehiclePageComponent}/>
       <Route name="packages">
         <Route name="package" path="/packages/:name/:version" handler={wrapComponent(ShowPackage, {Package: db.showPackage})}/>
         <Route name="new-campaign" path="/packages/:name/:version/new-campaign" handler={wrapComponent(CreateCampaign)}/>

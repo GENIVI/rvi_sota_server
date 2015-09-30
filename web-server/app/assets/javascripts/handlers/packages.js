@@ -38,6 +38,12 @@ define(function(require) {
                 db.searchablePackages.reset(packages);
               });
           break;
+          case 'get-packages-for-vin':
+            sendRequest.doGet('/api/v1/vehicles/' + payload.vin + '/package')
+              .success(function(packages) {
+                db.packagesForVin.reset(packages);
+              });
+          break;
         }
       };
       SotaDispatcher.register(this.dispatchCallback.bind(this));

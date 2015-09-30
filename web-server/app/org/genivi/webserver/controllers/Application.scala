@@ -67,11 +67,16 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
     } else if (resolverApiResources(head)) {
       proxyTo(resolverApiUri, req)
     } else {
-      // Note: Only resource "vehicles" are on both core and resolver
-      for {
-        respCore <- proxyTo(coreApiUri, req)
-        respResult <- proxyTo(resolverApiUri, req)
-      } yield respCore // TODO: Retry until both responses are success
+      // Note: Only resource "vehicles" are on both core and resolver,
+      // except endpoint which lists packages installed on a vin
+      if(path.endsWith("package")) {
+        proxyTo(resolverApiUri, req)
+      } else {
+        for {
+          respCore <- proxyTo(coreApiUri, req)
+          respResult <- proxyTo(resolverApiUri, req)
+        } yield respCore // TODO: Retry until both responses are success
+      }
     }
   }
 
