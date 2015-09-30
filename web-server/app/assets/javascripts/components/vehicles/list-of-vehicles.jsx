@@ -2,6 +2,7 @@ define(function(require) {
 
   var React = require('react'),
       _ = require('underscore'),
+      Router = require('react-router'),
       Fluxbone = require('../../mixins/fluxbone'),
       SotaDispatcher = require('sota-dispatcher');
 
@@ -18,7 +19,9 @@ define(function(require) {
         return (
           <tr>
             <td>
+              <Router.Link to='vehicle' params={{vin: vehicle.vin}}>
               { vehicle.vin }
+              </Router.Link>
             </td>
           </tr>
         );
