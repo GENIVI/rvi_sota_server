@@ -1,7 +1,7 @@
 define(function(require) {
   var SotaDispatcher = require('sota-dispatcher'),
-      _ = require('underscore');
-      db = require('../stores/db');
+      _ = require('underscore'),
+      db = require('../stores/db'),
       sendRequest = require('../mixins/send-request');
 
   var Handler = (function() {

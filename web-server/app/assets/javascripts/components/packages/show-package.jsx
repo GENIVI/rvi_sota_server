@@ -6,6 +6,7 @@ define(function(require) {
       VehiclesToUpdate = require('components/vehicles-to-update-component'),
       VehiclesToUpdateStore = require('stores/vehicles-to-update'),
       SotaDispatcher = require('sota-dispatcher'),
+      db = require('stores/db'),
       React = require('react');
 
   var ShowPackageComponent = React.createClass({
