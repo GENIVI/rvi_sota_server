@@ -5,7 +5,7 @@
 package org.genivi.sota.resolver.common
 
 import akka.http.scaladsl.server.{Directives, Directive1}
-import org.genivi.sota.resolver.types.Package
+import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.rest.Validation._
 
 

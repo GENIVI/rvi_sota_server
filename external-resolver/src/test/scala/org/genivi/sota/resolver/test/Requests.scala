@@ -13,9 +13,9 @@ import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import CirceMarshallingSupport._
 import org.genivi.sota.resolver.DependenciesDirectives.makeFakeDependencyMap
-import org.genivi.sota.resolver.types.Package.Metadata
+import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.vehicle.Vehicle
-import org.genivi.sota.resolver.types.{Filter, Package, PackageFilter}
+import org.genivi.sota.resolver.types.{Filter, PackageFilter}
 import org.scalatest.Matchers
 import scala.concurrent.duration._
 
@@ -59,7 +59,7 @@ trait PackageRequests extends Matchers { self: ScalatestRouteTest =>
   def addPackage
     (name: String, version: String, desc: Option[String], vendor: Option[String])
       : HttpRequest
-  = Put(Resource.uri("packages", name, version), Metadata(desc, vendor))
+  = Put(Resource.uri("packages", name, version), Package.Metadata(desc, vendor))
 
   def addPackageOK
     (name: String, version: String, desc: Option[String], vendor: Option[String])

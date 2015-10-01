@@ -4,9 +4,9 @@
  */
 package org.genivi.sota.resolver.vehicle
 
+import org.genivi.sota.resolver.packages.{Package, PackageFunctions}
 import org.genivi.sota.resolver.Errors
-import org.genivi.sota.resolver.db.{Packages, InstalledPackages}
-import org.genivi.sota.resolver.types.Package
+import org.genivi.sota.resolver.db.InstalledPackages
 import scala.concurrent.{ExecutionContext, Future}
 import slick.jdbc.JdbcBackend.Database
 
@@ -23,23 +23,12 @@ object VehicleFunctions {
         .fold[Future[Vehicle]]
           (Future.failed(MissingVehicle))(Future.successful(_)))
 
-  def existsPackage
-    (pkgId: Package.Id)
-    (implicit db: Database, ec: ExecutionContext)
-      : Future[Package] =
-    db.run(Packages.list)
-      .flatMap(_
-        .filter(_.id == pkgId)
-        .headOption
-        .fold[Future[Package]]
-          (Future.failed(Errors.MissingPackageException))(Future.successful(_)))
-
   def installPackage
     (vin: Vehicle.Vin, pkgId: Package.Id)
     (implicit db: Database, ec: ExecutionContext): Future[Unit] =
     for {
       _ <- exists(vin)
-      _ <- existsPackage(pkgId)
+      _ <- PackageFunctions.exists(pkgId)
       _ <- db.run(InstalledPackages.add(vin, pkgId))
     } yield ()
 
@@ -48,7 +37,7 @@ object VehicleFunctions {
     (implicit db: Database, ec: ExecutionContext): Future[Unit] =
     for {
       _ <- exists(vin)
-      _ <- existsPackage(pkgId)
+      _ <- PackageFunctions.exists(pkgId)
       _ <- db.run(InstalledPackages.remove(vin, pkgId))
     } yield ()
 
@@ -86,7 +75,7 @@ object VehicleFunctions {
     (pkgId: Package.Id)
     (implicit db: Database, ec: ExecutionContext): Future[Seq[Vehicle.Vin]] =
     for {
-      _  <- existsPackage(pkgId)
+      _  <- PackageFunctions.exists(pkgId)
       vs <- vinsThatHavePackageMap
               .map(_
                 .get(pkgId)
