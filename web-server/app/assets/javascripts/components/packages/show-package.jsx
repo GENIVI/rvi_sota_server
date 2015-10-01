@@ -3,8 +3,7 @@ define(function(require) {
   var _ = require('underscore'),
       Router = require('react-router'),
       PackageFilterAssociation = require('../package-filters/package-filter-association'),
-      VehiclesToUpdate = require('components/vehicles-to-update-component'),
-      VehiclesToUpdateStore = require('stores/vehicles-to-update'),
+      AffectedVins = require('../vehicles/affected-vins'),
       SotaDispatcher = require('sota-dispatcher'),
       db = require('stores/db'),
       React = require('react');
@@ -82,7 +81,7 @@ define(function(require) {
             getCreateList="get-filters"
             createResourceName="Filters"
             getDeleteList={{actionType: 'get-filters-for-package', name: params.name, version: params.version}}/>
-          <VehiclesToUpdate store={new VehiclesToUpdateStore({}, {pkgName: params.name, pkgVersion: params.version})}/>
+          <AffectedVins AffectedVins={db.affectedVins} />
         </div>
       );
     }

@@ -2,9 +2,9 @@ define(function(require) {
 
   var _ = require('underscore'),
       React = require('react'),
-      VehiclesToUpdateStore = require('stores/vehicles-to-update'),
-      VehiclesToUpdate = require('components/vehicles-to-update-component'),
+      AffectedVins = require('./vehicles/affected-vins'),
       showModel = require('../mixins/show-model'),
+      db = require('stores/db'),
       CreateUpdate = require('components/create-update');
 
   var ShowPackageComponent = React.createClass({
@@ -19,7 +19,7 @@ define(function(require) {
             New Update Campaign for Package <br/>
             {params.name}
           </h1>
-          <VehiclesToUpdate store={new VehiclesToUpdateStore({}, {pkgName: params.name, pkgVersion: params.version})}/>
+          <AffectedVins AffectedVins={db.affectedVins} />
           <CreateUpdate packageName={params.name} packageVersion={params.version}/>
         </div>
       );

@@ -19,6 +19,7 @@ define(function(require) {
       this.searchableFilters = atom.createAtom([]);
       this.showFilter = atom.createAtom({});
 
+      this.affectedVins = atom.createAtom([]);
       this.searchableVehicles = atom.createAtom([]);
       this.postStatus = atom.createAtom([]);
     }

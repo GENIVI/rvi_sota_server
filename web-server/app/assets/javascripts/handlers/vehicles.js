@@ -28,6 +28,14 @@ define(function(require) {
                 db.searchableVehicles.reset(vehicles);
               });
           break;
+          case 'fetch-affected-vins':
+            var affectedVinsUrl = '/api/v1/resolve/' + payload.name + "/" + payload.version;
+
+            sendRequest.doGet(affectedVinsUrl)
+              .success(function(vehicles) {
+                db.affectedVins.reset(vehicles);
+              });
+          break;
         }
       };
       SotaDispatcher.register(this.dispatchCallback.bind(this));
