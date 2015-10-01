@@ -11,6 +11,8 @@ define(function(require) {
       this.packagesForFilter = atom.createAtom([]);
       this.packagesForVin = atom.createAtom([]);
       this.filtersForPackage = atom.createAtom([]);
+      this.vehiclesForPackage = atom.createAtom([]);
+
       this.packages = atom.createAtom([]);
       this.showPackage = atom.createAtom({});
       this.searchablePackages = atom.createAtom([]);
