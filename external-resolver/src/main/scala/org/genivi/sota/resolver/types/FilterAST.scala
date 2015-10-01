@@ -8,6 +8,8 @@ import eu.timepit.refined.Refined
 import eu.timepit.refined.string.{Regex, regexPredicate}
 import scala.util.parsing.combinator.syntactical.StandardTokenParsers
 import scala.util.parsing.combinator.{PackratParsers, ImplicitConversions}
+import org.genivi.sota.resolver.vehicle.Vehicle
+
 
 sealed abstract trait FilterAST
 case class VinMatches(vin: Refined[String, Regex])    extends FilterAST

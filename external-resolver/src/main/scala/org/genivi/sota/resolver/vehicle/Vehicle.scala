@@ -2,7 +2,7 @@
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.resolver.types
+package org.genivi.sota.resolver.vehicle
 
 import eu.timepit.refined.{Refined, Predicate}
 import org.genivi.sota.rest.ErrorCode

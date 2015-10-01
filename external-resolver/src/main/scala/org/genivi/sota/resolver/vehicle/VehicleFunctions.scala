@@ -2,16 +2,16 @@
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.resolver.route
+package org.genivi.sota.resolver.vehicle
 
 import org.genivi.sota.resolver.Errors
-import org.genivi.sota.resolver.db.{Vehicles, Packages, InstalledPackages}
-import org.genivi.sota.resolver.types.{Vehicle, Package}
+import org.genivi.sota.resolver.db.{Packages, InstalledPackages}
+import org.genivi.sota.resolver.types.Package
 import scala.concurrent.{ExecutionContext, Future}
 import slick.jdbc.JdbcBackend.Database
 
 
-object VehicleRoute {
+object VehicleFunctions {
 
   case object MissingVehicle extends Throwable
 
@@ -19,7 +19,7 @@ object VehicleRoute {
     (vin: Vehicle.Vin)
     (implicit db: Database, ec: ExecutionContext)
       : Future[Vehicle] =
-    db.run(Vehicles.list)
+    db.run(VehicleDAO.list)
       .flatMap(_
         .filter(_.vin == vin)
         .headOption

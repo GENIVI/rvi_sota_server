@@ -4,9 +4,9 @@
  */
 package org.genivi.sota.resolver.db
 
-import cats.data.Xor
 import org.genivi.sota.refined.SlickRefined._
-import org.genivi.sota.resolver.types.{Vehicle, Package}
+import org.genivi.sota.resolver.vehicle.Vehicle
+import org.genivi.sota.resolver.types.Package
 import slick.driver.MySQLDriver.api._
 
 

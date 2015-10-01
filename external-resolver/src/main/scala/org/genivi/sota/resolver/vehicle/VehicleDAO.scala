@@ -2,13 +2,12 @@
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.resolver.db
+package org.genivi.sota.resolver.vehicle
 
 import org.genivi.sota.refined.SlickRefined._
-import org.genivi.sota.resolver.types.Vehicle
-import scala.concurrent.ExecutionContext
 
-object Vehicles {
+
+object VehicleDAO {
 
   import slick.driver.MySQLDriver.api._
 

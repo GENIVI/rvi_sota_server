@@ -11,7 +11,8 @@ import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import CirceMarshallingSupport._
 import org.genivi.sota.resolver.Errors.Codes
-import org.genivi.sota.resolver.types.{Vehicle, Package, PackageFilter}
+import org.genivi.sota.resolver.vehicle.Vehicle
+import org.genivi.sota.resolver.types.{Package, PackageFilter}
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 import org.scalacheck._
 
@@ -79,21 +80,21 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
       addVehicleOK("VINOOLAM0FAU2DEEP")
     }
 
-    "not accept too long Vins" in {
+    "not accept too long VINs" in {
       addVehicle("VINOOLAM0FAU2DEEP1") ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
-    "not accept too short Vins" in {
+    "not accept too short VINs" in {
       addVehicle("VINOOLAM0FAU2DEE") ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
-    "not accept Vins which aren't alpha num" in {
+    "not accept VINs which aren't alpha num" in {
       addVehicle("VINOOLAM0FAU2DEE!") ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
@@ -104,7 +105,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
       addVehicleOK("VINOOLAM0FAU2DEEP")
     }
 
-    "list all Vins on a GET request" in {
+    "list all VINs on a GET request" in {
       listVehicles ~> route ~> check {
         responseAs[Seq[Vehicle]] shouldBe List(Vehicle(Refined("VINOOLAM0FAU2DEEP")))
       }
