@@ -43,7 +43,7 @@ define(function(require) {
             </div>
             <div className="form-group">
               <label htmlFor="version">Version</label>
-              <input type="text" className="form-control" name="version" ref="version" placeholder="10"/>
+              <input type="text" className="form-control" name="version" ref="version" placeholder="1.0.0"/>
             </div>
             <div className="form-group">
               <label htmlFor="description">Description</label>
