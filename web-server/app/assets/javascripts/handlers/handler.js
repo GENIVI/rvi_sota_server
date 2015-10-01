@@ -19,6 +19,9 @@ define(function(require) {
       SotaDispatcher.register(this.dispatchCallback.bind(this));
 
       $(document).ajaxError(function(event, xhr) {
+        if (xhr.status === 401) {
+          return location.reload();
+        }
          var ct = xhr.getResponseHeader("content-type") || "";
            var result = xhr.responseText;
            if (ct.indexOf('plain') > -1) {
