@@ -3,7 +3,6 @@ define(function(require) {
       serializeForm = require('../../mixins/serialize-form'),
       toggleForm = require('../../mixins/toggle-form'),
       db = require('../../stores/db'),
-      Errors = require('../errors'),
       SotaDispatcher = require('sota-dispatcher');
 
   var AddVehicleComponent = React.createClass({
@@ -30,7 +29,6 @@ define(function(require) {
           <div className="form-group">
             <button type="submit" className="btn btn-primary">Add Vehicle</button>
           </div>
-          <Errors />
         </form>
       );
     }
