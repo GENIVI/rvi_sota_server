@@ -17,12 +17,9 @@ object VehicleFunctions {
 
   def exists
     (vin: Vehicle.Vin)
-    (implicit db: Database, ec: ExecutionContext)
-      : Future[Vehicle] =
-    db.run(VehicleDAO.list)
+    (implicit db: Database, ec: ExecutionContext): Future[Vehicle] =
+    db.run(VehicleDAO.exists(vin))
       .flatMap(_
-        .filter(_.vin == vin)
-        .headOption
         .fold[Future[Vehicle]]
           (Future.failed(MissingVehicle))(Future.successful(_)))
 
@@ -39,8 +36,7 @@ object VehicleFunctions {
 
   def installPackage
     (vin: Vehicle.Vin, pkgId: Package.Id)
-    (implicit db: Database, ec: ExecutionContext)
-      : Future[Unit] =
+    (implicit db: Database, ec: ExecutionContext): Future[Unit] =
     for {
       _ <- exists(vin)
       _ <- existsPackage(pkgId)
@@ -49,8 +45,7 @@ object VehicleFunctions {
 
   def uninstallPackage
     (vin: Vehicle.Vin, pkgId: Package.Id)
-    (implicit db: Database, ec: ExecutionContext)
-      : Future[Unit] =
+    (implicit db: Database, ec: ExecutionContext): Future[Unit] =
     for {
       _ <- exists(vin)
       _ <- existsPackage(pkgId)
@@ -68,15 +63,35 @@ object VehicleFunctions {
 
   def packagesOnVin
     (vin: Vehicle.Vin)
-    (implicit db: Database, ec: ExecutionContext)
-      : Future[Seq[Package.Id]] =
+    (implicit db: Database, ec: ExecutionContext): Future[Seq[Package.Id]] =
     for {
       _  <- exists(vin)
       ps <- packagesOnVinMap
-      .map(_
-        .get(vin)
-        .toList
-        .flatten)
+              .map(_
+                .get(vin)
+                .toList
+                .flatten)
     } yield ps
+
+  def vinsThatHavePackageMap
+    (implicit db: Database, ec: ExecutionContext)
+      : Future[Map[Package.Id, Seq[Vehicle.Vin]]] =
+    db.run(InstalledPackages.list)
+      .map(_
+        .sortBy(_._2)
+        .groupBy(_._2)
+        .mapValues(_.map(_._1)))
+
+  def vinsThatHavePackage
+    (pkgId: Package.Id)
+    (implicit db: Database, ec: ExecutionContext): Future[Seq[Vehicle.Vin]] =
+    for {
+      _  <- existsPackage(pkgId)
+      vs <- vinsThatHavePackageMap
+              .map(_
+                .get(pkgId)
+                .toList
+                .flatten)
+    } yield vs
 
 }

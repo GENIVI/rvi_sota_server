@@ -9,10 +9,13 @@ import akka.http.scaladsl.model.StatusCodes.NoContent
 import akka.http.scaladsl.server.ExceptionHandler.PF
 import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
+import eu.timepit.refined.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.Errors
 import org.genivi.sota.resolver.common.RefinementDirectives.refinedPackageId
+import org.genivi.sota.resolver.types.Package
 import org.genivi.sota.rest.Validation._
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 import scala.concurrent.ExecutionContext
@@ -37,7 +40,16 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
     pathPrefix("vehicles") {
       get {
         pathEnd {
-          complete(db.run(VehicleDAO.list))
+          parameter('package.as[Package.NameVersion].?) {
+            case Some(nameVersion) =>
+              val packageName   : Package.Name    = Refined(nameVersion.get.split("-").head)
+              val packageVersion: Package.Version = Refined(nameVersion.get.split("-").tail.head)
+              completeOrRecoverWith(VehicleFunctions.vinsThatHavePackage(Package.Id(packageName, packageVersion))) {
+                Errors.onMissingPackage
+              }
+            case None              =>
+              complete(db.run(VehicleDAO.list))
+          }
         }
       } ~
       (put & refined[Vehicle.ValidVin](Slash ~ Segment ~ PathEnd)) { vin =>

@@ -29,4 +29,10 @@ object VehicleDAO {
   def list: DBIO[Seq[Vehicle]] =
     vehicles.result
 
+  def exists(vin: Vehicle.Vin): DBIO[Option[Vehicle]] =
+    vehicles
+      .filter(_.vin === vin)
+      .result
+      .headOption
+
 }

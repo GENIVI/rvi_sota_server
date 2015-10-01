@@ -49,4 +49,8 @@ object Package {
       }
       , s => s"Invalid package id (should be package name dash package version): $s")
 
+  implicit val PackageIdOrdering: Ordering[Package.Id] = new Ordering[Package.Id] {
+    override def compare(id1: Package.Id, id2: Package.Id): Int =
+      id1.name.get + id1.version.get compare id2.name.get + id2.version.get
+  }
 }
