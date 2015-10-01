@@ -170,5 +170,29 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
         responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
       }
     }
+
+    "list all VINs that have a specific package installed on GET request to /vehciles?package:packageName-:packageVersion" in {
+      installPackageOK("VINOOLAM0FAU2DEEP", "apa", "1.0.1")
+      Get(Resource.uri("vehicles") + "?package=apa-1.0.1") ~> route ~> check {
+        status shouldBe StatusCodes.OK
+        responseAs[Seq[Vehicle.Vin]] shouldBe List(Refined("VINOOLAM0FAU2DEEP"))
+      }
+    }
+
+    "fail to list VINs that have a specific non-existing package installed" in {
+      installPackageOK("VINOOLAM0FAU2DEEP", "apa", "1.0.1")
+      Get(Resource.uri("vehicles") + "?package=apa-0.0.0") ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
+        responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
+      }
+    }
+
+    "fail to list VINs that have a specific empty or malformated package installed" in {
+      installPackageOK("VINOOLAM0FAU2DEEP", "apa", "1.0.1")
+      Get(Resource.uri("vehicles") + "?package=") ~> route ~> check {
+        status shouldBe StatusCodes.BadRequest
+      }
+    }
+
   }
 }

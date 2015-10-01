@@ -9,23 +9,22 @@ import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.StatusCodes.NoContent
-import akka.http.scaladsl.server.{Directives, ExceptionHandler, Route, PathMatchers, Directive1}
+import akka.http.scaladsl.server.{Directives, ExceptionHandler, Route, PathMatchers}
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.genivi.sota.resolver.common.RefinementDirectives.refinedPackageId
 import org.genivi.sota.resolver.db._
 import org.genivi.sota.resolver.types.{Package, Filter, PackageFilter}
 import org.genivi.sota.resolver.vehicle._
 import org.genivi.sota.rest.Handlers.{rejectionHandler, exceptionHandler}
-import org.genivi.sota.rest.Validation._
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 import scala.util.control.NoStackTrace
 import slick.jdbc.JdbcBackend.Database
-import org.genivi.sota.resolver.common.RefinementDirectives.refinedPackageId
 
 
 object PackageDirectives {
