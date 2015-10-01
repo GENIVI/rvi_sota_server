@@ -7,7 +7,7 @@ package org.genivi.webserver.controllers
 import jp.t2v.lab.play2.auth._
 import org.genivi.webserver.Authentication.{Account, Role}
 import play.api.mvc.{RequestHeader, Result}
-import play.api.mvc.Results.{Redirect, Forbidden}
+import play.api.mvc.Results.{Redirect, Forbidden, Unauthorized}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.{ClassTag, classTag}
@@ -71,7 +71,17 @@ trait AuthConfigImpl extends AuthConfig {
    * If the user is not logged in and tries to access a protected resource then redirct them as follows:
    */
   def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] = {
-    Future.successful(Redirect(routes.Application.login).withSession("access_uri" -> request.uri))
+    val redirectResponse = Redirect(routes.Application.login).withSession("access_uri" -> request.uri)
+    request.headers.get("Accept") match {
+      case Some(r) => {
+        if (r.contains("application/json")) {
+          Future.successful(Unauthorized)
+        } else {
+          Future.successful(redirectResponse)
+        }
+      }
+      case None => Future.successful(redirectResponse)
+    }
   }
 
 

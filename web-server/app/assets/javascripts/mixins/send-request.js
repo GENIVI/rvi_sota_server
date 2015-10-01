@@ -28,7 +28,7 @@ define(['jquery'], function($) {
       });
     },
     doGet: function(url, opts) {
-      return $.get(url);
+      return this.send("GET", url, opts);
     },
     doPost: function(url, data, opts) {
       return this.send("POST", url, data, opts);
