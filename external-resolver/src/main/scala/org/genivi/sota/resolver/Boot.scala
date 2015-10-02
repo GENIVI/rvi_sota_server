@@ -7,68 +7,20 @@ package org.genivi.sota.resolver
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.model.StatusCodes.NoContent
-import akka.http.scaladsl.server.{Directives, ExceptionHandler, Route, PathMatchers}
-import akka.http.scaladsl.util.FastFuture
+import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.ActorMaterializer
-import eu.timepit.refined.Refined
-import io.circe.generic.auto._
-import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import org.genivi.sota.resolver.common.Errors
-import org.genivi.sota.resolver.common.RefinementDirectives.refinedPackageId
-import org.genivi.sota.resolver.db._
-import org.genivi.sota.resolver.types.{PackageFilter}
-import org.genivi.sota.resolver.filters._
-import org.genivi.sota.resolver.vehicles._
-import org.genivi.sota.resolver.packages._
+import org.genivi.sota.resolver.filters.FilterDirectives
+import org.genivi.sota.resolver.packages.PackageDirectives
+import org.genivi.sota.resolver.resolve.ResolveDirectives
+import org.genivi.sota.resolver.vehicles.VehicleDirectives
 import org.genivi.sota.rest.Handlers.{rejectionHandler, exceptionHandler}
-import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import scala.util.Try
-import scala.util.control.NoStackTrace
 import slick.jdbc.JdbcBackend.Database
 
 
-object DependenciesDirectives {
-  import Directives._
-  import scala.concurrent.Future
-  import org.genivi.sota.resolver.filters.FilterAST._
-
-  def makeFakeDependencyMap
-    (name: Package.Name, version: Package.Version, vs: Seq[Vehicle])
-      : Map[Vehicle.Vin, List[Package.Id]] =
-    vs.map(vehicle => Map(vehicle.vin -> List(Package.Id(name, version))))
-      .foldRight(Map[Vehicle.Vin, List[Package.Id]]())(_++_)
-
-  def resolve
-    (name: Package.Name, version: Package.Version)
-    (implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext)
-      : Future[Map[Vehicle.Vin, Seq[Package.Id]]] =
-    for {
-      _       <- PackageFunctions.exists(Package.Id(name, version))
-      (p, fs) <- db.run(PackageFilters.listFiltersForPackage(Package.Id(name, version)))
-      vs      <- db.run(VehicleRepository.list)
-      ps : Seq[Seq[Package.Id]]
-              <- Future.sequence(vs.map(v => VehicleFunctions.packagesOnVin(v.vin)))
-      vps: Seq[Tuple2[Vehicle, Seq[Package.Id]]]
-              =  vs.zip(ps)
-    } yield makeFakeDependencyMap(name, version,
-              vps.filter(query(fs.map(_.expression).map(parseValidFilter).foldLeft[FilterAST](True)(And)))
-                 .map(_._1))
-
-  def route(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Route = {
-    pathPrefix("resolve") {
-      (get & refinedPackageId) { id =>
-        completeOrRecoverWith(resolve(id.name, id.version)) {
-          Errors.onMissingPackage
-        }
-      }
-    }
-  }
-}
-
-class Routing(implicit db: Database, system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext)
+class Routing
+  (implicit db: Database, system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext)
     extends Directives {
 
   val route: Route = pathPrefix("api" / "v1") {
@@ -77,7 +29,7 @@ class Routing(implicit db: Database, system: ActorSystem, mat: ActorMaterializer
         new VehicleDirectives().route ~
         new PackageDirectives().route ~
         new FilterDirectives().route ~
-        DependenciesDirectives.route
+        new ResolveDirectives().route
       }
     }
   }

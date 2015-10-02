@@ -115,7 +115,7 @@ class ResolveResourcePropSpec extends ResourcePropSpec {
   import ArbitraryPackage.arbPackage
   import ArbitraryVehicle.arbVehicle
   import akka.http.scaladsl.model.StatusCodes
-  import org.genivi.sota.resolver.DependenciesDirectives.makeFakeDependencyMap
+  import org.genivi.sota.resolver.resolve.ResolveFunctions.makeFakeDependencyMap
   import org.genivi.sota.resolver.filters._
   import org.genivi.sota.resolver.filters.FilterAST.{parseValidFilter, query}
   import org.genivi.sota.resolver.types._
@@ -154,7 +154,7 @@ class ResolveResourcePropSpec extends ResourcePropSpec {
               status === StatusCodes.OK
               val result = responseAs[Map[Vehicle.Vin, Seq[Package.Id]]]
               classify(result.toList.length > 0, "more than zero", "zero") {
-                result === makeFakeDependencyMap(p.id.name, p.id.version,
+                result === makeFakeDependencyMap(Package.Id(p.id.name, p.id.version),
 
                     // ... we filtered the list of all VINs by the boolean
                     // predicate that arises from the combined filter

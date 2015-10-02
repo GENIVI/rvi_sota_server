@@ -12,7 +12,7 @@ import eu.timepit.refined.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import CirceMarshallingSupport._
-import org.genivi.sota.resolver.DependenciesDirectives.makeFakeDependencyMap
+import org.genivi.sota.resolver.resolve._
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.vehicles.Vehicle
@@ -153,7 +153,8 @@ trait ResolveRequests extends Matchers { self: ScalatestRouteTest =>
     resolve(pname, pversion) ~> route ~> check {
       status shouldBe StatusCodes.OK
       responseAs[Map[Vehicle.Vin, List[Package.Id]]] shouldBe
-        makeFakeDependencyMap(Refined(pname), Refined(pversion), vins.map(s => Vehicle(Refined(s))))
+        ResolveFunctions.makeFakeDependencyMap(Package.Id(Refined(pname), Refined(pversion)),
+          vins.map(s => Vehicle(Refined(s))))
     }
   }
 }
