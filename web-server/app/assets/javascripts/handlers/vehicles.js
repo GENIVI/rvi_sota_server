@@ -36,6 +36,12 @@ define(function(require) {
                 db.affectedVins.reset(vehicles);
               });
           break;
+          case 'get-vehicles-for-package':
+            sendRequest.doGet('/api/v1/vehicles?package=' + payload.name + '-' + payload.version)
+              .success(function(vehicles) {
+                db.vehiclesForPackage.reset(vehicles);
+              });
+          break;
         }
       };
       SotaDispatcher.register(this.dispatchCallback.bind(this));
