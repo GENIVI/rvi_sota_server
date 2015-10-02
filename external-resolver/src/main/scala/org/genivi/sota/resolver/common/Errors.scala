@@ -2,7 +2,7 @@
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.resolver
+package org.genivi.sota.resolver.common
 
 object Errors {
   import akka.http.scaladsl.model.StatusCodes

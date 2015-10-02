@@ -5,17 +5,16 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.unmarshalling._
 import eu.timepit.refined.Refined
-import io.circe._
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.genivi.sota.resolver.common.Errors.Codes
 import org.genivi.sota.resolver.db.PackageFilters._
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.types.PackageFilter
-import org.genivi.sota.resolver.Errors.Codes
 import org.genivi.sota.rest.{ErrorRepresentation, ErrorCode}
+
 
 class PackageFilterResourceWordSpec extends ResourceWordSpec {
 
