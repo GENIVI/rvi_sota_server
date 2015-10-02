@@ -34,8 +34,8 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
   val coreApiUri = Play.current.configuration.getString("core.api.uri").get
   val resolverApiUri = Play.current.configuration.getString("resolver.api.uri").get
 
-  val coreApiResources = Set("packages", "install_campaigns")
-  val resolverApiResources = Set("filters", "packageFilters", "packageFiltersDelete", "resolve", "validate")
+  val coreApiResources = Set("packages", "updates")
+  val resolverApiResources = Set("vehicles", "filters", "packageFilters", "resolve", "validate")
 
   def proxyTo(apiUri: String, req: Request[RawBuffer]) : Future[Result] = {
     def toWsHeaders(hdrs: Headers) = hdrs.toMap.map {
@@ -56,16 +56,6 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
       }
   }
 
-  def isPackagesForVinsPath(path : Array[String]) : Boolean = {
-    val vinLength = 17
-    if(path.length != 5) return false
-
-    path(0).equals("vehicles") &&
-    path(1).length == vinLength &&
-    path(2).equals("package") &&
-    path(4).contains(".")
-  }
-
   def apiProxy(path: String) = AsyncStack(parse.raw, AuthorityKey -> Role.USER) { implicit req =>
     { // Mitigation for C04: Log transactions to and from SOTA Server
       auditLogger.info(s"Request: $req from user ${loggedIn.name}")
@@ -77,19 +67,21 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
     } else if (resolverApiResources(head)) {
       proxyTo(resolverApiUri, req)
     } else {
-      // Note: Only resource "vehicles" are on both core and resolver,
-      // except endpoint which lists packages installed on a vin
-      if(path.endsWith("package") || isPackagesForVinsPath(path.split("/"))) {
-        proxyTo(resolverApiUri, req)
-      } else if (path.equals("vehicles")){
-        for {
-          respCore <- proxyTo(coreApiUri, req)
-          respResult <- proxyTo(resolverApiUri, req)
-        } yield respCore // TODO: Retry until both responses are success
-      } else {
-        Future.successful(BadRequest)
-      }
+      Future.successful(NotFound)
     }
+  }
+
+  def apiProxyBroadcast(path: String) = AsyncStack(parse.raw, AuthorityKey -> Role.USER) { implicit req =>
+    { // Mitigation for C04: Log transactions to and from SOTA Server
+      auditLogger.info(s"Request: $req from user ${loggedIn.name}")
+    }
+
+    // Must PUT "vehicles" on both core and resolver
+    // TODO: Retry until both responses are success
+    for {
+      respCore <- proxyTo(coreApiUri, req)
+      respResult <- proxyTo(resolverApiUri, req)
+    } yield respCore
   }
 
   def index = StackAction(AuthorityKey -> Role.USER) { implicit req =>
