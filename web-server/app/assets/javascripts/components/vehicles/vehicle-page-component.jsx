@@ -2,6 +2,7 @@ define(function(require) {
 
   var React = require('react'),
       Router = require('react-router'),
+      AddPackageManually = require('../packages/add-package-manually-component'),
       ListOfPackagesForVin = require('../packages/list-of-packages-for-vin'),
       db = require('stores/db'),
       SearchBar = require('../search-bar');
@@ -19,6 +20,7 @@ define(function(require) {
         </div>
         <div className="row">
           <div className="col-md-12">
+            <AddPackageManually Vin={params.vin}/>
             <h2>Installed Packages</h2>
             <ListOfPackagesForVin Packages={db.packagesForVin} Vin={params.vin}/>
           </div>
