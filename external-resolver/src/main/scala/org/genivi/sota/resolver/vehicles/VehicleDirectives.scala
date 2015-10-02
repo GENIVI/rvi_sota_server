@@ -25,7 +25,7 @@ import slick.jdbc.JdbcBackend.Database
 class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
   import Directives._
 
-  def installedPackagesHandler: PF = {
+  def installedPackagesHandler = ExceptionHandler {
     case VehicleFunctions.MissingVehicle =>
       complete(StatusCodes.NotFound ->
         ErrorRepresentation(Vehicle.MissingVehicle, "Vehicle doesn't exist"))
@@ -37,6 +37,7 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
   }
 
   def route(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Route = {
+    val extractVin : Directive1[Vehicle.Vin] = refined[Vehicle.ValidVin](Slash ~ Segment)
     pathPrefix("vehicles") {
       get {
         pathEnd {
@@ -52,40 +53,27 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
           }
         }
       } ~
-      (put & refined[Vehicle.ValidVin](Slash ~ Segment ~ PathEnd)) { vin =>
-        pathEnd {
-          complete(db.run(VehicleRepository.add(Vehicle(vin))).map(_ => NoContent))
-        }
-      } ~
-      (get & refined[Vehicle.ValidVin](Slash ~ Segment))
-      { vin =>
-        path("package") {
-          completeOrRecoverWith(VehicleFunctions.packagesOnVin(vin)) {
-            case VehicleFunctions.MissingVehicle =>
-              complete(StatusCodes.NotFound ->
-                ErrorRepresentation(Vehicle.MissingVehicle, "Vehicle doesn't exist"))
-          }
-        }
-      } ~
-      (put & refined[Vehicle.ValidVin](Slash ~ Segment))
-      { vin =>
-        (pathPrefix("package") & refinedPackageId)
-        { pkgId =>
+      extractVin { vin =>
+        put {
           pathEnd {
-            completeOrRecoverWith(VehicleFunctions.installPackage(vin, pkgId)) {
-              installedPackagesHandler
-            }
+            complete(db.run(VehicleRepository.add(Vehicle(vin))).map(_ => NoContent))
           }
-        }
-      } ~
-      (delete & refined[Vehicle.ValidVin](Slash ~ Segment))
-      { vin =>
-        (pathPrefix("package") & refinedPackageId)
-        { pkgId =>
-          pathEnd {
-            completeOrRecoverWith(VehicleFunctions.uninstallPackage(vin, pkgId)) {
-              installedPackagesHandler
+        } ~
+        pathPrefix("package") {
+          (pathEnd & get) {
+            completeOrRecoverWith(VehicleFunctions.packagesOnVin(vin)) {
+              case VehicleFunctions.MissingVehicle =>
+                complete(StatusCodes.NotFound ->
+                  ErrorRepresentation(Vehicle.MissingVehicle, "Vehicle doesn't exist"))
             }
+          } ~
+          (handleExceptions( installedPackagesHandler ) & refinedPackageId) { pkgId =>
+            put(
+              complete(VehicleFunctions.installPackage(vin, pkgId))
+            ) ~
+            delete (
+              complete(VehicleFunctions.uninstallPackage(vin, pkgId))
+            )
           }
         }
       }
