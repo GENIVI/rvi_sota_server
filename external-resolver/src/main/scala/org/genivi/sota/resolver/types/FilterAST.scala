@@ -9,7 +9,7 @@ import eu.timepit.refined.string.{Regex, regexPredicate}
 import scala.util.parsing.combinator.syntactical.StandardTokenParsers
 import scala.util.parsing.combinator.{PackratParsers, ImplicitConversions}
 import org.genivi.sota.resolver.packages.Package
-import org.genivi.sota.resolver.vehicle.Vehicle
+import org.genivi.sota.resolver.vehicles.Vehicle
 
 
 sealed abstract trait FilterAST

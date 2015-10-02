@@ -18,7 +18,7 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.RefinementDirectives.refinedPackageId
 import org.genivi.sota.resolver.db._
 import org.genivi.sota.resolver.types.{Filter, PackageFilter}
-import org.genivi.sota.resolver.vehicle._
+import org.genivi.sota.resolver.vehicles._
 import org.genivi.sota.resolver.packages._
 import org.genivi.sota.rest.Handlers.{rejectionHandler, exceptionHandler}
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}

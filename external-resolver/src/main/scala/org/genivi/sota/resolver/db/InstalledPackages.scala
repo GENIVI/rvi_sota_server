@@ -5,7 +5,7 @@
 package org.genivi.sota.resolver.db
 
 import org.genivi.sota.refined.SlickRefined._
-import org.genivi.sota.resolver.vehicle.Vehicle
+import org.genivi.sota.resolver.vehicles.Vehicle
 import org.genivi.sota.resolver.packages.Package
 import slick.driver.MySQLDriver.api._
 
