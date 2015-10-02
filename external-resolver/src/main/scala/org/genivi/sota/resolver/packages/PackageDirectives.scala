@@ -31,7 +31,7 @@ class PackageDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
       (put & refinedPackageId & entity(as[Package.Metadata]))
       { (id, metadata) =>
         val pkg = Package(id, metadata.description, metadata.vendor)
-        complete(db.run(PackageDAO.add(pkg).map(_ => pkg)))
+        complete(db.run(PackageRepository.add(pkg).map(_ => pkg)))
       }
     }
   }

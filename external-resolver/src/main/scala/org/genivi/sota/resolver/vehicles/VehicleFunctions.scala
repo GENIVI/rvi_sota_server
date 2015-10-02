@@ -18,7 +18,7 @@ object VehicleFunctions {
   def exists
     (vin: Vehicle.Vin)
     (implicit db: Database, ec: ExecutionContext): Future[Vehicle] =
-    db.run(VehicleDAO.exists(vin))
+    db.run(VehicleRepository.exists(vin))
       .flatMap(_
         .fold[Future[Vehicle]]
           (Future.failed(MissingVehicle))(Future.successful(_)))

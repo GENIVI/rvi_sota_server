@@ -8,7 +8,7 @@ import org.genivi.sota.refined.SlickRefined._
 import slick.driver.MySQLDriver.api._
 
 
-object PackageDAO {
+object PackageRepository {
 
   // scalastyle:off
   private[packages] class PackageTable(tag: Tag) extends Table[Package](tag, "Package") {

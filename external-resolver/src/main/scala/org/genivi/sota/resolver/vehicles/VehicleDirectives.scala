@@ -48,13 +48,13 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
                 Errors.onMissingPackage
               }
             case None              =>
-              complete(db.run(VehicleDAO.list))
+              complete(db.run(VehicleRepository.list))
           }
         }
       } ~
       (put & refined[Vehicle.ValidVin](Slash ~ Segment ~ PathEnd)) { vin =>
         pathEnd {
-          complete(db.run( VehicleDAO.add(Vehicle(vin)) ).map(_ => NoContent))
+          complete(db.run(VehicleRepository.add(Vehicle(vin))).map(_ => NoContent))
         }
       } ~
       (get & refined[Vehicle.ValidVin](Slash ~ Segment))
