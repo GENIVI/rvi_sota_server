@@ -17,8 +17,9 @@ import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.RefinementDirectives.refinedPackageId
 import org.genivi.sota.resolver.db._
-import org.genivi.sota.resolver.types.{Package, Filter, PackageFilter}
+import org.genivi.sota.resolver.types.{Filter, PackageFilter}
 import org.genivi.sota.resolver.vehicle._
+import org.genivi.sota.resolver.packages._
 import org.genivi.sota.rest.Handlers.{rejectionHandler, exceptionHandler}
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 import scala.concurrent.{ExecutionContext, Future}
@@ -27,31 +28,10 @@ import scala.util.control.NoStackTrace
 import slick.jdbc.JdbcBackend.Database
 
 
-object PackageDirectives {
-  import Directives._
-
-  def route(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Route = {
-
-    pathPrefix("packages") {
-      get {
-        complete {
-          NoContent
-        }
-      } ~
-      (put & refinedPackageId & entity(as[Package.Metadata]))
-      { (id, metadata) =>
-        val pkg = Package(id, metadata.description, metadata.vendor)
-        complete(db.run(Packages.add(pkg).map(_ => pkg)))
-      }
-    }
-  }
-}
-
 object DependenciesDirectives {
   import Directives._
   import scala.concurrent.Future
-  import org.genivi.sota.resolver.types.{True, And}
-  import org.genivi.sota.resolver.types.{Package, FilterAST}
+  import org.genivi.sota.resolver.types.{FilterAST, True, And}
   import org.genivi.sota.resolver.types.FilterParser.parseValidFilter
   import org.genivi.sota.resolver.types.FilterQuery.query
 
@@ -63,7 +43,7 @@ object DependenciesDirectives {
 
   def resolve(name: Package.Name, version: Package.Version)
               (implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Future[Map[Vehicle.Vin, Seq[Package.Id]]] = for {
-    _       <- VehicleFunctions.existsPackage(Package.Id(name, version))
+    _       <- PackageFunctions.exists(Package.Id(name, version))
     (p, fs) <- db.run(PackageFilters.listFiltersForPackage(Package.Id(name, version)))
     vs      <- db.run(VehicleDAO.list)
     ps : Seq[Seq[Package.Id]]                   <- Future.sequence(vs.map(v => VehicleFunctions.packagesOnVin(v.vin)))
@@ -89,7 +69,10 @@ class Routing(implicit db: Database, system: ActorSystem, mat: ActorMaterializer
   val route: Route = pathPrefix("api" / "v1") {
     handleRejections(rejectionHandler) {
       handleExceptions(exceptionHandler) {
-        new VehicleDirectives().route ~ PackageDirectives.route ~ new FilterDirectives().routes() ~ DependenciesDirectives.route
+        new VehicleDirectives().route ~
+        new PackageDirectives().route ~
+        new FilterDirectives().routes() ~
+        DependenciesDirectives.route
       }
     }
   }

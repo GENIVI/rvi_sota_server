@@ -5,6 +5,7 @@
 package org.genivi.sota.resolver.types
 
 import org.genivi.sota.marshalling.CirceMarshallingSupport
+import org.genivi.sota.resolver.packages.Package
 
 
 case class PackageFilter(

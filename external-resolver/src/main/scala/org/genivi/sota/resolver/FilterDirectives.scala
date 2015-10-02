@@ -13,13 +13,15 @@ import eu.timepit.refined.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import org.genivi.sota.resolver.db.{Packages, Filters, PackageFilters}
-import org.genivi.sota.resolver.types.{Package, Filter, PackageFilter}
+import org.genivi.sota.resolver.db.{Filters, PackageFilters}
+import org.genivi.sota.resolver.types.{Filter, PackageFilter}
+import org.genivi.sota.resolver.packages._
 import org.genivi.sota.resolver.vehicle._
 import org.genivi.sota.rest.Validation._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import slick.jdbc.JdbcBackend.Database
+
 
 object FutureSupport {
 
@@ -61,7 +63,7 @@ class FilterDirectives()(implicit db: Database, mat: ActorMaterializer, ec: Exec
 
   def add(pf: PackageFilter) : Future[PackageFilter] = {
     for {
-      _ <- VehicleFunctions.existsPackage(Package.Id(pf.packageName, pf.packageVersion))
+      _ <- PackageFunctions.exists(Package.Id(pf.packageName, pf.packageVersion))
       _ <- db.run(Filters.load(pf.filterName)).failIfNone( Errors.MissingFilterException )
       _ <- db.run(PackageFilters.add(pf))
     } yield pf

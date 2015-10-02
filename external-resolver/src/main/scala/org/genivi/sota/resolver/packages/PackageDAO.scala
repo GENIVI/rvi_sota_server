@@ -2,17 +2,16 @@
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.resolver.db
+package org.genivi.sota.resolver.packages
 
 import org.genivi.sota.refined.SlickRefined._
-import org.genivi.sota.resolver.types.Package
 import slick.driver.MySQLDriver.api._
 
 
-object Packages {
+object PackageDAO {
 
   // scalastyle:off
-  private[db] class PackageTable(tag: Tag) extends Table[Package](tag, "Package") {
+  private[packages] class PackageTable(tag: Tag) extends Table[Package](tag, "Package") {
 
     def name        = column[Package.Name]("name")
     def version     = column[Package.Version]("version")
@@ -34,5 +33,12 @@ object Packages {
 
   def list: DBIO[Seq[Package]] =
     packages.result
+
+  def exists(pkgId: Package.Id): DBIO[Option[Package]] =
+    packages
+      .filter(id => id.name    === pkgId.name &&
+                    id.version === pkgId.version)
+      .result
+      .headOption
 
 }

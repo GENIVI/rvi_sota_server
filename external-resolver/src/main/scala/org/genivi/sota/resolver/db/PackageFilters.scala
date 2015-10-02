@@ -11,9 +11,9 @@ import cats.data.{Xor, XorT}
 import io.circe.{Encoder, Decoder, Json}
 import Json.{obj, string}
 import org.genivi.sota.resolver.db.Filters.filters
-import org.genivi.sota.resolver.db.Packages.packages
+import org.genivi.sota.resolver.packages._
 import org.genivi.sota.resolver.types.PackageFilter
-import org.genivi.sota.resolver.types.{Filter, Package}
+import org.genivi.sota.resolver.types.{Filter}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
 import scala.util.{Try, Success, Failure}
@@ -44,29 +44,26 @@ object PackageFilters {
   def add(pf: PackageFilter)(implicit ec: ExecutionContext): DBIO[PackageFilter] =
     (packageFilters += pf).map(_ => pf)
 
-  def load(name: Package.Name, version: Package.Version)(implicit ec: ExecutionContext): DBIO[Option[Package]] =
-    packages.filter(p => p.name === name && p.version === version).result.headOption
-
   def list: DBIO[Seq[PackageFilter]] = packageFilters.result
 
   def listPackagesForFilter(fname: Filter.Name)
                            (implicit ec: ExecutionContext): DBIO[Seq[Package]] = {
     val q = for {
       pf <- packageFilters.filter(_.filterName === fname)
-      f  <- packages.filter(pkg => pkg.name === pf.packageName && pkg.version === pf.packageVersion)
-    } yield f
+      ps <- PackageDAO.packages.filter(pkg => pkg.name === pf.packageName && pkg.version === pf.packageVersion)
+    } yield ps
     q.result
   }
 
   def listFiltersForPackage(packageId: Package.Id)
-                           (implicit ec: ExecutionContext): DBIO[(Option[Package], Seq[Filter])] = { 
+                           (implicit ec: ExecutionContext): DBIO[(Option[Package], Seq[Filter])] = {
     val qFilters = for {
       pf  <- packageFilters if pf.packageName === packageId.name && pf.packageVersion === packageId.version
-      f   <- Filters.filters if f.name === pf.filterName 
+      f   <- Filters.filters if f.name === pf.filterName
     } yield f
-    
+
     for {
-      p  <- Packages.packages.filter( x => x.name === packageId.name && x.version === packageId.version ).result.headOption
+      p  <- PackageDAO.packages.filter( x => x.name === packageId.name && x.version === packageId.version ).result.headOption
       fs <- qFilters.result
     } yield (p, fs)
   }

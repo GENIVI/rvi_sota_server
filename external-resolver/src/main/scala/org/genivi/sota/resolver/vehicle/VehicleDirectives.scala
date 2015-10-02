@@ -15,7 +15,7 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.Errors
 import org.genivi.sota.resolver.common.RefinementDirectives.refinedPackageId
-import org.genivi.sota.resolver.types.Package
+import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.rest.Validation._
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 import scala.concurrent.ExecutionContext
