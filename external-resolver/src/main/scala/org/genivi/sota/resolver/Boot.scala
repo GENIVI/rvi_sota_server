@@ -17,7 +17,8 @@ import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.RefinementDirectives.refinedPackageId
 import org.genivi.sota.resolver.db._
-import org.genivi.sota.resolver.types.{Filter, PackageFilter}
+import org.genivi.sota.resolver.types.{PackageFilter}
+import org.genivi.sota.resolver.filters._
 import org.genivi.sota.resolver.vehicles._
 import org.genivi.sota.resolver.packages._
 import org.genivi.sota.rest.Handlers.{rejectionHandler, exceptionHandler}
@@ -31,9 +32,7 @@ import slick.jdbc.JdbcBackend.Database
 object DependenciesDirectives {
   import Directives._
   import scala.concurrent.Future
-  import org.genivi.sota.resolver.types.{FilterAST, True, And}
-  import org.genivi.sota.resolver.types.FilterParser.parseValidFilter
-  import org.genivi.sota.resolver.types.FilterQuery.query
+  import org.genivi.sota.resolver.filters.FilterAST._
 
   def makeFakeDependencyMap
     (name: Package.Name, version: Package.Version, vs: Seq[Vehicle])
@@ -41,16 +40,21 @@ object DependenciesDirectives {
     vs.map(vehicle => Map(vehicle.vin -> List(Package.Id(name, version))))
       .foldRight(Map[Vehicle.Vin, List[Package.Id]]())(_++_)
 
-  def resolve(name: Package.Name, version: Package.Version)
-              (implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Future[Map[Vehicle.Vin, Seq[Package.Id]]] = for {
-    _       <- PackageFunctions.exists(Package.Id(name, version))
-    (p, fs) <- db.run(PackageFilters.listFiltersForPackage(Package.Id(name, version)))
-    vs      <- db.run(VehicleRepository.list)
-    ps : Seq[Seq[Package.Id]]                   <- Future.sequence(vs.map(v => VehicleFunctions.packagesOnVin(v.vin)))
-    vps: Seq[Tuple2[Vehicle, Seq[Package.Id]]]  =  vs.zip(ps)
-  } yield makeFakeDependencyMap(name, version,
-            vps.filter(query(fs.map(_.expression).map(parseValidFilter).foldLeft[FilterAST](True)(And)))
-               .map(_._1))
+  def resolve
+    (name: Package.Name, version: Package.Version)
+    (implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext)
+      : Future[Map[Vehicle.Vin, Seq[Package.Id]]] =
+    for {
+      _       <- PackageFunctions.exists(Package.Id(name, version))
+      (p, fs) <- db.run(PackageFilters.listFiltersForPackage(Package.Id(name, version)))
+      vs      <- db.run(VehicleRepository.list)
+      ps : Seq[Seq[Package.Id]]
+              <- Future.sequence(vs.map(v => VehicleFunctions.packagesOnVin(v.vin)))
+      vps: Seq[Tuple2[Vehicle, Seq[Package.Id]]]
+              =  vs.zip(ps)
+    } yield makeFakeDependencyMap(name, version,
+              vps.filter(query(fs.map(_.expression).map(parseValidFilter).foldLeft[FilterAST](True)(And)))
+                 .map(_._1))
 
   def route(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Route = {
     pathPrefix("resolve") {
@@ -71,7 +75,7 @@ class Routing(implicit db: Database, system: ActorSystem, mat: ActorMaterializer
       handleExceptions(exceptionHandler) {
         new VehicleDirectives().route ~
         new PackageDirectives().route ~
-        new FilterDirectives().routes() ~
+        new FilterDirectives().route ~
         DependenciesDirectives.route
       }
     }

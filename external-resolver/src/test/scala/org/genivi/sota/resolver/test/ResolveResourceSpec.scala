@@ -115,7 +115,8 @@ class ResolveResourcePropSpec extends ResourcePropSpec {
   import ArbitraryVehicle.arbVehicle
   import akka.http.scaladsl.model.StatusCodes
   import org.genivi.sota.resolver.DependenciesDirectives.makeFakeDependencyMap
-  import org.genivi.sota.resolver.types.FilterParser.parseValidFilter
+  import org.genivi.sota.resolver.filters._
+  import org.genivi.sota.resolver.filters.FilterAST.{parseValidFilter, query}
   import org.genivi.sota.resolver.types._
   import org.scalacheck.Prop.{True => _, _}
   import io.circe.generic.auto._
@@ -159,7 +160,7 @@ class ResolveResourcePropSpec extends ResourcePropSpec {
                     // queries.
 
                     // XXX: Deal with installed packages properly.
-                    allVehicles.map(v => (v, List[Package.Id]())).filter(FilterQuery.query
+                    allVehicles.map(v => (v, List[Package.Id]())).filter(query
                       (fs.map(_.expression).map(parseValidFilter)
                          .foldLeft[FilterAST](True)(And))).map(_._1))
               }

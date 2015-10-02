@@ -2,10 +2,10 @@
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.resolver.types
+package org.genivi.sota.resolver.filters
 
 import eu.timepit.refined.{Predicate, Refined}
-import org.genivi.sota.resolver.types.FilterParser.parseFilter
+import org.genivi.sota.resolver.filters.FilterAST.parseFilter
 
 
 case class Filter ( name: Filter.Name, expression: Filter.Expression )
