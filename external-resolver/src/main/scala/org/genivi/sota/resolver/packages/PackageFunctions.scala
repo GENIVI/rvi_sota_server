@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.resolver.packages
 
-import org.genivi.sota.resolver.Errors
+import org.genivi.sota.resolver.common.Errors
 import scala.concurrent.{ExecutionContext, Future}
 import slick.jdbc.JdbcBackend.Database
 

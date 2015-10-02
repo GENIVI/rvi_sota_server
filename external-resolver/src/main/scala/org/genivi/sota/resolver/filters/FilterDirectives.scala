@@ -19,7 +19,7 @@ import org.genivi.sota.resolver.filters._
 import org.genivi.sota.resolver.packages._
 import org.genivi.sota.resolver.vehicles._
 import org.genivi.sota.rest.Validation._
-import org.genivi.sota.resolver.Errors
+import org.genivi.sota.resolver.common.Errors
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import slick.jdbc.JdbcBackend.Database

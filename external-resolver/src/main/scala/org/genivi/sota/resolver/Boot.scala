@@ -15,6 +15,7 @@ import akka.stream.ActorMaterializer
 import eu.timepit.refined.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.common.RefinementDirectives.refinedPackageId
 import org.genivi.sota.resolver.db._
 import org.genivi.sota.resolver.types.{PackageFilter}
