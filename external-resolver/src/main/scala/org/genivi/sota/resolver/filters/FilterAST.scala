@@ -2,7 +2,7 @@
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.resolver.types
+package org.genivi.sota.resolver.filters
 
 import eu.timepit.refined.Refined
 import eu.timepit.refined.string.{Regex, regexPredicate}
@@ -25,7 +25,7 @@ case object True                                      extends FilterAST
 case object False                                     extends FilterAST
 
 
-object FilterParser extends StandardTokenParsers with PackratParsers with ImplicitConversions {
+object FilterAST extends StandardTokenParsers with PackratParsers with ImplicitConversions {
 
   lexical.delimiters ++= List("(",")")
   lexical.reserved   ++= List("vin_matches", "has_package", "has_component", "NOT", "AND", "OR", "TRUE", "FALSE")
@@ -75,9 +75,6 @@ object FilterParser extends StandardTokenParsers with PackratParsers with Implic
       // The very definition of being a valid filter expression is that it parses.
       case Left(_)  => sys.error("parseValidFilter: IMPOSSIBLE")
     }
-}
-
-object FilterPrinter {
 
   def ppFilter(f: FilterAST): String =
     f match {
@@ -90,9 +87,6 @@ object FilterPrinter {
       case True             => "TRUE"
       case False            => "FALSE"
     }
-}
-
-object FilterQuery {
 
   def query(f: FilterAST): Function1[Tuple2[Vehicle, Seq[Package.Id]], Boolean] =
   { case ((v: Vehicle, ps: Seq[Package.Id])) => f match {

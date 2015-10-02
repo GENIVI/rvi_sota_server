@@ -4,19 +4,10 @@
  */
 package org.genivi.sota.resolver.db
 
-import akka.http.scaladsl.model._
-import akka.http.scaladsl.server.Directives.complete
-import akka.http.scaladsl.server._
-import cats.data.{Xor, XorT}
-import io.circe.{Encoder, Decoder, Json}
-import Json.{obj, string}
-import org.genivi.sota.resolver.db.Filters.filters
+import org.genivi.sota.resolver.filters._
 import org.genivi.sota.resolver.packages._
 import org.genivi.sota.resolver.types.PackageFilter
-import org.genivi.sota.resolver.types.{Filter}
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.control.NoStackTrace
-import scala.util.{Try, Success, Failure}
+import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
 
@@ -59,7 +50,7 @@ object PackageFilters {
                            (implicit ec: ExecutionContext): DBIO[(Option[Package], Seq[Filter])] = {
     val qFilters = for {
       pf  <- packageFilters if pf.packageName === packageId.name && pf.packageVersion === packageId.version
-      f   <- Filters.filters if f.name === pf.filterName
+      f   <- FilterRepository.filters if f.name === pf.filterName
     } yield f
 
     for {

@@ -6,13 +6,14 @@ package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.unmarshalling._
-import cats.data.Xor
 import eu.timepit.refined.Refined
 import io.circe._
 import io.circe.generic.auto._
 import org.genivi.sota.rest.ErrorCodes
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import org.genivi.sota.resolver.types.{Filter, PackageFilter}
+import org.genivi.sota.resolver.filters.Filter
+import org.genivi.sota.resolver.filters.FilterAST._
+import org.genivi.sota.resolver.types.PackageFilter
 import org.genivi.sota.rest.{ErrorRepresentation, ErrorCode}
 
 class FiltersResourceWordSpec extends ResourceWordSpec {
@@ -100,7 +101,6 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
 object ArbitraryFilter {
 
   import ArbitraryFilterAST.arbFilterAST
-  import org.genivi.sota.resolver.types.{Filter, FilterPrinter}
   import org.scalacheck._
 
   val genName: Gen[String] =
@@ -114,7 +114,7 @@ object ArbitraryFilter {
     for {
       name <- genName
       expr <- ArbitraryFilterAST.genFilter
-    } yield Filter(Refined(name), Refined(FilterPrinter.ppFilter(expr)))
+    } yield Filter(Refined(name), Refined(ppFilter(expr)))
 
   implicit lazy val arbFilter = Arbitrary(genFilter)
 }

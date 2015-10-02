@@ -2,17 +2,16 @@
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.resolver.db
+package org.genivi.sota.resolver.filters
 
 import org.genivi.sota.db.Operators.regex
-import cats.data.Xor
 import org.genivi.sota.refined.SlickRefined._
-import org.genivi.sota.resolver.types.Filter
+import org.genivi.sota.resolver.db.PackageFilters
 import scala.concurrent.ExecutionContext
 import scala.util.control.NoStackTrace
 import slick.driver.MySQLDriver.api._
 
-object Filters {
+object FilterRepository {
 
   // scalastyle:off
   class FiltersTable(tag: Tag) extends Table[Filter](tag, "Filter") {

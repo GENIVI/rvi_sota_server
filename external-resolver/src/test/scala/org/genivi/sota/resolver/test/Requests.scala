@@ -13,9 +13,10 @@ import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import CirceMarshallingSupport._
 import org.genivi.sota.resolver.DependenciesDirectives.makeFakeDependencyMap
+import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.vehicles.Vehicle
-import org.genivi.sota.resolver.types.{Filter, PackageFilter}
+import org.genivi.sota.resolver.types.PackageFilter
 import org.scalatest.Matchers
 import scala.concurrent.duration._
 
