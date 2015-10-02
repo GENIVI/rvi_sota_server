@@ -14,7 +14,7 @@ object PackageFunctions {
   def exists
     (pkgId: Package.Id)
     (implicit db: Database, ec: ExecutionContext): Future[Package] =
-    db.run(PackageDAO.exists(pkgId))
+    db.run(PackageRepository.exists(pkgId))
       .flatMap(_
         .fold[Future[Package]]
           (Future.failed(Errors.MissingPackageException))(Future.successful(_)))

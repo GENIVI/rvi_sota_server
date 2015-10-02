@@ -45,7 +45,7 @@ object DependenciesDirectives {
               (implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Future[Map[Vehicle.Vin, Seq[Package.Id]]] = for {
     _       <- PackageFunctions.exists(Package.Id(name, version))
     (p, fs) <- db.run(PackageFilters.listFiltersForPackage(Package.Id(name, version)))
-    vs      <- db.run(VehicleDAO.list)
+    vs      <- db.run(VehicleRepository.list)
     ps : Seq[Seq[Package.Id]]                   <- Future.sequence(vs.map(v => VehicleFunctions.packagesOnVin(v.vin)))
     vps: Seq[Tuple2[Vehicle, Seq[Package.Id]]]  =  vs.zip(ps)
   } yield makeFakeDependencyMap(name, version,

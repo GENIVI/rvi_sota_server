@@ -7,7 +7,7 @@ package org.genivi.sota.resolver.vehicles
 import org.genivi.sota.refined.SlickRefined._
 
 
-object VehicleDAO {
+object VehicleRepository {
 
   import slick.driver.MySQLDriver.api._
 

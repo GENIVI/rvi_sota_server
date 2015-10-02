@@ -50,7 +50,7 @@ object PackageFilters {
                            (implicit ec: ExecutionContext): DBIO[Seq[Package]] = {
     val q = for {
       pf <- packageFilters.filter(_.filterName === fname)
-      ps <- PackageDAO.packages.filter(pkg => pkg.name === pf.packageName && pkg.version === pf.packageVersion)
+      ps <- PackageRepository.packages.filter(pkg => pkg.name === pf.packageName && pkg.version === pf.packageVersion)
     } yield ps
     q.result
   }
@@ -63,7 +63,7 @@ object PackageFilters {
     } yield f
 
     for {
-      p  <- PackageDAO.packages.filter( x => x.name === packageId.name && x.version === packageId.version ).result.headOption
+      p  <- PackageRepository.packages.filter( x => x.name === packageId.name && x.version === packageId.version ).result.headOption
       fs <- qFilters.result
     } yield (p, fs)
   }
