@@ -22,11 +22,6 @@ define(function(require) {
             filter: payload
         });
     },
-    componentWillMount: function(){
-      db.postStatus.addWatch("poll-filterer", _.bind(function() {
-        this.setState({postStatus: db.postStatus.deref()});
-      }, this));
-    },
 	buttonLabel: "NEW FILTER",
     form: function() {
 	  return (
@@ -43,9 +38,6 @@ define(function(require) {
 	        <div className="form-group">
               <button type="submit" className="btn btn-primary">Add Filter</button>
 		    </div>
-            <div className="form-group">
-              {this.state.postStatus}
-            </div>
           </form>
 	    </div>
         );}
