@@ -6,7 +6,6 @@ package org.genivi.sota.resolver.vehicles
 
 import org.genivi.sota.resolver.packages.{Package, PackageFunctions}
 import org.genivi.sota.resolver.common.Errors
-import org.genivi.sota.resolver.db.InstalledPackages
 import scala.concurrent.{ExecutionContext, Future}
 import slick.jdbc.JdbcBackend.Database
 
@@ -29,7 +28,7 @@ object VehicleFunctions {
     for {
       _ <- exists(vin)
       _ <- PackageFunctions.exists(pkgId)
-      _ <- db.run(InstalledPackages.add(vin, pkgId))
+      _ <- db.run(VehicleRepository.installPackage(vin, pkgId))
     } yield ()
 
   def uninstallPackage
@@ -38,13 +37,13 @@ object VehicleFunctions {
     for {
       _ <- exists(vin)
       _ <- PackageFunctions.exists(pkgId)
-      _ <- db.run(InstalledPackages.remove(vin, pkgId))
+      _ <- db.run(VehicleRepository.uninstallPackage(vin, pkgId))
     } yield ()
 
   def packagesOnVinMap
     (implicit db: Database, ec: ExecutionContext)
       : Future[Map[Vehicle.Vin, Seq[Package.Id]]] =
-    db.run(InstalledPackages.list)
+    db.run(VehicleRepository.listInstalledPackages)
       .map(_
         .sortBy(_._1)
         .groupBy(_._1)
@@ -65,7 +64,7 @@ object VehicleFunctions {
   def vinsThatHavePackageMap
     (implicit db: Database, ec: ExecutionContext)
       : Future[Map[Package.Id, Seq[Vehicle.Vin]]] =
-    db.run(InstalledPackages.list)
+    db.run(VehicleRepository.listInstalledPackages)
       .map(_
         .sortBy(_._2)
         .groupBy(_._2)

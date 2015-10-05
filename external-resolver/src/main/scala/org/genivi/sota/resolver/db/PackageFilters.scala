@@ -37,8 +37,7 @@ object PackageFilters {
 
   def list: DBIO[Seq[PackageFilter]] = packageFilters.result
 
-  def listPackagesForFilter(fname: Filter.Name)
-                           (implicit ec: ExecutionContext): DBIO[Seq[Package]] = {
+  def listPackagesForFilter(fname: Filter.Name): DBIO[Seq[Package]] = {
     val q = for {
       pf <- packageFilters.filter(_.filterName === fname)
       ps <- PackageRepository.packages.filter(pkg => pkg.name === pf.packageName && pkg.version === pf.packageVersion)
@@ -59,11 +58,10 @@ object PackageFilters {
     } yield (p, fs)
   }
 
-  def delete(fname: Filter.Name)(implicit ec: ExecutionContext): DBIO[Int] =
+  def delete(fname: Filter.Name): DBIO[Int] =
     packageFilters.filter(_.filterName === fname).delete
 
-  def delete(pname: Package.Name, pversion: Package.Version, fname: Filter.Name)
-    (implicit ec: ExecutionContext) : DBIO[Int] =
+  def delete(pname: Package.Name, pversion: Package.Version, fname: Filter.Name): DBIO[Int] =
     packageFilters
       .filter(pf => pf.packageName    === pname
                  && pf.packageVersion === pversion
