@@ -6,7 +6,6 @@ package org.genivi.sota.resolver.vehicles
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.StatusCodes.NoContent
-import akka.http.scaladsl.server.ExceptionHandler.PF
 import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.Refined
