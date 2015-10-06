@@ -36,6 +36,8 @@ object VehicleRepository {
       .result
       .headOption
 
+  def delete(vehicle : Vehicle) : DBIO[Int] = vehicles.filter( _.vin === vehicle.vin ).delete
+
   // scalastyle:off
   class InstalledPackageTable(tag: Tag) extends Table[(Vehicle.Vin, Package.Id)](tag, "InstalledPackage") {
 
@@ -80,5 +82,7 @@ object VehicleRepository {
 
   def listInstalledPackages: DBIO[Seq[(Vehicle.Vin, Package.Id)]] =
     installedPackages.result
+
+  def deleteInstalledPackageByVin(vehicle: Vehicle): DBIO[Int] = installedPackages.filter(_.vin === vehicle.vin).delete
 
 }

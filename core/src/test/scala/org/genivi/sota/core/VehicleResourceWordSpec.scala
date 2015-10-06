@@ -65,7 +65,16 @@ class VinResourceWordSpec extends WordSpec
         assert(vins.length === 1)
       }
     }
-
+    "delete a vin" in {
+      Delete( VinsUri + "/123456789012345WW") ~> service.route ~> check {
+        assert(status === StatusCodes.OK)
+      }
+    }
+    "return a 404 when deleting a non existing vin" in {
+      Delete( VinsUri + "/123456789NOTTHERE") ~> service.route ~> check {
+        assert(status === StatusCodes.NotFound)
+      }
+    }
   }
 
   override def afterAll() : Unit = {

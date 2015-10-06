@@ -84,4 +84,7 @@ object UpdateSpecs {
   def listUpdatesById(uuid: Refined[String, Uuid]): DBIO[Seq[(UUID, Vehicle.IdentificationNumber, UpdateStatus)]] =
     updateSpecs.filter(_.requestId === UUID.fromString(uuid.get)).result
 
+  def deleteUpdateSpecByVin(vehicle : Vehicle) : DBIO[Int] = updateSpecs.filter(_.vin === vehicle.vin).delete
+
+  def deleteRequiredPackageByVin(vehicle : Vehicle) : DBIO[Int] = requiredPackages.filter(_.vin === vehicle.vin).delete
 }
