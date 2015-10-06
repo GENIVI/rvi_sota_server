@@ -8,7 +8,10 @@ import eu.timepit.refined.{Predicate, Refined}
 import org.genivi.sota.resolver.filters.FilterAST.parseFilter
 
 
-case class Filter ( name: Filter.Name, expression: Filter.Expression )
+case class Filter(
+  name: Filter.Name,
+  expression: Filter.Expression
+)
 
 object Filter {
 
@@ -22,15 +25,6 @@ object Filter {
     expression: Filter.Expression
   )
 
-  import io.circe.generic.semiauto._
-  import org.genivi.sota.marshalling.CirceInstances._
-
-  object ExpressionWrapper {
-
-    implicit val encoderInstance = deriveFor[ExpressionWrapper].encoder
-    implicit val decoderInstance = deriveFor[ExpressionWrapper].decoder
-  }
-
   implicit val validFilterName: Predicate[ValidName, String] =
     Predicate.instance (name =>
       name.length > 1 && name.length <= 100 &&
@@ -43,7 +37,4 @@ object Filter {
         case Left(e)  => s"($expr failed to parse: $e.)"
         case Right(_) => "IMPOSSIBLE"
     })
-
-  implicit val encoderInstance = deriveFor[Filter].encoder
-  implicit val decoderInstance = deriveFor[Filter].decoder
 }
