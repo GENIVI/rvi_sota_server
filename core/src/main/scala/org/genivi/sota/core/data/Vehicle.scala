@@ -7,6 +7,7 @@ package org.genivi.sota.core.data
 import eu.timepit.refined.{Predicate, Refined}
 import io.circe.{Encoder, Decoder}
 import io.circe.generic.auto._
+import org.genivi.sota.rest.ErrorCode
 
 case class Vehicle(vin: Vehicle.IdentificationNumber)
 
@@ -24,4 +25,5 @@ object Vehicle {
     override def compare( a: IdentificationNumber, b: IdentificationNumber ) : Int = a.get compare b.get
   }
 
+  val MissingVehicle = new ErrorCode("missing_vehicle")
 }

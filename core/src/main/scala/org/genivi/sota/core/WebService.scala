@@ -25,11 +25,12 @@ import eu.timepit.refined.string._
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.core.data._
-import org.genivi.sota.core.db.{Packages, Vehicles, InstallRequests}
+import org.genivi.sota.core.db.{UpdateSpecs, Packages, Vehicles, InstallRequests}
 import org.genivi.sota.rest.Validation._
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 import scala.concurrent.Future
 import slick.driver.MySQLDriver.api.Database
+import slick.dbio.DBIO
 
 
 object ErrorCodes {
@@ -42,9 +43,38 @@ class VehiclesResource(db: Database)
   import system.dispatcher
   import CirceMarshallingSupport._
 
+  import scala.concurrent.{ExecutionContext, Future}
+
+  case object MissingVehicle extends Throwable
+
+  def exists
+    (vehicle: Vehicle)
+    (implicit ec: ExecutionContext): Future[Vehicle] =
+    db.run(Vehicles.exists(vehicle.vin))
+      .flatMap(_
+        .fold[Future[Vehicle]]
+          (Future.failed(MissingVehicle))(Future.successful(_)))
+
+  def deleteVin (vehicle: Vehicle)
+  (implicit ec: ExecutionContext): Future[Unit] =
+    for {
+      _ <- exists(vehicle)
+      _ <- db.run(UpdateSpecs.deleteRequiredPackageByVin(vehicle))
+      _ <- db.run(UpdateSpecs.deleteUpdateSpecByVin(vehicle))
+      _ <- db.run(Vehicles.deleteById(vehicle))
+    } yield ()
+
+
   val route = pathPrefix("vehicles") {
     (put & refined[Vehicle.Vin](Slash ~ Segment ~ PathEnd)) { vin =>
-          complete(db.run( Vehicles.create(Vehicle(vin)) ).map(_ => NoContent))
+      complete(db.run( Vehicles.create(Vehicle(vin)) ).map(_ => NoContent))
+    } ~
+    (delete & refined[Vehicle.Vin](Slash ~ Segment ~ PathEnd)) { vin =>
+        completeOrRecoverWith(deleteVin(Vehicle(vin))) {
+          case MissingVehicle =>
+            complete(StatusCodes.NotFound ->
+              ErrorRepresentation(Vehicle.MissingVehicle, "Vehicle doesn't exist"))
+          }
         }
     } ~
     path("vehicles") {

@@ -241,6 +241,29 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
         status shouldBe StatusCodes.BadRequest
       }
     }
+    "delete a VIN" in {
+      val vin = "12345678901234VIN"
+      addVehicleOK(vin)
+      Delete(Resource.uri("vehicles", vin)) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+      }
+    }
+    "delete a VIN and its installPackages" in {
+      val vin = "123456789OTHERVIN"
+      addVehicleOK(vin)
+      addPackageOK("halflife", "3.0.0", None, None)
+      installPackageOK(vin, "halflife", "3.0.0")
+      addPackageOK("halflife", "4.0.0", None, None)
+      installPackageOK(vin, "halflife", "4.0.0")
+      Delete(Resource.uri("vehicles", vin)) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+      }
+    }
 
+    "return a 404 when deleteing a VIN which doesn't exist" in {
+      Delete(Resource.uri("vehicles", "123456789NOTTHERE")) ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
+      }
+    }
   }
 }

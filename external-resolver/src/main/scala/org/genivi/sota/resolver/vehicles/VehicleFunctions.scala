@@ -50,6 +50,15 @@ object VehicleFunctions {
       ps <- packagesOnVinMap.map(_.get(vin).toList.flatten)
     } yield ps
 
+  def deleteVin
+    (vin: Vehicle.Vin)
+    (implicit db: Database, ec: ExecutionContext): Future[Unit] =
+      for {
+        _ <- exists(vin)
+        _ <- db.run(VehicleRepository.deleteInstalledPackageByVin(Vehicle(vin)))
+        _ <- db.run(VehicleRepository.delete(Vehicle(vin)))
+    } yield ()
+
   def vinsThatHavePackageMap
     (implicit db: Database, ec: ExecutionContext)
       : Future[Map[Package.Id, Seq[Vehicle.Vin]]] =

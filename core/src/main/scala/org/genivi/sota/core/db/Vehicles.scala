@@ -26,8 +26,16 @@ object Vehicles {
 
   def list(): DBIO[Seq[Vehicle]] = vins.result
 
+  def exists(vin: Vehicle.IdentificationNumber): DBIO[Option[Vehicle]] =
+    vins
+      .filter(_.vin === vin)
+      .result
+      .headOption
+
   def create(vehicle: Vehicle)(implicit ec: ExecutionContext) : DBIO[Vehicle.IdentificationNumber] =
     vins.insertOrUpdate(vehicle).map( _ => vehicle.vin )
+
+  def deleteById(vehicle : Vehicle) : DBIO[Int] = vins.filter( _.vin === vehicle.vin ).delete
 
   def searchByRegex(reg:String) : DBIO[Seq[Vehicle]] = vins.filter(vins => regex(vins.vin, reg)).result
 }
