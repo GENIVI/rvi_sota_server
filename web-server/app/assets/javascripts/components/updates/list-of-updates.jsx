@@ -20,7 +20,7 @@ define(function(require) {
       var rows = _.map(this.props.Updates.deref(), function(update) {
         var startend = update.periodOfValidity.split("/");
         return (
-          <tr>
+          <tr key={update.id}>
             <td>
               {update.packageId.name}
             </td>
