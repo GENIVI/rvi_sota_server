@@ -24,15 +24,17 @@ object Errors {
 
   case object MissingVehicle extends Throwable with NoStackTrace
 
-  def onMissingFilter : PF = {
-    case Errors.MissingFilterException => complete( StatusCodes.NotFound -> ErrorRepresentation( Codes.FilterNotFound, s"Filter not found") )
+  val onMissingFilter : PF = {
+    case Errors.MissingFilterException =>
+      complete( StatusCodes.NotFound -> ErrorRepresentation( Codes.FilterNotFound, s"Filter not found") )
   }
 
-  def onMissingPackage : PF = {
-    case Errors.MissingPackageException => complete( StatusCodes.NotFound -> ErrorRepresentation( Codes.PackageNotFound, "Package not found") )
+  val onMissingPackage : PF = {
+    case Errors.MissingPackageException =>
+      complete( StatusCodes.NotFound -> ErrorRepresentation( Codes.PackageNotFound, "Package not found") )
   }
 
-  def onMissingVehicle : PF = {
+  val onMissingVehicle : PF = {
     case Errors.MissingVehicle =>
       complete(StatusCodes.NotFound -> ErrorRepresentation(Codes.MissingVehicle, "Vehicle doesn't exist"))
   }

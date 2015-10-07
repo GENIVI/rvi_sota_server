@@ -18,26 +18,37 @@ import scala.concurrent.Future
 
 class HttpTransport( rviUri : Uri ) {
 
-  implicit def requestTransport( implicit actorSystem: ActorSystem, mat: akka.stream.ActorMaterializer, ec: ExecutionContext) : Json => Future[Json] =
+  implicit def requestTransport
+    (implicit actorSystem: ActorSystem, mat: akka.stream.ActorMaterializer, ec: ExecutionContext)
+      : Json => Future[Json] =
     json => Http().singleRequest( Post(rviUri, json) ~> logRequest(actorSystem.log) ).flatMap( handleRequestResult )
 
   def handleRequestResult(response: HttpResponse)
-                         (implicit mat: akka.stream.ActorMaterializer, exec: ExecutionContext) : Future[Json] = response match {
-    case HttpResponse( StatusCodes.OK | StatusCodes.Accepted | StatusCodes.Created, _, entity, _ ) => Unmarshal(entity).to[Json]
-    case HttpResponse( status, _, entity, _) =>
-      Unmarshal(entity).to[Json].recoverWith {
-        case _ =>  Future.failed( client.TransportException( s"Unexpected response status code: $status" ) )
-      }
-  }
+                         (implicit mat: akka.stream.ActorMaterializer, exec: ExecutionContext) : Future[Json] =
+    response match {
+      case HttpResponse( StatusCodes.OK | StatusCodes.Accepted | StatusCodes.Created, _, entity, _ ) =>
+        Unmarshal(entity).to[Json]
 
-  implicit def notifyTransport( implicit actorSystem: ActorSystem, mat: akka.stream.ActorMaterializer, ec: ExecutionContext): Json => Future[Unit] =
+      case HttpResponse( status, _, entity, _) =>
+        Unmarshal(entity).to[Json].recoverWith {
+          case _ =>  Future.failed( client.TransportException( s"Unexpected response status code: $status" ) )
+        }
+    }
+
+  implicit def notifyTransport
+    (implicit actorSystem: ActorSystem, mat: akka.stream.ActorMaterializer, ec: ExecutionContext)
+      : Json => Future[Unit] =
     json => Http().singleRequest( Post(rviUri, json) ).flatMap( handleNotifyResult )
 
   def handleNotifyResult(response: HttpResponse )
-                        (implicit mat: akka.stream.ActorMaterializer, exec: ExecutionContext) : Future[Unit] = response match {
-    case HttpResponse( StatusCodes.OK | StatusCodes.Accepted | StatusCodes.NoContent, _, _, _ ) => Future.successful(())
-    case HttpResponse( status, _, _, _) => Future.failed( client.TransportException( s"Unexpected response status code: $status" ) )
-  }
+                        (implicit mat: akka.stream.ActorMaterializer, exec: ExecutionContext) : Future[Unit] =
+    response match {
+      case HttpResponse( StatusCodes.OK | StatusCodes.Accepted | StatusCodes.NoContent, _, _, _ ) =>
+        Future.successful(())
+
+      case HttpResponse( status, _, _, _) =>
+        Future.failed( client.TransportException( s"Unexpected response status code: $status" ) )
+    }
 
 }
 

@@ -32,7 +32,8 @@ class UpdateController(transferProtocolProps: Props) extends Actor with ActorLog
           context.become( running( currentDownloads.updated( vin, actor ) ) )
           actor ! x
         case Some(x) =>
-          log.warning( s"There is an active transfer for vehicle $vin. Request to transfer packages $packages will be ignored." )
+          log.warning(
+            s"There is an active transfer for vehicle $vin. Request to transfer packages $packages will be ignored." )
       }
     case x @ ChunksReceived(vin, _, _) =>
       currentDownloads.get(vin).foreach( _ ! x)
@@ -55,7 +56,8 @@ object TransferProtocolActor {
 
   private[TransferProtocolActor] case class Specs( values : Iterable[UpdateSpec])
 
-  def props(db: Database, transferActorProps: (ClientServices, Package) => Props) = Props( new TransferProtocolActor( db, transferActorProps) )
+  def props(db: Database, transferActorProps: (ClientServices, Package) => Props) =
+    Props( new TransferProtocolActor( db, transferActorProps) )
 
 }
 
@@ -65,18 +67,21 @@ object UpdateEvents {
 
 }
 
-class TransferProtocolActor(db: Database, transferActorProps: (ClientServices, Package) => Props) extends Actor with ActorLogging {
+class TransferProtocolActor(db: Database, transferActorProps: (ClientServices, Package) => Props)
+    extends Actor with ActorLogging {
   import context.dispatcher
 
   def buildTransferQueue(specs: Iterable[UpdateSpec]) : Queue[Package] = {
     specs.foldLeft(Set.empty[Package])( (acc, x) => acc.union( x.dependencies ) ).to[Queue]
   }
 
-  def running(services: ClientServices, updates: Iterable[UpdateSpec], pending: Queue[Package], inProgress: Map[ActorRef, Package], done: Set[Package]) : Receive = {
+  def running(services: ClientServices, updates: Iterable[UpdateSpec], pending: Queue[Package],
+              inProgress: Map[ActorRef, Package], done: Set[Package]) : Receive = {
     case akka.actor.Terminated(ref) =>
       val p = inProgress.get(ref).get
       log.debug(s"Package $p uploaded.")
-      val newInProgress = pending.headOption.map( startPackageUpload(services) ).fold( inProgress - ref)( inProgress - ref + _ )
+      val newInProgress = pending.headOption.map( startPackageUpload(services) )
+        .fold( inProgress - ref)( inProgress - ref + _ )
       if( newInProgress.isEmpty ) {
         log.debug( s"All packages uploaded." )
         updates.foreach { x =>
@@ -85,8 +90,10 @@ class TransferProtocolActor(db: Database, transferActorProps: (ClientServices, P
         context.stop(self)
       } else {
         val finishedPackageTransfers = done + p
-        val (finishedUpdates, unfinishedUpdates) = updates.span( _.dependencies.diff( finishedPackageTransfers ).isEmpty )
-        context.become( running( services, unfinishedUpdates, if(pending.isEmpty) pending else pending.tail, newInProgress, finishedPackageTransfers) )
+        val (finishedUpdates, unfinishedUpdates) = updates.span(_.dependencies.diff( finishedPackageTransfers ).isEmpty)
+        context.become(
+          running( services, unfinishedUpdates, if(pending.isEmpty) pending else pending.tail,
+                   newInProgress, finishedPackageTransfers) )
       }
 
     case x @ ChunksReceived(vin, p, _) =>
@@ -126,9 +133,11 @@ case class ChunksReceived( vin: Vehicle.IdentificationNumber, `package`: Package
 case class PackageChunk( `package`: Package.Id, bytes: ByteString, index: Int)
 case class Finish(`package`: Package.Id )
 
-class PackageTransferActor( pckg: Package, services: ClientServices, rviClient: RviClient ) extends Actor with ActorLogging {
+class PackageTransferActor( pckg: Package, services: ClientServices, rviClient: RviClient )
+    extends Actor with ActorLogging {
 
-  implicit val byteStringEncoder : Encoder[ByteString] = Encoder[String].contramap[ByteString]( x => Base64.encodeBase64String(x.toArray) )
+  implicit val byteStringEncoder : Encoder[ByteString] =
+    Encoder[String].contramap[ByteString]( x => Base64.encodeBase64String(x.toArray) )
 
   import io.circe.generic.auto._
   import context.dispatcher
@@ -180,7 +189,7 @@ class PackageTransferActor( pckg: Package, services: ClientServices, rviClient: 
       }
       val nextIndex = mayBeNext.getOrElse(indexes.max + 1)
       log.debug(s"Next chunk index: $nextIndex")
-      if( nextIndex > lastIndex ) finish() else sendChunk(nextIndex) 
+      if( nextIndex > lastIndex ) finish() else sendChunk(nextIndex)
   }
 
   override def postStop() : Unit = {
@@ -191,6 +200,7 @@ class PackageTransferActor( pckg: Package, services: ClientServices, rviClient: 
 
 object PackageTransferActor {
 
-  def props( rviClient: RviClient )( services: ClientServices, pckg: Package) : Props = Props( new PackageTransferActor(pckg, services, rviClient) )
+  def props( rviClient: RviClient )( services: ClientServices, pckg: Package) : Props =
+    Props( new PackageTransferActor(pckg, services, rviClient) )
 
 }

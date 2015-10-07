@@ -35,11 +35,13 @@ object ExternalResolverRequestFailed {
   def apply( statusCode: StatusCode ) : ExternalResolverRequestFailed =
     new ExternalResolverRequestFailed( s"Unexpected status code received from external resolver '$statusCode'", null)
 
-  def apply( cause: Throwable ) : ExternalResolverRequestFailed = new ExternalResolverRequestFailed( "Request to external resolver failed.", cause )
+  def apply( cause: Throwable ) : ExternalResolverRequestFailed =
+    new ExternalResolverRequestFailed( "Request to external resolver failed.", cause )
 }
 
 class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri: Uri, vehiclesUri: Uri)
-                                   (implicit system: ActorSystem, mat: ActorMaterializer) extends ExternalResolverClient {
+                                   (implicit system: ActorSystem, mat: ActorMaterializer)
+    extends ExternalResolverClient {
 
   import system.dispatcher
   import io.circe._
@@ -53,7 +55,9 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
       Decoder[Seq[(Vehicle.IdentificationNumber, Set[Package.Id])]].map(_.toMap)
 
       def request(packageId: Package.Id): Future[HttpResponse] = {
-        Http().singleRequest(HttpRequest(uri = resolveUri.withPath(resolveUri.path / packageId.name.get / packageId.version.get)))
+        Http().singleRequest(
+          HttpRequest(uri = resolveUri.withPath(resolveUri.path / packageId.name.get / packageId.version.get))
+        )
       }
 
     request(packageId).flatMap { response =>
@@ -86,8 +90,8 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
         FastFuture.successful( () )
 
       case HttpResponse( StatusCodes.BadRequest, _, entity, _ ) =>
-        Unmarshal(entity).to[ErrorRepresentation]
-          .flatMap( x => FastFuture.failed( ExternalResolverRequestFailed(s"Error returned from external resolver: $x") ) )
+        Unmarshal(entity).to[ErrorRepresentation].flatMap( x =>
+          FastFuture.failed( ExternalResolverRequestFailed(s"Error returned from external resolver: $x") ) )
 
       case HttpResponse( status, _, _, _ ) =>
         FastFuture.failed( ExternalResolverRequestFailed(status) )
@@ -110,7 +114,8 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
       ('vendor  ->> vendor) ::
       HNil
 
-    val request : HttpRequest = Put(packagesUri.withPath(packagesUri.path / packageId.name.get / packageId.version.get ), payload)
+    val request : HttpRequest =
+      Put(packagesUri.withPath(packagesUri.path / packageId.name.get / packageId.version.get ), payload)
     handlePutResponse( Http().singleRequest( request ) )
   }
 

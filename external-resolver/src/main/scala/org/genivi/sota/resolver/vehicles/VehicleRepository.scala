@@ -68,7 +68,8 @@ object VehicleRepository {
                              (implicit ec: ExecutionContext) : DBIO[Unit] = DBIO.seq(
     installedPackages.filter( ip =>
       ip.vin === vehicle.vin &&
-      (ip.packageName.mappedTo[String] ++ ip.packageVersion.mappedTo[String] inSet deletedPackages.map( id => id.name.get + id.version.get ))
+      (ip.packageName.mappedTo[String] ++ ip.packageVersion.mappedTo[String])
+        .inSet( deletedPackages.map( id => id.name.get + id.version.get ))
     ).delete,
     installedPackages ++= newPackages.map( vehicle.vin -> _ )
   ).transactionally

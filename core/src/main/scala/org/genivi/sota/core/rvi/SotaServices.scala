@@ -75,7 +75,8 @@ object SotaServices {
 
     implicit val uriEncoder : Encoder[Uri] = Encoder[String].contramap[Uri]( _.toString() )
 
-    client.register_service.request( ('service ->> name) :: ('network_address ->> uri) :: HNil, 1 ).run[Record.`'service -> String`.T]( transport ).map( _.get('service) )
+    client.register_service.request( ('service ->> name) :: ('network_address ->> uri) :: HNil, 1 )
+      .run[Record.`'service -> String`.T]( transport ).map( _.get('service) )
   }
 
   def register(baseUri: Uri)

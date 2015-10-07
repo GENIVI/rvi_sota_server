@@ -88,7 +88,8 @@ trait AuthConfigImpl extends AuthConfig {
   /**
    * If authorization failed (usually incorrect password) redirect the user as follows:
    */
-  override def authorizationFailed(request: RequestHeader, user: User, authority: Option[Authority])(implicit context: ExecutionContext): Future[Result] = {
+  override def authorizationFailed(request: RequestHeader, user: User, authority: Option[Authority])
+                                  (implicit context: ExecutionContext): Future[Result] = {
     Future.successful(Forbidden("no permission"))
   }
 

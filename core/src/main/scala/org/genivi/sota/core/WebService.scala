@@ -122,7 +122,8 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
     }
   }
 
-  def savePackage( packageId: Package.Id, fileData: StrictForm.FileData )(implicit system: ActorSystem, mat: ActorMaterializer) : Future[(Uri, Long, String)] = {
+  def savePackage( packageId: Package.Id, fileData: StrictForm.FileData )
+                 (implicit system: ActorSystem, mat: ActorMaterializer) : Future[(Uri, Long, String)] = {
     val fileName = fileData.filename.getOrElse(s"${packageId.name.get}-${packageId.version.get}")
     val file = new File(fileName)
     val data = fileData.entity.dataBytes
@@ -144,7 +145,8 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
         complete(db.run(query))
       }
     } ~
-    (put & refined[Package.ValidName]( Slash ~ Segment) & refined[Package.ValidVersion](Slash ~ Segment ~ PathEnd)).as(Package.Id.apply _) { packageId =>
+    (put & refined[Package.ValidName]( Slash ~ Segment) & refined[Package.ValidVersion](Slash ~ Segment ~ PathEnd))
+        .as(Package.Id.apply _) { packageId =>
       formFields('description.?, 'vendor.?, 'file.as[StrictForm.FileData]) { (description, vendor, fileData) =>
         completeOrRecoverWith(
           for {

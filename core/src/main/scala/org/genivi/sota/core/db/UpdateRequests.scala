@@ -43,7 +43,8 @@ object UpdateRequests {
 
     def * = (id, packageName, packageVersion, creationTime, startAfter, finishBefore, priority).shaped <>
       (x => UpdateRequest(x._1, Package.Id(x._2, x._3), x._4, x._5 to x._6, x._7 ),
-      (x: UpdateRequest) => Some((x.id, x.packageId.name, x.packageId.version, x.creationTime, x.periodOfValidity.start, x.periodOfValidity.end, x.priority )))
+      (x: UpdateRequest) => Some((x.id, x.packageId.name, x.packageId.version, x.creationTime,
+                                  x.periodOfValidity.start, x.periodOfValidity.end, x.priority )))
 
 
   }

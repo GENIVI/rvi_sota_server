@@ -34,7 +34,8 @@ object UpdateNotifier {
     }
 
     val earliestExpirationDate : DateTime = updates.map( _.request.periodOfValidity.getEnd ).min
-    rviClient.sendMessage( s"genivi.org/vin/${vin.get}/sota/notify", UpdateNotification(updates.map(toPackageUpdate), services), earliestExpirationDate )
+    rviClient.sendMessage( s"genivi.org/vin/${vin.get}/sota/notify",
+                           UpdateNotification(updates.map(toPackageUpdate), services), earliestExpirationDate )
   }
 
 }

@@ -53,7 +53,7 @@ object PackageFilters {
     } yield f
 
     for {
-      p  <- PackageRepository.packages.filter( x => x.name === packageId.name && x.version === packageId.version ).result.headOption
+      p  <- PackageRepository.exists(packageId)
       fs <- qFilters.result
     } yield (p, fs)
   }
