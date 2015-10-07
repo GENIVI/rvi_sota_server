@@ -19,7 +19,7 @@ define(function(require) {
     render: function() {
       var rows = _.map(this.props.Packages.deref(), function(package) {
         return (
-          <tr>
+          <tr key={package.id.name + '-' + package.id.version}>
             <td>
               <Router.Link to='package' params={{name: package.id.name, version: package.id.version}}>
                 { package.id.name }
