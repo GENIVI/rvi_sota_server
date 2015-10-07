@@ -13,16 +13,19 @@ object Errors {
   import org.genivi.sota.marshalling.CirceMarshallingSupport._
 
   object Codes {
-    val FilterNotFound = ErrorCode("filter_not_found")
-    val PackageNotFound = ErrorCode("package_not_found")
-    val MissingVehicle = ErrorCode("missing_vehicle")
+    val FilterNotFound   = ErrorCode("filter_not_found")
+    val PackageNotFound  = ErrorCode("package_not_found")
+    val MissingVehicle   = ErrorCode("missing_vehicle")
+    val MissingComponent = ErrorCode("missing_component")
   }
 
-  object MissingPackageException extends Throwable with NoStackTrace
+  case object MissingPackageException extends Throwable with NoStackTrace
 
-  object MissingFilterException extends Throwable with NoStackTrace
+  case object MissingFilterException  extends Throwable with NoStackTrace
 
-  case object MissingVehicle extends Throwable with NoStackTrace
+  case object MissingVehicle          extends Throwable with NoStackTrace
+
+  case object MissingComponent        extends Throwable with NoStackTrace
 
   val onMissingFilter : PF = {
     case Errors.MissingFilterException =>
@@ -37,6 +40,11 @@ object Errors {
   val onMissingVehicle : PF = {
     case Errors.MissingVehicle =>
       complete(StatusCodes.NotFound -> ErrorRepresentation(Codes.MissingVehicle, "Vehicle doesn't exist"))
+  }
+
+  val onMissingComponent : PF = {
+    case Errors.MissingComponent =>
+      complete(StatusCodes.NotFound -> ErrorRepresentation(Codes.MissingComponent, "Component doesn't exist"))
   }
 
 }

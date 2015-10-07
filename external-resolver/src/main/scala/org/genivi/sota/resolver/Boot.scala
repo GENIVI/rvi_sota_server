@@ -13,6 +13,7 @@ import org.genivi.sota.resolver.filters.FilterDirectives
 import org.genivi.sota.resolver.packages.PackageDirectives
 import org.genivi.sota.resolver.resolve.ResolveDirectives
 import org.genivi.sota.resolver.vehicles.VehicleDirectives
+import org.genivi.sota.resolver.components.ComponentDirectives
 import org.genivi.sota.rest.Handlers.{rejectionHandler, exceptionHandler}
 import scala.concurrent.ExecutionContext
 import scala.util.Try
@@ -29,7 +30,8 @@ class Routing
         new VehicleDirectives().route ~
         new PackageDirectives().route ~
         new FilterDirectives().route ~
-        new ResolveDirectives().route
+        new ResolveDirectives().route ~
+        new ComponentDirectives().route
       }
     }
   }
