@@ -4,61 +4,50 @@
  */
 package org.genivi.sota.resolver.vehicles
 
+import org.genivi.sota.resolver.packages.PackageRepository
 import org.genivi.sota.resolver.packages.{Package, PackageFunctions}
 import org.genivi.sota.resolver.common.Errors
 import scala.concurrent.{ExecutionContext, Future}
+import slick.dbio.DBIO
 import slick.jdbc.JdbcBackend.Database
 
 
 object VehicleFunctions {
 
-  case object MissingVehicle extends Throwable
+  def exists(vin: Vehicle.Vin)
+            (implicit db: Database, ec: ExecutionContext): Future[Vehicle] =
+    db.run(VehicleRepository.exists(vin)).flatMap(
+      _.fold[Future[Vehicle]](Future.failed(Errors.MissingVehicle))(Future.successful)
+    )
 
-  def exists
-    (vin: Vehicle.Vin)
-    (implicit db: Database, ec: ExecutionContext): Future[Vehicle] =
-    db.run(VehicleRepository.exists(vin))
-      .flatMap(_
-        .fold[Future[Vehicle]]
-          (Future.failed(MissingVehicle))(Future.successful(_)))
-
-  def installPackage
-    (vin: Vehicle.Vin, pkgId: Package.Id)
-    (implicit db: Database, ec: ExecutionContext): Future[Unit] =
+  def installPackage(vin: Vehicle.Vin, pkgId: Package.Id)
+                    (implicit db: Database, ec: ExecutionContext): Future[Unit] =
     for {
       _ <- exists(vin)
       _ <- PackageFunctions.exists(pkgId)
       _ <- db.run(VehicleRepository.installPackage(vin, pkgId))
     } yield ()
 
-  def uninstallPackage
-    (vin: Vehicle.Vin, pkgId: Package.Id)
-    (implicit db: Database, ec: ExecutionContext): Future[Unit] =
+  def uninstallPackage(vin: Vehicle.Vin, pkgId: Package.Id)
+                      (implicit db: Database, ec: ExecutionContext): Future[Unit] =
     for {
       _ <- exists(vin)
       _ <- PackageFunctions.exists(pkgId)
       _ <- db.run(VehicleRepository.uninstallPackage(vin, pkgId))
     } yield ()
 
-  def packagesOnVinMap
-    (implicit db: Database, ec: ExecutionContext)
-      : Future[Map[Vehicle.Vin, Seq[Package.Id]]] =
-    db.run(VehicleRepository.listInstalledPackages)
-      .map(_
-        .sortBy(_._1)
-        .groupBy(_._1)
-        .mapValues(_.map(_._2)))
+  def packagesOnVinMap(implicit db: Database, ec: ExecutionContext) : Future[Map[Vehicle.Vin, Seq[Package.Id]]] =
+    db.run(VehicleRepository.listInstalledPackages).map(
+      _.sortBy(_._1)
+      .groupBy(_._1)
+      .mapValues(_.map(_._2))
+    )
 
-  def packagesOnVin
-    (vin: Vehicle.Vin)
-    (implicit db: Database, ec: ExecutionContext): Future[Seq[Package.Id]] =
+  def packagesOnVin(vin: Vehicle.Vin)
+                   (implicit db: Database, ec: ExecutionContext): Future[Seq[Package.Id]] =
     for {
       _  <- exists(vin)
-      ps <- packagesOnVinMap
-              .map(_
-                .get(vin)
-                .toList
-                .flatten)
+      ps <- packagesOnVinMap.map(_.get(vin).toList.flatten)
     } yield ps
 
   def vinsThatHavePackageMap
@@ -82,4 +71,23 @@ object VehicleFunctions {
                 .flatten)
     } yield vs
 
+  def updateInstalledPackages(vin: Vehicle.Vin, packages: Set[Package.Id] )
+                             (implicit db: Database, ec: ExecutionContext): Future[Unit] = {
+    def checkPackagesAvailable( ids: Set[Package.Id] ) : DBIO[Unit] = {
+      PackageRepository.load(ids).map( ids -- _.map(_.id) ).flatMap { xs =>
+        if( xs.isEmpty ) DBIO.successful(()) else DBIO.failed( Errors.MissingPackageException )
+      }
+    }
+
+    val action : DBIO[Unit] = for {
+      maybeVehicle      <- VehicleRepository.exists(vin)
+      vehicle           <- maybeVehicle.fold[DBIO[Vehicle]](DBIO.failed( Errors.MissingVehicle ))( DBIO.successful )
+      installedPackages <- VehicleRepository.installedOn(vin)
+      newPackages       =  packages -- installedPackages
+      deletedPackages   =  installedPackages -- packages
+      _                 <- checkPackagesAvailable(newPackages)
+      _                 <- VehicleRepository.updateInstalledPackages(vehicle, newPackages, deletedPackages)
+    } yield ()
+    db.run( action )
+  }
 }

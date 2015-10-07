@@ -28,9 +28,12 @@ class JsonRpcRviClient(transport: Json => Future[Json], ec: ExecutionContext) ex
   override def sendMessage[A](service: String, message: A, expirationDate: DateTime)
     (implicit encoder: Encoder[A]) : Future[Int] = {
     implicit val exec = ec
-    client.message.request( ('service_name ->> service) :: ('timeout ->> expirationDate.getMillis() / 1000) :: ('parameters ->> Seq(message)) :: HNil, Random.nextInt() )
+    client.message.request(
+        ('service_name ->> service) ::
+        ('timeout ->> expirationDate.getMillis() / 1000) ::
+        ('parameters ->> Seq(message)) :: HNil,
+        Random.nextInt() )
       .run[Record.`'transaction_id -> Int`.T](transport)
       .map( _.get('transaction_id))
   }
-
 }

@@ -2,10 +2,11 @@
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.core.db
+package org.genivi.sota.db
+
+import java.util.UUID
 
 import akka.http.scaladsl.model.Uri
-import java.util.UUID
 import slick.ast.{Node, TypedType}
 import slick.driver.MySQLDriver.api._
 import slick.lifted.Rep

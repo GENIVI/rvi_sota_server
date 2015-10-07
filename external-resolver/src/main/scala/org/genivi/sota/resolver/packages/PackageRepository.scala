@@ -5,8 +5,9 @@
 package org.genivi.sota.resolver.packages
 
 import org.genivi.sota.refined.SlickRefined._
+import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
-
+import org.genivi.sota.db.SlickExtensions._
 
 object PackageRepository {
 
@@ -41,4 +42,10 @@ object PackageRepository {
       .result
       .headOption
 
+  def load(ids: Set[Package.Id])
+          (implicit ec: ExecutionContext): DBIO[Set[Package]] = {
+    packages.filter( x =>
+      x.name.mappedTo[String] ++ x.version.mappedTo[String] inSet ids.map( id => id.name.get + id.version.get )
+    ).result.map( _.toSet )
+  }
 }

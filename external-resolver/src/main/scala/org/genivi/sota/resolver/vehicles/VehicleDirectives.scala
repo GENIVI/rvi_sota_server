@@ -24,16 +24,7 @@ import slick.jdbc.JdbcBackend.Database
 class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
   import Directives._
 
-  def installedPackagesHandler = ExceptionHandler {
-    case VehicleFunctions.MissingVehicle =>
-      complete(StatusCodes.NotFound ->
-        ErrorRepresentation(Vehicle.MissingVehicle, "Vehicle doesn't exist"))
-
-    // XXX: already in Errors.
-    case Errors.MissingPackageException =>
-      complete(StatusCodes.NotFound ->
-        ErrorRepresentation(Errors.Codes.PackageNotFound, "Package doesn't exist"))
-  }
+  def installedPackagesHandler = ExceptionHandler( Errors.onMissingPackage orElse Errors.onMissingVehicle)
 
   def route(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Route = {
     val extractVin : Directive1[Vehicle.Vin] = refined[Vehicle.ValidVin](Slash ~ Segment)
@@ -47,7 +38,7 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
               completeOrRecoverWith(VehicleFunctions.vinsThatHavePackage(Package.Id(packageName, packageVersion))) {
                 Errors.onMissingPackage
               }
-            case None              =>
+            case None =>
               complete(db.run(VehicleRepository.list))
           }
         }
@@ -58,21 +49,24 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
             complete(db.run(VehicleRepository.add(Vehicle(vin))).map(_ => NoContent))
           }
         } ~
-        pathPrefix("package") {
-          (pathEnd & get) {
-            completeOrRecoverWith(VehicleFunctions.packagesOnVin(vin)) {
-              case VehicleFunctions.MissingVehicle =>
-                complete(StatusCodes.NotFound ->
-                  ErrorRepresentation(Vehicle.MissingVehicle, "Vehicle doesn't exist"))
+        handleExceptions(ExceptionHandler( installedPackagesHandler ) ) {
+          pathPrefix("package") {
+            (pathEnd & get)( complete(VehicleFunctions.packagesOnVin(vin)) ) ~
+              (handleExceptions( installedPackagesHandler ) & refinedPackageId) { pkgId =>
+              put(
+                complete(VehicleFunctions.installPackage(vin, pkgId))
+              ) ~
+              delete (
+                complete(VehicleFunctions.uninstallPackage(vin, pkgId))
+              )
             }
           } ~
-          (handleExceptions( installedPackagesHandler ) & refinedPackageId) { pkgId =>
-            put(
-              complete(VehicleFunctions.installPackage(vin, pkgId))
-            ) ~
-            delete (
-              complete(VehicleFunctions.uninstallPackage(vin, pkgId))
-            )
+          path("packages") {
+            (put & entity(as[Set[Package.Id]]) ) { packageIds =>
+              onSuccess( VehicleFunctions.updateInstalledPackages(vin, packageIds ) ) {
+                complete( StatusCodes.NoContent )
+              }
+            }
           }
         }
       }

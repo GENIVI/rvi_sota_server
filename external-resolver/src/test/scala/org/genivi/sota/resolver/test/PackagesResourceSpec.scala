@@ -6,7 +6,6 @@ package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.ValidationRejection
-import akka.http.scaladsl.unmarshalling._
 import cats.data.Xor
 import eu.timepit.refined.Refined
 import io.circe.Json
@@ -18,27 +17,9 @@ import org.scalacheck._
 import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
 
 
-object ArbitraryPackage {
-
-  val genVersion: Gen[Version] =
-    Gen.listOfN(3, Gen.choose(0, 999)).map(_.mkString(".")).map(Refined(_))
-
-  val genPackageName: Gen[Package.Name] =
-    Gen.identifier.map(Refined(_))
-
-  val genPackage: Gen[Package] = for {
-    name    <- genPackageName
-    version <- genVersion
-    desc    <- Gen.option(Arbitrary.arbitrary[String])
-    vendor  <- Gen.option(Gen.alphaStr)
-  } yield Package(Package.Id(name, version), desc, vendor)
-
-  implicit lazy val arbPackage = Arbitrary(genPackage)
-}
-
 class PackagesResourcePropSpec extends ResourcePropSpec {
 
-  import ArbitraryPackage.arbPackage
+  import Generators.arbPackage
 
   property("create a new resource on PUT request") {
     forAll { (p : Package) =>

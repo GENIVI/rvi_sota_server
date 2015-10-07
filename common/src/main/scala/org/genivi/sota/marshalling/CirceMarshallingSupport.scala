@@ -18,7 +18,9 @@ trait CirceMarshallingSupport {
   // Unmarshalling
 
   implicit def circeUnmarshaller[T](implicit decoder: Decoder[T], mat: Materializer) : FromEntityUnmarshaller[T] =
-    circeFromEntityJsonUnmarshaller.map( decoder.decodeJson ).flatMap(_ => _.fold( e => FastFuture.failed(new DeserializationException(e)), FastFuture.successful ))
+    circeFromEntityJsonUnmarshaller
+      .map( decoder.decodeJson )
+      .flatMap( _ => _.fold( e => FastFuture.failed(new DeserializationException(e)), FastFuture.successful ) )
 
   implicit def circeFromEntityJsonUnmarshaller(implicit mat: Materializer) : FromEntityUnmarshaller[Json] =
     Unmarshaller.byteStringUnmarshaller
@@ -36,7 +38,8 @@ trait CirceMarshallingSupport {
   implicit def circeJsonMarshaller(implicit printer: Printer) : ToEntityMarshaller[Json] =
     Marshaller.StringMarshaller.wrap(ContentTypes.`application/json`)(printer.pretty)
 
-  implicit def circeToEntityMarshaller[T](implicit encoder: Encoder[T], printer: Printer = Printer.noSpaces): ToEntityMarshaller[T] =
+  implicit def circeToEntityMarshaller[T](implicit encoder: Encoder[T], printer: Printer = Printer.noSpaces)
+      : ToEntityMarshaller[T] =
     circeJsonMarshaller.compose(encoder.apply)
 
 

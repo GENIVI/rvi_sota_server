@@ -47,7 +47,9 @@ trait CirceInstances {
   implicit val uuidEncoder : Encoder[UUID] = Encoder[String].contramap(_.toString)
   implicit val uuidDecoder : Decoder[UUID] = Decoder[String].map(UUID.fromString)
 
-  implicit val dateTimeEncoder : Encoder[DateTime] = Encoder.instance[DateTime]( x =>  Json.string( ISODateTimeFormat.dateTime().print(x)) )
+  implicit val dateTimeEncoder : Encoder[DateTime] =
+    Encoder.instance[DateTime]( x =>  Json.string( ISODateTimeFormat.dateTime().print(x)) )
+
   implicit val dateTimeDecoder : Decoder[DateTime] = Decoder.instance { c =>
     c.focus.asString match {
       case None       => Xor.left(DecodingFailure("DataTime", c.history))

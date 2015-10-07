@@ -25,7 +25,8 @@ object Types {
   type Path = String Refined Uri
 }
 
-class Resolver(_path: Types.Path, _packageExtension: Types.FileExtension, _checksumExtension: Types.FileExtension) extends Types.Resolver {
+class Resolver(_path: Types.Path, _packageExtension: Types.FileExtension, _checksumExtension: Types.FileExtension)
+    extends Types.Resolver {
   val path = Paths.get(_path.get)
   val packageExtension = _packageExtension.get
   val checksumExtension = _checksumExtension.get

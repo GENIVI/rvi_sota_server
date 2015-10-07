@@ -7,6 +7,7 @@ package org.genivi.sota.core.db
 import akka.http.scaladsl.model.Uri
 import eu.timepit.refined.Refined
 import org.genivi.sota.core.data.Package
+import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.generic.DeepHLister
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
@@ -17,7 +18,6 @@ import slick.lifted.{LiteralColumn, ExtensionMethods, Rep, StringColumnExtension
 object Packages {
 
   import org.genivi.sota.refined.SlickRefined._
-  import SlickExtensions._
   import shapeless._
 
   // scalastyle:off
@@ -47,13 +47,17 @@ object Packages {
   def create(pkg: Package)(implicit ec: ExecutionContext): DBIO[Package] =
     packages.insertOrUpdate(pkg).map(_ => pkg)
 
-  def searchByRegex(reg:String): DBIO[Seq[Package]] = packages.filter (packages => regex(packages.name, reg) || regex(packages.version, reg) ).result
+  def searchByRegex(reg:String): DBIO[Seq[Package]] =
+    packages.filter (packages => regex(packages.name, reg) || regex(packages.version, reg) ).result
 
-  def byId(id : Package.Id) : DBIO[Option[Package]] = packages.filter( p => p.name === id.name && p.version === id.version ).result.headOption
+  def byId(id : Package.Id) : DBIO[Option[Package]] =
+    packages.filter( p => p.name === id.name && p.version === id.version ).result.headOption
 
   def byIds(ids : Set[Package.Id] )
            (implicit ec: ExecutionContext): DBIO[Seq[Package]] = {
 
-    packages.filter( x => x.name.mappedTo[String] ++ x.version.mappedTo[String] inSet ids.map( id => id.name.get + id.version.get ) ).result
+    packages.filter( x =>
+      x.name.mappedTo[String] ++ x.version.mappedTo[String] inSet ids.map( id => id.name.get + id.version.get )
+    ).result
   }
 }

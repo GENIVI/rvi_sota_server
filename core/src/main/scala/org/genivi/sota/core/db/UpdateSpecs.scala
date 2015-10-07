@@ -9,6 +9,7 @@ import java.util.UUID
 import org.genivi.sota.core.data.Package.Id
 import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.core.data.UpdateSpec
+import org.genivi.sota.db.SlickExtensions
 import scala.collection.GenTraversable
 import eu.timepit.refined.string.Uuid
 import scala.concurrent.ExecutionContext
@@ -21,9 +22,10 @@ object UpdateSpecs {
   import UpdateStatus._
   import SlickExtensions._
 
-  implicit val UpdateStatusColumn = MappedColumnType.base[UpdateStatus, String]( _.value.toString, UpdateStatus.withName )
+  implicit val UpdateStatusColumn = MappedColumnType.base[UpdateStatus, String](_.value.toString, UpdateStatus.withName)
 
-  class UpdateSpecsTable(tag: Tag) extends Table[(UUID, Vehicle.IdentificationNumber, UpdateStatus)](tag, "UpdateSpecs") {
+  class UpdateSpecsTable(tag: Tag)
+      extends Table[(UUID, Vehicle.IdentificationNumber, UpdateStatus)](tag, "UpdateSpecs") {
     def requestId = column[UUID]("update_request_id")
     def vin = column[Vehicle.IdentificationNumber]("vin")
     def status = column[UpdateStatus]("status")
@@ -33,7 +35,8 @@ object UpdateSpecs {
     def * = (requestId, vin, status)
   }
 
-  class RequiredPackagesTable(tag: Tag) extends Table[(UUID, Vehicle.IdentificationNumber, Package.Name, Package.Version)](tag, "RequiredPackages") {
+  class RequiredPackagesTable(tag: Tag)
+      extends Table[(UUID, Vehicle.IdentificationNumber, Package.Name, Package.Version)](tag, "RequiredPackages") {
     def requestId = column[UUID]("update_request_id")
     def vin = column[Vehicle.IdentificationNumber]("vin")
     def packageName = column[Package.Name]("package_name")
@@ -62,7 +65,10 @@ object UpdateSpecs {
 
   def load( vin: Vehicle.IdentificationNumber, packageIds: Set[Package.Id] )
           (implicit ec: ExecutionContext) : DBIO[Iterable[UpdateSpec]] = {
-    val requests = UpdateRequests.all.filter(r => r.packageName.mappedTo[String] ++ r.packageVersion.mappedTo[String] inSet packageIds.map( id => id.name.get + id.version.get ))
+    val requests = UpdateRequests.all.filter(r =>
+        (r.packageName.mappedTo[String] ++ r.packageVersion.mappedTo[String])
+          .inSet( packageIds.map( id => id.name.get + id.version.get ) )
+      )
     val specs = updateSpecs.filter(_.vin === vin)
     val q = for {
       r  <- requests

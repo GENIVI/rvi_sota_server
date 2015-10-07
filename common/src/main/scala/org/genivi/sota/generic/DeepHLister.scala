@@ -15,7 +15,8 @@ trait DeepHLister[R <: HList] extends DepFn1[R] {
 trait LowPriorityDeepHLister0 {
   type Aux[R <: HList, Out0 <: HList] = DeepHLister[R] {type Out = Out0} // scalastyle:ignore
 
-  implicit def headNotCaseClassDeepHLister[H, T <: HList](implicit dht: Lazy[DeepHLister[T]]): Aux[H :: T, H :: dht.value.Out] = new DeepHLister[H :: T] {
+  implicit def headNotCaseClassDeepHLister[H, T <: HList]
+    (implicit dht: Lazy[DeepHLister[T]]): Aux[H :: T, H :: dht.value.Out] = new DeepHLister[H :: T] {
     type Out = H :: dht.value.Out
 
     def apply(r: H :: T): Out = r.head :: dht.value(r.tail)
@@ -24,10 +25,9 @@ trait LowPriorityDeepHLister0 {
 
 trait LowPriorityDeepHLister extends LowPriorityDeepHLister0 {
 
-  implicit def headCaseClassDeepHLister[H, R <: HList, T <: HList](implicit
-                                                                   gen: Generic.Aux[H, R],
-                                                                   dhh: Lazy[DeepHLister[R]],
-                                                                   dht: Lazy[DeepHLister[T]]): Aux[H :: T, dhh.value.Out :: dht.value.Out] =
+  implicit def headCaseClassDeepHLister[H, R <: HList, T <: HList]
+    (implicit gen: Generic.Aux[H, R], dhh: Lazy[DeepHLister[R]], dht: Lazy[DeepHLister[T]])
+      : Aux[H :: T, dhh.value.Out :: dht.value.Out] =
     new DeepHLister[H :: T] {
 
       type Out = dhh.value.Out :: dht.value.Out
@@ -45,9 +45,9 @@ object DeepHLister extends LowPriorityDeepHLister {
     def apply(r: HNil): Out = HNil
   }
 
-  implicit def refinedHeadDeepHLister[A, P, H, T <: HList](implicit
-                                                           ev: H =:= Refined[A, P],
-                                                           dht: Lazy[DeepHLister[T]]): DeepHLister.Aux[Refined[A, P] :: T, Refined[A, P] :: dht.value.Out] =
+  implicit def refinedHeadDeepHLister[A, P, H, T <: HList]
+    (implicit ev: H =:= Refined[A, P], dht: Lazy[DeepHLister[T]])
+      : DeepHLister.Aux[Refined[A, P] :: T, Refined[A, P] :: dht.value.Out] =
     headNotCaseClassDeepHLister
 
 

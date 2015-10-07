@@ -55,10 +55,13 @@ class FilterDirectives()(implicit db: Database, mat: ActorMaterializer, ec: Exec
       } ~
       (put & refined[Filter.ValidName](Slash ~ Segment ~ PathEnd)
            & entity(as[Filter.ExpressionWrapper])) { (fname, expr) =>
-          complete(db.run(FilterRepository.update(Filter(fname, expr.expression))).failIfNone( Errors.MissingFilterException ))
+        complete(db.run(FilterRepository.update(Filter(fname, expr.expression)))
+                   .failIfNone( Errors.MissingFilterException ))
       } ~
       (delete & refined[Filter.ValidName](Slash ~ Segment ~ PathEnd)) { fname =>
-        complete( db.run(FilterRepository.delete(fname)).flatMap(x => if(x == 0) FastFuture.failed( Errors.MissingFilterException ) else FastFuture.successful(()) ) )
+        complete(
+          db.run(FilterRepository.delete(fname))
+            .flatMap(x => if(x == 0) FastFuture.failed( Errors.MissingFilterException ) else FastFuture.successful(())))
       }
 
     }
@@ -87,7 +90,7 @@ class FilterDirectives()(implicit db: Database, mat: ActorMaterializer, ec: Exec
             val packageVersion: Package.Version = Refined(nameVersion.get.split("-").tail.head)
             val f: Future[Seq[Filter]] = for {
               (p, fs) <- db.run(PackageFilters.listFiltersForPackage(Package.Id(packageName, packageVersion)))
-              _       <- p.fold[Future[Package]]( FastFuture.failed( Errors.MissingPackageException ) )( FastFuture.successful )
+              _  <- p.fold[Future[Package]](FastFuture.failed(Errors.MissingPackageException))(FastFuture.successful)
             } yield fs
             complete(f)
 
@@ -107,7 +110,9 @@ class FilterDirectives()(implicit db: Database, mat: ActorMaterializer, ec: Exec
               & refined[Filter.ValidName]    (Slash ~ Segment ~ PathEnd)) { (pname, pversion, fname) =>
         completeOrRecoverWith(deletePackageFilter(pname, pversion, fname)) {
           case MissingPackageFilterException =>
-            complete(StatusCodes.NotFound -> ErrorRepresentation( ErrorCode("filter_not_found"), s"No filter with the name '$fname' defined for package $pname-$pversion" ))
+            complete(StatusCodes.NotFound ->
+                       ErrorRepresentation( ErrorCode("filter_not_found"),
+                                            s"No filter with the name '$fname' defined for package $pname-$pversion" ))
           case e => failWith(e)
         }
       }
