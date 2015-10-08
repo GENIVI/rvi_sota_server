@@ -5,8 +5,7 @@ import eu.timepit.refined.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
-import org.genivi.sota.resolver.packages.Package
-import org.genivi.sota.resolver.types.PackageFilter
+import org.genivi.sota.resolver.packages.{Package, PackageFilter}
 import org.genivi.sota.resolver.vehicles.Vehicle
 import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
 
@@ -118,7 +117,6 @@ class ResolveResourcePropSpec extends ResourcePropSpec {
   import org.genivi.sota.resolver.resolve.ResolveFunctions.makeFakeDependencyMap
   import org.genivi.sota.resolver.filters._
   import org.genivi.sota.resolver.filters.FilterAST.{parseValidFilter, query}
-  import org.genivi.sota.resolver.types._
   import org.scalacheck.Prop.{True => _, _}
   import io.circe.generic.auto._
 

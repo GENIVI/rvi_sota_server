@@ -4,12 +4,14 @@
  */
 package org.genivi.sota.resolver.filters
 
+import eu.timepit.refined.Refined
+import eu.timepit.refined.string.Regex
 import org.genivi.sota.db.Operators.regex
 import org.genivi.sota.refined.SlickRefined._
-import org.genivi.sota.resolver.db.PackageFilters
 import scala.concurrent.ExecutionContext
 import scala.util.control.NoStackTrace
 import slick.driver.MySQLDriver.api._
+
 
 object FilterRepository {
 
@@ -42,19 +44,13 @@ object FilterRepository {
     q.update(filter.expression).map(i => if (i == 0) None else Some(filter))
   }
 
-  def deleteFilter(name: Filter.Name)(implicit ec: ExecutionContext): DBIO[Int] =
-    filters.filter(_.name === name).delete
-
   def delete(name: Filter.Name)(implicit ec: ExecutionContext): DBIO[Int] =
-    (for {
-      _ <- PackageFilters.delete(name)
-      filtersDeleted <- deleteFilter(name)
-    } yield filtersDeleted).transactionally
+    filters.filter(_.name === name).delete
 
   def list: DBIO[Seq[Filter]] =
     filters.result
 
-  def searchByRegex(re:String): DBIO[Seq[Filter]] =
-    filters.filter(filter => regex(filter.name, re)).result
+  def searchByRegex(re: Refined[String, Regex]): DBIO[Seq[Filter]] =
+    filters.filter(filter => regex(filter.name, re.get)).result
 
 }

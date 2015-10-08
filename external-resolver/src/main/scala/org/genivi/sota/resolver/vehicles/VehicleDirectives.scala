@@ -26,7 +26,7 @@ import slick.jdbc.JdbcBackend.Database
 class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
   import Directives._
 
-  def installedPackagesHandler = ExceptionHandler( Errors.onMissingPackage orElse Errors.onMissingVehicle)
+  def installedPackagesHandler = ExceptionHandler(Errors.onMissingPackage orElse Errors.onMissingVehicle)
 
   def route(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Route = {
     val extractVin : Directive1[Vehicle.Vin] = refined[Vehicle.ValidVin](Slash ~ Segment)
@@ -37,8 +37,9 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
             case Some(nameVersion) =>
               val packageName   : Package.Name    = Refined(nameVersion.get.split("-").head)
               val packageVersion: Package.Version = Refined(nameVersion.get.split("-").tail.head)
-              completeOrRecoverWith(VehicleFunctions.vinsThatHavePackage(Package.Id(packageName, packageVersion))) {
-                Errors.onMissingPackage
+              completeOrRecoverWith(db.run(VehicleRepository.vinsThatHavePackage
+                (Package.Id(packageName, packageVersion)))) {
+                  Errors.onMissingPackage
               }
             case None =>
               complete(db.run(VehicleRepository.list))
@@ -51,21 +52,24 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
             complete(db.run(VehicleRepository.add(Vehicle(vin))).map(_ => NoContent))
           }
         } ~
-        handleExceptions(ExceptionHandler( installedPackagesHandler ) ) {
+        handleExceptions(installedPackagesHandler) {
           delete {
             pathEnd {
-              complete(VehicleFunctions.deleteVin(vin))
+              complete(db.run(VehicleRepository.deleteVin(vin)))
             }
           } ~
           pathPrefix("package") {
-            (pathEnd & get)( complete(VehicleFunctions.packagesOnVin(vin)) ) ~
-              (handleExceptions( installedPackagesHandler ) & refinedPackageId) { pkgId =>
-              put(
-                complete(VehicleFunctions.installPackage(vin, pkgId))
-              ) ~
-              delete (
-                complete(VehicleFunctions.uninstallPackage(vin, pkgId))
-              )
+            (pathEnd & get) {
+              complete(db.run(VehicleRepository.packagesOnVin(vin)))
+            } ~
+            refinedPackageId
+            { pkgId =>
+                put {
+                  complete(db.run(VehicleRepository.installPackage(vin, pkgId)))
+                } ~
+                delete {
+                  complete(db.run(VehicleRepository.uninstallPackage(vin, pkgId)))
+                }
             }
           } ~
           path("packages") {

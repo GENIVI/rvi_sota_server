@@ -5,7 +5,8 @@
 package org.genivi.sota.resolver.vehicles
 
 import org.genivi.sota.refined.SlickRefined._
-import org.genivi.sota.resolver.packages.Package
+import org.genivi.sota.resolver.common.Errors
+import org.genivi.sota.resolver.packages.{Package, PackageRepository}
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
@@ -30,13 +31,24 @@ object VehicleRepository {
   def list: DBIO[Seq[Vehicle]] =
     vehicles.result
 
-  def exists(vin: Vehicle.Vin): DBIO[Option[Vehicle]] =
+  def exists(vin: Vehicle.Vin)(implicit ec: ExecutionContext): DBIO[Vehicle] =
     vehicles
       .filter(_.vin === vin)
       .result
       .headOption
+      .flatMap(_.
+        fold[DBIO[Vehicle]](DBIO.failed(Errors.MissingVehicle))(DBIO.successful(_)))
 
-  def delete(vehicle : Vehicle) : DBIO[Int] = vehicles.filter( _.vin === vehicle.vin ).delete
+  def delete(vin: Vehicle.Vin): DBIO[Int] =
+    vehicles.filter(_.vin === vin).delete
+
+  def deleteVin(vin: Vehicle.Vin)
+               (implicit ec: ExecutionContext): DBIO[Unit] =
+    for {
+      _ <- VehicleRepository.exists(vin)
+      _ <- deleteInstalledPackageByVin(vin)
+      _ <- delete(vin)
+    } yield ()
 
   // scalastyle:off
   class InstalledPackageTable(tag: Tag) extends Table[(Vehicle.Vin, Package.Id)](tag, "InstalledPackage") {
@@ -55,14 +67,28 @@ object VehicleRepository {
 
   val installedPackages = TableQuery[InstalledPackageTable]
 
-  def installPackage(vin: Vehicle.Vin, pkgId: Package.Id): DBIO[Int] =
-    installedPackages.insertOrUpdate((vin, pkgId))
+  def installPackage
+    (vin: Vehicle.Vin, pkgId: Package.Id)
+    (implicit db: Database, ec: ExecutionContext): DBIO[Unit] =
+    for {
+      _ <- exists(vin)
+      _ <- PackageRepository.exists(pkgId)
+      _ <- installedPackages.insertOrUpdate((vin, pkgId))
+    } yield ()
 
-  def uninstallPackage(vin: Vehicle.Vin, pkgId: Package.Id): DBIO[Int] =
-    installedPackages.filter(ip =>
-      ip.vin === vin &&
-      ip.packageName === pkgId.name &&
-      ip.packageVersion === pkgId.version).delete
+  def uninstallPackage
+    (vin: Vehicle.Vin, pkgId: Package.Id)
+    (implicit db: Database, ec: ExecutionContext): DBIO[Unit] =
+    for {
+      _ <- exists(vin)
+      _ <- PackageRepository.exists(pkgId)
+      _ <- installedPackages.filter { ip =>
+             ip.vin            === vin &&
+             ip.packageName    === pkgId.name &&
+             ip.packageVersion === pkgId.version
+           }.delete
+    } yield ()
+
 
   import org.genivi.sota.db.SlickExtensions._
 
@@ -83,6 +109,49 @@ object VehicleRepository {
   def listInstalledPackages: DBIO[Seq[(Vehicle.Vin, Package.Id)]] =
     installedPackages.result
 
-  def deleteInstalledPackageByVin(vehicle: Vehicle): DBIO[Int] = installedPackages.filter(_.vin === vehicle.vin).delete
+  def deleteInstalledPackageByVin(vin: Vehicle.Vin): DBIO[Int] =
+    installedPackages.filter(_.vin === vin).delete
+
+  def packagesOnVinMap
+    (implicit db: Database, ec: ExecutionContext)
+      : DBIO[Map[Vehicle.Vin, Seq[Package.Id]]] =
+    VehicleRepository.listInstalledPackages
+      .map(_
+        .sortBy(_._1)
+        .groupBy(_._1)
+        .mapValues(_.map(_._2)))
+
+  def packagesOnVin
+    (vin: Vehicle.Vin)
+    (implicit db: Database, ec: ExecutionContext): DBIO[Seq[Package.Id]] =
+    for {
+      _  <- VehicleRepository.exists(vin)
+      ps <- packagesOnVinMap
+              .map(_
+                .get(vin)
+                .toList
+                .flatten)
+    } yield ps
+
+  def vinsThatHavePackageMap
+    (implicit db: Database, ec: ExecutionContext)
+      : DBIO[Map[Package.Id, Seq[Vehicle.Vin]]] =
+    VehicleRepository.listInstalledPackages
+      .map(_
+        .sortBy(_._2)
+        .groupBy(_._2)
+        .mapValues(_.map(_._1)))
+
+  def vinsThatHavePackage
+    (pkgId: Package.Id)
+    (implicit db: Database, ec: ExecutionContext): DBIO[Seq[Vehicle.Vin]] =
+    for {
+      _  <- PackageRepository.exists(pkgId)
+      vs <- vinsThatHavePackageMap
+              .map(_
+                .get(pkgId)
+                .toList
+                .flatten)
+    } yield vs
 
 }

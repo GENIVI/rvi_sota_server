@@ -5,12 +5,19 @@
 package org.genivi.sota.resolver.packages
 
 import eu.timepit.refined.{Predicate, Refined}
+import org.genivi.sota.resolver.filters.Filter
 
 
 case class Package(
   id         : Package.Id,
   description: Option[String],
   vendor     : Option[String]
+)
+
+case class PackageFilter(
+  packageName   : Package.Name,
+  packageVersion: Package.Version,
+  filterName    : Filter.Name
 )
 
 object Package {
