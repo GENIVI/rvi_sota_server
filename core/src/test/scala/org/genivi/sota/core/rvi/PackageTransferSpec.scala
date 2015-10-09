@@ -81,7 +81,7 @@ class PackageTransferSpec extends PropSpec with Matchers with PropertyChecks wit
   implicit override val generatorDrivenConfig = PropertyCheckConfig(minSuccessful = 1)
 
   ignore("all chunks transferred") {
-    val services = ClientServices("", "", "")
+    val services = ClientServices("", "", "", "")
     forAll( Generators.vehicleGen, Gen.oneOf( packages ) ) { (vehicle, p) =>
       val pckg = Generators.generatePackageData(p)
       val probe = TestProbe()

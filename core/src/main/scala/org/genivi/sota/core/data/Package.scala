@@ -5,9 +5,9 @@
 package org.genivi.sota.core.data
 
 import akka.http.scaladsl.model.Uri
-import cats.Show
+import cats.{Show, Eq}
 import cats.data.Xor
-import eu.timepit.refined.{Refined, Predicate}
+import eu.timepit.refined._
 
 
 case class Package(
@@ -27,7 +27,16 @@ object Package {
   )
 
   object Id {
+    import io.circe.{Encoder, Decoder}
+    import io.circe.generic.semiauto._
+    import org.genivi.sota.marshalling.CirceInstances._
+
+    implicit val encoder : Encoder[Id] = deriveFor[Id].encoder
+    implicit val decoder : Decoder[Id] = deriveFor[Id].decoder
+
     implicit val showInstance : Show[Id] = Show.show( x => s"${x.name.get}-${x.version.get}" )
+
+    implicit val eqInstance : Eq[Id] = Eq.fromUniversalEquals[Id]
   }
 
   trait ValidName
@@ -40,6 +49,6 @@ object Package {
     Predicate.instance( _.nonEmpty, _ => "Package name required" )
 
   implicit val validPackageVersion: Predicate[ValidVersion, String] =
-    Predicate.instance( _.matches( """^\d+\.\d+(\.\d+)?(-\d+)?$""" ), _ => "Invalid version format")
+    Predicate.instance( _.matches( """^\d+\.\d+\.\d+$""" ), x => s"Invalid version format: $x")
 
 }

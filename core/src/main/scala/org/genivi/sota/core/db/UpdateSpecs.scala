@@ -81,6 +81,13 @@ object UpdateSpecs {
     })
   }
 
+  def setStatus( spec: UpdateSpec, newStatus: UpdateStatus ) : DBIO[Int] = {
+    updateSpecs.filter( t => t.vin === spec.vin && t.requestId === spec.request.id)
+      .map( _.status )
+      .update( newStatus )
+  }
+
+
   def listUpdatesById(uuid: Refined[String, Uuid]): DBIO[Seq[(UUID, Vehicle.IdentificationNumber, UpdateStatus)]] =
     updateSpecs.filter(_.requestId === UUID.fromString(uuid.get)).result
 

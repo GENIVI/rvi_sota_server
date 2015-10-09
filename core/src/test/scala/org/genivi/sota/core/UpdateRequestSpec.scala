@@ -49,7 +49,7 @@ class UpdateRequestSpec extends PropSpec with PropertyChecks with Matchers with 
 
     }
 
-    val resource = new UpdateRequestsResource(db, externalResolverClient, new UpdateService( ServerServices("", "", "", "")))
+    val resource = new UpdateRequestsResource(db, externalResolverClient, new UpdateService( ServerServices("", "", "", "", "")))
   }
 
   import UpdateRequest._
