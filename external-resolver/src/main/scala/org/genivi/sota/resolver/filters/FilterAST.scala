@@ -8,6 +8,7 @@ import eu.timepit.refined.Refined
 import eu.timepit.refined.string.{Regex, regexPredicate}
 import scala.util.parsing.combinator.syntactical.StandardTokenParsers
 import scala.util.parsing.combinator.{PackratParsers, ImplicitConversions}
+import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.vehicles.Vehicle
 
@@ -88,16 +89,17 @@ object FilterAST extends StandardTokenParsers with PackratParsers with ImplicitC
       case False            => "FALSE"
     }
 
-  def query(f: FilterAST): Function1[Tuple2[Vehicle, Seq[Package.Id]], Boolean] =
-  { case ((v: Vehicle, ps: Seq[Package.Id])) => f match {
+  def query(f: FilterAST): Function1[(Vehicle, (Seq[Package.Id], Seq[Component.PartNumber])), Boolean] =
+  { case a@((v: Vehicle, (ps: Seq[Package.Id], cs: Seq[Component.PartNumber]))) => f match {
       case VinMatches(re)       => !re.get.r.findAllIn(v.vin.get).isEmpty
       case HasPackage(re1, re2) => ps.map(p => !re1.get.r.findAllIn(p.name   .get).isEmpty &&
                                                !re2.get.r.findAllIn(p.version.get).isEmpty)
                                      .exists(_== true)
-      case HasComponent(s)      => true           // XXX: FOR NOW
-      case Not(f)               => !query(f)((v, ps))
-      case And(l, r)            => query(l)((v, ps)) && query(r)((v, ps))
-      case Or (l, r)            => query(l)((v, ps)) || query(r)((v, ps))
+      case HasComponent(re)     => cs.map(part => !re.get.r.findAllIn(part.get).isEmpty)
+                                     .exists(_== true)
+      case Not(f)               => !query(f)(a)
+      case And(l, r)            => query(l)(a) && query(r)(a)
+      case Or (l, r)            => query(l)(a) || query(r)(a)
       case True                 => true
       case False                => false
     }

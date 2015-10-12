@@ -276,15 +276,23 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
    */
 
   "add component on PUT /components/:partNumber { description }" in {
-    Put(Resource.uri("components", "jobby0"), Component.DescriptionWrapper("nice")) ~> route ~> check {
-      status shouldBe StatusCodes.OK
+    addComponentOK(Refined("jobby0"), "nice")
+  }
+
+  "fail if part number isn't a 30 character or shorter alpha numeric string" in {
+    addComponent(Refined(""), "bad") ~> route ~> check {
+      status shouldBe StatusCodes.NotFound
+    }
+    addComponent(Refined("0123456789012345678901234567890123456789"), "bad") ~> route ~> check {
+      status shouldBe StatusCodes.BadRequest
+    }
+    addComponent(Refined("a???"), "bad") ~> route ~> check {
+      status shouldBe StatusCodes.BadRequest
     }
   }
 
   "install component on VIN on PUT /vehicles/:vin/component/:partNumber" in {
-    Put(Resource.uri("vehicles", "VINOOLAM0FAU2DEEP", "component", "jobby0")) ~> route ~> check {
-      status shouldBe StatusCodes.OK
-    }
+    installComponentOK(Refined("VINOOLAM0FAU2DEEP"), Refined("jobby0"))
   }
 
   "list components on a VIN on GET /vehicles/:vin/component" in {

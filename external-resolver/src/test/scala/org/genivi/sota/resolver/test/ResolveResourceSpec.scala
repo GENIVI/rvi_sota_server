@@ -5,6 +5,7 @@ import eu.timepit.refined.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
+import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.packages.{Package, PackageFilter}
 import org.genivi.sota.resolver.vehicles.Vehicle
 import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
@@ -62,6 +63,23 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
         List("10RESOLVEVIN12345", "11RESOLVEVIN12345"))
     }
 
+    "support filtering by hardware components on VIN" in {
+
+      // Delete the previous filter and add another one which uses
+      // has_component instead.
+
+      deletePackageFilterOK("resolve pkg", "0.0.1", "1xfilter")
+      addComponentOK(Refined("jobby0"), "nice")
+      addComponentOK(Refined("jobby1"), "nice")
+      installComponentOK(Refined("00RESOLVEVIN12345"), Refined("jobby0"))
+      installComponentOK(Refined("01RESOLVEVIN12345"), Refined("jobby0"))
+      installComponentOK(Refined("11RESOLVEVIN12345"), Refined("jobby1"))
+      addFilterOK("components", s"""has_component "^.*y0"""")
+      addPackageFilterOK("resolve pkg", "0.0.1", "components")
+      resolveOK("resolve pkg", "0.0.1",
+        List("00RESOLVEVIN12345", "01RESOLVEVIN12345"))
+    }
+
     "return no VINs if the filter is trivially false" in {
 
       // Add trivially false filter.
@@ -96,11 +114,11 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
         status shouldBe StatusCodes.OK
 
         responseAs[io.circe.Json].noSpaces shouldBe
-          s"""[["10RESOLVEVIN12345",[{"version":"0.0.1","name":"resolve pkg"}]],["11RESOLVEVIN12345",[{"version":"0.0.1","name":"resolve pkg"}]]]"""
+          s"""[["00RESOLVEVIN12345",[{"version":"0.0.1","name":"resolve pkg"}]],["01RESOLVEVIN12345",[{"version":"0.0.1","name":"resolve pkg"}]]]"""
 
         responseAs[Map[Vehicle.Vin, Set[Package.Id]]] shouldBe
-          Map(Refined("10RESOLVEVIN12345") -> Set(Package.Id(Refined("resolve pkg"), Refined("0.0.1"))),
-              Refined("11RESOLVEVIN12345") -> Set(Package.Id(Refined("resolve pkg"), Refined("0.0.1"))))
+          Map(Refined("00RESOLVEVIN12345") -> Set(Package.Id(Refined("resolve pkg"), Refined("0.0.1"))),
+              Refined("01RESOLVEVIN12345") -> Set(Package.Id(Refined("resolve pkg"), Refined("0.0.1"))))
 
       }
     }
@@ -158,8 +176,8 @@ class ResolveResourcePropSpec extends ResourcePropSpec {
                     // predicate that arises from the combined filter
                     // queries.
 
-                    // XXX: Deal with installed packages properly.
-                    allVehicles.map(v => (v, List[Package.Id]())).filter(query
+                    // XXX: Deal with installed packages and components properly.
+                    allVehicles.map(v => (v, (List[Package.Id](), List[Component.PartNumber]()))).filter(query
                       (fs.map(_.expression).map(parseValidFilter)
                          .foldLeft[FilterAST](True)(And))).map(_._1))
               }

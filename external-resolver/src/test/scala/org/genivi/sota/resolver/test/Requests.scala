@@ -12,6 +12,7 @@ import eu.timepit.refined.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import CirceMarshallingSupport._
+import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.resolve._
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.resolver.packages.{Package, PackageFilter}
@@ -52,6 +53,15 @@ trait VehicleRequests extends Matchers { self: ScalatestRouteTest =>
       status shouldBe StatusCodes.OK
     }
 
+  def installComponent(vin: Vehicle.Vin, part: Component.PartNumber): HttpRequest =
+    Put(Resource.uri("vehicles", vin.get, "component", part.get))
+
+  def installComponentOK(vin: Vehicle.Vin, part: Component.PartNumber)
+                        (implicit route: Route): Unit =
+    installComponent(vin, part) ~> route ~> check {
+      status shouldBe StatusCodes.OK
+    }
+
 }
 
 trait PackageRequests extends Matchers { self: ScalatestRouteTest =>
@@ -68,6 +78,19 @@ trait PackageRequests extends Matchers { self: ScalatestRouteTest =>
   = addPackage(name, version, desc, vendor) ~> route ~> check {
       status shouldBe StatusCodes.OK
     }
+}
+
+trait ComponentRequests extends Matchers { self: ScalatestRouteTest =>
+
+  def addComponent(part: Component.PartNumber, desc: String): HttpRequest =
+    Put(Resource.uri("components", part.get), Component.DescriptionWrapper(desc))
+
+  def addComponentOK(part: Component.PartNumber, desc: String)
+                    (implicit route: Route): Unit =
+    addComponent(part, desc) ~> route ~> check {
+      status shouldBe StatusCodes.OK
+    }
+
 }
 
 trait FilterRequests extends Matchers { self: ScalatestRouteTest =>
