@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.core.transfer
 
+import akka.event.LoggingAdapter
 import io.circe.Json
 import org.genivi.sota.core.data.{Vehicle, Package, UpdateSpec}
 import org.genivi.sota.core.rvi.{RviClient,ServerServices}
@@ -18,7 +19,8 @@ case class UpdateNotification(packages: Seq[PackageUpdate], services: ServerServ
 object UpdateNotifier {
 
   def notify(updateSpecs: Seq[UpdateSpec], services: ServerServices)
-            (implicit rviClient: RviClient, ec: ExecutionContext): Iterable[Future[Int]] = {
+            (implicit rviClient: RviClient, ec: ExecutionContext, log: LoggingAdapter): Iterable[Future[Int]] = {
+    log.debug(s"Sending update notifications: $updateSpecs" )
     val updatesByVin : Map[Vehicle.IdentificationNumber, Seq[UpdateSpec]] = updateSpecs.groupBy( _.vin )
     updatesByVin.map( (notifyVehicle(services) _ ).tupled  )
   }

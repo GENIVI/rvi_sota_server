@@ -22,7 +22,7 @@ object Boot extends App with DatabaseConfig {
 
   import slick.driver.MySQLDriver.api.Database
   def startSotaServices(db: Database) : Route = {
-    val transferProtocolProps = TransferProtocolActor.props(db, PackageTransferActor.props( rviClient ))
+    val transferProtocolProps = TransferProtocolActor.props(db, rviClient, PackageTransferActor.props( rviClient ))
     val updateController = system.actorOf( UpdateController.props(transferProtocolProps ), "update-controller")
     new rvi.SotaServices(updateController, externalResolverClient).route
   }

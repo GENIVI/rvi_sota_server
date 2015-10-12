@@ -1,5 +1,6 @@
 package org.genivi.sota.core.transfer
 
+import akka.event.Logging
 import akka.http.scaladsl.model.Uri
 import akka.testkit.TestKit
 import eu.timepit.refined.Refined
@@ -19,11 +20,12 @@ import org.genivi.sota.core.rvi.SotaServices
 class UpdateNotifierSpec extends PropSpec with PropertyChecks with Matchers with BeforeAndAfterAll {
   import org.genivi.sota.core.Generators.{vehicleGen, dependenciesGen, updateRequestGen, vinDepGen}
 
-  val packages = scala.util.Random.shuffle( PackagesReader.read() ).take(100)
+  val packages = scala.util.Random.shuffle( PackagesReader.read().take(100) )
 
   implicit val system = akka.actor.ActorSystem("UpdateServiseSpec")
   implicit val materilizer = akka.stream.ActorMaterializer()
   import system.dispatcher
+  implicit val log = Logging(system, "org.genivi.sota.core.UpdateNotification")
 
   import org.scalatest.concurrent.ScalaFutures._
 
