@@ -11,6 +11,7 @@ import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
 import org.genivi.sota.resolver.packages.{Package, PackageFilter}
+import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.vehicles.Vehicle
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 import org.scalacheck._
@@ -158,6 +159,32 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
       }
     }
 
+    "return a 404 when deleteing a VIN which doesn't exist" in {
+      Delete(Resource.uri("vehicles", "123456789NOTTHERE")) ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
+      }
+    }
+
+    "delete a VIN" in {
+      val vin = "12345678901234VIN"
+      addVehicleOK(vin)
+      Delete(Resource.uri("vehicles", vin)) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+      }
+    }
+
+    "delete a VIN and its installPackages" in {
+      val vin = "123456789OTHERVIN"
+      addVehicleOK(vin)
+      addPackageOK("halflife", "3.0.0", None, None)
+      installPackageOK(vin, "halflife", "3.0.0")
+      addPackageOK("halflife", "4.0.0", None, None)
+      installPackageOK(vin, "halflife", "4.0.0")
+      Delete(Resource.uri("vehicles", vin)) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+      }
+    }
+
     /*
      * Tests related to installing packages on VINs.
      */
@@ -192,6 +219,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
       Get(Resource.uri("vehicles", "VINOOLAM0FAU2DEEB", "package")) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
       }
+
     }
 
     "uninstall a package on a VIN on DELETE request to /vehicles/:vin/package/:packageName/:packageVersion" in {
@@ -240,29 +268,30 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
         status shouldBe StatusCodes.BadRequest
       }
     }
-    "delete a VIN" in {
-      val vin = "12345678901234VIN"
-      addVehicleOK(vin)
-      Delete(Resource.uri("vehicles", vin)) ~> route ~> check {
-        status shouldBe StatusCodes.OK
-      }
-    }
-    "delete a VIN and its installPackages" in {
-      val vin = "123456789OTHERVIN"
-      addVehicleOK(vin)
-      addPackageOK("halflife", "3.0.0", None, None)
-      installPackageOK(vin, "halflife", "3.0.0")
-      addPackageOK("halflife", "4.0.0", None, None)
-      installPackageOK(vin, "halflife", "4.0.0")
-      Delete(Resource.uri("vehicles", vin)) ~> route ~> check {
-        status shouldBe StatusCodes.OK
-      }
-    }
 
-    "return a 404 when deleteing a VIN which doesn't exist" in {
-      Delete(Resource.uri("vehicles", "123456789NOTTHERE")) ~> route ~> check {
-        status shouldBe StatusCodes.NotFound
-      }
+  }
+
+  /*
+   * Tests related to installing components on VINs.
+   */
+
+  "add component on PUT /components/:partNumber { description }" in {
+    Put(Resource.uri("components", "jobby0"), Component.DescriptionWrapper("nice")) ~> route ~> check {
+      status shouldBe StatusCodes.OK
     }
   }
+
+  "install component on VIN on PUT /vehicles/:vin/component/:partNumber" in {
+    Put(Resource.uri("vehicles", "VINOOLAM0FAU2DEEP", "component", "jobby0")) ~> route ~> check {
+      status shouldBe StatusCodes.OK
+    }
+  }
+
+  "list components on a VIN on GET /vehicles/:vin/component" in {
+    Get(Resource.uri("vehicles", "VINOOLAM0FAU2DEEP", "component")) ~> route ~> check {
+      status shouldBe StatusCodes.OK
+      responseAs[Seq[Component.PartNumber]] shouldBe List(Refined("jobby0"))
+    }
+  }
+
 }

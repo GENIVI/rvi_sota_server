@@ -4,8 +4,10 @@
  */
 package org.genivi.sota.resolver.vehicles
 
+import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
+import org.genivi.sota.resolver.components.{Component, ComponentRepository}
 import org.genivi.sota.resolver.packages.{Package, PackageRepository}
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
@@ -50,6 +52,10 @@ object VehicleRepository {
       _ <- delete(vin)
     } yield ()
 
+  /*
+   * Installed packages.
+   */
+
   // scalastyle:off
   class InstalledPackageTable(tag: Tag) extends Table[(Vehicle.Vin, Package.Id)](tag, "InstalledPackage") {
 
@@ -89,9 +95,6 @@ object VehicleRepository {
            }.delete
     } yield ()
 
-
-  import org.genivi.sota.db.SlickExtensions._
-
   def updateInstalledPackages( vehicle: Vehicle, newPackages: Set[Package.Id], deletedPackages: Set[Package.Id] )
                              (implicit ec: ExecutionContext) : DBIO[Unit] = DBIO.seq(
     installedPackages.filter( ip =>
@@ -115,7 +118,7 @@ object VehicleRepository {
   def packagesOnVinMap
     (implicit db: Database, ec: ExecutionContext)
       : DBIO[Map[Vehicle.Vin, Seq[Package.Id]]] =
-    VehicleRepository.listInstalledPackages
+    listInstalledPackages
       .map(_
         .sortBy(_._1)
         .groupBy(_._1)
@@ -153,5 +156,57 @@ object VehicleRepository {
                 .toList
                 .flatten)
     } yield vs
+
+  /*
+   * Installed components.
+   */
+
+  // scalastyle:off
+  class InstalledComponentTable(tag: Tag)
+      extends Table[(Vehicle.Vin, Component.PartNumber)](tag, "InstalledComponent") {
+
+    def vin        = column[Vehicle.Vin]         ("vin")
+    def partNumber = column[Component.PartNumber]("partNumber")
+
+    def pk = primaryKey("pk_installedComponent", (vin, partNumber))
+
+    def * = (vin, partNumber)
+  }
+  // scalastyle:on
+
+  val installedComponents = TableQuery[InstalledComponentTable]
+
+  def listInstalledComponents: DBIO[Seq[(Vehicle.Vin, Component.PartNumber)]] =
+    installedComponents.result
+
+  def installComponent(vin: Vehicle.Vin, part: Component.PartNumber)
+                      (implicit ec: ExecutionContext): DBIO[Unit] =
+    for {
+      _ <- VehicleRepository.exists(vin)
+      _ <- ComponentRepository.exists(part)
+      _ <- installedComponents += ((vin, part))
+    } yield ()
+
+  def uninstallComponent(vin: Vehicle.Vin, part: Component.PartNumber): DBIO[Int] =
+    ???
+
+  def componentsOnVinMap
+    (implicit db: Database, ec: ExecutionContext): DBIO[Map[Vehicle.Vin, Seq[Component.PartNumber]]] =
+    VehicleRepository.listInstalledComponents
+      .map(_
+        .sortBy(_._1)
+        .groupBy(_._1)
+        .mapValues(_.map(_._2)))
+
+  def componentsOnVin(vin: Vehicle.Vin)
+                     (implicit db: Database, ec: ExecutionContext): DBIO[Seq[Component.PartNumber]] =
+    for {
+      _  <- exists(vin)
+      cs <- componentsOnVinMap
+              .map(_
+                .get(vin)
+                .toList
+                .flatten)
+    } yield cs
 
 }

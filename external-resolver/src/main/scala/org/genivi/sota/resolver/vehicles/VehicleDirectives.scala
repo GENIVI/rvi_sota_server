@@ -14,7 +14,8 @@ import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors
-import org.genivi.sota.resolver.common.RefinementDirectives.refinedPackageId
+import org.genivi.sota.resolver.common.RefinementDirectives.{refinedPackageId, refinedPartNumber}
+import org.genivi.sota.resolver.components.{Component, ComponentRepository}
 import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.rest.Validation._
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
@@ -28,11 +29,12 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
 
   def installedPackagesHandler = ExceptionHandler(Errors.onMissingPackage orElse Errors.onMissingVehicle)
 
-  def route(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Route = {
+  def route: Route = {
     val extractVin : Directive1[Vehicle.Vin] = refined[Vehicle.ValidVin](Slash ~ Segment)
     pathPrefix("vehicles") {
       get {
         pathEnd {
+
           parameter('package.as[Package.NameVersion].?) {
             case Some(nameVersion) =>
               val packageName   : Package.Name    = Refined(nameVersion.get.split("-").head)
@@ -57,30 +59,67 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
             pathEnd {
               complete(db.run(VehicleRepository.deleteVin(vin)))
             }
-          } ~
-          pathPrefix("package") {
-            (pathEnd & get) {
-              complete(db.run(VehicleRepository.packagesOnVin(vin)))
-            } ~
-            refinedPackageId
-            { pkgId =>
-                put {
-                  complete(db.run(VehicleRepository.installPackage(vin, pkgId)))
-                } ~
-                delete {
-                  complete(db.run(VehicleRepository.uninstallPackage(vin, pkgId)))
-                }
-            }
-          } ~
-          path("packages") {
-            (put & entity(as[Set[Package.Id]]) ) { packageIds =>
-              onSuccess( VehicleFunctions.updateInstalledPackages(vin, packageIds ) ) {
-                complete( StatusCodes.NoContent )
-              }
-            }
+          }
+        } ~
+        packageRoute(vin) ~
+        componentRoute(vin)
+      }
+    }
+  }
+
+  def packageRoute(vin: Vehicle.Vin): Route = {
+    pathPrefix("package") {
+      (pathEnd & get) {
+        completeOrRecoverWith(db.run(VehicleRepository.packagesOnVin(vin))) {
+          Errors.onMissingVehicle
+        }
+      } ~
+      refinedPackageId { pkgId =>
+        put(
+          completeOrRecoverWith(db.run(VehicleRepository.installPackage(vin, pkgId))) {
+            Errors.onMissingVehicle orElse Errors.onMissingPackage
+          }
+        ) ~
+        delete (
+          completeOrRecoverWith(db.run(VehicleRepository.uninstallPackage(vin, pkgId))) {
+            Errors.onMissingVehicle orElse Errors.onMissingPackage
+          }
+        )
+      }
+    } ~
+    path("packages") {
+      handleExceptions(installedPackagesHandler) {
+        (put & entity(as[Set[Package.Id]]) ) { packageIds =>
+          onSuccess( VehicleFunctions.updateInstalledPackages(vin, packageIds ) ) {
+            complete( StatusCodes.NoContent )
           }
         }
       }
     }
   }
+
+  def installedComponentsHandler =
+    ExceptionHandler(Errors.onMissingVehicle orElse Errors.onMissingComponent)
+
+  def componentRoute(vin: Vehicle.Vin): Route = {
+    pathPrefix("component") {
+      (pathEnd & get) {
+        completeOrRecoverWith(db.run(VehicleRepository.componentsOnVin(vin))) {
+            Errors.onMissingVehicle
+          }
+      } ~
+      refinedPartNumber
+      { part =>
+        handleExceptions(installedComponentsHandler) {
+          put {
+            complete(db.run(VehicleRepository.installComponent(vin, part)))
+          } ~
+          delete {
+            complete(db.run(VehicleRepository.uninstallComponent(vin, part)))
+          }
+        }
+      }
+    }
+  }
+
 }

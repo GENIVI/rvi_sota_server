@@ -22,6 +22,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import slick.jdbc.JdbcBackend.Database
 
 
+// TODO: Deprecate in favour of org.genivi.sota.db.Operators.failIfNone.
 object FutureSupport {
 
   implicit class FutureOps[T]( x: Future[Option[T]] ) {
