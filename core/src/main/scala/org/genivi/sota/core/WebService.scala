@@ -11,7 +11,7 @@ import akka.event.Logging
 import akka.http.scaladsl.common.StrictForm
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model.{StatusCodes, Uri, HttpResponse}
-import akka.http.scaladsl.server.{PathMatchers, ExceptionHandler, Directives}
+import akka.http.scaladsl.server.{Directive1, PathMatchers, ExceptionHandler, Directives}
 import akka.http.scaladsl.server.PathMatchers.Slash
 import Directives._
 import akka.parboiled2.util.Base64
@@ -64,29 +64,38 @@ class VehiclesResource(db: Database)
     } yield ()
 
 
+  val extractVin : Directive1[Vehicle.IdentificationNumber] = refined[Vehicle.Vin](Slash ~ Segment)
+
   val route = pathPrefix("vehicles") {
-    (put & refined[Vehicle.Vin](Slash ~ Segment ~ PathEnd)) { vin =>
-      complete(db.run( Vehicles.create(Vehicle(vin)) ).map(_ => NoContent))
-    } ~
-    (delete & refined[Vehicle.Vin](Slash ~ Segment ~ PathEnd)) { vin =>
-        completeOrRecoverWith(deleteVin(Vehicle(vin))) {
-          case MissingVehicle =>
-            complete(StatusCodes.NotFound ->
-              ErrorRepresentation(Vehicle.MissingVehicle, "Vehicle doesn't exist"))
+    extractVin { vin =>
+      pathEnd {
+        put {
+          complete(db.run(Vehicles.create(Vehicle(vin))).map(_ => NoContent))
+        } ~
+        delete {
+          completeOrRecoverWith(deleteVin(Vehicle(vin))) {
+            case MissingVehicle =>
+              complete(StatusCodes.NotFound ->
+                ErrorRepresentation(Vehicle.MissingVehicle, "Vehicle doesn't exist"))
           }
         }
+      } ~
+      (path("queued") & get) {
+        complete(db.run(UpdateSpecs.getPackagesQueuedForVin(vin)))
+      }
     } ~
-    path("vehicles") {
+    pathEnd {
       get {
         parameters('regex.?) { (regex) =>
           val query = regex match {
             case Some(r) => Vehicles.searchByRegex(r)
             case _ => Vehicles.list()
           }
-          complete{ db.run(query) }
+          complete(db.run(query))
         }
       }
     }
+  }
 }
 
 class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, updateService: UpdateService)

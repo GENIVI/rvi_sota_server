@@ -5,18 +5,43 @@ define(function(require) {
       _ = require('underscore'),
       SotaDispatcher = require('sota-dispatcher');
 
-  var Packages = React.createClass({
+  var QueuedPackages = React.createClass({
     contextTypes: {
       router: React.PropTypes.func
     },
     componentWillUnmount: function(){
-      this.props.Packages.removeWatch("poll-packages");
+      this.props.Packages.removeWatch("poll-package-queue-for-vin");
     },
     componentWillMount: function(){
-      SotaDispatcher.dispatch({actionType: 'get-packages-for-vin', vin: this.props.Vin});
-      this.props.Packages.addWatch("poll-packages", _.bind(this.forceUpdate, this, null));
+      this.props.Packages.addWatch("poll-package-queue-for-vin", _.bind(this.forceUpdate, this, null));
+    },
+    toggleQueuedPackages: function() {
+      SotaDispatcher.dispatch({actionType: 'get-package-queue-for-vin', vin: this.props.Vin});
+      this.setState({showQueuedPackages: !this.state.showQueuedPackages});
+    },
+    getInitialState: function() {
+      return {showQueuedPackages: false};
     },
     render: function() {
+      return (
+        <div>
+          <div className="row">
+            <div className="col-md-12">
+              <button className="btn btn-primary pull-right" onClick={this.toggleQueuedPackages}>
+                { this.state.showQueuedPackages ? "HIDE" : "Show Queued Packages" }
+              </button>
+            </div>
+          </div>
+          <br/>
+          <div className="row">
+            <div className="col-md-12">
+              { this.state.showQueuedPackages ? this.showQueuedPackages() : null }
+            </div>
+          </div>
+        </div>
+      )
+    },
+    showQueuedPackages: function() {
       var rows = _.map(this.props.Packages.deref(), function(package) {
         return (
           <tr key={package.name + '-' + package.version}>
@@ -27,11 +52,6 @@ define(function(require) {
             </td>
             <td>
               { package.version }
-            </td>
-            <td>
-              <Router.Link to='new-campaign' params={{name: package.name, version: package.version}}>
-                Create Campaign
-              </Router.Link>
             </td>
           </tr>
         );
@@ -56,5 +76,5 @@ define(function(require) {
     }
   });
 
-  return Packages;
+  return QueuedPackages;
 });

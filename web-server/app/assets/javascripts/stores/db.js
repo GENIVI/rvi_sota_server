@@ -10,6 +10,7 @@ define(function(require) {
 
       this.packagesForFilter = atom.createAtom([]);
       this.packagesForVin = atom.createAtom([]);
+      this.packageQueueForVin = atom.createAtom([]);
       this.filtersForPackage = atom.createAtom([]);
       this.vehiclesForPackage = atom.createAtom([]);
 
