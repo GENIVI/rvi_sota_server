@@ -10,41 +10,42 @@ date: 2015-08-26 10:36:37
 == Potential Security Threats
 
 [#security_table,cols=",,,,,,,,,,",opts="header"]
-[#security_table,cols=",,,,,,,,,,",opts="header"]
 |====
 ^.^|ID ^.^|Label ^.^|STRIDE Attribute ^.^|Assets ^.^|Interactions ^.^|Attack potential vector/rating ^.^|Damage potential vector/rating ^.^|Risk Vector/Rating
 |–––––|––––––––––––––––––––––––|–––––––––––––––––––––––––––|–––––––––––––––––––––––––––––––––|–––––––––––––––––––|––––––––––––––––––––––––––––––––––––––––––––|–––––––––––––––––––––––––––|–––––––––––––––––––––––––––––––––––––––––––––––
 // 8+|––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
-|link:#t01[T01] |Spoofing of Admin UI |Spoofing |Client credentials |Anyone → Web API |[exp:pro/acc:unl/tim:day/equ:std/kno:pub]/4 |[fin:xxx/ope:xxx/saf:xxx]/0 |[spe:exp/acc:unl/equ:std/tim:day/kno:pub]/36
-|link:#t02[T02] |Node sniffing |Information Disclosure |Client credentials |Anyone → Web API |[exp:exp/acc:unl/tim:wee/equ:std/kno:pub]/11 |[fin:xxx/ope:xxx/saf:xxx]/0 |[spe:exp/acc:unl/equ:std/tim:day/kno:pub]/36
-|link:#t03[T03] |Invalid package configuration injection |Tampering |Vehicle installed software state |Admin UI → Web API | /0| /0|[spe:mul/acc:mod/tim:wee/equ:std/kno:res]/19
-|link:#t04[T04] |Repudiation of vehicle SW configuration |Repudiation |Vehicle installed software state |Admin UI → Web API | | |[spe:mul/acc:eas/ela:wee/equ:spe/kno:sen]/15
-|link:#t05[T05] |Web API Denial of Service attack |Denial of service |Quality of Service |Anyone → Web API | /0|/0 |[acc:lay/acc:unl/tim:hou/equ:std/kno:res]/41
-|link:#t06[T06] |Brute force password cracking |Elevation of Privilege |Access to vehicle data, vehicle installed software state |Admin UI → Web API | | |[spe:lay/acc:unl/tim:wee/equ:std/kno:pub]/39
-|link:#t07[T07] |Spoofing of External Resolver |Spoofing |Vehicle installed software state |External Resolver → SOTA Server | | |[spe:mul/acc:eas/tim:wee/equ:spe/kno:sen]/15
-|link:#t08[T08] |Tampering of package dependencies |Tampering |Vehicle installed software state, vehicle software security |External Resolver → SOTA Server | | |[spe:mul/acc:eas/ela:wee/equ:spe/kno:sen]/15
-|link:#t09[T09] |Information leak of installed packages per VIN |Information Disclosure |Vehicle installed software state |External Resolver → SOTA Server | | |[spe:exp/acc:unl/equ:std/tim:day/kno:res]/32
-|link:#t10[T10] |RVI node spoofing |Spoofing |Information on vehicle software state |SOTA Server → RVI Node | | |[spe:exp/acc:unl/tim:day/equ:std/kno:sen]/28
-|link:#t11[T11] |Retrieving false package installation results |Tampering |Package information, software configuration per VIN |RVI Node → SOTA Server | | |[spe:exp/acc:unl/tim:day/equ:std/kno:sen]/28
-|link:#t12[T12] |Denying the installation of a software package |Repudiation |Vehicle software security |RVI Node → SOTA Server | | |[spe:exp/acc:unl/tim:day/equ:std/kno:sen]/28
-|link:#t13[T13] |RVI node sniffing |Information Disclosure |Vehicle installed software state |SOTA Server → RVI Node | | |[spe:exp/acc:unl/equ:std/tim:day/kno:res]/32
-|link:#t14[T14] |RVI node Denial of Service attack |Denial of service |Service Availability |Anyone → RVI Node | | |[acc:lay/acc:unl/tim:hou/equ:std/kno:res]/41
-|link:#t15[T15] |Logistics & Provisioning API Spoofing |Spoofing |Vehicle software security |Logistics & Provisioning → SOTA Server | | |[spe:exp/acc:unl/tim:day/equ:std/kno:sen]/28
-|link:#t16[T16] |Associating a part number with a malicious package |Tampering |Vehicle software security |Logistics & Provisioning → SOTA Server | | |[spe:mul/acc:unl/tim:wee/equ:std/kno:res]/27
-|link:#t17[T17] |VIN, part number, configurations compromise |Information Disclosure |Corporate data, vehicle software configuration, vehicle software security. |Logistics & Provisioning → SOTA Server | | |[spe:mul/acc:unl/tim:wee/equ:std/kno:res]/27
-|link:#t18[T18] |Charging & Billing API Spoofing |Spoofing |Financial loss |Charging & Billing → SOTA Server | | |[spe:exp/acc:unl/tim:day/equ:std/kno:sen]/28
-|link:#t19[T19] |Associating an update with the wrong cost |Tampering |Financial loss |Charging & Billing → SOTA Server | | |[spe:mul/acc:unl/tim:wee/equ:std/kno:res]/27
-|link:#t20[T20] |VIN, configurations, financial information compromise |Information Disclosure |Financial loss |Charging & Billing → SOTA Server | | |[spe:exp/acc:unl/tim:day/equ:std/kno:sen]/28
-|link:#t21[T21] |Spoofing SOTA Core Server |Spoofing |User data, VINs, Package information, Vehicle configurations |SOTA Core Server → MariaDB | | |[spe:exp/acc:unl/tim:day/equ:std/kno:sen]/28
-|link:#t22[T22] |Persistence of false data |Tampering |User data, VINs, Package information, Vehicle configurations |Anyone → MariaDB | | |[spe:exp/acc:eas/tim:day/equ:std/kno:res]/26
-|link:#t23[T23] |Compromise of sensitive data |Information Disclosure |User data, VINs, Package information, Vehicle configurations |Anyone → MariaDB | | |[spe:exp/acc:eas/tim:day/equ:std/kno:res]/26
-|link:#t24[T24] |MariaDB Denial of Service attack |Denial of service |Service Availability |Anyone → MariaDB | | |[acc:lay/acc:unl/tim:hou/equ:std/kno:res]/41
-|link:#t25[T25] |Getting admin rights |Elevation of Privilege |User data, VINs, Package information, Vehicle configurations, data store state |Anyone → MariaDB | | |[acc:pro/acc:unl/tim:day/equ:std/kno:pub]/39
-|link:#t26[T26] |Spoofing External Resolver |Spoofing |User data, VINs, Package information, Vehicle configurations |External Resolver → MariaDB | | |[spe:exp/acc:unl/tim:day/equ:std/kno:sen]/28
-|link:#t27[T27] |In-vehicle process spoofing |Spoofing |VINs, Package information |Anyone → SOTA Client | | |[spe:exp/acc:unl/tim:day/equ:std/kno:sen]/28
-|link:#t28[T28] |SOTA Client sniffing |Tampering |VINs, Package information |In vehicle process → SOTA Client | | |[spe:exp/acc:unl/tim:day/equ:std/kno:sen]/28
-|link:#t29[T29] |SOTA Client Denial of Service attack |Denial of service |Service Availability |Anyone → SOTA Client | | |[acc:lay/acc:unl/tim:hou/equ:std/kno:res]/41
+|link:#t01[T01] |Spoofing of Admin UI |Spoofing |Client credentials |Anyone → Web API |[exp:exp/acc:unl/tim:day/equ:std/kno:pub]/39 |[saf:hig/fin:ver/ope:nor]/10 |[spe:exp/acc:unl/equ:std/tim:day/kno:pub]/36
+|link:#t02[T02] |Node sniffing |Information Disclosure |Client credentials |Anyone → Web API |[exp:exp/acc:unl/tim:wee/equ:std/kno:pub]/37 |[saf:nor/fin:nor/ope:hig]/5 |[spe:exp/acc:unl/equ:std/tim:day/kno:pub]/36
+|link:#t03[T03] |Invalid package configuration injection |Tampering |Vehicle installed software state |Admin UI → Web API |[exp:mul/acc:mod/tim:wee/equ:std/kno:res]/26 |[saf:ver/fin:hig/ope:hig]/12 |[spe:mul/acc:mod/tim:wee/equ:std/kno:res]/19
+|link:#t04[T04] |Repudiation of vehicle SW configuration |Repudiation |Vehicle installed software state |Admin UI → Web API |[exp:mul/acc:eas/tim:wee/equ:spe/kno:sen]/23 |[saf:ver/fin:hig/ope:hig]/12 |[spe:mul/acc:eas/tim:wee/equ:spe/kno:sen]/15
+|link:#t05[T05] |Web API Denial of Service attack |Denial of service |Quality of Service |Anyone → Web API |[exp:lay/acc:unl/tim:hou/equ:std/kno:res]/29 |[saf:nor/fin:nor/ope:hig]/5 |[acc:lay/acc:unl/tim:hou/equ:std/kno:res]/41
+|link:#t06[T06] |Brute force password cracking |Elevation of Privilege |Access to vehicle data, vehicle installed software state |Admin UI → Web API |[exp:lay/acc:unl/tim:wee/equ:std/kno:pub]/31 |[saf:ver/fin:hig/ope:ver]/15 |[spe:lay/acc:unl/tim:wee/equ:std/kno:pub]/39
+|link:#t07[T07] |Spoofing of External Resolver |Spoofing |Vehicle installed software state |External Resolver → SOTA Server |[exp:mul/acc:eas/tim:wee/equ:spe/kno:sen]/23 |[saf:hig/fin:nor/ope:hig]/7 |[spe:mul/acc:eas/tim:wee/equ:spe/kno:sen]/15
+|link:#t08[T08] |Tampering of package dependencies |Tampering |Vehicle installed software state, vehicle software security |External Resolver → SOTA Server |[exp:mul/acc:eas/tim:wee/equ:spe/kno:sen]/23 |[saf:ver/fin:hig/ope:hig]/12 |[spe:mul/acc:eas/ela:wee/equ:spe/kno:sen]/15
+|link:#t09[T09] |Information leak of installed packages per VIN |Information Disclosure |Vehicle installed software state |External Resolver → SOTA Server |[exp:exp/acc:unl/tim:day/equ:std/kno:res]/35 |[saf:nor/fin:nor/ope:nor]/3 |[spe:exp/acc:unl/equ:std/tim:day/kno:res]/32
+|link:#t10[T10] |RVI node spoofing |Spoofing |Information on vehicle software state |SOTA Server → RVI Node |[exp:exp/acc:unl/tim:day/equ:std/kno:res]/35 |[saf:/ver/fin:nor/ope:nor]/5 |[spe:exp/acc:unl/tim:day/equ:std/kno:sen]/28
+|link:#t11[T11] |Retrieving false package installation results |Tampering |Package information, software configuration per VIN |RVI Node → SOTA Server |[exp:exp/acc:unl/tim:day/equ:std/know:sen]/31 |[saf:ver/fin:hig/ope:hig]/12 |[spe:exp/acc:unl/tim:day/equ:std/kno:sen]/28
+|link:#t12[T12] |Denying the installation of a software package |Repudiation |Vehicle software security |RVI Node → SOTA Server |[exp:exp/acc:unl/tim:day/equ:std/kno:sen]/31 |[saf:hig/fin:nor/ope:ver]/10 |[spe:exp/acc:unl/tim:day/equ:std/kno:sen]/28
+|link:#t13[T13] |RVI node sniffing |Information Disclosure |Vehicle installed software state |SOTA Server → RVI Node |[exp:exp/acc:unl/equ:std/tim:day/kno:res]/35 |[saf:nor/fin:nor/ope:nor]/3 |[spe:exp/acc:unl/equ:std/tim:day/kno:res]/32
+|link:#t14[T14] |RVI node Denial of Service attack |Denial of service |Service Availability |Anyone → RVI Node |[exp:lay/acc:unl/tim:hou/equ:std/kno:res]/40 |[saf:ver/fin:nor/ope:ver]/13 |[acc:lay/acc:unl/tim:hou/equ:std/kno:res]/41
+|link:#t15[T15] |Logistics & Provisioning API Spoofing |Spoofing |Vehicle software security |Logistics & Provisioning → SOTA Server |[exp:exp/acc:unl/tim:day/equ:std/kno:sen]/31 |[saf:nor/fin:ver/ope:ver]/13 |[spe:exp/acc:unl/tim:day/equ:std/kno:sen]/28
+|link:#t16[T16] |Associating a part number with a malicious package |Tampering |Vehicle software security |Logistics & Provisioning → SOTA Server |[exp:mul/acc:unl/tim:wee/equ:std/kno:res]/35 |[saf:ver/fin:ver/ope:ver]/18 |[spe:mul/acc:unl/tim:wee/equ:std/kno:res]/27
+|link:#t17[T17] |VIN, part number, configurations compromise |Information Disclosure |Corporate data, vehicle software configuration, vehicle software security. |Logistics & Provisioning → SOTA Server |[exp:mul/acc:unl/tim:wee/equ:std/kno:res]/35 |[saf:nor/fin:hig/ope:ver]/10 |[spe:mul/acc:unl/tim:wee/equ:std/kno:res]/27
+|link:#t18[T18] |Charging & Billing API Spoofing |Spoofing |Financial loss |Charging & Billing → SOTA Server |[exp:exp/acc:unl/tim:day/equ:std/kno:sen]/31 |[saf:nor/fin:ver/ope:ver]/13 |[spe:exp/acc:unl/tim:day/equ:std/kno:sen]/28
+|link:#t19[T19] |Associating an update with the wrong cost |Tampering |Financial loss |Charging & Billing → SOTA Server |[exp:mul/acc:unl/tim:wee/equ:std/kno:res]/35 |[saf:nor/fin:ver/ope:ver]/13 |[spe:mul/acc:unl/tim:wee/equ:std/kno:res]/27
+|link:#t20[T20] |VIN, configurations, financial information compromise |Information Disclosure |Financial loss |Charging & Billing → SOTA Server |[exp:exp/acc:unl/tim:day/equ:std/kno:sen]/31 |[saf:ver/fin:ver/ope:ver]/18 |[spe:exp/acc:unl/tim:day/equ:std/kno:sen]/28
+|link:#t21[T21] |Spoofing SOTA Core Server |Spoofing |User data, VINs, Package information, Vehicle configurations |SOTA Core Server → MariaDB |[exp:exp/acc:unl/tim:day/equ:std/kno:sen]/31 |[saf:ver/fin:hig/ope:ver]/15 |[spe:exp/acc:unl/tim:day/equ:std/kno:sen]/28
+|link:#t22[T22] |Persistence of false data |Tampering |User data, VINs, Package information, Vehicle configurations |Anyone → MariaDB |[exp:exp/acc:eas/tim:day/equ:std/kno:res]/29 |[saf:nor/fin:ver/ope:ver]/13 |[spe:exp/acc:eas/tim:day/equ:std/kno:res]/26
+|link:#t23[T23] |Compromise of sensitive data |Information Disclosure |User data, VINs, Package information, Vehicle configurations |Anyone → MariaDB |[exp:exp/acc:eas/tim:day/equ:std/kno:res]/29 |[saf:hig/fin:hig/ope:hig]/9 |[spe:exp/acc:eas/tim:day/equ:std/kno:res]/26
+|link:#t24[T24] |MariaDB Denial of Service attack |Denial of service |Service Availability |Anyone → MariaDB |[exp:lay/acc:unl/tim:hou/equ:std/kno:res]/33 |[saf:nor/fin:nor/ope:ver]/8 |[acc:lay/acc:unl/tim:hou/equ:std/kno:res]/41
+|link:#t25[T25] |Getting admin rights |Elevation of Privilege |User data, VINs, Package information, Vehicle configurations, data store state |Anyone → MariaDB |[exp:pro/acc:unl/tim:day/equ:std/kno:pub]/36 |[saf:ver/fin:ver/ope:ver]/18 |[acc:pro/acc:unl/tim:day/equ:std/kno:pub]/39
+|link:#t26[T26] |Spoofing External Resolver |Spoofing |User data, VINs, Package information, Vehicle configurations |External Resolver → MariaDB |[exp:exp/acc:unl/tim:day/equ:std/kno:sen]/31 |[saf:hig/fin:ver/ope:ver]/15 |[spe:exp/acc:unl/tim:day/equ:std/kno:sen]/28
+|link:#t27[T27] |In-vehicle process spoofing |Spoofing |VINs, Package information |Anyone → SOTA Client |[exp:exp/acc:unl/tim:day/equ:std/kno:sen]/31 |[saf:ver/fin:hig/ope:hig]/12 |[spe:exp/acc:unl/tim:day/equ:std/kno:sen]/28
+|link:#t28[T28] |SOTA Client sniffing |Tampering |VINs, Package information |In vehicle process → SOTA Client |[exp:exp/acc:unl/tim:day/equ:std/kno:sen]/31 |[saf:ver/fin:hig/ope:hig]/12 |[spe:exp/acc:unl/tim:day/equ:std/kno:sen]/28
+|link:#t29[T29] |SOTA Client Denial of Service attack |Denial of service |Service Availability |Anyone → SOTA Client |[exp:lay/acc:unl/tim:hou/equ:std/kno:res]/33 |[saf:nor/fin:nor/ope:ver]/12 |[acc:lay/acc:unl/tim:hou/equ:std/kno:res]/41
 |====
+
+
 
 image:../images/Whitelisted-Interactions-Reference-Diagram.svg[WhitelistedInteractions Reference Diagram]
 
