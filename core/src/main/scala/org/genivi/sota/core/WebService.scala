@@ -5,7 +5,6 @@
 package org.genivi.sota.core
 
 import java.io.File
-import java.security.MessageDigest
 
 import akka.actor.ActorSystem
 import akka.event.Logging
@@ -31,7 +30,7 @@ import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 import scala.concurrent.Future
 import slick.driver.MySQLDriver.api.Database
 import slick.dbio.DBIO
-
+import scala.util.Failure
 
 object ErrorCodes {
   val ExternalResolverError = ErrorCode( "external_resolver_error" )
@@ -123,80 +122,7 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
   }
 }
 
-class PackagesResource(resolver: ExternalResolverClient, db : Database)
-                      (implicit system: ActorSystem, mat: ActorMaterializer) {
 
-  import akka.stream.stage._
-  import system.dispatcher
-
-  private[this] val log = Logging.getLogger( system, "packagesResource" )
-
-  def digestCalculator(algorithm: String) : PushPullStage[ByteString, String] = new PushPullStage[ByteString, String] {
-    val digest = MessageDigest.getInstance(algorithm)
-
-    override def onPush(chunk: ByteString, ctx: Context[String]): SyncDirective = {
-      digest.update(chunk.toArray)
-      ctx.pull()
-    }
-
-    override def onPull(ctx: Context[String]): SyncDirective = {
-      if (ctx.isFinishing) ctx.pushAndFinish(Base64.rfc2045().encodeToString(digest.digest(), false))
-      else ctx.pull()
-    }
-
-    override def onUpstreamFinish(ctx: Context[String]): TerminationDirective = {
-      // If the stream is finished, we need to emit the last element in the onPull block.
-      // It is not allowed to directly emit elements from a termination block
-      // (onUpstreamFinish or onUpstreamFailure)
-      ctx.absorbTermination()
-    }
-  }
-
-  def savePackage( packageId: Package.Id, fileData: StrictForm.FileData )
-                 (implicit system: ActorSystem, mat: ActorMaterializer) : Future[(Uri, Long, String)] = {
-    val fileName = fileData.filename.getOrElse(s"${packageId.name.get}-${packageId.version.get}")
-    val file = new File(fileName)
-    val data = fileData.entity.dataBytes
-    for {
-      size <- data.runWith( SynchronousFileSink( file ) )
-      digest <- data.transform(() => digestCalculator("SHA-1")).runFold("")( (acc, data) => acc ++ data)
-    } yield (file.toURI().toString(), size, digest)
-  }
-
-  import org.genivi.sota.marshalling.RefinedMarshallingSupport._
-  val route = pathPrefix("packages") {
-    get {
-      parameters('regex.as[String Refined Regex].?) { (regex: Option[String Refined Regex]) =>
-        import CirceMarshallingSupport._
-        val query = (regex) match {
-          case Some(r) => Packages.searchByRegex(r.get)
-          case None => Packages.list
-        }
-        complete(db.run(query))
-      }
-    } ~
-    (put & refined[Package.ValidName]( Slash ~ Segment) & refined[Package.ValidVersion](Slash ~ Segment ~ PathEnd))
-        .as(Package.Id.apply _) { packageId =>
-      formFields('description.?, 'vendor.?, 'file.as[StrictForm.FileData]) { (description, vendor, fileData) =>
-        completeOrRecoverWith(
-          for {
-            _                   <- resolver.putPackage(packageId, description, vendor)
-            (uri, size, digest) <- savePackage(packageId, fileData)
-            _                   <- db.run(Packages.create( Package(packageId, uri, size, digest, description, vendor) ))
-          } yield NoContent
-        ) {
-          case ExternalResolverRequestFailed(msg, cause) => {
-            import CirceMarshallingSupport._
-            log.error( cause, s"Unable to create/update package: $msg" )
-            complete( StatusCodes.ServiceUnavailable -> ErrorRepresentation( ErrorCodes.ExternalResolverError, msg ) )
-          }
-          case e => failWith(e)
-        }
-      }
-    }
-  }
-
-}
 import org.genivi.sota.core.rvi.{ServerServices, RviClient}
 class WebService(registeredServices: ServerServices, resolver: ExternalResolverClient, db : Database)
                 (implicit system: ActorSystem, mat: ActorMaterializer, rviClient: RviClient) extends Directives {
