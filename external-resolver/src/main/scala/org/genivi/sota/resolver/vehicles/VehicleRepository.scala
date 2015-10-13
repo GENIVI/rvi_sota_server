@@ -5,10 +5,13 @@
 package org.genivi.sota.resolver.vehicles
 
 import org.genivi.sota.db.SlickExtensions._
+import org.genivi.sota.resolver.filters.FilterAST._
+import org.genivi.sota.resolver.filters.{FilterAST, And, True}
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.components.{Component, ComponentRepository}
-import org.genivi.sota.resolver.packages.{Package, PackageRepository}
+import org.genivi.sota.resolver.packages.{Package, PackageRepository, PackageFilterRepository}
+import org.genivi.sota.resolver.resolve.ResolveFunctions
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
@@ -75,7 +78,7 @@ object VehicleRepository {
 
   def installPackage
     (vin: Vehicle.Vin, pkgId: Package.Id)
-    (implicit db: Database, ec: ExecutionContext): DBIO[Unit] =
+    (implicit ec: ExecutionContext): DBIO[Unit] =
     for {
       _ <- exists(vin)
       _ <- PackageRepository.exists(pkgId)
@@ -84,7 +87,7 @@ object VehicleRepository {
 
   def uninstallPackage
     (vin: Vehicle.Vin, pkgId: Package.Id)
-    (implicit db: Database, ec: ExecutionContext): DBIO[Unit] =
+    (implicit ec: ExecutionContext): DBIO[Unit] =
     for {
       _ <- exists(vin)
       _ <- PackageRepository.exists(pkgId)
@@ -116,7 +119,7 @@ object VehicleRepository {
     installedPackages.filter(_.vin === vin).delete
 
   def packagesOnVinMap
-    (implicit db: Database, ec: ExecutionContext)
+    (implicit ec: ExecutionContext)
       : DBIO[Map[Vehicle.Vin, Seq[Package.Id]]] =
     listInstalledPackages
       .map(_
@@ -126,7 +129,7 @@ object VehicleRepository {
 
   def packagesOnVin
     (vin: Vehicle.Vin)
-    (implicit db: Database, ec: ExecutionContext): DBIO[Seq[Package.Id]] =
+    (implicit ec: ExecutionContext): DBIO[Seq[Package.Id]] =
     for {
       _  <- VehicleRepository.exists(vin)
       ps <- packagesOnVinMap
@@ -137,7 +140,7 @@ object VehicleRepository {
     } yield ps
 
   def vinsThatHavePackageMap
-    (implicit db: Database, ec: ExecutionContext)
+    (implicit ec: ExecutionContext)
       : DBIO[Map[Package.Id, Seq[Vehicle.Vin]]] =
     VehicleRepository.listInstalledPackages
       .map(_
@@ -147,7 +150,7 @@ object VehicleRepository {
 
   def vinsThatHavePackage
     (pkgId: Package.Id)
-    (implicit db: Database, ec: ExecutionContext): DBIO[Seq[Vehicle.Vin]] =
+    (implicit ec: ExecutionContext): DBIO[Seq[Vehicle.Vin]] =
     for {
       _  <- PackageRepository.exists(pkgId)
       vs <- vinsThatHavePackageMap
@@ -191,7 +194,7 @@ object VehicleRepository {
     ???
 
   def componentsOnVinMap
-    (implicit db: Database, ec: ExecutionContext): DBIO[Map[Vehicle.Vin, Seq[Component.PartNumber]]] =
+    (implicit ec: ExecutionContext): DBIO[Map[Vehicle.Vin, Seq[Component.PartNumber]]] =
     VehicleRepository.listInstalledComponents
       .map(_
         .sortBy(_._1)
@@ -199,7 +202,7 @@ object VehicleRepository {
         .mapValues(_.map(_._2)))
 
   def componentsOnVin(vin: Vehicle.Vin)
-                     (implicit db: Database, ec: ExecutionContext): DBIO[Seq[Component.PartNumber]] =
+                     (implicit ec: ExecutionContext): DBIO[Seq[Component.PartNumber]] =
     for {
       _  <- exists(vin)
       cs <- componentsOnVinMap
@@ -209,4 +212,23 @@ object VehicleRepository {
                 .flatten)
     } yield cs
 
+  /*
+   * Resolving package dependencies.
+   */
+
+  def resolve(pkgId: Package.Id)
+             (implicit ec: ExecutionContext): DBIO[Map[Vehicle.Vin, Seq[Package.Id]]] =
+    for {
+      _       <- PackageRepository.exists(pkgId)
+      (p, fs) <- PackageFilterRepository.listFiltersForPackage(pkgId)
+      vs      <- VehicleRepository.list
+      ps      : Seq[Seq[Package.Id]]
+              <- DBIO.sequence(vs.map(v => VehicleRepository.packagesOnVin(v.vin)))
+      cs      : Seq[Seq[Component.PartNumber]]
+              <- DBIO.sequence(vs.map(v => VehicleRepository.componentsOnVin(v.vin)))
+      vpcs: Seq[(Vehicle, (Seq[Package.Id], Seq[Component.PartNumber]))]
+              =  vs.zip(ps.zip(cs))
+    } yield ResolveFunctions.makeFakeDependencyMap(pkgId,
+              vpcs.filter(query(fs.map(_.expression).map(parseValidFilter).foldLeft[FilterAST](True)(And)))
+                  .map(_._1))
 }
