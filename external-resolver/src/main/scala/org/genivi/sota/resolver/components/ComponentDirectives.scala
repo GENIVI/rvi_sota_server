@@ -7,20 +7,25 @@ package org.genivi.sota.resolver.components
 import akka.http.scaladsl.model.StatusCodes.NoContent
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.ActorMaterializer
+import eu.timepit.refined.Refined
+import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.RefinementDirectives.refinedPartNumber
 import scala.concurrent.ExecutionContext
 import slick.jdbc.JdbcBackend.Database
 import Directives._
+
 
 class ComponentDirectives(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
 
   def route: Route = {
     pathPrefix("components") {
       get {
-        complete {
-          NoContent
+        parameter('regex.as[Refined[String, Regex]].?) { re =>
+          val query = re.fold(ComponentRepository.list)(re => ComponentRepository.searchByRegex(re))
+          complete(db.run(query))
         }
       } ~
       (put & refinedPartNumber & entity(as[Component.DescriptionWrapper]))
