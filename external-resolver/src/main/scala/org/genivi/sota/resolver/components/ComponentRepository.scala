@@ -4,12 +4,14 @@
  */
 package org.genivi.sota.resolver.components
 
+import eu.timepit.refined.Refined
+import eu.timepit.refined.string.Regex
+import org.genivi.sota.db.Operators._
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.vehicles.{Vehicle, VehicleRepository}
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
-import org.genivi.sota.db.Operators._
 
 
 object ComponentRepository {
@@ -40,5 +42,11 @@ object ComponentRepository {
       .result
       .headOption
       .failIfNone(Errors.MissingComponent)
+
+  def list: DBIO[Seq[Component]] =
+    components.result
+
+  def searchByRegex(re: Refined[String, Regex]): DBIO[Seq[Component]] =
+    components.filter(comp => regex(comp.partNumber, re.get)).result
 
 }

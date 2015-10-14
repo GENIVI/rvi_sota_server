@@ -5,7 +5,6 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
-import cats.data.Xor
 import eu.timepit.refined.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
@@ -279,23 +278,8 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
    * Tests related to installing components on VINs.
    */
 
-  "add component on PUT /components/:partNumber { description }" in {
-    addComponentOK(Refined("jobby0"), "nice")
-  }
-
-  "fail if part number isn't a 30 character or shorter alpha numeric string" in {
-    addComponent(Refined(""), "bad") ~> route ~> check {
-      status shouldBe StatusCodes.NotFound
-    }
-    addComponent(Refined("0123456789012345678901234567890123456789"), "bad") ~> route ~> check {
-      status shouldBe StatusCodes.BadRequest
-    }
-    addComponent(Refined("a???"), "bad") ~> route ~> check {
-      status shouldBe StatusCodes.BadRequest
-    }
-  }
-
   "install component on VIN on PUT /vehicles/:vin/component/:partNumber" in {
+    addComponentOK(Refined("jobby0"), "nice")
     installComponentOK(Refined("VINOOLAM0FAU2DEEP"), Refined("jobby0"))
   }
 
