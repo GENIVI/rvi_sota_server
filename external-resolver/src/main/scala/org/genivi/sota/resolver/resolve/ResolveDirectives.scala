@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.resolver.resolve
 
-import akka.http.scaladsl.server._
+import akka.http.scaladsl.server.{Route, Directives}
 import akka.stream.ActorMaterializer
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
@@ -18,7 +18,7 @@ import Directives._
 
 class ResolveDirectives(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
 
-  def route(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext): Route = {
+  def route: Route = {
     pathPrefix("resolve") {
       (get & refinedPackageId) { id =>
         completeOrRecoverWith(db.run(VehicleRepository.resolve(id))) {
