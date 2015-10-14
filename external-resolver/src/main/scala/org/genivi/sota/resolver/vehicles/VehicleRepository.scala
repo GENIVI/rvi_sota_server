@@ -212,6 +212,26 @@ object VehicleRepository {
                 .flatten)
     } yield cs
 
+  def vinsThatHaveComponentMap
+    (implicit ec: ExecutionContext): DBIO[Map[Component.PartNumber, Seq[Vehicle.Vin]]] =
+    VehicleRepository.listInstalledComponents
+      .map(_
+        .sortBy(_._2)
+        .groupBy(_._2)
+        .mapValues(_.map(_._1)))
+
+  def vinsThatHaveComponent
+    (part: Component.PartNumber)
+    (implicit ec: ExecutionContext): DBIO[Seq[Vehicle.Vin]] =
+    for {
+      _  <- ComponentRepository.exists(part)
+      vs <- vinsThatHaveComponentMap
+              .map(_
+                .get(part)
+                .toList
+                .flatten)
+    } yield vs
+
   /*
    * Resolving package dependencies.
    */

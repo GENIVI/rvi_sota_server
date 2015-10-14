@@ -50,6 +50,8 @@ class VehiclesResourcePropSpec extends ResourcePropSpec {
   import ArbitraryVehicle.{genVehicle, arbVehicle, genInvalidVehicle}
   import Generators.genPackage
 
+  val vehicles = "vehicles"
+
   property("Vehicles resource should create new resource on PUT request") {
     forAll { vehicle: Vehicle =>
       addVehicleOK(vehicle.vin.get)
@@ -76,7 +78,7 @@ class VehiclesResourcePropSpec extends ResourcePropSpec {
 
   property("fail to set installed packages if vin does not exist") {
     forAll(genVehicle, Gen.nonEmptyListOf(genPackage)) { (vehicle, packages) =>
-      Put( Resource.uri("vehicles", vehicle.vin.get, "packages"),  packages.map( _.id )) ~> route ~> check {
+      Put( Resource.uri(vehicles, vehicle.vin.get, "packages"),  packages.map( _.id )) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe Codes.MissingVehicle
       }
@@ -94,7 +96,7 @@ class VehiclesResourcePropSpec extends ResourcePropSpec {
       val (installedBefore, update) = state
       addVehicleOK(vehicle.vin.get)
       installedBefore.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
-      Put( Resource.uri("vehicles", vehicle.vin.get, "packages"),  update.map( _.id )) ~> route ~> check {
+      Put( Resource.uri(vehicles, vehicle.vin.get, "packages"),  update.map( _.id )) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
       }
@@ -112,7 +114,7 @@ class VehiclesResourcePropSpec extends ResourcePropSpec {
       val (availablePackages, update) = state
       addVehicleOK(vehicle.vin.get)
       availablePackages.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
-      Put( Resource.uri("vehicles", vehicle.vin.get, "packages"),  update.map( _.id )) ~> route ~> check {
+      Put( Resource.uri(vehicles, vehicle.vin.get, "packages"),  update.map( _.id )) ~> route ~> check {
         status shouldBe StatusCodes.NoContent
       }
     }
@@ -121,6 +123,8 @@ class VehiclesResourcePropSpec extends ResourcePropSpec {
 }
 
 class VehiclesResourceWordSpec extends ResourceWordSpec {
+
+  val vehicles = "vehicles"
 
   "Vin resource" should {
 
@@ -160,7 +164,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
     }
 
     "return a 404 when deleteing a VIN which doesn't exist" in {
-      Delete(Resource.uri("vehicles", "123456789NOTTHERE")) ~> route ~> check {
+      Delete(Resource.uri(vehicles, "123456789NOTTHERE")) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
       }
     }
@@ -168,7 +172,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
     "delete a VIN" in {
       val vin = "12345678901234VIN"
       addVehicleOK(vin)
-      Delete(Resource.uri("vehicles", vin)) ~> route ~> check {
+      Delete(Resource.uri(vehicles, vin)) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
     }
@@ -180,7 +184,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
       installPackageOK(vin, "halflife", "3.0.0")
       addPackageOK("halflife", "4.0.0", None, None)
       installPackageOK(vin, "halflife", "4.0.0")
-      Delete(Resource.uri("vehicles", vin)) ~> route ~> check {
+      Delete(Resource.uri(vehicles, vin)) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
     }
@@ -209,38 +213,38 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
     }
 
     "list installed packages on a VIN on GET request to /vehicles/:vin/package" in {
-      Get(Resource.uri("vehicles", "VINOOLAM0FAU2DEEP", "package")) ~> route ~> check {
+      Get(Resource.uri(vehicles, "VINOOLAM0FAU2DEEP", "package")) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Seq[Package.Id]] shouldBe List(Package.Id(Refined("apa"), Refined("1.0.1")))
       }
     }
 
     "fail to list installed packages on VINs that don't exist" in {
-      Get(Resource.uri("vehicles", "VINOOLAM0FAU2DEEB", "package")) ~> route ~> check {
+      Get(Resource.uri(vehicles, "VINOOLAM0FAU2DEEB", "package")) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
       }
 
     }
 
     "uninstall a package on a VIN on DELETE request to /vehicles/:vin/package/:packageName/:packageVersion" in {
-      Delete(Resource.uri("vehicles", "VINOOLAM0FAU2DEEP", "package", "apa", "1.0.1")) ~> route ~> check {
+      Delete(Resource.uri(vehicles, "VINOOLAM0FAU2DEEP", "package", "apa", "1.0.1")) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
-      Get(Resource.uri("vehicles", "VINOOLAM0FAU2DEEP", "package")) ~> route ~> check {
+      Get(Resource.uri(vehicles, "VINOOLAM0FAU2DEEP", "package")) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Seq[Package.Id]] shouldBe List()
       }
     }
 
     "fail to uninstall a package from a non-existing VIN" in {
-      Delete(Resource.uri("vehicles", "VINOOLAM0FAU2DEEB", "package", "apa", "1.0.1")) ~> route ~> check {
+      Delete(Resource.uri(vehicles, "VINOOLAM0FAU2DEEB", "package", "apa", "1.0.1")) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe Codes.MissingVehicle
       }
     }
 
     "fail to uninstall a package that isn't installed on a VIN" in {
-      Delete(Resource.uri("vehicles", "VINOOLAM0FAU2DEEP", "package", "bepa", "1.0.1")) ~> route ~> check {
+      Delete(Resource.uri(vehicles, "VINOOLAM0FAU2DEEP", "package", "bepa", "1.0.1")) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
       }
@@ -248,7 +252,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
 
     "list all VINs that have a specific package installed on GET request to /vehciles?package:packageName-:packageVersion" in {
       installPackageOK("VINOOLAM0FAU2DEEP", "apa", "1.0.1")
-      Get(Resource.uri("vehicles") + "?package=apa-1.0.1") ~> route ~> check {
+      Get(Resource.uri(vehicles) + "?package=apa-1.0.1") ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Seq[Vehicle.Vin]] shouldBe List(Refined("VINOOLAM0FAU2DEEP"))
       }
@@ -256,7 +260,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
 
     "fail to list VINs that have a specific non-existing package installed" in {
       installPackageOK("VINOOLAM0FAU2DEEP", "apa", "1.0.1")
-      Get(Resource.uri("vehicles") + "?package=apa-0.0.0") ~> route ~> check {
+      Get(Resource.uri(vehicles) + "?package=apa-0.0.0") ~> route ~> check {
         status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
       }
@@ -264,7 +268,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
 
     "fail to list VINs that have a specific empty or malformated package installed" in {
       installPackageOK("VINOOLAM0FAU2DEEP", "apa", "1.0.1")
-      Get(Resource.uri("vehicles") + "?package=") ~> route ~> check {
+      Get(Resource.uri(vehicles) + "?package=") ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
       }
     }
@@ -296,9 +300,29 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
   }
 
   "list components on a VIN on GET /vehicles/:vin/component" in {
-    Get(Resource.uri("vehicles", "VINOOLAM0FAU2DEEP", "component")) ~> route ~> check {
+    Get(Resource.uri(vehicles, "VINOOLAM0FAU2DEEP", "component")) ~> route ~> check {
       status shouldBe StatusCodes.OK
       responseAs[Seq[Component.PartNumber]] shouldBe List(Refined("jobby0"))
+    }
+  }
+
+  "list VINs that have a specific component on GET /vehicles?component=:partNumber" in {
+    Get(Resource.uri(vehicles) + "?component=jobby0") ~> route ~> check {
+      status shouldBe StatusCodes.OK
+      responseAs[Seq[Vehicle.Vin]] shouldBe List(Refined("VINOOLAM0FAU2DEEP"))
+    }
+  }
+
+  "fail to list VINs that have a specific non-existing component installed" in {
+    Get(Resource.uri(vehicles) + "?component=jobby1") ~> route ~> check {
+      status shouldBe StatusCodes.NotFound
+      responseAs[ErrorRepresentation].code shouldBe Codes.MissingComponent
+    }
+  }
+
+  "fail to list VINs that have a specific empty or malformated component installed" in {
+    Get(Resource.uri(vehicles) + "?component=") ~> route ~> check {
+      status shouldBe StatusCodes.BadRequest
     }
   }
 

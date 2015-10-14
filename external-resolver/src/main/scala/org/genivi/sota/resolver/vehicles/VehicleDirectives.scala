@@ -30,20 +30,25 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
   def installedPackagesHandler = ExceptionHandler(Errors.onMissingPackage orElse Errors.onMissingVehicle)
 
   def route: Route = {
+
     val extractVin : Directive1[Vehicle.Vin] = refined[Vehicle.ValidVin](Slash ~ Segment)
+
     pathPrefix("vehicles") {
       get {
         pathEnd {
-
-          parameter('package.as[Package.NameVersion].?) {
-            case Some(nameVersion) =>
+          parameters('package.as[Package.NameVersion].?, 'component.as[Component.PartNumber].?) {
+            case (Some(nameVersion), None)        =>
               val packageName   : Package.Name    = Refined(nameVersion.get.split("-").head)
               val packageVersion: Package.Version = Refined(nameVersion.get.split("-").tail.head)
               completeOrRecoverWith(db.run(VehicleRepository.vinsThatHavePackage
                 (Package.Id(packageName, packageVersion)))) {
                   Errors.onMissingPackage
               }
-            case None =>
+            case (None,              Some(part)) =>
+              completeOrRecoverWith(db.run(VehicleRepository.vinsThatHaveComponent(part))) {
+                Errors.onMissingComponent
+              }
+            case (_,                 _)          =>
               complete(db.run(VehicleRepository.list))
           }
         }
