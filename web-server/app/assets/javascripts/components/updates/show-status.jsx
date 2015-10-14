@@ -109,7 +109,7 @@ define(function(require) {
         if(Array.isArray(value)) {
           if(value[2] === "Pending") {
             pendingVINs++;
-          } else if (value[2] === "Completed") {
+          } else if (value[2] === "Finished") {
             completedVINs++;
           } else if(value[2] === "Failed") {
             failedVINs++;
