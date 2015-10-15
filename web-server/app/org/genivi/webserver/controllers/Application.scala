@@ -63,7 +63,7 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
 
     val head = path.split("/", 2).head
     val components = path.split("/")
-    if (components.contains("vehicles") && components.contains("queued")) {
+    if (components.contains("vehicles") && (components.contains("queued") || req.queryString.contains("regex"))) {
       proxyTo(coreApiUri, req)
     }
     else if (coreApiResources(head)) {
