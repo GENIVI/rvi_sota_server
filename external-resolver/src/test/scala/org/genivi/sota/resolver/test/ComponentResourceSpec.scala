@@ -70,5 +70,17 @@ class ComponentResourceWordSpec extends ResourceWordSpec {
       }
     }
 
+    "delete components on DELETE /components/:partNumber" in {
+      Delete(Resource.uri(components, "jobby1")) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+      }
+      Get(Resource.uri(components)) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+        responseAs[Seq[Component]] shouldBe List(Component(Refined("bobby0"), "nice"),
+                                                 Component(Refined("bobby1"), "nice"),
+                                                 Component(Refined("jobby0"), "nice"))
+      }
+    }
+
   }
 }

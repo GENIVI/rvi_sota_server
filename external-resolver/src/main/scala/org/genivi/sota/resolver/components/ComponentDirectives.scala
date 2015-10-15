@@ -32,6 +32,10 @@ class ComponentDirectives(implicit db: Database, mat: ActorMaterializer, ec: Exe
       { (part, desc) =>
           val comp = Component(part, desc.description)
           complete(db.run(ComponentRepository.addComponent(comp)).map(_ => comp))
+      } ~
+      (delete & refinedPartNumber)
+      { part =>
+          complete(db.run(ComponentRepository.removeComponent(part)))
       }
     }
   }
