@@ -84,12 +84,18 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
       auditLogger.info(s"Request: $req from user ${loggedIn.name}")
     }
 
-    // Must PUT "vehicles" on both core and resolver
-    // TODO: Retry until both responses are success
-    for {
-      respCore <- proxyTo(coreApiUri, req)
-      respResult <- proxyTo(resolverApiUri, req)
-    } yield respCore
+    //TODO: This routing is very ugly, find a better solution
+    val components = path.split("/")
+    if(components.contains("component") && req.method.equalsIgnoreCase("PUT")) {
+      proxyTo(resolverApiUri, req)
+    } else {
+      // Must PUT "vehicles" on both core and resolver
+      // TODO: Retry until both responses are success
+      for {
+        respCore <- proxyTo(coreApiUri, req)
+        respResult <- proxyTo(resolverApiUri, req)
+      } yield respCore
+    }
   }
 
   def index = StackAction(AuthorityKey -> Role.USER) { implicit req =>
