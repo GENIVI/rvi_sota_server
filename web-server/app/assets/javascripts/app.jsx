@@ -4,8 +4,10 @@ define(function(require) {
       VehiclesPageComponent = require('components/vehicles/vehicles-page-component'),
       PackagesPageComponent = require('components/packages/packages-page-component'),
       FiltersPageComponent = require('components/filters/filters-page-component'),
+      ComponentsPage = require('components/components/components-page'),
       ShowPackage = require('components/packages/show-package'),
       ShowFilter = require('components/filters/show-filter'),
+      ShowComponent = require('components/components/show-components'),
       VehiclePageComponent = require('components/vehicles/vehicle-page-component'),
       Router = require('react-router'),
       CreateCampaign = require('components/create-campaign-page-component'),
@@ -49,6 +51,9 @@ define(function(require) {
                 <li role="presentation">
                   <Link to="updates" className="updates">Updates</Link>
                 </li>
+                <li role="presentation">
+                  <Link to="components" className="components">Components</Link>
+                </li>
               </ul>
 	    </div>
           </div>
@@ -84,6 +89,10 @@ define(function(require) {
       <Route name="updates">
         <Route name="update" path="/updates/:id" handler={wrapComponent(ShowUpdate, {Update: db.showUpdate})} />
         <DefaultRoute handler={wrapComponent(ListOfUpdates, {Updates: db.updates})} />
+      </Route>
+      <Route name="components">
+        <Route name="component" path="/component/:partNumber" handler={wrapComponent(ShowComponent, {Component: db.showComponent})} />
+        <DefaultRoute handler={ComponentsPage}/>
       </Route>
     </Route>
   );

@@ -35,7 +35,7 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
   val resolverApiUri = Play.current.configuration.getString("resolver.api.uri").get
 
   val coreApiResources = Set("packages", "updates")
-  val resolverApiResources = Set("vehicles", "filters", "packageFilters", "resolve", "validate")
+  val resolverApiResources = Set("vehicles", "filters", "packageFilters", "resolve", "validate", "components")
 
   def proxyTo(apiUri: String, req: Request[RawBuffer]) : Future[Result] = {
     def toWsHeaders(hdrs: Headers) = hdrs.toMap.map {
