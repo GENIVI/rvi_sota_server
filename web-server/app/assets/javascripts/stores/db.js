@@ -25,6 +25,7 @@ define(function(require) {
 
       this.searchableComponents = atom.createAtom([]);
       this.showComponent = atom.createAtom({});
+      this.vinsForComponent = atom.createAtom([]);
 
       this.affectedVins = atom.createAtom([]);
       this.searchableVehicles = atom.createAtom([]);
