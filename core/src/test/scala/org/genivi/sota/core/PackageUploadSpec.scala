@@ -38,7 +38,7 @@ class PackageUploadSpec extends PropSpec with PropertyChecks with Matchers with 
 
       override def resolve(packageId: Package.Id): Future[Map[Vehicle, Set[Package.Id]]] = ???
 
-      override def setInstalledPackages( vin: Vehicle.IdentificationNumber, json: io.circe.Json) : Future[Unit] = ???
+      override def setInstalledPackages( vin: Vehicle.Vin, json: io.circe.Json) : Future[Unit] = ???
     }
 
     val resource = new PackagesResource(resolver, db)

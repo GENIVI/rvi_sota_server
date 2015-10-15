@@ -51,7 +51,7 @@ trait Generators {
     prio         <- Gen.choose(1, 10)
   } yield UpdateRequest( UUID.randomUUID(), packageId, DateTime.now, startAfter to finishBefore, prio )
 
-  def vinDepGen(packages: Seq[Package]) : Gen[(Vehicle.IdentificationNumber, Set[Package.Id])] = for {
+  def vinDepGen(packages: Seq[Package]) : Gen[(Vehicle.Vin, Set[Package.Id])] = for {
     vin               <- vehicleGen.map( _.vin )
     m                 <- Gen.choose(1, 10)
     packages          <- Gen.pick(m, packages).map( _.map(_.id) )

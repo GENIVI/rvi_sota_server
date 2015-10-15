@@ -25,7 +25,7 @@ import scala.math.BigDecimal.RoundingMode
 
 class UpdateController(transferProtocolProps: Props) extends Actor with ActorLogging {
 
-  def running( currentDownloads: Map[Vehicle.IdentificationNumber, ActorRef] ) : Receive = {
+  def running( currentDownloads: Map[Vehicle.Vin, ActorRef] ) : Receive = {
     case x @ StartDownload(vin, packages, clientServices) =>
       currentDownloads.get(vin) match {
         case None =>
@@ -159,7 +159,7 @@ class TransferProtocolActor(db: Database, rviClient: RviClient, transferActorPro
 }
 
 case class StartDownloadMessage( `package`: Package.Id, checksum: String, chunkscount: Int )
-case class ChunksReceived( vin: Vehicle.IdentificationNumber, `package`: Package.Id, chunks: List[Int] )
+case class ChunksReceived( vin: Vehicle.Vin, `package`: Package.Id, chunks: List[Int] )
 case class PackageChunk( `package`: Package.Id, bytes: ByteString, index: Int)
 case class Finish(`package`: Package.Id )
 

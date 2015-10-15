@@ -38,7 +38,7 @@ class VehicleResourceSpec extends PropSpec with PropertyChecks
     Uri.Empty.withPath(BasePath / pathSuffix)
   }
 
-  def vehicleUri(vin: Vehicle.IdentificationNumber)  = Uri.Empty.withPath( BasePath / vin.get )
+  def vehicleUri(vin: Vehicle.Vin)  = Uri.Empty.withPath( BasePath / vin.get )
 
   import Generators._
 

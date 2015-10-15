@@ -35,14 +35,14 @@ class UpdateNotifierSpec extends PropSpec with PropertyChecks with Matchers with
   val serverTransport = HttpTransport( rviUri )
   implicit val rviClient = new JsonRpcRviClient( serverTransport.requestTransport, system.dispatcher)
 
-  def updateSpecGen(vinGen : Gen[Vehicle.IdentificationNumber]) : Gen[UpdateSpec] = for {
+  def updateSpecGen(vinGen : Gen[Vehicle.Vin]) : Gen[UpdateSpec] = for {
     updateRequest <- updateRequestGen(Gen.oneOf(packages).map( _.id) )
     vin           <- vinGen
     m             <- Gen.choose(1, 10)
     packages      <- Gen.pick(m, packages).map( _.toSet )
   } yield UpdateSpec( updateRequest, vin, UpdateStatus.Pending, packages )
 
-  def updateSpecsGen( vinGen : Gen[Vehicle.IdentificationNumber] ) : Gen[Seq[UpdateSpec]] =
+  def updateSpecsGen( vinGen : Gen[Vehicle.Vin] ) : Gen[Seq[UpdateSpec]] =
     Gen.containerOf[Seq, UpdateSpec](updateSpecGen(vinGen))
 
   property("notify about available updates", RequiresRvi) {

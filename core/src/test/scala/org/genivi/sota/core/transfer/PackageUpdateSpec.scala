@@ -34,21 +34,21 @@ object DataGenerators {
 
   val packages = scala.util.Random.shuffle( PackagesReader.read().take(10).map(Generators.generatePackageData ) )
 
-  def dependenciesGen(packageId: Package.Id, vin: Vehicle.IdentificationNumber) : Gen[UpdateService.VinsToPackages] =
+  def dependenciesGen(packageId: Package.Id, vin: Vehicle.Vin) : Gen[UpdateService.VinsToPackages] =
     for {
       n                <- Gen.choose(1, 3)
       requiredPackages <- Gen.containerOfN[Set, Package.Id](n, Gen.oneOf(packages ).map( _.id ))
     } yield Map( vin -> (requiredPackages + packageId) )
 
 
-  def updateWithDependencies(vin: Vehicle.IdentificationNumber) : Gen[(UpdateRequest, UpdateService.VinsToPackages)] =
+  def updateWithDependencies(vin: Vehicle.Vin) : Gen[(UpdateRequest, UpdateService.VinsToPackages)] =
     for {
       packageId    <- Gen.oneOf( packages.map( _.id) )
       request      <- updateRequestGen( packageId )
       dependencies <- dependenciesGen( packageId, vin )
     } yield (request, dependencies)
 
-  def requestsGen(vin: Vehicle.IdentificationNumber): Gen[Map[UpdateRequest, UpdateService.VinsToPackages]] = for {
+  def requestsGen(vin: Vehicle.Vin): Gen[Map[UpdateRequest, UpdateService.VinsToPackages]] = for {
     n        <- Gen.choose(1, 4)
     requests <- Gen.listOfN(1, updateWithDependencies(vin)).map( _.toMap )
   } yield requests
@@ -178,8 +178,8 @@ class PackageUpdateSpec extends PropSpec with PropertyChecks with Matchers with 
 
   def init( services: ServerServices, generatedData: Map[UpdateRequest, UpdateService.VinsToPackages] ) : Future[Set[UpdateSpec]] = {
     val updateService = new UpdateService( services )( akka.event.Logging(system, "sota.core.updateQueue"), rviClient )
-    val vins : Set[Vehicle.IdentificationNumber] =
-      generatedData.values.map( _.keySet ).fold(Set.empty[Vehicle.IdentificationNumber])( _ union _)
+    val vins : Set[Vehicle.Vin] =
+      generatedData.values.map( _.keySet ).fold(Set.empty[Vehicle.Vin])( _ union _)
     import slick.driver.MySQLDriver.api._
     for {
       _     <- db.run( DBIO.seq( vins.map( vin => Vehicles.create(Vehicle(vin))).toArray: _* ) )

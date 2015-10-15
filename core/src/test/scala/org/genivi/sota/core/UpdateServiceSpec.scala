@@ -72,7 +72,7 @@ class UpdateServiceSpec extends PropSpec with PropertyChecks with Matchers with 
   }
 
   property("decline if some of dependencies not found") {
-    def vinDepGen(missingPackages: Seq[Package.Id]) : Gen[(Vehicle.IdentificationNumber, Set[Package.Id])] = for {
+    def vinDepGen(missingPackages: Seq[Package.Id]) : Gen[(Vehicle.Vin, Set[Package.Id])] = for {
       vin               <- vehicleGen.map( _.vin )
       m                 <- Gen.choose(1, 10)
       availablePackages <- Gen.pick(m, packages).map( _.map(_.id) )
@@ -95,7 +95,7 @@ class UpdateServiceSpec extends PropSpec with PropertyChecks with Matchers with 
     }
   }
 
-  def createVehicles( vins: Set[Vehicle.IdentificationNumber] ) : Future[Unit] = {
+  def createVehicles( vins: Set[Vehicle.Vin] ) : Future[Unit] = {
     import slick.driver.MySQLDriver.api._
     db.run( DBIO.seq( vins.map( vin => Vehicles.create(Vehicle(vin))).toArray: _* ) )
   }

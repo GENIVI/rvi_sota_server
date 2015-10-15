@@ -64,7 +64,7 @@ class VehiclesResource(db: Database)
     } yield ()
 
 
-  val extractVin : Directive1[Vehicle.IdentificationNumber] = refined[Vehicle.Vin](Slash ~ Segment)
+  val extractVin : Directive1[Vehicle.Vin] = refined[Vehicle.ValidVin](Slash ~ Segment)
 
   val route = pathPrefix("vehicles") {
     extractVin { vin =>
