@@ -19,8 +19,6 @@ import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
 
 class PackagesResourcePropSpec extends ResourcePropSpec {
 
-  import Generators.arbPackage
-
   property("create a new resource on PUT request") {
     forAll { (p : Package) =>
       addPackage(p.id.name.get, p.id.version.get, p.description, p.vendor) ~> route ~> check {

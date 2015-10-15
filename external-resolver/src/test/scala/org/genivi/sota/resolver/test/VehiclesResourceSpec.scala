@@ -10,6 +10,7 @@ import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
 import org.genivi.sota.resolver.packages.{Package, PackageFilter}
+import org.genivi.sota.resolver.packages.Package._
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.vehicles.Vehicle
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
@@ -47,7 +48,6 @@ object ArbitraryVehicle {
 class VehiclesResourcePropSpec extends ResourcePropSpec {
 
   import ArbitraryVehicle.{genVehicle, arbVehicle, genInvalidVehicle}
-  import Generators.genPackage
 
   val vehicles = "vehicles"
 
