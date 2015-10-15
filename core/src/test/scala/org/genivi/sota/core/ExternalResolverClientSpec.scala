@@ -45,12 +45,12 @@ class ExternalResolverClientSpec extends PropSpec with Matchers with BeforeAndAf
 
   val s: String = s"""[["VINBEAGLEBOARD000",[{"version":"23.5.2","name":"rust"}]]]"""
 
-  val m: Map[Vehicle.IdentificationNumber, Set[Package.Id]] =
+  val m: Map[Vehicle.Vin, Set[Package.Id]] =
     Map(Refined("VINBEAGLEBOARD000") -> Set(Package.Id(Refined("rust"), Refined("23.5.2"))))
 
   property("parse the external resolver's response") {
 
-    decode[Map[Vehicle.IdentificationNumber, Set[Package.Id]]](s) shouldBe Xor.Right(m)
+    decode[Map[Vehicle.Vin, Set[Package.Id]]](s) shouldBe Xor.Right(m)
 
   }
 
@@ -66,7 +66,7 @@ class ExternalResolverClientSpec extends PropSpec with Matchers with BeforeAndAf
 
   property("parse from a HttpResponse as a Map") {
 
-    ScalaFutures.whenReady(Unmarshal(resp.entity).to[Map[Vehicle.IdentificationNumber, Set[Package.Id]]]) { m2 =>
+    ScalaFutures.whenReady(Unmarshal(resp.entity).to[Map[Vehicle.Vin, Set[Package.Id]]]) { m2 =>
       m2 shouldBe m
     }
 

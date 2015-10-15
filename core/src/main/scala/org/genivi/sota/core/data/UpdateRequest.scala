@@ -28,7 +28,7 @@ import UpdateStatus._
 
 case class UpdateSpec(
   request: UpdateRequest,
-  vin: Vehicle.IdentificationNumber,
+  vin: Vehicle.Vin,
   status: UpdateStatus,
   dependencies: Set[Package] ) {
 

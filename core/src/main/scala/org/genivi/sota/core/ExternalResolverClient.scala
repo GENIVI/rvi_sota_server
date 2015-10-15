@@ -22,7 +22,7 @@ trait ExternalResolverClient {
 
   def resolve(packageId: Package.Id): Future[Map[Vehicle, Set[Package.Id]]]
 
-  def setInstalledPackages( vin: Vehicle.IdentificationNumber, json: io.circe.Json) : Future[Unit]
+  def setInstalledPackages( vin: Vehicle.Vin, json: io.circe.Json) : Future[Unit]
 }
 
 case class ExternalResolverRequestFailed private ( msg: String, cause: Throwable ) extends Throwable( msg, cause )
@@ -51,8 +51,8 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
   private[this] val log = Logging( system, "org.genivi.sota.externalResolverClient" )
 
   override def resolve(packageId: Package.Id): Future[Map[Vehicle, Set[Package.Id]]] = {
-    implicit val responseDecoder : Decoder[Map[Vehicle.IdentificationNumber, Set[Package.Id]]] =
-      Decoder[Seq[(Vehicle.IdentificationNumber, Set[Package.Id])]].map(_.toMap)
+    implicit val responseDecoder : Decoder[Map[Vehicle.Vin, Set[Package.Id]]] =
+      Decoder[Seq[(Vehicle.Vin, Set[Package.Id])]].map(_.toMap)
 
       def request(packageId: Package.Id): Future[HttpResponse] = {
         Http().singleRequest(
@@ -61,7 +61,7 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
       }
 
     request(packageId).flatMap { response =>
-      Unmarshal(response.entity).to[Map[Vehicle.IdentificationNumber, Set[Package.Id]]].map { parsed =>
+      Unmarshal(response.entity).to[Map[Vehicle.Vin, Set[Package.Id]]].map { parsed =>
         parsed.map { case (k, v) => Vehicle(k) -> v }
       }
     }.recover { case _ => Map.empty[Vehicle, Set[Package.Id]] }
@@ -80,7 +80,7 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
       case e => Future.failed( ExternalResolverRequestFailed(e) )
     }
 
-  def setInstalledPackages( vin: Vehicle.IdentificationNumber, json: io.circe.Json) : Future[Unit] = {
+  def setInstalledPackages( vin: Vehicle.Vin, json: io.circe.Json) : Future[Unit] = {
     import akka.http.scaladsl.client.RequestBuilding.Post
     import org.genivi.sota.rest.ErrorRepresentation
 

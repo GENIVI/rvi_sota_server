@@ -106,7 +106,7 @@ class UpdateService(registeredServices: ServerServices)(implicit val log: Loggin
 }
 
 object UpdateService {
-  type VinsToPackages = Map[Vehicle.IdentificationNumber, Set[Package.Id]]
+  type VinsToPackages = Map[Vehicle.Vin, Set[Package.Id]]
   type DependencyResolver = Package => Future[VinsToPackages]
 
 }

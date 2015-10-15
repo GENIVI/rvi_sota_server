@@ -20,14 +20,14 @@ final case class ServerServices(start: String, cancel: String, ack: String, repo
 
 final case class ClientServices( start: String, chunk: String, finish: String, getpackages: String )
 
-final case class StartDownload(vin: Vehicle.IdentificationNumber, packages: List[Package.Id], services: ClientServices )
+final case class StartDownload(vin: Vehicle.Vin, packages: List[Package.Id], services: ClientServices )
 
 final case class RviParameters[T](parameters: List[T], service_name: String )
 
-final case class InstallReport(vin: Vehicle.IdentificationNumber, `package`: Package.Id, status: Boolean,
+final case class InstallReport(vin: Vehicle.Vin, `package`: Package.Id, status: Boolean,
                                description: String)
 
-final case class InstalledPackages(vin: Vehicle.IdentificationNumber, packages: Json )
+final case class InstalledPackages(vin: Vehicle.Vin, packages: Json )
 
 class SotaServices(updateController: ActorRef, resolverClient: ExternalResolverClient)
                   (implicit system: ActorSystem, mat: ActorMaterializer) {

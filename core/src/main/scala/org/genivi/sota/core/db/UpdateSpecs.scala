@@ -26,9 +26,9 @@ object UpdateSpecs {
   implicit val UpdateStatusColumn = MappedColumnType.base[UpdateStatus, String](_.value.toString, UpdateStatus.withName)
 
   class UpdateSpecsTable(tag: Tag)
-      extends Table[(UUID, Vehicle.IdentificationNumber, UpdateStatus)](tag, "UpdateSpecs") {
+      extends Table[(UUID, Vehicle.Vin, UpdateStatus)](tag, "UpdateSpecs") {
     def requestId = column[UUID]("update_request_id")
-    def vin = column[Vehicle.IdentificationNumber]("vin")
+    def vin = column[Vehicle.Vin]("vin")
     def status = column[UpdateStatus]("status")
 
     def pk = primaryKey("pk_update_specs", (requestId, vin))
@@ -37,9 +37,9 @@ object UpdateSpecs {
   }
 
   class RequiredPackagesTable(tag: Tag)
-      extends Table[(UUID, Vehicle.IdentificationNumber, Package.Name, Package.Version)](tag, "RequiredPackages") {
+      extends Table[(UUID, Vehicle.Vin, Package.Name, Package.Version)](tag, "RequiredPackages") {
     def requestId = column[UUID]("update_request_id")
-    def vin = column[Vehicle.IdentificationNumber]("vin")
+    def vin = column[Vehicle.Vin]("vin")
     def packageName = column[Package.Name]("package_name")
     def packageVersion = column[Package.Version]("package_version")
 
@@ -66,7 +66,7 @@ object UpdateSpecs {
     )
   }
 
-  def load( vin: Vehicle.IdentificationNumber, packageIds: Set[Package.Id] )
+  def load( vin: Vehicle.Vin, packageIds: Set[Package.Id] )
           (implicit ec: ExecutionContext) : DBIO[Iterable[UpdateSpec]] = {
     val requests = UpdateRequests.all.filter(r =>
         (r.packageName.mappedTo[String] ++ r.packageVersion.mappedTo[String])
@@ -90,7 +90,7 @@ object UpdateSpecs {
       .update( newStatus )
   }
 
-  def getPackagesQueuedForVin(vin: Vehicle.IdentificationNumber)
+  def getPackagesQueuedForVin(vin: Vehicle.Vin)
                              (implicit ec: ExecutionContext) : DBIO[Iterable[Id]] = {
     val specs = updateSpecs.filter(r => r.vin === vin && (r.status === UpdateStatus.InFlight ||
       r.status === UpdateStatus.Pending))
@@ -103,7 +103,7 @@ object UpdateSpecs {
     })
   }
 
-  def listUpdatesById(uuid: Refined[String, Uuid]): DBIO[Seq[(UUID, Vehicle.IdentificationNumber, UpdateStatus)]] =
+  def listUpdatesById(uuid: Refined[String, Uuid]): DBIO[Seq[(UUID, Vehicle.Vin, UpdateStatus)]] =
     updateSpecs.filter(_.requestId === UUID.fromString(uuid.get)).result
 
   def deleteUpdateSpecByVin(vehicle : Vehicle) : DBIO[Int] = updateSpecs.filter(_.vin === vehicle.vin).delete

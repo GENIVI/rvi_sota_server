@@ -21,11 +21,11 @@ object UpdateNotifier {
   def notify(updateSpecs: Seq[UpdateSpec], services: ServerServices)
             (implicit rviClient: RviClient, ec: ExecutionContext, log: LoggingAdapter): Iterable[Future[Int]] = {
     log.debug(s"Sending update notifications: $updateSpecs" )
-    val updatesByVin : Map[Vehicle.IdentificationNumber, Seq[UpdateSpec]] = updateSpecs.groupBy( _.vin )
+    val updatesByVin : Map[Vehicle.Vin, Seq[UpdateSpec]] = updateSpecs.groupBy( _.vin )
     updatesByVin.map( (notifyVehicle(services) _ ).tupled  )
   }
 
-  def notifyVehicle(services: ServerServices)( vin: Vehicle.IdentificationNumber, updates: Seq[UpdateSpec] )
+  def notifyVehicle(services: ServerServices)( vin: Vehicle.Vin, updates: Seq[UpdateSpec] )
                    ( implicit rviClient: RviClient, ec: ExecutionContext): Future[Int] = {
     import com.github.nscala_time.time.Imports._
     import io.circe.generic.auto._

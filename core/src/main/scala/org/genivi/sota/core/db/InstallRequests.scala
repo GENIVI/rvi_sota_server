@@ -26,7 +26,7 @@ object InstallRequests {
     def installCampaignId = column[Long]("installCampaignId")
     def packageName = column[Package.Name]("packageName")
     def packageVersion = column[Package.Version]("packageVersion")
-    def vin = column[Vehicle.IdentificationNumber]("vin")
+    def vin = column[Vehicle.Vin]("vin")
     def statusCode = column[Status]("statusCode")
     def errorMessage = column[String]("errorMessage")
     def * = (id.?, installCampaignId, packageName, packageVersion, vin, statusCode, errorMessage.?).shaped <>
