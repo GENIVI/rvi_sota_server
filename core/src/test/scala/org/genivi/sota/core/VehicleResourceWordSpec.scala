@@ -51,6 +51,11 @@ class VinResourceWordSpec extends WordSpec
         assert(vins.length === 3)
       }
     }
+    "return a list of packages installed on a vin" in {
+      Get(VinsUri + "/BLAHVIN0123456789/queued") ~> service.route ~> check {
+        assert(status === StatusCodes.OK)
+      }
+    }
     "filter list of vins by regex 'WW'" in {
       Get(VinsUri + "?regex=WW") ~> service.route ~> check {
         assert(status === StatusCodes.OK)

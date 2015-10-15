@@ -4,6 +4,7 @@ define(function(require) {
       Router = require('react-router'),
       AddPackageManually = require('../packages/add-package-manually-component'),
       ListOfPackagesForVin = require('../packages/list-of-packages-for-vin'),
+      QueuedPackages = require('../packages/list-of-queued-packages-for-vin'),
       db = require('stores/db'),
       SearchBar = require('../search-bar');
 
@@ -23,6 +24,8 @@ define(function(require) {
             <AddPackageManually Vin={params.vin}/>
             <h2>Installed Packages</h2>
             <ListOfPackagesForVin Packages={db.packagesForVin} Vin={params.vin}/>
+            <h2>Packages Queued To Install On VIN</h2>
+            <QueuedPackages Packages={db.packageQueueForVin} Vin={params.vin}/>
           </div>
         </div>
       </div>

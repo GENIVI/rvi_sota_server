@@ -9,6 +9,7 @@ import java.util.UUID
 import org.genivi.sota.core.data.Package.Id
 import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.core.data.UpdateSpec
+import org.genivi.sota.core.db.UpdateRequests.UpdateRequestsTable
 import org.genivi.sota.db.SlickExtensions
 import scala.collection.GenTraversable
 import eu.timepit.refined.string.Uuid
@@ -51,6 +52,8 @@ object UpdateSpecs {
 
   val requiredPackages = TableQuery[RequiredPackagesTable]
 
+  val updateRequests = TableQuery[UpdateRequestsTable]
+
   def persist(updateSpec: UpdateSpec) : DBIO[Unit] = {
     val specProjection = (updateSpec.request.id, updateSpec.vin,  updateSpec.status)
 
@@ -87,6 +90,18 @@ object UpdateSpecs {
       .update( newStatus )
   }
 
+  def getPackagesQueuedForVin(vin: Vehicle.IdentificationNumber)
+                             (implicit ec: ExecutionContext) : DBIO[Iterable[Id]] = {
+    val specs = updateSpecs.filter(r => r.vin === vin && (r.status === UpdateStatus.InFlight ||
+      r.status === UpdateStatus.Pending))
+    val q = for {
+      s <- specs
+      u <- updateRequests if s.requestId === u.id
+    } yield (u.packageName, u.packageVersion)
+    q.result.map(_.map {
+      case (packageName, packageVersion) => Id(packageName, packageVersion)
+    })
+  }
 
   def listUpdatesById(uuid: Refined[String, Uuid]): DBIO[Seq[(UUID, Vehicle.IdentificationNumber, UpdateStatus)]] =
     updateSpecs.filter(_.requestId === UUID.fromString(uuid.get)).result

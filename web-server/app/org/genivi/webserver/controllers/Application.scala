@@ -62,7 +62,15 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
     }
 
     val head = path.split("/", 2).head
-    if (coreApiResources(head)) {
+    val components = path.split("/")
+    auditLogger.info("path:" + path)
+    auditLogger.info("first:" + components.contains("vehicles"))
+    auditLogger.info("second:" + components.contains("queued"))
+    if (components.contains("vehicles") && components.contains("queued")) {
+      auditLogger.info("queued request")
+      proxyTo(coreApiUri, req)
+    }
+    else if (coreApiResources(head)) {
       proxyTo(coreApiUri, req)
     } else if (resolverApiResources(head)) {
       proxyTo(resolverApiUri, req)

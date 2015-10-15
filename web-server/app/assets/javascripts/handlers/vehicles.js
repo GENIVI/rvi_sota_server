@@ -42,6 +42,12 @@ define(function(require) {
                 db.vehiclesForPackage.reset(vehicles);
               });
           break;
+          case 'get-package-queue-for-vin':
+            sendRequest.doGet('/api/v1/vehicles/' + payload.vin + '/queued')
+              .success(function(packages) {
+                db.packageQueueForVin.reset(packages);
+              });
+          break;
         }
       };
       SotaDispatcher.register(this.dispatchCallback.bind(this));
