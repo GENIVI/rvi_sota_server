@@ -44,6 +44,15 @@ define(function(require) {
                 SotaDispatcher.dispatch({actionType: 'get-components'});
               }, this));
             break;
+          case 'get-vins-for-component':
+            sendRequest.doGet('/api/v1/vehicles?component=' + payload.partNumber )
+              .success(function(vehicles) {
+                var formattedVehicles = _.map(vehicles, function(vin) {
+                  return {vin: vin};
+                });
+                db.vinsForComponent.reset(formattedVehicles);
+              });
+          break;
         }
       };
       SotaDispatcher.register(this.dispatchCallback.bind(this));
