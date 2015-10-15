@@ -48,6 +48,18 @@ define(function(require) {
                 db.packageQueueForVin.reset(packages);
               });
           break;
+          case 'list-components-on-vin':
+            sendRequest.doGet('/api/v1/vehicles/' + payload.vin + '/component')
+              .success(function(components) {
+                db.componentsOnVin.reset(components);
+              });
+          break;
+          case 'add-component-to-vin':
+            sendRequest.doPut('/api/v1/vehicles/' + payload.vin + '/component/' + payload.partNumber)
+              .success(function(components, blah, stuff) {
+                SotaDispatcher.dispatch({actionType: 'list-components-on-vin', vin: payload.vin});
+              });
+          break;
         }
       };
       SotaDispatcher.register(this.dispatchCallback.bind(this));

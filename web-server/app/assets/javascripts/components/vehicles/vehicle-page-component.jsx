@@ -5,6 +5,8 @@ define(function(require) {
       AddPackageManually = require('../packages/add-package-manually-component'),
       ListOfPackagesForVin = require('../packages/list-of-packages-for-vin'),
       QueuedPackages = require('../packages/list-of-queued-packages-for-vin'),
+      AddComponent = require('../components/add-component-to-vin'),
+      ComponentsOnVin = require('../components/list-of-components-on-vin'),
       db = require('stores/db'),
       SearchBar = require('../search-bar');
 
@@ -26,6 +28,9 @@ define(function(require) {
             <ListOfPackagesForVin Packages={db.packagesForVin} Vin={params.vin}/>
             <h2>Packages Queued To Install On VIN</h2>
             <QueuedPackages Packages={db.packageQueueForVin} Vin={params.vin}/>
+            <AddComponent Vin={params.vin}/>
+            <h2>Components Install On VIN</h2>
+            <ComponentsOnVin Components={db.componentsOnVin} Vin={params.vin}/>
           </div>
         </div>
       </div>
