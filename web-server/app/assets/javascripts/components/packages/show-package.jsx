@@ -3,6 +3,7 @@ define(function(require) {
   var _ = require('underscore'),
       Router = require('react-router'),
       VehiclesForPackage = require('../vehicles/vehicles-for-package'),
+      VehiclesQueuedForPackage = require('../vehicles/list-of-vehicles-queued-for-package'),
       PackageFilterAssociation = require('../package-filters/package-filter-association'),
       AffectedVins = require('../vehicles/affected-vins'),
       SotaDispatcher = require('sota-dispatcher'),
@@ -84,6 +85,7 @@ define(function(require) {
             getDeleteList={{actionType: 'get-filters-for-package', name: params.name, version: params.version}}/>
           <AffectedVins AffectedVins={db.affectedVins} />
           <VehiclesForPackage VehiclesForPackage={db.vehiclesForPackage}/>
+          <VehiclesQueuedForPackage Vehicles={db.vehiclesQueuedForPackage} PackageName={params.name} PackageVersion={params.version}/>
         </div>
       );
     }
