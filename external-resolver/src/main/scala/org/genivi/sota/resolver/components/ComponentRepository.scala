@@ -35,6 +35,9 @@ object ComponentRepository {
   def addComponent(comp: Component): DBIO[Int] =
     components.insertOrUpdate(comp)
 
+  def removeComponent(part: Component.PartNumber): DBIO[Int] =
+    components.filter(_.partNumber === part).delete
+
   def exists(part: Component.PartNumber)
             (implicit ec: ExecutionContext): DBIO[Component] =
     components
