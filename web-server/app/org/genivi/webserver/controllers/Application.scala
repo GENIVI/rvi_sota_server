@@ -83,7 +83,7 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
 
     //TODO: This routing is very ugly, find a better solution
     val components = path.split("/")
-    if(components.contains("component") && req.method.equalsIgnoreCase("PUT")) {
+    if((components.contains("component") || components.contains("package")) && req.method.equalsIgnoreCase("PUT")) {
       proxyTo(resolverApiUri, req)
     } else {
       // Must PUT "vehicles" on both core and resolver
