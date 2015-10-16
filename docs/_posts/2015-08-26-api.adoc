@@ -152,6 +152,75 @@ a|
 
 |================================================================
 
+=== GET /vehicles/:vin/queued
+
+[width="100%",cols="18%,82%",]
+|================================================================
+|Availability
+|resolver
+
+|Description
+|Returns a list of packages queued to be installed on a given vehicle.
+
+|URL
+|/api/v1/vehicles/:vin/queued
+
+|Parameters a|
+* *:vin* — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.
+
+
+|Success Response
+a|
+*Code:* 200
+
+*Content:* A list of packages.
+
+[source,json]
+----
+[
+  {
+    "version": "1.2.3",
+    "name": "myPackage"
+  },
+  {
+    "version": "1.2.3",
+    "name": "myOtherPackage"
+  }
+]
+----
+
+|================================================================
+
+=== GET /vehicles/:vin/history
+
+[width="100%",cols="18%,82%",]
+|================================================================
+|Availability
+|resolver
+
+|Description
+|Returns the package install history of a given vehicle.
+
+|URL
+|/api/v1/vehicles/:vin/history
+
+|Parameters a|
+* *:vin* — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.
+
+
+|Success Response
+a|
+*Code:* 200
+
+*Content:* A list of packages, and the DateTime they were installed.
+
+
+|================================================================
+
 === PUT /vehicles/:vin/component/:partNumber
 
 [width="100%",cols="18%,82%",]
