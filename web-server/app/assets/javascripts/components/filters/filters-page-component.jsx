@@ -1,18 +1,20 @@
 define(function(require) {
 
   var React = require('react'),
+      FiltersHeader = require('./filters-header-component'),
       SearchBar = require('../search-bar'),
-      FiltersComponent = require('./filters-component'),
-      FiltersStore = require('../../stores/filters'),
-      FiltersHeader = require('./filters-header-component');
+      ListOfFilters = require('./list-of-filters'),
+      Errors = require('../errors'),
+      db = require('stores/db');
 
   var FiltersPageComponent = React.createClass({
     render: function() {
       return (
       <div>
         <FiltersHeader/>
-        <SearchBar label="Filter" event="search-filters"/>
-        <FiltersComponent Store={FiltersStore}/>
+        <Errors />
+        <SearchBar label="Filter" event="search-filters-by-regex"/>
+        <ListOfFilters Filters={db.searchableFilters}/>
       </div>
     );}
   });

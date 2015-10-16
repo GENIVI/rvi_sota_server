@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.core.transfer
 
+import akka.event.LoggingAdapter
 import io.circe.Json
 import org.genivi.sota.core.data.{Vehicle, Package, UpdateSpec}
 import org.genivi.sota.core.rvi.{RviClient,ServerServices}
@@ -18,12 +19,13 @@ case class UpdateNotification(packages: Seq[PackageUpdate], services: ServerServ
 object UpdateNotifier {
 
   def notify(updateSpecs: Seq[UpdateSpec], services: ServerServices)
-            (implicit rviClient: RviClient, ec: ExecutionContext): Iterable[Future[Int]] = {
-    val updatesByVin : Map[Vehicle.IdentificationNumber, Seq[UpdateSpec]] = updateSpecs.groupBy( _.vin )
+            (implicit rviClient: RviClient, ec: ExecutionContext, log: LoggingAdapter): Iterable[Future[Int]] = {
+    log.debug(s"Sending update notifications: $updateSpecs" )
+    val updatesByVin : Map[Vehicle.Vin, Seq[UpdateSpec]] = updateSpecs.groupBy( _.vin )
     updatesByVin.map( (notifyVehicle(services) _ ).tupled  )
   }
 
-  def notifyVehicle(services: ServerServices)( vin: Vehicle.IdentificationNumber, updates: Seq[UpdateSpec] )
+  def notifyVehicle(services: ServerServices)( vin: Vehicle.Vin, updates: Seq[UpdateSpec] )
                    ( implicit rviClient: RviClient, ec: ExecutionContext): Future[Int] = {
     import com.github.nscala_time.time.Imports._
     import io.circe.generic.auto._
@@ -34,7 +36,8 @@ object UpdateNotifier {
     }
 
     val earliestExpirationDate : DateTime = updates.map( _.request.periodOfValidity.getEnd ).min
-    rviClient.sendMessage( s"genivi.org/vin/${vin.get}/sota/notify", UpdateNotification(updates.map(toPackageUpdate), services), earliestExpirationDate )
+    rviClient.sendMessage( s"genivi.org/vin/${vin.get}/sota/notify",
+                           UpdateNotification(updates.map(toPackageUpdate), services), earliestExpirationDate )
   }
 
 }

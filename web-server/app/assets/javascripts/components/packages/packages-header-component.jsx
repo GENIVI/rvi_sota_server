@@ -1,6 +1,5 @@
 define(function(require) {
   var React = require('react'),
-      PackageStore = require('../../stores/packages'),
       AddPackageComponent = require('./add-package-component');
 
   var PackagesHeaderComponent = React.createClass({
@@ -20,7 +19,7 @@ define(function(require) {
             </p>
           </div>
         </div>
-        <AddPackageComponent PackageStore={PackageStore}/>
+        <AddPackageComponent />
       </div>
     );}
   });

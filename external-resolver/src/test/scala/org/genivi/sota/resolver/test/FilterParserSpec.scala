@@ -7,11 +7,8 @@ package org.genivi.sota.resolver.test
 import eu.timepit.refined.Refined
 import org.scalacheck._
 import org.scalatest.FlatSpec
-import org.genivi.sota.resolver.types.FilterParser.parseFilter
-import org.genivi.sota.resolver.types.FilterPrinter.ppFilter
-import org.genivi.sota.resolver.types.FilterAST
-import org.genivi.sota.resolver.types.
-  {VinMatches, HasPackage, HasComponent, Not, And, Or, True, False}
+import org.genivi.sota.resolver.filters._
+import org.genivi.sota.resolver.filters.FilterAST._
 
 
 class FilterParserSpec extends FlatSpec {

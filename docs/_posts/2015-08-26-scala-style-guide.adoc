@@ -4,6 +4,8 @@ title: "Scala Style Guide"
 category: dev
 date: 2015-08-26 10:40:21
 ---
+:icons: font
+
 The document contains Scala stylistic guidelines, which should be
 fillowed in order to produce readable and idiomatic code, allowing
 effective collaboration. The following style guides were used as a

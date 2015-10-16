@@ -6,6 +6,7 @@ package org.genivi.sota.core.db
 
 import java.util.UUID
 import org.genivi.sota.core.data.Package
+import org.genivi.sota.db.SlickExtensions
 import org.joda.time.DateTime
 import org.genivi.sota.generic.DeepHLister
 import scala.concurrent.ExecutionContext
@@ -42,7 +43,8 @@ object UpdateRequests {
 
     def * = (id, packageName, packageVersion, creationTime, startAfter, finishBefore, priority).shaped <>
       (x => UpdateRequest(x._1, Package.Id(x._2, x._3), x._4, x._5 to x._6, x._7 ),
-      (x: UpdateRequest) => Some((x.id, x.packageId.name, x.packageId.version, x.creationTime, x.periodOfValidity.start, x.periodOfValidity.end, x.priority )))
+      (x: UpdateRequest) => Some((x.id, x.packageId.name, x.packageId.version, x.creationTime,
+                                  x.periodOfValidity.start, x.periodOfValidity.end, x.priority )))
 
 
   }

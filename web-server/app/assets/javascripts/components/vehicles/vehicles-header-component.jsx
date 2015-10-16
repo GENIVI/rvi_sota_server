@@ -1,6 +1,5 @@
 define(function(require) {
   var React = require('react'),
-      VehicleStore = require('../../stores/vehicles'),
       AddVehicleComponent = require('./add-vehicle-component');
 
   var VehiclesHeaderComponent = React.createClass({
@@ -20,7 +19,7 @@ define(function(require) {
             </p>
           </div>
         </div>
-        <AddVehicleComponent VehicleStore={VehicleStore}/>
+        <AddVehicleComponent />
       </div>
     );}
   });

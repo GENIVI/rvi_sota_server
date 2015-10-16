@@ -7,7 +7,7 @@ package org.genivi.webserver.controllers
 import jp.t2v.lab.play2.auth._
 import org.genivi.webserver.Authentication.{Account, Role}
 import play.api.mvc.{RequestHeader, Result}
-import play.api.mvc.Results.{Redirect, Forbidden}
+import play.api.mvc.Results.{Redirect, Forbidden, Unauthorized}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.{ClassTag, classTag}
@@ -71,14 +71,25 @@ trait AuthConfigImpl extends AuthConfig {
    * If the user is not logged in and tries to access a protected resource then redirct them as follows:
    */
   def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] = {
-    Future.successful(Redirect(routes.Application.login).withSession("access_uri" -> request.uri))
+    val redirectResponse = Redirect(routes.Application.login).withSession("access_uri" -> request.uri)
+    request.headers.get("Accept") match {
+      case Some(r) => {
+        if (r.contains("application/json")) {
+          Future.successful(Unauthorized)
+        } else {
+          Future.successful(redirectResponse)
+        }
+      }
+      case None => Future.successful(redirectResponse)
+    }
   }
 
 
   /**
    * If authorization failed (usually incorrect password) redirect the user as follows:
    */
-  override def authorizationFailed(request: RequestHeader, user: User, authority: Option[Authority])(implicit context: ExecutionContext): Future[Result] = {
+  override def authorizationFailed(request: RequestHeader, user: User, authority: Option[Authority])
+                                  (implicit context: ExecutionContext): Future[Result] = {
     Future.successful(Forbidden("no permission"))
   }
 
@@ -103,7 +114,7 @@ trait AuthConfigImpl extends AuthConfig {
      * Whether use the secure option or not use it in the cookie.
      * However default is false, I strongly recommend using true in a production.
      */
-    cookieSecureOption = play.api.Play.isProd(play.api.Play.current),
+    cookieSecureOption = false,
     cookieMaxAge       = Some(sessionTimeoutInSeconds)
   )
 

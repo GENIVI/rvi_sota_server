@@ -8,7 +8,7 @@ case class InstallRequest(
   id: Option[Long],
   installCampaignId: Long,
   packageId: Package.Id,
-  vin: Vehicle.IdentificationNumber,
+  vin: Vehicle.Vin,
   statusCode: InstallRequest.Status,
   errorMessage: Option[String]
 )

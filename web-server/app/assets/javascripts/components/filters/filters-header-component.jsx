@@ -1,6 +1,5 @@
 define(function(require) {
   var React = require('react'),
-      Store = require('../../stores/filters'),
       AddFilterComponent = require('./add-filter-component');
 
   var FiltersHeaderComponent = React.createClass({
@@ -20,7 +19,7 @@ define(function(require) {
             </p>
           </div>
         </div>
-        <AddFilterComponent Store={Store}/>
+        <AddFilterComponent />
       </div>
     );}
   });

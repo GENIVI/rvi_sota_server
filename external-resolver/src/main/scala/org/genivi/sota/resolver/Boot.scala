@@ -7,164 +7,31 @@ package org.genivi.sota.resolver
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.model.StatusCodes.NoContent
-import akka.http.scaladsl.server.{Directives, ExceptionHandler, Route, PathMatchers}
-import akka.http.scaladsl.server.PathMatchers.Slash
+import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.ActorMaterializer
-import eu.timepit.refined.Refined
-import eu.timepit.refined.string.Regex
-import io.circe.generic.auto._
-import org.genivi.sota.CirceSupport._
-import org.genivi.sota.resolver.db._
-import org.genivi.sota.resolver.types.{Vehicle, Package, Filter, PackageFilter}
-import org.genivi.sota.rest.ErrorRepresentation.errorRepresentationEncoder
+import org.genivi.sota.resolver.filters.FilterDirectives
+import org.genivi.sota.resolver.packages.PackageDirectives
+import org.genivi.sota.resolver.resolve.ResolveDirectives
+import org.genivi.sota.resolver.vehicles.VehicleDirectives
+import org.genivi.sota.resolver.components.ComponentDirectives
 import org.genivi.sota.rest.Handlers.{rejectionHandler, exceptionHandler}
-import org.genivi.sota.rest.Validation._
-import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 import slick.jdbc.JdbcBackend.Database
 
 
-class Routing(db: Database)
-  (implicit system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext) extends Directives {
-
-  def vehiclesRoute: Route = {
-    pathPrefix("vehicles") {
-      get {
-        complete(db.run(Vehicles.list))
-      } ~
-      (put & refined[Vehicle.ValidVin](Slash ~ Segment ~ PathEnd)) { vin =>
-        complete(db.run( Vehicles.add(Vehicle(vin)) ).map(_ => NoContent))
-      }
-    }
-  }
-
-  def refinedPackageId =
-    refined[Package.ValidName](Slash ~ Segment) &
-      refined[Package.ValidVersion](Slash ~ Segment ~ PathEnd)
-
-  def packagesRoute: Route = {
-
-    pathPrefix("packages") {
-      get {
-        complete {
-          NoContent
-        }
-      } ~
-      (put & refinedPackageId & entity(as[Package.Metadata])) { (name, version, metadata) =>
-        complete(db.run(Packages.add(Package(Package.Id(name, version), metadata.description, metadata.vendor))))
-      }
-    }
-  }
-
-  def resolveHandler: ExceptionHandler = ExceptionHandler {
-    case err: Packages.MissingPackageException.type =>
-      complete(StatusCodes.NotFound ->
-        ErrorRepresentation(PackageFilter.MissingPackage, "Package doesn't exist"))
-  }
-
-  def resolveRoute: Route = {
-    pathPrefix("resolve") {
-      (get & refinedPackageId) { (name, version) =>
-        handleExceptions(resolveHandler) {
-          complete(db.run(Resolve.resolve(name, version)))
-        }
-      }
-    }
-  }
-
-  def packageFiltersHandler: ExceptionHandler = ExceptionHandler {
-    case err: Packages.MissingPackageException.type =>
-      complete(StatusCodes.NotFound ->
-        ErrorRepresentation(PackageFilter.MissingPackage, "Package doesn't exist"))
-    case err: PackageFilters.MissingPackageFilterException =>
-      complete(StatusCodes.NotFound ->
-        ErrorRepresentation(PackageFilter.MissingPackageFilter, "Package filter doesn't exist"))
-    case err: Filters.MissingFilterException.type   =>
-      complete(StatusCodes.NotFound ->
-        ErrorRepresentation(PackageFilter.MissingFilter, "Filter doesn't exist"))
-  }
-
-  def packageFiltersListingHandler: ExceptionHandler = ExceptionHandler {
-    case err: Packages.MissingPackageException.type =>
-      complete(StatusCodes.NotFound ->
-        ErrorRepresentation(PackageFilter.MissingPackage, "Package doesn't exist"))
-    case err: Filters.MissingFilterException.type =>
-      complete(StatusCodes.NotFound ->
-        ErrorRepresentation(PackageFilter.MissingFilter, "Filter doesn't exist"))
-  }
-
-  def filterRoute: Route =
-    pathPrefix("filters") {
-      get {
-        parameter('regex.as[Refined[String, Regex]].?) { re =>
-          val query = re.fold(Filters.list)(r => Filters.searchByRegex(r.get))
-          complete(db.run(query))
-        }
-      } ~
-      (post & entity(as[Filter])) { filter => complete(db.run(Filters.add(filter)))
-      } ~
-      (put  & refined[Filter.ValidName](Slash ~ Segment ~ PathEnd)
-            & entity(as[Filter.ExpressionWrapper])) { (fname, expr) =>
-        handleExceptions(packageFiltersHandler) {
-          complete(db.run(Filters.update(Filter(fname, expr.expression))))
-        }
-      } ~
-      (delete & refined[Filter.ValidName](Slash ~ Segment ~ PathEnd)) { fname =>
-        handleExceptions(packageFiltersHandler) {
-          complete(db.run(Filters.delete(fname)))
-        }
-      }
-    }
-
-  def validateRoute: Route = {
-    pathPrefix("validate") {
-      path("filter") ((post & entity(as[Filter])) (_ => complete("OK")))
-    }
-  }
-
-  def packageFiltersRoute: Route = {
-
-    pathPrefix("packageFilters") {
-      get {
-        parameters('package.as[Package.NameVersion].?, 'filter.as[Filter.Name].?)
-        { case (Some(nameVersion), None)        =>
-            handleExceptions(packageFiltersListingHandler) {
-              complete(db.run(PackageFilters.listFiltersForPackage
-                (Refined(nameVersion.get.split("-").head), Refined(nameVersion.get.split("-").tail.head))))
-            }
-          case (None,              Some(fname)) =>
-            handleExceptions(packageFiltersListingHandler) {
-              complete(db.run(PackageFilters.listPackagesForFilter(fname)))
-            }
-          case (None,              None)        =>
-            complete(db.run(PackageFilters.list))
-          case _                                =>
-            complete(StatusCodes.NotFound)
-        }
-      } ~
-      (post & entity(as[PackageFilter])) { pf =>
-        handleExceptions(packageFiltersHandler) {
-          complete(db.run(PackageFilters.add(pf)))
-        }
-      } ~
-      (delete & refined[Package.ValidName]   (Slash ~ Segment)
-              & refined[Package.ValidVersion](Slash ~ Segment)
-              & refined[Filter.ValidName]    (Slash ~ Segment ~ PathEnd))
-      { (pname, pversion, fname) =>
-        handleExceptions(packageFiltersHandler) {
-          complete(db.run(PackageFilters.delete(pname, pversion, fname)))
-        }
-      }
-    }
-  }
+class Routing
+  (implicit db: Database, system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext)
+    extends Directives {
 
   val route: Route = pathPrefix("api" / "v1") {
     handleRejections(rejectionHandler) {
       handleExceptions(exceptionHandler) {
-        vehiclesRoute ~ packagesRoute ~ resolveRoute ~ filterRoute ~ validateRoute ~ packageFiltersRoute
+        new VehicleDirectives().route ~
+        new PackageDirectives().route ~
+        new FilterDirectives().route ~
+        new ResolveDirectives().route ~
+        new ComponentDirectives().route
       }
     }
   }
@@ -176,12 +43,11 @@ object Boot extends App {
   implicit val materializer = ActorMaterializer()
   implicit val exec         = system.dispatcher
   implicit val log          = Logging(system, "boot")
+  implicit val db           = Database.forConfig("database")
 
   log.info(org.genivi.sota.resolver.BuildInfo.toString)
 
-  val db = Database.forConfig("database")
-
-  val route         = new Routing(db)
+  val route         = new Routing
   val host          = system.settings.config.getString("server.host")
   val port          = system.settings.config.getInt("server.port")
   val bindingFuture = Http().bindAndHandle(route.route, host, port)

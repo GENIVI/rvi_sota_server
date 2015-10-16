@@ -1,26 +1,26 @@
-define(['react', '../../mixins/serialize-form', '../../mixins/request-status', 'sota-dispatcher'], function(React, serializeForm, RequestStatus, SotaDispatcher) {
+define(function(require) {
+  var React = require('react'),
+      serializeForm = require('../../mixins/serialize-form'),
+      toggleForm = require('../../mixins/toggle-form'),
+      db = require('../../stores/db'),
+      SotaDispatcher = require('sota-dispatcher');
 
   var AddVehicleComponent = React.createClass({
-    toggleForm: function() {
-      this.setState({showForm: !this.state.showForm});
-    },
-    getInitialState: function() {
-      return {showForm: false};
-    },
     mixins: [
-      RequestStatus.Mixin("VehicleStore")
+      toggleForm
     ],
     handleSubmit: function(e) {
       e.preventDefault();
 
       payload = serializeForm(this.refs.form);
       SotaDispatcher.dispatch({
-        actionType: 'vehicle-add',
+        actionType: 'create-vehicle',
         vehicle: payload
       });
     },
-    render: function() {
-      var form = (
+    buttonLabel: "NEW VIN",
+    form: function() {
+      return (
         <form ref='form' onSubmit={this.handleSubmit}>
           <div className="form-group">
             <label htmlFor="name">Vehicle Name</label>
@@ -29,27 +29,7 @@ define(['react', '../../mixins/serialize-form', '../../mixins/request-status', '
           <div className="form-group">
             <button type="submit" className="btn btn-primary">Add Vehicle</button>
           </div>
-          <div className="form-group">
-            { this.state.postStatus }
-          </div>
         </form>
-      );
-      return (
-        <div>
-          <div className="row">
-            <div className="col-md-12">
-              <button className="btn btn-primary pull-right" onClick={this.toggleForm}>
-                { this.state.showForm ? "HIDE" : "NEW VIN" }
-              </button>
-            </div>
-          </div>
-          <br/>
-          <div className="row">
-            <div className="col-md-12">
-              { this.state.showForm ? form : null }
-            </div>
-          </div>
-        </div>
       );
     }
   });

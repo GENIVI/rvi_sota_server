@@ -5,14 +5,15 @@ category: dev
 date: 2015-08-26 10:30:27
 ---
 :toc: macro
+:icons: font
 
 This is the documentation page for the REST API of SOTA, including the Web Server, the Core Server, and the Resolver.
 
 The content-type of all requests is `application/json` unless otherwise specified.
 
-The core, resolver, and web server all expose APIs. Calls to the web server's API are forwarded to the appropriate entity: core, resolver, or both. Thus, the documentation here documents the core and resolver APIs; the calls to the web server are the same, but must be sent with a session authorization cookie.
+TIP: The core, resolver, and web server all expose APIs. Calls to the web server's API are forwarded to the appropriate entity: core, resolver, or both. Thus, the documentation here documents the core and resolver APIs; the calls to the web server are the same, but must be sent with a session authorization cookie.
 
-toc::[]
+toc::[right]
 
 === GET /vehicles
 
@@ -81,6 +82,231 @@ characters.
 ----
 
 |=======================================================================
+
+=== DELETE /vehicles/:vin
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+|Availability |core, resolver
+
+|Description |Deletes a vehicle VIN from the database.
+
+|URL |/api/v1/vehicles/:vin
+
+|URL Parameters a|
+* *:vin* — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.
+
+|Success Response a|
+*Code:* 200
+
+// Shouldn't this be a 204?
+
+|Error Response a|
+*Code:* 404
+
+*Content:*
+[source,json]
+----
+{
+  "description": "Vehicle doesn't exist",
+  "code": "missing_vehicle"
+}
+----
+
+|=======================================================================
+
+=== GET /vehicles/:vin/component
+
+[width="100%",cols="18%,82%",]
+|================================================================
+|Availability
+|resolver
+
+|Description
+|Returns a list of the components installed on a given vehicle.
+
+|URL
+|/api/v1/vehicles/:vin/component
+
+|Parameters a|
+* *:vin* — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.
+
+
+|Success Response
+a|
+*Code:* 200
+
+*Content:* A list of component part IDs and their descriptions.
+
+[source,json]
+----
+{
+  "description": "Acme DVD Player",
+  "partNumber": "A-DVD-1234"
+}
+----
+
+|================================================================
+
+=== GET /vehicles/:vin/queued
+
+[width="100%",cols="18%,82%",]
+|================================================================
+|Availability
+|resolver
+
+|Description
+|Returns a list of packages queued to be installed on a given vehicle.
+
+|URL
+|/api/v1/vehicles/:vin/queued
+
+|Parameters a|
+* *:vin* — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.
+
+
+|Success Response
+a|
+*Code:* 200
+
+*Content:* A list of packages.
+
+[source,json]
+----
+[
+  {
+    "version": "1.2.3",
+    "name": "myPackage"
+  },
+  {
+    "version": "1.2.3",
+    "name": "myOtherPackage"
+  }
+]
+----
+
+|================================================================
+
+=== GET /vehicles/:vin/history
+
+[width="100%",cols="18%,82%",]
+|================================================================
+|Availability
+|resolver
+
+|Description
+|Returns the package install history of a given vehicle.
+
+|URL
+|/api/v1/vehicles/:vin/history
+
+|Parameters a|
+* *:vin* — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.
+
+
+|Success Response
+a|
+*Code:* 200
+
+*Content:* A list of packages, and the DateTime they were installed.
+
+
+|================================================================
+
+=== PUT /vehicles/:vin/component/:partNumber
+
+[width="100%",cols="18%,82%",]
+|================================================================
+|Availability
+|resolver
+
+|Description
+|Adds a component to a given vehicle.
+
+|URL
+|/api/v1/vehicles/:vin/component/:partNumber
+
+|Parameters a|
+* *:vin* — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.
+* *:partNumber* — The unique identifying name of a hardware component.
+
+|Success Response
+a|
+*Code:* 200
+
+|================================================================
+
+=== GET /vehicles/:vin/package
+
+[width="100%",cols="18%,82%",]
+|================================================================
+|Availability
+|resolver
+
+|Description
+|Returns a list of the packages installed on a given vehicle.
+
+|URL
+|/api/v1/vehicles/:vin/package
+
+|Parameters a|
+* *:vin* — An existing vehicle identification number.
+
+|Success Response
+a|
+*Code:* 200
+
+*Content:* A list of package names and versions.
+
+[source,json]
+----
+[
+  {
+    "version": "1.2.3",
+    "name": "myPackage"
+  }
+]
+----
+
+|================================================================
+
+=== PUT /vehicles/:vin/package/:name/:version
+
+[width="100%",cols="18%,82%",]
+|================================================================
+|Availability
+|resolver
+
+|Description
+|Marks a package as installed on a given vehicle.
+
+|URL
+|/api/v1/vehicles/:vin/package/:name/:version
+
+|Parameters a|
+* *:vin* — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.
+* *:name* — The name of the software package.
+* *:version* — The package version, in _x.y.z_ format. __x__, __y__, and _z_ must all contain only digits.
+
+|Success Response
+a|
+*Code:* 200
+
+
+|================================================================
+
 
 === GET /packages
 
@@ -208,6 +434,108 @@ Note: Currently, the resolver returns an empty list and a *204 No Content* code 
 ----
 
 |=======================================================================
+
+=== GET /components
+
+[width="100%",cols="18%,82%",]
+|================================================================
+|Availability
+|resolver
+
+|Description
+|Returns a list of all hardware components in the database.
+
+|URL
+|/api/v1/components
+
+|Parameters
+|None
+
+|Success Response
+a|
+*Code:* 200
+
+*Content:* A list of component part numbers and their descriptions.
+
+[source,json]
+----
+[
+  {
+    "description": "AcmeDVDPlayer",
+    "partNumber": "A-DVD-1234"
+  },
+  {
+    "description": "AcmeSeatWarmer",
+    "partNumber": "A-HOTBUNS-1234"
+  }
+]
+----
+
+|================================================================
+
+=== PUT /components/:partNumber
+
+[width="100%",cols="18%,82%",]
+|================================================================
+|Availability
+|resolver
+
+|Description
+|Adds a hardware component to the database, or updates an existing hardware component's description.
+
+|URL
+|/api/v1/components/:partNumber
+
+|URL Parameters
+a|
+* *:partNumber* — The unique identifying name of a hardware component.
+
+|Data Parameters
+a|
+* *description* — A description of the component.
+
+|Success Response
+a|
+*Code:* 200
+
+*Content:* The added or modified hardware component and its description.
+
+[source,json]
+----
+{
+  "description": "AcmeDVDPlayer",
+  "partNumber": "A-DVD-1234"
+}
+----
+
+|================================================================
+
+=== DELETE /components/:partNumber
+
+[width="100%",cols="18%,82%",]
+|================================================================
+|Availability
+|resolver
+
+|Description
+a|Deletes an unused hardware component from the database.
+
+NOTE: You can't delete a component that is associated with one or more VINs.
+
+|URL
+|/api/v1/components/:partNumber
+
+|URL Parameters
+a|
+* *:partNumber* — The unique identifying name of a hardware component.
+
+|Success Response
+a|
+*Code:* 200
+
+*Content:* None.
+
+|================================================================
 
 === GET /resolve/:name/:version
 
@@ -690,7 +1018,7 @@ package.
   ** *version* — A package version, in _x.y.z_ format. __x__, __y__, and __z__ must all exist, and contain only digits.
 * *priority* — `[int]` The priority order of the campaign. Lower numbers indicate higher priority.
 * *creationTime* — `[dateTime]` The date and time the install campaign was created on.
-* *periodOfValidity* — `[dateTime]/[dateTime]` A string with campaign start and end `dateTime`s separated by a slash.
+* *periodOfValidity* — `[dateTime]/[dateTime]` A string with campaign start and end `dateTime` separated by a slash.
 
 *Example:*
 [source,json]

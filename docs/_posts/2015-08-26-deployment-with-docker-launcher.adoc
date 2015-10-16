@@ -5,8 +5,11 @@ category: doc
 date: 2015-08-26 14:09:53
 order: 2
 ---
+:icons: font
 
-Docker Launcher launches projects using Docker and Ansible. It is a prerequisite for deploying the SOTA server, and can be installed from https://github.com/advancedtelematic/docker-launcher[its GitHub repository.] *Please ensure you are using the latest version of Docker Launcher. Older versions may not correctly deploy the SOTA Server.*
+Docker Launcher launches projects using Docker and Ansible. It is a prerequisite for deploying the SOTA server, and can be installed from https://github.com/advancedtelematic/docker-launcher[its GitHub repository.]
+
+IMPORTANT: Please ensure you are using the latest version of Docker Launcher. Older versions may not correctly deploy the SOTA Server.
 
 == Prerequisites
 
@@ -18,20 +21,22 @@ You will need curl, python, and the following three python packages: `ansible`, 
 
 You will need a Docker Hub account (https://hub.docker.com/).
 
-
-
 == Deploying a Development System
 
-**Caution:** When deploying the Web UI using Docker, it will run in 'production mode' by default. In this mode of operation, an SSL certificate is required to log into the Web UI. As a workaround, you can set the `cookieSecureOption` on line 106 of the file `app/org/genivi/webserver/controllers/AuthConfigImpl.scala` to `false`.
+To deploy a local development system, there are 3 basic steps.
 
-As a prerequisite to deploying a local development system, you must run
+=== 1. Build the local docker images
 
 [source,sh]
 -------------------------
 ./sbt docker:publishLocal
 -------------------------
 
-Once this completes successfully, you may deploy with https://github.com/advancedtelematic/docker-launcher[Docker Launcher.] For deploying a development system to your local machine, make sure you have Docker Launcher and Docker installed and configured to your liking. Docker Launcher currently requires Docker >= v.1.6.1 and Ansible v.1.9.2. Ansible 2.x has not yet been tested, and is not guaranteed to work.
+Once this completes successfully, you may deploy with https://github.com/advancedtelematic/docker-launcher[Docker Launcher.]
+
+=== 2. Launch the docker images with docker-launcher
+
+For deploying a development system to your local machine, make sure you have Docker Launcher and Docker installed and configured to your liking. Docker Launcher currently requires Docker >= v.1.8.0 and Ansible v.1.9.2. Ansible 2.x has not yet been tested, and is not guaranteed to work.
 
 First, enter the `deploy` directory, and copy the example Docker Launcher configuration file, then edit it to match your preferences. The only values you should need to change are the `user` and `email` fields in `docker-launcher.yml`. These should be a valid username and associated email address for Docker Hub.
 
@@ -39,28 +44,31 @@ First, enter the `deploy` directory, and copy the example Docker Launcher config
 --------------------------------------------------
 cd deploy
 cp docker-launcher.yml.example docker-launcher.yml
+docker-launcher -c docker-launcher.yml deploy-sota-local.yml
 --------------------------------------------------
 
-You can then deploy a development system with
+You will be prompted for your Docker Hub password, but for a local deployment it's not actually needed.
+
+=== 3. Apply database migrations to the newly created MariaDB container
 
 [source,sh]
 ------------------------------------------------------------
-
-docker-launcher -c docker-launcher.yml deploy-sota-local.yml
+CORE_DB_URL=jdbc:mariadb://<your-docker-host>:3306/sota_core RESOLVER_DB_URL=jdbc:mariadb://<your-docker-host>:3306/sota_resolver sbt flywayMigrate
 ------------------------------------------------------------
 
-For a local deployment, a Docker Hub password is not actually required. When prompted for one, you can just press enter to continue.
+=== Teardown
 
-To stop the running system run
+To stop the running system, run
 
 [source,sh]
 -----------------------------------------------------------------------
-
 docker-launcher --teardown -c docker-launcher.yml deploy-sota-local.yml
 -----------------------------------------------------------------------
 
+TIP: Teardown does not wipe the database; there is a `sota-data` container for persistent database storage. If you wish to start over with a clean database, you can remove this container with `docker rm -v sota-data`, and run docker-launcher again to recreate it.
+
 [[cistaging-remote-system]]
-=== CI/Staging remote system
+== CI/Staging remote system
 
 For deploying a remote system for staging and CI, with a docker daemon accessible from a single IP run
 
@@ -100,11 +108,9 @@ For migrations you need to tell flyway the connection details like so:
 CORE_DB_USER=<user> CORE_DB_PASSWORD=<password> CORE_DB_URL=jdbc:mysql://<host>:3306/sota sbt core/flywayMigrate
 ----------------------------------------------------------------------------------------------------------------
 
-With `<user>`, `<password>` and `<host>` replaced with suitable values.
+With `<user>`, `<password>`, and `<host>` replaced with suitable values.
 
 == Deploying to Amazon AWS
-
-**Caution:** When deploying the Web UI using Docker, it will run in 'production mode' by default. In this mode of operation, an SSL certificate is required to log into the Web UI. As a workaround, you can set the `cookieSecureOption` on line 106 of the file `app/org/genivi/webserver/controllers/AuthConfigImpl.scala` to `false`.
 
 === AWS Prerequisites
 
@@ -158,6 +164,7 @@ vars:
 
 You will need to change at least three values from the example file:
 
+[#code_list]
 <1> Your username at Docker Hub
 <2> The email address associated with your Docker Hub account
 <3> The name of an SSH keypair associated with your AWS account

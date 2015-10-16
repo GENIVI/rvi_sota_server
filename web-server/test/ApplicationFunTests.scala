@@ -19,6 +19,13 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
   override lazy val browsers = Vector(FirefoxInfo(firefoxProfile), ChromeInfo)
   val coreDb = Database.forConfig("core.database").createSession()
   val resolverDb = Database.forConfig("resolver.database").createSession()
+  val testVinName = "TESTVIN0123456789"
+  val testFilterName = "TestFilter"
+  val testFilterExpression = "vin_matches '.*'"
+  val testDeleteFilterName = "TestDeleteFilter"
+  val testPackageName = "Testpkg"
+  val userName = "admin@genivi.org"
+  val password = "genivirocks!"
 
   override def beforeAll() {
     clearTables()
@@ -32,16 +39,45 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
 
   def clearTables() {
     try {
-      resolverDb.createStatement().executeQuery("delete from PackageFilters where filterName ='TestFilter'")
-      resolverDb.createStatement().executeQuery("delete from Filter where name ='TestFilter'")
-      resolverDb.createStatement().executeQuery("delete from Vehicle where vin = 'TESTVIN0123456789'")
-      coreDb.createStatement().executeQuery("delete from Vehicle where vin = 'TESTVIN0123456789'")
-      coreDb.createStatement().executeQuery("delete from Package where name = 'Testpkg'")
+      resolverDb.createStatement().executeQuery("delete from PackageFilters where filterName ='" + testFilterName + "'")
+      resolverDb.createStatement().executeQuery("delete from Filter where name ='" + testFilterName + "'")
+      resolverDb.createStatement().executeQuery("delete from Filter where name ='" + testDeleteFilterName + "'")
+      resolverDb.createStatement().executeQuery("delete from Vehicle where vin = '" + testVinName + "'")
+      coreDb.createStatement().executeQuery("delete from RequiredPackages where vin = '" + testVinName + "'")
+      coreDb.createStatement().executeQuery("delete from RequiredPackages where package_name = '" + testPackageName + "'")
+
+      val rowCountResult = coreDb.createStatement().executeQuery("select count(*) as update_count from UpdateRequests where package_name = '" + testPackageName + "'")
+      rowCountResult.next()
+      val updateCount = rowCountResult.getInt("update_count")
+      if(updateCount > 0) {
+        val result = coreDb.createStatement().executeQuery("select * from UpdateRequests where package_name = '" + testPackageName + "'")
+        while(result.next()) {
+          val reqId = result.getString("update_request_id")
+          coreDb.createStatement().executeQuery("delete from UpdateSpecs where update_request_id = '" + reqId + "'")
+        }
+      }
+      coreDb.createStatement().executeQuery("delete from UpdateRequests where package_name = '" + testPackageName + "'")
+      coreDb.createStatement().executeQuery("delete from Vehicle where vin = '" + testVinName + "'")
+      coreDb.createStatement().executeQuery("delete from Package where name = '" + testPackageName + "'")
     } catch {
       //Teamcity handles clearing the database for us. Thus, ignoring this exception is generally
-      //fine, unless you are attempting to run the integration tests locally, so we print a warning.
-      case e:SQLSyntaxErrorException => println("Clearing database failed!")
+      //fine, unless you are attempting to run the integration tests locally.
+      case e:SQLSyntaxErrorException => println("Clearing database failed!\nException msg:" + e.getMessage)
     }
+  }
+
+  def findElementWithText(text: String, selector: String): Boolean = {
+    val elems = webDriver.findElements(By.cssSelector(selector))
+    var contains = false
+    for (n <- elems) if (n.getText.equalsIgnoreCase(text)) contains = true
+    contains
+  }
+
+  def findElementContainingText(text: String, selector: String): Boolean = {
+    val elems = webDriver.findElements(By.cssSelector(selector))
+    var contains = false
+    for (n <- elems) if (n.getText.contains(text)) contains = true
+    contains
   }
 
   def sharedTests(browser: BrowserInfo) = {
@@ -50,32 +86,31 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
     "All browsers" must {
 
       "allow users to add and search for vins " + browser.name in {
-        val testVin = "TESTVIN0123456789"
         go to (s"http://$webHost:$webPort/login")
-        emailField("email").value = "admin@genivi.org"
-        pwdField("password").value = "genivirocks!"
+        emailField("email").value = userName
+        pwdField("password").value = password
         submit()
         eventually {
           click on linkText("Vehicles")
-          textField("vin").value = testVin
+          click on cssSelector("button")
+          textField("vin").value = testVinName
           submit()
           eventually {
-            textField("regex").value = testVin
-            eventually {
-              find(className("list-group-item")).value.text mustBe testVin
-            }
+            textField("regex").value = testVinName
+            findElementWithText(testVinName, "td") mustBe true
           }
         }
       }
 
       "allow users to add packages " + browser.name in {
         go to (s"http://$webHost:$webPort/login")
-        emailField("email").value = "admin@genivi.org"
-        pwdField("password").value = "genivirocks!"
+        emailField("email").value = userName
+        pwdField("password").value = password
         submit()
         eventually {
           click on linkText("Packages")
-          textField("name").value = "Testpkg"
+          click on cssSelector("button")
+          textField("name").value = testPackageName
           textField("version").value = "1.0.0"
           textField("description").value = "Functional test package"
           textField("vendor").value = "SOTA"
@@ -84,28 +119,105 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
           webDriver.findElement(By.name("file")).sendKeys(file.getCanonicalPath)
           submit()
           eventually {
-            val elems = webDriver.findElements(By.cssSelector("span"))
-            var contains = false
-            for (n <- elems) if (n.getText.equals("Testpkg")) contains = true
-            contains mustBe true
+            textField("regex").value = testPackageName
+            findElementWithText(testPackageName, "a") mustBe true
           }
         }
       }
 
       "allow users to add filters " + browser.name in {
-        val filterName = "Testfilter"
         go to (s"http://$webHost:$webPort/login")
-        emailField("email").value = "admin@genivi.org"
-        pwdField("password").value = "genivirocks!"
+        emailField("email").value = userName
+        pwdField("password").value = password
         submit()
         eventually {
           click on linkText("Filters")
-          textField("name").value = filterName
-          textArea("expression").value = "vin_matches 'SAJNX5745SC??????'"
+          click on cssSelector("button")
+          textField("name").value = testFilterName
+          textArea("expression").value = testFilterExpression
           submit()
           eventually {
-            find(className("postStatus")).get.text mustBe "Added filter \"" + filterName +
-              "\" successfully"
+            textField("regex").value = testFilterName
+            findElementWithText(testFilterName, "td") mustBe true
+          }
+        }
+      }
+
+      "allow users to create install campaigns " + browser.name in {
+        go to (s"http://$webHost:$webPort/login")
+        emailField("email").value = userName
+        pwdField("password").value = password
+        submit()
+        eventually {
+          click on linkText("Packages")
+          click on linkText(testPackageName)
+          click on testFilterName
+          click on "new-campaign"
+          numberField("priority").value = "1"
+          submit()
+          eventually {
+            findElementContainingText("Update ID:", "span") mustBe true
+          }
+        }
+      }
+
+      "allow users to change filter expressions " + browser.name in {
+        val alternateFilterExpression = "vin_matches 'TEST'"
+        go to (s"http://$webHost:$webPort/login")
+        emailField("email").value = userName
+        pwdField("password").value = password
+        submit()
+        eventually {
+          click on linkText("Filters")
+          textField("regex").value = "^" + testFilterName + "$"
+          click on linkText("Details")
+          textField("expression").value = alternateFilterExpression
+          submit()
+          eventually {
+            findElementWithText(alternateFilterExpression, "span") mustBe true
+          }
+        }
+      }
+
+      "reject invalid filter expressions " + browser.name in {
+        val alternateFilterExpression = "invalid"
+        go to (s"http://$webHost:$webPort/login")
+        emailField("email").value = userName
+        pwdField("password").value = password
+        submit()
+        eventually {
+          click on linkText("Filters")
+          textField("regex").value = "^" + testFilterName + "$"
+          click on linkText("Details")
+          textField("expression").value = alternateFilterExpression
+          submit()
+          eventually {
+            findElementContainingText("Predicate failed:", "div") mustBe true
+          }
+        }
+      }
+
+      "allow users to delete filters " + browser.name in {
+        go to (s"http://$webHost:$webPort/login")
+        emailField("email").value = userName
+        pwdField("password").value = password
+        submit()
+        eventually {
+          click on linkText("Filters")
+          click on cssSelector("button")
+          textField("name").value = testDeleteFilterName
+          textArea("expression").value = testFilterExpression
+          submit()
+          eventually {
+            textField("regex").value = "^" + testDeleteFilterName + "$"
+            click on linkText("Details")
+            click on "delete-filter"
+            eventually {
+              textField("regex").value = "^" + testDeleteFilterName + "$"
+              eventually {
+                findElementWithText(testDeleteFilterName, "td") mustBe false
+              }
+            }
           }
         }
       }

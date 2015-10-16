@@ -1,19 +1,23 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.unmarshalling._
 import eu.timepit.refined.Refined
 import io.circe.generic.auto._
-import org.genivi.sota.CirceSupport._
-import org.genivi.sota.resolver.types.{Vehicle, Package, PackageFilter}
-import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.genivi.sota.resolver.common.Errors.Codes
+import org.genivi.sota.resolver.components.Component
+import org.genivi.sota.resolver.packages.{Package, PackageFilter}
+import org.genivi.sota.resolver.vehicles.Vehicle
+import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
 
 
 class ResolveResourceWordSpec extends ResourceWordSpec {
 
+  val pkgName = "resolvePkg"
+
   "Resolve resource" should {
 
-    "give back a list of vehicles onto which the supplied package should be installed" in {
+    "return all VINs if the filter is trivially true" in {
 
       // Add some vehicles.
       val vins = List(
@@ -25,83 +29,116 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
       vins map addVehicleOK
 
       // Add a package.
-      addPackageOK("resolve pkg", "0.0.1", None, None)
+      addPackageOK("resolvePkg", "0.0.1", None, None)
 
       // Add a trival filter that lets all vins through.
       addFilterOK("truefilter", "TRUE")
-      addPackageFilterOK("resolve pkg", "0.0.1", "truefilter")
+      addPackageFilterOK(pkgName, "0.0.1", "truefilter")
 
-      resolveOK("resolve pkg", "0.0.1", vins)
+      resolveOK(pkgName, "0.0.1", vins)
+    }
+
+    "support filtering by VIN" in {
 
       // Add another filter.
       addFilterOK("0xfilter", s"""vin_matches "^00.*" OR vin_matches "^01.*"""")
-      addPackageFilterOK("resolve pkg", "0.0.1", "0xfilter")
+      addPackageFilterOK(pkgName, "0.0.1", "0xfilter")
 
-      resolveOK("resolve pkg", "0.0.1",
+      resolveOK(pkgName, "0.0.1",
         List("00RESOLVEVIN12345", "01RESOLVEVIN12345"))
+    }
+
+    "support filtering by installed packages on VIN" in {
+
+      // Delete the previous filter and add another one which uses
+      // has_package instead.
+
+      deletePackageFilterOK(pkgName, "0.0.1", "0xfilter")
+      addPackageOK("apa",  "1.0.0", None, None)
+      addPackageOK("bepa", "1.0.0", None, None)
+      installPackageOK("10RESOLVEVIN12345", "apa", "1.0.0")
+      installPackageOK("11RESOLVEVIN12345", "apa", "1.0.0")
+      installPackageOK("00RESOLVEVIN12345", "bepa", "1.0.0")
+      addFilterOK("1xfilter", s"""has_package "^a.*" "1.*"""")
+      addPackageFilterOK(pkgName, "0.0.1", "1xfilter")
+      resolveOK(pkgName, "0.0.1",
+        List("10RESOLVEVIN12345", "11RESOLVEVIN12345"))
+    }
+
+    "support filtering by hardware components on VIN" in {
+
+      // Delete the previous filter and add another one which uses
+      // has_component instead.
+
+      deletePackageFilterOK(pkgName, "0.0.1", "1xfilter")
+      addComponentOK(Refined("jobby0"), "nice")
+      addComponentOK(Refined("jobby1"), "nice")
+      installComponentOK(Refined("00RESOLVEVIN12345"), Refined("jobby0"))
+      installComponentOK(Refined("01RESOLVEVIN12345"), Refined("jobby0"))
+      installComponentOK(Refined("11RESOLVEVIN12345"), Refined("jobby1"))
+      addFilterOK("components", s"""has_component "^.*y0"""")
+      addPackageFilterOK(pkgName, "0.0.1", "components")
+      resolveOK(pkgName, "0.0.1",
+        List("00RESOLVEVIN12345", "01RESOLVEVIN12345"))
+    }
+
+    "return no VINs if the filter is trivially false" in {
 
       // Add trivially false filter.
       addFilterOK("falsefilter", "FALSE")
-      addPackageFilterOK("resolve pkg", "0.0.1", "falsefilter")
+      addPackageFilterOK(pkgName, "0.0.1", "falsefilter")
 
-      resolveOK("resolve pkg", "0.0.1", List())
-
+      resolveOK(pkgName, "0.0.1", List())
     }
-  }
 
-  "fail if a non-existing package name is given" in {
+    "fail if a non-existing package name is given" in {
 
-    resolve("resolve pkg2", "0.0.1") ~> route ~> check {
-      status shouldBe StatusCodes.NotFound
-      responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingPackage
+      resolve("resolvePkg2", "0.0.1") ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
+        responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
+      }
     }
-  }
 
-  "fail if a non-existing package version is given" in {
+    "fail if a non-existing package version is given" in {
 
-    resolve("resolve pkg", "0.0.2") ~> route ~> check {
-      status shouldBe StatusCodes.NotFound
-      responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingPackage
+      resolve(pkgName, "0.0.2") ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
+        responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
+      }
     }
-  }
 
-  "return a string that the core server can parse" in {
+    "return a string that the core server can parse" in {
 
-    deletePackageFilter("resolve pkg", "0.0.1", "falseFilter") ~> route ~> check {
-      status shouldBe StatusCodes.OK
-      resolve("resolve pkg", "0.0.1") ~> route ~> check {
+      deletePackageFilter(pkgName, "0.0.1", "falseFilter") ~> route ~> check {
         status shouldBe StatusCodes.OK
+        resolve(pkgName, "0.0.1") ~> route ~> check {
+          status shouldBe StatusCodes.OK
 
-        responseAs[io.circe.Json].noSpaces shouldBe
-          s"""[["00RESOLVEVIN12345",[{"version":"0.0.1","name":"resolve pkg"}]],["01RESOLVEVIN12345",[{"version":"0.0.1","name":"resolve pkg"}]]]"""
+          responseAs[io.circe.Json].noSpaces shouldBe
+            s"""[["00RESOLVEVIN12345",[{"version":"0.0.1","name":"resolvePkg"}]],["01RESOLVEVIN12345",[{"version":"0.0.1","name":"resolvePkg"}]]]"""
 
-        responseAs[Map[Vehicle.Vin, Set[Package.Id]]] shouldBe
-          Map(Refined("00RESOLVEVIN12345") -> Set(Package.Id(Refined("resolve pkg"), Refined("0.0.1"))),
-              Refined("01RESOLVEVIN12345") -> Set(Package.Id(Refined("resolve pkg"), Refined("0.0.1"))))
+          responseAs[Map[Vehicle.Vin, Set[Package.Id]]] shouldBe
+            Map(Refined("00RESOLVEVIN12345") -> Set(Package.Id(Refined(pkgName), Refined("0.0.1"))),
+                Refined("01RESOLVEVIN12345") -> Set(Package.Id(Refined(pkgName), Refined("0.0.1"))))
 
+        }
       }
     }
   }
-
 }
-/*
 
 class ResolveResourcePropSpec extends ResourcePropSpec {
 
   import ArbitraryFilter.arbFilter
-  import ArbitraryPackage.arbPackage
   import ArbitraryVehicle.arbVehicle
   import akka.http.scaladsl.model.StatusCodes
-  import org.genivi.sota.resolver.db.Resolve.makeFakeDependencyMap
-  import org.genivi.sota.resolver.types.FilterParser.parseValidFilter
-  import org.genivi.sota.resolver.types._
+  import org.genivi.sota.resolver.resolve.ResolveFunctions.makeFakeDependencyMap
+  import org.genivi.sota.resolver.filters._
+  import org.genivi.sota.resolver.filters.FilterAST.{parseValidFilter, query}
   import org.scalacheck.Prop.{True => _, _}
-  import org.genivi.sota.CirceSupport._
   import io.circe.generic.auto._
-  import akka.http.scaladsl.unmarshalling._
 
-
-  property("Resolve should give back the same thing as if we filtered with the filters") {
+  ignore("Resolve should give back the same thing as if we filtered with the filters") {
 
     forAll() { (
       vs: Seq[Vehicle],   // The available vehicles.
@@ -132,14 +169,16 @@ class ResolveResourcePropSpec extends ResourcePropSpec {
               status === StatusCodes.OK
               val result = responseAs[Map[Vehicle.Vin, Seq[Package.Id]]]
               classify(result.toList.length > 0, "more than zero", "zero") {
-                result === makeFakeDependencyMap(p.id.name, p.id.version,
+                result === makeFakeDependencyMap(Package.Id(p.id.name, p.id.version),
 
                     // ... we filtered the list of all VINs by the boolean
                     // predicate that arises from the combined filter
                     // queries.
-                    allVehicles.filter(FilterQuery.query
+
+                    // XXX: Deal with installed packages and components properly.
+                    allVehicles.map(v => (v, (List[Package.Id](), List[Component.PartNumber]()))).filter(query
                       (fs.map(_.expression).map(parseValidFilter)
-                         .foldLeft[FilterAST](True)(And))))
+                         .foldLeft[FilterAST](True)(And))).map(_._1))
               }
             }
           }
@@ -150,5 +189,3 @@ class ResolveResourcePropSpec extends ResourcePropSpec {
   }
 
 }
-
- */

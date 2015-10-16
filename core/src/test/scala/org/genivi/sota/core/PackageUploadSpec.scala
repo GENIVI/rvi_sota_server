@@ -8,6 +8,7 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.http.scaladsl.unmarshalling._
 import io.circe.generic.auto._
 import java.io.File
+import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.core.data.{Vehicle, Package}
 import org.genivi.sota.rest.ErrorRepresentation
 import org.scalatest.prop.PropertyChecks
@@ -36,6 +37,8 @@ class PackageUploadSpec extends PropSpec with PropertyChecks with Matchers with 
       override def putPackage(packageId: Package.Id, description: Option[String], vendor: Option[String]): Future[Unit] = resolverResult
 
       override def resolve(packageId: Package.Id): Future[Map[Vehicle, Set[Package.Id]]] = ???
+
+      override def setInstalledPackages( vin: Vehicle.Vin, json: io.circe.Json) : Future[Unit] = ???
     }
 
     val resource = new PackagesResource(resolver, db)
@@ -62,7 +65,7 @@ class PackageUploadSpec extends PropSpec with PropertyChecks with Matchers with 
   }
 
   property("Returns service unavailable if request to external resolver fails") {
-    import org.genivi.sota.CirceSupport._
+    import CirceMarshallingSupport._
     new Service( Future.failed( ExternalResolverRequestFailed( StatusCodes.InternalServerError ) ) ) {
       forAll { (pckg: Package) =>
         mkRequest( pckg ) ~> resource.route ~> check {
@@ -87,7 +90,7 @@ class PackageUploadSpec extends PropSpec with PropertyChecks with Matchers with 
     }
   }
 
-  override def afterAll() {
+  override def afterAll() : Unit = {
     system.shutdown()
     db.close()
   }

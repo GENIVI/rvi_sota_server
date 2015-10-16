@@ -5,14 +5,13 @@
 package org.genivi.sota.core
 
 import java.io.File
-import java.security.MessageDigest
 
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.common.StrictForm
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model.{StatusCodes, Uri, HttpResponse}
-import akka.http.scaladsl.server.{PathMatchers, ExceptionHandler, Directives}
+import akka.http.scaladsl.server.{Directive1, PathMatchers, ExceptionHandler, Directives}
 import akka.http.scaladsl.server.PathMatchers.Slash
 import Directives._
 import akka.parboiled2.util.Base64
@@ -23,13 +22,15 @@ import cats.data.Xor
 import eu.timepit.refined._
 import eu.timepit.refined.string._
 import io.circe.generic.auto._
+import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.core.data._
-import org.genivi.sota.core.db.{Packages, Vehicles, InstallRequests}
+import org.genivi.sota.core.db.{UpdateSpecs, Packages, Vehicles, InstallRequests, InstallHistories}
 import org.genivi.sota.rest.Validation._
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 import scala.concurrent.Future
 import slick.driver.MySQLDriver.api.Database
-
+import slick.dbio.DBIO
+import scala.util.Failure
 
 object ErrorCodes {
   val ExternalResolverError = ErrorCode( "external_resolver_error" )
@@ -39,24 +40,65 @@ class VehiclesResource(db: Database)
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
 
   import system.dispatcher
-  import org.genivi.sota.CirceSupport._
+  import CirceMarshallingSupport._
+
+  import scala.concurrent.{ExecutionContext, Future}
+
+  case object MissingVehicle extends Throwable
+
+  def exists
+    (vehicle: Vehicle)
+    (implicit ec: ExecutionContext): Future[Vehicle] =
+    db.run(Vehicles.exists(vehicle.vin))
+      .flatMap(_
+        .fold[Future[Vehicle]]
+          (Future.failed(MissingVehicle))(Future.successful(_)))
+
+  def deleteVin (vehicle: Vehicle)
+  (implicit ec: ExecutionContext): Future[Unit] =
+    for {
+      _ <- exists(vehicle)
+      _ <- db.run(UpdateSpecs.deleteRequiredPackageByVin(vehicle))
+      _ <- db.run(UpdateSpecs.deleteUpdateSpecByVin(vehicle))
+      _ <- db.run(Vehicles.deleteById(vehicle))
+    } yield ()
+
+
+  val extractVin : Directive1[Vehicle.Vin] = refined[Vehicle.ValidVin](Slash ~ Segment)
 
   val route = pathPrefix("vehicles") {
-    (put & refined[Vehicle.Vin](Slash ~ Segment ~ PathEnd)) { vin =>
-          complete(db.run( Vehicles.create(Vehicle(vin)) ).map(_ => NoContent))
+    extractVin { vin =>
+      pathEnd {
+        put {
+          complete(db.run(Vehicles.create(Vehicle(vin))).map(_ => NoContent))
+        } ~
+        delete {
+          completeOrRecoverWith(deleteVin(Vehicle(vin))) {
+            case MissingVehicle =>
+              complete(StatusCodes.NotFound ->
+                ErrorRepresentation(Vehicle.MissingVehicle, "Vehicle doesn't exist"))
+          }
         }
+      } ~
+      (path("queued") & get) {
+        complete(db.run(UpdateSpecs.getPackagesQueuedForVin(vin)))
+      } ~
+      (path("history") & get) {
+        complete(db.run(InstallHistories.list(vin)))
+      }
     } ~
-    path("vehicles") {
+    pathEnd {
       get {
         parameters('regex.?) { (regex) =>
           val query = regex match {
             case Some(r) => Vehicles.searchByRegex(r)
             case _ => Vehicles.list()
           }
-          complete{ db.run(query) }
+          complete(db.run(query))
         }
       }
     }
+  }
 }
 
 class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, updateService: UpdateService)
@@ -65,7 +107,7 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
   import eu.timepit.refined.string.uuidPredicate
   import org.genivi.sota.core.db.UpdateSpecs
   import UpdateSpec._
-  import org.genivi.sota.CirceSupport._
+  import CirceMarshallingSupport._
 
   implicit val _db = db
   val route = pathPrefix("updates") {
@@ -92,78 +134,7 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
   }
 }
 
-class PackagesResource(resolver: ExternalResolverClient, db : Database)
-                      (implicit system: ActorSystem, mat: ActorMaterializer) {
 
-  import akka.stream.stage._
-  import system.dispatcher
-
-  private[this] val log = Logging.getLogger( system, "packagesResource" )
-
-  def digestCalculator(algorithm: String) : PushPullStage[ByteString, String] = new PushPullStage[ByteString, String] {
-    val digest = MessageDigest.getInstance(algorithm)
-
-    override def onPush(chunk: ByteString, ctx: Context[String]): SyncDirective = {
-      digest.update(chunk.toArray)
-      ctx.pull()
-    }
-
-    override def onPull(ctx: Context[String]): SyncDirective = {
-      if (ctx.isFinishing) ctx.pushAndFinish(Base64.rfc2045().encodeToString(digest.digest(), false))
-      else ctx.pull()
-    }
-
-    override def onUpstreamFinish(ctx: Context[String]): TerminationDirective = {
-      // If the stream is finished, we need to emit the last element in the onPull block.
-      // It is not allowed to directly emit elements from a termination block
-      // (onUpstreamFinish or onUpstreamFailure)
-      ctx.absorbTermination()
-    }
-  }
-
-  def savePackage( packageId: Package.Id, fileData: StrictForm.FileData )(implicit system: ActorSystem, mat: ActorMaterializer) : Future[(Uri, Long, String)] = {
-    val fileName = fileData.filename.getOrElse(s"${packageId.name.get}-${packageId.version.get}")
-    val file = new File(fileName)
-    val data = fileData.entity.dataBytes
-    for {
-      size <- data.runWith( SynchronousFileSink( file ) )
-      digest <- data.transform(() => digestCalculator("SHA-1")).runFold("")( (acc, data) => acc ++ data)
-    } yield (file.toURI().toString(), size, digest)
-  }
-
-  val route = pathPrefix("packages") {
-    get {
-      import org.genivi.sota.CirceSupport._
-      parameters('regex.as[String Refined Regex].?) { (regex: Option[String Refined Regex]) =>
-        import org.genivi.sota.CirceSupport._
-        val query = (regex) match {
-          case Some(r) => Packages.searchByRegex(r.get)
-          case None => Packages.list
-        }
-        complete(db.run(query))
-      }
-    } ~
-    (put & refined[Package.ValidName]( Slash ~ Segment) & refined[Package.ValidVersion](Slash ~ Segment ~ PathEnd)).as(Package.Id.apply _) { packageId =>
-      formFields('description.?, 'vendor.?, 'file.as[StrictForm.FileData]) { (description, vendor, fileData) =>
-        completeOrRecoverWith(
-          for {
-            _                   <- resolver.putPackage(packageId, description, vendor)
-            (uri, size, digest) <- savePackage(packageId, fileData)
-            _                   <- db.run(Packages.create( Package(packageId, uri, size, digest, description, vendor) ))
-          } yield NoContent
-        ) {
-          case ExternalResolverRequestFailed(msg, cause) => {
-            import org.genivi.sota.CirceSupport._
-            log.error( cause, s"Unable to create/update package: $msg" )
-            complete( StatusCodes.ServiceUnavailable -> ErrorRepresentation( ErrorCodes.ExternalResolverError, msg ) )
-          }
-          case e => failWith(e)
-        }
-      }
-    }
-  }
-
-}
 import org.genivi.sota.core.rvi.{ServerServices, RviClient}
 class WebService(registeredServices: ServerServices, resolver: ExternalResolverClient, db : Database)
                 (implicit system: ActorSystem, mat: ActorMaterializer, rviClient: RviClient) extends Directives {

@@ -26,7 +26,7 @@ import scala.concurrent.Future
 import scala.concurrent.Promise
 import scala.util.Success
 
-class ClientActor(vin: Vehicle.IdentificationNumber, probe: ActorRef) extends Actor with ActorLogging with  Stash {
+class ClientActor(vin: Vehicle.Vin, probe: ActorRef) extends Actor with ActorLogging with  Stash {
 
   val chunks = scala.collection.mutable.ListBuffer.empty[PackageChunk]
 
@@ -59,7 +59,7 @@ object ClientActor {
   final case class SetUploader( ref: ActorRef )
   final case class Report( chunks: List[PackageChunk] )
 
-  def props( vin: Vehicle.IdentificationNumber, probe: ActorRef ) : Props = Props( new ClientActor( vin, probe ) )
+  def props( vin: Vehicle.Vin, probe: ActorRef ) : Props = Props( new ClientActor( vin, probe ) )
 
 }
 
@@ -81,7 +81,7 @@ class PackageTransferSpec extends PropSpec with Matchers with PropertyChecks wit
   implicit override val generatorDrivenConfig = PropertyCheckConfig(minSuccessful = 1)
 
   ignore("all chunks transferred") {
-    val services = ClientServices("", "", "")
+    val services = ClientServices("", "", "", "")
     forAll( Generators.vehicleGen, Gen.oneOf( packages ) ) { (vehicle, p) =>
       val pckg = Generators.generatePackageData(p)
       val probe = TestProbe()

@@ -34,8 +34,8 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
   val coreApiUri = Play.current.configuration.getString("core.api.uri").get
   val resolverApiUri = Play.current.configuration.getString("resolver.api.uri").get
 
-  val coreApiResources = Set("packages", "install_campaigns")
-  val resolverApiResources = Set("filters", "packageFilters", "packageFiltersDelete", "resolve", "validate")
+  val coreApiResources = Set("packages", "updates")
+  val resolverApiResources = Set("vehicles", "filters", "packageFilters", "resolve", "validate", "components")
 
   def proxyTo(apiUri: String, req: Request[RawBuffer]) : Future[Result] = {
     def toWsHeaders(hdrs: Headers) = hdrs.toMap.map {
@@ -62,16 +62,36 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
     }
 
     val head = path.split("/", 2).head
-    if (coreApiResources(head)) {
+    val components = path.split("/")
+    if (components.contains("vehicles") && (components.contains("queued") || components.contains("history") ||
+        req.queryString.contains("regex"))) {
+      proxyTo(coreApiUri, req)
+    }
+    else if (coreApiResources(head)) {
       proxyTo(coreApiUri, req)
     } else if (resolverApiResources(head)) {
       proxyTo(resolverApiUri, req)
     } else {
-      // Note: Only resource "vehicles" are on both core and resolver
+      Future.successful(NotFound)
+    }
+  }
+
+  def apiProxyBroadcast(path: String) = AsyncStack(parse.raw, AuthorityKey -> Role.USER) { implicit req =>
+    { // Mitigation for C04: Log transactions to and from SOTA Server
+      auditLogger.info(s"Request: $req from user ${loggedIn.name}")
+    }
+
+    //TODO: This routing is very ugly, find a better solution
+    val components = path.split("/")
+    if((components.contains("component") || components.contains("package")) && req.method.equalsIgnoreCase("PUT")) {
+      proxyTo(resolverApiUri, req)
+    } else {
+      // Must PUT "vehicles" on both core and resolver
+      // TODO: Retry until both responses are success
       for {
         respCore <- proxyTo(coreApiUri, req)
         respResult <- proxyTo(resolverApiUri, req)
-      } yield respCore // TODO: Retry until both responses are success
+      } yield respCore
     }
   }
 

@@ -4,16 +4,21 @@ define(function(require) {
       VehiclesPageComponent = require('components/vehicles/vehicles-page-component'),
       PackagesPageComponent = require('components/packages/packages-page-component'),
       FiltersPageComponent = require('components/filters/filters-page-component'),
-      ShowPackage = require('components/show-package-component'),
-      ShowFilter = require('components/filters/show-filter-component'),
-      Packages = require('stores/packages'),
-      Filters = require('stores/filters'),
+      ComponentsPage = require('components/components/components-page'),
+      ShowPackage = require('components/packages/show-package'),
+      ShowFilter = require('components/filters/show-filter'),
+      ShowComponent = require('components/components/show-components'),
+      VehiclePageComponent = require('components/vehicles/vehicle-page-component'),
       Router = require('react-router'),
-      Updates = require('stores/updates'),
-      UpdatesComponent = require('components/updates/updates-component'),
       CreateCampaign = require('components/create-campaign-page-component'),
+      ListOfUpdates = require('components/updates/list-of-updates'),
       ShowUpdate = require('components/updates/show-update-component'),
       SotaDispatcher = require('sota-dispatcher');
+
+  // set up db
+  var db = require('stores/db');
+  // set up handlers
+  var Handler = require('handlers/handler');
 
   var Link = Router.Link;
   var Route = Router.Route;
@@ -35,8 +40,8 @@ define(function(require) {
 	    <div className="navbar-collapse collapse">
               <ul className="nav side-nav">
                 <li role="presentation">
-   	          <Link to="vehicles" className="vehicles">Vehicles</Link>
-   	        </li>
+                  <Link to="vehicles" className="vehicles">Vehicles</Link>
+                </li>
                 <li role="presentation">
                   <Link to="packages" className="packages">Packages</Link>
                 </li>
@@ -45,6 +50,9 @@ define(function(require) {
                 </li>
                 <li role="presentation">
                   <Link to="updates" className="updates">Updates</Link>
+                </li>
+                <li role="presentation">
+                  <Link to="components" className="components">Components</Link>
                 </li>
               </ul>
 	    </div>
@@ -68,18 +76,23 @@ define(function(require) {
   var routes = (
     <Route handler={App} path="/">
       <Route name="vehicles" handler={VehiclesPageComponent}/>
+      <Route name="vehicle" path="vehicles/:vin" handler={VehiclePageComponent}/>
       <Route name="packages">
-        <Route name="package" path="/packages/:name/:version" handler={wrapComponent(ShowPackage, {Store: Packages})}/>
-        <Route name="new-campaign" path="/packages/:name/:version/new-campaign" handler={wrapComponent(CreateCampaign, {Store: Packages})}/>
+        <Route name="package" path="/packages/:name/:version" handler={wrapComponent(ShowPackage, {Package: db.showPackage})}/>
+        <Route name="new-campaign" path="/packages/:name/:version/new-campaign" handler={wrapComponent(CreateCampaign)}/>
         <DefaultRoute handler={PackagesPageComponent}/>
       </Route>
       <Route name="filters">
-        <Route name="filter" path="/filters/:name" handler={wrapComponent(ShowFilter, {Store: Filters})}/>
+        <Route name="filter" path="/filters/:name" handler={wrapComponent(ShowFilter, {Filter: db.showFilter})}/>
         <DefaultRoute handler={FiltersPageComponent} />
       </Route>
       <Route name="updates">
-        <Route name="update" path="/updates/:id" handler={wrapComponent(ShowUpdate, {Store: new Updates()})} />
-        <DefaultRoute handler={wrapComponent(UpdatesComponent, {Store: new Updates()})} />
+        <Route name="update" path="/updates/:id" handler={wrapComponent(ShowUpdate, {Update: db.showUpdate})} />
+        <DefaultRoute handler={wrapComponent(ListOfUpdates, {Updates: db.updates})} />
+      </Route>
+      <Route name="components">
+        <Route name="component" path="/component/:partNumber" handler={wrapComponent(ShowComponent, {Component: db.showComponent})} />
+        <DefaultRoute handler={ComponentsPage}/>
       </Route>
     </Route>
   );

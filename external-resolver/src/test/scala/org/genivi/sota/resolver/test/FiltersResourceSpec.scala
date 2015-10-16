@@ -5,16 +5,18 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.unmarshalling._
 import eu.timepit.refined.Refined
-import org.genivi.sota.resolver.types.{Filter, PackageFilter}
-import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
-
+import io.circe._
+import io.circe.generic.auto._
+import org.genivi.sota.rest.ErrorCodes
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.genivi.sota.resolver.filters.Filter
+import org.genivi.sota.resolver.filters.FilterAST._
+import org.genivi.sota.resolver.packages.PackageFilter
+import org.genivi.sota.rest.{ErrorRepresentation, ErrorCode}
 
 class FiltersResourceWordSpec extends ResourceWordSpec {
-
-  import org.genivi.sota.CirceSupport._
-  import io.circe.generic.auto._
-  import akka.http.scaladsl.unmarshalling._
 
   "Filters resource" should {
 
@@ -29,7 +31,7 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
     "not accept empty filter names" in {
        addFilter("", filterExpr) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
-        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
+          responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
@@ -73,7 +75,7 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
     "fail on trying to update non-existing filters" in {
       updateFilter("nonexistant", filterExpr) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingFilter
+        responseAs[ErrorRepresentation].code shouldBe ErrorCode("filter_not_found")
       }
     }
 
@@ -89,7 +91,7 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
     "fail on trying to delete non-existing filters" in {
       deleteFilter("nonexistant") ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        responseAs[ErrorRepresentation].code shouldBe PackageFilter.MissingFilter
+        responseAs[ErrorRepresentation].code shouldBe ErrorCode("filter_not_found")
       }
     }
 
@@ -99,7 +101,6 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
 object ArbitraryFilter {
 
   import ArbitraryFilterAST.arbFilterAST
-  import org.genivi.sota.resolver.types.{Filter, FilterPrinter}
   import org.scalacheck._
 
   val genName: Gen[String] =
@@ -113,7 +114,7 @@ object ArbitraryFilter {
     for {
       name <- genName
       expr <- ArbitraryFilterAST.genFilter
-    } yield Filter(Refined(name), Refined(FilterPrinter.ppFilter(expr)))
+    } yield Filter(Refined(name), Refined(ppFilter(expr)))
 
   implicit lazy val arbFilter = Arbitrary(genFilter)
 }

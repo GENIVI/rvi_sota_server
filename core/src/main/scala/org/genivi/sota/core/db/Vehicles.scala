@@ -14,7 +14,7 @@ object Vehicles {
 
   // scalastyle:off
   class VehicleTable(tag: Tag) extends Table[Vehicle](tag, "Vehicle") {
-    def vin = column[Vehicle.IdentificationNumber]("vin")
+    def vin = column[Vehicle.Vin]("vin")
     def * = (vin) <> (Vehicle.apply, Vehicle.unapply)
     def pk = primaryKey("vin", vin)  // insertOrUpdate doesn't work if
                                      // we use O.PrimaryKey in the vin
@@ -26,8 +26,16 @@ object Vehicles {
 
   def list(): DBIO[Seq[Vehicle]] = vins.result
 
-  def create(vehicle: Vehicle)(implicit ec: ExecutionContext) : DBIO[Vehicle.IdentificationNumber] =
+  def exists(vin: Vehicle.Vin): DBIO[Option[Vehicle]] =
+    vins
+      .filter(_.vin === vin)
+      .result
+      .headOption
+
+  def create(vehicle: Vehicle)(implicit ec: ExecutionContext) : DBIO[Vehicle.Vin] =
     vins.insertOrUpdate(vehicle).map( _ => vehicle.vin )
+
+  def deleteById(vehicle : Vehicle) : DBIO[Int] = vins.filter( _.vin === vehicle.vin ).delete
 
   def searchByRegex(reg:String) : DBIO[Seq[Vehicle]] = vins.filter(vins => regex(vins.vin, reg)).result
 }

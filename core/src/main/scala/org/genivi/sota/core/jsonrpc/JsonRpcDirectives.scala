@@ -9,6 +9,7 @@ import akka.http.scaladsl.server._
 import cats.data.Xor
 import io.circe.DecodingFailure
 import io.circe._
+import org.genivi.sota.marshalling.CirceMarshallingSupport
 import scala.concurrent.ExecutionContext
 import shapeless.HList
 
@@ -43,8 +44,7 @@ private[this] object ResultResponse {
 trait JsonRpcDirectives {
 
   import akka.http.scaladsl.server.Directives._
-  import org.genivi.sota.core.data.CodecInstances._
-  import org.genivi.sota.CirceSupport._
+  import CirceMarshallingSupport._
   import io.circe.generic.auto._
   import io.circe.syntax._
 
@@ -53,7 +53,8 @@ trait JsonRpcDirectives {
   import scala.language.implicitConversions
 
   implicit def lift[In, Out](fn: In => Future[Out])
-                            (implicit inDecoder: Decoder[In], outEncoder: Encoder[Out], ec: ExecutionContext) : MethodFn = request => {
+                   (implicit inDecoder: Decoder[In], outEncoder: Encoder[Out], ec: ExecutionContext)
+      : MethodFn = request => {
     import shapeless._
     import record._
     import syntax.singleton._
@@ -65,8 +66,11 @@ trait JsonRpcDirectives {
   }
 
   val ParseErrorHandler = RejectionHandler.newBuilder().handle{
-    case MalformedRequestContentRejection(_, Some(ParsingFailure(_, _))) => complete(ErrorResponse( PredefinedErrors.ParseError, None ) )
-    case MalformedRequestContentRejection(_, Some(DecodingFailure(msg, _))) => complete(ErrorResponse( PredefinedErrors.InvalidRequest(msg.asJson), None ) )
+    case MalformedRequestContentRejection(_, Some(ParsingFailure(_, _))) =>
+      complete(ErrorResponse( PredefinedErrors.ParseError, None ) )
+
+    case MalformedRequestContentRejection(_, Some(DecodingFailure(msg, _))) =>
+      complete(ErrorResponse( PredefinedErrors.InvalidRequest(msg.asJson), None ) )
   }.result()
 
   def service(methods: (String, MethodFn)*) : Route = service(methods.toMap)

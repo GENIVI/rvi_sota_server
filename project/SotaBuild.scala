@@ -25,9 +25,10 @@ object SotaBuild extends Build {
 
     testOptions in Test ++= Seq(
       Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
-      Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
-      Tests.Argument(TestFrameworks.ScalaCheck, "-maxDiscardRatio", "10", "-minSuccessfulTests", "100")
+      Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
     ),
+
+    testFrameworks := Seq(sbt.TestFrameworks.ScalaTest),
 
     dependencyOverrides ++= Set(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
@@ -144,9 +145,9 @@ object Dependencies {
 
   lazy val Scalaz = "org.scalaz" %% "scalaz-core" % "7.1.3"
 
-  lazy val ScalaTest = "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test"
+  lazy val ScalaTest = "org.scalatest" % "scalatest_2.11" % "2.2.4"
 
-  lazy val ScalaCheck = "org.scalacheck" %% "scalacheck" % "1.12.4" % "test"
+  lazy val ScalaCheck = "org.scalacheck" %% "scalacheck" % "1.12.4"
 
   lazy val Flyway = "org.flywaydb" % "flyway-core" % "3.2.1" % "test"
 

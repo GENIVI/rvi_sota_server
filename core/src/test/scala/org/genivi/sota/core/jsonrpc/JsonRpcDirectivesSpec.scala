@@ -3,7 +3,8 @@ package org.genivi.sota.core.jsonrpc
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 import io.circe.Json
 import io.circe.generic.auto._
-import org.genivi.sota.CirceSupport._
+import org.genivi.sota.marshalling.CirceMarshallingSupport
+import CirceMarshallingSupport._
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{Matchers, PropSpec}
@@ -11,8 +12,6 @@ import org.scalatest.concurrent.ScalaFutures._
 import scala.concurrent.Future
 
 class JsonRpcDirectivesSpec extends PropSpec with PropertyChecks with Matchers with akka.http.scaladsl.testkit.ScalatestRouteTest with JsonRpcDirectives {
-
-  import org.genivi.sota.core.data.CodecInstances._
 
   property("parse errors") {
     Post("/").withEntity( HttpEntity(ContentTypes.`application/json`, "dafdsfasfasf") ) ~> service( Map.empty[String, MethodFn]) ~> check {

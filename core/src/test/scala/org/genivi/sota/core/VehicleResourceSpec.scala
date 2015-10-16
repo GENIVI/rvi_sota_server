@@ -10,7 +10,8 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import eu.timepit.refined.Refined
 import io.circe.generic.auto._
-import org.genivi.sota.CirceSupport._
+import org.genivi.sota.marshalling.CirceMarshallingSupport
+import CirceMarshallingSupport._
 import org.genivi.sota.core.data.Vehicle
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
@@ -37,7 +38,7 @@ class VehicleResourceSpec extends PropSpec with PropertyChecks
     Uri.Empty.withPath(BasePath / pathSuffix)
   }
 
-  def vehicleUri(vin: Vehicle.IdentificationNumber)  = Uri.Empty.withPath( BasePath / vin.get )
+  def vehicleUri(vin: Vehicle.Vin)  = Uri.Empty.withPath( BasePath / vin.get )
 
   import Generators._
 

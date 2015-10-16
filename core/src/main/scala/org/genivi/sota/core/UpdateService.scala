@@ -19,7 +19,9 @@ import scala.util.control.NoStackTrace
 import slick.dbio.DBIO
 import slick.driver.MySQLDriver.api.Database
 
-case class PackagesNotFound(packageIds: (Package.Id)*)(implicit show: Show[Package.Id]) extends Throwable(s"""Package(s) not found: ${packageIds.map(show.show).mkString(", ")}""") with NoStackTrace
+case class PackagesNotFound(packageIds: (Package.Id)*)
+                           (implicit show: Show[Package.Id])
+    extends Throwable(s"""Package(s) not found: ${packageIds.map(show.show).mkString(", ")}""") with NoStackTrace
 
 case class UploadConf( chunkSize: Int, downloadSplitStrategy: Set[Package] => Vector[Download] )
 
@@ -51,11 +53,15 @@ class UpdateService(registeredServices: ServerServices)(implicit val log: Loggin
     }
 
     log.debug(s"Dependencies from resolver: $vinsToDeps")
-    val requirements : Set[Package.Id]  = vinsToDeps.foldLeft(Set.empty[Package.Id])((acc, vinDeps) => acc.union(vinDeps._2) )
+    val requirements : Set[Package.Id]  =
+      vinsToDeps.foldLeft(Set.empty[Package.Id])((acc, vinDeps) => acc.union(vinDeps._2) )
     for {
       foundPackages <- db.run( Packages.byIds( requirements ) )
-      mapping       <- if( requirements.size == foundPackages.size ) FastFuture.successful( mapPackagesToIds( foundPackages ) )
-                      else FastFuture.failed( PackagesNotFound( missingPackages(requirements, foundPackages).toArray: _* ) )
+      mapping       <- if( requirements.size == foundPackages.size ) {
+                         FastFuture.successful( mapPackagesToIds( foundPackages ) )
+                       } else {
+                         FastFuture.failed( PackagesNotFound( missingPackages(requirements, foundPackages).toArray: _*))
+                       }
     } yield mapping
 
   }
@@ -67,7 +73,8 @@ class UpdateService(registeredServices: ServerServices)(implicit val log: Loggin
     }
   }
 
-  def mkUploadSpecs(request: UpdateRequest, vinsToPackageIds: VinsToPackages, idsToPackages: Map[Package.Id, Package]): Set[UpdateSpec] = {
+  def mkUploadSpecs(request: UpdateRequest, vinsToPackageIds: VinsToPackages,
+                    idsToPackages: Map[Package.Id, Package]): Set[UpdateSpec] = {
     vinsToPackageIds.map {
       case (vin, requiredPackageIds) =>
         val packages : Set[Package] = requiredPackageIds.map( idsToPackages.get ).map( _.get )
@@ -77,7 +84,9 @@ class UpdateService(registeredServices: ServerServices)(implicit val log: Loggin
 
   def persistRequest(request: UpdateRequest, updateSpecs: Set[UpdateSpec])
                     (implicit db: Database, ec: ExecutionContext) : Future[Unit] = {
-    db.run( DBIO.seq( UpdateRequests.persist(request) +: updateSpecs.map( UpdateSpecs.persist ).toArray: _*)).map( _ => ())
+    db.run(
+      DBIO.seq( UpdateRequests.persist(request) +: updateSpecs.map( UpdateSpecs.persist ).toArray: _*)).map( _ => ()
+    )
   }
 
   def queueUpdate(request: UpdateRequest, resolver : DependencyResolver )
@@ -92,11 +101,12 @@ class UpdateService(registeredServices: ServerServices)(implicit val log: Loggin
     } yield updateSpecs
   }
 
-  def all(implicit db: Database, ec: ExecutionContext): Future[Set[UpdateRequest]] = db.run(UpdateRequests.list).map(_.toSet)
+  def all(implicit db: Database, ec: ExecutionContext): Future[Set[UpdateRequest]] =
+    db.run(UpdateRequests.list).map(_.toSet)
 }
 
 object UpdateService {
-  type VinsToPackages = Map[Vehicle.IdentificationNumber, Set[Package.Id]]
+  type VinsToPackages = Map[Vehicle.Vin, Set[Package.Id]]
   type DependencyResolver = Package => Future[VinsToPackages]
 
 }

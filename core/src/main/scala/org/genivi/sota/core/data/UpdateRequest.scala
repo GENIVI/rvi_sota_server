@@ -11,7 +11,12 @@ import org.joda.time.{Interval, DateTime}
 import io.circe._
 import io.circe.generic.auto._
 
-case class UpdateRequest( id: UUID, packageId: Package.Id, creationTime: DateTime, periodOfValidity: Interval, priority: Int )
+case class UpdateRequest(
+  id: UUID,
+  packageId: Package.Id,
+  creationTime: DateTime,
+  periodOfValidity: Interval,
+  priority: Int)
 
 object UpdateStatus extends Enumeration {
   type UpdateStatus = Value
@@ -21,7 +26,12 @@ object UpdateStatus extends Enumeration {
 
 import UpdateStatus._
 
-case class UpdateSpec( request: UpdateRequest, vin: Vehicle.IdentificationNumber, status: UpdateStatus, dependencies: Set[Package] ) {
+case class UpdateSpec(
+  request: UpdateRequest,
+  vin: Vehicle.Vin,
+  status: UpdateStatus,
+  dependencies: Set[Package] ) {
+
   def size : Long = dependencies.foldLeft(0L)( _ + _.size)
 }
 

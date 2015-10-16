@@ -10,6 +10,7 @@ import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.server.MalformedQueryParamRejection
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import eu.timepit.refined._
+import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.core.data.{ Package => DataPackage }
 import org.genivi.sota.core.db.Packages
 import org.scalatest.BeforeAndAfterAll
@@ -27,7 +28,7 @@ class PackageResourceWordSpec extends WordSpec
     with BeforeAndAfterAll {
 
   import io.circe.generic.auto._
-  import org.genivi.sota.CirceSupport._
+  import CirceMarshallingSupport._
 
   val databaseName = "test-database"
 
@@ -35,7 +36,9 @@ class PackageResourceWordSpec extends WordSpec
   val externalResolverClient = new DefaultExternalResolverClient(
     Uri(config.getString("resolver.baseUri")),
     Uri(config.getString("resolver.resolveUri")),
-    Uri(config.getString("resolver.packagesUri")) )
+    Uri(config.getString("resolver.packagesUri")),
+    Uri(config.getString("resolver.vehiclesUri"))
+  )
   val db = Database.forConfig(databaseName)
   lazy val service = new PackagesResource(externalResolverClient, db)
 
@@ -78,7 +81,6 @@ class PackageResourceWordSpec extends WordSpec
       }
     }
     "returns 400 for bad request" in {
-      println(PackagesUri + "?regex=)")
       Get(PackagesUri + "?regex=)" ) ~> service.route ~> check {
         rejection shouldBe a [MalformedQueryParamRejection]
         assert(rejection === MalformedQueryParamRejection("regex", "Regex predicate failed: Unmatched closing \')\'\n)", None))

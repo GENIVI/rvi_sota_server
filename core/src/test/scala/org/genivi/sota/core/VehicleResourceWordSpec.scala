@@ -10,7 +10,8 @@ import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import eu.timepit.refined.Refined
 import io.circe.generic.auto._
-import org.genivi.sota.CirceSupport._
+import org.genivi.sota.marshalling.CirceMarshallingSupport
+import CirceMarshallingSupport._
 import org.genivi.sota.core.data.Vehicle
 import org.genivi.sota.core.db.Vehicles
 import org.scalatest.BeforeAndAfterAll
@@ -31,7 +32,7 @@ class VinResourceWordSpec extends WordSpec
 
   val testVins = List("12345678901234500", "1234567WW0123AAAA", "123456789012345WW")
 
-  override def beforeAll {
+  override def beforeAll() : Unit = {
     TestDatabase.resetDatabase( databaseName )
     import scala.concurrent.duration._
     Await.ready( db.run( DBIO.seq( testVins.map( v => Vehicles.create(Vehicle(Refined(v)))): _*) ), 2.seconds )
@@ -50,6 +51,11 @@ class VinResourceWordSpec extends WordSpec
         assert(vins.length === 3)
       }
     }
+    "return a list of packages installed on a vin" in {
+      Get(VinsUri + "/BLAHVIN0123456789/queued") ~> service.route ~> check {
+        assert(status === StatusCodes.OK)
+      }
+    }
     "filter list of vins by regex 'WW'" in {
       Get(VinsUri + "?regex=WW") ~> service.route ~> check {
         assert(status === StatusCodes.OK)
@@ -64,10 +70,19 @@ class VinResourceWordSpec extends WordSpec
         assert(vins.length === 1)
       }
     }
-
+    "delete a vin" in {
+      Delete( VinsUri + "/123456789012345WW") ~> service.route ~> check {
+        assert(status === StatusCodes.OK)
+      }
+    }
+    "return a 404 when deleting a non existing vin" in {
+      Delete( VinsUri + "/123456789NOTTHERE") ~> service.route ~> check {
+        assert(status === StatusCodes.NotFound)
+      }
+    }
   }
 
-  override def afterAll() {
+  override def afterAll() : Unit = {
     system.shutdown()
     db.close()
   }

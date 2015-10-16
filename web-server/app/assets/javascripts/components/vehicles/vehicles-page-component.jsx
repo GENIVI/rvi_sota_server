@@ -1,10 +1,11 @@
 define(function(require) {
 
   var React = require('react'),
-      VehiclesComponent = require('./vehicles-component'),
+      ListOfVehicles = require('./list-of-vehicles'),
       VehiclesHeaderComponent = require('./vehicles-header-component'),
-      SearchBar = require('../search-bar'),
-      VehicleStore = require('../../stores/vehicles');
+      db = require('stores/db'),
+      Errors = require('../errors'),
+      SearchBar = require('../search-bar');
 
   var VehiclesPageComponent = React.createClass({
     render: function() {
@@ -15,8 +16,9 @@ define(function(require) {
         </div>
         <div className="row">
           <div className="col-md-12">
-            <SearchBar label="Filter" event="vehicles-filter"/>
-            <VehiclesComponent VehicleStore={VehicleStore}/>
+            <Errors />
+            <SearchBar label="Filter" event="search-vehicles-by-regex"/>
+            <ListOfVehicles Vehicles={db.searchableVehicles}/>
           </div>
         </div>
       </div>
