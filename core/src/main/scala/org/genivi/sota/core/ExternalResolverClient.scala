@@ -81,11 +81,11 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
     }
 
   def setInstalledPackages( vin: Vehicle.Vin, json: io.circe.Json) : Future[Unit] = {
-    import akka.http.scaladsl.client.RequestBuilding.Post
+    import akka.http.scaladsl.client.RequestBuilding.Put
     import org.genivi.sota.rest.ErrorRepresentation
 
     val uri = vehiclesUri.withPath( vehiclesUri.path / vin.get / "packages" )
-    val futureResult = Http().singleRequest( Post(uri, json) ).flatMap {
+    val futureResult = Http().singleRequest( Put(uri, json) ).flatMap {
       case HttpResponse( StatusCodes.NoContent, _, _, _ ) =>
         FastFuture.successful( () )
 
