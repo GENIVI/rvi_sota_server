@@ -72,9 +72,12 @@ define(function(require) {
           break;
           case 'add-component-to-vin':
             sendRequest.doPut('/api/v1/vehicles/' + payload.vin + '/component/' + payload.partNumber)
-              .success(function(components, blah, stuff) {
+              .success(function() {
                 SotaDispatcher.dispatch({actionType: 'list-components-on-vin', vin: payload.vin});
               });
+          break;
+          case 'sync-packages-for-vin':
+            sendRequest.doPut('/api/v1/vehicles/' + payload.vin + '/sync');
           break;
         }
       };
