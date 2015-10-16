@@ -48,6 +48,12 @@ define(function(require) {
                 db.packageQueueForVin.reset(packages);
               });
           break;
+          case 'get-package-history-for-vin':
+            sendRequest.doGet('/api/v1/vehicles/' + payload.vin + '/history')
+              .success(function(packages) {
+                db.packageHistoryForVin.reset(packages);
+              });
+          break;
           case 'list-components-on-vin':
             sendRequest.doGet('/api/v1/vehicles/' + payload.vin + '/component')
               .success(function(components) {
