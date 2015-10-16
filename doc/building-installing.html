@@ -113,18 +113,13 @@
 </div>
 
 <div class="paragraph">
-<p>For the server-side components, this project includes a <a href="https://github.com/advancedtelematic/docker-launcher">docker-launcher</a> configuration file to allow the cluster of components to be deployed conveniently to a developer machine or to Amazon AWS. See <a href="../doc/deployment-with-docker-launcher.html">Deployment with Docker Launcher</a> for deploying a development or evaluation system with Docker Launcher.</p>
+<p>For the server-side components, this project includes a <a href="https://github.com/advancedtelematic/docker-launcher">docker-launcher</a> configuration file to allow the cluster of components to be deployed conveniently to a developer machine or to Amazon AWS. See <a href="../doc/deployment-with-docker-launcher.html">Deployment with Docker Launcher</a> for deploying development or production systems with Docker Launcher.</p>
 </div>
 <div id="toc" class="toc">
 <div id="toctitle" class="title">Table of Contents</div>
 <ul class="sectlevel1">
 <li><a href="#building-rvi_sota_server-locally">Building rvi_sota_server Locally</a>
 <ul class="sectlevel2">
-<li><a href="#prerequisite-java">Prerequisite: Java</a></li>
-<li><a href="#prerequisite-mariadb">Prerequisite: MariaDB</a></li>
-<li><a href="#prerequisite-rvi-server-node">Prerequisite: RVI server node</a></li>
-<li><a href="#running-the-server">Running the server</a></li>
-<li><a href="#troubleshooting">Troubleshooting</a></li>
 <li><a href="#database-migrations">Database Migrations</a></li>
 </ul>
 </li>
@@ -148,18 +143,13 @@
 <p>Java 8</p>
 </li>
 <li>
-<p>MariaDB (with appropriate databases created)</p>
-</li>
-<li>
-<p>An RVI server node</p>
+<p>mysql (with appropriate databases created)</p>
 </li>
 </ol>
 </div>
 <div class="paragraph">
 <p>The other dependencies are managed using Scala&#8217;s <code>sbt</code>. If you have sbt installed then use it, otherwise the <code>./sbt</code> script in the root of the project will bootstrap everything you need beyond Java 8.</p>
 </div>
-<div class="sect2">
-<h3 id="prerequisite-java">Prerequisite: Java</h3>
 <div class="paragraph">
 <p>To check the version of java installed, run:</p>
 </div>
@@ -171,9 +161,6 @@ Java(TM) SE Runtime Environment (build 1.8.0_45-b14)
 Java HotSpot(TM) 64-Bit Server VM (build 25.45-b02, mixed mode)</pre>
 </div>
 </div>
-</div>
-<div class="sect2">
-<h3 id="prerequisite-mariadb">Prerequisite: MariaDB</h3>
 <div class="paragraph">
 <p>For development, a local MariaDB install is required. (Note that this is <strong>not</strong> required for deployment, as Docker Launcher will handle the creation of the database. If a Docker Launcher local deployment is attempted on a machine already running a database instance, there may be conflicts.) Create two databases called 'sota_core' and 'sota_resolver':</p>
 </div>
@@ -215,62 +202,6 @@ If you are having trouble with flywayMigrate after an update, try deleting the s
 </tr>
 </table>
 </div>
-</div>
-<div class="sect2">
-<h3 id="prerequisite-rvi-server-node">Prerequisite: RVI server node</h3>
-<div class="paragraph">
-<p>All client-server communications are done using the <a href="https://github.com/PDXostc/rvi_core">RVI protocol</a>, and the SOTA Core Server requires an active RVI Server Node to run. The easiest way get an RVI node suitable for SOTA up and running is to use our docker images:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="sh">docker pull advancedtelematic/rvi
-docker run -it --name rvi-server --expose <span style="color: #666666">8801</span> --expose 8805-8808 -p 8801:8801 -p 8805:8805 -p 8806:8806 -p 8807:8807 -p 8808:8808 advancedtelematic/rvi server</code></pre>
-</div>
-</div>
-<div class="sidebarblock">
-<div class="content">
-<div class="title">Building without an active RVI node</div>
-<div class="paragraph">
-<p>If you don&#8217;t need to worry about the client communication part of the server, you might not want to bother with setting up an RVI node. You can get around this requirement by editing line 57 of <code>/core/src/main/scala/org/genivi/sota/core/Boot.scala</code> to the following:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="scala">sotaServices <span style="color: #008000; font-weight: bold">&lt;-</span> <span style="color: #0000FF; font-weight: bold">FastFuture</span><span style="color: #666666">.</span>successful<span style="color: #666666">(</span><span style="color: #0000FF; font-weight: bold">ServerServices</span><span style="color: #666666">(</span><span style="color: #BA2121">&quot;&quot;</span><span style="color: #666666">,</span><span style="color: #BA2121">&quot;&quot;</span><span style="color: #666666">,</span><span style="color: #BA2121">&quot;&quot;</span><span style="color: #666666">,</span><span style="color: #BA2121">&quot;&quot;</span><span style="color: #666666">,</span><span style="color: #BA2121">&quot;&quot;</span><span style="color: #666666">))</span></code></pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="running-the-server">Running the server</h3>
-<div class="paragraph">
-<p>Once flywayMigrate has run, open three consoles and run:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="sh">sbt resolver/run
-sbt core/run
-sbt webserver/run</code></pre>
-</div>
-</div>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-The SOTA Core server looks for the RVI server node on localhost by default. If your RVI node is running somewhere else (i.e. if you&#8217;re running docker on a mac), you will need to specify <code>RVI_URI</code> as an environment variable. If your docker host was 192.168.99.100, for example, you would run <code>RVI_URI="http://192.168.99.100:8801" sbt core/run</code>.
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>Now open <a href="http://localhost:9000/">localhost:9000</a> in a browser.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="troubleshooting">Troubleshooting</h3>
 <div class="paragraph">
 <p>If you are using an encrypted home directory, you may get the following error when attempting a build. This is because scala/sbt tends to create long file names, and these get expanded even further by ecryptfs.</p>
 </div>
@@ -300,6 +231,18 @@ ln -s /var/sota-build/resolver-target external-resolver/target
 ln -s /var/sota-build/webserver-target/ web-server/target</pre>
 </div>
 </div>
+<div class="paragraph">
+<p>Once flywayMigrate has run, open three consoles and run:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>sbt resolver/run
+sbt core/run
+sbt webserver/run</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now open <a href="http://localhost:9000/">localhost:9000</a> in a browser.</p>
 </div>
 <div class="sect2">
 <h3 id="database-migrations">Database Migrations</h3>

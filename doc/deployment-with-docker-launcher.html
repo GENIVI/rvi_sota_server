@@ -113,19 +113,7 @@
 </div>
 
 <div class="paragraph">
-<p>Docker Launcher launches projects using Docker and Ansible. It is a prerequisite for deploying the SOTA server, and can be installed from <a href="https://github.com/advancedtelematic/docker-launcher">its GitHub repository.</a></p>
-</div>
-<div class="admonitionblock important">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-important" title="Important"></i>
-</td>
-<td class="content">
-Please ensure you are using the latest version of Docker Launcher. Older versions may not correctly deploy the SOTA Server.
-</td>
-</tr>
-</table>
+<p>Docker Launcher launches projects using Docker and Ansible. It is a prerequisite for deploying the SOTA server, and can be installed from <a href="https://github.com/advancedtelematic/docker-launcher">its GitHub repository.</a> <strong>Please ensure you are using the latest version of Docker Launcher. Older versions may not correctly deploy the SOTA Server.</strong></p>
 </div>
 <div class="sect1">
 <h2 id="prerequisites">Prerequisites</h2>
@@ -148,23 +136,18 @@ Please ensure you are using the latest version of Docker Launcher. Older version
 <h2 id="deploying-a-development-system">Deploying a Development System</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>To deploy a local development system, there are 3 basic steps.</p>
+<p><strong>Caution:</strong> When deploying the Web UI using Docker, it will run in 'production mode' by default. In this mode of operation, an SSL certificate is required to log into the Web UI. As a workaround, you can set the <code>cookieSecureOption</code> on line 106 of the file <code>app/org/genivi/webserver/controllers/AuthConfigImpl.scala</code> to <code>false</code>.</p>
 </div>
-<div class="sect2">
-<h3 id="1-build-the-local-docker-images">1. Build the local docker images</h3>
+<div class="paragraph">
+<p>As a prerequisite to deploying a local development system, you must run</p>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="sh">./sbt docker:publishLocal</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Once this completes successfully, you may deploy with <a href="https://github.com/advancedtelematic/docker-launcher">Docker Launcher.</a></p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="2-launch-the-docker-images-with-docker-launcher">2. Launch the docker images with docker-launcher</h3>
-<div class="paragraph">
-<p>For deploying a development system to your local machine, make sure you have Docker Launcher and Docker installed and configured to your liking. Docker Launcher currently requires Docker &gt;= v.1.8.0 and Ansible v.1.9.2. Ansible 2.x has not yet been tested, and is not guaranteed to work.</p>
+<p>Once this completes successfully, you may deploy with <a href="https://github.com/advancedtelematic/docker-launcher">Docker Launcher.</a> For deploying a development system to your local machine, make sure you have Docker Launcher and Docker installed and configured to your liking. Docker Launcher currently requires Docker &gt;= v.1.6.1 and Ansible v.1.9.2. Ansible 2.x has not yet been tested, and is not guaranteed to work.</p>
 </div>
 <div class="paragraph">
 <p>First, enter the <code>deploy</code> directory, and copy the example Docker Launcher configuration file, then edit it to match your preferences. The only values you should need to change are the <code>user</code> and <code>email</code> fields in <code>docker-launcher.yml</code>. These should be a valid username and associated email address for Docker Hub.</p>
@@ -172,50 +155,30 @@ Please ensure you are using the latest version of Docker Launcher. Older version
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="sh"><span style="color: #008000">cd </span>deploy
-cp docker-launcher.yml.example docker-launcher.yml
-docker-launcher -c docker-launcher.yml deploy-sota-local.yml</code></pre>
+cp docker-launcher.yml.example docker-launcher.yml</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>You will be prompted for your Docker Hub password, but for a local deployment it&#8217;s not actually needed.</p>
+<p>You can then deploy a development system with</p>
 </div>
-</div>
-<div class="sect2">
-<h3 id="3-apply-database-migrations-to-the-newly-created-mariadb-container">3. Apply database migrations to the newly created MariaDB container</h3>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="sh"><span style="color: #19177C">CORE_DB_URL</span><span style="color: #666666">=</span>jdbc:mariadb://&lt;your-docker-host&gt;:3306/sota_core <span style="color: #19177C">RESOLVER_DB_URL</span><span style="color: #666666">=</span>jdbc:mariadb://&lt;your-docker-host&gt;:3306/sota_resolver sbt flywayMigrate</code></pre>
+<pre class="pygments highlight"><code data-lang="sh">docker-launcher -c docker-launcher.yml deploy-sota-local.yml</code></pre>
 </div>
 </div>
-</div>
-<div class="sect2">
-<h3 id="teardown">Teardown</h3>
 <div class="paragraph">
-<p>To stop the running system, run</p>
+<p>For a local deployment, a Docker Hub password is not actually required. When prompted for one, you can just press enter to continue.</p>
+</div>
+<div class="paragraph">
+<p>To stop the running system run</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="sh">docker-launcher --teardown -c docker-launcher.yml deploy-sota-local.yml</code></pre>
 </div>
 </div>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-Teardown does not wipe the database; there is a <code>sota-data</code> container for persistent database storage. If you wish to start over with a clean database, you can remove this container with <code>docker rm -v sota-data</code>, and run docker-launcher again to recreate it.
-</td>
-</tr>
-</table>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="cistaging-remote-system">CI/Staging remote system</h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="cistaging-remote-system">CI/Staging remote system</h3>
 <div class="paragraph">
 <p>For deploying a remote system for staging and CI, with a docker daemon accessible from a single IP run</p>
 </div>
@@ -239,6 +202,7 @@ ansible-playbook -i inventory launch-docker-hub.yml</code></pre>
 <pre class="pygments highlight"><code data-lang="sh">docker -H tcp://&lt;Address-of-staging-system&gt;:2375 build -t something .</code></pre>
 </div>
 </div>
+</div>
 <div class="sect2">
 <h3 id="deploying-against-the-staging-system">Deploying against the staging system</h3>
 <div class="listingblock">
@@ -256,7 +220,7 @@ docker-launcher -c deploy/docker-launcher.yml deploy/deploy-sota-local.yml</code
 </div>
 </div>
 <div class="paragraph">
-<p>With <code>&lt;user&gt;</code>, <code>&lt;password&gt;</code>, and <code>&lt;host&gt;</code> replaced with suitable values.</p>
+<p>With <code>&lt;user&gt;</code>, <code>&lt;password&gt;</code> and <code>&lt;host&gt;</code> replaced with suitable values.</p>
 </div>
 </div>
 </div>
@@ -264,6 +228,9 @@ docker-launcher -c deploy/docker-launcher.yml deploy/deploy-sota-local.yml</code
 <div class="sect1">
 <h2 id="deploying-to-amazon-aws">Deploying to Amazon AWS</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p><strong>Caution:</strong> When deploying the Web UI using Docker, it will run in 'production mode' by default. In this mode of operation, an SSL certificate is required to log into the Web UI. As a workaround, you can set the <code>cookieSecureOption</code> on line 106 of the file <code>app/org/genivi/webserver/controllers/AuthConfigImpl.scala</code> to <code>false</code>.</p>
+</div>
 <div class="sect2">
 <h3 id="aws-prerequisites">AWS Prerequisites</h3>
 <div class="paragraph">
