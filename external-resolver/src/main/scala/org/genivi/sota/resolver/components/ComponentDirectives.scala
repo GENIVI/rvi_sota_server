@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.resolver.components
 
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.StatusCodes.NoContent
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.ActorMaterializer
@@ -13,6 +14,7 @@ import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.RefinementDirectives.refinedPartNumber
+import org.genivi.sota.resolver.common.Errors
 import scala.concurrent.ExecutionContext
 import slick.jdbc.JdbcBackend.Database
 import Directives._
@@ -35,7 +37,9 @@ class ComponentDirectives(implicit db: Database, mat: ActorMaterializer, ec: Exe
       } ~
       (delete & refinedPartNumber)
       { part =>
-          complete(db.run(ComponentRepository.removeComponent(part)))
+          completeOrRecoverWith(db.run(ComponentRepository.removeComponent(part))) {
+            Errors.onComponentInstalled
+          }
       }
     }
   }
