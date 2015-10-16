@@ -16,6 +16,14 @@ trait PackageCommon {
     version: Version
   )
 
+  object Id {
+    import io.circe.{Encoder, Decoder}
+    import io.circe.generic.semiauto._
+    import org.genivi.sota.marshalling.CirceInstances._
+    implicit val encoder : Encoder[Id] = deriveFor[Id].encoder
+    implicit val decoder : Decoder[Id] = deriveFor[Id].decoder
+  }
+
   trait ValidName
   trait ValidVersion
   trait ValidId
