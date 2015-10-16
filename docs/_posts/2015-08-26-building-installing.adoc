@@ -8,7 +8,7 @@ order: 1
 :toc: macro
 :icons: font
 
-For the server-side components, this project includes a https://github.com/advancedtelematic/docker-launcher[docker-launcher] configuration file to allow the cluster of components to be deployed conveniently to a developer machine or to Amazon AWS. See link:../doc/deployment-with-docker-launcher.html[Deployment with Docker Launcher] for deploying development or production systems with Docker Launcher.
+For the server-side components, this project includes a https://github.com/advancedtelematic/docker-launcher[docker-launcher] configuration file to allow the cluster of components to be deployed conveniently to a developer machine or to Amazon AWS. See link:../doc/deployment-with-docker-launcher.html[Deployment with Docker Launcher] for deploying a development or evaluation system with Docker Launcher.
 
 toc::[]
 
@@ -17,9 +17,12 @@ toc::[]
 For local development, the following prerequisites are required:
 
 1.  Java 8
-2.  mysql (with appropriate databases created)
+2.  MariaDB (with appropriate databases created)
+3.  An RVI server node
 
 The other dependencies are managed using Scala's `sbt`. If you have sbt installed then use it, otherwise the `./sbt` script in the root of the project will bootstrap everything you need beyond Java 8.
+
+=== Prerequisite: Java
 
 To check the version of java installed, run:
 
@@ -29,6 +32,8 @@ java version "1.8.0_45"
 Java(TM) SE Runtime Environment (build 1.8.0_45-b14)
 Java HotSpot(TM) 64-Bit Server VM (build 25.45-b02, mixed mode)
 ---------------------------------------------------------------
+
+=== Prerequisite: MariaDB
 
 For development, a local MariaDB install is required. (Note that this is *not* required for deployment, as Docker Launcher will handle the creation of the database. If a Docker Launcher local deployment is attempted on a machine already running a database instance, there may be conflicts.) Create two databases called 'sota_core' and 'sota_resolver':
 
@@ -57,6 +62,21 @@ This will apply any new migrations in src/main/resources/db/migration, and keep 
 
 TIP: If you are having trouble with flywayMigrate after an update, try deleting the sota_core, sota_core_test, sota_resolver, and sota_resolver_test databases, recreating them with the commands above, and running flywayMigrate again.
 
+=== Prerequisite: RVI server node
+
+All client-server communications are done using the link:https://github.com/PDXostc/rvi_core[RVI protocol]. To get an RVI node suitable for SOTA up and running, you should
+
+?? use our docker images ??
+
+Get around using an RVI node by modifying core/Boot.scala line 57 like so:
+
+[source,scala]
+----
+sotaServices <- FastFuture.successful(ServerServices("","","","")) // SotaServices.register( Uri(config.getString("rvi.sotaServicesUri")) )
+----
+
+=== Problems
+
 If you are using an encrypted home directory, you may get the following error when attempting a build. This is because scala/sbt tends to create long file names, and these get expanded even further by ecryptfs.
 
 ------------------------------------------------------------
@@ -81,6 +101,8 @@ ln -s /var/sota-build/core-target/ core/target
 ln -s /var/sota-build/resolver-target external-resolver/target
 ln -s /var/sota-build/webserver-target/ web-server/target
 --------------------------------------------------------------
+
+
 
 Once flywayMigrate has run, open three consoles and run:
 
