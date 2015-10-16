@@ -26,7 +26,8 @@ import scala.util.Failure
 import scala.util.Success
 import slick.driver.MySQLDriver.api.Database
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.core.db.Packages
+import org.genivi.sota.core.db.{UpdateSpecs, Packages}
+import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives._
 import org.genivi.sota.rest.Validation._
 
@@ -80,9 +81,13 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
     uploadResult
   }
 
+  val extractPackageId : Directive1[Package.Id] = (
+    refined[Package.ValidName](Slash ~ Segment) &
+    refined[Package.ValidVersion](Slash ~ Segment)).as(Package.Id.apply _)
+
   import io.circe.generic.auto._
   val route = pathPrefix("packages") {
-    get {
+    (pathEnd & get) {
       parameters('regex.as[String Refined Regex].?) { (regex: Option[String Refined Regex]) =>
         import org.genivi.sota.marshalling.CirceMarshallingSupport._
         val query = (regex) match {
@@ -92,23 +97,29 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
         complete(db.run(query))
       }
     } ~
-    (put & refined[Package.ValidName]( Slash ~ Segment) & refined[Package.ValidVersion](Slash ~ Segment ~ PathEnd))
-        .as(Package.Id.apply _) { packageId =>
-      formFields('description.?, 'vendor.?, 'file.as[StrictForm.FileData]) { (description, vendor, fileData) =>
-        completeOrRecoverWith(
-          for {
-            _                   <- resolver.putPackage(packageId, description, vendor)
-            (uri, size, digest) <- savePackage(packageId, fileData)
-            _                   <- db.run(Packages.create( Package(packageId, uri, size, digest, description, vendor) ))
-          } yield StatusCodes.NoContent
-        ) {
-          case ExternalResolverRequestFailed(msg, cause) =>
-            import org.genivi.sota.marshalling.CirceMarshallingSupport._
-            log.error( cause, s"Unable to create/update package: $msg" )
-            complete( StatusCodes.ServiceUnavailable -> ErrorRepresentation( ErrorCodes.ExternalResolverError, msg ) )
+    extractPackageId { packageId =>
+      (pathEnd & put) {
+        formFields('description.?, 'vendor.?, 'file.as[StrictForm.FileData]) { (description, vendor, fileData) =>
+          completeOrRecoverWith(
+            for {
+              _                   <- resolver.putPackage(packageId, description, vendor)
+              (uri, size, digest) <- savePackage(packageId, fileData)
+              _                   <- db.run(Packages.create(
+                                      Package(packageId, uri, size, digest, description, vendor)))
+            } yield StatusCodes.NoContent
+          ) {
+            case ExternalResolverRequestFailed(msg, cause) =>
+              import org.genivi.sota.marshalling.CirceMarshallingSupport._
+              log.error( cause, s"Unable to create/update package: $msg" )
+              complete( StatusCodes.ServiceUnavailable -> ErrorRepresentation( ErrorCodes.ExternalResolverError, msg ) )
 
-          case e => failWith(e)
+            case e => failWith(e)
+          }
         }
+      } ~
+      path("queued") {
+        import org.genivi.sota.marshalling.CirceMarshallingSupport._
+        complete(db.run(UpdateSpecs.getVinsQueuedForPackage(packageId.name, packageId.version)))
       }
     }
   }

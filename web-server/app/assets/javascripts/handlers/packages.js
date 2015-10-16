@@ -44,6 +44,12 @@ define(function(require) {
                 db.packagesForVin.reset(packages);
               });
           break;
+          case 'get-vehicles-queued-for-package':
+            sendRequest.doGet('/api/v1/packages/' + payload.name + "/" + payload.version + "/queued")
+              .success(function(vehicles) {
+                db.vehiclesQueuedForPackage.reset(vehicles);
+              });
+          break;
         }
       };
       SotaDispatcher.register(this.dispatchCallback.bind(this));

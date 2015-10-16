@@ -103,6 +103,16 @@ object UpdateSpecs {
     })
   }
 
+  def getVinsQueuedForPackage(pkgName: Package.Name, pkgVer: Package.Version) :
+    DBIO[Seq[Vehicle.Vin]] = {
+    val specs = updateSpecs.filter(r => r.status === UpdateStatus.Pending)
+    val q = for {
+      s <- specs
+      u <- updateRequests if(s.requestId === u.id) && (u.packageName === pkgName) && (u.packageVersion === pkgVer)
+    } yield s.vin
+    q.result
+  }
+
   def listUpdatesById(uuid: Refined[String, Uuid]): DBIO[Seq[(UUID, Vehicle.Vin, UpdateStatus)]] =
     updateSpecs.filter(_.requestId === UUID.fromString(uuid.get)).result
 
