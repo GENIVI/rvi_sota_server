@@ -11,6 +11,7 @@ import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.vehicles.{Vehicle, VehicleRepository}
 import scala.concurrent.ExecutionContext
+import scala.util.control.NoStackTrace
 import slick.driver.MySQLDriver.api._
 
 
@@ -35,8 +36,13 @@ object ComponentRepository {
   def addComponent(comp: Component): DBIO[Int] =
     components.insertOrUpdate(comp)
 
-  def removeComponent(part: Component.PartNumber): DBIO[Int] =
-    components.filter(_.partNumber === part).delete
+  def removeComponent(part: Component.PartNumber)
+                     (implicit ec: ExecutionContext): DBIO[Int] =
+    for {
+      vs <- VehicleRepository.vinsThatHaveComponent(part)
+      r  <- if (vs.nonEmpty) DBIO.failed(Errors.ComponentIsInstalledException)
+            else components.filter(_.partNumber === part).delete
+    } yield r
 
   def exists(part: Component.PartNumber)
             (implicit ec: ExecutionContext): DBIO[Component] =
