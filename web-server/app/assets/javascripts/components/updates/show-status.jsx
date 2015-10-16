@@ -56,7 +56,7 @@ define(function(require) {
     completedVINsTable: function() {
       var completedVINRows = _.map(this.props.UpdateStatus.deref(), function(value) {
         if(Array.isArray(value)) {
-          if(value[2] === "Completed") {
+          if(value[2] === "Finished") {
             return (
               <tr>
                 <td>
