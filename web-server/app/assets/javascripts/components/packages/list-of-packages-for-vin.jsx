@@ -28,11 +28,6 @@ define(function(require) {
             <td>
               { package.version }
             </td>
-            <td>
-              <Router.Link to='new-campaign' params={{name: package.name, version: package.version}}>
-                Create Campaign
-              </Router.Link>
-            </td>
           </tr>
         );
       });
