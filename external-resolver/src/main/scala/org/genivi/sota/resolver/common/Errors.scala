@@ -13,19 +13,23 @@ object Errors {
   import org.genivi.sota.marshalling.CirceMarshallingSupport._
 
   object Codes {
-    val FilterNotFound   = ErrorCode("filter_not_found")
-    val PackageNotFound  = ErrorCode("package_not_found")
-    val MissingVehicle   = ErrorCode("missing_vehicle")
-    val MissingComponent = ErrorCode("missing_component")
+    val FilterNotFound     = ErrorCode("filter_not_found")
+    val PackageNotFound    = ErrorCode("package_not_found")
+    val MissingVehicle     = ErrorCode("missing_vehicle")
+    val MissingComponent   = ErrorCode("missing_component")
+    val ComponentInstalled = ErrorCode("component_is_installed")
   }
 
-  case object MissingPackageException extends Throwable with NoStackTrace
+  case object MissingPackageException       extends Throwable with NoStackTrace
 
-  case object MissingFilterException  extends Throwable with NoStackTrace
+  case object MissingFilterException        extends Throwable with NoStackTrace
 
-  case object MissingVehicle          extends Throwable with NoStackTrace
+  case object MissingVehicle                extends Throwable with NoStackTrace
 
-  case object MissingComponent        extends Throwable with NoStackTrace
+  case object MissingComponent              extends Throwable with NoStackTrace
+
+  case object ComponentIsInstalledException extends Throwable with NoStackTrace
+
 
   val onMissingFilter : PF = {
     case Errors.MissingFilterException =>
@@ -45,6 +49,13 @@ object Errors {
   val onMissingComponent : PF = {
     case Errors.MissingComponent =>
       complete(StatusCodes.NotFound -> ErrorRepresentation(Codes.MissingComponent, "Component doesn't exist"))
+  }
+
+  val onComponentInstalled: PF = {
+    case Errors.ComponentIsInstalledException =>
+      complete(StatusCodes.BadRequest ->
+        ErrorRepresentation(Codes.ComponentInstalled,
+          "Components that are installed on vehicles cannot be removed."))
   }
 
 }

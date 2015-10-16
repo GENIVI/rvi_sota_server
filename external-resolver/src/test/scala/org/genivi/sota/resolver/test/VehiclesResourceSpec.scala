@@ -310,4 +310,11 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
     }
   }
 
+  "fail to delete components that are installed on vehicles" in {
+    Delete(Resource.uri("components", "jobby0")) ~> route ~> check {
+      status shouldBe StatusCodes.BadRequest
+      responseAs[ErrorRepresentation].code shouldBe Codes.ComponentInstalled
+    }
+  }
+
 }
