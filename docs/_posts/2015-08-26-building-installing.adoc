@@ -64,18 +64,40 @@ TIP: If you are having trouble with flywayMigrate after an update, try deleting 
 
 === Prerequisite: RVI server node
 
-All client-server communications are done using the link:https://github.com/PDXostc/rvi_core[RVI protocol]. To get an RVI node suitable for SOTA up and running, you should
+All client-server communications are done using the link:https://github.com/PDXostc/rvi_core[RVI protocol], and the SOTA Core Server requires an active RVI Server Node to run. The easiest way get an RVI node suitable for SOTA up and running is to use our docker images:
 
-?? use our docker images ??
+[source,sh]
+----
+docker pull advancedtelematic/rvi
+docker run -it --name rvi-server --expose 8801 --expose 8805-8808 -p 8801:8801 -p 8805:8805 -p 8806:8806 -p 8807:8807 -p 8808:8808 advancedtelematic/rvi server
+----
 
-Get around using an RVI node by modifying core/Boot.scala line 57 like so:
+.Building without an active RVI node
+****
+If you don't need to worry about the client communication part of the server, you might not want to bother with setting up an RVI node. You can get around this requirement by editing line 57 of `/core/src/main/scala/org/genivi/sota/core/Boot.scala` to the following:
 
 [source,scala]
 ----
-sotaServices <- FastFuture.successful(ServerServices("","","","")) // SotaServices.register( Uri(config.getString("rvi.sotaServicesUri")) )
+sotaServices <- FastFuture.successful(ServerServices("","","","",""))
 ----
+****
 
-=== Problems
+=== Running the server
+
+Once flywayMigrate has run, open three consoles and run:
+
+[source,sh]
+-------------------------------------------------------------
+sbt resolver/run
+sbt core/run
+sbt webserver/run
+-------------------------------------------------------------
+
+TIP: The SOTA Core server looks for the RVI server node on localhost by default. If your RVI node is running somewhere else (i.e. if you're running docker on a mac), you will need to specify `RVI_URI` as an environment variable. If your docker host was 192.168.99.100, for example, you would run `RVI_URI="http://192.168.99.100:8801" sbt core/run`.
+
+Now open http://localhost:9000/[localhost:9000] in a browser.
+
+=== Troubleshooting
 
 If you are using an encrypted home directory, you may get the following error when attempting a build. This is because scala/sbt tends to create long file names, and these get expanded even further by ecryptfs.
 
@@ -101,18 +123,6 @@ ln -s /var/sota-build/core-target/ core/target
 ln -s /var/sota-build/resolver-target external-resolver/target
 ln -s /var/sota-build/webserver-target/ web-server/target
 --------------------------------------------------------------
-
-
-
-Once flywayMigrate has run, open three consoles and run:
-
--------------------------------------------------------------
-sbt resolver/run
-sbt core/run
-sbt webserver/run
--------------------------------------------------------------
-
-Now open http://localhost:9000/[localhost:9000] in a browser.
 
 === Database Migrations
 
