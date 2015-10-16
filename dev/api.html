@@ -137,6 +137,8 @@ The core, resolver, and web server all expose APIs. Calls to the web server&#821
 <li><a href="#put-vehicles-vin">PUT /vehicles/:vin</a></li>
 <li><a href="#delete-vehicles-vin">DELETE /vehicles/:vin</a></li>
 <li><a href="#get-vehicles-vin-component">GET /vehicles/:vin/component</a></li>
+<li><a href="#get-vehicles-vin-queued">GET /vehicles/:vin/queued</a></li>
+<li><a href="#get-vehicles-vin-history">GET /vehicles/:vin/history</a></li>
 <li><a href="#put-vehicles-vin-component-partnumber">PUT /vehicles/:vin/component/:partNumber</a></li>
 <li><a href="#get-vehicles-vin-package">GET /vehicles/:vin/package</a></li>
 <li><a href="#put-vehicles-vin-package-name-version">PUT /vehicles/:vin/package/:name/:version</a></li>
@@ -377,6 +379,108 @@ characters.</p>
   <span style="color: #008000; font-weight: bold">&quot;partNumber&quot;</span>: <span style="color: #BA2121">&quot;A-DVD-1234&quot;</span>
 }</code></pre>
 </div>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="get-vehicles-vin-queued">GET /vehicles/:vin/queued</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Returns a list of packages queued to be installed on a given vehicle.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/vehicles/:vin/queued</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>:vin</strong> — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div>
+<div class="paragraph">
+<p><strong>Content:</strong> A list of packages.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">[
+  {
+    <span style="color: #008000; font-weight: bold">&quot;version&quot;</span>: <span style="color: #BA2121">&quot;1.2.3&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>: <span style="color: #BA2121">&quot;myPackage&quot;</span>
+  },
+  {
+    <span style="color: #008000; font-weight: bold">&quot;version&quot;</span>: <span style="color: #BA2121">&quot;1.2.3&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>: <span style="color: #BA2121">&quot;myOtherPackage&quot;</span>
+  }
+]</code></pre>
+</div>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="get-vehicles-vin-history">GET /vehicles/:vin/history</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Returns the package install history of a given vehicle.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/vehicles/:vin/history</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>:vin</strong> — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div>
+<div class="paragraph">
+<p><strong>Content:</strong> A list of packages, and the DateTime they were installed.</p>
 </div></div></td>
 </tr>
 </tbody>
