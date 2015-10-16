@@ -16,7 +16,7 @@ import org.apache.commons.codec.binary.Base64
 import org.genivi.sota.core.data.UpdateStatus
 import org.genivi.sota.core.data.Vehicle
 import org.genivi.sota.core.data.{Package, UpdateSpec, Vehicle}
-import org.genivi.sota.core.db.UpdateSpecs
+import org.genivi.sota.core.db.{UpdateSpecs, InstallHistories}
 import org.joda.time.DateTime
 import slick.driver.MySQLDriver.api.Database
 
@@ -115,6 +115,7 @@ class TransferProtocolActor(db: Database, rviClient: RviClient, transferActorPro
       updates.find( _.request.packageId === packageId ).foreach { finishedSpec =>
         val pendingSpecs = updates - finishedSpec
         db.run( UpdateSpecs.setStatus( finishedSpec, if( success ) UpdateStatus.Finished  else UpdateStatus.Failed ) )
+        db.run( InstallHistories.log(vin, packageId, success) )
         if( pendingSpecs.isEmpty ) {
           log.debug( "All installation reports received." )
           rviClient.sendMessage(services.getpackages, io.circe.Json.Empty, ttl())
