@@ -52,6 +52,7 @@ object VehicleRepository {
     for {
       _ <- VehicleRepository.exists(vin)
       _ <- deleteInstalledPackageByVin(vin)
+      _ <- deleteInstalledComponentByVin(vin)
       _ <- delete(vin)
     } yield ()
 
@@ -181,6 +182,9 @@ object VehicleRepository {
 
   def listInstalledComponents: DBIO[Seq[(Vehicle.Vin, Component.PartNumber)]] =
     installedComponents.result
+
+  def deleteInstalledComponentByVin(vin: Vehicle.Vin): DBIO[Int] =
+    installedComponents.filter(_.vin === vin).delete
 
   def installComponent(vin: Vehicle.Vin, part: Component.PartNumber)
                       (implicit ec: ExecutionContext): DBIO[Unit] =

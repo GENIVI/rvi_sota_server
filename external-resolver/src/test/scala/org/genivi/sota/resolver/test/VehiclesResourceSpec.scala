@@ -188,6 +188,17 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
       }
     }
 
+    "delete a VIN and its installComponents" in {
+      val vin  = "123456789OTHERVIN"
+      val comp = Refined("ashtray"): Component.PartNumber
+      addVehicleOK(vin)
+      addComponentOK(comp, "good to have")
+      installComponentOK(Refined(vin), comp)
+      Delete(Resource.uri(vehicles, vin)) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+      }
+    }
+
     /*
      * Tests related to installing packages on VINs.
      */
