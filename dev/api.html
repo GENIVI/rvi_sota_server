@@ -118,17 +118,34 @@
 <div class="paragraph">
 <p>The content-type of all requests is <code>application/json</code> unless otherwise specified.</p>
 </div>
-<div class="paragraph">
-<p>The core, resolver, and web server all expose APIs. Calls to the web server&#8217;s API are forwarded to the appropriate entity: core, resolver, or both. Thus, the documentation here documents the core and resolver APIs; the calls to the web server are the same, but must be sent with a session authorization cookie.</p>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+The core, resolver, and web server all expose APIs. Calls to the web server&#8217;s API are forwarded to the appropriate entity: core, resolver, or both. Thus, the documentation here documents the core and resolver APIs; the calls to the web server are the same, but must be sent with a session authorization cookie.
+</td>
+</tr>
+</table>
 </div>
 <div id="toc" class="toc">
 <div id="toctitle" class="title">Table of Contents</div>
 <ul class="sectlevel2">
 <li><a href="#get-vehicles">GET /vehicles</a></li>
 <li><a href="#put-vehicles-vin">PUT /vehicles/:vin</a></li>
+<li><a href="#delete-vehicles-vin">DELETE /vehicles/:vin</a></li>
+<li><a href="#get-vehicles-vin-component">GET /vehicles/:vin/component</a></li>
+<li><a href="#put-vehicles-vin-component-partnumber">PUT /vehicles/:vin/component/:partNumber</a></li>
+<li><a href="#get-vehicles-vin-package">GET /vehicles/:vin/package</a></li>
+<li><a href="#put-vehicles-vin-package-name-version">PUT /vehicles/:vin/package/:name/:version</a></li>
 <li><a href="#get-packages">GET /packages</a></li>
 <li><a href="#put-packages-name-version-core">PUT /packages/:name/:version (core)</a></li>
 <li><a href="#put-packages-name-version-resolver">PUT /packages/:name/:version (resolver)</a></li>
+<li><a href="#get-components">GET /components</a></li>
+<li><a href="#put-components-partnumber">PUT /components/:partNumber</a></li>
+<li><a href="#delete-components-partnumber">DELETE /components/:partNumber</a></li>
 <li><a href="#get-resolve-name-version">GET /resolve/:name/:version</a></li>
 <li><a href="#get-filters">GET /filters</a></li>
 <li><a href="#post-filters">POST /filters</a></li>
@@ -248,6 +265,261 @@ characters.</p>
   <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;Predicate failed:(ABCDEFGHIJKLMNOP1234567890 isn&#39;t 17 letters or digits long).&quot;</span>
 }</code></pre>
 </div>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="delete-vehicles-vin">DELETE /vehicles/:vin</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Availability</th>
+<th class="tableblock halign-left valign-top">core, resolver</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Deletes a vehicle VIN from the database.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/vehicles/:vin</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>:vin</strong> — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Error Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 404</p>
+</div>
+<div class="paragraph">
+<p><strong>Content:</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">{
+  <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;Vehicle doesn&#39;t exist&quot;</span>,
+  <span style="color: #008000; font-weight: bold">&quot;code&quot;</span>: <span style="color: #BA2121">&quot;missing_vehicle&quot;</span>
+}</code></pre>
+</div>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="get-vehicles-vin-component">GET /vehicles/:vin/component</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Returns a list of the components installed on a given vehicle.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/vehicles/:vin/component</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>:vin</strong> — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div>
+<div class="paragraph">
+<p><strong>Content:</strong> A list of component part IDs and their descriptions.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">{
+  <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;Acme DVD Player&quot;</span>,
+  <span style="color: #008000; font-weight: bold">&quot;partNumber&quot;</span>: <span style="color: #BA2121">&quot;A-DVD-1234&quot;</span>
+}</code></pre>
+</div>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="put-vehicles-vin-component-partnumber">PUT /vehicles/:vin/component/:partNumber</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Adds a component to a given vehicle.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/vehicles/:vin/component/:partNumber</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>:vin</strong> — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.</p>
+</li>
+<li>
+<p><strong>:partNumber</strong> — The unique identifying name of a hardware component.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="get-vehicles-vin-package">GET /vehicles/:vin/package</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Returns a list of the packages installed on a given vehicle.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/vehicles/:vin/package</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>:vin</strong> — An existing vehicle identification number.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div>
+<div class="paragraph">
+<p><strong>Content:</strong> A list of package names and versions.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">[
+  {
+    <span style="color: #008000; font-weight: bold">&quot;version&quot;</span>: <span style="color: #BA2121">&quot;1.2.3&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>: <span style="color: #BA2121">&quot;myPackage&quot;</span>
+  }
+]</code></pre>
+</div>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="put-vehicles-vin-package-name-version">PUT /vehicles/:vin/package/:name/:version</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Marks a package as installed on a given vehicle.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/vehicles/:vin/package/:name/:version</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>:vin</strong> — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.</p>
+</li>
+<li>
+<p><strong>:name</strong> — The name of the software package.</p>
+</li>
+<li>
+<p><strong>:version</strong> — The package version, in <em>x.y.z</em> format. <em>x</em>, <em>y</em>, and <em>z</em> must all contain only digits.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
 </div></div></td>
 </tr>
 </tbody>
@@ -499,6 +771,172 @@ characters.</p>
   }
 }</code></pre>
 </div>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="get-components">GET /components</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Returns a list of all hardware components in the database.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/components</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Parameters</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div>
+<div class="paragraph">
+<p><strong>Content:</strong> A list of component part numbers and their descriptions.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">[
+  {
+    <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;AcmeDVDPlayer&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;partNumber&quot;</span>: <span style="color: #BA2121">&quot;A-DVD-1234&quot;</span>
+  },
+  {
+    <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;AcmeSeatWarmer&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;partNumber&quot;</span>: <span style="color: #BA2121">&quot;A-HOTBUNS-1234&quot;</span>
+  }
+]</code></pre>
+</div>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="put-components-partnumber">PUT /components/:partNumber</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Adds a hardware component to the database, or updates an existing hardware component&#8217;s description.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/components/:partNumber</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>:partNumber</strong> — The unique identifying name of a hardware component.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Data Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>description</strong> — A description of the component.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div>
+<div class="paragraph">
+<p><strong>Content:</strong> The added or modified hardware component and its description.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">{
+  <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;AcmeDVDPlayer&quot;</span>,
+  <span style="color: #008000; font-weight: bold">&quot;partNumber&quot;</span>: <span style="color: #BA2121">&quot;A-DVD-1234&quot;</span>
+}</code></pre>
+</div>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="delete-components-partnumber">DELETE /components/:partNumber</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Deletes an unused hardware component from the database.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+You can&#8217;t delete a component that is associated with one or more VINs.
+</td>
+</tr>
+</table>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/components/:partNumber</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>:partNumber</strong> — The unique identifying name of a hardware component.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div>
+<div class="paragraph">
+<p><strong>Content:</strong> None.</p>
 </div></div></td>
 </tr>
 </tbody>
@@ -1378,7 +1816,7 @@ package.</p></td>
 <p><strong>creationTime</strong> — <code>[dateTime]</code> The date and time the install campaign was created on.</p>
 </li>
 <li>
-<p><strong>periodOfValidity</strong> — <code>[dateTime]/[dateTime]</code> A string with campaign start and end `dateTime`s separated by a slash.</p>
+<p><strong>periodOfValidity</strong> — <code>[dateTime]/[dateTime]</code> A string with campaign start and end <code>dateTime</code> separated by a slash.</p>
 </li>
 </ul>
 </div>

@@ -119,7 +119,7 @@
 <h2 id="signing-in">Signing in</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Once the SOTA server is <a href="../doc/building-installing.html">built</a> and running, the Admin Browser will be available at <a href="http://localhost:9000" class="bare">http://localhost:9000</a>. The default username is <code>admin@genivi.org</code>, and the default password is <code>genivirocks!</code>.</p>
+<p>The default username is <code>admin@genivi.org</code>, and the default password is <code>genivirocks!</code>. The url of the server depends on where and how it was deployed; a local deployment using sbt will be at <a href="http://localhost:9000" class="bare">http://localhost:9000</a>; a docker deployment will be on port 80.</p>
 </div>
 </div>
 </div>
@@ -129,22 +129,14 @@
 <div class="sect2">
 <h3 id="adding-a-vin">Adding a VIN</h3>
 <div class="paragraph">
-<p>To add a VIN, click the <em>Vehicles</em> tab at the left of the page. Enter a valid VIN number (exactly 17 characters long and consisting only of alphanumeric characters) in the <strong>Vehicle Name</strong> field, and click the <strong>Add Vehicle</strong> button. If the addition was successful, the newly added VIN will appear in the list at the bottom of the page.</p>
+<p>To add a VIN, click the <strong>Vehicles</strong> tab at the left of the page. Enter a valid VIN number (exactly 17 characters long and consisting only of alphanumeric characters) in the <strong>Vehicle Name</strong> field, and click the <strong>Add Vehicle</strong> button. If the addition was successful, the newly added VIN will appear in the list at the bottom of the page.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="searching-for-vins">Searching for VINs</h3>
+<h3 id="adding-components-and-packages-to-a-vin">Adding components and packages to a VIN</h3>
 <div class="paragraph">
-<p>You can search VINs by regular expression. As you type a regular expression in the <strong>Filter</strong> field, the list of VINs below is dynamically updated.</p>
+<p>You might need to let SOTA know about the software packages and hardware components already installed on a particular VIN. To do so, click on any VIN from the vehicles page, and click <strong>Add Installed Package</strong> or <strong>Add Component</strong>.</p>
 </div>
-</div>
-<div class="sect2">
-<h3 id="adding-a-software-package-to-a-vin">Adding a software package to a VIN</h3>
-
-</div>
-<div class="sect2">
-<h3 id="adding-a-hardware-component-to-a-vin">Adding a hardware component to a VIN</h3>
-
 </div>
 </div>
 </div>
@@ -159,14 +151,19 @@
 <div class="paragraph">
 <p>SOTA has a filter syntax to create these filters; currently the valid terms are <strong>vin_matches</strong>, <strong>has_package</strong>, and <strong>has_component</strong>, and the boolean operators <strong>NOT</strong>, <strong>AND</strong>, and <strong>OR</strong>. <strong>vin_matches</strong>, <strong>has_package</strong>, and <strong>has_component</strong> take regular expressions (enclosed in quotes) as arguments.</p>
 </div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Example</div>
 <div class="paragraph">
-<p>Example: For a filter matching all VINs beginning with 12ABC, that have the AcmeDVDPlayer installed, the syntax would be <code>vin_matches "^12ABC" AND has_component "AcmeDVDPlayer"</code>.</p>
+<p>For a filter matching all VINs beginning with 12ABC, that have the AcmeDVDPlayer installed, the syntax would be <code>vin_matches "^12ABC" AND has_component "AcmeDVDPlayer"</code>.</p>
+</div>
+</div>
 </div>
 </div>
 <div class="sect2">
 <h3 id="creating-a-filter">Creating a filter</h3>
 <div class="paragraph">
-<p>To create a new filter, click the <strong>Filters</strong> tab at the left of the page. Enter a unique name in the <strong>Filter Name</strong> field, and enter your expression in the <strong>Filter Expression</strong> field. Click the <strong>Add Filter</strong> button. If the filter was successfully created, you should see the filter appear below.</p>
+<p>To create a new filter, click the <strong>Filters</strong> tab at the left of the page. Enter a unique alphanumeric name in the <strong>Filter Name</strong> field, and enter your expression in the <strong>Filter Expression</strong> field. Click the <strong>Add Filter</strong> button. If the filter was successfully created, you should see the filter appear below.</p>
 </div>
 </div>
 <div class="sect2">
@@ -184,13 +181,13 @@
 <div class="sect2">
 <h3 id="associating-a-filter-with-a-package">Associating a filter with a package</h3>
 <div class="paragraph">
-<p>To associate your filter with a particular software package, go to the <strong>Packages</strong> tab and click on Create Campaign next to the package you wish to associate. You can click on a filter name under <strong>All Filters</strong> to associate it with the package. To remove a previously-associated filter, click on a filter name under <strong>Package Filters</strong>.</p>
+<p>From the <strong>Filters</strong> tab, click details next to the filter you wish to associate. At the bottom of the page you will see a list of all available packages under "Add Packages". You can click on the packages you wish to associate with this filter. To de-associate a package, click on it under "Current Packages".</p>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="managing-software-packages">Managing Software Packages</h2>
+<h2 id="managing-software-packages-and-hardware-components">Managing Software Packages and Hardware Components</h2>
 <div class="sectionbody">
 <div class="sect2">
 <h3 id="adding-a-software-package">Adding a software package</h3>
@@ -198,33 +195,20 @@
 <p>To add a software package, you will need to upload a package file and give it a unique <strong>Package ID</strong>. A package ID consists of a package name and a version number. The name must be alphanumeric, and the version must consist of three digits separated by periods. (For example, 3.0.4 and 0.115.33 are both valid version numbers, but 1.3 and 2.7.22b are not.)</p>
 </div>
 <div class="paragraph">
-<p>Click the <strong>Packages</strong> tab at the top of the page. Enter a Package Name, Version, and optionally a description and vendor name in the appropriate fields. Then, select a file to upload. Click <strong>Add Package</strong>. If the upload was successful, you will see the package added to the list at the bottom of the page.</p>
+<p>Click the <strong>Packages</strong> tab at the left of the page. Enter a Package Name, Version, and optionally a description and vendor name in the appropriate fields. Then, select a file to upload. Click <strong>Add Package</strong>. If the upload was successful, you will see the package added to the list at the bottom of the page.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="adding-a-hardware-component">Adding a hardware component</h3>
+<div class="paragraph">
+<p>To add a hardware component, go to the <strong>Components</strong> tab and click <strong>New Component</strong>. Enter a part number (alphanumeric, 30 characters or less), optionally add a description, and click <strong>Add Component</strong>.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="searching-for-packages">Searching for packages</h3>
 <div class="paragraph">
-<p>You can search for packages by regular expression. As you type a regular expression in the *Filter field, the list of packages below is dynamically updated.</p>
+<p>You can search for packages by regular expression. As you type a regular expression in the <strong>Filter</strong> field, the list of packages below is dynamically updated.</p>
 </div>
-</div>
-<div class="sect2">
-<h3 id="associating-a-package-with-a-filter">Associating a package with a filter</h3>
-<div class="paragraph">
-<p>To associate your package with a particular filter, go to the <strong>Packages</strong> tab and click on Create Campaign next to the package you wish to associate. You can click on a filter name under <strong>All Filters</strong> to associate it with the package. To remove a previously-associated filter, click on a filter name under <strong>Package Filters</strong>.</p>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="managing-hardware-components">Managing Hardware Components</h2>
-<div class="sectionbody">
-<div class="sect2">
-<h3 id="adding-a-hardware-component">Adding a hardware component</h3>
-
-</div>
-<div class="sect2">
-<h3 id="searching-for-vehicles-by-installed-component">Searching for vehicles by installed component</h3>
-
 </div>
 </div>
 </div>
@@ -233,9 +217,6 @@
 <div class="sectionbody">
 <div class="paragraph">
 <p>To create an install campaign for a package, go to the <strong>Packages</strong> tab and click <strong>Create Campaign</strong> next to the package you wish to create a campaign for.</p>
-</div>
-<div class="paragraph">
-<p>You can associate filters with the package, and view which VINs will be affected.</p>
 </div>
 <div class="admonitionblock important">
 <table>
