@@ -34,6 +34,9 @@ object InstallHistories {
 
   val installHistories = TableQuery[InstallHistoryTable]
 
+  def list(vin: Vehicle.Vin): DBIO[Seq[InstallHistory]] =
+    installHistories.filter(_.vin === vin).result
+
   def log(vin: Vehicle.Vin, pkgId: Package.Id, success: Boolean): DBIO[Int] =
     installHistories += InstallHistory(None, vin, pkgId, success, DateTime.now)
 
