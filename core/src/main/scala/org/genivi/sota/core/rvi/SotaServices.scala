@@ -57,7 +57,8 @@ class SotaServices(updateController: ActorRef, resolverClient: ExternalResolverC
       service( "message" -> lift[RviParameters[InstallReport], Unit](forwardMessage(updateController)))
     } ~
     path("packages") {
-      service( "message" -> lift[RviParameters[InstalledPackages], Unit](forwardMessage(updateController)))
+      service( "message" -> lift[RviParameters[InstalledPackages], Unit](
+        m => updatePackagesInResolver(m.parameters.head)))
     }
   }
 
