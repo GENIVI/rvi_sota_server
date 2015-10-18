@@ -5,6 +5,7 @@ category: dev
 date: 2015-08-26 10:40:21
 ---
 :icons: font
+:toc: macro
 
 The document contains Scala stylistic guidelines, which should be
 fillowed in order to produce readable and idiomatic code, allowing
@@ -12,42 +13,18 @@ effective collaboration. The following style guides were used as a
 basis:
 
 1.  http://docs.scala-lang.org/style/[Typesafe Scala Style Guide]
-2.  https://github.com/databricks/scala-style-guide[Databricks Scala
-Guide]
+2.  https://github.com/databricks/scala-style-guide[Databricks Scala Guide]
 3.  http://twitter.github.io/effectivescala/[Twitter's Effective Scala]
 
-[[table-of-contents]]
-== Table of Contents
-
-1.  link:#syntactic[Syntactic Style]
-* link:#identation[Identation]
-* link:#naming[Naming Convention]
-* link:#declarations[Declarations]
-* link:#imports[Imports]
-* link:#control_structures[Control Structures]
-* link:#infix[Infix Methods]
-* link:#documentation[Documentation Style]
-2.  link:#lang[Language Features]
-* link:#override_modifier[override Modifier]
-* link:#destruct_bind[Destructuring Binds]
-* link:#symbolic_methods[Symbolic Methods (Operator Overloading)]
-* link:#type_inference[Type Inference]
-* link:#return[Return Statements]
-* link:#recursion[Recursion and Tail Recursion]
-* link:#exception[Exception Handling]
-* link:#option[Options]
-* link:#chaining[Monadic Chaining]
-* link:#concurrency[Concurrency]
-* link:#concurrency-private-this[Private Fields]
-* link:#java-default-param-values[Default Parameter Values]
+toc::[right]
 
 [[syntactic-style]]
 == Syntactic Style
 
-[[identation]]
-=== Identation
+[[indentation]]
+=== Indentation
 
-* General identation: 2 spaces
+* General indentation: 2 spaces
 * Limit lines to 100 characters
 * If a single expression is longer than 100 characters it should be
 spitted into multiple expressions by assigning intermediate results to
