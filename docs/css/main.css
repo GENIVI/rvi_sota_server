@@ -24,16 +24,21 @@ code {
     padding-left: 3.4cm;
 }
 
+#header h4 {
+    color: white;
+}
+
 #header a:hover {
     text-decoration: none;
 }
 
 #footer {
-    margin: 20px 0;
+    padding-top: 40px;
+    padding-bottom: 40px;
     font-size: 0.85em;
-    color: #999;
-    text-align: center;
-    background: rgb(41,43,44);
+    text-align: left;
+    background: rgb(141,142,142);
+    font-size: large;
 }
 
 #footer > a {
@@ -58,6 +63,12 @@ code {
     padding-right: 10px;
     text-decoration: none;
     color: rgb(165,231,224);
+    border-bottom: none;
+}
+
+#navigation li a:hover, #navigation li a:focus {
+    background-color: transparent;
+    color: rgb(190,190,190);
 }
 
 #navigation .nav-header {
@@ -127,7 +138,6 @@ col:first-child {
     padding-top: 2cm;
     height: 100%;
     display: table-cell;
-    float: none;
 }
 
 
@@ -138,7 +148,6 @@ col:first-child {
     font-size: small !important;
     height: 100%;
     display: table-cell;
-    float: none;
     vertical-align: top;
 }
 
@@ -150,6 +159,8 @@ col:first-child {
     display: table;
     width:100%;
 }
+
+
 
 /*Beginning of asciidoctor CSS*/
 
@@ -383,14 +394,18 @@ div, dl, dt, dd, ul, ol, li, h1, h2, h3, #toctitle, .sidebarblock>.content>.titl
     padding: 0;
     direction: ltr
 }
-a {
-    color: rgba(0,0,0,0.8);
-    text-decoration: underline;
+a, .line-through>a {
+    color: rgba(0,0,0,0.675);
+    /*text-decoration: underline;*/
     line-height: inherit;
-    text-decoration-color: rgb(151,226,217);
+    /*text-decoration-color: rgb(151,226,217);*/
+    /*-webkit-text-decoration-color: rgb(151,226,217);*/
+    border-bottom: 4px solid rgb(151,226,217);
 }
-a:hover, a:focus {
-    /*color: #1d4b8f*/
+a:hover, a:focus, .line-through>a:hover, .line-through>a:focus {
+    color: rgba(0,0,0,0.675);
+    border-bottom: 4px solid rgb(190,190,190);
+    text-decoration: none;
 }
 a img {
     border: none
@@ -552,12 +567,12 @@ blockquote, blockquote p {
     }
 }
 table {
-    background: #fff;
+    background: #fafbfc;
     margin-bottom: 1.25em;
     border: solid 2px rgba(255,255,255,0)
 }
 table thead, table tfoot {
-    background: #f7f8f7;
+    background: rgb(219,220,221);
     font-weight: bold
 }
 table thead tr th, table thead tr td, table tfoot tr th, table tfoot tr td {
@@ -574,9 +589,11 @@ table tr th, table tr td {
 table tr.even, table tr.alt, table tr:nth-of-type(even) {
     background: rgb(238,238,238)
 }
+
 table thead tr th, table tfoot tr th, table tbody tr td, table tr td, table tfoot tr td {
     display: table-cell;
-    line-height: 1.6
+    line-height: 1.6;
+    background-color: transparent;
 }
 h1, h2, h3, #toctitle, .sidebarblock>.content>.title, h4, h5, h6 {
     line-height: 1.2;
@@ -759,8 +776,16 @@ p a>code:hover {
     list-style-type: none
 }
 #toc a {
-    text-decoration: none
+    text-decoration: none;
+    border-bottom: 2px dotted rgb(190,190,190);
 }
+
+#toc a:hover {
+    text-decoration: none;
+    border-bottom: 2px dotted rgb(151, 226, 217);
+}
+
+
 #toc a:active {
     text-decoration: underline
 }
@@ -978,7 +1003,7 @@ table.tableblock #preamble>.sectionbody>.paragraph:first-of-type p {
     font-size: large;
 }
 
-.sidebarblock>.content>.paragraph>p>code, .sidebarblock>.content>.listingblock>.content>.highlight {
+.admonitionblock code, .sidebarblock>.content>.paragraph>p>code, .sidebarblock>.content>.listingblock>.content>.highlight {
     background-color: rgb(133,198,194);
 }
 
@@ -988,7 +1013,7 @@ table.tableblock #preamble>.sectionbody>.paragraph:first-of-type p {
     color:white;
 }
 .literalblock pre, .listingblock pre:not(.highlight), .listingblock pre[class="highlight"], .listingblock pre[class^="highlight "], .listingblock pre.CodeRay, .listingblock pre.prettyprint {
-    background: #f7f7f8
+    background: rgb(219,220,221);
 }
 .sidebarblock .literalblock pre, .sidebarblock .listingblock pre:not(.highlight), .sidebarblock .listingblock pre[class="highlight"], .sidebarblock .listingblock pre[class^="highlight "], .sidebarblock .listingblock pre.CodeRay, .sidebarblock .listingblock pre.prettyprint {
     background: #f2f1f1
@@ -1191,7 +1216,10 @@ table.tableblock, th.tableblock, td.tableblock {
     border: 0 solid #dedede
 }
 table.grid-all th.tableblock, table.grid-all td.tableblock {
-    border-width: 0 1px 1px 0
+    border-right-width: 2px;
+    border-right-color: #fafbfc;
+    border-bottom-width: 2px;
+    border-bottom-color: #fafbfc;
 }
 table.grid-all tfoot>tr>th.tableblock, table.grid-all tfoot>tr>td.tableblock {
     border-width: 1px 1px 0 0
@@ -1212,7 +1240,7 @@ table.grid-rows tfoot>tr>th.tableblock, table.grid-rows tfoot>tr>td.tableblock {
     border-width: 1px 0 0 0
 }
 table.frame-all {
-    border-width: 1px
+    border-width: 0px
 }
 table.frame-sides {
     border-width: 0 1px
@@ -1248,7 +1276,8 @@ tbody tr th {
 }
 tbody tr th, tbody tr th p, tfoot tr th, tfoot tr th p {
     color: rgba(0, 0, 0, .8);
-    font-weight: bold
+    font-weight: bold;
+    background-color: rgb(219,220,221);
 }
 p.tableblock>code:only-child {
     background: none;
@@ -1565,30 +1594,39 @@ span.icon>.fa {
 }
 .admonitionblock td.icon [class^="fa icon-"] {
     font-size: 2.5em;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, .5);
+    /*text-shadow: 1px 1px 2px rgba(0, 0, 0, .5);*/
     cursor: default
 }
+
 .admonitionblock td.icon .icon-note:before {
     content: "\f05a";
-    color: #19407c
+    color: rgb(133,198,194);
 }
 .admonitionblock td.icon .icon-tip:before {
     content: "\f0eb";
-    text-shadow: 1px 1px 2px rgba(155, 155, 0, .8);
-    color: #111
+    /*text-shadow: 1px 1px 2px rgba(155, 155, 0, .8);*/
+    color: rgb(133,198,194);
 }
 .admonitionblock td.icon .icon-warning:before {
     content: "\f071";
-    color: #bf6900
+    color: rgb(133,198,194);
 }
 .admonitionblock td.icon .icon-caution:before {
     content: "\f06d";
-    color: #bf3400
+    color: rgb(133,198,194);
 }
 .admonitionblock td.icon .icon-important:before {
     content: "\f06a";
-    color: #bf0000
+    color: rgb(133,198,194);
 }
+.admonitionblock td {
+    border: none;
+}
+
+.admonitionblock {
+    margin-left: -80px;
+}
+
 .conum[data-value] {
     display: inline-block;
     color: #fff !important;

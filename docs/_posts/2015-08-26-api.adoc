@@ -55,7 +55,8 @@ a|
 
 [width="100%",cols="18%,82%",]
 |=======================================================================
-|Availability |core, resolver
+|Availability
+|core, resolver
 
 |Description |Adds a vehicle VIN to the database.
 
@@ -87,7 +88,8 @@ characters.
 
 [width="100%",cols="18%,82%",]
 |=======================================================================
-|Availability |core, resolver
+|Availability
+|core, resolver
 
 |Description |Deletes a vehicle VIN from the database.
 
@@ -370,7 +372,8 @@ Note: Currently, the resolver returns an empty list and a *204 No Content* code 
 
 [width="100%",cols="18%,82%",]
 |=======================================================================
-|Availability |core
+|Availability
+|core
 
 |Description |Adds a package to the database.
 
@@ -401,7 +404,8 @@ Note: Currently, the resolver returns an empty list and a *204 No Content* code 
 
 [width="100%",cols="18%,82%",]
 |=======================================================================
-|Availability |resolver
+|Availability
+|resolver
 
 |Description |Adds a package to the database.
 
@@ -541,7 +545,8 @@ a|
 
 [width="100%",cols="18%,82%",]
 |=======================================================================
-|Availability |resolver
+|Availability
+|resolver
 
 |Description |Takes a package name and version, and returns a list of VINs it applies to, along with the packageId.
 
@@ -586,7 +591,8 @@ a|
 
 [width="100%",cols="18%,82%",]
 |=======================================================================
-|Availability |resolver
+|Availability
+|resolver
 
 |Description |Returns a list of all filters in the database.
 
@@ -615,7 +621,8 @@ a|
 
 [width="100%",cols="18%,82%",]
 |=======================================================================
-|Availability |resolver
+|Availability
+|resolver
 
 |Description |Adds a filter to the database.
 
@@ -673,7 +680,8 @@ a|
 
 [width="100%",cols="18%,82%",]
 |=======================================================================
-|Availability |resolver
+|Availability
+|resolver
 
 |Description |Modifies an existing filter
 
@@ -733,7 +741,8 @@ a|
 
 [width="100%",cols="18%,82%",]
 |=======================================================================
-|Availability |resolver
+|Availability
+|resolver
 
 |Description |Deletes an existing filter
 
@@ -769,7 +778,8 @@ a|
 
 [width="100%",cols="18%,82%",]
 |=======================================================================
-|Availability |resolver
+|Availability
+|resolver
 
 |Description |Validates the syntax of a filter.
 
@@ -903,7 +913,8 @@ whether a filter with this name already exists.
 
 [width="100%",cols="18%,82%",]
 |=======================================================================
-|Availability |web server, resolver
+|Availability
+|web server, resolver
 
 |Description |Returns a list of all packages associated with a
 particular filter.
@@ -960,7 +971,8 @@ A list of packages and their information.
 
 [width="100%",cols="18%,82%",]
 |=======================================================================
-|Availability |resolver
+|Availability
+|resolver
 
 |Description |Returns a list of all filters associated with a particular
 package.
@@ -1005,7 +1017,8 @@ package.
 
 [width="100%",cols="18%,82%",]
 |=======================================================================
-|Availability |core
+|Availability
+|core
 
 |Description |Create an install campaign for a package
 
@@ -1112,7 +1125,8 @@ Invalid package name:
 
 [width="100%",cols="18%,82%",]
 |=======================================================================
-|Availability |core
+|Availability
+|core
 
 |Description |Create an install campaign for a package
 
@@ -1165,7 +1179,8 @@ None
 
 [width="100%",cols="18%,82%",]
 |=======================================================================
-|Availability |core
+|Availability
+|core
 
 |Description |Create an install campaign for a package
 
