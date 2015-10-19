@@ -40,7 +40,7 @@ define(function(require) {
     render: function() {
       var vehicles = _.map(this.props.AffectedVins.deref(), function(vin) {
         return (
-          <li className="list-group-item">
+          <li className="list-group-item" key={vin[0]}>
             { vin[0] }
           </li>
         );
