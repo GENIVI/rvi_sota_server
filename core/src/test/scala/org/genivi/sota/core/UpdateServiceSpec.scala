@@ -52,7 +52,7 @@ class UpdateServiceSpec extends PropSpec with PropertyChecks with Matchers with 
 
   }
 
-  val service = new UpdateService( ServerServices("", "", "", "", "") )
+  val service = new UpdateService( ServerServices("", "", "", "") )
 
   import org.genivi.sota.core.data.UpdateRequest
   import org.scalatest.concurrent.ScalaFutures.{whenReady, PatienceConfig}

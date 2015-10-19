@@ -137,7 +137,7 @@ object SotaClient {
       chunkName  <- chunkRegistration
       finishName <- finishRegistration
       _          <- notifyRegistration
-    } yield ClientServices( startName, chunkName, finishName, "" )
+    } yield ClientServices( startName, "", chunkName, finishName, "" )
   }
 
 }

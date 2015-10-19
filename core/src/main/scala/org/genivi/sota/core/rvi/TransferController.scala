@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.core.rvi
 
+import akka.actor.ReceiveTimeout
 import java.net.URI
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
@@ -12,12 +13,15 @@ import java.nio.file.{Paths, StandardOpenOption}
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, Status}
 import akka.util.ByteString
 import io.circe.Encoder
+import java.util.concurrent.TimeUnit
 import org.apache.commons.codec.binary.Base64
 import org.genivi.sota.core.data.UpdateStatus
 import org.genivi.sota.core.data.Vehicle
 import org.genivi.sota.core.data.{Package, UpdateSpec, Vehicle}
 import org.genivi.sota.core.db.{UpdateSpecs, InstallHistories}
 import org.joda.time.DateTime
+import scala.concurrent.duration.{FiniteDuration, Duration}
+import scala.util.control.NoStackTrace
 import slick.driver.MySQLDriver.api.Database
 
 import scala.collection.immutable.Queue
@@ -125,6 +129,11 @@ class TransferProtocolActor(db: Database, rviClient: RviClient, transferActorPro
         }
       }
 
+    case UploadAborted =>
+      rviClient.sendMessage(services.abort, io.circe.Json.Empty, ttl())
+      updates.foreach(x => db.run( UpdateSpecs.setStatus(x, UpdateStatus.Canceled) ))
+      context.stop(self)
+
   }
 
   def ttl() : DateTime = {
@@ -164,6 +173,8 @@ case class ChunksReceived( vin: Vehicle.Vin, `package`: Package.Id, chunks: List
 case class PackageChunk( `package`: Package.Id, bytes: ByteString, index: Int)
 case class Finish(`package`: Package.Id )
 
+case object UploadAborted
+
 class PackageTransferActor( pckg: Package, services: ClientServices, rviClient: RviClient )
     extends Actor with ActorLogging {
 
@@ -175,6 +186,11 @@ class PackageTransferActor( pckg: Package, services: ClientServices, rviClient: 
   import cats.syntax.show._
 
   val chunkSize = context.system.settings.config.getBytes("rvi.transfer.chunkSize").intValue()
+  val ackTimeout : FiniteDuration = FiniteDuration(
+    context.system.settings.config.getDuration("rvi.transfer.ackTimeout", TimeUnit.MILLISECONDS),
+    TimeUnit.MILLISECONDS
+  )
+
 
   lazy val lastIndex = (BigDecimal(pckg.size) / BigDecimal(chunkSize) setScale(0, RoundingMode.CEILING)).toInt
 
@@ -193,6 +209,7 @@ class PackageTransferActor( pckg: Package, services: ClientServices, rviClient: 
     val bytesRead = channel.read( buffer )
     buffer.flip()
     rviClient.sendMessage( services.chunk, PackageChunk( pckg.id,  ByteString( buffer ), index), ttl() )
+    context.setReceiveTimeout( ackTimeout )
   }
 
   def finish() : Unit = {
@@ -205,22 +222,43 @@ class PackageTransferActor( pckg: Package, services: ClientServices, rviClient: 
     rviClient.sendMessage( services.start, StartDownloadMessage(pckg.id, pckg.checkSum, lastIndex), ttl() )
   }
 
-  override def receive = {
-    case ChunksReceived(_, _, Nil) =>
-      sendChunk(1)
+  val maxAttempts : Int = 5
 
+  def transferring( lastSentChunk: Int, attempt: Int ) : Receive = {
     case ChunksReceived(_, _, indexes) =>
       log.debug(s"${pckg.id.show}. Chunk received by client: $indexes" )
       val mayBeNext = indexes.sorted.sliding(2, 1).find {
         case first :: second :: Nil => second - first > 1
         case first :: Nil => true
+        case _ => false
       }.map {
         case first :: _ :: Nil => first + 1
         case 1 :: Nil => 2
+        case Nil => 1
       }
       val nextIndex = mayBeNext.getOrElse(indexes.max + 1)
       log.debug(s"Next chunk index: $nextIndex")
-      if( nextIndex > lastIndex ) finish() else sendChunk(nextIndex)
+      if( nextIndex > lastIndex ) finish()
+      else {
+        sendChunk(nextIndex)
+        context.become( transferring(nextIndex, 1) )
+      }
+
+    case ReceiveTimeout if attempt == maxAttempts =>
+      context.setReceiveTimeout(Duration.Undefined)
+      context.parent ! UploadAborted
+      context.stop( self )
+
+    case ReceiveTimeout =>
+      sendChunk(lastSentChunk)
+      context.become( transferring(lastSentChunk, attempt + 1) )
+  }
+
+  override def receive = {
+    case ChunksReceived(_, _, Nil) =>
+      sendChunk(1)
+      context.become( transferring(1, 1) )
+
   }
 
   override def postStop() : Unit = {

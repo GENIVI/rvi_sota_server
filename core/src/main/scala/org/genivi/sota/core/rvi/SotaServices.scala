@@ -16,9 +16,9 @@ import io.circe.Json
 import scala.concurrent.{ExecutionContext, Future}
 import org.genivi.sota.core.ExternalResolverClient
 
-final case class ServerServices(start: String, cancel: String, ack: String, report: String, packages: String)
+final case class ServerServices(start: String, ack: String, report: String, packages: String)
 
-final case class ClientServices( start: String, chunk: String, finish: String, getpackages: String )
+final case class ClientServices( start: String, abort: String, chunk: String, finish: String, getpackages: String )
 
 final case class StartDownload(vin: Vehicle.Vin, packages: List[Package.Id], services: ClientServices )
 
@@ -89,17 +89,15 @@ object SotaServices {
   def register(baseUri: Uri)
               (implicit transport: Json => Future[Json], ec : ExecutionContext) : Future[ServerServices] = {
     val startRegistration = registerService("/sota/start", baseUri.withPath( baseUri.path / "start"))
-    val cancelRegistration = registerService("/sota/cancel", baseUri.withPath( baseUri.path / "cancel"))
     val ackRegistration = registerService("/sota/ack", baseUri.withPath( baseUri.path / "ack"))
     val reportRegistration = registerService("/sota/report", baseUri.withPath( baseUri.path / "report"))
     val packagesRegistration = registerService("/sota/packages", baseUri.withPath( baseUri.path / "packages"))
     for {
       startName  <- startRegistration
-      cancelName <- cancelRegistration
       ackName    <- ackRegistration
       reportName <- reportRegistration
       packagesName <- packagesRegistration
-    } yield ServerServices( start = startName, cancel = cancelName, ack = ackName,
+    } yield ServerServices( start = startName, ack = ackName,
                             report = reportName, packages = packagesName )
   }
 
