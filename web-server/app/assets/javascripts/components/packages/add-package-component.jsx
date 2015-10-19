@@ -4,12 +4,17 @@ define(function(require) {
       React = require('react'),
       _ = require('underscore'),
       serializeForm = require('../../mixins/serialize-form'),
+      Router = require('react-router'),
+      sendRequest = require('../../mixins/send-request');
+      HandleFailMixin = require('../../mixins/handle-fail'),
       toggleForm = require('../../mixins/toggle-form'),
       SotaDispatcher = require('sota-dispatcher');
 
   var AddPackageComponent = React.createClass({
     mixins: [
-      toggleForm
+      toggleForm,
+      Router.Navigation,
+      HandleFailMixin
     ],
     handleSubmit: function(e) {
       e.preventDefault();
@@ -26,11 +31,14 @@ define(function(require) {
       var file = $('.file-upload')[0].files[0];
       data.append('file', file);
 
-      SotaDispatcher.dispatch({
-        actionType: 'create-package',
-        package: payload,
-        data: data
-      });
+      var url = '/api/v1/packages/' + payload.name + '/' + payload.version;
+      sendRequest.doPut(url, data, {form: true})
+        .done(_.bind(function(pkgId) {
+          this.transitionTo("/packages/" + pkgId.name + "/" + pkgId.version);
+        }, this, payload.id))
+        .fail(_.bind(function(xhr) {
+          this.trigger("error", this, xhr);
+        }, this));
     },
     buttonLabel: "NEW PACKAGE",
     form: function() {
