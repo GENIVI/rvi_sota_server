@@ -9,17 +9,16 @@
         <meta name="description" content="Software Updates Over the Air">
 
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="/rvi_sota_server/css/syntax.css">
         <link rel="stylesheet" href="/rvi_sota_server/css/main.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css">
     </head>
     <body>
 
-        <div class="container">
+        <div class="container-fluid">
             <div class="row">
                 <div id="header" class="col-sm-12">
-                    <h4><a class="brand" href="/rvi_sota_server/">GENIVI SOTA Project</a>
-    <small>Software Updates Over the Air</small>
+                    <h4><img src="/rvi_sota_server/images/icon-logo.png"> <a class="brand" href="/rvi_sota_server/">GENIVI SOTA Project</a> / 
+    Software Updates Over the Air
 </h4>
 
                 </div>
@@ -28,7 +27,7 @@
             <div class="row">
                 
                 
-                    <div id="navigation" class="col-sm-2">
+                    <div id="navigation" class="col-sm-3">
                         <ul class="nav nav-list">
     <li><a href="/rvi_sota_server/">Home</a></li>
     
@@ -105,8 +104,9 @@
 
                     </div>
 
-                    <div id="content" class="col-sm-10">
-                        <div class="page-header">
+                    <div id="content" class="col-sm-9">
+                        <div id="content" class="col-sm-10">
+                            <div class="page-header">
     <h2>Building & Deploying
         
     </h2>
@@ -165,10 +165,10 @@
 </div>
 <div class="listingblock">
 <div class="content">
-<pre># java -version
+<pre class="pygments highlight"><code># java -version
 java version "1.8.0_45"
 Java(TM) SE Runtime Environment (build 1.8.0_45-b14)
-Java HotSpot(TM) 64-Bit Server VM (build 25.45-b02, mixed mode)</pre>
+Java HotSpot(TM) 64-Bit Server VM (build 25.45-b02, mixed mode)</code></pre>
 </div>
 </div>
 </div>
@@ -193,12 +193,7 @@ FLUSH <span style="color: #008000; font-weight: bold">PRIVILEGES</span>;</code><
 </div>
 </div>
 <div class="paragraph">
-<p>To update the database schema, run:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>sbt flywayMigrate</pre>
-</div>
+<p>To update the database schema, run <code>sbt flywayMigrate</code></p>
 </div>
 <div class="paragraph">
 <p>This will apply any new migrations in src/main/resources/db/migration, and keep your existing data. This command expects to find the databases on localhost with sota/s0ta for the username/password. The URL to the database and login details can be overridden with the <code>CORE_DB_URL</code>, <code>CORE_DB_USER</code> and <code>CORE_DB_PASSWORD</code> environment variables for the core and <code>RESOLVER_DB_URL</code>, <code>RESOLVER_DB_USER</code> and, <code>RESOLVER_DB_PASSWORD</code> for the external resolver. See <code>project/SotaBuild.scala</code> for the implementation.</p>
@@ -386,6 +381,7 @@ exit</pre>
 </div>
 </div>
 
+                        </div>
                     </div>
                 
             </div>

@@ -9,17 +9,16 @@
         <meta name="description" content="Software Updates Over the Air">
 
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="/rvi_sota_server/css/syntax.css">
         <link rel="stylesheet" href="/rvi_sota_server/css/main.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css">
     </head>
     <body>
 
-        <div class="container">
+        <div class="container-fluid">
             <div class="row">
                 <div id="header" class="col-sm-12">
-                    <h4><a class="brand" href="/rvi_sota_server/">GENIVI SOTA Project</a>
-    <small>Software Updates Over the Air</small>
+                    <h4><img src="/rvi_sota_server/images/icon-logo.png"> <a class="brand" href="/rvi_sota_server/">GENIVI SOTA Project</a> / 
+    Software Updates Over the Air
 </h4>
 
                 </div>
@@ -28,7 +27,7 @@
             <div class="row">
                 
                 
-                    <div id="navigation" class="col-sm-2">
+                    <div id="navigation" class="col-sm-3">
                         <ul class="nav nav-list">
     <li><a href="/rvi_sota_server/">Home</a></li>
     
@@ -105,254 +104,88 @@
 
                     </div>
 
-                    <div id="content" class="col-sm-10">
-                        <div class="page-header">
+                    <div id="content" class="col-sm-9">
+                        <div id="content" class="col-sm-10">
+                            <div class="page-header">
     <h2>Use Cases
         
     </h2>
 </div>
 
-<div class="sect1">
-<h2 id="table-of-contents">Table of Contents</h2>
-<div class="sectionbody">
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p><a href="#server-config">SOTA Server Configuration</a></p>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="#VIN_ADD">VIN_ADD</a> Add a VIN to the system</p>
+<div id="toc" class="toc">
+<div id="toctitle" class="title">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#sota-server-configuration">SOTA Server Configuration</a>
+<ul class="sectlevel2">
+<li><a href="#VIN_ADD"><a href="#VIN_ADD">VIN_ADD</a> Add a VIN to the system</a></li>
+<li><a href="#VIN_DEL"><a href="#VIN_DEL">VIN_DEL</a> Delete an existing VIN</a></li>
+<li><a href="#VIN_SEARCH"><a href="#VIN_SEARCH">VIN_SEARCH</a> Search for VINs</a></li>
+<li><a href="#VIN_SET_DATA_PLAN"><a href="#VIN_SET_DATA_PLAN">VIN_SET_DATA_PLAN</a> Associate Data Plan with VIN</a></li>
+<li><a href="#VIN_GET_UPDATE_HISTORY"><a href="#VIN_GET_UPDATE_HISTORY">VIN_GET_UPDATE_HISTORY</a> Get installation history for VIN</a></li>
+<li><a href="#PACKAGE_ADD_SOTASERVER"><a href="#PACKAGE_ADD_SOTASERVER">PACKAGE_ADD_SOTASERVER</a> Register a new Package with SOTA Server</a></li>
+<li><a href="#PACKAGE_ADD_RESOLVER"><a href="#PACKAGE_ADD_RESOLVER">PACKAGE_ADD_RESOLVER</a> Register a new Package with External Resolver</a></li>
+<li><a href="#PACKAGE_SEARCH"><a href="#PACKAGE_SEARCH">PACKAGE_SEARCH</a> Search for a Package</a></li>
+<li><a href="#PLAN_ADD"><a href="#PLAN_ADD">PLAN_ADD</a> Register a new Data Plan</a></li>
+<li><a href="#PLAN_ADD_BILLING_CYCLE"><a href="#PLAN_ADD_BILLING_CYCLE">PLAN_ADD_BILLING_CYCLE</a> Associate a Billing Cycle with a Data Plan</a></li>
+<li><a href="#PLAN_SEARCH"><a href="#PLAN_SEARCH">PLAN_SEARCH</a> Find existing Data Plan</a></li>
+<li><a href="#PLAN_GET_BILLING_CYCLES"><a href="#PLAN_GET_BILLING_CYCLES">PLAN_GET_BILLING_CYCLES</a> Get Billing Cycles for a Data Plan</a></li>
+<li><a href="#PLAN_ADD_TRAFFIC"><a href="#PLAN_ADD_TRAFFIC">PLAN_ADD_TRAFFIC</a> Add Traffic Information to active Billing Cycle for Data Plan associated with VIN</a></li>
+</ul>
 </li>
-<li>
-<p><a href="#VIN_DEL">VIN_DEL</a> Delete an existing VIN</p>
+<li><a href="#EXTERNAL">External Resolver Configuration</a>
+<ul class="sectlevel2">
+<li><a href="#FILTER_ADD"><a href="#FILTER_ADD">FILTER_ADD</a> Add a new Filter</a></li>
+<li><a href="#FILTER_SEARCH"><a href="#FILTER_SEARCH">FILTER_SEARCH</a> Search for a Filter</a></li>
+<li><a href="#FILTER_VALIDATE"><a href="#FILTER_VALIDATE">FILTER_VALIDATE</a> Test validity of a Filter Expression</a></li>
+<li><a href="#FILTER_DELETE"><a href="#FILTER_DELETE">FILTER_DELETE</a> Delete a Filter</a></li>
+<li><a href="#FILTER_PACKAGE_ADD"><a href="#FILTER_PACKAGE_ADD">FILTER_PACKAGE_ADD</a> Associate a Package with a Filter</a></li>
+<li><a href="#FILTER_PACKAGE_DELETE"><a href="#FILTER_PACKAGE_DELETE">FILTER_PACKAGE_DELETE</a> Remove a Package from a Filter</a></li>
+<li><a href="#FILTER_SEARCH_PACKAGE_BY_FILTER"><a href="#FILTER_SEARCH_PACKAGE_BY_FILTER">FILTER_SEARCH_PACKAGE_BY_FILTER</a> Get list of Packages by Filter</a></li>
+<li><a href="#FILTER_SEARCH_FILTER_BY_PACKAGE"><a href="#FILTER_SEARCH_FILTER_BY_PACKAGE">FILTER_SEARCH_FILTER_BY_PACKAGE</a> Get list of Filters by Package</a></li>
+<li><a href="#COMP_ADD"><a href="#COMP_ADD">COMP_ADD</a> Add a Component</a></li>
+<li><a href="#VIN_ADD_COMP"><a href="#VIN_ADD_COMP">VIN_ADD_COMP</a> Associate a Component with a VIN</a></li>
+<li><a href="#VIN_ADD_PACKAGE"><a href="#VIN_ADD_PACKAGE">VIN_ADD_PACKAGE</a> Associate a Package with a VIN</a></li>
+<li><a href="#VIN_DELETE_PACKAGE"><a href="#VIN_DELETE_PACKAGE">VIN_DELETE_PACKAGE</a> Remove a Package from a VIN</a></li>
+<li><a href="#COMP_SEARCH"><a href="#COMP_SEARCH">COMP_SEARCH</a> Search for a Component</a></li>
+<li><a href="#VIN_SEARCH_BY_COMP"><a href="#VIN_SEARCH_BY_COMP">VIN_SEARCH_BY_COMP</a> Find VINs by Component</a></li>
+<li><a href="#COMP_SEARCH_BY_VIN"><a href="#COMP_SEARCH_BY_VIN">COMP_SEARCH_BY_VIN</a> Find Components associated with a VIN</a></li>
+<li><a href="#PACKAGE_ADD_DEPENDENCY"><a href="#PACKAGE_ADD_DEPENDENCY">PACKAGE_ADD_DEPENDENCY</a> Create Dependency between Packages</a></li>
+<li><a href="#PACKAGE_GET_DEPENDENCIES"><a href="#PACKAGE_GET_DEPENDENCIES">PACKAGE_GET_DEPENDENCIES</a> Get Dependencies for a Package</a></li>
+<li><a href="#PACKAGE_DEL_DEPENDENCY"><a href="#PACKAGE_DEL_DEPENDENCY">PACKAGE_DEL_DEPENDENCY</a> Remove Dependency between Packages</a></li>
+<li><a href="#PACKAGE_SEARCH_BY_VIN"><a href="#PACKAGE_SEARCH_BY_VIN">PACKAGE_SEARCH_BY_VIN</a> Find VINs by Package</a></li>
+</ul>
 </li>
-<li>
-<p><a href="#VIN_SEARCH">VIN_SEARCH</a> Search for VINs</p>
+<li><a href="#INSTALLATION">Installation Queue Management (SOTA Server)</a>
+<ul class="sectlevel2">
+<li><a href="#QUEUE_REQUEST_ADD"><a href="#QUEUE_REQUEST_ADD">QUEUE_REQUEST_ADD</a> Queue a package for installation on VINs matching Filter</a></li>
+<li><a href="#QUEUE_REQUEST_CANCEL"><a href="#QUEUE_REQUEST_CANCEL">QUEUE_REQUEST_CANCEL</a> Cancel a previous Installation Request</a></li>
+<li><a href="#QUEUE_GET_STATUS"><a href="#QUEUE_GET_STATUS">QUEUE_GET_STATUS</a> Get status for an Installation Request</a></li>
+<li><a href="#QUEUE_GET_COMPLETED_VINS"><a href="#QUEUE_GET_COMPLETED_VINS">QUEUE_GET_COMPLETED_VINS</a> List VINs for which installation is complete for Installation Request</a></li>
+<li><a href="#QUEUE_GET_PENDING_VINS"><a href="#QUEUE_GET_PENDING_VINS">QUEUE_GET_PENDING_VINS</a> List VINs for which installation is pending for Installation Request</a></li>
+<li><a href="#QUEUE_GET_IN_FLIGHT_VINS"><a href="#QUEUE_GET_IN_FLIGHT_VINS">QUEUE_GET_IN_FLIGHT_VINS</a> List VINs for which installation is ongoing for Installation Request</a></li>
+<li><a href="#QUEUE_GET_FAILED_VINS"><a href="#QUEUE_GET_FAILED_VINS">QUEUE_GET_FAILED_VINS</a> List VINs for which installation failed for Installation Request</a></li>
+<li><a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE"><a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE">QUEUE_GET_NEXT_SOFTWARE_UPDATE</a> Get current or next queued Installation Request for VIN</a></li>
+<li><a href="#QUEUE_INITIATE_XMIT"><a href="#QUEUE_INITIATE_XMIT">QUEUE_INITIATE_XMIT</a></a></li>
+<li><a href="#QUEUE_PURGE"><a href="#QUEUE_PURGE">QUEUE_PURGE</a> Purge failing or expired Installation Requests from Queue</a></li>
+<li><a href="#QUEUE_REQUEST_GET_ALL_PACKAGES"><a href="#QUEUE_REQUEST_GET_ALL_PACKAGES">QUEUE_REQUEST_GET_ALL_PACKAGES</a> Get list of Packages queued for a VIN</a></li>
+</ul>
 </li>
-<li>
-<p><a href="#VIN_SET_DATA_PLAN">VIN_SET_DATA_PLAN</a> Associate Data Plan with
-VIN</p>
-</li>
-<li>
-<p><a href="#VIN_GET_UPDATE_HISTORY">VIN_GET_UPDATE_HISTORY</a> Get installation
-history for VIN</p>
-</li>
-<li>
-<p><a href="#PACKAGE_ADD_SOTASERVER">PACKAGE_ADD_SOTASERVER</a> Register a new
-Package with SOTA Server</p>
-</li>
-<li>
-<p><a href="#PACKAGE_ADD_RESOLVER">PACKAGE_ADD_RESOLVER</a> Register a new
-Package with External Resolver</p>
-</li>
-<li>
-<p><a href="#PACKAGE_SEARCH">PACKAGE_SEARCH</a> Search for a Package</p>
-</li>
-<li>
-<p><a href="#PLAN_ADD">PLAN_ADD</a> Register a new Data Plan</p>
-</li>
-<li>
-<p><a href="#PLAN_ADD_BILLING_CYCLE">PLAN_ADD_BILLING_CYCLE</a> Associate a
-Billing Cycle with a Data Plan</p>
-</li>
-<li>
-<p><a href="#PLAN_SEARCH">PLAN_SEARCH</a> Find existing Data Plan</p>
-</li>
-<li>
-<p><a href="#PLAN_GET_BILLING_CYCLES">PLAN_GET_BILLING_CYCLES</a> Get Billing
-Cycles for a Data Plan</p>
-</li>
-<li>
-<p><a href="#PLAN_ADD_TRAFFIC">PLAN_ADD_TRAFFIC</a> Add Traffic Information to
-active Billing Cycle for Data Plan associated with VIN</p>
+<li><a href="#DEVICE">Device Interaction</a>
+<ul class="sectlevel2">
+<li><a href="#DEV_WAKEUP"><a href="#DEV_WAKEUP">DEV_WAKEUP</a> Send Wake-up event to VIN, triggering <a href="#DEV_CONNECT">DEV_CONNECT</a></a></li>
+<li><a href="#DEV_CONNECT"><a href="#DEV_CONNECT">DEV_CONNECT</a> Device connects to SOTA Server to process or resume Installation Request</a></li>
+<li><a href="#DEV_DISCONNECT"><a href="#DEV_DISCONNECT">DEV_DISCONNECT</a> SOTA Server instructs Device to disconnect</a></li>
+<li><a href="#UPDATE_NOTIFICATION"><a href="#UPDATE_NOTIFICATION">UPDATE_NOTIFICATION</a> Send any queued Installation Requests (<a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE">QUEUE_GET_NEXT_SOFTWARE_UPDATE</a>) to Device</a></li>
+<li><a href="#TRIGGER_TRANSFER_START"><a href="#TRIGGER_TRANSFER_START">TRIGGER_TRANSFER_START</a> Software Loading Manager requests download from SOTA Server via SOTA Client</a></li>
+<li><a href="#TRANSFER_START"><a href="#TRANSFER_START">TRANSFER_START</a> SOTA Server sends Download metadata to Device</a></li>
+<li><a href="#TRANSFER_CHUNK"><a href="#TRANSFER_CHUNK">TRANSFER_CHUNK</a> SOTA Server sends next Download chunk to Device</a></li>
+<li><a href="#TRANSFER_COMPLETE"><a href="#TRANSFER_COMPLETE">TRANSFER_COMPLETE</a> SOTA Server sends Finalize Download to Device</a></li>
+<li><a href="#INSTALL_SOFTWARE_UPDATE"><a href="#INSTALL_SOFTWARE_UPDATE">INSTALL_SOFTWARE_UPDATE</a> Device installs all received Packages</a></li>
+<li><a href="#INSTALL_REPORT"><a href="#INSTALL_REPORT">INSTALL_REPORT</a> Device reports Installation Result to SOTA Server</a></li>
+<li><a href="#GET_ALL_PACKAGES"><a href="#GET_ALL_PACKAGES">GET_ALL_PACKAGES</a> Get list of Packages installed on a VIN (from the Device)</a></li>
+</ul>
 </li>
 </ul>
-</div>
-</li>
-<li>
-<p><a href="#resolver-config">External Resolver Configuration</a></p>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="#FILTER_ADD">FILTER_ADD</a> Add a new Filter</p>
-</li>
-<li>
-<p><a href="#FILTER_SEARCH">FILTER_SEARCH</a> Search for a Filter</p>
-</li>
-<li>
-<p><a href="#FILTER_VALIDATE">FILTER_VALIDATE</a> Test validity of a Filter
-Expression</p>
-</li>
-<li>
-<p><a href="#FILTER_DELETE">FILTER_DELETE</a> Delete a Filter</p>
-</li>
-<li>
-<p><a href="#FILTER_PACKAGE_ADD">FILTER_PACKAGE_ADD</a> Associate a Package with
-a Filter</p>
-</li>
-<li>
-<p><a href="#FILTER_PACKAGE_DELETE">FILTER_PACKAGE_DELETE</a> Remove a Package
-from a Filter</p>
-</li>
-<li>
-<p><a href="#FILTER_SEARCH_PACKAGE_BY_FILTER">FILTER_SEARCH_PACKAGE_BY_FILTER</a>
-Get list of Packages by Filter</p>
-</li>
-<li>
-<p><a href="#FILTER_SEARCH_FILTER_BY_PACKAGE">FILTER_SEARCH_FILTER_BY_PACKAGE</a>
-Get list of Filters by Package</p>
-</li>
-<li>
-<p><a href="#COMP_ADD">COMP_ADD</a> Add a Component</p>
-</li>
-<li>
-<p><a href="#VIN_ADD_COMP">VIN_ADD_COMP</a> Associate a Component with a VIN</p>
-</li>
-<li>
-<p><a href="#VIN_ADD_PACKAGE">VIN_ADD_PACKAGE</a> Associate a Package with a VIN</p>
-</li>
-<li>
-<p><a href="#VIN_DELETE_PACKAGE">VIN_DELETE_PACKAGE</a> Remove a Package from a
-VIN</p>
-</li>
-<li>
-<p><a href="#COMP_SEARCH">COMP_SEARCH</a> Search for a Component</p>
-</li>
-<li>
-<p><a href="#VIN_SEARCH_BY_COMP">VIN_SEARCH_BY_COMP</a> Find VINs by Component</p>
-</li>
-<li>
-<p><a href="#COMP_SEARCH_BY_VIN">COMP_SEARCH_BY_VIN</a> Find Components
-associated with a VIN</p>
-</li>
-<li>
-<p><a href="#PACKAGE_ADD_DEPENDENCY">PACKAGE_ADD_DEPENDENCY</a> Create Dependency
-between Packages</p>
-</li>
-<li>
-<p><a href="#PACKAGE_GET_DEPENDENCIES">PACKAGE_GET_DEPENDENCIES</a> Get
-Dependencies for a Package</p>
-</li>
-<li>
-<p><a href="#PACKAGE_DEL_DEPENDENCY">PACKAGE_DEL_DEPENDENCY</a> Remove Dependency
-between Packages</p>
-</li>
-<li>
-<p><a href="#PACKAGE_SEARCH_BY_VIN">PACKAGE_SEARCH_BY_VIN</a> Find VINs by
-Package</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><a href="#queue-management">Installation Queue Management (SOTA Server)</a></p>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="#QUEUE_REQUEST_ADD">QUEUE_REQUEST_ADD</a> Queue a package for
-installation on VINs matching Filter</p>
-</li>
-<li>
-<p><a href="#QUEUE_REQUEST_CANCEL">QUEUE_REQUEST_CANCEL</a> Cancel a previous
-Installation Request</p>
-</li>
-<li>
-<p><a href="#QUEUE_GET_STATUS">QUEUE_GET_STATUS</a> Get status for an
-Installation Request</p>
-</li>
-<li>
-<p><a href="#QUEUE_GET_COMPLETED_VINS">QUEUE_GET_COMPLETED_VINS</a> List VINs for
-which installation is complete for Installation Request</p>
-</li>
-<li>
-<p><a href="#QUEUE_GET_PENDING_VINS">QUEUE_GET_PENDING_VINS</a> List VINs for
-which installation is pending for Installation Request</p>
-</li>
-<li>
-<p><a href="#QUEUE_GET_IN_FLIGHT_VINS">QUEUE_GET_IN_FLIGHT_VINS</a> List VINs for
-which installation is ongoing for Installation Request</p>
-</li>
-<li>
-<p><a href="#QUEUE_GET_FAILED_VINS">QUEUE_GET_FAILED_VINS</a> List VINs for which
-installation failed for Installation Request</p>
-</li>
-<li>
-<p><a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE">QUEUE_GET_NEXT_SOFTWARE_UPDATE</a>
-Get current or next queued Installation Request for VIN</p>
-</li>
-<li>
-<p><a href="#QUEUE_INITIATE_XMIT">QUEUE_INITIATE_XMIT</a> Trigger
-<a href="#DEV_WAKEUP">DEV_WAKEUP</a> for sleeping VINs with queued Installation
-Requests</p>
-</li>
-<li>
-<p><a href="#QUEUE_PURGE">QUEUE_PURGE</a> Purge failing or expired Installation
-Requests from Queue</p>
-</li>
-<li>
-<p><a href="#QUEUE_REQUEST_GET_ALL_PACKAGES">QUEUE_REQUEST_GET_ALL_PACKAGES</a>
-Get list of Packages queued for a VIN</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><a href="#device-interaction">Device Interaction</a></p>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="#DEV_WAKEUP">DEV_WAKEUP</a> Send Wake-up event to VIN, triggering
-<a href="#DEV_CONNECT">DEV_CONNECT</a></p>
-</li>
-<li>
-<p><a href="#DEV_CONNECT">DEV_CONNECT</a> Device connects to SOTA Server to
-process or resume Installation Request</p>
-</li>
-<li>
-<p><a href="#DEV_DISCONNECT">DEV_DISCONNECT</a> SOTA Server instructs Device to
-disconnect</p>
-</li>
-<li>
-<p><a href="#UPDATE_NOTIFICATION">UPDATE_NOTIFICATION</a> Send any queued
-Installation Requests
-(<a href="#QUEUE_GET_NEXT_SOFTWARE_UPDATE">QUEUE_GET_NEXT_SOFTWARE_UPDATE</a>)
-to Device</p>
-</li>
-<li>
-<p><a href="#TRIGGER_TRANSFER_START">TRIGGER_TRANSFER_START</a> Software Loading
-Manager requests download from SOTA Server via SOTA Client</p>
-</li>
-<li>
-<p><a href="#TRANSFER_START">TRANSFER_START</a> SOTA Server sends Download
-metadata to Device</p>
-</li>
-<li>
-<p><a href="#TRANSFER_CHUNK">TRANSFER_CHUNK</a> SOTA Server sends next Download
-chunk to Device</p>
-</li>
-<li>
-<p><a href="#TRANSFER_COMPLETE">TRANSFER_COMPLETE</a> SOTA Server sends Finalize
-Download to Device</p>
-</li>
-<li>
-<p><a href="#INSTALL_SOFTWARE_UPDATE">INSTALL_SOFTWARE_UPDATE</a> Device installs
-all received Packages</p>
-</li>
-<li>
-<p><a href="#INSTALL_REPORT">INSTALL_REPORT</a> Device reports Installation
-Result to SOTA Server</p>
-</li>
-<li>
-<p><a href="#GET_ALL_PACKAGES">GET_ALL_PACKAGES</a> Get list of Packages
-installed on a VIN (from the Device)</p>
-</li>
-</ul>
-</div>
-</li>
-</ol>
-</div>
-</div>
 </div>
 <div class="sect1">
 <h2 id="sota-server-configuration">SOTA Server Configuration</h2>
@@ -4030,6 +3863,7 @@ Returns:
 </div>
 </div>
 
+                        </div>
                     </div>
                 
             </div>
