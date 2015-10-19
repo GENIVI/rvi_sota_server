@@ -1,15 +1,13 @@
 
-@import "https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400";
-
 body {
     font-weight: 400;
-    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.7);
+    background: rgb(41,43,44);
 }
 
 pre, code {
     border: none;
     border-radius: 0;
-    background-color: #f9f9f9;
+    background-color: rgb(219,220,221);
     font-size: 0.85em;
 }
 
@@ -22,8 +20,8 @@ code {
 }
 
 #header {
-    border-bottom: 1px solid #eee;
-    margin-bottom: 20px;
+    background: rgb(141,142,142);
+    padding-left: 3.4cm;
 }
 
 #header a:hover {
@@ -35,6 +33,11 @@ code {
     font-size: 0.85em;
     color: #999;
     text-align: center;
+    background: rgb(41,43,44);
+}
+
+#footer > a {
+    color: rgb(165,231,224);
 }
 
 #content > .page-header:first-child {
@@ -53,11 +56,14 @@ code {
 #navigation li a {
     padding-left: 10px;
     padding-right: 10px;
+    text-decoration: none;
+    color: rgb(165,231,224);
 }
 
 #navigation .nav-header {
     padding-left: 0;
     padding-right: 0;
+    color: #f8f8f8;
 }
 
 body.rtl {
@@ -108,6 +114,43 @@ col:first-child {
     word-wrap: break-word;
 }
 
+
+
+.col-sm-10 {
+    background: #fafbfc;
+    padding-left: 3cm;
+    height: 100%;
+}
+
+.col-sm-9 {
+    background: #fafbfc;
+    padding-top: 2cm;
+    height: 100%;
+    display: table-cell;
+    float: none;
+}
+
+
+.col-sm-3 {
+    background: rgb(41,43,44);
+    padding-left: 3cm;
+    padding-top: 2cm;
+    font-size: small !important;
+    height: 100%;
+    display: table-cell;
+    float: none;
+    vertical-align: top;
+}
+
+.brand {
+    color: rgb(151,226,217);
+}
+
+.row {
+    display: table;
+    width:100%;
+}
+
 /*Beginning of asciidoctor CSS*/
 
 article, aside, details, figcaption, figure, footer, header, hgroup, main, nav, section, summary {
@@ -136,6 +179,7 @@ body {
 }
 a {
     background: transparent
+    text-decoration-color: rgb(151,226,217);
 }
 a:focus {
     outline: thin dotted
@@ -259,12 +303,13 @@ table {
 html, body {
     font-size: 100%
 }
+
 body {
-    background: #fff;
-    color: rgba(0, 0, 0, .8);
+    /*background: #191a1b;*/
+    color: rgba(0, 0, 0, .675);
     padding: 0;
     margin: 0;
-    font-family: "Noto Serif", "DejaVu Serif", serif;
+    font-family: Helvetica, Arial, "DejaVu Serif", serif;
     font-weight: 400;
     font-style: normal;
     line-height: 1;
@@ -339,12 +384,13 @@ div, dl, dt, dd, ul, ol, li, h1, h2, h3, #toctitle, .sidebarblock>.content>.titl
     direction: ltr
 }
 a {
-    color: #2156a5;
+    color: rgba(0,0,0,0.8);
     text-decoration: underline;
-    line-height: inherit
+    line-height: inherit;
+    text-decoration-color: rgb(151,226,217);
 }
 a:hover, a:focus {
-    color: #1d4b8f
+    /*color: #1d4b8f*/
 }
 a img {
     border: none
@@ -362,11 +408,12 @@ p aside {
     line-height: 1.35;
     font-style: italic
 }
+
 h1, h2, h3, #toctitle, .sidebarblock>.content>.title, h4, h5, h6 {
-    font-family: "Open Sans", "DejaVu Sans", sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-weight: 300;
     font-style: normal;
-    color: #ba3925;
+    color: rgba(0,0,0,0.9);
     text-rendering: optimizeLegibility;
     margin-top: 1em;
     margin-bottom: .5em;
@@ -374,7 +421,7 @@ h1, h2, h3, #toctitle, .sidebarblock>.content>.title, h4, h5, h6 {
 }
 h1 small, h2 small, h3 small, #toctitle small, .sidebarblock>.content>.title small, h4 small, h5 small, h6 small {
     font-size: 60%;
-    color: #e99b8f;
+    color: #f8f9fa;
     line-height: 0
 }
 h1 {
@@ -412,7 +459,7 @@ small {
     line-height: inherit
 }
 code {
-    font-family: "Droid Sans Mono", "DejaVu Sans Mono", monospace;
+    font-family: "Courier New", Courier, monospace;
     font-weight: 400;
     color: rgba(0, 0, 0, .9)
 }
@@ -507,7 +554,7 @@ blockquote, blockquote p {
 table {
     background: #fff;
     margin-bottom: 1.25em;
-    border: solid 1px #dedede
+    border: solid 2px rgba(255,255,255,0)
 }
 table thead, table tfoot {
     background: #f7f8f7;
@@ -525,7 +572,7 @@ table tr th, table tr td {
     color: rgba(0, 0, 0, .8)
 }
 table tr.even, table tr.alt, table tr:nth-of-type(even) {
-    background: #f8f8f7
+    background: rgb(238,238,238)
 }
 table thead tr th, table tfoot tr th, table tbody tr td, table tr td, table tfoot tr td {
     display: table-cell;
@@ -551,17 +598,17 @@ h1 strong, h2 strong, h3 strong, #toctitle strong, .sidebarblock>.content>.title
     letter-spacing: 0;
     padding: .1em .5ex;
     word-spacing: -.15em;
-    background-color: #f7f7f8;
     -webkit-border-radius: 4px;
     border-radius: 4px;
     line-height: 1.45;
     text-rendering: optimizeSpeed
 }
 pre, pre>code {
-    line-height: 1.45;
+    line-height: 1.25;
     color: rgba(0, 0, 0, .9);
-    font-family: "Droid Sans Mono", "DejaVu Sans Mono", monospace;
+    font-family: "Courier New", Courier, monospace;
     font-weight: 400;
+    font-size: smaller;
     text-rendering: optimizeSpeed
 }
 .keyseq {
@@ -708,7 +755,7 @@ p a>code:hover {
     margin: .5em 0
 }
 #toc ul {
-    font-family: "Open Sans", "DejaVu Sans", sans-serif;
+    font-family: Helvetica, Arial, "DejaVu Sans", sans-serif;
     list-style-type: none
 }
 #toc a {
@@ -718,7 +765,6 @@ p a>code:hover {
     text-decoration: underline
 }
 #toctitle {
-    color: #7a2518;
     font-size: 1.2em
 }
 @media only screen and (min-width:768px) {
@@ -795,12 +841,10 @@ p a>code:hover {
     }
 }
 #content #toc {
-    border-style: solid;
-    border-width: 1px;
-    border-color: #e0e0dc;
+    border-style: none;
     margin-bottom: 1.25em;
     padding: 1.25em;
-    background: #f8f8f7;
+    background: rgb(219,220,221);
     -webkit-border-radius: 4px;
     border-radius: 4px
 }
@@ -809,15 +853,6 @@ p a>code:hover {
 }
 #content #toc>:last-child {
     margin-bottom: 0
-}
-#footer {
-    max-width: 100%;
-    background-color: rgba(0, 0, 0, .8);
-    padding: 1.25em
-}
-#footer-text {
-    color: rgba(255, 255, 255, .8);
-    line-height: 1.44
 }
 .sect1 {
     padding-bottom: .625em
@@ -863,7 +898,7 @@ p a>code:hover {
 .admonitionblock td.content>.title, .audioblock>.title, .exampleblock>.title, .imageblock>.title, .listingblock>.title, .literalblock>.title, .stemblock>.title, .openblock>.title, .paragraph>.title, .quoteblock>.title, table.tableblock>.title, .verseblock>.title, .videoblock>.title, .dlist>.title, .olist>.title, .ulist>.title, .qlist>.title, .hdlist>.title {
     text-rendering: optimizeLegibility;
     text-align: left;
-    font-family: "Noto Serif", "DejaVu Serif", serif;
+    font-family: Helvetica, Arial, "DejaVu Serif", serif;
     font-size: 1rem;
     font-style: italic
 }
@@ -879,8 +914,7 @@ table.tableblock #preamble>.sectionbody>.paragraph:first-of-type p {
     font-size: inherit
 }
 .admonitionblock>table {
-    border-collapse: separate;
-    border: 0;
+    background-color: rgb(166,230,224);
     background: none;
     width: 100%
 }
@@ -893,27 +927,23 @@ table.tableblock #preamble>.sectionbody>.paragraph:first-of-type p {
 }
 .admonitionblock>table td.icon .title {
     font-weight: bold;
-    font-family: "Open Sans", "DejaVu Sans", sans-serif;
+    font-family: Helvetica, Arial, "DejaVu Sans", sans-serif;
     text-transform: uppercase
 }
 .admonitionblock>table td.content {
     padding-left: 1.125em;
     padding-right: 1.25em;
-    border-left: 1px solid #ddddd8;
-    color: rgba(0, 0, 0, .6)
+    color: rgba(0,0,0, .6);
+    background-color: rgb(166,230,224);
+    /*font-weight: bold;*/
 }
 .admonitionblock>table td.content>:last-child>:last-child {
     margin-bottom: 0
 }
 .exampleblock>.content {
-    border-style: solid;
-    border-width: 1px;
-    border-color: #e6e6e6;
     margin-bottom: 1.25em;
     padding: 1.25em;
     background: #fff;
-    -webkit-border-radius: 4px;
-    border-radius: 4px
 }
 .exampleblock>.content>:first-child {
     margin-top: 0
@@ -927,7 +957,7 @@ table.tableblock #preamble>.sectionbody>.paragraph:first-of-type p {
     border-color: #e0e0dc;
     margin-bottom: 1.25em;
     padding: 1.25em;
-    background: #f8f8f7;
+    background: rgb(166,230,224);
     -webkit-border-radius: 4px;
     border-radius: 4px
 }
@@ -938,12 +968,24 @@ table.tableblock #preamble>.sectionbody>.paragraph:first-of-type p {
     margin-bottom: 0
 }
 .sidebarblock>.content>.title {
-    color: #7a2518;
+    color: black;
     margin-top: 0;
     text-align: center
 }
+
+.sidebarblock>.content>.paragraph {
+    color: black;
+    font-size: large;
+}
+
+.sidebarblock>.content>.paragraph>p>code, .sidebarblock>.content>.listingblock>.content>.highlight {
+    background-color: rgb(133,198,194);
+}
+
+
 .exampleblock>.content>:last-child>:last-child, .exampleblock>.content .olist>ol>li:last-child>:last-child, .exampleblock>.content .ulist>ul>li:last-child>:last-child, .exampleblock>.content .qlist>ol>li:last-child>:last-child, .sidebarblock>.content>:last-child>:last-child, .sidebarblock>.content .olist>ol>li:last-child>:last-child, .sidebarblock>.content .ulist>ul>li:last-child>:last-child, .sidebarblock>.content .qlist>ol>li:last-child>:last-child {
     margin-bottom: 0
+    color:white;
 }
 .literalblock pre, .listingblock pre:not(.highlight), .listingblock pre[class="highlight"], .listingblock pre[class^="highlight "], .listingblock pre.CodeRay, .listingblock pre.prettyprint {
     background: #f7f7f8
@@ -1051,7 +1093,7 @@ table.pyhltable .linenodiv {
     margin-bottom: .75em
 }
 .quoteblock blockquote, .quoteblock blockquote p {
-    color: rgba(0, 0, 0, .85);
+    color: rgb(0,0,0);
     font-size: 1.15rem;
     line-height: 1.75;
     word-spacing: .1em;
@@ -1071,7 +1113,7 @@ table.pyhltable .linenodiv {
     font-weight: bold;
     line-height: .6em;
     margin-left: -.6em;
-    color: #7a2518;
+    color: white;
     text-shadow: 0 1px 2px rgba(0, 0, 0, .1)
 }
 .quoteblock blockquote>.paragraph:last-child p {
@@ -1080,7 +1122,8 @@ table.pyhltable .linenodiv {
 .quoteblock .attribution {
     margin-top: .5em;
     margin-right: .5ex;
-    text-align: right
+    text-align: right;
+    color: white;
 }
 .quoteblock .quoteblock {
     margin-left: 0;
@@ -1098,7 +1141,7 @@ table.pyhltable .linenodiv {
     margin: 0 1em 1.25em 1em
 }
 .verseblock pre {
-    font-family: "Open Sans", "DejaVu Sans", sans;
+    font-family: Helvetica, Arial, "DejaVu Sans", sans;
     font-size: 1.15rem;
     color: rgba(0, 0, 0, .85);
     font-weight: 300;
@@ -1122,7 +1165,6 @@ table.pyhltable .linenodiv {
 .quoteblock .attribution cite, .verseblock .attribution cite {
     display: block;
     letter-spacing: -.05em;
-    color: rgba(0, 0, 0, .6)
 }
 .quoteblock.abstract {
     margin: 0 0 1.25em 0;
@@ -1231,7 +1273,8 @@ dl dd:last-child, dl dd:last-child>:last-child {
     margin-bottom: 0
 }
 ol>li p, ul>li p, ul dd, ol dd, .olist .olist, .ulist .ulist, .ulist .olist, .olist .ulist {
-    margin-bottom: .625em
+    margin-bottom: .25em;
+    line-height: 1.3;
 }
 ul.unstyled, ol.unnumbered, ul.checklist, ul.none {
     list-style-type: none
@@ -1557,7 +1600,7 @@ span.icon>.fa {
     width: 1.67em;
     height: 1.67em;
     line-height: 1.67em;
-    font-family: "Open Sans", "DejaVu Sans", sans-serif;
+    font-family: Helvetica, Arial, "DejaVu Sans", sans-serif;
     font-style: normal;
     font-weight: bold
 }
@@ -1602,7 +1645,7 @@ p {
     font-size: 1em
 }
 .exampleblock>.content {
-    background-color: #fffef7;
+    background-color: rgb(166,230,224);
     border-color: #e0e0dc;
     -webkit-box-shadow: 0 1px 4px #e0e0dc;
     box-shadow: 0 1px 4px #e0e0dc
