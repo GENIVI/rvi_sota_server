@@ -22,7 +22,7 @@ define(function(require) {
         if(Array.isArray(value)) {
           if(value[2] === "Failed") {
             return (
-              <tr>
+              <tr key={value[1]}>
                 <td>
                   {value[1]}
                 </td>
@@ -58,7 +58,7 @@ define(function(require) {
         if(Array.isArray(value)) {
           if(value[2] === "Finished") {
             return (
-              <tr>
+              <tr key={value=[1]}>
                 <td>
                   {value[1]}
                 </td>
@@ -115,7 +115,7 @@ define(function(require) {
             failedVINs++;
           }
           return (
-            <tr>
+            <tr key={value[1]}>
               <td>
                 {value[1]}
               </td>
