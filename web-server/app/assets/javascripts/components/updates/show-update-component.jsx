@@ -22,7 +22,7 @@ define(function(require) {
     render: function() {
       var rows = _.map(this.props.Update.deref(), function(value, key) {
         return (
-          <tr>
+          <tr key={key}>
             <td>
               {key}
             </td>

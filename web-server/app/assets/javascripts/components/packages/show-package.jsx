@@ -30,7 +30,7 @@ define(function(require) {
       var params = this.context.router.getCurrentParams();
       var rows = _.map(this.props.Package.deref(), function(value, key) {
         return (
-          <tr>
+          <tr key={key}>
             <td>
               {key}
             </td>
