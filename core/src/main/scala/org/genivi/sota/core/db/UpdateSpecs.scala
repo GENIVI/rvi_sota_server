@@ -75,7 +75,7 @@ object UpdateSpecs {
     val specs = updateSpecs.filter(_.vin === vin)
     val q = for {
       r  <- requests
-      s  <- specs if (r.id === s.requestId)
+      s  <- specs if (r.id === s.requestId) && (s.status === UpdateStatus.Pending)
       rp <- requiredPackages if (rp.vin === vin && rp.requestId === s.requestId)
       p  <- Packages.packages if (p.name === rp.packageName && p.version === rp.packageVersion)
     } yield (r, s.vin, s.status, p)
