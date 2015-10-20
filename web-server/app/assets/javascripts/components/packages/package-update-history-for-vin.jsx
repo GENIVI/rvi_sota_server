@@ -3,45 +3,25 @@ define(function(require) {
   var React = require('react'),
       Router = require('react-router'),
       _ = require('underscore'),
+      togglePanel = require('../../mixins/toggle-panel'),
       SotaDispatcher = require('sota-dispatcher');
 
   var PackageHistory = React.createClass({
     contextTypes: {
       router: React.PropTypes.func
     },
+    mixins: [togglePanel],
     componentWillUnmount: function(){
       this.props.Packages.removeWatch("poll-package-history-for-vin");
     },
     componentWillMount: function(){
       this.props.Packages.addWatch("poll-package-history-for-vin", _.bind(this.forceUpdate, this, null));
     },
-    toggleQueuedPackages: function() {
+    refreshData: function() {
       SotaDispatcher.dispatch({actionType: 'get-package-history-for-vin', vin: this.props.Vin});
-      this.setState({showPackageHistory: !this.state.showPackageHistory});
     },
-    getInitialState: function() {
-      return {showPackageHistory: false};
-    },
-    render: function() {
-      return (
-        <div>
-          <div className="row">
-            <div className="col-md-12">
-              <button className="btn btn-primary pull-right" onClick={this.toggleQueuedPackages}>
-                { this.state.showPackageHistory ? "HIDE" : "Show Failed/Finished Packages" }
-              </button>
-            </div>
-          </div>
-          <br/>
-          <div className="row">
-            <div className="col-md-12">
-              { this.state.showPackageHistory ? this.showPackageHistory() : null }
-            </div>
-          </div>
-        </div>
-      )
-    },
-    showPackageHistory: function() {
+    label: "Finished / Failed Packages",
+    panel: function() {
       var finishedRows = _.map(this.props.Packages.deref(), function(package) {
         if(package.success === true) {
           return (

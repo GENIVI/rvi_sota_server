@@ -27,12 +27,12 @@ define(function(require) {
             <AddPackageManually Vin={params.vin}/>
             <h2>Installed Packages</h2>
             <ListOfPackagesForVin Packages={db.packagesForVin} Vin={params.vin}/>
-            <h2>Queued Package Updates</h2>
-            <QueuedPackages Packages={db.packageQueueForVin} Vin={params.vin}/>
-            <PackageHistory Packages={db.packageHistoryForVin} Vin={params.vin}/>
             <AddComponent Vin={params.vin}/>
             <h2>Components Install On VIN</h2>
             <ComponentsOnVin Components={db.componentsOnVin} Vin={params.vin}/>
+            <h2>Updates</h2>
+            <QueuedPackages Packages={db.packageQueueForVin} Vin={params.vin}/>
+            <PackageHistory Packages={db.packageHistoryForVin} Vin={params.vin}/>
           </div>
         </div>
       </div>
