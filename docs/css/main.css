@@ -108,7 +108,6 @@ table {
 }
 
 td, th {
-  border: 1px solid #999;
   padding: 0.5rem;
   text-align: left;
 }
@@ -124,8 +123,6 @@ col:first-child {
 #wraptable {
     word-wrap: break-word;
 }
-
-
 
 .col-sm-10 {
     background: #fafbfc;
