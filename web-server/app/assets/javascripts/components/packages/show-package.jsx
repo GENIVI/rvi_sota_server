@@ -43,11 +43,8 @@ define(function(require) {
       return (
         <div>
           <h1>
-            Package Details
+            Packages &gt; {this.props.Package.deref().id}
           </h1>
-          <p>
-            {this.props.Package.description}
-          </p>
           <div className="row">
             <div className="col-md-12">
               <Router.Link to='new-campaign' params={{name: params.name, version: params.version}}>

@@ -31,7 +31,7 @@ define(function(require) {
           <thead>
             <tr>
               <td>
-                VINs
+                VIN
               </td>
             </tr>
           </thead>

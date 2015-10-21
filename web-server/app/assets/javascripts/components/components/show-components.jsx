@@ -38,19 +38,30 @@ define(function(require) {
       var params = this.context.router.getCurrentParams();
       var listItems = _.map(this.props.Component.deref(), function(value, key) {
         return (
-          <li>
-            {key}: {value}
-          </li>
+          <tr key={key}>
+            <td>
+              {key}
+            </td>
+            <td>
+              {value}
+            </td>
+          </tr>
         );
       });
       return (
         <div>
           <h1>
-            {this.props.Component.deref().partNumber}
+            Components &gt; {this.props.Component.deref().partNumber}
           </h1>
-          <ul>
-            {listItems}
-          </ul>
+          <div className="row">
+            <div className="col-md-12">
+              <table className="table table-striped table-bordered">
+                <tbody>
+                  {listItems}
+                </tbody>
+              </table>
+            </div>
+          </div>
           <button type="button" className="btn btn-primary" onClick={this.removeComponent} name="delete-component">Delete Component</button>
           <Errors />
           <br/>

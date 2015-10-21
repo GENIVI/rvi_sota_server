@@ -36,7 +36,7 @@ define(function(require) {
           <div className="row">
             <div className="col-md-12">
               <h2>
-                Failed VINs
+                Failed Vehicles
               </h2>
             </div>
           </div>
@@ -72,7 +72,7 @@ define(function(require) {
           <div className="row">
             <div className="col-md-12">
               <h2>
-                Completed VINs
+                Completed Vehicles
               </h2>
             </div>
           </div>
@@ -156,18 +156,10 @@ define(function(require) {
               </table>
             </div>
           </div>
-          <button className="btn btn-primary pull-right" onClick={this.toggleFailedVINs}>
-            { this.state.showFailedVINs ? "HIDE" : "Show failed VINs" }
-          </button>
-          <button className="btn btn-primary pull-right" onClick={this.toggleCompletedVINs}>
-            { this.state.showCompletedVINs ? "HIDE" : "Show completed VINs" }
-          </button>
-          { this.state.showFailedVINs ? this.failedVINsTable() : null }
-          { this.state.showCompletedVINs ? this.completedVINsTable() : null }
           <div className="row">
             <div className="col-md-12">
               <h2>
-                All VINs
+                All Vehicles
               </h2>
             </div>
           </div>
@@ -181,6 +173,14 @@ define(function(require) {
               </table>
             </div>
           </div>
+          <button className="btn btn-primary pull-right" onClick={this.toggleFailedVINs}>
+            { this.state.showFailedVINs ? "HIDE" : "Show failed VINs" }
+          </button>
+          <button className="btn btn-primary pull-right" onClick={this.toggleCompletedVINs}>
+            { this.state.showCompletedVINs ? "HIDE" : "Show completed VINs" }
+          </button>
+          { this.state.showFailedVINs ? this.failedVINsTable() : null }
+          { this.state.showCompletedVINs ? this.completedVINsTable() : null }
         </div>
       );
     }

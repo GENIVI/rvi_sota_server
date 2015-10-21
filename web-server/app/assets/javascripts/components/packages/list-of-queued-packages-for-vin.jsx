@@ -20,7 +20,7 @@ define(function(require) {
     refreshData: function() {
       SotaDispatcher.dispatch({actionType: 'get-package-queue-for-vin', vin: this.props.Vin});
     },
-    label: "Queued Package Updates",
+    label: "Queue",
     panel: function() {
       var rows = _.map(this.props.Packages.deref(), function(package) {
         return (

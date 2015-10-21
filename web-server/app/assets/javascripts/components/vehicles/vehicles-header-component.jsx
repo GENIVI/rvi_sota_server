@@ -9,7 +9,7 @@ define(function(require) {
         <div className="row">
           <div className="col-md-12">
             <h1>
-              Vehicle Identification Numbers
+              Vehicles
             </h1>
           </div>
         </div>

@@ -20,11 +20,8 @@ define(function(require) {
         return (
           <tr key={component}>
               <td>
-                {component}
-              </td>
-              <td>
                 <Router.Link to='component' params={ {partNumber: component} }>
-                  Details
+                  {component}
                 </Router.Link>
               </td>
           </tr>
@@ -37,7 +34,6 @@ define(function(require) {
               <td>
                 Part Number
               </td>
-              <td/>
             </tr>
           </thead>
           <tbody>
