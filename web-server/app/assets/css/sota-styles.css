@@ -40,6 +40,10 @@ body {
     padding-left: 35px;
 }
 
+.nav-link-btn {
+    padding-right: 10px;
+}
+
 #app {
     padding-left: 180px;
 }
