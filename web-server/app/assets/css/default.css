@@ -1,3 +1,7 @@
 .top-nav {
     height: 72px;
 }
+
+.pointer {
+    cursor: pointer;
+}

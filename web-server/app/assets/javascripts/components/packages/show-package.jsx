@@ -83,7 +83,9 @@ define(function(require) {
             getCreateList="get-filters"
             createResourceName="Filters"
             getDeleteList={{actionType: 'get-filters-for-package', name: params.name, version: params.version}}/>
+          <br/>
           <AffectedVins AffectedVins={db.affectedVins} />
+          <h2>Vehicles</h2>
           <VehiclesForPackage VehiclesForPackage={db.vehiclesForPackage}/>
           <VehiclesQueuedForPackage Vehicles={db.vehiclesQueuedForPackage} PackageName={params.name} PackageVersion={params.version}/>
         </div>
