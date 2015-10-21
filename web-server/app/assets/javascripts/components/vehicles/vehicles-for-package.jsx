@@ -27,7 +27,7 @@ define(function(require) {
         version: params.version
       });
     },
-    label: "Vehicles with this package",
+    label: "Vehicles with this package installed",
     panel: function() {
       var vehicles = _.map(this.props.VehiclesForPackage.deref(), function(vehicle) {
         return (

@@ -18,7 +18,7 @@ define(function(require) {
     refreshData: function() {
       SotaDispatcher.dispatch({actionType: 'get-vehicles-queued-for-package', name: this.props.PackageName, version: this.props.PackageVersion});
     },
-    label: "Queued Vehicles",
+    label: "Vehicles with this package queued for install",
     panel: function() {
       var vehicles = _.map(this.props.Vehicles.deref(), function(vehicle) {
         return (
@@ -36,7 +36,7 @@ define(function(require) {
           <thead>
             <tr>
               <td>
-                VINs
+                VIN
               </td>
             </tr>
           </thead>

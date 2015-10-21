@@ -46,13 +46,13 @@ define(function(require) {
                   <Link to="packages" className="packages">Packages</Link>
                 </li>
                 <li role="presentation">
+                  <Link to="components" className="components">Components</Link>
+                </li>
+                <li role="presentation">
                   <Link to="filters" className="filters">Filters</Link>
                 </li>
                 <li role="presentation">
                   <Link to="updates" className="updates">Updates</Link>
-                </li>
-                <li role="presentation">
-                  <Link to="components" className="components">Components</Link>
                 </li>
               </ul>
 	    </div>

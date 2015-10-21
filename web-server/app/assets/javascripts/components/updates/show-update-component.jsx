@@ -37,7 +37,7 @@ define(function(require) {
           <div className="row">
             <div className="col-md-12">
               <h1>
-                Update ID: {this.props.Update.deref().id}
+                Updates &gt; {this.props.Update.deref().id}
               </h1>
             </div>
           </div>

@@ -19,6 +19,7 @@ define(function(require) {
                 var showPackage = _.find(packages, function(package) {
                   return package.id.name == payload.name && package.id.version == payload.version;
                 });
+                showPackage.id = showPackage.id.name + '-' + showPackage.id.version;
                 db.showPackage.reset(showPackage);
               });
           break;

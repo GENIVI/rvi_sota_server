@@ -20,7 +20,7 @@ define(function(require) {
     refreshData: function() {
       SotaDispatcher.dispatch({actionType: 'get-package-history-for-vin', vin: this.props.Vin});
     },
-    label: "Finished / Failed Packages",
+    label: "History",
     panel: function() {
       var finishedRows = _.map(this.props.Packages.deref(), function(package) {
         if(package.success === true) {
@@ -62,7 +62,7 @@ define(function(require) {
       });
       return (
         <div>
-          <h2>Finished Package Updates</h2>
+          <h2>Completed Updates</h2>
           <table className="table table-striped table-bordered">
             <thead>
               <tr>
@@ -81,7 +81,7 @@ define(function(require) {
               { finishedRows }
             </tbody>
           </table>
-          <h2>Failed Package Updates</h2>
+          <h2>Failed Updates</h2>
           <table className="table table-striped table-bordered">
             <thead>
               <tr>
