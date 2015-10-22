@@ -58,7 +58,7 @@ define(function(require) {
 	          </div>
           </div>
         </nav>
-        <div className="page wrapper">
+        <div className="page wrapper container-fluid">
           <RouteHandler />
         </div>
       </div>

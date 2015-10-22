@@ -1,3 +1,11 @@
+.top-nav {
+    height: 72px;
+}
+
+.pointer {
+    cursor: pointer;
+}
+
 body {
     padding-top: 70px;
 }
@@ -28,10 +36,10 @@ body {
     border-top: 2px solid #454545;
 }
 
-.sota-container {
-    padding-left: 180px;
-}
-
 .nav-label {
     padding-left: 35px;
+}
+
+#app {
+    padding-left: 180px;
 }
