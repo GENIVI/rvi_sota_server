@@ -1599,16 +1599,16 @@ span.icon>.fa {
 }
 
 .admonitionblock td.icon .icon-note:before {
-    content: "\f05a";
+    content: url(/rvi_sota_server/images/icon-note.png);
     color: rgb(133,198,194);
 }
 .admonitionblock td.icon .icon-tip:before {
-    content: "\f0eb";
+    content: url(/rvi_sota_server/images/icon-tip.png);
     /*text-shadow: 1px 1px 2px rgba(155, 155, 0, .8);*/
     color: rgb(133,198,194);
 }
 .admonitionblock td.icon .icon-warning:before {
-    content: "\f071";
+    content: url(/rvi_sota_server/images/icon-important.png);
     color: rgb(133,198,194);
 }
 .admonitionblock td.icon .icon-caution:before {
@@ -1616,7 +1616,7 @@ span.icon>.fa {
     color: rgb(133,198,194);
 }
 .admonitionblock td.icon .icon-important:before {
-    content: "\f06a";
+    content: url(/rvi_sota_server/images/icon-important.png);
     color: rgb(133,198,194);
 }
 .admonitionblock td {
