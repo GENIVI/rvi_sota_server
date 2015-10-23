@@ -1,0 +1,404 @@
+DEBUG:sota_client::handler::service: >>> Received Message: {
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "services_available",
+  "params": {
+    "services": [
+      "genivi.org/backend/sota/start"
+    ]
+  }
+}
+DEBUG:sota_client::handler::service: <<< Sent Response: {
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": null
+}
+DEBUG:sota_client::handler::service: >>> Received Message: {"jsonrpc":"2.0","id":1,"method":"services_available","params":{"services":["genivi.org/backend/sota/cancel"]}}
+DEBUG:sota_client::handler::service: <<< Sent Response: {
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": null
+}
+DEBUG:sota_client::handler::service: >>> Received Message: {"jsonrpc":"2.0","id":1,"method":"services_available","params":{"services":["genivi.org/backend/sota/ack"]}}
+DEBUG:sota_client::handler::service: <<< Sent Response: {
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": null
+}
+DEBUG:sota_client::handler::service: >>> Received Message: {"jsonrpc":"2.0","id":1,"method":"services_available","params":{"services":["genivi.org/backend/sota/report"]}}
+DEBUG:sota_client::handler::service: <<< Sent Response: {
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": null
+}
+DEBUG:sota_client::handler::service: >>> Received Message: {"jsonrpc":"2.0","id":1,"method":"services_available","params":{"services":["genivi.org/backend/sota/packages"]}}
+DEBUG:sota_client::handler::service: <<< Sent Response: {
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": null
+}
+
+DEBUG:sota_client::rvi::send: <<< Sent Message: 
+{
+  "jsonrpc": "2.0",
+  "id": 2649007917144,
+  "method": "register_service",
+  "params": {
+    "network_address": "sota_client_1:8090",
+    "service": "/sota/notify"
+  }
+}
+DEBUG:sota_client::rvi::send: >>> Received Response: 
+{
+  "jsonrpc": "2.0",
+  "id": 2649007917144,
+  "result": {
+    "status": 0,
+    "service": "genivi.org/vin/VINOOLAM0FAU2DEEP/sota/notify"
+  }
+}
+DEBUG:sota_client::rvi::send: <<< Sent Message: 
+{
+  "jsonrpc": "2.0",
+  "id": 2649018536808,
+  "method": "register_service",
+  "params": {
+    "network_address": "sota_client_1:8090",
+    "service": "/sota/start"
+  }
+}
+DEBUG:sota_client::rvi::send: >>> Received Response: 
+{
+  "jsonrpc": "2.0",
+  "id": 2649018536808,
+  "result": {
+    "status": 0,
+    "service": "genivi.org/vin/VINOOLAM0FAU2DEEP/sota/start"
+  }
+}
+DEBUG:sota_client::rvi::send: <<< Sent Message: 
+{
+  "jsonrpc": "2.0",
+  "id": 2649026902037,
+  "method": "register_service",
+  "params": {
+    "network_address": "sota_client_1:8090",
+    "service": "/sota/chunk"
+  }
+}
+DEBUG:sota_client::rvi::send: >>> Received Response: 
+{
+  "jsonrpc": "2.0",
+  "id": 2649026902037,
+  "result": {
+    "status": 0,
+    "service": "genivi.org/vin/VINOOLAM0FAU2DEEP/sota/chunk"
+  }
+}
+DEBUG:sota_client::rvi::send: <<< Sent Message: 
+{
+  "jsonrpc": "2.0",
+  "id": 2649040717391,
+  "method": "register_service",
+  "params": {
+    "network_address": "sota_client_1:8090",
+    "service": "/sota/finish"
+  }
+}
+DEBUG:sota_client::rvi::send: >>> Received Response: 
+{
+  "jsonrpc": "2.0",
+  "id": 2649040717391,
+  "result": {
+    "status": 0,
+    "service": "genivi.org/vin/VINOOLAM0FAU2DEEP/sota/finish"
+  }
+}
+DEBUG:sota_client::rvi::send: <<< Sent Message: 
+{
+  "jsonrpc": "2.0",
+  "id": 2649049342263,
+  "method": "register_service",
+  "params": {
+    "network_address": "sota_client_1:8090",
+    "service": "/sota/getpackages"
+  }
+}
+DEBUG:sota_client::rvi::send: >>> Received Response: 
+{
+  "jsonrpc": "2.0",
+  "id": 2649049342263,
+  "result": {
+    "status": 0,
+    "service": "genivi.org/vin/VINOOLAM0FAU2DEEP/sota/getpackages"
+  }
+}
+DEBUG:sota_client::rvi::send: <<< Sent Message: 
+{
+  "jsonrpc": "2.0",
+  "id": 2649070760676,
+  "method": "register_service",
+  "params": {
+    "network_address": "sota_client_1:8090",
+    "service": "/sota/abort"
+  }
+}
+DEBUG:sota_client::rvi::send: >>> Received Response: 
+{
+  "jsonrpc": "2.0",
+  "id": 2649070760676,
+  "result": {
+    "status": 0,
+    "service": "genivi.org/vin/VINOOLAM0FAU2DEEP/sota/abort"
+  }
+}
+INFO:sota_client::rvi::edge: Ready to accept connections.
+DEBUG:sota_client::handler::service: >>> Received Message: 
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "message",
+  "params": {
+    "service_name": "/sota/notify",
+    "parameters": [
+      {
+        "services": {
+          "cancel": "genivi.org/backend/sota/cancel",
+          "ack": "genivi.org/backend/sota/ack",
+          "report": "genivi.org/backend/sota/report",
+          "start": "genivi.org/backend/sota/start",
+          "packages": "genivi.org/backend/sota/packages"
+        },
+        "packages": [
+          {
+            "size": 35768,
+            "package": {
+              "version": "7.6.2",
+              "name": "ghc"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+// INFO:sota_client::handler::notify: New package available: ghc-7.6.2, size: 35768
+DEBUG:sota_client::handler::service: <<< Sent Response: 
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": null
+}
+Array([Struct([Array([DictEntry(Str("name"), Str("ghc")), DictEntry(Str("version"), Str("7.6.2"))], "{ss}"), UInt64(35768)])], "r")
+msg: Array([Struct([Array([DictEntry(Str("name"), Str("ghc")), DictEntry(Str("version"), Str("7.6.2"))], "{ss}"), UInt64(35768)])], "r")
+unparsed: [Struct([Array([DictEntry(Str("name"), Str("ghc")), DictEntry(Str("version"), Str("7.6.2"))], "{ss}"), UInt64(35768)])]
+p: Struct([Array([DictEntry(Str("name"), Str("ghc")), DictEntry(Str("version"), Str("7.6.2"))], "{ss}"), UInt64(35768)])
+package: UserPackage { package: PackageId { name: "ghc", version: "7.6.2" }, size: 35768 }
+packages: [UserPackage { package: PackageId { name: "ghc", version: "7.6.2" }, size: 35768 }]
+INFO:sota_client::sota_dbus::receiver: Got initiate for ghc-7.6.2 from :1.3
+DEBUG:sota_client::rvi::send: <<< Sent Message: 
+{
+  "jsonrpc": "2.0",
+  "id": 2677667615071,
+  "method": "message",
+  "params": {
+    "service_name": "genivi.org/backend/sota/start",
+    "timeout": 1445520390,
+    "parameters": [
+      {
+        "packages": [
+          {
+            "name": "ghc",
+            "version": "7.6.2"
+          }
+        ],
+        "services": {
+          "start": "genivi.org/vin/VINOOLAM0FAU2DEEP/sota/start",
+          "chunk": "genivi.org/vin/VINOOLAM0FAU2DEEP/sota/chunk",
+          "abort": "genivi.org/vin/VINOOLAM0FAU2DEEP/sota/abort",
+          "finish": "genivi.org/vin/VINOOLAM0FAU2DEEP/sota/finish",
+          "getpackages": "genivi.org/vin/VINOOLAM0FAU2DEEP/sota/getpackages"
+        },
+        "vin": "VINOOLAM0FAU2DEEP"
+      }
+    ]
+  }
+}
+DEBUG:sota_client::rvi::send: >>> Received Response: 
+{
+  "jsonrpc": "2.0",
+  "id": 2677667615071,
+  "result": {
+    "status": 0,
+    "transaction_id": 2
+  }
+}
+DEBUG:sota_client::handler::service: >>> Received Message: 
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "message",
+  "params": {
+    "service_name": "/sota/start",
+    "parameters": [
+      {
+        "chunkscount": 1,
+        "checksum": "e6db09bd2c84db66534107da4ef00e6addccba8e",
+        "package": {
+          "version": "7.6.2",
+          "name": "ghc"
+        }
+      }
+    ]
+  }
+}
+INFO:sota_client::handler::start: Starting transfer for package ghc-7.6.2
+DEBUG:sota_client::rvi::send: <<< Sent Message: 
+{
+  "jsonrpc": "2.0",
+  "id": 2677989151999,
+  "method": "message",
+  "params": {
+    "service_name": "genivi.org/backend/sota/ack",
+    "timeout": 1445520390,
+    "parameters": [
+      {
+        "package": {
+          "name": "ghc",
+          "version": "7.6.2"
+        },
+        "chunks": [],
+        "vin": "VINOOLAM0FAU2DEEP"
+      }
+    ]
+  }
+}
+DEBUG:sota_client::rvi::send: >>> Received Response: 
+{
+  "jsonrpc": "2.0",
+  "id": 2677989151999,
+  "result": {
+    "status": 0,
+    "transaction_id": 3
+  }
+}
+DEBUG:sota_client::handler::service: <<< Sent Response: 
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": null
+}
+DEBUG:sota_client::handler::service: >>> Received Message: 
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "message",
+  "params": {
+    "service_name": "/sota/chunk",
+    "parameters": [
+      {
+        "index": 1,
+        "bytes": "<snip base64 encoded data chunk>",
+        "package": {
+          "version": "7.6.2",
+          "name": "ghc"
+        }
+      }
+    ]
+  }
+}
+INFO:sota_client::handler::chunk: Wrote chunk 1 for package ghc-7.6.2
+DEBUG:sota_client::rvi::send: <<< Sent Message: 
+{
+  "jsonrpc": "2.0",
+  "id": 2678355020281,
+  "method": "message",
+  "params": {
+    "service_name": "genivi.org/backend/sota/ack",
+    "timeout": 1445520390,
+    "parameters": [
+      {
+        "package": {
+          "name": "ghc",
+          "version": "7.6.2"
+        },
+        "chunks": [
+          1
+        ],
+        "vin": "VINOOLAM0FAU2DEEP"
+      }
+    ]
+  }
+}
+DEBUG:sota_client::rvi::send: >>> Received Response: 
+{
+  "jsonrpc": "2.0",
+  "id": 2678355020281,
+  "result": {
+    "status": 0,
+    "transaction_id": 4
+  }
+}
+DEBUG:sota_client::handler::service: <<< Sent Response: 
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": null
+}
+DEBUG:sota_client::handler::service: >>> Received Message: 
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "message",
+  "params": {
+    "service_name": "/sota/finish",
+    "parameters": [
+      {
+        "package": {
+          "version": "7.6.2",
+          "name": "ghc"
+        }
+      }
+    ]
+  }
+}
+INFO:sota_client::handler::finish: Finished transfer of ghc-7.6.2
+DEBUG:sota_client::handler::service: <<< Sent Response: 
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": null
+}
+Array([DictEntry(Str("name"), Str("ghc")), DictEntry(Str("version"), Str("7.6.2"))], "{ss}")
+PackageId { name: "ghc", version: "7.6.2" }
+Ok([Struct([Array([DictEntry(Str("name"), Str("ghc")), DictEntry(Str("version"), Str("7.6.2"))], "{ss}"), Bool(true), Str("Successfully installed package")])])
+DEBUG:sota_client::rvi::send: <<< Sent Message: 
+{
+  "jsonrpc": "2.0",
+  "id": 2680479224662,
+  "method": "message",
+  "params": {
+    "service_name": "genivi.org/backend/sota/report",
+    "timeout": 1445520392,
+    "parameters": [
+      {
+        "package": {
+          "name": "ghc",
+          "version": "7.6.2"
+        },
+        "status": true,
+        "description": "Successfully installed package",
+        "vin": "VINOOLAM0FAU2DEEP"
+      }
+    ]
+  }
+}
+DEBUG:sota_client::rvi::send: >>> Received Response: 
+{
+  "jsonrpc": "2.0",
+  "id": 2680479224662,
+  "result": {
+    "status": 0,
+    "transaction_id": 5
+  }
+}
