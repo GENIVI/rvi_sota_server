@@ -219,8 +219,23 @@ characters.
 a|
 *Code:* 200
 
-*Content:* A list of packages, and the DateTime they were installed.
+*Content:* A list of packages that were attempted to be installed on the VIN, their statuses, and the DateTime the status was reported.
 
+[source,json]
+----
+[
+  {
+    "success": true,
+    "completionTime": "2015-10-22T13:25:02.000Z",
+    "id": 1,
+    "vin": "VINOOLAM0FAU2DEEP",
+    "packageId": {
+      "version": "7.6.2",
+      "name": "ghc"
+    }
+  }
+]
+----
 
 |================================================================
 
@@ -315,7 +330,7 @@ a|
 
 [width="100%",cols="18%,82%",]
 |==============================================================
-|Availability |core, resolver
+|Availability |core
 |Description |Returns a list of packages.
 |URL |/api/v1/packages
 |Parameters |None
@@ -364,8 +379,6 @@ Example:
   }
 ]
 ----
-
-Note: Currently, the resolver returns an empty list and a *204 No Content* code for this endpoint, even though it stores package information in its database.
 
 |==============================================================
 
@@ -985,8 +998,6 @@ package.
 * *:version* — A package version, in _x.y.z_ format. __x__, __y__, and __z__ must all exist, and contain only digits.
 
 |Success Response a|
-*Example:* GET http://resolver/api/v1/packageFilters?package=myPackage-1.2.3
-
 *Code:* 200
 
 *Content:* A list of filters associated with the package.
