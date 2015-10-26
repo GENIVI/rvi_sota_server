@@ -130,7 +130,6 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
 class ResolveResourcePropSpec extends ResourcePropSpec {
 
   import ArbitraryFilter.arbFilter
-  import ArbitraryVehicle.arbVehicle
   import akka.http.scaladsl.model.StatusCodes
   import org.genivi.sota.resolver.resolve.ResolveFunctions.makeFakeDependencyMap
   import org.genivi.sota.resolver.filters._
