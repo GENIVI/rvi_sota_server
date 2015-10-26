@@ -18,7 +18,7 @@ import java.security.MessageDigest
 import org.apache.commons.codec.binary.Hex
 import org.genivi.sota.core.Generators
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.core.data.Vehicle
+import org.genivi.sota.core.data.Vehicle, Vehicle._
 import org.joda.time.DateTime
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
@@ -103,7 +103,7 @@ class PackageTransferSpec extends PropSpec with Matchers with PropertyChecks wit
   val services = ClientServices("", "", "", "", "")
 
   ignore("all chunks transferred") {
-    forAll( Generators.vehicleGen, Gen.oneOf( packages ) ) { (vehicle, p) =>
+    forAll( genVehicle, Gen.oneOf( packages ) ) { (vehicle, p) =>
       val pckg = Generators.generatePackageData(p)
       val probe = TestProbe()
       val clientActor = system.actorOf( ClientActor.props(vehicle.vin, probe.ref), "sota-client" )
@@ -120,7 +120,7 @@ class PackageTransferSpec extends PropSpec with Matchers with PropertyChecks wit
   ignore("transfer aborts after x attempts to deliver a chunk") {
     val chunkSize = system.settings.config.getBytes("rvi.transfer.chunkSize").intValue()
     val testDataGen = for {
-      vehicle <- Generators.vehicleGen
+      vehicle <- genVehicle
       p       <- Gen.oneOf( packages.filter( _.size > chunkSize ) )
       chunks  <- Gen.choose(0,
                            (BigDecimal(p.size) / BigDecimal(chunkSize) setScale(0, RoundingMode.CEILING)).toInt - 1)

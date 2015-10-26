@@ -18,7 +18,7 @@ import org.genivi.sota.core.RequiresRvi
 import org.genivi.sota.core.rvi.SotaServices
 
 class UpdateNotifierSpec extends PropSpec with PropertyChecks with Matchers with BeforeAndAfterAll {
-  import org.genivi.sota.core.Generators.{vehicleGen, dependenciesGen, updateRequestGen, vinDepGen}
+  import org.genivi.sota.core.Generators.{dependenciesGen, updateRequestGen, vinDepGen}
 
   val packages = scala.util.Random.shuffle( PackagesReader.read().take(100) )
 

@@ -12,42 +12,12 @@ import org.genivi.sota.resolver.common.Errors.Codes
 import org.genivi.sota.resolver.packages.{Package, PackageFilter}
 import org.genivi.sota.resolver.packages.Package._
 import org.genivi.sota.resolver.components.Component
-import org.genivi.sota.resolver.vehicles.Vehicle
+import org.genivi.sota.resolver.vehicles.Vehicle, Vehicle._
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 import org.scalacheck._
 
 
-object ArbitraryVehicle {
-
-  val genVehicle: Gen[Vehicle] =
-    Gen.listOfN(17, Gen.alphaNumChar).
-      map(xs => Vehicle(Refined(xs.mkString)))
-
-  implicit lazy val arbVehicle: Arbitrary[Vehicle] =
-    Arbitrary(genVehicle)
-
-  val genTooLongVin: Gen[String] = for {
-    n   <- Gen.choose(18, 100)
-    vin <- Gen.listOfN(n, Gen.alphaNumChar)
-  } yield vin.mkString
-
-  val genTooShortVin: Gen[String] = for {
-    n   <- Gen.choose(1, 16)
-    vin <- Gen.listOfN(n, Gen.alphaNumChar)
-  } yield vin.mkString
-
-  val genNotAlphaNumVin: Gen[String] =
-    Gen.listOfN(17, Arbitrary.arbitrary[Char]).
-      suchThat(_.exists(c => !(c.isLetter || c.isDigit))).flatMap(_.mkString)
-
-  val genInvalidVehicle: Gen[Vehicle] =
-    Gen.oneOf(genTooLongVin, genTooShortVin, genNotAlphaNumVin).
-      map(x => Vehicle(Refined(x)))
-}
-
 class VehiclesResourcePropSpec extends ResourcePropSpec {
-
-  import ArbitraryVehicle.{genVehicle, arbVehicle, genInvalidVehicle}
 
   val vehicles = "vehicles"
 
