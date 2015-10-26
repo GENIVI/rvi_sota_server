@@ -23,6 +23,15 @@ define(function(require) {
                 db.showPackage.reset(showPackage);
               });
           break;
+          case 'create-package':
+            var url = '/api/v1/packages/' + payload.package.name + '/' + payload.package.version;
+            sendRequest.doPut(url, payload.data, {form: true})
+              .success(function() {
+                location.hash = "#/packages/" + payload.package.name + "/" + payload.package.version;
+                SotaDispatcher.dispatch({actionType: 'get-packages'});
+                SotaDispatcher.dispatch({actionType: 'search-packages-by-regex'});
+              });
+          break;
           case 'search-packages-by-regex':
             var query = payload.regex ? '?regex=' + payload.regex : '';
 
