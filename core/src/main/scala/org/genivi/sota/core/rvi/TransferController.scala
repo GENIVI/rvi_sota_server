@@ -120,20 +120,11 @@ class TransferProtocolActor(db: Database, rviClient: RviClient, transferActorPro
         val pendingSpecs = updates - finishedSpec
         db.run( UpdateSpecs.setStatus( finishedSpec, if( success ) UpdateStatus.Finished  else UpdateStatus.Failed ) )
         db.run( InstallHistories.log(vin, packageId, success) )
-        log.debug("PENDING SPECS:")
-        log.debug(pendingSpecs.toString())
-        log.debug("Updates")
-        log.debug(updates.toString())
-        log.debug("finishedSpec")
-        log.debug(finishedSpec.toString)
-        log.debug("EVERYTHING")
-        log.debug(r.toString())
         if( pendingSpecs.isEmpty ) {
           log.debug( "All installation reports received." )
           rviClient.sendMessage(services.getpackages, io.circe.Json.Empty, ttl())
           context.stop( self )
         } else {
-          log.debug( "Pending Specs remaining.")
           context.become(running( services, pendingSpecs, pending, inProgress, done ))
         }
       }
