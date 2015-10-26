@@ -154,26 +154,21 @@ Please ensure you are using the latest version of Docker Launcher. Older version
 <h2 id="deploying-a-development-system">Deploying a Development System</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>To deploy a local development system, there are 3 basic steps.</p>
+<p>Deploying with docker-launcher is quite easy: first, build the images:</p>
 </div>
-<div class="sect2">
-<h3 id="1-build-the-local-docker-images">1. Build the local docker images</h3>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="sh">./sbt docker:publishLocal</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Once this completes successfully, you may deploy with <a href="https://github.com/advancedtelematic/docker-launcher">Docker Launcher.</a></p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="2-launch-the-docker-images-with-docker-launcher">2. Launch the docker images with docker-launcher</h3>
-<div class="paragraph">
-<p>For deploying a development system to your local machine, make sure you have Docker Launcher and Docker installed and configured to your liking. Docker Launcher currently requires Docker &gt;= v.1.8.0 and Ansible v.1.9.2. Ansible 2.x has not yet been tested, and is not guaranteed to work.</p>
+<p>And then you may deploy with <a href="https://github.com/advancedtelematic/docker-launcher">Docker Launcher.</a></p>
 </div>
 <div class="paragraph">
-<p>First, enter the <code>deploy</code> directory, and copy the example Docker Launcher configuration file, then edit it to match your preferences. The only values you should need to change are the <code>user</code> and <code>email</code> fields in <code>docker-launcher.yml</code>. These should be a valid username and associated email address for Docker Hub.</p>
+<p>Make sure you have Docker Launcher and Docker installed and configured to your liking. Docker Launcher currently requires Docker &gt;= v.1.8.0 and Ansible v.1.9.2. Ansible 2.x has not yet been tested, and is not guaranteed to work.</p>
+</div>
+<div class="paragraph">
+<p>Enter the <code>deploy</code> directory, copy the example Docker Launcher configuration file, and run it.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -183,16 +178,7 @@ docker-launcher -c docker-launcher.yml deploy-sota-local.yml</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>You will be prompted for your Docker Hub password, but for a local deployment it&#8217;s not actually needed.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="3-apply-database-migrations-to-the-newly-created-mariadb-container">3. Apply database migrations to the newly created MariaDB container</h3>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="sh"><span style="color: #19177C">CORE_DB_URL</span><span style="color: #666666">=</span>jdbc:mariadb://&lt;your-docker-host&gt;:3306/sota_core <span style="color: #19177C">RESOLVER_DB_URL</span><span style="color: #666666">=</span>jdbc:mariadb://&lt;your-docker-host&gt;:3306/sota_resolver sbt flywayMigrate</code></pre>
-</div>
-</div>
+<p>You will be prompted for your Docker Hub password, but for a local deployment it&#8217;s not actually needed. You can just press enter at the prompt.</p>
 </div>
 <div class="sect2">
 <h3 id="teardown">Teardown</h3>

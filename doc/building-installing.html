@@ -364,11 +364,12 @@ ln -s /var/sota-build/webserver-target/ web-server/target</pre>
 <p>The SOTA client builds as a docker container. As long as you have <code>rust</code> and <code>cargo</code> installed, <code>make docker</code> should build a docker image called <code>sota-client</code>.</p>
 </div>
 <div class="paragraph">
-<p>You can also build the SOTA client from within a docker container; this will be necessary if your build environment is not running linux. From the project root, run <code>docker run -it --rm -v $PWD:/build advancedtelematic/rust:1.2.0 /bin/bash</code>. Once you are at a bash prompt, run the following commands:</p>
+<p>You can also build the SOTA client from within a docker container; this will be necessary if your build environment is not running linux. From the project root, run <code>docker run -it --rm -v $PWD:/build advancedtelematic/rust:latest /bin/bash</code>. Once you are at a bash prompt, run the following commands:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>apt-get install -y libssl-dev
+<pre>apt-get update
+apt-get install -y libssl-dev dbus libdbus-1-dev dbus-1-dbg make
 cd /build
 cargo build --release
 exit</pre>
@@ -381,7 +382,7 @@ exit</pre>
 <p>Once the sota-client docker image is built (by either of the two methods above), you can run it with <code>docker run -it --name sota-client -p 9000:9000 --link rvi-client:rvi-client -e RUST_LOG=info advancedtelematic/sota-client</code>.</p>
 </div>
 <div class="paragraph">
-<p>The client will listen for an active campaign from the server, and download updates when they become available. It then directly calls <code>rpm -i</code> to install the package it received.</p>
+<p>The client will listen for an active campaign from the server, and download updates when they become available. It then uses dbus calls to install the package it received.</p>
 </div>
 </div>
 </div>
