@@ -9,6 +9,7 @@ import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.util.FastFuture
 import akka.parboiled2.util.Base64
 import akka.testkit.TestProbe
+import com.typesafe.config.ConfigFactory
 import io.circe.Encoder
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -24,15 +25,20 @@ import org.scalatest.prop.PropertyChecks
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
 import scala.concurrent.Future
 import scala.concurrent.Promise
+import scala.math.BigDecimal.RoundingMode
 import scala.util.Success
 
-class ClientActor(vin: Vehicle.Vin, probe: ActorRef) extends Actor with ActorLogging with  Stash {
+class ClientActor(vin: Vehicle.Vin, probe: ActorRef, chunksToConsume: Int)
+    extends Actor with ActorLogging with  Stash {
 
   val chunks = scala.collection.mutable.ListBuffer.empty[PackageChunk]
 
   def consumeChunks(uploader: ActorRef) : Receive = {
     case StartDownloadMessage(pid, _, _) =>
       uploader ! ChunksReceived(vin, pid, List.empty)
+
+    case PackageChunk(_, _, index) if index > chunksToConsume =>
+      // do nothing, uploader will time out.
 
     case x @ PackageChunk(pid, data, index) =>
       chunks += x
@@ -59,14 +65,15 @@ object ClientActor {
   final case class SetUploader( ref: ActorRef )
   final case class Report( chunks: List[PackageChunk] )
 
-  def props( vin: Vehicle.Vin, probe: ActorRef ) : Props = Props( new ClientActor( vin, probe ) )
+  def props( vin: Vehicle.Vin, probe: ActorRef, chunksToConsume: Int = Int.MaxValue ) : Props =
+    Props( new ClientActor( vin, probe, chunksToConsume ) )
 
 }
 
 class AccRviClient( clientActor: ActorRef ) extends RviClient {
 
   def sendMessage[A](service: String, message: A, expirationDate: DateTime)
-                    (implicit encoder: Encoder[A] ) : Future[Int] = {
+                 (implicit encoder: Encoder[A] ) : Future[Int] = {
     clientActor ! message
     FastFuture.successful( 1 )
   }
@@ -75,13 +82,27 @@ class AccRviClient( clientActor: ActorRef ) extends RviClient {
 
 class PackageTransferSpec extends PropSpec with Matchers with PropertyChecks with BeforeAndAfterAll {
 
-  implicit val system = akka.actor.ActorSystem()
+  val config = ConfigFactory.parseString(
+    """|akka {
+       |  loglevel = debug
+       |}
+       |rvi {
+       |  transfer {
+       |    chunkSize = 1K
+       |    ackTimeout = 300ms
+       |  }
+       |}
+    """.stripMargin
+  )
+
+  implicit val system = akka.actor.ActorSystem( "test", Some(config) )
   val packages = org.genivi.sota.core.PackagesReader.read()
 
   implicit override val generatorDrivenConfig = PropertyCheckConfig(minSuccessful = 1)
 
+  val services = ClientServices("", "", "", "", "")
+
   ignore("all chunks transferred") {
-    val services = ClientServices("", "", "", "")
     forAll( Generators.vehicleGen, Gen.oneOf( packages ) ) { (vehicle, p) =>
       val pckg = Generators.generatePackageData(p)
       val probe = TestProbe()
@@ -93,6 +114,35 @@ class PackageTransferSpec extends PropSpec with Matchers with PropertyChecks wit
       val digest = MessageDigest.getInstance("SHA-1")
       report.chunks.sortBy(_.index).foreach(x => digest.update( x.bytes.toByteBuffer ) )
       pckg.checkSum shouldBe Hex.encodeHexString( digest.digest )
+    }
+  }
+
+  ignore("transfer aborts after x attempts to deliver a chunk") {
+    val chunkSize = system.settings.config.getBytes("rvi.transfer.chunkSize").intValue()
+    val testDataGen = for {
+      vehicle <- Generators.vehicleGen
+      p       <- Gen.oneOf( packages.filter( _.size > chunkSize ) )
+      chunks  <- Gen.choose(0,
+                           (BigDecimal(p.size) / BigDecimal(chunkSize) setScale(0, RoundingMode.CEILING)).toInt - 1)
+    } yield (vehicle, p, chunks)
+
+    forAll( testDataGen ) { testData =>
+      val (vehicle, p, chunksTransferred) = testData
+      val pckg = Generators.generatePackageData(p)
+      val probe = TestProbe()
+      val clientActor = system.actorOf( ClientActor.props(vehicle.vin, probe.ref, chunksTransferred), "sota-client" )
+      val rviClient = new AccRviClient( clientActor )
+      val proxy = system.actorOf(
+        Props(new Actor {
+                val underTest = context.actorOf( PackageTransferActor.props(rviClient)(services, pckg) )
+                def receive = {
+                  case x if sender == underTest => probe.ref forward x
+                  case x                        => underTest forward x
+                }
+              })
+      )
+      clientActor ! ClientActor.SetUploader( proxy )
+      probe.expectMsg(UploadAborted)
     }
   }
 
