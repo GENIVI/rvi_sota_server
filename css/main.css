@@ -1670,9 +1670,6 @@ p, td.content {
 p strong, td.content strong {
     letter-spacing: -.005em
 }
-p, blockquote, dt, td.content {
-    font-size: 1.0625rem
-}
 p {
     margin-bottom: 1.25rem
 }
