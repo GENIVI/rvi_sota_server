@@ -21,6 +21,19 @@ define(function(require) {
     },
     render: function() {
       var rows = _.map(this.props.Update.deref(), function(value, key) {
+        if(key === "packageId") {
+          var idString = value.name + '-' + value.version;
+          return (
+            <tr key={idString}>
+              <td>
+                {key}
+              </td>
+              <td>
+                {idString}
+              </td>
+            </tr>
+          );
+        }
         return (
           <tr key={key}>
             <td>

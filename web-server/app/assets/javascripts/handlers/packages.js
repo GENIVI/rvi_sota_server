@@ -16,11 +16,9 @@ define(function(require) {
           case 'get-package':
             sendRequest.doGet('/api/v1/packages')
               .success(function(packages) {
-                var showPackage = _.find(packages, function(package) {
+                db.showPackage.reset(_.find(packages, function(package) {
                   return package.id.name == payload.name && package.id.version == payload.version;
-                });
-                showPackage.id = showPackage.id.name + '-' + showPackage.id.version;
-                db.showPackage.reset(showPackage);
+                }));
               });
           break;
           case 'create-package':

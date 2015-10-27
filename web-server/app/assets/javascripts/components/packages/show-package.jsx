@@ -29,6 +29,19 @@ define(function(require) {
     render: function() {
       var params = this.context.router.getCurrentParams();
       var rows = _.map(this.props.Package.deref(), function(value, key) {
+        if(key === "id") {
+          var idString = value.name + '-' + value.version;
+          return (
+            <tr key={idString}>
+              <td>
+                {key}
+              </td>
+              <td>
+                {idString}
+              </td>
+            </tr>
+          );
+        }
         return (
           <tr key={key}>
             <td>
