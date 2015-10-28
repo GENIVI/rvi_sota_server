@@ -8,8 +8,6 @@ import javax.inject.Inject
 
 import jp.t2v.lab.play2.auth.{AuthElement, LoginLogout}
 import org.genivi.webserver.Authentication.{AccountManager, Role}
-import org.genivi.webserver.requesthelpers.RequestHelper._
-import org.genivi.webserver.requesthelpers.{ErrorResponse, LeftResponse, RightResponse}
 import org.slf4j.LoggerFactory
 import play.api.Play.current
 import play.api._
