@@ -122,7 +122,7 @@ object Dependencies {
 
   val AkkaHttpVersion = "1.0"
 
-  val AkkaVersion = "2.3.12"
+  val AkkaVersion = "2.4.0"
 
   val CirceVersion = "0.2.0-SNAPSHOT"
 
