@@ -58,7 +58,7 @@ define(function(require) {
         if(Array.isArray(value)) {
           if(value[2] === "Finished") {
             return (
-              <tr key={value=[1]}>
+              <tr key={value[1]}>
                 <td>
                   {value[1]}
                 </td>
