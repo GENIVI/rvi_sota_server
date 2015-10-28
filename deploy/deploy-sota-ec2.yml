@@ -3,136 +3,132 @@ nodes:
   - name: sota_server
     group: sota_server
     services:
+      - data
       - mysql
+      - rvi
       - resolver
       - core
       - webserver
       - haproxy
-    size: c3.xlarge
+      - migration
+      - monitor
+    volumes:
+      - dev: /dev/xvdb
+        size: 15
+        fs: btrfs
+        mountpoint: /var/lib/docker
+    size: t2.medium
     count: 1
 
 security_groups:
   - name: sota_server
-    description: "security group for sota server"
+    description: "Security group for SOTA server"
     rules:
       - proto: tcp
         from_port: 22
         to_port: 22
         cidr_ip: 87.138.108.187/32
       - proto: tcp
-        from_port: 443
-        to_port: 443
-        cidr_ip: 0.0.0.0/0
-      - proto: tcp
         from_port: 80
         to_port: 80
         cidr_ip: 0.0.0.0/0
       - proto: tcp
-        from_port: 8888
-        to_port: 8888
-        cidr_ip: 87.138.108.187/32
+        from_port: 8807
+        to_port: 8807
+        cidr_ip: 0.0.0.0/0
     rules_egress:
       - proto: all
         cidr_ip: 0.0.0.0/0
 
 services:
-  - name: haproxy
-    version: latest
-    repo: haproxy
-    ports:
-      - 80
-      - 443
-      - 3306
-      - 8888
-    files:
-      - src: haproxy.cfg.j2
-        dest: /etc/haproxy.cfg
+  - name: data
+    repo: busybox
+    state: present
+    restart_policy: 'no'
     volumes:
-      - /etc/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - /var/lib/mysql
+      - /usr/local/packages
 
   - name: mysql
     repo: advancedtelematic/mariadb
     ports:
-      - 3307:3306
+      - 3306
     env:
       MYSQL_ROOT_PASSWORD: "{{ db_root_password }}"
       MYSQL_USER: "{{ db_user }}"
       MYSQL_PASSWORD: "{{ db_user_password }}"
       MYSQL_DATABASES: "{{ db_resolver_name }} {{ db_core_name }}"
+    volumes_from:
+      - data
 
-  - name: rvi-server
+  - name: rvi
     repo: advancedtelematic/rvi
     attach: true
     ports:
-      - 8801
-      - 8805
-      - 8806
       - 8807
-      - 8808
     command: server
 
-  - name: rvi-client
-    repo: advancedtelematic/rvi
-    attach: true
-    ports:
-      - 8901
-      - 8905
-      - 8906
-      - 8907
-      - 8908
-    command: client
-
-  - name: sota-client
-    repo: advancedtelematic/sota-client
-    ports:
-      - 8090
-    links:
-      - rvi-client
-    env:
-      SOTA_CLIENT_PORT: "8090"
-
   - name: resolver
-    repo: advancedtelematic/sota-resolver
-    pull: false
+    repo: advancedtelematic/sota-resolver:dev
+    version: dev
     ports:
       - 8081
-    expose:
-      - "8081"
     links:
-      - mysql
+      - mysql[direct]
     env:
       HOST: 0.0.0.0
-      RESOLVER_DB_URL: "jdbc:mysql://{{ '{{' }}groups.haproxy[0] {{ '}}' }}:3307/{{ db_resolver_name }}"
+      RESOLVER_DB_URL: "jdbc:mariadb://mysql:3306/{{ db_resolver_name }}"
 
   - name: core
-    repo: advancedtelematic/sota-core
-    pull: false
+    repo: advancedtelematic/sota-core:dev
+    version: dev
     ports:
       - 8080
-    expose:
-      - "8080"
     links:
-      - mysql
-      - resolver
-      - rvi-server
+      - mysql[direct]
+      - resolver[direct]
+      - rvi[direct]
     env:
       HOST: 0.0.0.0
-      CORE_DB_URL: "jdbc:mysql://{{ '{{' }}groups.haproxy[0] {{ '}}' }}:3307/{{ db_core_name }}"
-      RESOLVER_API_URI: "http://{{ '{{' }} groups.haproxy[0] {{ '}}' }}:8081"
-      RVI_URI: "http://{{ '{{' }} groups.haproxy[0] {{ '}}' }}:8801"
+      SOTA_SERVICES_URI: "http://core:8080/rvi"
+      CORE_DB_URL: "jdbc:mariadb://mysql:3306/{{ db_core_name }}"
+      RESOLVER_API_URI: "http://resolver:8081"
+      RVI_URI: "http://rvi:8801"
+    volumes_from:
+      - data
 
   - name: webserver
-    repo: advancedtelematic/sota-webserver
+    repo: advancedtelematic/sota-webserver:dev
+    version: dev
     links:
-      - resolver
-      - core
-    pull: false
+      - resolver[direct]
+      - core[direct]
     ports:
-      - 9000
-    expose:
-      - "9000"
+      - 80:9000
     env:
-      CORE_API_URI: "http://{{ '{{' }} groups.haproxy[0] {{ '}}' }}:8080"
-      RESOLVER_API_URI: "http://{{ '{{' }} groups.haproxy[0] {{ '}}' }}:8081"
+      CORE_API_URI: "http://core:8080"
+      RESOLVER_API_URI: "http://resolver:8081"
       PLAY_CRYPTO_SECRET: {{ play_crypto_secret }}
 
+  - name: migration
+    repo: advancedtelematic/sota-migration
+    restart_policy: 'no'
+    links:
+      - mysql[direct]
+    env:
+      RESOLVER_DB_URL: "jdbc:mariadb://mysql:3306/{{ db_resolver_name }}"
+      CORE_DB_URL: "jdbc:mariadb://mysql:3306/{{ db_core_name }}"
+
+  - name: monitor
+    repo: advancedtelematic/docker-aws-monitor
+    schedule:
+      - onboot: 2min
+        schedule: 1min
+        description: "Post container status to AWS Cloud Watch"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    env:
+      AWS_ACCESS_KEY_ID: "{{ monitoring_key_id }}"
+      AWS_SECRET_ACCESS_KEY: "{{ monitoring_secret_key }}"
+      REGION: "{{ monitoring_region }}"
+    command: "webserver core resolver mysql rvi"
