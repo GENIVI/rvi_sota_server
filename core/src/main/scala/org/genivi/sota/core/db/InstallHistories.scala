@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.core.db
 
-import org.genivi.sota.core.data.{Vehicle, Package, InstallHistory, InstallRequest}
+import org.genivi.sota.core.data.{Vehicle, Package, InstallHistory}
 import org.joda.time.DateTime
 import slick.driver.JdbcTypesComponent._
 import slick.driver.MySQLDriver.api._
