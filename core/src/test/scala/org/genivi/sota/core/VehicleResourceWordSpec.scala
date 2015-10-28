@@ -52,7 +52,7 @@ class VinResourceWordSpec extends WordSpec
       }
     }
     "return a list of packages installed on a vin" in {
-      Get(VinsUri + "/BLAHVIN0123456789/queued") ~> service.route ~> check {
+      Get(VinsUri + "/BLAHV1N0123456789/queued") ~> service.route ~> check {
         assert(status === StatusCodes.OK)
       }
     }
@@ -76,7 +76,7 @@ class VinResourceWordSpec extends WordSpec
       }
     }
     "return a 404 when deleting a non existing vin" in {
-      Delete( VinsUri + "/123456789NOTTHERE") ~> service.route ~> check {
+      Delete( VinsUri + "/123456789N0TTHERE") ~> service.route ~> check {
         assert(status === StatusCodes.NotFound)
       }
     }

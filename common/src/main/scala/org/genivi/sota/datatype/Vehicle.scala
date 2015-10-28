@@ -13,8 +13,11 @@ trait VehicleCommon {
   trait ValidVin
 
   implicit val validVin : Predicate[ValidVin, String] = Predicate.instance(
-    vin => vin.length == 17 && vin.forall(c => c.isLetter || c.isDigit),
-    vin => s"($vin isn't 17 letters or digits long)"
+    vin => vin.length == 17
+        && vin.forall(c => (c.isUpper  || c.isDigit)
+                        && (c.isLetter || c.isDigit)
+                        && !List('I', 'O', 'Q').contains(c)),
+    vin => s"($vin must be 17 letters or digits long and not contain 'I', 'O', or 'Q')"
   )
 
   type Vin = Refined[String, ValidVin]
@@ -23,9 +26,11 @@ trait VehicleCommon {
     override def compare(v1: Vin, v2: Vin): Int = v1.get compare v2.get
   }
 
+  val genVinChar: Gen[Char] =
+    Gen.oneOf('A' to 'Z' diff List('I', 'O', 'Q'))
+
   val genVin: Gen[Vin] =
-    Gen.listOfN(17, Gen.alphaNumChar)
-       .map(xs => Refined(xs.mkString))
+    Gen.listOfN(17, genVinChar).map(cs => Refined(cs.mkString))
 
   implicit lazy val arbVin: Arbitrary[Vin] =
     Arbitrary(genVin)
@@ -34,13 +39,13 @@ trait VehicleCommon {
 
     val genTooLongVin: Gen[String] = for {
       n  <- Gen.choose(18, 100)
-      xs <- Gen.listOfN(n, Gen.alphaNumChar)
-    } yield xs.mkString
+      cs <- Gen.listOfN(n, genVinChar)
+    } yield cs.mkString
 
     val genTooShortVin: Gen[String] = for {
       n  <- Gen.choose(1, 16)
-      xs <- Gen.listOfN(n, Gen.alphaNumChar)
-    } yield xs.mkString
+      cs <- Gen.listOfN(n, genVinChar)
+    } yield cs.mkString
 
     val genNotAlphaNumVin: Gen[String] =
       Gen.listOfN(17, Arbitrary.arbitrary[Char]).
