@@ -24,7 +24,7 @@ import eu.timepit.refined.string._
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.core.data._
-import org.genivi.sota.core.db.{UpdateSpecs, Packages, Vehicles, InstallRequests, InstallHistories}
+import org.genivi.sota.core.db.{UpdateSpecs, Packages, Vehicles, InstallHistories}
 import org.genivi.sota.rest.Validation._
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 import scala.concurrent.Future
