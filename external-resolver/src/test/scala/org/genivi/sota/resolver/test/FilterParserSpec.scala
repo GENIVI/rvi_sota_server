@@ -75,6 +75,75 @@ class FilterParserSpec extends FlatSpec {
 
 }
 
+class FilterQuerySpec extends ResourceWordSpec {
+
+  import org.genivi.sota.resolver.vehicles.Vehicle
+  import org.genivi.sota.resolver.packages.Package
+  import org.genivi.sota.resolver.components.Component
+
+  val vin1 = Vehicle(Refined("APABEPA1234567890"))
+  val vin2 = Vehicle(Refined("APACEPA1234567890"))
+  val vin3 = Vehicle(Refined("APADEPA1234567890"))
+  val vin4 = Vehicle(Refined("BEPAEPA1234567890"))
+  val vin5 = Vehicle(Refined("DEPAEPA1234567890"))
+
+  val pkg1 = Package.Id(Refined("pkg1"), Refined("1.0.0"))
+  val pkg2 = Package.Id(Refined("pkg2"), Refined("1.0.0"))
+  val pkg3 = Package.Id(Refined("pkg3"), Refined("1.0.1"))
+  val pkg4 = Package.Id(Refined("pkg4"), Refined("1.0.1"))
+
+  val part1: Refined[String, Component.ValidPartNumber] = Refined("part1")
+  val part2: Refined[String, Component.ValidPartNumber] = Refined("part2")
+  val part3: Refined[String, Component.ValidPartNumber] = Refined("part3")
+  val part4: Refined[String, Component.ValidPartNumber] = Refined("part4")
+
+  val vins: Seq[(Vehicle, (Seq[Package.Id], Seq[Component.PartNumber]))] =
+    List( (vin1, (List(pkg1), List(part1)))
+        , (vin2, (List(pkg2), List(part2)))
+        , (vin3, (List(pkg3), List(part3)))
+        , (vin4, (List(pkg4), List(part4)))
+        , (vin5, (List(),     List()))
+        )
+
+  def run(f: FilterAST): Seq[Vehicle] =
+    vins.filter(query(f)).map(_._1)
+
+
+  "Filter queries" should {
+
+    "filter by matching VIN" in {
+      run(VinMatches(Refined(".*")))       shouldBe List(vin1, vin2, vin3, vin4, vin5)
+      run(VinMatches(Refined(".*BEPA.*"))) shouldBe List(vin1, vin4)
+    }
+
+    "filter by matching package" in {
+
+      // Note that vin5 isn't matched, because it has no components!
+      run(HasPackage(Refined(".*"),       Refined(".*")))    shouldBe List(vin1, vin2, vin3, vin4)
+
+      run(HasPackage(Refined(".*"),       Refined("1.0.0"))) shouldBe List(vin1, vin2)
+      run(HasPackage(Refined("pkg(3|4)"), Refined(".*")))    shouldBe List(vin3, vin4)
+
+    }
+
+    "filter by matching component" in {
+      run(HasComponent(Refined(".*")))        shouldBe List(vin1, vin2, vin3, vin4)
+      run(HasComponent(Refined("part(1|4)"))) shouldBe List(vin1, vin4)
+    }
+
+    "filter by a combination of matching VINs, packages and components" in {
+      run(And(VinMatches(Refined(".*")),
+              And(HasPackage(Refined(".*"), Refined(".*")),
+                  HasComponent(Refined(".*"))))) shouldBe List(vin1, vin2, vin3, vin4)
+
+      run(And(VinMatches(Refined(".*BEPA.*")),
+              And(HasPackage(Refined("pkg.*"), Refined(".*")),
+                  HasComponent(Refined("part4"))))) shouldBe List(vin4)
+    }
+
+  }
+}
+
 object ArbitraryFilterAST {
 
   def genFilterHelper(i: Int): Gen[FilterAST] = {
