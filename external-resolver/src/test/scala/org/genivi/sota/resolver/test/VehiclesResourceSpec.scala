@@ -95,12 +95,14 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
 
   val vehicles = "vehicles"
 
-  val vin = "V1N00LAM0FAU2DEEP"
+  val vin  = "V1N00LAM0FAU2DEEP"
+  val vin2 = "XAPABEPA123456789"
 
   "Vin resource" should {
 
     "create a new resource on PUT request" in {
       addVehicleOK(vin)
+      addVehicleOK(vin2)
     }
 
     "not accept too long VINs" in {
@@ -130,11 +132,11 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
 
     "list all VINs on a GET request" in {
       listVehicles ~> route ~> check {
-        responseAs[Seq[Vehicle]] shouldBe List(Vehicle(Refined(vin)))
+        responseAs[Seq[Vehicle]] shouldBe List(Vehicle(Refined(vin)), Vehicle(Refined(vin2)))
       }
     }
 
-    "return a 404 when deleteing a VIN which doesn't exist" in {
+    "return a 404 when deleting a VIN which doesn't exist" in {
       Delete(Resource.uri(vehicles, "123456789N0TTHERE")) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
       }
@@ -232,26 +234,27 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
       }
     }
 
-    "list all VINs that have a specific package installed on GET request to /vehciles?package:packageName-:packageVersion" in {
+    "list all VINs that have a specific package installed on GET request to /vehciles?packageName=:packageName&packageVersion=:packageVersion" in {
       installPackageOK(vin, "apa", "1.0.1")
-      Get(Resource.uri(vehicles) + "?package=apa-1.0.1") ~> route ~> check {
+      Get(Resource.uri(vehicles) + "?packageName=apa&packageVersion=1.0.1") ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[Seq[Vehicle.Vin]] shouldBe List(Refined(vin))
+        responseAs[Seq[Vehicle]] shouldBe List(Vehicle(Refined(vin)))
       }
     }
 
-    "fail to list VINs that have a specific non-existing package installed" in {
+    "return the empty list of VINs when the package does not exist" in {
       installPackageOK(vin, "apa", "1.0.1")
-      Get(Resource.uri(vehicles) + "?package=apa-0.0.0") ~> route ~> check {
-        status shouldBe StatusCodes.NotFound
-        responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
+      Get(Resource.uri(vehicles) + "?packageName=apa&packageVersion=0.0.0") ~> route ~> check {
+        status shouldBe StatusCodes.OK
+        responseAs[Seq[Vehicle]] shouldBe List()
       }
     }
 
-    "fail to list VINs that have a specific empty or malformated package installed" in {
+    "list all VINs if package parameter isn't provided properly" in {
       installPackageOK(vin, "apa", "1.0.1")
       Get(Resource.uri(vehicles) + "?package=") ~> route ~> check {
-        status shouldBe StatusCodes.BadRequest
+        status shouldBe StatusCodes.OK
+        responseAs[Seq[Vehicle]] shouldBe List(Vehicle(Refined(vin)), Vehicle(Refined(vin2)))
       }
     }
 
@@ -276,14 +279,11 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
   "list VINs that have a specific component on GET /vehicles?component=:partNumber" in {
     Get(Resource.uri(vehicles) + "?component=jobby0") ~> route ~> check {
       status shouldBe StatusCodes.OK
-      responseAs[Seq[Vehicle.Vin]] shouldBe List(Refined(vin))
+      responseAs[Seq[Vehicle]] shouldBe List(Vehicle(Refined(vin)))
     }
-  }
-
-  "fail to list VINs that have a specific non-existing component installed" in {
     Get(Resource.uri(vehicles) + "?component=jobby1") ~> route ~> check {
-      status shouldBe StatusCodes.NotFound
-      responseAs[ErrorRepresentation].code shouldBe Codes.MissingComponent
+      status shouldBe StatusCodes.OK
+      responseAs[Seq[Vehicle]] shouldBe List()
     }
   }
 

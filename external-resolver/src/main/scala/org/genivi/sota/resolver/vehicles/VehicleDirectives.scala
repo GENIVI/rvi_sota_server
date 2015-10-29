@@ -10,6 +10,7 @@ import akka.http.scaladsl.server._
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.Refined
+import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
@@ -36,20 +37,10 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
     pathPrefix("vehicles") {
       get {
         pathEnd {
-          parameters('package.as[Package.NameVersion].?, 'component.as[Component.PartNumber].?) {
-            case (Some(nameVersion), None)        =>
-              val packageName   : Package.Name    = Refined(nameVersion.get.split("-").head)
-              val packageVersion: Package.Version = Refined(nameVersion.get.split("-").tail.head)
-              completeOrRecoverWith(db.run(VehicleRepository.vinsThatHavePackage
-                (Package.Id(packageName, packageVersion)))) {
-                  Errors.onMissingPackage
-              }
-            case (None,              Some(part)) =>
-              completeOrRecoverWith(db.run(VehicleRepository.vinsThatHaveComponent(part))) {
-                Errors.onMissingComponent
-              }
-            case (_,                 _)          =>
-              complete(db.run(VehicleRepository.list))
+          parameters('regex.as[Refined[String, Regex]].?, 'packageName.as[Package.Name].?,
+            'packageVersion.as[Package.Version].?, 'component.as[Component.PartNumber].?)
+          { case (re, pn, pv, cp) =>
+              complete(db.run(VehicleRepository.search(re, pn , pv, cp)))
           }
         }
       } ~

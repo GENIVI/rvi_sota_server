@@ -4,12 +4,14 @@
  */
 package org.genivi.sota.resolver.vehicles
 
+import eu.timepit.refined.Refined
+import eu.timepit.refined.string.Regex
 import org.genivi.sota.db.SlickExtensions._
-import org.genivi.sota.resolver.filters.FilterAST._
-import org.genivi.sota.resolver.filters.{FilterAST, And, True}
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.components.{Component, ComponentRepository}
+import org.genivi.sota.resolver.filters.FilterAST, FilterAST.{query, parseFilter, parseValidFilter}
+import org.genivi.sota.resolver.filters.{True, And, VinMatches, HasPackage, HasComponent}
 import org.genivi.sota.resolver.packages.{Package, PackageRepository, PackageFilterRepository}
 import org.genivi.sota.resolver.resolve.ResolveFunctions
 import scala.concurrent.ExecutionContext
@@ -140,27 +142,6 @@ object VehicleRepository {
                 .flatten)
     } yield ps
 
-  def vinsThatHavePackageMap
-    (implicit ec: ExecutionContext)
-      : DBIO[Map[Package.Id, Seq[Vehicle.Vin]]] =
-    VehicleRepository.listInstalledPackages
-      .map(_
-        .sortBy(_._2)
-        .groupBy(_._2)
-        .mapValues(_.map(_._1)))
-
-  def vinsThatHavePackage
-    (pkgId: Package.Id)
-    (implicit ec: ExecutionContext): DBIO[Seq[Vehicle.Vin]] =
-    for {
-      _  <- PackageRepository.exists(pkgId)
-      vs <- vinsThatHavePackageMap
-              .map(_
-                .get(pkgId)
-                .toList
-                .flatten)
-    } yield vs
-
   /*
    * Installed components.
    */
@@ -216,25 +197,41 @@ object VehicleRepository {
                 .flatten)
     } yield cs
 
-  def vinsThatHaveComponentMap
-    (implicit ec: ExecutionContext): DBIO[Map[Component.PartNumber, Seq[Vehicle.Vin]]] =
-    VehicleRepository.listInstalledComponents
-      .map(_
-        .sortBy(_._2)
-        .groupBy(_._2)
-        .mapValues(_.map(_._1)))
-
-  def vinsThatHaveComponent
-    (part: Component.PartNumber)
-    (implicit ec: ExecutionContext): DBIO[Seq[Vehicle.Vin]] =
+  def vinsWithPackagesAndComponents
+    (implicit ec: ExecutionContext)
+      : DBIO[Seq[(Vehicle, (Seq[Package.Id], Seq[Component.PartNumber]))]] =
     for {
-      _  <- ComponentRepository.exists(part)
-      vs <- vinsThatHaveComponentMap
-              .map(_
-                .get(part)
-                .toList
-                .flatten)
-    } yield vs
+      vs   <- VehicleRepository.list
+      ps   : Seq[Seq[Package.Id]]
+           <- DBIO.sequence(vs.map(v => VehicleRepository.packagesOnVin(v.vin)))
+      cs   : Seq[Seq[Component.PartNumber]]
+           <- DBIO.sequence(vs.map(v => VehicleRepository.componentsOnVin(v.vin)))
+      vpcs : Seq[(Vehicle, (Seq[Package.Id], Seq[Component.PartNumber]))]
+           =  vs.zip(ps.zip(cs))
+    } yield vpcs
+
+  /*
+   * Searching
+   */
+
+  def search(re        : Option[Refined[String, Regex]],
+             pkgName   : Option[Package.Name],
+             pkgVersion: Option[Package.Version],
+             part      : Option[Component.PartNumber])
+            (implicit ec: ExecutionContext): DBIO[Seq[Vehicle]] = {
+
+    val vins  = re.fold[FilterAST](True)(VinMatches(_))
+    val pkgs  = (pkgName, pkgVersion) match
+      { case (Some(re1), Some(re2)) => HasPackage(Refined(re1.get), Refined(re2.get))
+        case _                      => True
+      }
+    val comps = part.fold[FilterAST](True)(r => HasComponent(Refined(r.get)))
+
+    for {
+      vpcs <- vinsWithPackagesAndComponents
+    } yield vpcs.filter(query(And(vins, And(pkgs, comps)))).map(_._1)
+
+  }
 
   /*
    * Resolving package dependencies.
@@ -244,14 +241,8 @@ object VehicleRepository {
              (implicit ec: ExecutionContext): DBIO[Map[Vehicle.Vin, Seq[Package.Id]]] =
     for {
       _       <- PackageRepository.exists(pkgId)
-      (p, fs) <- PackageFilterRepository.listFiltersForPackage(pkgId)
-      vs      <- VehicleRepository.list
-      ps      : Seq[Seq[Package.Id]]
-              <- DBIO.sequence(vs.map(v => VehicleRepository.packagesOnVin(v.vin)))
-      cs      : Seq[Seq[Component.PartNumber]]
-              <- DBIO.sequence(vs.map(v => VehicleRepository.componentsOnVin(v.vin)))
-      vpcs: Seq[(Vehicle, (Seq[Package.Id], Seq[Component.PartNumber]))]
-              =  vs.zip(ps.zip(cs))
+      (_, fs) <- PackageFilterRepository.listFiltersForPackage(pkgId)
+      vpcs    <- vinsWithPackagesAndComponents
     } yield ResolveFunctions.makeFakeDependencyMap(pkgId,
               vpcs.filter(query(fs.map(_.expression).map(parseValidFilter).foldLeft[FilterAST](True)(And)))
                   .map(_._1))

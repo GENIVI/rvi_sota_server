@@ -56,6 +56,6 @@ object Boot extends App {
 
   sys.addShutdownHook {
     Try( db.close()  )
-    Try( system.shutdown() )
+    Try( system.terminate() )
   }
 }
