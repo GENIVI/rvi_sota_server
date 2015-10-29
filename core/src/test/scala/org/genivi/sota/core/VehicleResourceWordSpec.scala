@@ -14,6 +14,8 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport
 import CirceMarshallingSupport._
 import org.genivi.sota.core.data.Vehicle
 import org.genivi.sota.core.db.Vehicles
+import org.genivi.sota.core.rvi.JsonRpcRviClient
+import org.genivi.sota.core.jsonrpc.HttpTransport
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.{WordSpec, Matchers}
 import scala.concurrent.Await
@@ -29,9 +31,13 @@ class VinResourceWordSpec extends WordSpec
     with BeforeAndAfterAll {
 
   val databaseName = "test-database"
-
   val db = Database.forConfig(databaseName)
-  lazy val service = new VehiclesResource(db)
+
+  val rviUri = Uri(system.settings.config.getString( "rvi.endpoint" ))
+  val serverTransport = HttpTransport( rviUri )
+  implicit val rviClient = new JsonRpcRviClient( serverTransport.requestTransport, system.dispatcher)
+
+  lazy val service = new VehiclesResource(db, rviClient)
 
   val testVins = List("12345678901234500", "1234567WW0123AAAA", "123456789012345WW")
 
@@ -67,6 +73,11 @@ class VinResourceWordSpec extends WordSpec
     "return a list of packages installed on a vin" in {
       Get(VinsUri + "/BLAHV1N0123456789/queued") ~> service.route ~> check {
         assert(status === StatusCodes.OK)
+      }
+    }
+    "initiate a getpackages message to a vin" in {
+      Put(VinsUri + "/V1234567890123456/sync") ~> service.route ~> check {
+        assert(status === StatusCodes.NoContent)
       }
     }
     "filter list of vins by regex 'WW'" in {

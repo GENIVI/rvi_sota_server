@@ -13,6 +13,8 @@ import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import CirceMarshallingSupport._
 import org.genivi.sota.core.data.Vehicle
+import org.genivi.sota.core.rvi.JsonRpcRviClient
+import org.genivi.sota.core.jsonrpc.HttpTransport
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
@@ -27,9 +29,13 @@ class VehicleResourceSpec extends PropSpec with PropertyChecks
     with BeforeAndAfterAll {
 
   val databaseName = "test-database"
-
   val db = Database.forConfig(databaseName)
-  lazy val service = new VehiclesResource(db)
+
+  val rviUri = Uri(system.settings.config.getString( "rvi.endpoint" ))
+  val serverTransport = HttpTransport( rviUri )
+  implicit val rviClient = new JsonRpcRviClient( serverTransport.requestTransport, system.dispatcher)
+
+  lazy val service = new VehiclesResource(db, rviClient)
 
   override def beforeAll {
     TestDatabase.resetDatabase( databaseName )
