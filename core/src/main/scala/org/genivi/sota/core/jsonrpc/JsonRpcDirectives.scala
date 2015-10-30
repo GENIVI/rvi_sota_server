@@ -15,6 +15,9 @@ import shapeless.HList
 
 import scala.concurrent.Future
 
+/**
+ * JSON-RPC request message.
+ */
 final case class Request( jsonrpc: String, method: String, params: Json, id: Option[Int] )
 
 object PredefinedErrors {
@@ -41,6 +44,9 @@ private[this] object ResultResponse {
   implicit val encoderInstance = deriveFor[ResultResponse].encoder
 }
 
+/**
+ * Directives for handling JSON-RPC messages.
+ */
 trait JsonRpcDirectives {
 
   import akka.http.scaladsl.server.Directives._

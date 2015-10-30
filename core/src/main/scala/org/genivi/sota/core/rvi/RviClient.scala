@@ -10,6 +10,9 @@ import scala.concurrent.Future
 import scala.util.Random
 import com.github.nscala_time.time.Imports.DateTime
 
+/**
+ * Abstract interface for sending a message to RVI.
+ */
 trait RviClient {
   def sendMessage[A](service: String, message: A, expirationDate: DateTime)
                     (implicit encoder: Encoder[A] ) : Future[Int]
@@ -17,6 +20,9 @@ trait RviClient {
 
 import io.circe._
 
+/**
+ * Concrete implementation for sending a message to RVI in JSON-RPC format.
+ */
 class JsonRpcRviClient(transport: Json => Future[Json], ec: ExecutionContext) extends RviClient {
 
   import shapeless._
@@ -25,6 +31,14 @@ class JsonRpcRviClient(transport: Json => Future[Json], ec: ExecutionContext) ex
   import org.genivi.sota.core.jsonrpc.client
   import shapeless.record._
 
+  /**
+   * Send a JSON-RPC formatted message to RVI.
+   *
+   * @param service the path to the destination endpoint
+   * @param message the message of generic type
+   * @param expirationDate the expiration in absolute time
+   * @return a future of the transaction ID
+   */
   override def sendMessage[A](service: String, message: A, expirationDate: DateTime)
     (implicit encoder: Encoder[A]) : Future[Int] = {
     implicit val exec = ec
