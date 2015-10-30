@@ -42,6 +42,10 @@ include::../_includes/api/get-vehicles-vin-history.ad[]
 
 include::../_includes/api/put-vehicles-vin-component-partnumber.ad[]
 
+=== DELETE /vehicles/:vin/component/:partNumber
+
+include::../_includes/api/delete-vehicles-vin-component-partnumber.ad[]
+
 === GET /vehicles/:vin/package
 
 include::../_includes/api/get-vehicles-vin-package.ad[]
@@ -49,6 +53,14 @@ include::../_includes/api/get-vehicles-vin-package.ad[]
 === PUT /vehicles/:vin/package/:name/:version
 
 include::../_includes/api/put-vehicles-vin-package-name-version.ad[]
+
+=== DELETE /vehicles/:vin/package/:name/:version
+
+include::../_includes/api/delete-vehicles-vin-package-name-version.ad[]
+
+=== PUT /vehicles/:vin/packages
+
+include::../_includes/api/put-vehicles-vin-packages.ad[]
 
 === GET /packages
 

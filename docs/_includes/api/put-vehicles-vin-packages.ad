@@ -1,0 +1,40 @@
+
+[width="100%",cols="18%,82%",]
+|================================================================
+
+
+|Description
+|Marks a list of packages as installed on a given vehicle.
+
+|URL
+|/api/v1/vehicles/:vin/packages
+
+|URL Parameters a|
+* *:vin* — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.
+|Data Parameters a|
+An array of objects containing:
+* *:name* — The name of a software package.
+ *:version* — The package version, in _x.y.z_ format. __x__, __y__, and _z_ must all contain only digits.
+|Example a|
+[source,json]
+----
+[
+  {
+    "name": "myPackage",
+    "version": "1.2.3"
+  },
+  {
+    "name": "myPackage2",
+    "version": "2.3.4"
+  }
+]
+----
+
+|Success Response
+a|
+*Code:* 200
+
+|================================================================
+

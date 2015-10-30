@@ -24,6 +24,14 @@ include::../_includes/api/put-vehicles-vin.ad[]
 
 include::../_includes/api/delete-vehicles-vin.ad[]
 
+=== GET /vehicles/:vin/queued
+
+include::../_includes/api/get-vehicles-vin-queued.ad[]
+
+=== GET /vehicles/:vin/history
+
+include::../_includes/api/get-vehicles-vin-history.ad[]
+
 === GET /packages
 
 include::../_includes/api/get-packages.ad[]
