@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `service` mod in crate `sota_client`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, service">
+
+    <title>sota_client::handler::service - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../../index.html'>sota_client</a>::<wbr><a href='../index.html'>handler</a></p><script>window.sidebarCurrent = {name: 'service', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Module <a href='../../index.html'>sota_client</a>::<wbr><a href='../index.html'>handler</a>::<wbr><a class='mod' href=''>service</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-842' class='srclink' href='../../../src/sota_client/handler/service.rs.html#1-227' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>The main service handler</p>
+
+<p>Parses incoming messages and delegates them to the appropriate individual message handlers,
+passing on the results to the <a href="../main_loop/index.html"><code>main_loop</code></a></p>
+</div><h2 id='reexports' class='section-header'><a href="#reexports">Reexports</a></h2>
+<table><tr><td><code>use std::prelude::<a class='mod' href='https://doc.rust-lang.org/nightly/std/prelude/v1/index.html' title='std::prelude::v1'>v1</a>::*;</code></td></tr><tr><td><code>use <a class='mod' href='../../../sota_client/jsonrpc/index.html' title='sota_client::jsonrpc'>jsonrpc</a>;</code></td></tr><tr><td><code>use jsonrpc::{<a class='struct' href='../../../sota_client/jsonrpc/struct.OkResponse.html' title='sota_client::jsonrpc::OkResponse'>OkResponse</a>, <a class='struct' href='../../../sota_client/jsonrpc/struct.ErrResponse.html' title='sota_client::jsonrpc::ErrResponse'>ErrResponse</a>};</code></td></tr><tr><td><code>use std::io::{<a class='trait' href='https://doc.rust-lang.org/nightly/std/io/trait.Read.html' title='std::io::Read'>Read</a>, <a class='trait' href='https://doc.rust-lang.org/nightly/std/io/trait.Write.html' title='std::io::Write'>Write</a>};</code></td></tr><tr><td><code>use std::ops::<a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.DerefMut.html' title='core::ops::DerefMut'>DerefMut</a>;</code></td></tr><tr><td><code>use std::sync::{<a class='struct' href='https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html' title='alloc::arc::Arc'>Arc</a>, <a class='struct' href='https://doc.rust-lang.org/nightly/std/sync/mutex/struct.Mutex.html' title='std::sync::mutex::Mutex'>Mutex</a>};</code></td></tr><tr><td><code>use std::sync::mpsc::<a class='struct' href='https://doc.rust-lang.org/nightly/std/sync/mpsc/struct.Sender.html' title='std::sync::mpsc::Sender'>Sender</a>;</code></td></tr><tr><td><code>use std::thread::<a class='fn' href='https://doc.rust-lang.org/nightly/std/thread/fn.sleep_ms.html' title='std::thread::sleep_ms'>sleep_ms</a>;</code></td></tr><tr><td><code>use <a class='mod' href='../../../time/index.html' title='time'>time</a>;</code></td></tr><tr><td><code>use hyper::server::{<a class='trait' href='../../../hyper/server/trait.Handler.html' title='hyper::server::Handler'>Handler</a>, <a class='struct' href='../../../hyper/server/request/struct.Request.html' title='hyper::server::request::Request'>Request</a>, <a class='struct' href='../../../hyper/server/response/struct.Response.html' title='hyper::server::response::Response'>Response</a>};</code></td></tr><tr><td><code>use rustc_serialize::{<a class='mod' href='../../../rustc_serialize/json/index.html' title='rustc_serialize::json'>json</a>, <a class='trait' href='../../../rustc_serialize/serialize/trait.Decodable.html' title='rustc_serialize::serialize::Decodable'>Decodable</a>};</code></td></tr><tr><td><code>use rustc_serialize::json::<a class='enum' href='../../../rustc_serialize/json/enum.Json.html' title='rustc_serialize::json::Json'>Json</a>;</code></td></tr><tr><td><code>use rvi::{<a class='struct' href='../../../sota_client/rvi/struct.Message.html' title='sota_client::rvi::Message'>Message</a>, <a class='trait' href='../../../sota_client/rvi/handler/trait.RVIHandler.html' title='sota_client::rvi::handler::RVIHandler'>RVIHandler</a>, <a class='struct' href='../../../sota_client/rvi/struct.Service.html' title='sota_client::rvi::Service'>Service</a>};</code></td></tr><tr><td><code>use message::{<a class='struct' href='../../../sota_client/message/struct.BackendServices.html' title='sota_client::message::BackendServices'>BackendServices</a>, <a class='struct' href='../../../sota_client/message/struct.LocalServices.html' title='sota_client::message::LocalServices'>LocalServices</a>, <a class='enum' href='../../../sota_client/message/enum.Notification.html' title='sota_client::message::Notification'>Notification</a>};</code></td></tr><tr><td><code>use handler::{<a class='struct' href='../../../sota_client/handler/struct.NotifyParams.html' title='sota_client::handler::NotifyParams'>NotifyParams</a>, <a class='struct' href='../../../sota_client/handler/struct.StartParams.html' title='sota_client::handler::StartParams'>StartParams</a>, <a class='struct' href='../../../sota_client/handler/struct.ChunkParams.html' title='sota_client::handler::ChunkParams'>ChunkParams</a>, <a class='struct' href='../../../sota_client/handler/struct.FinishParams.html' title='sota_client::handler::FinishParams'>FinishParams</a>};</code></td></tr><tr><td><code>use handler::{<a class='struct' href='../../../sota_client/handler/struct.ReportParams.html' title='sota_client::handler::ReportParams'>ReportParams</a>, <a class='struct' href='../../../sota_client/handler/struct.AbortParams.html' title='sota_client::handler::AbortParams'>AbortParams</a>, <a class='trait' href='../../../sota_client/handler/trait.HandleMessageParams.html' title='sota_client::handler::HandleMessageParams'>HandleMessageParams</a>, <a class='type' href='../../../sota_client/handler/type.Transfers.html' title='sota_client::handler::Transfers'>Transfers</a>};</code></td></tr><tr><td><code>use configuration::<a class='struct' href='../../../sota_client/configuration/struct.Configuration.html' title='sota_client::configuration::Configuration'>Configuration</a>;</code></td></tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.ServiceHandler.html'
+                               title='sota_client::handler::service::ServiceHandler'>ServiceHandler</a></td>
+                        <td class='docblock short'>
+                             <p>Type that encodes a single service handler.</p>
+
+                        </td>
+                    </tr>
+                </table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../../";
+        window.currentCrate = "sota_client";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../../jquery.js"></script>
+    <script src="../../../main.js"></script>
+    
+    <script async src="../../../search-index.js"></script>
+</body>
+</html>

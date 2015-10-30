@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `main_loop` mod in crate `sota_client`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, main_loop">
+
+    <title>sota_client::main_loop - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>sota_client</a></p><script>window.sidebarCurrent = {name: 'main_loop', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>sota_client</a>::<wbr><a class='mod' href=''>main_loop</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-13' class='srclink' href='../../src/sota_client/main_loop.rs.html#1-119' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Main loop, starting the worker threads and wiring up communication channels between them.</p>
+</div><h2 id='reexports' class='section-header'><a href="#reexports">Reexports</a></h2>
+<table><tr><td><code>use std::prelude::<a class='mod' href='https://doc.rust-lang.org/nightly/std/prelude/v1/index.html' title='std::prelude::v1'>v1</a>::*;</code></td></tr><tr><td><code>use std::sync::mpsc::<a class='fn' href='https://doc.rust-lang.org/nightly/std/sync/mpsc/fn.channel.html' title='std::sync::mpsc::channel'>channel</a>;</code></td></tr><tr><td><code>use std::<a class='mod' href='https://doc.rust-lang.org/nightly/std/thread/index.html' title='std::thread'>thread</a>;</code></td></tr><tr><td><code>use std::sync::{<a class='struct' href='https://doc.rust-lang.org/nightly/alloc/arc/struct.Arc.html' title='alloc::arc::Arc'>Arc</a>, <a class='struct' href='https://doc.rust-lang.org/nightly/std/sync/mutex/struct.Mutex.html' title='std::sync::mutex::Mutex'>Mutex</a>};</code></td></tr><tr><td><code>use std::collections::<a class='struct' href='https://doc.rust-lang.org/nightly/std/collections/hash/map/struct.HashMap.html' title='std::collections::hash::map::HashMap'>HashMap</a>;</code></td></tr><tr><td><code>use std::ops::<a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Deref.html' title='core::ops::Deref'>Deref</a>;</code></td></tr><tr><td><code>use <a class='mod' href='../../sota_client/rvi/index.html' title='sota_client::rvi'>rvi</a>;</code></td></tr><tr><td><code>use handler::<a class='struct' href='../../sota_client/handler/struct.ServiceHandler.html' title='sota_client::handler::ServiceHandler'>ServiceHandler</a>;</code></td></tr><tr><td><code>use message::{<a class='struct' href='../../sota_client/message/struct.InitiateParams.html' title='sota_client::message::InitiateParams'>InitiateParams</a>, <a class='struct' href='../../sota_client/message/struct.BackendServices.html' title='sota_client::message::BackendServices'>BackendServices</a>, <a class='struct' href='../../sota_client/message/struct.PackageId.html' title='sota_client::message::PackageId'>PackageId</a>};</code></td></tr><tr><td><code>use message::{<a class='enum' href='../../sota_client/message/enum.Notification.html' title='sota_client::message::Notification'>Notification</a>, <a class='struct' href='../../sota_client/message/struct.ServerPackageReport.html' title='sota_client::message::ServerPackageReport'>ServerPackageReport</a>, <a class='struct' href='../../sota_client/message/struct.LocalServices.html' title='sota_client::message::LocalServices'>LocalServices</a>, <a class='struct' href='../../sota_client/message/struct.ServerReport.html' title='sota_client::message::ServerReport'>ServerReport</a>};</code></td></tr><tr><td><code>use configuration::<a class='struct' href='../../sota_client/configuration/struct.Configuration.html' title='sota_client::configuration::Configuration'>Configuration</a>;</code></td></tr><tr><td><code>use persistence::<a class='struct' href='../../sota_client/persistence/struct.Transfer.html' title='sota_client::persistence::Transfer'>Transfer</a>;</code></td></tr><tr><td><code>use <a class='mod' href='../../sota_client/sota_dbus/index.html' title='sota_client::sota_dbus'>sota_dbus</a>;</code></td></tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.start.html'
+                               title='sota_client::main_loop::start'>start</a></td>
+                        <td class='docblock short'>
+                             <p>Main loop, starting the worker threads and wiring up communication channels between them.</p>
+
+                        </td>
+                    </tr>
+                </table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "sota_client";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script async src="../../search-index.js"></script>
+</body>
+</html>

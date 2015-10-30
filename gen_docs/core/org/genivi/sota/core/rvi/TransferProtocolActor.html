@@ -51,7 +51,8 @@
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Actor to transfer packages to a single vehicle.
+</p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="akka.actor.ActorLogging">ActorLogging</span>, <span class="extype" name="akka.actor.Actor">Actor</span>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
@@ -90,7 +91,7 @@
         <div id="allMembers">
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
-              <ol><li name="org.genivi.sota.core.rvi.TransferProtocolActor#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+              <ol><li name="org.genivi.sota.core.rvi.TransferProtocolActor#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="&lt;init&gt;(db:slick.driver.MySQLDriver.api.Database,rviClient:org.genivi.sota.core.rvi.RviClient,transferActorProps:(org.genivi.sota.core.rvi.ClientServices,org.genivi.sota.core.data.Package)=&gt;akka.actor.Props):org.genivi.sota.core.rvi.TransferProtocolActor"></a>
       <a id="&lt;init&gt;:TransferProtocolActor"></a>
       <h4 class="signature">
@@ -106,7 +107,7 @@
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt class="param">db</dt><dd class="cmt"><p>the database connection</p></dd><dt class="param">rviClient</dt><dd class="cmt"><p>the client to the RVI node</p></dd><dt class="param">transferActorProps</dt><dd class="cmt"><p>the configuration class for creating the PackageTransferActor</p></dd></dl></div>
     </li></ol>
             </div>
 
@@ -647,8 +648,9 @@
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="org.genivi.sota.core.rvi.TransferProtocolActor">TransferProtocolActor</a> → Actor</dd></dl></div>
-    </li><li name="org.genivi.sota.core.rvi.TransferProtocolActor#running" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <p class="shortcomment cmt">Entry point to this actor when the vehicle initiates a download.</p><div class="fullcomment"><div class="comment cmt"><p>Entry point to this actor when the vehicle initiates a download.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="org.genivi.sota.core.rvi.TransferProtocolActor">TransferProtocolActor</a> → Actor</dd></dl></div>
+    </li><li name="org.genivi.sota.core.rvi.TransferProtocolActor#running" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="running(services:org.genivi.sota.core.rvi.ClientServices,updates:Set[org.genivi.sota.core.data.UpdateSpec],pending:scala.collection.immutable.Queue[org.genivi.sota.core.data.Package],inProgress:Map[akka.actor.ActorRef,org.genivi.sota.core.data.Package],done:Set[org.genivi.sota.core.data.Package]):TransferProtocolActor.this.Receive"></a>
       <a id="running(ClientServices,Set[UpdateSpec],Queue[Package],Map[ActorRef,Package],Set[Package]):Receive"></a>
       <h4 class="signature">
@@ -664,7 +666,11 @@
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <p class="shortcomment cmt">Create actors to handle each transfer to the vehicle.</p><div class="fullcomment"><div class="comment cmt"><p>Create actors to handle each transfer to the vehicle.
+Forward ChunksReceived messages from the vehicle to the transfer actors.
+Terminate when all updates and dependencies are successfully transferred,
+or when the transfer is aborted because the vehicle is not responding.
+</p></div></div>
     </li><li name="akka.actor.Actor#self" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="self:akka.actor.ActorRef"></a>
       <a id="self:ActorRef"></a>

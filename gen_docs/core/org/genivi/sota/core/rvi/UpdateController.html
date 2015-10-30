@@ -51,7 +51,8 @@
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Actor to handle events received from the RVI node.
+</p></div><dl class="attributes block"> <dt>See also</dt><dd><span class="cmt"><p>SotaServices</p></span></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="akka.actor.ActorLogging">ActorLogging</span>, <span class="extype" name="akka.actor.Actor">Actor</span>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
@@ -106,7 +107,7 @@
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <p class="shortcomment cmt"></p>
     </li></ol>
             </div>
 
@@ -613,8 +614,10 @@
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="org.genivi.sota.core.rvi.UpdateController">UpdateController</a> → Actor</dd></dl></div>
-    </li><li name="org.genivi.sota.core.rvi.UpdateController#running" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <p class="shortcomment cmt">Entry point with initial empty map of downloads
+</p><div class="fullcomment"><div class="comment cmt"><p>Entry point with initial empty map of downloads
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="org.genivi.sota.core.rvi.UpdateController">UpdateController</a> → Actor</dd></dl></div>
+    </li><li name="org.genivi.sota.core.rvi.UpdateController#running" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="running(currentDownloads:Map[org.genivi.sota.core.data.Vehicle.Vin,akka.actor.ActorRef]):UpdateController.this.Receive"></a>
       <a id="running(Map[data.Vehicle.Vin,ActorRef]):Receive"></a>
       <h4 class="signature">
@@ -630,7 +633,10 @@
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <p class="shortcomment cmt">Create actors to handle new downloads to a single vehicle.</p><div class="fullcomment"><div class="comment cmt"><p>Create actors to handle new downloads to a single vehicle.
+Forward messages to that actor until it finishes the download.
+Remove the actor from the map when it is terminated.
+</p></div><dl class="paramcmts block"><dt class="param">currentDownloads</dt><dd class="cmt"><p>the map of VIN to the actor handling that vehicle</p></dd></dl></div>
     </li><li name="akka.actor.Actor#self" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="self:akka.actor.ActorRef"></a>
       <a id="self:ActorRef"></a>

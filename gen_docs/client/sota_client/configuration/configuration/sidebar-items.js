@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Configuration","Type to encode the full configuration."]]});

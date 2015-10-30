@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["AbortParams","Type for \"Abort Transfer\" messages. The package transfer to abort"]]});

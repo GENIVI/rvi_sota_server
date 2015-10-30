@@ -49,7 +49,9 @@
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Send a notification to SOTA clients via RVI that there are packages that
+can/should be updated.
+</p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
@@ -310,7 +312,7 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="org.genivi.sota.core.transfer.UpdateNotifier#notify" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="org.genivi.sota.core.transfer.UpdateNotifier#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify(updateSpecs:Seq[org.genivi.sota.core.data.UpdateSpec],services:org.genivi.sota.core.rvi.ServerServices)(implicitrviClient:org.genivi.sota.core.rvi.RviClient,implicitec:scala.concurrent.ExecutionContext,implicitlog:akka.event.LoggingAdapter):Iterable[scala.concurrent.Future[Int]]"></a>
       <a id="notify(Seq[UpdateSpec],ServerServices)(RviClient,ExecutionContext,LoggingAdapter):Iterable[Future[Int]]"></a>
       <h4 class="signature">
@@ -326,7 +328,7 @@
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <p class="shortcomment cmt">Notify all the vehicles in an updated that an update is ready</p><div class="fullcomment"><div class="comment cmt"><p>Notify all the vehicles in an updated that an update is ready</p></div><dl class="paramcmts block"><dt class="param">updateSpecs</dt><dd class="cmt"><p>A set of updates</p></dd></dl></div>
     </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
       <a id="notify():Unit"></a>
@@ -361,7 +363,7 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="org.genivi.sota.core.transfer.UpdateNotifier#notifyVehicle" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="org.genivi.sota.core.transfer.UpdateNotifier#notifyVehicle" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyVehicle(services:org.genivi.sota.core.rvi.ServerServices)(vin:org.genivi.sota.core.data.Vehicle.Vin,updates:Seq[org.genivi.sota.core.data.UpdateSpec])(implicitrviClient:org.genivi.sota.core.rvi.RviClient,implicitec:scala.concurrent.ExecutionContext):scala.concurrent.Future[Int]"></a>
       <a id="notifyVehicle(ServerServices)(data.Vehicle.Vin,Seq[UpdateSpec])(RviClient,ExecutionContext):Future[Int]"></a>
       <h4 class="signature">
@@ -377,7 +379,7 @@
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <p class="shortcomment cmt">Notify a single vehicle that it has updates</p><div class="fullcomment"><div class="comment cmt"><p>Notify a single vehicle that it has updates</p></div><dl class="paramcmts block"><dt class="param">vin</dt><dd class="cmt"><p>The VIN of the vehicle to notify</p></dd><dt class="param">updates</dt><dd class="cmt"><p>The updates that apply to the vehicle</p></dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
       <a id="synchronized[T0](⇒T0):T0"></a>

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["NotifyParams","Type for \"Notify\" messages."]]});

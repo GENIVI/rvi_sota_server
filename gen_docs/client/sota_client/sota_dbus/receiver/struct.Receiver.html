@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Receiver` struct in crate `sota_client`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Receiver">
+
+    <title>sota_client::sota_dbus::receiver::Receiver - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../../index.html'>sota_client</a>::<wbr><a href='../index.html'>sota_dbus</a>::<wbr><a href='index.html'>receiver</a></p><script>window.sidebarCurrent = {name: 'Receiver', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../../index.html'>sota_client</a>::<wbr><a href='../index.html'>sota_dbus</a>::<wbr><a href='index.html'>receiver</a>::<wbr><a class='struct' href=''>Receiver</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-600' class='srclink' href='../../../src/sota_client/sota_dbus/receiver.rs.html#28-33' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Receiver {
+    config: <a class='struct' href='../../../sota_client/configuration/struct.DBusConfiguration.html' title='sota_client::configuration::DBusConfiguration'>DBusConfiguration</a>,
+    sender: <a class='struct' href='https://doc.rust-lang.org/nightly/std/sync/mpsc/struct.Sender.html' title='std::sync::mpsc::Sender'>Sender</a>&lt;<a class='enum' href='../../../sota_client/message/enum.Notification.html' title='sota_client::message::Notification'>Notification</a>&gt;,
+}</pre><div class='docblock'><p>Encodes the state that is needed to accept incoming DBus messages.</p>
+</div><h2 class='fields'>Fields</h2>
+<table><tr class='stab '>
+                                  <td id='structfield.config'><code>config</code></td><td><div class='docblock'><p>The configuration for the DBus interface.</p>
+</div></td></tr><tr class='stab '>
+                                  <td id='structfield.sender'><code>sender</code></td><td><div class='docblock'><p>A sender to forward incoming messages.</p>
+</div></td></tr></table><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../../../sota_client/sota_dbus/struct.Receiver.html' title='sota_client::sota_dbus::Receiver'>Receiver</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>(c: <a class='struct' href='../../../sota_client/configuration/struct.DBusConfiguration.html' title='sota_client::configuration::DBusConfiguration'>DBusConfiguration</a>, s: <a class='struct' href='https://doc.rust-lang.org/nightly/std/sync/mpsc/struct.Sender.html' title='std::sync::mpsc::Sender'>Sender</a>&lt;<a class='enum' href='../../../sota_client/message/enum.Notification.html' title='sota_client::message::Notification'>Notification</a>&gt;) -&gt; <a class='struct' href='../../../sota_client/sota_dbus/struct.Receiver.html' title='sota_client::sota_dbus::Receiver'>Receiver</a></code></h4>
+<div class='docblock'><p>Create a new <code>Receiver</code>.</p>
+
+<h1 id='arguments' class='section-header'><a href='#arguments'>Arguments</a></h1>
+<ul>
+<li><code>c</code>: The configuration for the DBus interface.</li>
+<li><code>s</code>: A sender to forward incoming messages.</li>
+</ul>
+</div><h4 id='method.start' class='method'><code>fn <a href='#method.start' class='fnname'>start</a>(&amp;self)</code></h4>
+<div class='docblock'><p>Start the listener. It will register in DBus according to the configuration, wait for
+incoming messages and forward them via the internal <code>Sender</code>.</p>
+</div><h4 id='method.handle_initiate' class='method'><code>fn <a href='#method.handle_initiate' class='fnname'>handle_initiate</a>(&amp;self, msg: &amp;mut <a class='struct' href='../../../dbus/message/struct.Message.html' title='dbus::message::Message'>Message</a>) -&gt; <a class='type' href='../../../dbus/objpath/type.MethodResult.html' title='dbus::objpath::MethodResult'>MethodResult</a></code></h4>
+<div class='docblock'><p>Handles incoming &quot;Initiate Download&quot; messages.</p>
+
+<p>Parses the message and forwards it to the internal <code>Sender</code>.</p>
+
+<h1 id='arguments' class='section-header'><a href='#arguments'>Arguments</a></h1>
+<ul>
+<li><code>msg</code>: The message to handle.</li>
+</ul>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../../";
+        window.currentCrate = "sota_client";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../../jquery.js"></script>
+    <script src="../../../main.js"></script>
+    
+    <script async src="../../../search-index.js"></script>
+</body>
+</html>

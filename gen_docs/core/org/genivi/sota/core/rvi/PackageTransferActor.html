@@ -51,7 +51,8 @@
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Actor to handle transferring chunks to a vehicle.
+</p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="akka.actor.ActorLogging">ActorLogging</span>, <span class="extype" name="akka.actor.Actor">Actor</span>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
@@ -90,7 +91,7 @@
         <div id="allMembers">
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
-              <ol><li name="org.genivi.sota.core.rvi.PackageTransferActor#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+              <ol><li name="org.genivi.sota.core.rvi.PackageTransferActor#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="&lt;init&gt;(pckg:org.genivi.sota.core.data.Package,services:org.genivi.sota.core.rvi.ClientServices,rviClient:org.genivi.sota.core.rvi.RviClient):org.genivi.sota.core.rvi.PackageTransferActor"></a>
       <a id="&lt;init&gt;:PackageTransferActor"></a>
       <h4 class="signature">
@@ -106,7 +107,7 @@
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt class="param">pckg</dt><dd class="cmt"><p>the package to transfer</p></dd><dt class="param">services</dt><dd class="cmt"><p>the service paths available on the vehicle</p></dd></dl></div>
     </li></ol>
             </div>
 
@@ -737,7 +738,8 @@
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="org.genivi.sota.core.rvi.PackageTransferActor">PackageTransferActor</a> → Actor</dd></dl></div>
+      <p class="shortcomment cmt">Entry point to this actor starting with first chunk.</p><div class="fullcomment"><div class="comment cmt"><p>Entry point to this actor starting with first chunk.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="org.genivi.sota.core.rvi.PackageTransferActor">PackageTransferActor</a> → Actor</dd></dl></div>
     </li><li name="akka.actor.Actor#self" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="self:akka.actor.ActorRef"></a>
       <a id="self:ActorRef"></a>
@@ -840,7 +842,7 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="org.genivi.sota.core.rvi.PackageTransferActor#transferring" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="org.genivi.sota.core.rvi.PackageTransferActor#transferring" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="transferring(lastSentChunk:Int,attempt:Int):PackageTransferActor.this.Receive"></a>
       <a id="transferring(Int,Int):Receive"></a>
       <h4 class="signature">
@@ -856,7 +858,9 @@
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <p class="shortcomment cmt">Send the next chunk or resend last chunk if vehicle doesn't acknowledge with ChunksReceived.</p><div class="fullcomment"><div class="comment cmt"><p>Send the next chunk or resend last chunk if vehicle doesn't acknowledge with ChunksReceived.
+Abort transfer if maxAttempts exceeded.
+</p></div></div>
     </li><li name="org.genivi.sota.core.rvi.PackageTransferActor#ttl" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="ttl():org.joda.time.DateTime"></a>
       <a id="ttl():DateTime"></a>

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Message","A generic incoming message."],["RVIMessage","A generic outgoing message."],["RegisterServiceRequest","Encodes a registration request."],["RegisterServiceResponse","Encodes a registration response."]]});

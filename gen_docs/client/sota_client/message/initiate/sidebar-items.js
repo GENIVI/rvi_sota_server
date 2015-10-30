@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["InitiateParams","Encodes the parameters needed for the \"Initiate Download\" message."],["LocalServices","Encodes the list of service URLs the client registered."]]});

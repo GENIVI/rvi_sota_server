@@ -49,7 +49,9 @@
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>An implementation of the External Resolver that talks via HTTP to the
+external resolver in this project
+</p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a href="ExternalResolverClient.html" class="extype" name="org.genivi.sota.core.ExternalResolverClient">ExternalResolverClient</a>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
@@ -397,7 +399,11 @@
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="org.genivi.sota.core.DefaultExternalResolverClient">DefaultExternalResolverClient</a> → <a href="ExternalResolverClient.html" class="extype" name="org.genivi.sota.core.ExternalResolverClient">ExternalResolverClient</a></dd></dl></div>
+      <p class="shortcomment cmt">Add a new package to SOTA
+This is called when the user adds a new package to the SOTA system
+</p><div class="fullcomment"><div class="comment cmt"><p>Add a new package to SOTA
+This is called when the user adds a new package to the SOTA system
+</p></div><dl class="paramcmts block"><dt class="param">packageId</dt><dd class="cmt"><p>The name and version of the package</p></dd><dt class="param">description</dt><dd class="cmt"><p>A description of the package (optional)</p></dd><dt class="param">vendor</dt><dd class="cmt"><p>The vendor providing the package (optional)</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="org.genivi.sota.core.DefaultExternalResolverClient">DefaultExternalResolverClient</a> → <a href="ExternalResolverClient.html" class="extype" name="org.genivi.sota.core.ExternalResolverClient">ExternalResolverClient</a></dd></dl></div>
     </li><li name="org.genivi.sota.core.DefaultExternalResolverClient#resolve" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="resolve(packageId:org.genivi.sota.core.data.Package.Id):scala.concurrent.Future[Map[org.genivi.sota.core.data.Vehicle,Set[org.genivi.sota.core.data.Package.Id]]]"></a>
       <a id="resolve(data.Package.Id):Future[Map[Vehicle,Set[data.Package.Id]]]"></a>
@@ -414,7 +420,10 @@
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="org.genivi.sota.core.DefaultExternalResolverClient">DefaultExternalResolverClient</a> → <a href="ExternalResolverClient.html" class="extype" name="org.genivi.sota.core.ExternalResolverClient">ExternalResolverClient</a></dd></dl></div>
+      <p class="shortcomment cmt">Given a package name and version, return vehicles that it should be
+installed on.</p><div class="fullcomment"><div class="comment cmt"><p>Given a package name and version, return vehicles that it should be
+installed on.
+</p></div><dl class="paramcmts block"><dt class="param">packageId</dt><dd class="cmt"><p>The name and version of the package</p></dd><dt>returns</dt><dd class="cmt"><p>Which packages need to be installed on which vehicles</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="org.genivi.sota.core.DefaultExternalResolverClient">DefaultExternalResolverClient</a> → <a href="ExternalResolverClient.html" class="extype" name="org.genivi.sota.core.ExternalResolverClient">ExternalResolverClient</a></dd></dl></div>
     </li><li name="org.genivi.sota.core.DefaultExternalResolverClient#setInstalledPackages" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="setInstalledPackages(vin:org.genivi.sota.core.data.Vehicle.Vin,json:io.circe.Json):scala.concurrent.Future[Unit]"></a>
       <a id="setInstalledPackages(data.Vehicle.Vin,Json):Future[Unit]"></a>
@@ -431,7 +440,14 @@
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="org.genivi.sota.core.DefaultExternalResolverClient">DefaultExternalResolverClient</a> → <a href="ExternalResolverClient.html" class="extype" name="org.genivi.sota.core.ExternalResolverClient">ExternalResolverClient</a></dd></dl></div>
+      <p class="shortcomment cmt">Update the list of packages that are installed on a vehicle.</p><div class="fullcomment"><div class="comment cmt"><p>Update the list of packages that are installed on a vehicle.
+During normal operation SOTA will keep track of the state of of the
+clients that are in the field. However there may be cases where this gets
+out of sync for example if a ECU is replaced in the field, or when
+packages are loaded in the factory.
+The client can query the local package manager for the list of installed
+packages and report it via this function
+</p></div><dl class="paramcmts block"><dt class="param">vin</dt><dd class="cmt"><p>The VIN that is sending the update</p></dd><dt class="param">json</dt><dd class="cmt"><p>A JSON encoded list of installed packages</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="org.genivi.sota.core.DefaultExternalResolverClient">DefaultExternalResolverClient</a> → <a href="ExternalResolverClient.html" class="extype" name="org.genivi.sota.core.ExternalResolverClient">ExternalResolverClient</a></dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
       <a id="synchronized[T0](⇒T0):T0"></a>

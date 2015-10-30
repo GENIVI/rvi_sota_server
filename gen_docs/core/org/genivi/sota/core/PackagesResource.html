@@ -205,7 +205,7 @@
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="org.genivi.sota.core.PackagesResource#digestCalculator" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="org.genivi.sota.core.PackagesResource#digestCalculator" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="digestCalculator(algorithm:String):akka.stream.stage.PushPullStage[akka.util.ByteString,String]"></a>
       <a id="digestCalculator(String):PushPullStage[ByteString,String]"></a>
       <h4 class="signature">
@@ -221,7 +221,9 @@
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <p class="shortcomment cmt">Streaming calculation of the hash of a stream.</p><div class="fullcomment"><div class="comment cmt"><p>Streaming calculation of the hash of a stream.
+This is used by savePackage (below)
+</p></div><dl class="paramcmts block"><dt class="param">algorithm</dt><dd class="cmt"><p>The hash algorithm, usually &quot;SHA-1&quot;</p></dd><dt>returns</dt><dd class="cmt"><p>A stream that will calculate the hash of the contents fed through it</p></dd></dl></div>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
@@ -272,7 +274,9 @@
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <p class="shortcomment cmt">A scala HTTP routing directive that extracts a package name/version from
+the request URL
+</p>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <a id="finalize():Unit"></a>
@@ -415,7 +419,7 @@
       </a>
     </span>
       
-    </li><li name="org.genivi.sota.core.PackagesResource#savePackage" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="org.genivi.sota.core.PackagesResource#savePackage" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="savePackage(packageId:org.genivi.sota.core.data.Package.Id,fileData:akka.http.scaladsl.common.StrictForm.FileData):scala.concurrent.Future[(akka.http.scaladsl.model.Uri,Long,String)]"></a>
       <a id="savePackage(data.Package.Id,FileData):Future[(Uri,Long,String)]"></a>
       <h4 class="signature">
@@ -431,7 +435,11 @@
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <p class="shortcomment cmt">Handle an incomming file upload.</p><div class="fullcomment"><div class="comment cmt"><p>Handle an incomming file upload.
+Write the contents to disk, while calculating the SHA-1 hash of the
+package's contents
+</p></div><dl class="paramcmts block"><dt class="param">packageId</dt><dd class="cmt"><p>The name/version number of the package this is being uploaded</p></dd><dt class="param">fileData</dt><dd class="cmt"><p>A stream of the package contents</p></dd><dt>returns</dt><dd class="cmt"><p>A tuple of the URI where the package is available, the package
+        size and the package's checksum</p></dd></dl></div>
     </li><li name="org.genivi.sota.core.PackagesResource#storePath" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="storePath:java.nio.file.Path"></a>
       <a id="storePath:Path"></a>
@@ -448,7 +456,7 @@
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <p class="shortcomment cmt">The location on disk where uploaded package are stored.</p>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
       <a id="synchronized[T0](⇒T0):T0"></a>

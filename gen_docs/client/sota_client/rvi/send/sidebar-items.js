@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["send","Send a object to RVI. Either returns the full response from RVI or a error message."],["send_message","Prepare a message and send it to RVI. Returns the full response from RVI on success or a error message on failure."]]});

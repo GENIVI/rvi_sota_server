@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["FinishParams","Type for \"Finish Transfer\" messages."]]});
