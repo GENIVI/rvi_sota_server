@@ -105,6 +105,10 @@ With `<user>`, `<password>`, and `<host>` replaced with suitable values.
 
 Deployment of rvi-sota-server requires valid AWS administrator credentials, as well as an SSH key to administer any instances launched by the vw-garage deployment scripts.
 
+=== SSL
+
+The current version of SOTA Server is SSL insensitive; for a production system using SSL use an SSL-stripping load balancer.
+
 ==== Create New User for Deployment
 
 For security purposes, we recommend creating a new IAM user to manage the deployment. This user will have full access to the AWS services, but will not have the capability to create new users. If the credentials for the *deploy* user are compromised, they can be reset using the root AWS account.
