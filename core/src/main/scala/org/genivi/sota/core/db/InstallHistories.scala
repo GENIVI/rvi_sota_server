@@ -22,7 +22,7 @@ object InstallHistories {
 
   /**
    * Slick mapping definition for the InstallHistory table
-   * @see {@linktourl http://slick.typesafe.com/}
+   * @see {@link http://slick.typesafe.com/}
    */
   // scalastyle:off
   class InstallHistoryTable(tag: Tag) extends Table[InstallHistory](tag, "InstallHistory") {
@@ -49,6 +49,8 @@ object InstallHistories {
   /**
    * List the install attempts that have been made on a specific VIN
    * This information is fetched from the InstallHistory SQL table.
+   * @param vin The VIN to fetch data for
+   * @return A list of the install history for that VIN
    */
   def list(vin: Vehicle.Vin): DBIO[Seq[InstallHistory]] =
     installHistories.filter(_.vin === vin).result
@@ -56,6 +58,9 @@ object InstallHistories {
   /**
    * Record the outcome of a install attempt on a specific VIN. The result of
    * the install is returned from the SOTA client via RVI.
+   * @param vin The VIN that the install attempt ran on
+   * @param pkgId The name/version of the package that was attempted to be installed
+   * @param success Whether the install was successful
    */
   def log(vin: Vehicle.Vin, pkgId: Package.Id, success: Boolean): DBIO[Int] =
     installHistories += InstallHistory(None, vin, pkgId, success, DateTime.now)
