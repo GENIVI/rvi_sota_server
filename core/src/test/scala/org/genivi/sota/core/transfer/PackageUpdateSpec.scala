@@ -30,6 +30,9 @@ import slick.jdbc.JdbcBackend.Database
 import org.genivi.sota.core.rvi.{RviClient, ServerServices}
 
 
+/**
+ * Generator for spec data, including packages, dependencies and requests
+ */
 object DataGenerators {
 
   val packages = scala.util.Random.shuffle( PackagesReader.read().take(10).map(Generators.generatePackageData ) )
@@ -57,6 +60,9 @@ object DataGenerators {
 
 case class RviParameters[T](parameters: List[T], service_name: String  )
 
+/**
+ * Dummy SotaClient object for tests
+ */
 object SotaClient {
   import akka.actor.{Actor, ActorLogging, Props}
   import org.genivi.sota.core.rvi.{ClientServices, ServerServices, StartDownload,
@@ -142,7 +148,10 @@ object SotaClient {
 
 }
 
-trait  SotaCore {
+/**
+ * Generic trait for SOTA Core tests. Includes dummy RVI service routes.
+ */
+trait SotaCore {
   import org.genivi.sota.core.rvi.{TransferProtocolActor, PackageTransferActor, UpdateController, JsonRpcRviClient}
 
   implicit val system = akka.actor.ActorSystem("PackageUpdateSpec")
@@ -167,6 +176,9 @@ trait  SotaCore {
 
 }
 
+/**
+ * Property Spec for testing package updates
+ */
 class PackageUpdateSpec extends PropSpec with PropertyChecks with Matchers with BeforeAndAfterAll with SotaCore {
   import DataGenerators._
 

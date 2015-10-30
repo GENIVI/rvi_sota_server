@@ -18,7 +18,7 @@ import slick.jdbc.JdbcBackend.Database
 
 
 /**
- * Created by vladimir on 14/08/15.
+ * Spec tests for package upload to Core
  */
 class PackageUploadSpec extends PropSpec with PropertyChecks with Matchers with Generators with ScalatestRouteTest {
 

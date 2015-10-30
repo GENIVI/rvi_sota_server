@@ -8,7 +8,9 @@ import org.scalatest.{PropSpec, Matchers, BeforeAndAfterAll}
 import org.scalatest.prop.PropertyChecks
 import scala.concurrent.Future
 
-
+/**
+ * Base class for JSON-RPC property-based specs
+ */
 abstract class JsonRpcSpecBase extends PropSpec with PropertyChecks with  Matchers with JsonGen with BeforeAndAfterAll {
 
   implicit val system = ActorSystem("test")

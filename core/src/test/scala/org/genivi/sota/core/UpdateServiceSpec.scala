@@ -20,6 +20,9 @@ import slick.jdbc.JdbcBackend._
 
 import scala.concurrent.{Await, Future}
 
+/**
+ * Spec tests for Update service
+ */
 class UpdateServiceSpec extends PropSpec with PropertyChecks with Matchers with BeforeAndAfterAll {
 
   val databaseName = "test-database"

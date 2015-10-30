@@ -20,6 +20,9 @@ import scala.concurrent.Await
 import slick.driver.MySQLDriver.api._
 
 
+/**
+ * WordSpec for VIN REST actions
+ */
 class VinResourceWordSpec extends WordSpec
     with Matchers
     with ScalatestRouteTest

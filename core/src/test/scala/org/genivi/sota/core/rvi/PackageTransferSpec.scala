@@ -28,6 +28,9 @@ import scala.concurrent.Promise
 import scala.math.BigDecimal.RoundingMode
 import scala.util.Success
 
+/**
+ * Dummy actor to simulate SOTA Client in tests
+ */
 class ClientActor(vin: Vehicle.Vin, probe: ActorRef, chunksToConsume: Int)
     extends Actor with ActorLogging with  Stash {
 
@@ -60,6 +63,9 @@ class ClientActor(vin: Vehicle.Vin, probe: ActorRef, chunksToConsume: Int)
 
 }
 
+/**
+ * Dummy actor to simulate SOTA Client in tests
+ */
 object ClientActor {
 
   final case class SetUploader( ref: ActorRef )
@@ -70,6 +76,9 @@ object ClientActor {
 
 }
 
+/**
+ * Dummy actor to simulate RVI Client in tests
+ */
 class AccRviClient( clientActor: ActorRef ) extends RviClient {
 
   def sendMessage[A](service: String, message: A, expirationDate: DateTime)
@@ -80,6 +89,9 @@ class AccRviClient( clientActor: ActorRef ) extends RviClient {
 
 }
 
+/**
+ * Property-based spec for Package Transfers
+ */
 class PackageTransferSpec extends PropSpec with Matchers with PropertyChecks with BeforeAndAfterAll {
 
   val config = ConfigFactory.parseString(

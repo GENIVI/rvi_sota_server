@@ -21,7 +21,7 @@ import scala.concurrent.Future
 
 
 /**
- * Created by vladimir on 20/08/15.
+ * Spec tests for the external resolver client
  */
 class ExternalResolverClientSpec extends PropSpec with Matchers with BeforeAndAfterAll {
 

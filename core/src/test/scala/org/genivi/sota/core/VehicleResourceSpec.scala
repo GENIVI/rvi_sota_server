@@ -18,6 +18,9 @@ import org.scalatest.prop.PropertyChecks
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
 import slick.driver.MySQLDriver.api._
 
+/**
+ * Spec tests for vehicle REST actions
+ */
 class VehicleResourceSpec extends PropSpec with PropertyChecks
     with Matchers
     with ScalatestRouteTest

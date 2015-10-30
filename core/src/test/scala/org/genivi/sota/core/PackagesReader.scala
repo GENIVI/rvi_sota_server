@@ -5,6 +5,9 @@ import eu.timepit.refined._
 import org.genivi.sota.core.data.Package
 
 
+/*
+ * Test object for reading packages
+ */
 object PackagesReader {
 
   def readVersion( maybeStr: Option[String] ) : Option[Package.Version] = {
