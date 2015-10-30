@@ -6,6 +6,9 @@ import play.api.test.Helpers._
 import org.scalatestplus.play._
 import play.api.libs.ws.WS
 
+/**
+ * Test routing of users based on whether they have been authenticated
+ */
 class LoginFunTest extends PlaySpec with OneServerPerSuite {
 
   "redirect users to login page" in {

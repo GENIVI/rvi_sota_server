@@ -12,6 +12,10 @@ import play.api.mvc.Results.{Redirect, Forbidden, Unauthorized}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.{ClassTag, classTag}
 
+/**
+ * Trait for authentication implicits.
+ *
+ */
 trait AuthConfigImpl extends AuthConfig {
 
   /**

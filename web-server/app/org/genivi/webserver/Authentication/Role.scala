@@ -6,7 +6,9 @@ package org.genivi.webserver.Authentication
 
 import play.api.libs.json.{JsString, JsValue, JsSuccess, Format}
 
-
+/**
+ * Roles for accounts
+ */
 object Role extends Enumeration {
   type Role = Value
   val USER = Value
