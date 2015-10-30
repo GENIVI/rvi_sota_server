@@ -4,6 +4,10 @@
   */
 package org.genivi.sota.refined
 
+/**
+  * Use the underlaying equality and show instances for refined types.
+  */
+
 object implicits {
   import cats.{Eq, Show}
   import eu.timepit.refined.Refined

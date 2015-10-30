@@ -8,6 +8,10 @@ import cats.{Show, Eq}
 import eu.timepit.refined.{Predicate, Refined}
 import org.scalacheck.{Arbitrary, Gen}
 
+/**
+  * A (software) package has a notion of id which is shared between the
+  * core and the resolver.
+  */
 
 trait PackageCommon {
 
@@ -23,6 +27,14 @@ trait PackageCommon {
     implicit val encoder : Encoder[Id] = deriveFor[Id].encoder
     implicit val decoder : Decoder[Id] = deriveFor[Id].decoder
   }
+
+  /**
+    * A valid package id consists of two refined strings, the first
+    * being the name of the package and the second being the
+    * version. See the predicate below for what constitutes as valid.
+    *
+    * @see {@link https://github.com/fthomas/refined}
+    */
 
   trait ValidName
   trait ValidVersion
@@ -52,6 +64,11 @@ trait PackageCommon {
       }
       , s => s"Invalid package id (should be package name dash package version): $s")
 
+  /**
+    * Use the underlaying (string) ordering, show and equality for
+    * package ids.
+    */
+
   implicit val PackageIdOrdering: Ordering[Id] = new Ordering[Id] {
     override def compare(id1: Id, id2: Id): Int =
       id1.name.get + id1.version.get compare id2.name.get + id2.version.get
@@ -62,6 +79,13 @@ trait PackageCommon {
 
   implicit val eqInstance: Eq[Id] =
     Eq.fromUniversalEquals[Id]
+
+  /**
+    * For property based testing purposes, we need to explain how to
+    * randomly generate package ids.
+    *
+    * @see {@link https://www.scalacheck.org/}
+    */
 
   val genPackageId: Gen[Id] =
     for {
