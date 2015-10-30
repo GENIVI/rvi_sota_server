@@ -98,7 +98,17 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
       }
     } ~
     extractPackageId { packageId =>
-      (pathEnd & put) {
+      pathEnd {
+        get {
+          // TODO: Include error description with rejectEmptyResponse?
+          rejectEmptyResponse {
+            import org.genivi.sota.marshalling.CirceMarshallingSupport._
+            complete {
+              db.run(Packages.byId(packageId))
+            }
+          }
+        } ~
+        put {
         // TODO: Fix form fields metadata causing error for large upload
         parameters('description.?, 'vendor.?) { (description, vendor) =>
           formFields('file.as[StrictForm.FileData]) { fileData =>
@@ -119,6 +129,7 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
               case e => failWith(e)
             }
           }
+        }
         }
       } ~
       path("queued") {
