@@ -45,6 +45,13 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
         }
       } ~
       extractVin { vin =>
+        get {
+          pathEnd {
+            completeOrRecoverWith(db.run(VehicleRepository.exists(vin))) {
+              Errors.onMissingVehicle
+            }
+          }
+        } ~
         put {
           pathEnd {
             complete(db.run(VehicleRepository.add(Vehicle(vin))).map(_ => NoContent))

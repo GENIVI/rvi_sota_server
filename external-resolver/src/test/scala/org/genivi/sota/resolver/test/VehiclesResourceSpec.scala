@@ -136,6 +136,15 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
       }
     }
 
+    "list a specific vehicle on GET /vehicles/:vin or fail if it doesn't exist" in {
+      Get(Resource.uri("vehicles", vin)) ~> route ~> check {
+        responseAs[Vehicle] shouldBe Vehicle(Refined(vin))
+      }
+      Get(Resource.uri("vehicles", vin.drop(1) + "1")) ~> route ~> check {
+        responseAs[ErrorRepresentation].code shouldBe Codes.MissingVehicle
+      }
+    }
+
     "return a 404 when deleting a VIN which doesn't exist" in {
       Delete(Resource.uri(vehicles, "123456789N0TTHERE")) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
