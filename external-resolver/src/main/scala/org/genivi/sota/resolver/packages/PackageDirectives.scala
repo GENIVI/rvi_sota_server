@@ -21,9 +21,15 @@ class PackageDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
   def route: Route = {
 
     pathPrefix("packages") {
-      get {
+      (get & pathEnd) {
         complete {
           NoContent
+        }
+      } ~
+      (get & refinedPackageId)
+      { id =>
+        completeOrRecoverWith(db.run(PackageRepository.exists(id))) {
+          Errors.onMissingPackage
         }
       } ~
       (put & refinedPackageId & entity(as[Package.Metadata]))
