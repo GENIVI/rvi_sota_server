@@ -148,8 +148,8 @@ arrayBuffer += elem
   */
 
 /**
-* Style to use
-*/
+ * Style to use
+ */
 -----------------------------------------
 * Do not use @author tags since it does not encourage Collective Code
 Ownership.
