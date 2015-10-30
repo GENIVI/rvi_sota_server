@@ -1,0 +1,39 @@
+[width="100%",cols="18%,82%",]
+|================================================================
+
+
+|Description
+|Returns the package install history of a given vehicle.
+
+|URL
+|/api/v1/vehicles/:vin/history
+
+|Parameters a|
+* *:vin* — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.
+
+
+|Success Response
+a|
+*Code:* 200
+
+*Content:* A list of packages that were attempted to be installed on the VIN, their statuses, and the DateTime the status was reported.
+
+[source,json]
+----
+[
+  {
+    "success": true,
+    "completionTime": "2015-10-22T13:25:02.000Z",
+    "id": 1,
+    "vin": "VINOOLAM0FAU2DEEP",
+    "packageId": {
+      "version": "7.6.2",
+      "name": "ghc"
+    }
+  }
+]
+----
+
+|================================================================

@@ -1,0 +1,35 @@
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+
+
+|Description |Create an install campaign for a package
+
+|URL |/api/v1/updates/:campaignId
+
+|URL Parameters a|
+
+*:campaignId* — The UUID of an existing install campaign.
+
+|Success Response a|
+*Code:* 200
+
+*Content:* A list of VINs associated with the requested campaign, and their update status.
+
+[source,json]
+----
+[
+  [
+    "52930598-a624-4701-9bf9-dce1e9c4ac77",
+    "aaaaaaa1234567890",
+    "Pending"
+  ],
+  [
+    "52930598-a624-4701-9bf9-dce1e9c4ac77",
+    "abcdefg1234567890",
+    "Pending"
+  ]
+]
+----
+|=======================================================================
+

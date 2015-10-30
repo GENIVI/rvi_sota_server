@@ -1,0 +1,31 @@
+[width="100%",cols="18%,82%",]
+|================================================================
+
+
+|Description
+|Returns a list of the components installed on a given vehicle.
+
+|URL
+|/api/v1/vehicles/:vin/component
+
+|Parameters a|
+* *:vin* — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.
+
+
+|Success Response
+a|
+*Code:* 200
+
+*Content:* A list of component part IDs and their descriptions.
+
+[source,json]
+----
+{
+  "description": "Acme DVD Player",
+  "partNumber": "A-DVD-1234"
+}
+----
+
+|================================================================

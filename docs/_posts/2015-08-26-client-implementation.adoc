@@ -3,7 +3,7 @@ layout: page
 title: "Client Implementation Reference"
 category: dev
 date: 2015-08-26 14:14:23
-order: 5
+order: 7
 ---
 :icons: font
 :toc: macro

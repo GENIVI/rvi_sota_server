@@ -1,14 +1,12 @@
 ---
 layout: page
-title: "Web server API"
+title: "Resolver API"
 category: dev
-date: 2015-08-26 10:30:27
-order: 1
+date: 2015-10-30 15:09:40
+order: 3
 ---
 :toc: macro
 :icons: font
-
-The web server has an API that forwards all the relevant calls to either the core or resolver API (or both), depending on what's appropriate. All API calls to the web server need a session authorization cookie as well.
 
 The content-type of all requests is `application/json` unless otherwise specified.
 
@@ -50,13 +48,9 @@ include::../_includes/api/get-vehicles-vin-package.ad[]
 
 include::../_includes/api/put-vehicles-vin-package-name-version.ad[]
 
-=== GET /packages
-
-include::../_includes/api/get-packages.ad[]
-
 === PUT /packages/:name/:version
 
-include::../_includes/api/put-packages-name-version-core.ad[]
+include::../_includes/api/put-packages-name-version-resolver.ad[]
 
 === GET /components
 
@@ -114,14 +108,3 @@ include::../_includes/api/get-packagefilters-filter-filter.ad[]
 
 include::../_includes/api/get-packagefilters-package-name-version.ad[]
 
-=== POST /updates
-
-include::../_includes/api/post-updates.ad[]
-
-=== GET /updates
-
-include::../_includes/api/get-updates.ad[]
-
-=== GET /updates/:campaignId
-
-include::../_includes/api/get-updates-campaignid.ad[]

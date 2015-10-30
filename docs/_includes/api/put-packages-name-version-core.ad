@@ -1,0 +1,29 @@
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+
+
+|Description |Adds a package to the database.
+
+|Content-type a| `multipart/form-data`
+
+|URL |/api/v1/packages/:name/:version
+
+|URL Parameters a|
+* *:name* — The name of the software package.
+* *:version* — The package version, in _x.y.z_ format. __x__, __y__, and _z_ must all contain only digits.
+
+|Data Parameters a|
+*Required:*
+
+* *file* — The binary package file.
+
+*Optional:*
+
+* *description* — A short description of the package.
+* *vendor* — The vendor for the software package.
+
+|Success Response a|
+*Code:* 204
+
+|=======================================================================

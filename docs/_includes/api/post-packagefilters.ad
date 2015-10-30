@@ -1,0 +1,37 @@
+
+[width="100%",cols="18%,82%",]
+|==================================================================
+|Description |Associate a filter with a package
+|URL |/api/v1/packageFilters
+|Data Parameters a|
+* *packageName* - The name of an existing package.
+* *packageVersion* - A valid version number for that package.
+* *filterName* - The name of an existing filter.
+|Success Response a|
+*Code:* 200
+
+*Content:*
+
+[source,json]
+----
+[
+  {
+    "filterName": "myFilter",
+    "packageVersion": "4.5.6",
+    "packageName": "myPackage"
+  }
+]
+----
+
+|Error Response a|
+*Code:* 409
+
+*Content:*
+[source,json]
+----
+{
+  "code": "duplicate_entry",
+  "description": "Entry already exists"
+}
+----
+|==================================================================
