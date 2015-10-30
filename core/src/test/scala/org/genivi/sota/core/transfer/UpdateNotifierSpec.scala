@@ -17,6 +17,9 @@ import slick.jdbc.JdbcBackend.Database
 import org.genivi.sota.core.RequiresRvi
 import org.genivi.sota.core.rvi.SotaServices
 
+/**
+ * Property-based spec for testing update notifier
+ */
 class UpdateNotifierSpec extends PropSpec with PropertyChecks with Matchers with BeforeAndAfterAll {
   import org.genivi.sota.core.Generators.{dependenciesGen, updateRequestGen, vinDepGen}
 

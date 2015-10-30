@@ -9,12 +9,21 @@ import org.joda.time.DateTime
 import slick.driver.JdbcTypesComponent._
 import slick.driver.MySQLDriver.api._
 
-
+/**
+ * Database mapping definition for the InstallHistory table.
+ * This provides a history of package installs that have been attempted on a
+ * VIN.  It records the identity of the package which was attempted to be
+ * installed, the time of the attempt and whether the install was successful
+ */
 object InstallHistories {
 
   import Mappings._
   import org.genivi.sota.refined.SlickRefined._
 
+  /**
+   * Slick mapping definition for the InstallHistory table
+   * @see {@link http://slick.typesafe.com/}
+   */
   // scalastyle:off
   class InstallHistoryTable(tag: Tag) extends Table[InstallHistory](tag, "InstallHistory") {
 
@@ -32,11 +41,27 @@ object InstallHistories {
   }
   // scalastyle:on
 
-  val installHistories = TableQuery[InstallHistoryTable]
+  /**
+   * Internal helper definition to accesss the SQL table
+   */
+  private val installHistories = TableQuery[InstallHistoryTable]
 
+  /**
+   * List the install attempts that have been made on a specific VIN
+   * This information is fetched from the InstallHistory SQL table.
+   * @param vin The VIN to fetch data for
+   * @return A list of the install history for that VIN
+   */
   def list(vin: Vehicle.Vin): DBIO[Seq[InstallHistory]] =
     installHistories.filter(_.vin === vin).result
 
+  /**
+   * Record the outcome of a install attempt on a specific VIN. The result of
+   * the install is returned from the SOTA client via RVI.
+   * @param vin The VIN that the install attempt ran on
+   * @param pkgId The name/version of the package that was attempted to be installed
+   * @param success Whether the install was successful
+   */
   def log(vin: Vehicle.Vin, pkgId: Package.Id, success: Boolean): DBIO[Int] =
     installHistories += InstallHistory(None, vin, pkgId, success, DateTime.now)
 

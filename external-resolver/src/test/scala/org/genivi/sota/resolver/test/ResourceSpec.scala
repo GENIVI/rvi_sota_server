@@ -13,6 +13,11 @@ import org.scalatest.{BeforeAndAfterAll, Suite, WordSpec, PropSpec, Matchers}
 import slick.jdbc.JdbcBackend.Database
 
 
+/**
+ * Generic trait for REST specs
+ * Includes helpers for Packages, Components, Filters, PackageFilters and
+ * Resolver
+ */
 trait ResourceSpec extends
          VehicleRequests
     with PackageRequests
@@ -50,5 +55,16 @@ trait ResourceSpec extends
 
 }
 
+/**
+ * Generic trait for REST Word Specs
+ * Includes helpers for Packages, Components, Filters, PackageFilters and
+ * Resolver
+ */
 trait ResourceWordSpec extends WordSpec with ResourceSpec
+
+/**
+ * Generic trait for REST Property specs
+ * Includes helpers for Packages, Components, Filters, PackageFilters and
+ * Resolver
+ */
 trait ResourcePropSpec extends PropSpec with ResourceSpec with PropertyChecks

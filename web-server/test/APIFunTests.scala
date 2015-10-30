@@ -17,6 +17,9 @@ import play.api.libs.ws.{WSResponse, WS}
 import play.api.mvc.{Cookie, Cookies}
 import play.api.test.Helpers._
 
+/**
+ * Integration tests for the API
+ */
 class APIFunTests extends PlaySpec with OneServerPerSuite {
 
   val testVin = "TESTVIN0123456789"

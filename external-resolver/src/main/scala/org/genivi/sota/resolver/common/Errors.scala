@@ -4,6 +4,14 @@
  */
 package org.genivi.sota.resolver.common
 
+/**
+  * The resolver deals with vehicles, packages, filters and components,
+  * sometimes when working with these entities they might not exist, in
+  * which case we have to throw an error. This file contains common
+  * exceptions and handlers for how to complete requests in which the
+  * exceptions are raised.
+  */
+
 object Errors {
   import akka.http.scaladsl.model.StatusCodes
   import akka.http.scaladsl.server.Directives.complete

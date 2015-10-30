@@ -33,10 +33,19 @@ object FutureSupport {
   }
 }
 
+/**
+ * API routes for filters.
+ * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html} 
+ */
 class FilterDirectives(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
   import FutureSupport._
-
+  /**
+   * API route for filters.
+   * @return      Route object containing routes for getting, creating, editing, and deleting filters
+   * @throws      Errors.MissingFilterException if the filter doesn't exist
+   */
   def filterRoute: Route =
+
     pathPrefix("filters") {
       get {
         parameter('regex.as[Refined[String, Regex]].?) { re =>
@@ -60,6 +69,12 @@ class FilterDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execut
 
     }
 
+  /**
+   * API route for package -> filter association.
+   * @return      Route object containing routes for package -> filter association
+   * @throws      Errors.MissingFilterException if the filter doesn't exist
+   * @throws      Errors.MissingPackageException if the package doesn't exist
+   */
   def packageFiltersRoute: Route =
 
     pathPrefix("packageFilters") {
@@ -99,12 +114,19 @@ class FilterDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execut
       }
     }
 
+  /**
+   * API route for validating filters.
+   * @return      Route object containing routes for verifying that a filter is valid
+   */
   def validateRoute: Route = {
     pathPrefix("validate") {
       path("filter") ((post & entity(as[Filter])) (_ => complete("OK")))
     }
   }
 
+  /**
+   * Exception handler for filter routes.
+   */
   def route: Route =
     handleExceptions( ExceptionHandler( Errors.onMissingFilter orElse Errors.onMissingPackage ) ) {
       filterRoute ~ packageFiltersRoute ~ validateRoute

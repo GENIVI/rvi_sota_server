@@ -16,6 +16,11 @@ import scala.concurrent.ExecutionContext
 
 import scala.concurrent.Future
 
+/**
+ * HTTP transport to communicate with RVI node.
+ *
+ * @param rviUri the RVI node address
+ */
 class HttpTransport( rviUri : Uri ) {
 
   implicit def requestTransport

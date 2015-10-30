@@ -20,7 +20,9 @@ import scala.concurrent.Await
 import slick.driver.MySQLDriver.api._
 import DataPackage._
 
-
+/**
+ * WordSpec tests for Package REST actions
+ */
 class PackageResourceWordSpec extends WordSpec
     with Matchers
     with ScalatestRouteTest

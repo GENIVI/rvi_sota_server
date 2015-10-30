@@ -23,6 +23,10 @@ import views.html
 
 import scala.concurrent.{ExecutionContext, Future}
 
+/**
+ * The main application controller. Handles authentication and request proxying.
+ *
+ */
 class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val accountManager: AccountManager)
   extends Controller with LoginLogout with AuthConfigImpl with I18nSupport with AuthElement {
 
@@ -32,6 +36,12 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
   val coreApiUri = Play.current.configuration.getString("core.api.uri").get
   val resolverApiUri = Play.current.configuration.getString("resolver.api.uri").get
 
+  /**
+   * Returns an Option[String] of the uri of the service to proxy to
+   *
+   * @param path The path of the request
+   * @return The service to proxy to
+   */
   def apiByPath(path: String) = path.split("/").toList match {
     case "packages" :: _ => coreApiUri
     case "updates" :: _ => coreApiUri
@@ -40,6 +50,13 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
     case _ => resolverApiUri
   }
 
+  /**
+   * Proxies the request to the given service
+   *
+   * @param apiUri Uri of the service to proxy to
+   * @param req request to proxy
+   * @return The proxied request
+   */
   def proxyTo(apiUri: String, req: Request[RawBuffer]) : Future[Result] = {
     def toWsHeaders(hdrs: Headers) = hdrs.toMap.map {
       case(name, value) => name -> value.mkString }
@@ -61,6 +78,12 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
     }
   }
 
+  /**
+   * Proxies the given path
+   *
+   * @param path Path of the request
+   * @return
+   */
   def apiProxy(path: String) = AsyncStack(parse.raw, AuthorityKey -> Role.USER) { implicit req =>
     { // Mitigation for C04: Log transactions to and from SOTA Server
       auditLogger.info(s"Request: $req from user ${loggedIn.name}")
@@ -68,6 +91,12 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
     proxyTo(apiByPath(path), req)
   }
 
+  /**
+   * Proxies request to both core and resolver
+   *
+   * @param path The path of the request
+   * @return
+   */
   def apiProxyBroadcast(path: String) = AsyncStack(parse.raw, AuthorityKey -> Role.USER) { implicit req =>
     { // Mitigation for C04: Log transactions to and from SOTA Server
       auditLogger.info(s"Request: $req from user ${loggedIn.name}")
@@ -81,10 +110,21 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
     } yield respCore
   }
 
+  /**
+   * Renders index.html
+   *
+   * @return OK response and index html
+   */
   def index = StackAction(AuthorityKey -> Role.USER) { implicit req =>
     Ok(views.html.main())
   }
 
+  /**
+   * Find a user by id
+   *
+   * @param id The Id of the user
+   * @return Future option of user
+   */
   def resolveUser(id: Id)(implicit ctx: ExecutionContext): Future[Option[User]] = {
     Future.successful(accountManager.findById(id))
   }
@@ -94,14 +134,27 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
       .verifying("Invalid email or password", result => result.isDefined)
   }
 
+  /**
+   * Renders the login form
+   *
+   * @return OK response and login.html
+   */
   def login = Action { request =>
     Ok(html.login(loginForm))
   }
 
+  /**
+   * Logs out a user
+   *
+   */
   def logout = Action.async{ implicit request =>
     gotoLogoutSucceeded
   }
 
+  /**
+   * Authenticates a user
+   *
+   */
   def authenticate = Action.async { implicit request =>
     loginForm.bindFromRequest.fold(
       formWithErrors => Future.successful(BadRequest(views.html.login(formWithErrors))),

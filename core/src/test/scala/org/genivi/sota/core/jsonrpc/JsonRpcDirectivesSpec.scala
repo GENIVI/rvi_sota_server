@@ -11,6 +11,9 @@ import org.scalatest.{Matchers, PropSpec}
 import org.scalatest.concurrent.ScalaFutures._
 import scala.concurrent.Future
 
+/**
+ * Property-based spec for testing JSON-RPC directives
+ */
 class JsonRpcDirectivesSpec extends PropSpec with PropertyChecks with Matchers with akka.http.scaladsl.testkit.ScalatestRouteTest with JsonRpcDirectives {
 
   property("parse errors") {

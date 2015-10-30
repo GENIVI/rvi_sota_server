@@ -6,6 +6,9 @@ import play.api.test.Helpers._
 import org.scalatestplus.play._
 import play.api.libs.ws.WS
 
+/**
+ * Test the Application controller
+ */
 class ApplicationSpec extends PlaySpec with OneServerPerSuite {
 
   "send 404 on a bad request" in {

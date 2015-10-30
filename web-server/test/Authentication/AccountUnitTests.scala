@@ -6,6 +6,9 @@ import org.genivi.webserver.Authentication.{AccountManager, Role, Account}
 import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
 import scala.language.reflectiveCalls
 
+/**
+ * Tests account authorization
+ */
 class AccountUnitTests extends PlaySpec with OneServerPerSuite {
 
   def fixture = new {

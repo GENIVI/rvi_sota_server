@@ -16,6 +16,9 @@ import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.core.data.{Vehicle, Package}, Vehicle._
 import org.scalacheck.{Arbitrary, Gen}
 
+/**
+ * Generators for property-based testing of core objects
+ */
 trait Generators {
 
   val PackageVersionGen: Gen[Package.Version] =

@@ -39,6 +39,13 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
 
   private[this] val log = Logging.getLogger( system, "org.genivi.sota.core.PackagesResource" )
 
+  /**
+   * Streaming calculation of the hash of a stream.
+   * This is used by savePackage (below)
+   *
+   * @param algorithm The hash algorithm, usually "SHA-1"
+   * @return A stream that will calculate the hash of the contents fed through it
+   */
   def digestCalculator(algorithm: String) : PushPullStage[ByteString, String] = new PushPullStage[ByteString, String] {
     val digest = MessageDigest.getInstance(algorithm)
 
@@ -60,9 +67,23 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
     }
   }
 
+  /**
+   * The location on disk where uploaded package are stored.
+   */
   val storePath : Path = Paths.get( system.settings.config.getString("upload.store") )
 
   import cats.syntax.show._
+
+  /**
+   * Handle an incomming file upload.
+   * Write the contents to disk, while calculating the SHA-1 hash of the
+   * package's contents
+   *
+   * @param packageId The name/version number of the package this is being uploaded
+   * @param fileData A stream of the package contents
+   * @return A tuple of the URI where the package is available, the package
+   *         size and the package's checksum
+   */
   def savePackage( packageId: Package.Id, fileData: StrictForm.FileData ) : Future[(Uri, Long, String)] = {
     val fileName = fileData.filename.getOrElse(s"${packageId.name.get}-${packageId.version.get}")
     val file = storePath.resolve(fileName).toFile
@@ -81,6 +102,10 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
     uploadResult
   }
 
+  /**
+   * A scala HTTP routing directive that extracts a package name/version from
+   * the request URL
+   */
   val extractPackageId : Directive1[Package.Id] = (
     refined[Package.ValidName](Slash ~ Segment) &
     refined[Package.ValidVersion](Slash ~ Segment)).as(Package.Id.apply _)

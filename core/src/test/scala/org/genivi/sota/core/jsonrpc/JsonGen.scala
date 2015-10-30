@@ -1,5 +1,9 @@
 package org.genivi.sota.core.jsonrpc
 
+/**
+ * Trait including utilities for generating randomr JSON values
+ * Used by property-based tests
+ */
 trait JsonGen {
 
   import io.circe.Json

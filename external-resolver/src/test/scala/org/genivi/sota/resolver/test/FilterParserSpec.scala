@@ -10,7 +10,9 @@ import org.scalatest.FlatSpec
 import org.genivi.sota.resolver.filters._
 import org.genivi.sota.resolver.filters.FilterAST._
 
-
+/**
+ * Specs for the filter parser
+ */
 class FilterParserSpec extends FlatSpec {
 
   val apaS = s"""vin_matches "apa""""
@@ -75,6 +77,9 @@ class FilterParserSpec extends FlatSpec {
 
 }
 
+/**
+ * Specs for filter queries
+ */
 class FilterQuerySpec extends ResourceWordSpec {
 
   import org.genivi.sota.resolver.vehicles.Vehicle
@@ -144,6 +149,10 @@ class FilterQuerySpec extends ResourceWordSpec {
   }
 }
 
+/**
+ * An arbitrary filter abstract syntax tree
+ * Used for property based testing of filter expressions
+ */
 object ArbitraryFilterAST {
 
   def genFilterHelper(i: Int): Gen[FilterAST] = {
@@ -188,6 +197,9 @@ object ArbitraryFilterAST {
     Arbitrary(genFilter)
 }
 
+/**
+ * Property Spec for the filter parser
+ */
 object FilterParserPropSpec extends ResourcePropSpec {
 
   import ArbitraryFilterAST.arbFilterAST

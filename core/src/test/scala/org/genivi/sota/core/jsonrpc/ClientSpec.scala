@@ -11,6 +11,9 @@ import org.scalatest.concurrent.ScalaFutures._
 import scala.concurrent.Future
 import scala.util.control.NoStackTrace
 
+/**
+ * Spec for testing JsonRpc requests from the SOTA Client
+ */
 class ClientSpec extends JsonRpcSpecBase {
 
   def respondWith( id: Int, result: Json ) : Json => Future[Json] = _ => Future.successful(

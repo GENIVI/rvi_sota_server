@@ -7,7 +7,10 @@ package org.genivi.sota.refined
 import eu.timepit.refined.{Predicate, Refined}
 import slick.driver.MySQLDriver.api._
 
-
+/**
+  * Map refined types to their underlaying types when interacting with
+  * the database.
+  */
 trait SlickRefined {
 
   trait Wrap[F[_, _]] {

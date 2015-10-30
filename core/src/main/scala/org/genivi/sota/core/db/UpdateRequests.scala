@@ -12,12 +12,23 @@ import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.core.data.UpdateRequest
 
+/**
+ * Database mapping definition for the UpdateRequests table.
+ * These refer to a single software package that should be installed as part
+ * of a install campaign.  There one of these shared among multiple VINs: the
+ * UpdateSpecs table records the result of the individual install for each
+ * vehicle.
+ */
 object UpdateRequests {
 
   import org.genivi.sota.refined.SlickRefined._
   import Mappings._
   import SlickExtensions._
 
+  /**
+   * Slick mapping definition for the UpdateRequests table
+   * @see {@link http://slick.typesafe.com/}
+   */
   class UpdateRequestsTable(tag: Tag) extends Table[UpdateRequest](tag, "UpdateRequests") {
     def id = column[UUID]("update_request_id", O.PrimaryKey)
     def packageName = column[Package.Name]("package_name")
@@ -48,10 +59,22 @@ object UpdateRequests {
 
   }
 
+  /**
+   * Internal helper definition to accesss the SQL table
+   */
   val all = TableQuery[UpdateRequestsTable]
 
+  /**
+   * List all the package updates that have been ever created
+   * @return A list of update requests
+   */
   def list: DBIO[Seq[UpdateRequest]] = all.result
 
+  /**
+   * Add a new package update. Package updated specify a specific package at a
+   * specific version to be installed in a time window, with a given priority
+   * @param request A new update request to add
+   */
   def persist(request: UpdateRequest)
              (implicit ec: ExecutionContext): DBIO[UpdateRequest] = (all += request).map( _ => request)
 }

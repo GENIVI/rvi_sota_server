@@ -16,6 +16,9 @@ import org.genivi.sota.resolver.filters.FilterAST._
 import org.genivi.sota.resolver.packages.PackageFilter
 import org.genivi.sota.rest.{ErrorRepresentation, ErrorCode}
 
+/**
+ * Spec for Filter REST actions
+ */
 class FiltersResourceWordSpec extends ResourceWordSpec {
 
   "Filters resource" should {
@@ -98,6 +101,10 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
   }
 }
 
+/**
+ * Arbitrary filter object
+ * Used in property-based testing
+ */
 object ArbitraryFilter {
 
   import ArbitraryFilterAST.arbFilterAST
@@ -119,6 +126,9 @@ object ArbitraryFilter {
   implicit lazy val arbFilter = Arbitrary(genFilter)
 }
 
+/**
+ * Filter resource property spec
+ */
 class FiltersResourcePropSpec extends ResourcePropSpec {
 
   import ArbitraryFilter.arbFilter
