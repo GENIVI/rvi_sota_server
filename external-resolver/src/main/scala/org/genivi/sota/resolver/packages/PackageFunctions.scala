@@ -51,7 +51,7 @@ object PackageFunctions {
    * Lists the packages for a filter
    * @param fname  The name of the filter for which to list the packages
    * @return       A Future[Seq[Package]] of associated packages
-   * @throws       Error.MissingFilterException if the named filter does not exist
+   * @throws       Errors.MissingFilterException if the named filter does not exist
    */
   def listPackagesForFilter
     (fname: Filter.Name)
