@@ -8,6 +8,13 @@ import akka.http.scaladsl.unmarshalling._
 import akka.http.scaladsl.util.FastFuture
 import eu.timepit.refined._
 
+/**
+  * Add Akka HTTP request unmarshalling support for refined types.
+  *
+  * @see {@link http://doc.akka.io/docs/akka-stream-and-http-experimental/1.0/scala.html}
+  * @see {@link https://github.com/fthomas/refined}
+  */
+
 object RefinedMarshallingSupport {
 
   implicit def refinedUnmarshaller[P](implicit p: Predicate[P, String]): FromStringUnmarshaller[Refined[String, P]] =

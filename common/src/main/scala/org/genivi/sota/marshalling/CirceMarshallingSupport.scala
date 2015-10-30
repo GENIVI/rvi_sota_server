@@ -4,7 +4,6 @@
  */
 package org.genivi.sota.marshalling
 
-
 import akka.http.scaladsl.marshalling.{Marshaller, ToEntityMarshaller}
 import akka.http.scaladsl.model.{ContentTypes, HttpCharsets, MediaTypes}
 import akka.http.scaladsl.unmarshalling._
@@ -12,6 +11,15 @@ import akka.http.scaladsl.util.FastFuture
 import akka.stream.Materializer
 import cats.data.Xor
 import io.circe._
+
+/**
+  * Akka HTTP comes with built-in support for (un)marshalling using the
+  * Spray JSON library, however since we are using Circe for JSON we
+  * need to add this ourselves.
+  *
+  * @see {@link http://doc.akka.io/docs/akka-stream-and-http-experimental/1.0/scala.html}
+  * @see {@link https://github.com/travisbrown/circe}
+  */
 
 trait CirceMarshallingSupport {
 
