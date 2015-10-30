@@ -11,6 +11,9 @@ import org.genivi.sota.resolver.vehicles.Vehicle
 import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
 
 
+/**
+ * Spec for testing Resolver REST actions
+ */
 class ResolveResourceWordSpec extends ResourceWordSpec {
 
   val pkgName = "resolvePkg"
@@ -127,6 +130,9 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
   }
 }
 
+/**
+ * Property spec for Resolver REST actions
+ */
 class ResolveResourcePropSpec extends ResourcePropSpec {
 
   import ArbitraryFilter.arbFilter

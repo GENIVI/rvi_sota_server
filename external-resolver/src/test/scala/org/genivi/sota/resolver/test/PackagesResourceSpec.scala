@@ -17,6 +17,9 @@ import org.scalacheck._
 import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
 
 
+/**
+ * Spec for Packages REST actions
+ */
 class PackagesResourcePropSpec extends ResourcePropSpec {
 
   property("create a new resource on PUT request") {
@@ -71,6 +74,9 @@ class PackagesResourcePropSpec extends ResourcePropSpec {
 
 }
 
+/**
+ * Spec for Packages REST action word processing
+ */
 class PackagesResourceWordSpec extends ResourceWordSpec {
 
   "Packages resource" should {

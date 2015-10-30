@@ -13,7 +13,9 @@ import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.resolver.packages.{Package, PackageFilter}
 import org.genivi.sota.rest.{ErrorRepresentation, ErrorCode}
 
-
+/**
+ * Spec for Package Filter REST actions
+ */
 class PackageFilterResourceWordSpec extends ResourceWordSpec {
 
   "Package filter resource" should {

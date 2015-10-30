@@ -17,6 +17,9 @@ import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 import org.scalacheck._
 
 
+/**
+ * Spec for Vehicle REST actions
+ */
 class VehiclesResourcePropSpec extends ResourcePropSpec {
 
   val vehicles = "vehicles"
@@ -91,6 +94,9 @@ class VehiclesResourcePropSpec extends ResourcePropSpec {
 
 }
 
+/**
+ * Word Spec for Vehicle REST actions
+ */
 class VehiclesResourceWordSpec extends ResourceWordSpec {
 
   val vehicles = "vehicles"

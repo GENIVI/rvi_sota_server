@@ -11,7 +11,9 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 
-
+/**
+ * Specs for Component REST actions
+ */
 class ComponentResourceWordSpec extends ResourceWordSpec {
 
   val components = "components"
