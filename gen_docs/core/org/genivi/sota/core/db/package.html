@@ -1,0 +1,251 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>db - org.genivi.sota.core.db</title>
+          <meta name="description" content="db - org.genivi.sota.core.db" />
+          <meta name="keywords" content="db org.genivi.sota.core.db" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../index.html';
+            var hash = 'org.genivi.sota.core.db.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../../package.html" class="extype" name="org">org</a>.<a href="../../../package.html" class="extype" name="org.genivi">genivi</a>.<a href="../../package.html" class="extype" name="org.genivi.sota">sota</a>.<a href="../package.html" class="extype" name="org.genivi.sota.core">core</a></p>
+        <h1>db</h1><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.package" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">db</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="org.genivi.sota.core.db.DatabaseConfig" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="DatabaseConfigextendsAnyRef"></a>
+      <a id="DatabaseConfig:DatabaseConfig"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="DatabaseConfig.html"><span class="name">DatabaseConfig</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.package@DatabaseConfigextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Define how to open a database connection.</p><div class="fullcomment"><div class="comment cmt"><p>Define how to open a database connection.  This information is read out of
+the default configuration.
+It is a scala trait that will be mixed into the main app (in Boot.scala)
+</p></div></div>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="org.genivi.sota.core.db.InstallHistories" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="InstallHistories"></a>
+      <a id="InstallHistories:InstallHistories"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="InstallHistories$.html"><span class="name">InstallHistories</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.package@InstallHistories" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Database mapping definition for the InstallHistory table.</p><div class="fullcomment"><div class="comment cmt"><p>Database mapping definition for the InstallHistory table.
+This provides a history of package installs that have been attempted on a
+VIN.  It records the identity of the package which was attempted to be
+installed, the time of the attempt and whether the install was successful
+</p></div></div>
+    </li><li name="org.genivi.sota.core.db.Mappings" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Mappings"></a>
+      <a id="Mappings:Mappings"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Mappings$.html"><span class="name">Mappings</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.package@Mappings" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Define how to store a Joda Date time in the SQL database.</p><div class="fullcomment"><div class="comment cmt"><p>Define how to store a Joda Date time in the SQL database.
+This is imported as an implicit into the other database mapping definitions
+in this directory.
+</p></div></div>
+    </li><li name="org.genivi.sota.core.db.Packages" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Packages"></a>
+      <a id="Packages:Packages"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Packages$.html"><span class="name">Packages</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.package@Packages" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Database mapping definition for the Package SQL table.</p><div class="fullcomment"><div class="comment cmt"><p>Database mapping definition for the Package SQL table. This defines all the
+packages that have been uploaded to SOTA. Packages identified by a name +
+version tuple. The database doesn't include the actual binary data, rather
+A URL that points to it and a checksum is stored in the database instead.
+There are also free-form descriptions about the package and vendor
+</p></div></div>
+    </li><li name="org.genivi.sota.core.db.UpdateRequests" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="UpdateRequests"></a>
+      <a id="UpdateRequests:UpdateRequests"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="UpdateRequests$.html"><span class="name">UpdateRequests</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.package@UpdateRequests" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Database mapping definition for the UpdateRequests table.</p><div class="fullcomment"><div class="comment cmt"><p>Database mapping definition for the UpdateRequests table.
+These refer to a single software package that should be installed as part
+of a install campaign.  There one of these shared among multiple VINs: the
+UpdateSpecs table records the result of the individual install for each
+vehicle.
+</p></div></div>
+    </li><li name="org.genivi.sota.core.db.UpdateSpecs" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="UpdateSpecs"></a>
+      <a id="UpdateSpecs:UpdateSpecs"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="UpdateSpecs$.html"><span class="name">UpdateSpecs</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.package@UpdateSpecs" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Database mapping definition for the UpdateSpecs and RequiredPackages tables.</p><div class="fullcomment"><div class="comment cmt"><p>Database mapping definition for the UpdateSpecs and RequiredPackages tables.
+UpdateSpecs records the status of a package update for a specific VIN. One
+UpdateSpecs row has several RequiredPackages rows that detail the individual
+packages that need to be installed.
+</p></div></div>
+    </li><li name="org.genivi.sota.core.db.Vehicles" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Vehicles"></a>
+      <a id="Vehicles:Vehicles"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Vehicles$.html"><span class="name">Vehicles</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.package@Vehicles" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Database mapping definition for the Vehicles table.</p><div class="fullcomment"><div class="comment cmt"><p>Database mapping definition for the Vehicles table.
+The Vehicles table is simple: it only contains the list of the vehicles
+(VINs) that are known to the SOTA system.  Other tables that refer to
+VINs should have a foreign key into this table
+</p></div></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

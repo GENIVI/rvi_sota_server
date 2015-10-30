@@ -1,0 +1,376 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>filters - org.genivi.sota.resolver.filters</title>
+          <meta name="description" content="filters - org.genivi.sota.resolver.filters" />
+          <meta name="keywords" content="filters org.genivi.sota.resolver.filters" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../index.html';
+            var hash = 'org.genivi.sota.resolver.filters.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../../package.html" class="extype" name="org">org</a>.<a href="../../../package.html" class="extype" name="org.genivi">genivi</a>.<a href="../../package.html" class="extype" name="org.genivi.sota">sota</a>.<a href="../package.html" class="extype" name="org.genivi.sota.resolver">resolver</a></p>
+        <h1>filters</h1><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.filters.package" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">filters</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="org.genivi.sota.resolver.filters.And" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="AndextendsFilterASTwithProductwithSerializable"></a>
+      <a id="And:And"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="And.html"><span class="name">And</span></a><span class="params">(<span name="l">l: <a href="FilterAST.html" class="extype" name="org.genivi.sota.resolver.filters.FilterAST">FilterAST</a></span>, <span name="r">r: <a href="FilterAST.html" class="extype" name="org.genivi.sota.resolver.filters.FilterAST">FilterAST</a></span>)</span><span class="result"> extends <a href="FilterAST.html" class="extype" name="org.genivi.sota.resolver.filters.FilterAST">FilterAST</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.filters.package@AndextendsFilterASTwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.filters.Filter" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="FilterextendsProductwithSerializable"></a>
+      <a id="Filter:Filter"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Filter.html"><span class="name">Filter</span></a><span class="params">(<span name="name">name: <a href="Filter$.html#Name=eu.timepit.refined.Refined[String,org.genivi.sota.resolver.filters.Filter.ValidName]" class="extmbr" name="org.genivi.sota.resolver.filters.Filter.Name">Name</a></span>, <span name="expression">expression: <a href="Filter$.html#Expression=eu.timepit.refined.Refined[String,org.genivi.sota.resolver.filters.Filter.ValidExpression]" class="extmbr" name="org.genivi.sota.resolver.filters.Filter.Expression">Expression</a></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.filters.package@FilterextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.filters.FilterAST" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="FilterASTextendsAnyRef"></a>
+      <a id="FilterAST:FilterAST"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="FilterAST.html"><span class="name">FilterAST</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.filters.package@FilterASTextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.filters.FilterDirectives" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="FilterDirectivesextendsAnyRef"></a>
+      <a id="FilterDirectives:FilterDirectives"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="FilterDirectives.html"><span class="name">FilterDirectives</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.filters.package@FilterDirectivesextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">API routes for filters.</p><div class="fullcomment"><div class="comment cmt"><p>API routes for filters.</p></div><dl class="attributes block"> <dt>See also</dt><dd><span class="cmt"><p><code><span class="extype" name="tourl">http://pdxostc.github.io/rvi_sota_server/dev/api.html</span></code></p></span></dd></dl></div>
+    </li><li name="org.genivi.sota.resolver.filters.HasComponent" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HasComponentextendsFilterASTwithProductwithSerializable"></a>
+      <a id="HasComponent:HasComponent"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="HasComponent.html"><span class="name">HasComponent</span></a><span class="params">(<span name="name">name: <span class="extype" name="eu.timepit.refined.Refined">Refined</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="eu.timepit.refined.string.Regex">Regex</span>]</span>)</span><span class="result"> extends <a href="FilterAST.html" class="extype" name="org.genivi.sota.resolver.filters.FilterAST">FilterAST</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.filters.package@HasComponentextendsFilterASTwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.filters.HasPackage" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HasPackageextendsFilterASTwithProductwithSerializable"></a>
+      <a id="HasPackage:HasPackage"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="HasPackage.html"><span class="name">HasPackage</span></a><span class="params">(<span name="name">name: <span class="extype" name="eu.timepit.refined.Refined">Refined</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="eu.timepit.refined.string.Regex">Regex</span>]</span>, <span name="version">version: <span class="extype" name="eu.timepit.refined.Refined">Refined</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="eu.timepit.refined.string.Regex">Regex</span>]</span>)</span><span class="result"> extends <a href="FilterAST.html" class="extype" name="org.genivi.sota.resolver.filters.FilterAST">FilterAST</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.filters.package@HasPackageextendsFilterASTwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.filters.Not" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="NotextendsFilterASTwithProductwithSerializable"></a>
+      <a id="Not:Not"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Not.html"><span class="name">Not</span></a><span class="params">(<span name="f">f: <a href="FilterAST.html" class="extype" name="org.genivi.sota.resolver.filters.FilterAST">FilterAST</a></span>)</span><span class="result"> extends <a href="FilterAST.html" class="extype" name="org.genivi.sota.resolver.filters.FilterAST">FilterAST</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.filters.package@NotextendsFilterASTwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.filters.Or" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="OrextendsFilterASTwithProductwithSerializable"></a>
+      <a id="Or:Or"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="Or.html"><span class="name">Or</span></a><span class="params">(<span name="l">l: <a href="FilterAST.html" class="extype" name="org.genivi.sota.resolver.filters.FilterAST">FilterAST</a></span>, <span name="r">r: <a href="FilterAST.html" class="extype" name="org.genivi.sota.resolver.filters.FilterAST">FilterAST</a></span>)</span><span class="result"> extends <a href="FilterAST.html" class="extype" name="org.genivi.sota.resolver.filters.FilterAST">FilterAST</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.filters.package@OrextendsFilterASTwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.filters.VinMatches" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="VinMatchesextendsFilterASTwithProductwithSerializable"></a>
+      <a id="VinMatches:VinMatches"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="VinMatches.html"><span class="name">VinMatches</span></a><span class="params">(<span name="vin">vin: <span class="extype" name="eu.timepit.refined.Refined">Refined</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="eu.timepit.refined.string.Regex">Regex</span>]</span>)</span><span class="result"> extends <a href="FilterAST.html" class="extype" name="org.genivi.sota.resolver.filters.FilterAST">FilterAST</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.filters.package@VinMatchesextendsFilterASTwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="org.genivi.sota.resolver.filters.False" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="False"></a>
+      <a id="False:False"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="False$.html"><span class="name">False</span></a><span class="result"> extends <a href="FilterAST.html" class="extype" name="org.genivi.sota.resolver.filters.FilterAST">FilterAST</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.filters.package@False" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.filters.Filter" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Filter"></a>
+      <a id="Filter:Filter"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Filter$.html"><span class="name">Filter</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.filters.package@Filter" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.filters.FilterAST" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="FilterAST"></a>
+      <a id="FilterAST:FilterAST"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="FilterAST$.html"><span class="name">FilterAST</span></a><span class="result"> extends <span class="extype" name="scala.util.parsing.combinator.syntactical.StandardTokenParsers">StandardTokenParsers</span> with <span class="extype" name="scala.util.parsing.combinator.PackratParsers">PackratParsers</span> with <span class="extype" name="scala.util.parsing.combinator.ImplicitConversions">ImplicitConversions</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.filters.package@FilterAST" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.filters.FilterFunctions" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="FilterFunctions"></a>
+      <a id="FilterFunctions:FilterFunctions"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="FilterFunctions$.html"><span class="name">FilterFunctions</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.filters.package@FilterFunctions" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.filters.FilterRepository" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="FilterRepository"></a>
+      <a id="FilterRepository:FilterRepository"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="FilterRepository$.html"><span class="name">FilterRepository</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.filters.package@FilterRepository" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.filters.FutureSupport" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="FutureSupport"></a>
+      <a id="FutureSupport:FutureSupport"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="FutureSupport$.html"><span class="name">FutureSupport</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.filters.package@FutureSupport" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.filters.True" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="True"></a>
+      <a id="True:True"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="True$.html"><span class="name">True</span></a><span class="result"> extends <a href="FilterAST.html" class="extype" name="org.genivi.sota.resolver.filters.FilterAST">FilterAST</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.filters.package@True" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>
