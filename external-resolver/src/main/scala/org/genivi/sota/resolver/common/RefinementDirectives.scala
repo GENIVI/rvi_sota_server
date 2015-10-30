@@ -10,6 +10,9 @@ import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.rest.Validation._
 import Directives._
 
+/**
+  * Helpers for extracting refined values from the URL.
+  */
 
 object RefinementDirectives {
 
