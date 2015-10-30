@@ -99,21 +99,25 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
     } ~
     extractPackageId { packageId =>
       (pathEnd & put) {
-        formFields('description.?, 'vendor.?, 'file.as[StrictForm.FileData]) { (description, vendor, fileData) =>
-          completeOrRecoverWith(
-            for {
-              _                   <- resolver.putPackage(packageId, description, vendor)
-              (uri, size, digest) <- savePackage(packageId, fileData)
-              _                   <- db.run(Packages.create(
-                                      Package(packageId, uri, size, digest, description, vendor)))
-            } yield StatusCodes.NoContent
-          ) {
-            case ExternalResolverRequestFailed(msg, cause) =>
-              import org.genivi.sota.marshalling.CirceMarshallingSupport._
-              log.error( cause, s"Unable to create/update package: $msg" )
-              complete( StatusCodes.ServiceUnavailable -> ErrorRepresentation( ErrorCodes.ExternalResolverError, msg ) )
-
-            case e => failWith(e)
+        // TODO: Fix form fields metadata causing error for large upload
+        parameters('description.?, 'vendor.?) { (description, vendor) =>
+          formFields('file.as[StrictForm.FileData]) { fileData =>
+            completeOrRecoverWith(
+              for {
+                _                   <- resolver.putPackage(packageId, description, vendor)
+                (uri, size, digest) <- savePackage(packageId, fileData)
+                _                   <- db.run(Packages.create(
+                                        Package(packageId, uri, size, digest, description, vendor)))
+              } yield StatusCodes.NoContent
+            ) {
+              case ExternalResolverRequestFailed(msg, cause) =>
+                import org.genivi.sota.marshalling.CirceMarshallingSupport._
+                log.error(cause, s"Unable to create/update package: $msg")
+                complete(
+                  StatusCodes.ServiceUnavailable ->
+                  ErrorRepresentation(ErrorCodes.ExternalResolverError, msg))
+              case e => failWith(e)
+            }
           }
         }
       } ~

@@ -44,19 +44,21 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
     def toWsHeaders(hdrs: Headers) = hdrs.toMap.map {
       case(name, value) => name -> value.mkString }
 
-    WS.url(apiUri + req.path)
+    val w = WS.url(apiUri + req.path)
       .withFollowRedirects(false)
       .withMethod(req.method)
       .withHeaders(toWsHeaders(req.headers).toSeq :_*)
       .withQueryString(req.queryString.mapValues(_.head).toSeq :_*)
-      .withBody(req.body.asBytes().get)
-      .execute
-      .map { resp => Result(
-        header = ResponseHeader(
-          status = resp.status,
-          headers = resp.allHeaders.mapValues(x => x.head)),
+
+    val wreq = req.body.asBytes() match {
+      case Some(b) => w.withBody(b)
+      case None => w.withBody(FileBody(req.body.asFile))
+    }
+    wreq.execute.map { resp =>
+      Result(
+        header = ResponseHeader(resp.status, resp.allHeaders.mapValues(x => x.head)),
         body = Enumerator(resp.bodyAsBytes))
-      }
+    }
   }
 
   def apiProxy(path: String) = AsyncStack(parse.raw, AuthorityKey -> Role.USER) { implicit req =>

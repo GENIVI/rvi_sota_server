@@ -22,7 +22,9 @@ define(function(require) {
               });
           break;
           case 'create-package':
-            var url = '/api/v1/packages/' + payload.package.name + '/' + payload.package.version;
+            var url = '/api/v1/packages/' + payload.package.name + '/' + payload.package.version
+              + '?description=' + encodeURIComponent(payload.package.description)
+              + '&vendor=' + encodeURIComponent(payload.package.vendor);
             sendRequest.doPut(url, payload.data, {form: true})
               .success(function() {
                 location.hash = "#/packages/" + payload.package.name + "/" + payload.package.version;
