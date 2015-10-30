@@ -1,8 +1,17 @@
 define(function(require) {
   var SotaDispatcher = require('sota-dispatcher'),
-      _ = require('underscore');
-      db = require('../stores/db');
+      _ = require('underscore'),
+      db = require('../stores/db'),
+      checkExists = require('../mixins/check-exists'),
       sendRequest = require('../mixins/send-request');
+
+  var createVehicle = function(payload) {
+    var url = '/api/v1/vehicles/' + payload.vehicle.vin;
+    sendRequest.doPut(url, payload.vehicle)
+      .success(function(vehicles) {
+        SotaDispatcher.dispatch({actionType: 'search-vehicles-by-regex'});
+      });
+  }
 
   var Handler = (function() {
       this.dispatchCallback = function(payload) {
@@ -14,11 +23,9 @@ define(function(require) {
               });
           break;
           case 'create-vehicle':
-            var url = '/api/v1/vehicles/' + payload.vehicle.vin;
-            sendRequest.doPut(url, payload.vehicle)
-              .success(function(vehicles) {
-                SotaDispatcher.dispatch({actionType: 'search-vehicles-by-regex'});
-              });
+            checkExists('/api/v1/vehicles/' + payload.vehicle.vin, "Vehicle", function() {
+              createVehicle(payload);
+            });
           break;
           case 'search-vehicles-by-regex':
             var query = payload.regex ? '?regex=' + payload.regex : '';

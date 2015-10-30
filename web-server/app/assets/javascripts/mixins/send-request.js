@@ -1,21 +1,21 @@
-define(['jquery'], function($) {
+define(['jquery', 'underscore'], function($, _) {
   var sendRequest = {
     send: function(type, url, data, opts) {
       opts = opts || {};
       if (opts.form) {
         return this.formMultipart(type, url, data);
       } else {
-        return this.jsonAjax(type, url, data);
+        return this.jsonAjax(type, url, data, opts);
       }
     },
-    jsonAjax: function(type, url, data) {
-      return $.ajax({
+    jsonAjax: function(type, url, data, opts) {
+      return $.ajax(_.extend({
         type: type,
         url: url,
         dataType: 'json',
         data: JSON.stringify(data),
         contentType: "application/json"
-      });
+      }, opts));
     },
     formMultipart: function(type, url, data) {
       return $.ajax({
@@ -28,7 +28,7 @@ define(['jquery'], function($) {
       });
     },
     doGet: function(url, opts) {
-      return this.send("GET", url, opts);
+      return this.send("GET", url, undefined, opts);
     },
     doPost: function(url, data, opts) {
       return this.send("POST", url, data, opts);
