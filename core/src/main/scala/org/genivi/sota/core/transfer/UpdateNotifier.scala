@@ -16,8 +16,16 @@ import scala.concurrent.Future
 case class PackageUpdate( `package`: Package.Id, size: Long )
 case class UpdateNotification(packages: Seq[PackageUpdate], services: ServerServices)
 
+/**
+ * Send a notification to SOTA clients via RVI that there are packages that
+ * can/should be updated.
+ */
 object UpdateNotifier {
 
+  /**
+   * Notify all the vehicles in an updated that an update is ready
+   * @param updateSpecs A set of updates
+   */
   def notify(updateSpecs: Seq[UpdateSpec], services: ServerServices)
             (implicit rviClient: RviClient, ec: ExecutionContext, log: LoggingAdapter): Iterable[Future[Int]] = {
     log.debug(s"Sending update notifications: $updateSpecs" )
@@ -25,6 +33,11 @@ object UpdateNotifier {
     updatesByVin.map( (notifyVehicle(services) _ ).tupled  )
   }
 
+  /**
+   * Notify a single vehicle that it has updates
+   * @param vin The VIN of the vehicle to notify
+   * @param updates The updates that apply to the vehicle
+   */
   def notifyVehicle(services: ServerServices)( vin: Vehicle.Vin, updates: Seq[UpdateSpec] )
                    ( implicit rviClient: RviClient, ec: ExecutionContext): Future[Int] = {
     import com.github.nscala_time.time.Imports._
