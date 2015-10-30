@@ -3,6 +3,7 @@ layout: page
 title: "SOTA Architecture"
 category: dev
 date: 2015-08-26 14:14:23
+order: 4
 ---
 :icons: font
 
@@ -18,9 +19,7 @@ The system architecture is illustrated here:
 
 image:../images/System-Architecture-Diagram.svg[System Architecture Diagram]
 
-The data model for the system is illustrated here (click to enlarge):
-
-link:../images/Data-Model.svg[image:../images/Data-Model.svg[Data Model Diagram]]
+The data model for the system is illustrated link:../images/Data-Model.svg[here].
 
 == Context Diagrams
 

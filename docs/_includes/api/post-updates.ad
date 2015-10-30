@@ -1,0 +1,105 @@
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+
+
+|Description |Create an install campaign for a package
+
+|URL |/api/v1/updates
+
+|Data Parameters a|
+* *id* — A UUID; must not already exist in the database.
+* *packageId* — An object consisting of:
+  ** *name* — A package name.
+  ** *version* — A package version, in _x.y.z_ format. __x__, __y__, and __z__ must all exist, and contain only digits.
+* *priority* — `[int]` The priority order of the campaign. Lower numbers indicate higher priority.
+* *creationTime* — `[dateTime]` The date and time the install campaign was created on.
+* *periodOfValidity* — `[dateTime]/[dateTime]` A string with campaign start and end `dateTime` separated by a slash.
+
+*Example:*
+[source,json]
+----
+{
+  "id": "7dacded2-911e-4c43-b5e3-f91870e79f05",
+  "packageId": {
+    "name": "myPackage",
+    "version": "1.2.3"
+  },
+  "priority": 3,
+  "creationTime": "2015-09-18T00:00:23+00:00",
+  "periodOfValidity": "2015-09-18T90:00:00+00:00/2015-09-19T00:00:00+00:00"
+}
+----
+|Success Response a|
+*Code:* 200
+
+*Content:* A list of VIN update objects. Each object contains:
+
+* *vin*
+* *status* — The status of the update for this VIN. Can be _Pending, InFlight, Canceled, Failed,_ or _Finished_.
+* *request* — An object containing information about the update campaign. Includes:
+  ** *packageId* — Object containing:
+    *** *name* — Package name
+    *** *version* — _x.y.z_
+  ** *id* — the UUID of the update campaign
+  ** *priority* — The priority of the campaign.
+  ** *periodOfValidity* — `[dateTime]/[dateTime]` The start and end time of the update campaign.
+  ** *creationTime* — `[dateTime]` — The date and time the campaign was created.
+* *dependencies* — A description of the package to be sent. Object containing:
+  ** *id* — The packageId of the package to be sent. Object consisting of:
+    *** *name* — Package name
+    *** *version* — _x.y.z_
+  ** *uri* — The URI of the package binary
+  ** *size* — Package size in bytes
+  ** *checkSum* — The package's checksum
+  ** *description* — The package's description text
+  ** *vendor* — The package's vendor
+
+[source,json]
+----
+[
+  {
+    "dependencies": [
+      {
+        "size": 35768,
+        "description": "testing",
+        "uri": {
+          "uri": "http://sota_core/ghc-7.6.3-18.3.el7.x86_64.rpm"
+        },
+        "checkSum": "5tsJvSyE22ZTQQfaTvAOat3Muo4=",
+        "id": {
+          "version": "1.2.3",
+          "name": "myPackage"
+        },
+        "vendor": "AcmeSoftware"
+      }
+    ],
+    "status": "Pending",
+    "vin": "aaaaaaa1234567890",
+    "request": {
+      "periodOfValidity": "2015-09-18T02:00:00.000+02:00/2015-09-19T02:00:00.000+02:00",
+      "priority": 3,
+      "id": "7dacded2-911e-4c43-b5e3-f91870e79f07",
+      "packageId": {
+        "version": "1.2.3",
+        "name": "myPackage"
+      },
+      "creationTime": "2015-09-18T02:00:23.000+02:00"
+    }
+  }
+]
+----
+
+|Error Response a|
+Invalid package name:
+
+*Code:* 500
+
+*Content:*
+[source,json]
+----
+{
+  "error": "Cannot add or update a child row: a foreign key constraint fails (`sota_core`.`installcampaign`, CONSTRAINT `install_campaign_package_id_fk` FOREIGN KEY (`packageName`, `packageVersion`) REFERENCES `Package` (`name`, `version`))"
+}
+----
+|=======================================================================

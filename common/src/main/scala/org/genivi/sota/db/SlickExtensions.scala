@@ -4,12 +4,18 @@
  */
 package org.genivi.sota.db
 
-import java.util.UUID
-
 import akka.http.scaladsl.model.Uri
+import java.util.UUID
 import slick.ast.{Node, TypedType}
 import slick.driver.MySQLDriver.api._
 import slick.lifted.Rep
+
+/**
+  * Explain to the database layer, Slick, how to map Uri and UUIDs into
+  * types that the database knows about (strings).
+  *
+  * @see {@link http://slick.typesafe.com/docs/}
+  */
 
 object SlickExtensions {
   implicit val UriColumnType = MappedColumnType.base[Uri, String](_.toString(), Uri.apply)

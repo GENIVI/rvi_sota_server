@@ -19,10 +19,6 @@ define(function(require) {
       payload.id = {name: payload.name, version: payload.version};
 
       var data = new FormData();
-      _.each(payload, function(k,v) {
-        data.append(k, v);
-      });
-
       var file = $('.file-upload')[0].files[0];
       data.append('file', file);
 

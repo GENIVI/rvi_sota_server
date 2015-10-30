@@ -20,6 +20,9 @@ import scala.concurrent.Await
 import slick.driver.MySQLDriver.api._
 
 
+/**
+ * WordSpec for VIN REST actions
+ */
 class VinResourceWordSpec extends WordSpec
     with Matchers
     with ScalatestRouteTest
@@ -51,8 +54,18 @@ class VinResourceWordSpec extends WordSpec
         assert(vins.length === 3)
       }
     }
+    "list resource on GET :vin request" in {
+      Get(VinsUri + "/12345678901234500") ~> service.route ~> check {
+        assert(status === StatusCodes.OK)
+      }
+    }
+    "return a 404 on GET :vin that doesn't exist" in {
+      Get(VinsUri + "/123456789N0TTHERE") ~> service.route ~> check {
+        assert(status === StatusCodes.NotFound)
+      }
+    }
     "return a list of packages installed on a vin" in {
-      Get(VinsUri + "/BLAHVIN0123456789/queued") ~> service.route ~> check {
+      Get(VinsUri + "/BLAHV1N0123456789/queued") ~> service.route ~> check {
         assert(status === StatusCodes.OK)
       }
     }
@@ -76,7 +89,7 @@ class VinResourceWordSpec extends WordSpec
       }
     }
     "return a 404 when deleting a non existing vin" in {
-      Delete( VinsUri + "/123456789NOTTHERE") ~> service.route ~> check {
+      Delete( VinsUri + "/123456789N0TTHERE") ~> service.route ~> check {
         assert(status === StatusCodes.NotFound)
       }
     }

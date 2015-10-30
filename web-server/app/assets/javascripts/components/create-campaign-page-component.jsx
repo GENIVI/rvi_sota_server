@@ -16,8 +16,7 @@ define(function(require) {
       return (
         <div>
           <h1>
-            New Update Campaign for Package <br/>
-            {params.name}
+            Packages &gt; {params.name}-{params.version} &gt; New Update
           </h1>
           <AffectedVins AffectedVins={db.affectedVins} />
           <CreateUpdate packageName={params.name} packageVersion={params.version}/>

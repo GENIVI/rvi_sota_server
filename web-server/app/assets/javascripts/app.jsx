@@ -29,36 +29,36 @@ define(function(require) {
     render: function() {
       return (
       <div>
- 	<div className="navbar navbar-fixed-top top-nav">
-	  <div className="navbar-header">
+ 	    <nav className="navbar navbar-default navbar-fixed-top top-nav">
+	      <div className="navbar-header">
             <div className="top-logo">
               <a href="#/" className="top-logo"></a>
             </div>
             <div className="top-icon">
-              <label>SOTA</label>
+              <h2 className="nav-label">SOTA</h2>
             </div>
-	    <div className="navbar-collapse collapse">
+	        <div className="navbar-collapse collapse">
               <ul className="nav side-nav">
                 <li role="presentation">
-                  <Link to="vehicles" className="vehicles">Vehicles</Link>
+                  <Link to="vehicles" className="vehicles"><i className="fa fa-car nav-link-btn"/>Vehicles</Link>
                 </li>
                 <li role="presentation">
-                  <Link to="packages" className="packages">Packages</Link>
+                  <Link to="packages" className="packages"><i className="fa fa-envelope nav-link-btn"/>Packages</Link>
                 </li>
                 <li role="presentation">
-                  <Link to="filters" className="filters">Filters</Link>
+                  <Link to="components" className="components"><i className="fa fa-cog nav-link-btn"/>Components</Link>
                 </li>
                 <li role="presentation">
-                  <Link to="updates" className="updates">Updates</Link>
+                  <Link to="filters" className="filters"><i className="fa fa-filter nav-link-btn"/>Filters</Link>
                 </li>
                 <li role="presentation">
-                  <Link to="components" className="components">Components</Link>
+                  <Link to="updates" className="updates"><i className="fa fa-download nav-link-btn"/>Updates</Link>
                 </li>
               </ul>
-	    </div>
+	        </div>
           </div>
-        </div>
-        <div className="page wrapper">
+        </nav>
+        <div className="page wrapper container-fluid">
           <RouteHandler />
         </div>
       </div>

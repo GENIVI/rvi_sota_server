@@ -20,19 +20,19 @@ define(function(require) {
       return (
       <div>
         <div>
-          <h1>VIN: {params.vin}</h1>
+          <h1>Vehicles &gt; {params.vin}</h1>
         </div>
         <div className="row">
           <div className="col-md-12">
-            <AddPackageManually Vin={params.vin}/>
             <h2>Installed Packages</h2>
             <ListOfPackagesForVin Packages={db.packagesForVin} Vin={params.vin}/>
-            <h2>Queued Package Updates</h2>
+            <AddPackageManually Vin={params.vin}/>
+            <h2>Installed Components</h2>
+            <ComponentsOnVin Components={db.componentsOnVin} Vin={params.vin}/>
+            <AddComponent Vin={params.vin}/>
+            <h2>Package Updates</h2>
             <QueuedPackages Packages={db.packageQueueForVin} Vin={params.vin}/>
             <PackageHistory Packages={db.packageHistoryForVin} Vin={params.vin}/>
-            <AddComponent Vin={params.vin}/>
-            <h2>Components Install On VIN</h2>
-            <ComponentsOnVin Components={db.componentsOnVin} Vin={params.vin}/>
           </div>
         </div>
       </div>

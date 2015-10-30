@@ -27,33 +27,7 @@ services:
     attach: true
     ports:
       - 8801
-      - 8805
-      - 8806
-      - 8807
-      - 8808
     command: server
-
-  - name: rvi-client
-    repo: advancedtelematic/rvi
-    attach: true
-    ports:
-      - 8901
-      - 8905
-      - 8906
-      - 8907
-      - 8908
-    command: client
-
-  - name: sota-client
-    repo: advancedtelematic/sota-client
-    ports:
-      - 8090
-    links:
-      - rvi-client
-    env:
-      SOTA_CLIENT_PORT: "8090"
-    volumes_from:
-      - sota-data
 
   - name: resolver
     repo: advancedtelematic/sota-resolver
@@ -66,7 +40,7 @@ services:
       - mysql
     env:
       HOST: 0.0.0.0
-      RESOLVER_DB_URL: "jdbc:mysql://mysql:3306/{{ db_resolver_name }}"
+      RESOLVER_DB_URL: "jdbc:mariadb://mysql:3306/{{ db_resolver_name }}"
 
   - name: core
     repo: advancedtelematic/sota-core
@@ -82,7 +56,7 @@ services:
     env:
       HOST: 0.0.0.0
       SOTA_SERVICES_URI: "http://core:8080/rvi"
-      CORE_DB_URL: "jdbc:mysql://mysql:3306/{{ db_core_name }}"
+      CORE_DB_URL: "jdbc:mariadb://mysql:3306/{{ db_core_name }}"
       RESOLVER_API_URI: "http://resolver:8081"
       RVI_URI: "http://rvi-server:8801"
     volumes_from:
@@ -101,3 +75,11 @@ services:
       RESOLVER_API_URI: "http://resolver:8081"
       PLAY_CRYPTO_SECRET: {{ play_crypto_secret }}
 
+  - name: sota-migration
+    repo: advancedtelematic/sota-migration
+    restart_policy: 'no'
+    links:
+      - mysql
+    env:
+      RESOLVER_DB_URL: "jdbc:mariadb://mysql:3306/{{ db_resolver_name }}"
+      CORE_DB_URL: "jdbc:mariadb://mysql:3306/{{ db_core_name }}"

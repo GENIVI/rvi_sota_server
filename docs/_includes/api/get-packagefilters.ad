@@ -1,0 +1,22 @@
+
+[width="100%",cols="18%,82%",]
+|==================================================================
+|Description |Returns a list of all package —> filter associations.
+|URL |/api/v1/packageFilters
+|Parameters |None
+|Success Response a|
+*Code:* 200
+
+*Content:*
+
+[source,json]
+----
+[
+  {
+    "filterName": "myFilter",
+    "packageVersion": "4.5.6",
+    "packageName": "myPackage"
+  }
+]
+----
+|==================================================================

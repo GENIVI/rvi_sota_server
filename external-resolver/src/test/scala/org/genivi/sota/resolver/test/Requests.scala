@@ -13,14 +13,17 @@ import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import CirceMarshallingSupport._
 import org.genivi.sota.resolver.components.Component
-import org.genivi.sota.resolver.resolve._
+import org.genivi.sota.resolver.resolve.ResolveFunctions
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.resolver.packages.{Package, PackageFilter}
 import org.genivi.sota.resolver.vehicles.Vehicle
 import org.scalatest.Matchers
 import scala.concurrent.duration._
 
-
+/**
+ * Generic test resource object
+ * Used in property-based testing
+ */
 object Resource {
   def uri(pathSuffixes: String*): Uri = {
     val BasePath = Path("/api") / "v1"
@@ -28,6 +31,9 @@ object Resource {
   }
 }
 
+/**
+ * Testing Trait for building Vehicle requests
+ */
 trait VehicleRequests extends Matchers { self: ScalatestRouteTest =>
 
   def addVehicle(vin: String): HttpRequest =
@@ -64,6 +70,9 @@ trait VehicleRequests extends Matchers { self: ScalatestRouteTest =>
 
 }
 
+/**
+ * Testing Trait for building Package requests
+ */
 trait PackageRequests extends Matchers { self: ScalatestRouteTest =>
 
   def addPackage
@@ -80,6 +89,9 @@ trait PackageRequests extends Matchers { self: ScalatestRouteTest =>
     }
 }
 
+/**
+ * Testing Trait for building Component requests
+ */
 trait ComponentRequests extends Matchers { self: ScalatestRouteTest =>
 
   def addComponent(part: Component.PartNumber, desc: String): HttpRequest =
@@ -93,6 +105,9 @@ trait ComponentRequests extends Matchers { self: ScalatestRouteTest =>
 
 }
 
+/**
+ * Testing Trait for building Filter requests
+ */
 trait FilterRequests extends Matchers { self: ScalatestRouteTest =>
 
   def addFilter(name: String, expr: String): HttpRequest =
@@ -135,6 +150,9 @@ trait FilterRequests extends Matchers { self: ScalatestRouteTest =>
     Post(Resource.uri("validate", "filter"), filter)
 }
 
+/**
+ * Testing Trait for building PackageFilter requests
+ */
 trait PackageFilterRequests extends Matchers { self: ScalatestRouteTest =>
 
   def addPackageFilter(pname: String, pversion: String, fname: String): HttpRequest =
@@ -164,6 +182,9 @@ trait PackageFilterRequests extends Matchers { self: ScalatestRouteTest =>
     }
 }
 
+/**
+ * Testing Trait for building Resolve requests
+ */
 trait ResolveRequests extends Matchers { self: ScalatestRouteTest =>
 
   def resolve(pname: String, pversion: String): HttpRequest =

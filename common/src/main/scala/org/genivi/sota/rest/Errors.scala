@@ -4,9 +4,14 @@
  */
 package org.genivi.sota.rest
 
-import cats.data.Xor
-import io.circe.{Encoder, Decoder, Json}
-import Json.{obj, string}
+import io.circe.{Encoder, Decoder}
+
+/**
+  * Errors are presented to the user of the core and resolver API as
+  * JSON objects, this is done semi-automatically by the Circe library.
+  *
+  * @see {@link https://github.com/travisbrown/circe}
+  */
 
 object ErrorCodes {
   val InvalidEntity = new ErrorCode("invalid_entity")

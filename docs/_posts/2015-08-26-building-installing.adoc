@@ -26,6 +26,7 @@ The other dependencies are managed using Scala's `sbt`. If you have sbt installe
 
 To check the version of java installed, run:
 
+[source]
 ---------------------------------------------------------------
 # java -version
 java version "1.8.0_45"
@@ -52,11 +53,7 @@ GRANT ALL PRIVILEGES ON sota_resolver_test . * TO 'sota'@'localhost';
 FLUSH PRIVILEGES;
 ---------------------------------------------------------------------
 
-To update the database schema, run:
-
---------------------------
-sbt flywayMigrate
---------------------------
+To update the database schema, run `sbt flywayMigrate`
 
 This will apply any new migrations in src/main/resources/db/migration, and keep your existing data. This command expects to find the databases on localhost with sota/s0ta for the username/password. The URL to the database and login details can be overridden with the `CORE_DB_URL`, `CORE_DB_USER` and `CORE_DB_PASSWORD` environment variables for the core and `RESOLVER_DB_URL`, `RESOLVER_DB_USER` and, `RESOLVER_DB_PASSWORD` for the external resolver. See `project/SotaBuild.scala` for the implementation.
 
@@ -152,10 +149,11 @@ You can build RVI directly from https://github.com/PDXostc/rvi_core[its GitHub r
 
 The SOTA client builds as a docker container. As long as you have `rust` and `cargo` installed, `make docker` should build a docker image called `sota-client`.
 
-You can also build the SOTA client from within a docker container; this will be necessary if your build environment is not running linux. From the project root, run `docker run -it --rm -v $PWD:/build advancedtelematic/rust:1.2.0 /bin/bash`. Once you are at a bash prompt, run the following commands:
+You can also build the SOTA client from within a docker container; this will be necessary if your build environment is not running linux. From the project root, run `docker run -it --rm -v $PWD:/build advancedtelematic/rust:latest /bin/bash`. Once you are at a bash prompt, run the following commands:
 
 -----------------------------
-apt-get install -y libssl-dev
+apt-get update
+apt-get install -y libssl-dev dbus libdbus-1-dev dbus-1-dbg make
 cd /build
 cargo build --release
 exit
@@ -165,4 +163,4 @@ Now you can run `make docker` from your normal build environment.
 
 Once the sota-client docker image is built (by either of the two methods above), you can run it with `docker run -it --name sota-client -p 9000:9000 --link rvi-client:rvi-client -e RUST_LOG=info advancedtelematic/sota-client`.
 
-The client will listen for an active campaign from the server, and download updates when they become available. It then directly calls `rpm -i` to install the package it received.
+The client will listen for an active campaign from the server, and download updates when they become available. It then uses dbus calls to install the package it received.

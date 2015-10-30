@@ -7,6 +7,9 @@ package org.genivi.sota.core
 import com.typesafe.config.ConfigFactory
 import org.flywaydb.core.Flyway
 
+/*
+ * Helper object to configure test database for specs
+ */
 object TestDatabase {
 
   def resetDatabase( databaseName: String ) = {

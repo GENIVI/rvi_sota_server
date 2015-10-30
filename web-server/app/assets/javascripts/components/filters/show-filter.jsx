@@ -30,19 +30,30 @@ define(function(require) {
       var params = this.context.router.getCurrentParams();
       var listItems = _.map(this.props.Filter.deref(), function(value, key) {
         return (
-          <li>
-            {key}: {value}
-          </li>
+          <tr key={key}>
+            <td>
+              {key}
+            </td>
+            <td>
+              {value}
+            </td>
+          </tr>
         );
       });
       return (
         <div>
           <h1>
-            {this.props.Filter.deref().name}
+            Filters &gt; {this.props.Filter.deref().name}
           </h1>
-          <ul>
-            {listItems}
-          </ul>
+          <div className="row">
+            <div className="col-md-12">
+              <table className="table table-striped table-bordered">
+                <tbody>
+                  {listItems}
+                </tbody>
+              </table>
+            </div>
+          </div>
           <h2>
             Edit filter
           </h2>

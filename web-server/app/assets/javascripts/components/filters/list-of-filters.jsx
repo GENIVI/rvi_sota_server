@@ -21,15 +21,12 @@ define(function(require) {
         return (
           <tr key={filter.name + filter.expression}>
               <td>
-                {filter.name}
+                <Router.Link to='filter' params={ {name: filter.name} }>
+                  {filter.name}
+                </Router.Link>
               </td>
               <td>
                 {filter.expression}
-              </td>
-              <td>
-                <Router.Link to='filter' params={ {name: filter.name} }>
-                  Details
-                </Router.Link>
               </td>
           </tr>
         );
@@ -44,7 +41,6 @@ define(function(require) {
               <td>
           Expression
               </td>
-              <td/>
             </tr>
           </thead>
           <tbody>

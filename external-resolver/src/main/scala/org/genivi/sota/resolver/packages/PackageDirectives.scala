@@ -14,16 +14,28 @@ import org.genivi.sota.resolver.common.RefinementDirectives.refinedPackageId
 import scala.concurrent.ExecutionContext
 import slick.jdbc.JdbcBackend.Database
 
-
+/**
+ * API routes for packages.
+ */
 class PackageDirectives(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
   import Directives._
 
+  /**
+   * API route for packages.
+   * @return      Route object containing route for adding packages
+   */
   def route: Route = {
 
     pathPrefix("packages") {
-      get {
+      (get & pathEnd) {
         complete {
           NoContent
+        }
+      } ~
+      (get & refinedPackageId)
+      { id =>
+        completeOrRecoverWith(db.run(PackageRepository.exists(id))) {
+          Errors.onMissingPackage
         }
       } ~
       (put & refinedPackageId & entity(as[Package.Metadata]))

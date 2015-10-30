@@ -37,11 +37,11 @@ define(function(require) {
         packageId : { name: this.props.packageName,
         version: this.props.packageVersion },
         priority: Number(React.findDOMNode(this.refs.priority).value),
-        creationTime: this.formatDate(startAfterDate, startAfterTime, startAfterTimeZone),
+        creationTime: this.formatDateForJSON(startAfterDate, startAfterTime, startAfterTimeZone),
         periodOfValidity:
-          this.formatDate(startAfterDate, startAfterTime, startAfterTimeZone)
+          this.formatDateForJSON(startAfterDate, startAfterTime, startAfterTimeZone)
           + '/'
-          + this.formatDate(endBeforeDate, endBeforeTime, endBeforeTimeZone)
+          + this.formatDateForJSON(endBeforeDate, endBeforeTime, endBeforeTimeZone)
       }
       SendRequest.doPost("/api/v1/updates", payload)
         .done(_.bind(function(data) {
@@ -52,16 +52,15 @@ define(function(require) {
           this.trigger("error", this, xhr);
         }, this));
     },
-    formatDate: function(date, time, timeZone) {
+    formatDateForJSON: function(date, time, timeZone) {
       //TODO: Get seconds working with ReactJS
       return date + "T" + time + ":00" + timeZone;
     },
-    getTodaysDate: function() {
-      var today = new Date();
-      var dd = today.getDate();
-      var mm = today.getMonth()+1; //January is 0!
+    formatDateForInput: function(date) {
+      var dd = date.getDate();
+      var mm = date.getMonth()+1; //January is 0!
 
-      var yyyy = today.getFullYear();
+      var yyyy = date.getFullYear();
       if(dd<10){
           dd='0'+dd
       }
@@ -70,9 +69,17 @@ define(function(require) {
       }
       return yyyy+"-"+mm+"-"+dd;
     },
+    incrementDate: function(date) {
+      Date.prototype.addDays = function(days) {
+        var dat = new Date(this.valueOf());
+        dat.setDate(dat.getDate() + days);
+        return dat;
+      }
+      return date.addDays(1);
+    },
     componentDidMount: function() {
-      React.findDOMNode(this.refs.startAfterDate).value = this.getTodaysDate();
-      React.findDOMNode(this.refs.endBeforeDate).value = this.getTodaysDate();
+      React.findDOMNode(this.refs.startAfterDate).value = this.formatDateForInput(new Date());
+      React.findDOMNode(this.refs.endBeforeDate).value = this.formatDateForInput(this.incrementDate(new Date()));
       React.findDOMNode(this.refs.startAfterTime).value = "00:00";
       React.findDOMNode(this.refs.endBeforeTime).value = "00:00";
     },

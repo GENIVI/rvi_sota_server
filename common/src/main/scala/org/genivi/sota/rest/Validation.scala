@@ -6,10 +6,19 @@ package org.genivi.sota.rest
 
 import akka.http.scaladsl.server.PathMatcher.{Matched, Unmatched}
 import akka.http.scaladsl.server._
-import eu.timepit.refined.boolean.And
 import eu.timepit.refined.{Refined, Predicate, refineV}
 import scala.reflect.ClassTag
 
+/**
+  * Pathmatchers in Akka HTTP enable the programmer to extract values
+  * from the URL. Here we extend the pathmatching facility to do
+  * validation using the predicate of our refined types. If validation
+  * fails, reject the request -- see Handlers.scala for how this is
+  * handled.
+  *
+  * @see {@link http://doc.akka.io/docs/akka-stream-and-http-experimental/1.0/scala.html}
+  * @see {@link https://github.com/fthomas/refined}
+  */
 
 final class RefinedMatcher[P] {
   import Directives._
@@ -26,26 +35,6 @@ final class RefinedMatcher[P] {
 }
 
 object Validation {
-  import Directives._
-
-  implicit def andPredicate[A, B, T](implicit pa: Predicate[A, T], pb: Predicate[B, T]): Predicate[A And B, T] =
-    new Predicate[A And B, T] {
-      def isValid(t: T): Boolean = pa.isValid(t) && pb.isValid(t)
-      def show(t: T): String = s"(${pa.show(t)} && ${pb.show(t)})"
-
-      override def validate(t: T): Option[String] =
-        (pa.validate(t), pb.validate(t)) match {
-          case (Some(sl), Some(sr)) =>
-            Some(s"$sl, $sr")
-          case (Some(sl), None) =>
-            Some( pa.show(t) )
-          case (None, Some(sr)) =>
-            Some( pb.show(t) )
-          case _ => None
-        }
-
-      override val isConstant: Boolean = pa.isConstant && pb.isConstant
-    }
 
   def refined[P]: RefinedMatcher[P] = new RefinedMatcher[P]
 

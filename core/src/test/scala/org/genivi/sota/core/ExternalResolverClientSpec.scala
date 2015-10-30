@@ -21,7 +21,7 @@ import scala.concurrent.Future
 
 
 /**
- * Created by vladimir on 20/08/15.
+ * Spec tests for the external resolver client
  */
 class ExternalResolverClientSpec extends PropSpec with Matchers with BeforeAndAfterAll {
 
@@ -43,10 +43,10 @@ class ExternalResolverClientSpec extends PropSpec with Matchers with BeforeAndAf
     }
   }
 
-  val s: String = s"""[["VINBEAGLEBOARD000",[{"version":"23.5.2","name":"rust"}]]]"""
+  val s: String = s"""[["V1NBEAGLEB0ARD000",[{"version":"23.5.2","name":"rust"}]]]"""
 
   val m: Map[Vehicle.Vin, Set[Package.Id]] =
-    Map(Refined("VINBEAGLEBOARD000") -> Set(Package.Id(Refined("rust"), Refined("23.5.2"))))
+    Map(Refined("V1NBEAGLEB0ARD000") -> Set(Package.Id(Refined("rust"), Refined("23.5.2"))))
 
   property("parse the external resolver's response") {
 

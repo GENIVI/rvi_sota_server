@@ -23,22 +23,18 @@ You will need a Docker Hub account (https://hub.docker.com/).
 
 == Deploying a Development System
 
-To deploy a local development system, there are 3 basic steps.
-
-=== 1. Build the local docker images
+Deploying with docker-launcher is quite easy: first, build the images:
 
 [source,sh]
 -------------------------
 ./sbt docker:publishLocal
 -------------------------
 
-Once this completes successfully, you may deploy with https://github.com/advancedtelematic/docker-launcher[Docker Launcher.]
+And then you may deploy with https://github.com/advancedtelematic/docker-launcher[Docker Launcher.]
 
-=== 2. Launch the docker images with docker-launcher
+Make sure you have Docker Launcher and Docker installed and configured to your liking. Docker Launcher currently requires Docker >= v.1.8.0 and Ansible v.1.9.2. Ansible 2.x has not yet been tested, and is not guaranteed to work.
 
-For deploying a development system to your local machine, make sure you have Docker Launcher and Docker installed and configured to your liking. Docker Launcher currently requires Docker >= v.1.8.0 and Ansible v.1.9.2. Ansible 2.x has not yet been tested, and is not guaranteed to work.
-
-First, enter the `deploy` directory, and copy the example Docker Launcher configuration file, then edit it to match your preferences. The only values you should need to change are the `user` and `email` fields in `docker-launcher.yml`. These should be a valid username and associated email address for Docker Hub.
+Enter the `deploy` directory, copy the example Docker Launcher configuration file, and run it.
 
 [source,sh]
 --------------------------------------------------
@@ -47,14 +43,7 @@ cp docker-launcher.yml.example docker-launcher.yml
 docker-launcher -c docker-launcher.yml deploy-sota-local.yml
 --------------------------------------------------
 
-You will be prompted for your Docker Hub password, but for a local deployment it's not actually needed.
-
-=== 3. Apply database migrations to the newly created MariaDB container
-
-[source,sh]
-------------------------------------------------------------
-CORE_DB_URL=jdbc:mariadb://<your-docker-host>:3306/sota_core RESOLVER_DB_URL=jdbc:mariadb://<your-docker-host>:3306/sota_resolver sbt flywayMigrate
-------------------------------------------------------------
+You will be prompted for your Docker Hub password, but for a local deployment it's not actually needed. You can just press enter at the prompt.
 
 === Teardown
 
@@ -115,6 +104,10 @@ With `<user>`, `<password>`, and `<host>` replaced with suitable values.
 === AWS Prerequisites
 
 Deployment of rvi-sota-server requires valid AWS administrator credentials, as well as an SSH key to administer any instances launched by the vw-garage deployment scripts.
+
+=== SSL
+
+The current version of SOTA Server is SSL insensitive; for a production system using SSL use an SSL-stripping load balancer.
 
 ==== Create New User for Deployment
 

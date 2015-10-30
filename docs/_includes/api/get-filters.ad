@@ -1,0 +1,27 @@
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+
+
+|Description |Returns a list of all filters in the database.
+
+|URL |/api/v1/filters
+
+|Parameters |None
+
+|Success Response a|
+*Code:* 200
+
+*Content:* A list of filters.
+
+[source,json]
+----
+[
+  {
+    "expression": "vin_matches \"^12ABC\" AND has_component \"AcmeDVDPlayer\"",
+    "name": "myFilter"
+  }
+]
+----
+
+|=======================================================================

@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.core.rvi
 
+import akka.actor.ReceiveTimeout
 import java.net.URI
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
@@ -12,19 +13,35 @@ import java.nio.file.{Paths, StandardOpenOption}
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, Status}
 import akka.util.ByteString
 import io.circe.Encoder
+import java.util.concurrent.TimeUnit
 import org.apache.commons.codec.binary.Base64
 import org.genivi.sota.core.data.UpdateStatus
 import org.genivi.sota.core.data.Vehicle
 import org.genivi.sota.core.data.{Package, UpdateSpec, Vehicle}
 import org.genivi.sota.core.db.{UpdateSpecs, InstallHistories}
 import org.joda.time.DateTime
+import scala.concurrent.duration.{FiniteDuration, Duration}
+import scala.util.control.NoStackTrace
 import slick.driver.MySQLDriver.api.Database
 
 import scala.collection.immutable.Queue
 import scala.math.BigDecimal.RoundingMode
 
+/**
+ * Actor to handle events received from the RVI node.
+ *
+ * @param transferActorProps the configuration class for creating actors to handle a single vehicle
+ * @see SotaServices
+ */
 class UpdateController(transferProtocolProps: Props) extends Actor with ActorLogging {
 
+  /**
+   * Create actors to handle new downloads to a single vehicle.
+   * Forward messages to that actor until it finishes the download.
+   * Remove the actor from the map when it is terminated.
+   *
+   * @param currentDownloads the map of VIN to the actor handling that vehicle
+   */
   def running( currentDownloads: Map[Vehicle.Vin, ActorRef] ) : Receive = {
     case x @ StartDownload(vin, packages, clientServices) =>
       currentDownloads.get(vin) match {
@@ -47,12 +64,18 @@ class UpdateController(transferProtocolProps: Props) extends Actor with ActorLog
       context.become( running( currentDownloads.filterNot( _._2 == x ) ) )
   }
 
+  /**
+   * Entry point with initial empty map of downloads
+   */
   override def receive : Receive = running( Map.empty )
 
 }
 
 object UpdateController {
 
+  /**
+   * Configuration class for creating the UpdateController actor.
+   */
   def props( transferProtocolProps: Props ) : Props = Props( new UpdateController(transferProtocolProps) )
 
 }
@@ -61,21 +84,34 @@ object TransferProtocolActor {
 
   private[TransferProtocolActor] case class Specs( values : Iterable[UpdateSpec])
 
+  /**
+   * Configuration class for creating the TransferProtocolActor actor.
+   */
   def props(db: Database, rviClient: RviClient, transferActorProps: (ClientServices, Package) => Props) =
     Props( new TransferProtocolActor( db, rviClient, transferActorProps) )
-
-  case object GetAllPackages
-
 }
 
 object UpdateEvents {
 
+  /**
+   * Message from TransferProtocolActor when all packages are transferred to vehicle.
+   */
   final case class PackagesTransferred( update: UpdateSpec )
 
+  /**
+   * Message from TransferProtocolActor when an installation report is received from the vehicle.
+   */
   final case class InstallReportReceived( report: InstallReport )
 
 }
 
+/**
+ * Actor to transfer packages to a single vehicle.
+ *
+ * @param db the database connection
+ * @param rviClient the client to the RVI node
+ * @param transferActorProps the configuration class for creating the PackageTransferActor
+ */
 class TransferProtocolActor(db: Database, rviClient: RviClient, transferActorProps: (ClientServices, Package) => Props)
     extends Actor with ActorLogging {
   import context.dispatcher
@@ -86,6 +122,12 @@ class TransferProtocolActor(db: Database, rviClient: RviClient, transferActorPro
     specs.foldLeft(Set.empty[Package])( (acc, x) => acc.union( x.dependencies ) ).to[Queue]
   }
 
+  /**
+   * Create actors to handle each transfer to the vehicle.
+   * Forward ChunksReceived messages from the vehicle to the transfer actors.
+   * Terminate when all updates and dependencies are successfully transferred,
+   * or when the transfer is aborted because the vehicle is not responding.
+   */
   def running(services: ClientServices, updates: Set[UpdateSpec], pending: Queue[Package],
               inProgress: Map[ActorRef, Package], done: Set[Package]) : Receive = {
     case akka.actor.Terminated(ref) =>
@@ -125,6 +167,11 @@ class TransferProtocolActor(db: Database, rviClient: RviClient, transferActorPro
         }
       }
 
+    case UploadAborted =>
+      rviClient.sendMessage(services.abort, io.circe.Json.Empty, ttl())
+      updates.foreach(x => db.run( UpdateSpecs.setStatus(x, UpdateStatus.Canceled) ))
+      context.stop(self)
+
   }
 
   def ttl() : DateTime = {
@@ -149,6 +196,9 @@ class TransferProtocolActor(db: Database, rviClient: RviClient, transferActorPro
       context stop self
   }
 
+  /**
+   * Entry point to this actor when the vehicle initiates a download.
+   */
   override def receive : Receive = {
     case StartDownload(vin, packages, services) =>
       log.debug(s"$vin requested packages $packages")
@@ -164,6 +214,14 @@ case class ChunksReceived( vin: Vehicle.Vin, `package`: Package.Id, chunks: List
 case class PackageChunk( `package`: Package.Id, bytes: ByteString, index: Int)
 case class Finish(`package`: Package.Id )
 
+case object UploadAborted
+
+/**
+ * Actor to handle transferring chunks to a vehicle.
+ *
+ * @param pckg the package to transfer
+ * @param services the service paths available on the vehicle
+ */
 class PackageTransferActor( pckg: Package, services: ClientServices, rviClient: RviClient )
     extends Actor with ActorLogging {
 
@@ -175,6 +233,11 @@ class PackageTransferActor( pckg: Package, services: ClientServices, rviClient: 
   import cats.syntax.show._
 
   val chunkSize = context.system.settings.config.getBytes("rvi.transfer.chunkSize").intValue()
+  val ackTimeout : FiniteDuration = FiniteDuration(
+    context.system.settings.config.getDuration("rvi.transfer.ackTimeout", TimeUnit.MILLISECONDS),
+    TimeUnit.MILLISECONDS
+  )
+
 
   lazy val lastIndex = (BigDecimal(pckg.size) / BigDecimal(chunkSize) setScale(0, RoundingMode.CEILING)).toInt
 
@@ -193,6 +256,7 @@ class PackageTransferActor( pckg: Package, services: ClientServices, rviClient: 
     val bytesRead = channel.read( buffer )
     buffer.flip()
     rviClient.sendMessage( services.chunk, PackageChunk( pckg.id,  ByteString( buffer ), index), ttl() )
+    context.setReceiveTimeout( ackTimeout )
   }
 
   def finish() : Unit = {
@@ -205,22 +269,50 @@ class PackageTransferActor( pckg: Package, services: ClientServices, rviClient: 
     rviClient.sendMessage( services.start, StartDownloadMessage(pckg.id, pckg.checkSum, lastIndex), ttl() )
   }
 
-  override def receive = {
-    case ChunksReceived(_, _, Nil) =>
-      sendChunk(1)
+  val maxAttempts : Int = 5
 
+  /**
+   * Send the next chunk or resend last chunk if vehicle doesn't acknowledge with ChunksReceived.
+   * Abort transfer if maxAttempts exceeded.
+   */
+  def transferring( lastSentChunk: Int, attempt: Int ) : Receive = {
     case ChunksReceived(_, _, indexes) =>
       log.debug(s"${pckg.id.show}. Chunk received by client: $indexes" )
       val mayBeNext = indexes.sorted.sliding(2, 1).find {
         case first :: second :: Nil => second - first > 1
         case first :: Nil => true
+        case _ => false
       }.map {
         case first :: _ :: Nil => first + 1
         case 1 :: Nil => 2
+        case Nil => 1
       }
       val nextIndex = mayBeNext.getOrElse(indexes.max + 1)
       log.debug(s"Next chunk index: $nextIndex")
-      if( nextIndex > lastIndex ) finish() else sendChunk(nextIndex)
+      if( nextIndex > lastIndex ) finish()
+      else {
+        sendChunk(nextIndex)
+        context.become( transferring(nextIndex, 1) )
+      }
+
+    case ReceiveTimeout if attempt == maxAttempts =>
+      context.setReceiveTimeout(Duration.Undefined)
+      context.parent ! UploadAborted
+      context.stop( self )
+
+    case ReceiveTimeout =>
+      sendChunk(lastSentChunk)
+      context.become( transferring(lastSentChunk, attempt + 1) )
+  }
+
+  /**
+   * Entry point to this actor starting with first chunk.
+   */
+  override def receive = {
+    case ChunksReceived(_, _, Nil) =>
+      sendChunk(1)
+      context.become( transferring(1, 1) )
+
   }
 
   override def postStop() : Unit = {
@@ -231,6 +323,9 @@ class PackageTransferActor( pckg: Package, services: ClientServices, rviClient: 
 
 object PackageTransferActor {
 
+  /**
+   * Configuration class for creating PackageTransferActor.
+   */
   def props( rviClient: RviClient )( services: ClientServices, pckg: Package) : Props =
     Props( new PackageTransferActor(pckg, services, rviClient) )
 

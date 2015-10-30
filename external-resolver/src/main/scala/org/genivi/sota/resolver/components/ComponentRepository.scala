@@ -39,7 +39,7 @@ object ComponentRepository {
   def removeComponent(part: Component.PartNumber)
                      (implicit ec: ExecutionContext): DBIO[Int] =
     for {
-      vs <- VehicleRepository.vinsThatHaveComponent(part)
+      vs <- VehicleRepository.search(None, None, None, Some(part))
       r  <- if (vs.nonEmpty) DBIO.failed(Errors.ComponentIsInstalledException)
             else components.filter(_.partNumber === part).delete
     } yield r

@@ -13,13 +13,13 @@ import java.security.MessageDigest
 import java.util.UUID
 import org.apache.commons.codec.binary.Hex
 import org.genivi.sota.core.data.UpdateRequest
-import org.genivi.sota.core.data.{Vehicle, Package}
+import org.genivi.sota.core.data.{Vehicle, Package}, Vehicle._
 import org.scalacheck.{Arbitrary, Gen}
 
+/**
+ * Generators for property-based testing of core objects
+ */
 trait Generators {
-
-  val vehicleGen: Gen[Vehicle] = Gen.listOfN(17, Gen.alphaNumChar).map( xs => Vehicle( Refined(xs.mkString) ) )
-  implicit val arbitraryVehicle : Arbitrary[Vehicle] = Arbitrary( vehicleGen )
 
   val PackageVersionGen: Gen[Package.Version] =
     Gen.listOfN(3, Gen.choose(0, 999)).map(_.mkString(".")).map(Refined(_))
@@ -52,7 +52,7 @@ trait Generators {
   } yield UpdateRequest( UUID.randomUUID(), packageId, DateTime.now, startAfter to finishBefore, prio )
 
   def vinDepGen(packages: Seq[Package]) : Gen[(Vehicle.Vin, Set[Package.Id])] = for {
-    vin               <- vehicleGen.map( _.vin )
+    vin               <- genVin
     m                 <- Gen.choose(1, 10)
     packages          <- Gen.pick(m, packages).map( _.map(_.id) )
   } yield vin -> packages.toSet

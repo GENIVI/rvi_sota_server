@@ -17,6 +17,12 @@ import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.core.data.{UpdateSpec, Download, Vehicle, UpdateStatus, Package}
 
+/**
+ * Database mapping definition for the UpdateSpecs and RequiredPackages tables.
+ * UpdateSpecs records the status of a package update for a specific VIN. One
+ * UpdateSpecs row has several RequiredPackages rows that detail the individual
+ * packages that need to be installed.
+ */
 object UpdateSpecs {
 
   import org.genivi.sota.refined.SlickRefined._
@@ -25,6 +31,10 @@ object UpdateSpecs {
 
   implicit val UpdateStatusColumn = MappedColumnType.base[UpdateStatus, String](_.value.toString, UpdateStatus.withName)
 
+  /**
+   * Slick mapping definition for the UpdateSpecs table
+   * @see {@link http://slick.typesafe.com/}
+   */
   class UpdateSpecsTable(tag: Tag)
       extends Table[(UUID, Vehicle.Vin, UpdateStatus)](tag, "UpdateSpecs") {
     def requestId = column[UUID]("update_request_id")
@@ -36,6 +46,10 @@ object UpdateSpecs {
     def * = (requestId, vin, status)
   }
 
+  /**
+   * Slick mapping definition for the RequiredPackages table
+   * @see {@link http://slick.typesafe.com/}
+   */
   class RequiredPackagesTable(tag: Tag)
       extends Table[(UUID, Vehicle.Vin, Package.Name, Package.Version)](tag, "RequiredPackages") {
     def requestId = column[UUID]("update_request_id")
@@ -48,12 +62,27 @@ object UpdateSpecs {
     def * = (requestId, vin, packageName, packageVersion)
   }
 
+  /**
+   * Internal helper definition to accesss the UpdateSpecs table
+   */
   val updateSpecs = TableQuery[UpdateSpecsTable]
 
+  /**
+   * Internal helper definition to accesss the RequiredPackages table
+   */
   val requiredPackages = TableQuery[RequiredPackagesTable]
 
+  /**
+   * Internal helper definition to accesss the UpdateRequests table
+   */
   val updateRequests = TableQuery[UpdateRequestsTable]
 
+  /**
+   * Add an update for a specific VIN.
+   * This update will consist of one-or-more packages that need to be installed
+   * on a single VIN
+   * @param updateSpec The list of packages that should be installed
+   */
   def persist(updateSpec: UpdateSpec) : DBIO[Unit] = {
     val specProjection = (updateSpec.request.id, updateSpec.vin,  updateSpec.status)
 
@@ -66,6 +95,11 @@ object UpdateSpecs {
     )
   }
 
+  /**
+   * Install a list of specific packages on a VIN
+   * @param vin The VIN to install on
+   * @param packageIds The list of packages to install
+   */
   def load( vin: Vehicle.Vin, packageIds: Set[Package.Id] )
           (implicit ec: ExecutionContext) : DBIO[Iterable[UpdateSpec]] = {
     val requests = UpdateRequests.all.filter(r =>
@@ -84,12 +118,23 @@ object UpdateSpecs {
     })
   }
 
+  /**
+   * Records the status of an update on a specific VIN
+   * @param spec The combination of VIN and update request to record the status of
+   * @param newStatus The latest status of the installation. One of Pending
+   *                  InFlight, Canceled, Failed or Finished.
+   */
   def setStatus( spec: UpdateSpec, newStatus: UpdateStatus ) : DBIO[Int] = {
     updateSpecs.filter( t => t.vin === spec.vin && t.requestId === spec.request.id)
       .map( _.status )
       .update( newStatus )
   }
 
+  /**
+   * Get the packages that are queued for installation on a VIN.
+   * @param vin The VIN to query
+   * @return A List of package names + versions that are due to be installed.
+   */
   def getPackagesQueuedForVin(vin: Vehicle.Vin)
                              (implicit ec: ExecutionContext) : DBIO[Iterable[Id]] = {
     val specs = updateSpecs.filter(r => r.vin === vin && (r.status === UpdateStatus.InFlight ||
@@ -103,6 +148,14 @@ object UpdateSpecs {
     })
   }
 
+  /**
+   * Return a list of all the VINs that a specific version of a package will be
+   * installed on.  Note that VINs where the package has started installation,
+   * or has either been installed or where the install failed are not included.
+   * @param pkgName The package name to search for
+   * @param pkgVer The version of the package to search for
+   * @return A list of VINs that the package will be installed on
+   */
   def getVinsQueuedForPackage(pkgName: Package.Name, pkgVer: Package.Version) :
     DBIO[Seq[Vehicle.Vin]] = {
     val specs = updateSpecs.filter(r => r.status === UpdateStatus.Pending)
@@ -113,10 +166,24 @@ object UpdateSpecs {
     q.result
   }
 
+  /**
+   * Return the status of a specific update
+   * @return The update status
+   */
   def listUpdatesById(uuid: Refined[String, Uuid]): DBIO[Seq[(UUID, Vehicle.Vin, UpdateStatus)]] =
     updateSpecs.filter(_.requestId === UUID.fromString(uuid.get)).result
 
+  /**
+   * Delete all the updates for a specific VIN
+   * This is part of the process for deleting a VIN from the system
+   * @param vehicle The vehicle to get the VIN to delete from
+   */
   def deleteUpdateSpecByVin(vehicle : Vehicle) : DBIO[Int] = updateSpecs.filter(_.vin === vehicle.vin).delete
 
+  /**
+   * Delete all the required packages that are needed for a VIN.
+   * This is part of the process for deleting a VIN from the system
+   * @param vehicle The vehicle to get the VIN to delete from
+   */
   def deleteRequiredPackageByVin(vehicle : Vehicle) : DBIO[Int] = requiredPackages.filter(_.vin === vehicle.vin).delete
 }

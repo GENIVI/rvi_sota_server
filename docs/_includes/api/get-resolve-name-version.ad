@@ -1,0 +1,43 @@
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+
+
+|Description |Takes a package name and version, and returns a list of VINs it applies to, along with the packageId.
+
+|URL |/api/v1/resolve/:name/:version
+
+|URL Parameters a|
+* *:name* — The name of the software package.
+* *:version* — The package version, in _x.y.z_ format. __x__, __y__, and _z_ must all contain only digits.
+
+|Success Response a|
+*Code:* 200
+
+*Content:*
+
+[source,json]
+----
+[
+  [
+    "aaaaaaa1234567890",
+    [
+      {
+        "version": "1.2.3",
+        "name": "myPackage"
+      }
+    ]
+  ],
+  [
+    "abcdefg1234567890",
+    [
+      {
+        "version": "1.2.3",
+        "name": "myPackage"
+      }
+    ]
+  ]
+]
+----
+
+|=======================================================================

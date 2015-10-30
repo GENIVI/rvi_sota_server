@@ -4,20 +4,22 @@ define(function(require) {
       _ = require('underscore'),
       db = require('stores/db'),
       ListOfVehicles = require('./list-of-vehicles'),
+      togglePanel = require('../../mixins/toggle-panel'),
       SotaDispatcher = require('sota-dispatcher');
 
   var VehiclesForPackage = React.createClass({
     contextTypes: {
       router: React.PropTypes.func
     },
+    mixins: [togglePanel],
     componentWillUnmount: function(){
       this.props.VehiclesForPackage.removeWatch("poll-vehicles-for-package");
     },
     componentWillMount: function(){
-      this.fetchVehiclesForPackage();
+      this.refreshData();
       this.props.VehiclesForPackage.addWatch("poll-vehicles-for-package", _.bind(this.forceUpdate, this, null));
     },
-    fetchVehiclesForPackage: function() {
+    refreshData: function() {
       var params = this.context.router.getCurrentParams();
       SotaDispatcher.dispatch({
         actionType: 'get-vehicles-for-package',
@@ -25,14 +27,8 @@ define(function(require) {
         version: params.version
       });
     },
-    getInitialState: function() {
-      return {collapsed: true};
-    },
-    toggleVins: function() {
-      this.fetchVehiclesForPackage();
-      this.setState({collapsed: !this.state.collapsed});
-    },
-    render: function() {
+    label: "Vehicles with this package installed",
+    panel: function() {
       var vehicles = _.map(this.props.VehiclesForPackage.deref(), function(vehicle) {
         return (
           <li className='list-group-item'>
@@ -42,14 +38,9 @@ define(function(require) {
       });
       return (
         <div>
-          <button type="button" className="btn btn-primary" onClick={this.toggleVins}>
-            {this.state.collapsed ? 'View' : 'Hide'} Vehicles with this package
-          </button>
-          <div className={this.state.collapsed ? 'hide' : ''}>
-            <ul className='list-group'>
-              {vehicles}
-            </ul>
-          </div>
+          <ul className='list-group'>
+            {vehicles}
+          </ul>
         </div>
       );
     }

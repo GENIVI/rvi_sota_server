@@ -16,19 +16,43 @@ import io.circe.Json
 import scala.concurrent.{ExecutionContext, Future}
 import org.genivi.sota.core.ExternalResolverClient
 
-final case class ServerServices(start: String, cancel: String, ack: String, report: String, packages: String)
+/**
+ * RVI paths for server-side services.
+ */
+final case class ServerServices(start: String, ack: String, report: String, packages: String)
 
-final case class ClientServices( start: String, chunk: String, finish: String, getpackages: String )
+/**
+ * RVI paths for client-side services.
+ */
+final case class ClientServices( start: String, abort: String, chunk: String, finish: String, getpackages: String )
 
+/**
+ * RVI message from client to initiate a package download.
+ */
 final case class StartDownload(vin: Vehicle.Vin, packages: List[Package.Id], services: ClientServices )
 
+/**
+ * RVI parameters of generic type for a specified service name.
+ */
 final case class RviParameters[T](parameters: List[T], service_name: String )
 
+/**
+ * RVI message from client to report installation of a downloaded package.
+ */
 final case class InstallReport(vin: Vehicle.Vin, `package`: Package.Id, status: Boolean,
                                description: String)
 
+/**
+ * RVI message from client to report all installed packages.
+ */
 final case class InstalledPackages(vin: Vehicle.Vin, packages: Json )
 
+/**
+ * HTTP endpoints for receiving messages from the RVI node.
+ *
+ * @param updateController the actor to forward messages for processing
+ * @param resolverClient the resolver to update when a vehicle sends its installed packages
+ */
 class SotaServices(updateController: ActorRef, resolverClient: ExternalResolverClient)
                   (implicit system: ActorSystem, mat: ActorMaterializer) {
   import Directives._
@@ -86,20 +110,24 @@ object SotaServices {
       .run[Record.`'service -> String`.T]( transport ).map( _.get('service) )
   }
 
+  /**
+   * Register our services to the RVI node.
+   *
+   * @param baseUri the edge URI that we are listening on
+   * @return a future of the RVI paths for our services
+   */
   def register(baseUri: Uri)
               (implicit transport: Json => Future[Json], ec : ExecutionContext) : Future[ServerServices] = {
     val startRegistration = registerService("/sota/start", baseUri.withPath( baseUri.path / "start"))
-    val cancelRegistration = registerService("/sota/cancel", baseUri.withPath( baseUri.path / "cancel"))
     val ackRegistration = registerService("/sota/ack", baseUri.withPath( baseUri.path / "ack"))
     val reportRegistration = registerService("/sota/report", baseUri.withPath( baseUri.path / "report"))
     val packagesRegistration = registerService("/sota/packages", baseUri.withPath( baseUri.path / "packages"))
     for {
       startName  <- startRegistration
-      cancelName <- cancelRegistration
       ackName    <- ackRegistration
       reportName <- reportRegistration
       packagesName <- packagesRegistration
-    } yield ServerServices( start = startName, cancel = cancelName, ack = ackName,
+    } yield ServerServices( start = startName, ack = ackName,
                             report = reportName, packages = packagesName )
   }
 

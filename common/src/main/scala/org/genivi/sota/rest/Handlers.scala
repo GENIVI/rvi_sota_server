@@ -11,6 +11,12 @@ import io.circe.generic.auto._
 import org.genivi.sota.marshalling.{RefinementError, CirceMarshallingSupport}
 import CirceMarshallingSupport._
 
+/**
+  * When validation, JSON deserialisation fail or a duplicate entry
+  * occures in the database, we complete the request by returning the
+  * correct status code and JSON error message (see Errors.scala).
+  */
+
 object Handlers {
 
   case class InvalidEntity(msg: String) extends Throwable(msg)

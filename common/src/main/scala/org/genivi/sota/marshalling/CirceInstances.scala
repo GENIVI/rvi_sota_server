@@ -13,6 +13,12 @@ import io.circe.{DecodingFailure, Json, Encoder, Decoder}
 import org.joda.time.{Interval, DateTime}
 import org.joda.time.format.ISODateTimeFormat
 
+/**
+  * Some datatypes we use don't have predefined JSON encoders and
+  * decoders in Circe, so we add them here.
+  *
+  * @see {@link https://github.com/travisbrown/circe}
+  */
 
 trait CirceInstances {
 

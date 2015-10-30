@@ -8,6 +8,9 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
 
+/**
+ * Spec for Validate REST actions
+ */
 class ValidateResourceSpec extends ResourceWordSpec {
 
   "Validate resource" should {

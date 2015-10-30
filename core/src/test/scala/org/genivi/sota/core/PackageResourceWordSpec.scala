@@ -20,7 +20,9 @@ import scala.concurrent.Await
 import slick.driver.MySQLDriver.api._
 import DataPackage._
 
-
+/**
+ * WordSpec tests for Package REST actions
+ */
 class PackageResourceWordSpec extends WordSpec
     with Matchers
     with ScalatestRouteTest
@@ -64,6 +66,13 @@ class PackageResourceWordSpec extends WordSpec
         assert(packages.nonEmpty)
         assert(packages.filter(pkg => pkg.id === DataPackage.Id(Refined("scala"), Refined("2.11.0"))).nonEmpty)
         assert(packages.length === 5)
+      }
+    }
+    "list resource on GET :package request" in {
+      Get(PackagesUri + "/scala/2.11.0") ~> service.route ~> check {
+        assert(status === StatusCodes.OK)
+        val pkg = responseAs[DataPackage]
+        assert(pkg.id === DataPackage.Id(Refined("scala"), Refined("2.11.0")))
       }
     }
     "filter list of packages by regex '0'" in {

@@ -5,7 +5,7 @@ import akka.http.scaladsl.util.FastFuture
 import akka.testkit.TestKit
 import eu.timepit.refined.Refined
 import java.util.UUID
-import org.genivi.sota.core.data.Vehicle
+import org.genivi.sota.core.data.Vehicle, Vehicle._
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db.{UpdateSpecs, Packages, Vehicles}
 import org.scalacheck.Arbitrary
@@ -20,6 +20,9 @@ import slick.jdbc.JdbcBackend._
 
 import scala.concurrent.{Await, Future}
 
+/**
+ * Spec tests for Update service
+ */
 class UpdateServiceSpec extends PropSpec with PropertyChecks with Matchers with BeforeAndAfterAll {
 
   val databaseName = "test-database"
@@ -52,7 +55,7 @@ class UpdateServiceSpec extends PropSpec with PropertyChecks with Matchers with 
 
   }
 
-  val service = new UpdateService( ServerServices("", "", "", "", "") )
+  val service = new UpdateService( ServerServices("", "", "", "") )
 
   import org.genivi.sota.core.data.UpdateRequest
   import org.scalatest.concurrent.ScalaFutures.{whenReady, PatienceConfig}
@@ -73,7 +76,7 @@ class UpdateServiceSpec extends PropSpec with PropertyChecks with Matchers with 
 
   property("decline if some of dependencies not found") {
     def vinDepGen(missingPackages: Seq[Package.Id]) : Gen[(Vehicle.Vin, Set[Package.Id])] = for {
-      vin               <- vehicleGen.map( _.vin )
+      vin               <- genVin
       m                 <- Gen.choose(1, 10)
       availablePackages <- Gen.pick(m, packages).map( _.map(_.id) )
       n                 <- Gen.choose(1, missingPackages.length)

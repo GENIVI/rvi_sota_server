@@ -15,6 +15,9 @@ import org.scalatest.{PropSpec, Matchers}
 import CirceMarshallingSupport._
 import org.scalatest.concurrent.ScalaFutures._
 
+/**
+ * Specs to test JSON-RPC requests running over HTTP Transport
+ */
 class HttpTransportSpec extends JsonRpcSpecBase {
 
   val transport = HttpTransport( Uri.Empty )

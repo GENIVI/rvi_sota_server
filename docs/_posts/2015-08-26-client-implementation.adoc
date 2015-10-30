@@ -1,0 +1,430 @@
+---
+layout: page
+title: "Client Implementation Reference"
+category: dev
+date: 2015-08-26 14:14:23
+order: 7
+---
+:icons: font
+:toc: macro
+
+The GENIVI SOTA project includes a link:https://github.com/pdxostc/rvi_sota_client[client implementation] in link:http://rust-lang.org[Rust] for the GENIVI platform, but any client that implements the necessary JSON-RPC calls may be used. This document is a reference doc for those calls. You can also take a look at a detailed breakdown of a complete session, from registration through to completed package installation, link:/rvi_sota_server/dev/client-implementation-example-session.html[here].
+
+All client-server communication in SOTA is done over link:https://github.com/pdxostc/rvi_core[RVI], so we will assume that you've already got an RVI client node running on the client device, set up to communicate with the SOTA server node. All of the client's communication with the server is intermediated by the RVI client node, so both in this doc and in the link:/rvi_sota_server/dev/client-implementation-example-session.html[example session], "server" and "RVI client node" are used interchangeably.
+
+toc::[]
+
+== Overview
+
+The client, in a nutshell, is a middleman. It listens for messages from RVI, accepts package downloads, sends them to the system's software loading manager, and reports back to the RVI node the results of the package install. It also can send a list of the packages currently installed on the device when the server asks for it.
+
+All communication with RVI is done via JSON-RPC. The implementation of the client's communication with the local software update manager is left up to the developer.
+
+== RPC Calls Client -> RVI
+
+NOTE: All Client -> RVI node JSON RPC calls have an object containing three name/value pairs under `params`. They are `service_name`, `timeout` (given as a Unix epoch time), and `parameters`. `parameters` contains all of the actual content of the SOTA protocol.
+
+WARNING: Due to a bug in RVI, the `parameters` value is actually a one-element array. This should change after the next RVI release
+
+
+=== genivi.org/backend/sota/start
+
+[width="100%",cols="18%,82%",]
+|================================================================
+|Description
+|Notification that the client has accepted a package install for one or more packages, and the server may start sending them
+
+|Parameters
+a|
+* *services:* An object containing all the services the client supplies, and their fully qualified names, as name/value pairs.
+* *packages:* An array listing the packages the client is willing to accept. Must only include packages the client has been notified about. Each is an object containing the name and version of the package as name/value pairs.
+* *vin:* The VIN of the client device.
+
+|Example
+a|
+[source,json]
+----
+{
+  "jsonrpc": "2.0",
+  "id": 2677667615071,
+  "method": "message",
+  "params": {
+    "service_name": "genivi.org/backend/sota/start",
+    "timeout": 1445520390,
+    "parameters": [
+      {
+        "packages": [
+          {
+            "name": "ghc",
+            "version": "7.6.2"
+          }
+        ],
+        "services": {
+          "start": "genivi.org/vin/VINOOLAM0FAU2DEEP/sota/start",
+          "chunk": "genivi.org/vin/VINOOLAM0FAU2DEEP/sota/chunk",
+          "abort": "genivi.org/vin/VINOOLAM0FAU2DEEP/sota/abort",
+          "finish": "genivi.org/vin/VINOOLAM0FAU2DEEP/sota/finish",
+          "getpackages": "genivi.org/vin/VINOOLAM0FAU2DEEP/sota/getpackages"
+        },
+        "vin": "VINOOLAM0FAU2DEEP"
+      }
+    ]
+  }
+}
+----
+
+|================================================================
+
+
+=== genivi.org/backend/sota/ack
+
+[width="100%",cols="18%,82%",]
+|================================================================
+|Description
+|Acknowledgement of a start message, or a received chunk
+
+|Parameters
+a|
+* *chunks:* An array containing a list of the indicies of all chunks already received, as integers.
+* *package:* An object containing the name and version of the package as name/value pairs.
+* *vin:* The VIN of the client device.
+
+|Example
+a|
+[source,json]
+----
+{
+  "jsonrpc": "2.0",
+  "id": 2677989151999,
+  "method": "message",
+  "params": {
+    "service_name": "genivi.org/backend/sota/ack",
+    "timeout": 1445520390,
+    "parameters": [
+      {
+        "package": {
+          "name": "ghc",
+          "version": "7.6.2"
+        },
+        "chunks": [1,2,5],
+        "vin": "VINOOLAM0FAU2DEEP"
+      }
+    ]
+  }
+}
+----
+
+|================================================================
+
+=== genivi.org/backend/sota/report
+
+[width="100%",cols="18%,82%",]
+|================================================================
+|Description
+|A report on the success or failure of the package install, after the file transfer has completed successfully
+
+|Parameters
+a|
+* *status:* A boolean indicating whether the install succeeded or failed.
+* *description:* A status message from the install. Likely passed through from the local software loading manager.
+* *package:* An object containing the name and version of the package as name/value pairs.
+* *vin:* The VIN of the client device.
+
+|Example
+a|
+[source,json]
+----
+{
+  "jsonrpc": "2.0",
+  "id": 2680479224662,
+  "method": "message",
+  "params": {
+    "service_name": "genivi.org/backend/sota/report",
+    "timeout": 1445520392,
+    "parameters": [
+      {
+        "package": {
+          "name": "ghc",
+          "version": "7.6.2"
+        },
+        "status": true,
+        "description": "Successfully installed package",
+        "vin": "VINOOLAM0FAU2DEEP"
+      }
+    ]
+  }
+}
+----
+
+|================================================================
+
+=== genivi.org/backend/sota/packages
+
+[width="100%",cols="18%,82%",]
+|================================================================
+|Description
+|A list of the packages currently installed on the client, and their versions
+
+|Parameters
+a|
+* *packages:* An array listing the packages available for update/install. Each element is an object containing the name and version of the package as a name/value pair.
+* *vin:* The VIN of the client device.
+
+|Example
+a|
+
+[source,json]
+----
+{
+  "jsonrpc": "2.0",
+  "id": 2680479224662,
+  "method": "message",
+  "params": {
+    "service_name": "genivi.org/backend/sota/packages",
+    "timeout": 1445520390,
+    "parameters": [
+      {
+        "packages": [
+          {
+            "name": "ghc",
+            "version": "7.6.2"
+          },
+          {
+            "name": "myPackage",
+            "version": "1.2.3"
+          }
+        ],
+        "vin": "VINOOLAM0FAU2DEEP"
+      }
+    ]
+  }
+}
+----
+
+|================================================================
+
+== RPC Calls RVI -> Client
+
+NOTE: All RVI node -> Client JSON RPC calls have an object containing two name/value pairs under `params`. They are `service_name` and `parameters`. `parameters` contains all of the actual content of the SOTA protocol. Note that the RVI node doesn't supply a timeout.
+
+WARNING: Due to a bug in RVI, the `parameters` value is actually a one-element array. This should change after the next RVI release.
+
+=== /sota/notify
+
+[width="100%",cols="18%,82%",]
+|================================================================
+|Description
+|Notification that there is one or more new package updates ready to be installed.
+
+|Parameters
+a|
+* *services:* An object containing all the services the RVI node supplies, and their fully qualified names, as name/value pairs.
+* *packages:* An array listing the packages available for update/install. Each element contains:
+** *package:* An object containing the name and version of the package as name/value pairs.
+** *size:* The size, in bytes, of the package.
+
+|Example
+a|
+[source,json]
+----
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "message",
+  "params": {
+    "service_name": "/sota/notify",
+    "parameters": [
+      {
+        "services": {
+          "ack": "genivi.org/backend/sota/ack",
+          "report": "genivi.org/backend/sota/report",
+          "start": "genivi.org/backend/sota/start",
+          "packages": "genivi.org/backend/sota/packages"
+        },
+        "packages": [
+          {
+            "size": 35768,
+            "package": {
+              "version": "7.6.2",
+              "name": "ghc"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+----
+
+|================================================================
+
+=== /sota/start
+
+[width="100%",cols="18%,82%",]
+|================================================================
+|Description
+|Package file transfer initialization
+
+|Parameters
+a|
+* *chunkscount:* The number of 64kb chunks the file contains.
+* *checksum:* The SHA1 checksum of the package binary.
+* *package:* An object containing the name and version of the package as name/value pairs.
+
+|Example
+a|
+[source,json]
+----
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "message",
+  "params": {
+    "service_name": "/sota/start",
+    "parameters": [
+      {
+        "chunkscount": 1,
+        "checksum": "e6db09bd2c84db66534107da4ef00e6addccba8e",
+        "package": {
+          "version": "7.6.2",
+          "name": "ghc"
+        }
+      }
+    ]
+  }
+}
+----
+|================================================================
+
+=== /sota/chunk
+
+[width="100%",cols="18%,82%",]
+|================================================================
+|Description
+|Delivery of a 64kb chunk of the package file
+
+|Parameters
+a|
+* *index:* The index of the chunk being sent. 1-indexed.
+* *bytes:* The chunk itself. Base64-encoded.
+* *package:* An object containing the name and version of the package as name/value pairs.
+
+|Example
+a|
+[source,json]
+----
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "message",
+  "params": {
+    "service_name": "/sota/chunk",
+    "parameters": [
+      {
+        "index": 1,
+        "bytes": "7avu2wMAA<rest of base64 encoded data chunk omitted>AAAKWVo=",
+        "package": {
+          "version": "7.6.2",
+          "name": "ghc"
+        }
+      }
+    ]
+  }
+}
+----
+
+|================================================================
+
+=== /sota/finish
+
+[width="100%",cols="18%,82%",]
+|================================================================
+|Description
+|Notification of transfer completion
+
+|Parameters
+a|
+* *package:* An object containing the name and version of the package as name/value pairs.
+
+|Example
+a|
+[source,json]
+----
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "message",
+  "params": {
+    "service_name": "/sota/finish",
+    "parameters": [
+      {
+        "package": {
+          "version": "7.6.2",
+          "name": "ghc"
+        }
+      }
+    ]
+  }
+}
+----
+
+|================================================================
+
+=== /sota/getpackages
+
+[width="100%",cols="18%,82%",]
+|================================================================
+|Description
+|A request for information about what packages the client currently has installed
+
+|Parameters
+a|
+*None*
+
+|Example
+a|
+
+[source,json]
+----
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "message",
+  "params": {
+    "service_name": "/sota/getpackages",
+    "parameters": []
+  }
+}
+----
+
+|================================================================
+
+=== /sota/abort
+
+[width="100%",cols="18%,82%",]
+|================================================================
+|Description
+|A notification that all pending or in-progress package installs should be aborted
+
+|Parameters
+a|
+*None*
+
+|Example
+a|
+
+[source,json]
+----
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "message",
+  "params": {
+    "service_name": "/sota/abort",
+    "parameters": []
+  }
+}
+----
+
+|================================================================
+

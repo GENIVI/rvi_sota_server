@@ -29,8 +29,21 @@ define(function(require) {
     render: function() {
       var params = this.context.router.getCurrentParams();
       var rows = _.map(this.props.Package.deref(), function(value, key) {
+        if(key === "id") {
+          var idString = value.name + '-' + value.version;
+          return (
+            <tr key={idString}>
+              <td>
+                {key}
+              </td>
+              <td>
+                {idString}
+              </td>
+            </tr>
+          );
+        }
         return (
-          <tr>
+          <tr key={key}>
             <td>
               {key}
             </td>
@@ -43,11 +56,8 @@ define(function(require) {
       return (
         <div>
           <h1>
-            Package Details
+            Packages &gt; {this.props.Package.deref().id}
           </h1>
-          <p>
-            {this.props.Package.description}
-          </p>
           <div className="row">
             <div className="col-md-12">
               <Router.Link to='new-campaign' params={{name: params.name, version: params.version}}>
@@ -83,7 +93,9 @@ define(function(require) {
             getCreateList="get-filters"
             createResourceName="Filters"
             getDeleteList={{actionType: 'get-filters-for-package', name: params.name, version: params.version}}/>
+          <br/>
           <AffectedVins AffectedVins={db.affectedVins} />
+          <h2>Vehicles</h2>
           <VehiclesForPackage VehiclesForPackage={db.vehiclesForPackage}/>
           <VehiclesQueuedForPackage Vehicles={db.vehiclesQueuedForPackage} PackageName={params.name} PackageVersion={params.version}/>
         </div>

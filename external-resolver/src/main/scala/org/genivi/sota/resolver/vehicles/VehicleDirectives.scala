@@ -10,6 +10,7 @@ import akka.http.scaladsl.server._
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.Refined
+import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
@@ -23,12 +24,23 @@ import slick.dbio.{DBIOAction, DBIO}
 import scala.concurrent.ExecutionContext
 import slick.jdbc.JdbcBackend.Database
 
-
+/**
+ * API routes for everything related to vehicles: creation, deletion, and package and component association.
+ * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
+ */
 class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
   import Directives._
 
+  /**
+   * Exception handler for package routes.
+   */
   def installedPackagesHandler = ExceptionHandler(Errors.onMissingPackage orElse Errors.onMissingVehicle)
 
+  /**
+   * Base API route for vehicles.
+   * @return      Route object containing routes for creating, deleting, and listing vehicles
+   * @throws      Errors.MissingVehicle if vehicle doesn't exist
+   */
   def route: Route = {
 
     val extractVin : Directive1[Vehicle.Vin] = refined[Vehicle.ValidVin](Slash ~ Segment)
@@ -36,24 +48,21 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
     pathPrefix("vehicles") {
       get {
         pathEnd {
-          parameters('package.as[Package.NameVersion].?, 'component.as[Component.PartNumber].?) {
-            case (Some(nameVersion), None)        =>
-              val packageName   : Package.Name    = Refined(nameVersion.get.split("-").head)
-              val packageVersion: Package.Version = Refined(nameVersion.get.split("-").tail.head)
-              completeOrRecoverWith(db.run(VehicleRepository.vinsThatHavePackage
-                (Package.Id(packageName, packageVersion)))) {
-                  Errors.onMissingPackage
-              }
-            case (None,              Some(part)) =>
-              completeOrRecoverWith(db.run(VehicleRepository.vinsThatHaveComponent(part))) {
-                Errors.onMissingComponent
-              }
-            case (_,                 _)          =>
-              complete(db.run(VehicleRepository.list))
+          parameters('regex.as[Refined[String, Regex]].?, 'packageName.as[Package.Name].?,
+            'packageVersion.as[Package.Version].?, 'component.as[Component.PartNumber].?)
+          { case (re, pn, pv, cp) =>
+              complete(db.run(VehicleRepository.search(re, pn , pv, cp)))
           }
         }
       } ~
       extractVin { vin =>
+        get {
+          pathEnd {
+            completeOrRecoverWith(db.run(VehicleRepository.exists(vin))) {
+              Errors.onMissingVehicle
+            }
+          }
+        } ~
         put {
           pathEnd {
             complete(db.run(VehicleRepository.add(Vehicle(vin))).map(_ => NoContent))
@@ -72,6 +81,13 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
     }
   }
 
+  /**
+   * API route for package -> vehicle associations.
+   * @return      Route object containing routes for listing packages on a vehicle, and creating and deleting 
+   *              vehicle -> package associations
+   * @throws      Errors.MissingPackageException if package doesn't exist
+   * @throws      Errors.MissingVehicle if vehicle doesn't exist
+   */
   def packageRoute(vin: Vehicle.Vin): Route = {
     pathPrefix("package") {
       (pathEnd & get) {
@@ -103,9 +119,19 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
     }
   }
 
+  /**
+   * Exception handler for component routes.
+   */
   def installedComponentsHandler =
     ExceptionHandler(Errors.onMissingVehicle orElse Errors.onMissingComponent)
 
+  /**
+   * API route for component -> vehicle associations.
+   * @return      Route object containing routes for listing components on a vehicle, and creating and deleting 
+   *              vehicle -> component associations
+   * @throws      Errors.MissingComponent if component doesn't exist
+   * @throws      Errors.MissingVehicle if vehicle doesn't exist
+   */
   def componentRoute(vin: Vehicle.Vin): Route = {
     pathPrefix("component") {
       (pathEnd & get) {

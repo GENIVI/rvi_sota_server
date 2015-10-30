@@ -12,6 +12,9 @@ import eu.timepit.refined.string.Uri
 import org.genivi.sota.core.files.Types.ValidExtension
 import org.scalatest._
 
+/**
+ * WordSpec tests for resolver
+ */
 class ResolverSpec extends WordSpec with Matchers {
   def createTestDir: Path = Files.createTempDirectory(Paths.get("/tmp"), "packages")
 

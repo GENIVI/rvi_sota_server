@@ -19,7 +19,10 @@ import scala.concurrent.ExecutionContext
 import scala.util.Try
 import slick.jdbc.JdbcBackend.Database
 
-
+/**
+ * Base API routing class.
+ * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
+ */
 class Routing
   (implicit db: Database, system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext)
     extends Directives {
@@ -56,6 +59,6 @@ object Boot extends App {
 
   sys.addShutdownHook {
     Try( db.close()  )
-    Try( system.shutdown() )
+    Try( system.terminate() )
   }
 }

@@ -46,6 +46,7 @@ define(function(require) {
               <td>
                 Version
               </td>
+              <td/>
             </tr>
           </thead>
           <tbody>

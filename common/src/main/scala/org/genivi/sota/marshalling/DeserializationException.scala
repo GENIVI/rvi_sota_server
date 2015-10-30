@@ -4,5 +4,8 @@
  */
 package org.genivi.sota.marshalling
 
-case class DeserializationException(cause: Throwable) extends Throwable(cause)
+/**
+ * Unmarshalling into JSON sometimes fails, see CirceMarshallingSupport.scala.
+ */
 
+case class DeserializationException(cause: Throwable) extends Throwable(cause)

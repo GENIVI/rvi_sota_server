@@ -21,8 +21,21 @@ define(function(require) {
     },
     render: function() {
       var rows = _.map(this.props.Update.deref(), function(value, key) {
+        if(key === "packageId") {
+          var idString = value.name + '-' + value.version;
+          return (
+            <tr key={idString}>
+              <td>
+                {key}
+              </td>
+              <td>
+                {idString}
+              </td>
+            </tr>
+          );
+        }
         return (
-          <tr>
+          <tr key={key}>
             <td>
               {key}
             </td>
@@ -37,7 +50,7 @@ define(function(require) {
           <div className="row">
             <div className="col-md-12">
               <h1>
-                Update ID: {this.props.Update.deref().id}
+                Updates &gt; {this.props.Update.deref().id}
               </h1>
             </div>
           </div>

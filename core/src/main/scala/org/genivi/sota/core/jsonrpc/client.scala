@@ -7,6 +7,9 @@ package org.genivi.sota.core.jsonrpc
 import scala.language.dynamics
 import scala.util.control.NoStackTrace
 
+/**
+ * Encoder/decoder for JSON-RPC requests and responses.
+ */
 object client extends Dynamic {
 
   import cats.data.Xor

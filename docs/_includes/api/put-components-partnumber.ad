@@ -1,0 +1,34 @@
+
+[width="100%",cols="18%,82%",]
+|================================================================
+
+
+|Description
+|Adds a hardware component to the database, or updates an existing hardware component's description.
+
+|URL
+|/api/v1/components/:partNumber
+
+|URL Parameters
+a|
+* *:partNumber* — The unique identifying name of a hardware component.
+
+|Data Parameters
+a|
+* *description* — A description of the component.
+
+|Success Response
+a|
+*Code:* 200
+
+*Content:* The added or modified hardware component and its description.
+
+[source,json]
+----
+{
+  "description": "AcmeDVDPlayer",
+  "partNumber": "A-DVD-1234"
+}
+----
+
+|================================================================

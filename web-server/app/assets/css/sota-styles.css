@@ -1,0 +1,49 @@
+.top-nav {
+    height: 72px;
+}
+
+.pointer {
+    cursor: pointer;
+}
+
+body {
+    padding-top: 70px;
+}
+.side-nav {
+    position: fixed
+}
+@media(min-width:768px) {
+    .side-nav {
+        top: 71px;
+        margin-left: -230px;
+        left: 230px;
+        width: 180px;
+        height: 1000px;
+        background-color: black;
+    }
+}
+.top-nav {
+    color: white;
+    background-color: black;
+}
+
+.side-nav > li > a {
+    color: #999;
+    padding-left: 35px;
+}
+
+.side-nav li {
+    border-top: 2px solid #454545;
+}
+
+.nav-label {
+    padding-left: 35px;
+}
+
+.nav-link-btn {
+    padding-right: 10px;
+}
+
+#app {
+    padding-left: 180px;
+}

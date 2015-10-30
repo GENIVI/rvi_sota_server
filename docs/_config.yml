@@ -6,7 +6,7 @@ subtitle: 'Software Updates Over the Air'
 disqus_shortname: ''
 
 # if you use google analytics, add your tracking id here
-google_analytics_id: ''
+google_analytics_id: 'UA-69301419-1'
 
 # Enable/show navigation. There are there options:
 #   0 - always hide
@@ -40,7 +40,7 @@ highlighter: pygments
 future: true
 
 # Exclude non-site files
-exclude: ['bin', 'README.md','Gemfile*','Makefile']
+exclude: ['bin', 'README.md','Gemfile*','Makefile','Dockerfile']
 
 gems: 
   - jekyll-asciidoc
