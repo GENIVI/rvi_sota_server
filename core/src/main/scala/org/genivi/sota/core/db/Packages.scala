@@ -29,7 +29,7 @@ object Packages {
 
   /**
    * Slick mapping definition for the Package table
-   * @see {@linktourl http://slick.typesafe.com/}
+   * @see {@link http://slick.typesafe.com/}
    */
   // scalastyle:off
   class PackageTable(tag: Tag) extends Table[Package](tag, "Package") {
@@ -58,24 +58,30 @@ object Packages {
 
   /**
    * List all the packages that are available on the SOTA system
+   * @return a list of packages
    */
   def list: DBIO[Seq[Package]] = packages.result
 
   /**
    * Add a new package to the SOTA system. If the package already exists, it is
    * updated in place.
+   * @param pkg The definition of the package to add to SOTA
+   * @return The package that was added
    */
   def create(pkg: Package)(implicit ec: ExecutionContext): DBIO[Package] =
     packages.insertOrUpdate(pkg).map(_ => pkg)
 
   /**
    * Find a package using a regular expression match on its name or version
+   * @param reg The regular expression to search with
    */
   def searchByRegex(reg:String): DBIO[Seq[Package]] =
     packages.filter (packages => regex(packages.name, reg) || regex(packages.version, reg) ).result
 
   /**
    * Return the information about a package from its name & version
+   * @param id The name/version of the package to fetch
+   * @return The full package information
    */
   def byId(id : Package.Id) : DBIO[Option[Package]] =
     packages.filter( p => p.name === id.name && p.version === id.version ).result.headOption
@@ -83,6 +89,8 @@ object Packages {
   /**
     * Return information about a list of packages. The complete package
     * information for every item in ids is returned
+    * @param ids A set of package names/values to look up
+    * @return A list of package definitions
     */
   def byIds(ids : Set[Package.Id] )
            (implicit ec: ExecutionContext): DBIO[Seq[Package]] = {
