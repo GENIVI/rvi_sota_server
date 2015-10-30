@@ -15,9 +15,15 @@ import scala.concurrent.ExecutionContext
 import slick.jdbc.JdbcBackend.Database
 import Directives._
 
-
+/**
+ * API routes for package resolution.
+ */
 class ResolveDirectives(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
-
+  /**
+   * API route for resolving a package, i.e. returning the list of VINs it applies to.
+   * @return 			Route object containing route for package resolution
+   * @throws 			Errors.MissingPackageException if the package doesn't exist
+   */
   def route: Route = {
     pathPrefix("resolve") {
       (get & refinedPackageId) { id =>

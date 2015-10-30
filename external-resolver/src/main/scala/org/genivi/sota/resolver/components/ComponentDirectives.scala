@@ -19,9 +19,17 @@ import scala.concurrent.ExecutionContext
 import slick.jdbc.JdbcBackend.Database
 import Directives._
 
-
+/**
+ * API routes for creating, deleting, and listing components.
+ * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html} 
+ */
 class ComponentDirectives(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
 
+  /**
+   * API route for filters.
+   * @return      Route object containing routes for creating, editing, and listing components
+   * @throws      Errors.ComponentIsInstalledException on DELETE call, if component doesn't exist
+   */
   def route: Route = {
     pathPrefix("components") {
       get {

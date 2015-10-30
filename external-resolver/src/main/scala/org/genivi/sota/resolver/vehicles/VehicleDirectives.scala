@@ -24,12 +24,23 @@ import slick.dbio.{DBIOAction, DBIO}
 import scala.concurrent.ExecutionContext
 import slick.jdbc.JdbcBackend.Database
 
-
+/**
+ * API routes for everything related to vehicles: creation, deletion, and package and component association.
+ * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
+ */
 class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
   import Directives._
 
+  /**
+   * Exception handler for package routes.
+   */
   def installedPackagesHandler = ExceptionHandler(Errors.onMissingPackage orElse Errors.onMissingVehicle)
 
+  /**
+   * Base API route for vehicles.
+   * @return      Route object containing routes for creating, deleting, and listing vehicles
+   * @throws      Errors.MissingVehicle if vehicle doesn't exist
+   */
   def route: Route = {
 
     val extractVin : Directive1[Vehicle.Vin] = refined[Vehicle.ValidVin](Slash ~ Segment)
@@ -63,6 +74,13 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
     }
   }
 
+  /**
+   * API route for package -> vehicle associations.
+   * @return      Route object containing routes for listing packages on a vehicle, and creating and deleting 
+   *              vehicle -> package associations
+   * @throws      Errors.MissingPackageException if package doesn't exist
+   * @throws      Errors.MissingVehicle if vehicle doesn't exist
+   */
   def packageRoute(vin: Vehicle.Vin): Route = {
     pathPrefix("package") {
       (pathEnd & get) {
@@ -94,9 +112,19 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
     }
   }
 
+  /**
+   * Exception handler for component routes.
+   */
   def installedComponentsHandler =
     ExceptionHandler(Errors.onMissingVehicle orElse Errors.onMissingComponent)
 
+  /**
+   * API route for component -> vehicle associations.
+   * @return      Route object containing routes for listing components on a vehicle, and creating and deleting 
+   *              vehicle -> component associations
+   * @throws      Errors.MissingComponent if component doesn't exist
+   * @throws      Errors.MissingVehicle if vehicle doesn't exist
+   */
   def componentRoute(vin: Vehicle.Vin): Route = {
     pathPrefix("component") {
       (pathEnd & get) {
