@@ -66,6 +66,13 @@ class PackageResourceWordSpec extends WordSpec
         assert(packages.length === 5)
       }
     }
+    "list resource on GET :package request" in {
+      Get(PackagesUri + "/scala/2.11.0") ~> service.route ~> check {
+        assert(status === StatusCodes.OK)
+        val pkg = responseAs[DataPackage]
+        assert(pkg.id === DataPackage.Id(Refined("scala"), Refined("2.11.0")))
+      }
+    }
     "filter list of packages by regex '0'" in {
       Get(PackagesUri + "?regex=0") ~> service.route ~> check {
         assert(status === StatusCodes.OK)

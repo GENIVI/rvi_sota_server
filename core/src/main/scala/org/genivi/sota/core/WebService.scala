@@ -69,6 +69,13 @@ class VehiclesResource(db: Database)
   val route = pathPrefix("vehicles") {
     extractVin { vin =>
       pathEnd {
+        get {
+          completeOrRecoverWith(exists(Vehicle(vin))) {
+            case MissingVehicle =>
+              complete(StatusCodes.NotFound ->
+                ErrorRepresentation(Vehicle.MissingVehicle, "Vehicle doesn't exist"))
+          }
+        } ~
         put {
           complete(db.run(Vehicles.create(Vehicle(vin))).map(_ => NoContent))
         } ~
