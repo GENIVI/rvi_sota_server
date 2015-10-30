@@ -11,10 +11,11 @@ import eu.timepit.refined.Refined
 import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.genivi.sota.resolver.common.Errors.Codes
 import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.packages.Package._
-import org.scalacheck._
 import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
+import org.scalacheck._
 
 
 class PackagesResourcePropSpec extends ResourcePropSpec {
@@ -82,6 +83,21 @@ class PackagesResourceWordSpec extends ResourceWordSpec {
           Package(Package.Id(Refined("name"), Refined("1.0.0")), Some("嚢"), None)
       }
     }
-  }
 
+    val pkg = Package(Package.Id(Refined("apa"), Refined("1.0.0")), None, None)
+
+    "GET /packages/:pkgName/:pkgVersion should return the package or fail" in {
+      addPackage(pkg.id.name.get, pkg.id.version.get, None, None) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+      }
+      Get(Resource.uri("packages", pkg.id.name.get, pkg.id.version.get)) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+        responseAs[Package] shouldBe pkg
+      }
+      Get(Resource.uri("packages", "bepa", "1.0.0")) ~> route ~> check {
+        status shouldBe StatusCodes.NotFound
+        responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
+      }
+    }
+  }
 }
