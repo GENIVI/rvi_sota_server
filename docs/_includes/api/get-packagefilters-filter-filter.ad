@@ -1,0 +1,55 @@
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+
+
+|Description |Returns a list of all packages associated with a
+particular filter.
+
+|URL |/api/v1/packageFilters?filter=:filter
+
+|URL Parameters a|
+* *:filter* — A filter name.
+
+|Success Response a|
+A list of packages and their information.
+
+*Code:* 200
+
+*Content:*
+
+[source,json]
+----
+[
+  {
+    "vendor": "AcmeSoftware",
+    "description": "",
+    "id": {
+      "version": "1.2.3",
+      "name": "myPackage"
+    }
+  },
+  {
+    "vendor": "AcmeSoftware",
+    "description": "",
+    "id": {
+      "version": "2.3.4",
+      "name": "myPackage2"
+    }
+  }
+]
+----
+
+
+|Error Response a|
+*Code:* 404
+
+*Content:*
+[source,json]
+----
+{
+  "code": "missing_filter",
+  "description": "Filter doesn't exist"
+}
+----
+|=======================================================================

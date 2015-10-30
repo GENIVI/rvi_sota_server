@@ -1,0 +1,30 @@
+[width="100%",cols="18%,82%",]
+|================================================================
+
+
+|Description
+|Returns a list of the packages installed on a given vehicle.
+
+|URL
+|/api/v1/vehicles/:vin/package
+
+|Parameters a|
+* *:vin* — An existing vehicle identification number.
+
+|Success Response
+a|
+*Code:* 200
+
+*Content:* A list of package names and versions.
+
+[source,json]
+----
+[
+  {
+    "version": "1.2.3",
+    "name": "myPackage"
+  }
+]
+----
+
+|================================================================

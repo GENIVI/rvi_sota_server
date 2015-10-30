@@ -3,7 +3,7 @@ layout: page
 title: "SOTA Architecture"
 category: dev
 date: 2015-08-26 14:14:23
-order: 2
+order: 4
 ---
 :icons: font
 

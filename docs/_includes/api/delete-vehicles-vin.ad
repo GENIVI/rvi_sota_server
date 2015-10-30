@@ -1,0 +1,31 @@
+[width="100%",cols="18%,82%",]
+|=======================================================================
+
+
+|Description |Deletes a vehicle VIN from the database.
+
+|URL |/api/v1/vehicles/:vin
+
+|URL Parameters a|
+* *:vin* — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.
+
+|Success Response a|
+*Code:* 200
+
+// Shouldn't this be a 204?
+
+|Error Response a|
+*Code:* 404
+
+*Content:*
+[source,json]
+----
+{
+  "description": "Vehicle doesn't exist",
+  "code": "missing_vehicle"
+}
+----
+
+|=======================================================================

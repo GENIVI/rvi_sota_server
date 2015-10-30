@@ -1,0 +1,27 @@
+
+[width="100%",cols="18%,82%",]
+|==================================================================
+|Description |Delete a package -> filter association
+|URL |/api/v1/packageFiltersDelete/:packageName/:packageVersion/:filterName
+|URL Parameters a|
+* *packageName* - The name of an existing package.
+* *packageVersion* - A valid version number for that package.
+* *filterName* - The name of an existing filter that is associated with that package name and version.
+|Success Response a|
+*Code:* 200
+
+*Content:* 1
+
+|Error Response a|
+*Code:* 400
+
+*Content:*
+[source,json]
+----
+{
+  "code": "missing_package_filter",
+  "description": "Package filter doesn't exist"
+}
+----
+|==================================================================
+

@@ -1,0 +1,22 @@
+
+[width="100%",cols="18%,82%",]
+|================================================================
+
+
+|Description
+|Adds a component to a given vehicle.
+
+|URL
+|/api/v1/vehicles/:vin/component/:partNumber
+
+|Parameters a|
+* *:vin* — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.
+* *:partNumber* — The unique identifying name of a hardware component.
+
+|Success Response
+a|
+*Code:* 200
+
+|================================================================

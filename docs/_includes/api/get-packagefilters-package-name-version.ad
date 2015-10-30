@@ -1,0 +1,41 @@
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+
+
+|Description |Returns a list of all filters associated with a particular
+package.
+
+|URL |/api/v1/packageFilters?package=:name[-]:version
+
+|URL Parameters a|
+* *:name* — A package name.
+* *:version* — A package version, in _x.y.z_ format. __x__, __y__, and __z__ must all exist, and contain only digits.
+
+|Success Response a|
+*Code:* 200
+
+*Content:* A list of filters associated with the package.
+
+[source,json]
+----
+[
+  {
+    "expression": "vin_matches \"^12ABC\" AND has_component \"AcmeDVDPlayer\"",
+    "name": "myFilter"
+  }
+]
+----
+
+|Error Response a|
+*Code:* 404
+
+*Content:*
+[source,json]
+----
+{
+  "code": "missing_package",
+  "description": "Package doesn't exist"
+}
+----
+|=======================================================================

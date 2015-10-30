@@ -1,0 +1,51 @@
+
+[width="100%",cols="18%,82%",]
+|=======================================================================
+
+
+|Description |Create an install campaign for a package
+
+|URL |/api/v1/updates
+
+|Parameters a|
+
+None
+|Success Response a|
+*Code:* 200
+
+*Content:* A list of update campaign objects. Each object contains:
+
+* *packageId* — Object containing:
+  ** *name* — Package name
+  ** *version* — _x.y.z_
+* *id* — the UUID of the update campaign
+* *priority* — The priority of the campaign.
+* *periodOfValidity* — `[dateTime]/[dateTime]` The start and end time of the update campaign.
+* *creationTime* — `[dateTime]` — The date and time the campaign was created.
+
+[source,json]
+----
+[
+  {
+    "periodOfValidity": "2015-09-18T02:00:00.000+02:00/2015-09-19T02:00:00.000+02:00",
+    "priority": 3,
+    "id": "7dacded2-911e-4c43-b5e3-f91870e79f05",
+    "packageId": {
+      "version": "1.2.3",
+      "name": "myPackage"
+    },
+    "creationTime": "2015-09-18T02:00:23.000+02:00"
+  },
+  {
+    "periodOfValidity": "2015-09-18T02:00:00.000+02:00/2015-09-19T02:00:00.000+02:00",
+    "priority": 3,
+    "id": "7dacded2-911e-4c43-b5e3-f91870e79f06",
+    "packageId": {
+      "version": "2.3.4",
+      "name": "myPackage"
+    },
+    "creationTime": "2015-09-18T02:00:23.000+02:00"
+  }
+]
+----
+|=======================================================================

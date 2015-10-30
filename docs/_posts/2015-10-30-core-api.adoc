@@ -1,0 +1,56 @@
+---
+layout: page
+title: "Core API"
+category: dev
+date: 2015-10-30 15:09:33
+order: 2
+---
+:toc: macro
+:icons: font
+
+The content-type of all requests is `application/json` unless otherwise specified.
+
+toc::[right]
+
+=== GET /vehicles
+
+include::../_includes/api/get-vehicles.ad[]
+
+=== PUT /vehicles/:vin
+
+include::../_includes/api/put-vehicles-vin.ad[]
+
+=== DELETE /vehicles/:vin
+
+include::../_includes/api/delete-vehicles-vin.ad[]
+
+=== GET /vehicles/:vin/queued
+
+include::../_includes/api/get-vehicles-vin-queued.ad[]
+
+=== GET /vehicles/:vin/history
+
+include::../_includes/api/get-vehicles-vin-history.ad[]
+
+=== GET /packages
+
+include::../_includes/api/get-packages.ad[]
+
+=== PUT /packages/:name/:version
+
+include::../_includes/api/put-packages-name-version-core.ad[]
+
+=== POST /updates
+
+include::../_includes/api/post-updates.ad[]
+
+=== GET /updates
+
+include::../_includes/api/get-updates.ad[]
+
+=== GET /updates/:campaignId
+
+include::../_includes/api/get-updates-campaignid.ad[]
+
+
+

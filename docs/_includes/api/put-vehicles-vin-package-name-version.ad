@@ -1,0 +1,25 @@
+
+[width="100%",cols="18%,82%",]
+|================================================================
+
+
+|Description
+|Marks a package as installed on a given vehicle.
+
+|URL
+|/api/v1/vehicles/:vin/package/:name/:version
+
+|Parameters a|
+* *:vin* — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.
+* *:name* — The name of the software package.
+* *:version* — The package version, in _x.y.z_ format. __x__, __y__, and _z_ must all contain only digits.
+
+|Success Response
+a|
+*Code:* 200
+
+
+|================================================================
+
