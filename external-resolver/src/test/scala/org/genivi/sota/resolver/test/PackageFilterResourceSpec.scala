@@ -80,7 +80,7 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
       }
     }
 
-    "list filters associated to a package on GET requests to /packageFilters?package=:packageName-:packageVersion" in {
+    "list filters associated to a package on GET requests to /packageFilters?packageName=:packageName&packageVersion=:packageVersion" in {
       listFiltersForPackage(pkgName, pkgVersion) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Seq[Filter]] shouldBe List(Filter(Refined(filterName), Refined(filterExpr)))

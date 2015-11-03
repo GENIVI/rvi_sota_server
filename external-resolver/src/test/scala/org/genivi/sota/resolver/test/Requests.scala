@@ -171,7 +171,7 @@ trait PackageFilterRequests extends Matchers { self: ScalatestRouteTest =>
     Get(Resource.uri("packageFilters") + s"?filter=$fname")
 
   def listFiltersForPackage(pname: String, pversion: String): HttpRequest =
-    Get(Resource.uri("packageFilters") + s"?package=$pname-$pversion")
+    Get(Resource.uri("packageFilters") + s"?packageName=$pname&packageVersion=$pversion")
 
   def deletePackageFilter(pname: String, pversion: String, fname: String): HttpRequest =
     Delete(Resource.uri("packageFilters", pname, pversion, fname))
