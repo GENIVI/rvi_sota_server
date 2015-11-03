@@ -2,8 +2,7 @@ define(function(require) {
 
   var _ = require('underscore'),
       Router = require('react-router'),
-      VehiclesForPackage = require('../vehicles/vehicles-for-package'),
-      VehiclesQueuedForPackage = require('../vehicles/list-of-vehicles-queued-for-package'),
+      VehiclesListPanel = require('../vehicles/vehicles-list-panel'),
       PackageFilterAssociation = require('../package-filters/package-filter-association'),
       AffectedVins = require('../vehicles/affected-vins'),
       SotaDispatcher = require('sota-dispatcher'),
@@ -53,10 +52,11 @@ define(function(require) {
           </tr>
         );
       });
+      var data = {name: params.name, version: params.version}
       return (
         <div>
           <h1>
-            Packages &gt; {this.props.Package.deref().id}
+            Packages &gt; {params.name + "-" + params.version}
           </h1>
           <div className="row">
             <div className="col-md-12">
@@ -96,8 +96,16 @@ define(function(require) {
           <br/>
           <AffectedVins AffectedVins={db.affectedVins} />
           <h2>Vehicles</h2>
-          <VehiclesForPackage VehiclesForPackage={db.vehiclesForPackage}/>
-          <VehiclesQueuedForPackage Vehicles={db.vehiclesQueuedForPackage} PackageName={params.name} PackageVersion={params.version}/>
+          <VehiclesListPanel
+            Vehicles={db.vehiclesForPackage}
+            PollEventName="poll-vehicles-for-package"
+            DispatchObject={{actionType: "get-vehicles-for-package", name: params.name, version: params.version}}
+            Label="Vehicles with this package installed"/>
+          <VehiclesListPanel
+            Vehicles={db.vehiclesQueuedForPackage}
+            PollEventName="poll-vehicles-for-package"
+            DispatchObject={{actionType: "get-vehicles-queued-for-package", name: params.name, version: params.version}}
+            Label="Vehicles with this package queued for install"/>
         </div>
       );
     }
