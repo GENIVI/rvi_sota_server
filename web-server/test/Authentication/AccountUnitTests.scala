@@ -1,8 +1,9 @@
+package Authentication
 /**
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-import org.genivi.webserver.Authentication.{AccountManager, Role, Account}
+import org.genivi.webserver.Authentication.{AccountManager, Role}
 import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
 import scala.language.reflectiveCalls
 

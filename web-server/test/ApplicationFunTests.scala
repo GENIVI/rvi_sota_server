@@ -13,7 +13,7 @@ import slick.jdbc.JdbcBackend.Database
 
 import scala.collection.JavaConversions._
 
-object BrowserTests extends Tag("BrowserTest")
+object BrowserTests extends Tag("BrowserTests")
 
 class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowsersPerSuite
   with BeforeAndAfterAll {
@@ -87,7 +87,7 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
     val webPort = app.configuration.getInt("test.webserver.port").getOrElse(port)
     "All browsers" must {
 
-      "allow users to add and search for vins " + browser.name taggedAs (BrowserTests) in {
+      "allow users to add and search for vins " + browser.name taggedAs BrowserTests in {
         go to s"http://$webHost:$webPort/login"
         emailField("email").value = userName
         pwdField("password").value = password
@@ -104,7 +104,7 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
         }
       }
 
-      "allow users to add packages " + browser.name taggedAs (BrowserTests) in {
+      "allow users to add packages " + browser.name taggedAs BrowserTests in {
         go to s"http://$webHost:$webPort/login"
         emailField("email").value = userName
         pwdField("password").value = password
@@ -127,7 +127,7 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
         }
       }
 
-      "allow users to add filters " + browser.name taggedAs (BrowserTests) in {
+      "allow users to add filters " + browser.name taggedAs BrowserTests in {
         go to s"http://$webHost:$webPort/login"
         emailField("email").value = userName
         pwdField("password").value = password
@@ -145,7 +145,7 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
         }
       }
 
-      "allow users to create install campaigns " + browser.name taggedAs (BrowserTests) in {
+      "allow users to create install campaigns " + browser.name taggedAs BrowserTests in {
         go to s"http://$webHost:$webPort/login"
         emailField("email").value = userName
         pwdField("password").value = password
@@ -163,7 +163,7 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
         }
       }
 
-      "allow users to change filter expressions " + browser.name taggedAs (BrowserTests) in {
+      "allow users to change filter expressions " + browser.name taggedAs BrowserTests in {
         val alternateFilterExpression = "vin_matches 'TEST'"
         go to s"http://$webHost:$webPort/login"
         emailField("email").value = userName
@@ -181,7 +181,7 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
         }
       }
 
-      "reject invalid filter expressions " + browser.name taggedAs (BrowserTests) in {
+      "reject invalid filter expressions " + browser.name taggedAs BrowserTests in {
         val alternateFilterExpression = "invalid"
         go to s"http://$webHost:$webPort/login"
         emailField("email").value = userName
@@ -199,7 +199,7 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
         }
       }
 
-      "allow users to delete filters " + browser.name taggedAs (BrowserTests) in {
+      "allow users to delete filters " + browser.name taggedAs BrowserTests in {
         go to s"http://$webHost:$webPort/login"
         emailField("email").value = userName
         pwdField("password").value = password
