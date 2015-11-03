@@ -68,6 +68,6 @@ object Boot extends App with DatabaseConfig {
 
   sys.addShutdownHook {
     Try( db.close()  )
-    Try( system.shutdown() )
+    Try( system.terminate() )
   }
 }
