@@ -265,11 +265,10 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
       }
     }
 
-    "list all VINs if package parameter isn't provided properly" in {
+    "fail if package parameters ain't provided properly" in {
       installPackageOK(vin, "apa", "1.0.1")
-      Get(Resource.uri(vehicles) + "?package=") ~> route ~> check {
-        status shouldBe StatusCodes.OK
-        responseAs[Seq[Vehicle]] shouldBe List(Vehicle(Refined(vin)), Vehicle(Refined(vin2)))
+      Get(Resource.uri(vehicles) + "?packageName=&packageVersion=") ~> route ~> check {
+        status shouldBe StatusCodes.BadRequest
       }
     }
 

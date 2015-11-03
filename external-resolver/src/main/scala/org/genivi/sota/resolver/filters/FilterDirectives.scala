@@ -35,7 +35,7 @@ object FutureSupport {
 
 /**
  * API routes for filters.
- * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html} 
+ * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
  */
 class FilterDirectives(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
   import FutureSupport._
@@ -79,20 +79,18 @@ class FilterDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execut
 
     pathPrefix("packageFilters") {
       get {
-        parameters('package.as[Package.NameVersion].?, 'filter.as[Filter.Name].?) {
-          case (Some(nameVersion), None) =>
-            val packageName: Package.Name = Refined(nameVersion.get.split("-").head)
-            val packageVersion: Package.Version = Refined(nameVersion.get.split("-").tail.head)
+        parameters('packageName.as[Package.Name].?, 'packageVersion.as[Package.Version].?, 'filter.as[Filter.Name].?) {
+          case (Some(pkgName), Some(pkgVersion), None) =>
             val f: Future[Seq[Filter]] = for {
-              (p, fs) <- db.run(PackageFilterRepository.listFiltersForPackage(Package.Id(packageName, packageVersion)))
+              (p, fs) <- db.run(PackageFilterRepository.listFiltersForPackage(Package.Id(pkgName, pkgVersion)))
               _       <-
                 p.fold[Future[Package]](FastFuture.failed(Errors.MissingPackageException))(FastFuture.successful)
             } yield fs
             complete(f)
 
-          case (None, Some(fname)) =>
+          case (None, None, Some(fname)) =>
             complete(PackageFunctions.listPackagesForFilter(fname))
-          case (None, None) =>
+          case (None, None, None) =>
             complete(db.run(PackageFilterRepository.list))
           case _ =>
             complete(StatusCodes.NotFound)
