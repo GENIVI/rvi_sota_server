@@ -9,7 +9,7 @@ import akka.http.scaladsl.model.StatusCodes.NoContent
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
-import eu.timepit.refined.Refined
+import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._

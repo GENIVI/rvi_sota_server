@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.resolver.vehicles
 
-import eu.timepit.refined.Refined
+import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.refined.SlickRefined._
@@ -220,12 +220,15 @@ object VehicleRepository {
              part      : Option[Component.PartNumber])
             (implicit ec: ExecutionContext): DBIO[Seq[Vehicle]] = {
 
+    def toRegex[T](r: Refined[String, T]): Refined[String, Regex] =
+      Refined.unsafeApply(r.get)
+
     val vins  = re.fold[FilterAST](True)(VinMatches(_))
     val pkgs  = (pkgName, pkgVersion) match
-      { case (Some(re1), Some(re2)) => HasPackage(Refined(re1.get), Refined(re2.get))
+      { case (Some(re1), Some(re2)) => HasPackage(toRegex(re1), toRegex(re2))
         case _                      => True
       }
-    val comps = part.fold[FilterAST](True)(r => HasComponent(Refined(r.get)))
+    val comps = part.fold[FilterAST](True)(r => HasComponent(toRegex(r)))
 
     for {
       vpcs <- vinsWithPackagesAndComponents

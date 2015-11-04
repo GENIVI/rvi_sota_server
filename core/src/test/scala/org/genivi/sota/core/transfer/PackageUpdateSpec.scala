@@ -9,7 +9,8 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import akka.testkit.{TestKit, TestProbe}
-import eu.timepit.refined.Refined
+import eu.timepit.refined.refineMV
+import eu.timepit.refined.api.Refined
 import org.genivi.sota.core.DefaultExternalResolverClient
 import org.genivi.sota.core.{PackagesReader, RequiresRvi, TestDatabase, UpdateService}
 import org.genivi.sota.core.Generators
@@ -69,6 +70,7 @@ object SotaClient {
     StartDownloadMessage, RviClient, JsonRpcRviClient}
   import io.circe._
   import io.circe.generic.auto._
+  import org.genivi.sota.marshalling.CirceInstances._
 
   class ClientActor(rviClient: RviClient, clientServices: ClientServices) extends Actor with ActorLogging {
     def ttl() : DateTime = {
@@ -85,7 +87,7 @@ object SotaClient {
       case UpdateNotification(packages, services ) =>
         log.debug( "Update notification received." )
         rviClient.sendMessage(services.start,
-                              StartDownload(Refined("VINOOLAM0FAU2DEEP"), packages.map(_.`package`).toList, clientServices), ttl())
+                              StartDownload(refineMV[Vehicle.ValidVin]("V1N00LAM0FAU2DEEP"), packages.map(_.`package`).toList, clientServices), ttl())
       case m => log.debug(s"Not supported yet: $m")
     }
   }
@@ -225,7 +227,7 @@ class PackageUpdateSpec extends PropSpec with PropertyChecks with Matchers with 
   implicit val log = Logging(system, "org.genivi.sota.core.PackageUpload")
 
   property("updates should be transfered to device", RequiresRvi) {
-    forAll( requestsGen(Refined("VINOOLAM0FAU2DEEP")) ) { (requests) =>
+    forAll( requestsGen(Refined.unsafeApply("VINOOLAM0FAU2DEEP")) ) { (requests) =>
       val probe = TestProbe()
       val serviceUri = Uri.from( scheme="http", host="192.168.1.64", port= 8080 )
       system.eventStream.subscribe(probe.ref, classOf[UpdateEvents.InstallReportReceived])

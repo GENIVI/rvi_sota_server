@@ -134,7 +134,7 @@ object Dependencies {
 
   val AkkaVersion = "2.4.0"
 
-  val CirceVersion = "0.2.0-SNAPSHOT"
+  val CirceVersion = "0.2.0"
 
 
   lazy val Akka = Seq(
@@ -146,12 +146,12 @@ object Dependencies {
   )
 
   lazy val Circe = Seq(
-    "io.circe" %% "circe-core" % CirceVersion,
+    "io.circe" %% "circe-core"    % CirceVersion,
     "io.circe" %% "circe-generic" % CirceVersion,
-    "io.circe" %% "circe-jawn" % CirceVersion
+    "io.circe" %% "circe-parse"   % CirceVersion
   )
 
-  lazy val Refined = "eu.timepit" %% "refined" % "0.2.3"
+  lazy val Refined = "eu.timepit" %% "refined" % "0.3.1"
 
   lazy val Scalaz = "org.scalaz" %% "scalaz-core" % "7.1.3"
 

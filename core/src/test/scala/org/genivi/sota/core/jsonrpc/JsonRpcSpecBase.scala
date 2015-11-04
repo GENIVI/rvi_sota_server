@@ -24,7 +24,7 @@ abstract class JsonRpcSpecBase extends PropSpec with PropertyChecks with  Matche
   )
 
   override def afterAll() {
-    system.shutdown()
+    system.terminate()
   }
 
 }

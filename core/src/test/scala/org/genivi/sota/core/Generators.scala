@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.core
 
-import eu.timepit.refined.Refined
+import eu.timepit.refined.api.Refined
 import akka.http.scaladsl.model.Uri
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -22,10 +22,10 @@ import org.scalacheck.{Arbitrary, Gen}
 trait Generators {
 
   val PackageVersionGen: Gen[Package.Version] =
-    Gen.listOfN(3, Gen.choose(0, 999)).map(_.mkString(".")).map(Refined(_))
+    Gen.listOfN(3, Gen.choose(0, 999)).map(_.mkString(".")).map(Refined.unsafeApply(_))
 
   val PackageNameGen: Gen[Package.Name] =
-    Gen.identifier.map(Refined(_))
+    Gen.identifier.map(Refined.unsafeApply(_))
 
   val PackageIdGen = for {
     name    <- PackageNameGen
