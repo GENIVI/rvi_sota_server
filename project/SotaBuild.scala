@@ -16,6 +16,8 @@ object SotaBuild extends Build {
 
   lazy val IntegrationTests = config("it") extend Test
 
+  lazy val BrowserTests = config("bt") extend Test
+
   lazy val basicSettings = Seq(
     organization := "org.genivi",
     scalaVersion := "2.11.7",
@@ -89,8 +91,9 @@ object SotaBuild extends Build {
   lazy val webServer = Project(id = "webserver", base = file("web-server"),
     settings = commonSettings ++ PlaySettings.defaultScalaSettings ++ Seq(
       RoutesKeys.routesGenerator := InjectedRoutesGenerator,
-      testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "BrowserTest"),
-      testOptions in IntegrationTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "BrowserTest"),
+      testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "APITests BrowserTests"),
+      testOptions in IntegrationTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "APITests"),
+      testOptions in BrowserTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "BrowserTests"),
       resolvers += "scalaz-bintray"  at "http://dl.bintray.com/scalaz/releases",
       dockerExposedPorts := Seq(9000),
       libraryDependencies ++= Seq (
@@ -113,7 +116,8 @@ object SotaBuild extends Build {
     .enablePlugins(PlayScala, SbtWeb)
     .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
     .settings(inConfig(IntegrationTests)(Defaults.testTasks): _*)
-    .configs(UnitTests, IntegrationTests)
+    .settings(inConfig(BrowserTests)(Defaults.testTasks): _*)
+    .configs(UnitTests, IntegrationTests, BrowserTests)
 
   lazy val sota = Project(id = "sota", base = file("."))
     .settings( basicSettings )
