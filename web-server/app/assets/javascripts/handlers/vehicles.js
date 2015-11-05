@@ -46,7 +46,10 @@ define(function(require) {
           case 'get-vehicles-for-package':
             sendRequest.doGet('/api/v1/vehicles?package=' + payload.name + '-' + payload.version)
               .success(function(vehicles) {
-                db.vehiclesForPackage.reset(vehicles);
+                var list = _.map(vehicles, function(vehicle) {
+                  return vehicle.vin;
+                });
+                db.vehiclesForPackage.reset(list);
               });
           break;
           case 'get-package-queue-for-vin':

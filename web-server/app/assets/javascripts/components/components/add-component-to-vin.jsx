@@ -19,7 +19,7 @@ define(function(require) {
             vin: this.props.Vin
         });
       },
-      buttonLabel: "Add Component",
+      buttonLabel: "Add Installed Component",
       form: function() {
         return (
           <div>
