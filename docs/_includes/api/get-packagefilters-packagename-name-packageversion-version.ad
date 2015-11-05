@@ -6,7 +6,7 @@
 |Description |Returns a list of all filters associated with a particular
 package.
 
-|URL |/api/v1/packageFilters?package=:name[-]:version
+|URL |/api/v1/packageFilters?packageName=:name&packageVersion=:version
 
 |URL Parameters a|
 * *:name* — A package name.
