@@ -122,9 +122,9 @@ include::../_includes/api/delete-packagefilters-packagename-packageversion-filte
 
 include::../_includes/api/get-packagefilters-filter-filter.ad[]
 
-=== GET /packageFilters?package=:name[-]:version
+=== GET /packageFilters?packageName=:name&packageVersion=:version
 
-include::../_includes/api/get-packagefilters-package-name-version.ad[]
+include::../_includes/api/get-packagefilters-packagename-name-packageversion-version.ad[]
 
 === POST /updates
 
