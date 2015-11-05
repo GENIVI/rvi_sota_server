@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <meta name="viewport" content="width=device-width">
 
-        <title>GENIVI SOTA Project : API</title>
+        <title>GENIVI SOTA Project : Web server API</title>
         <meta name="description" content="Software Updates Over the Air">
 
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
@@ -89,22 +89,28 @@
             <li data-order="10"><a href="/rvi_sota_server/dev/generated-documentation.html">Auto-generated Documentation</a></li>
         
             
-            <li data-order="6"><a href="/rvi_sota_server/dev/client-implementation-example-session.html">Client Implementation Example Session</a></li>
+            <li data-order="3"><a href="/rvi_sota_server/dev/resolver-api.html">Resolver API</a></li>
         
             
-            <li data-order="5"><a href="/rvi_sota_server/dev/client-implementation.html">Client Implementation Reference</a></li>
+            <li data-order="2"><a href="/rvi_sota_server/dev/core-api.html">Core API</a></li>
         
             
-            <li data-order="2"><a href="/rvi_sota_server/dev/architecture.html">SOTA Architecture</a></li>
+            <li data-order="8"><a href="/rvi_sota_server/dev/client-implementation-example-session.html">Client Implementation Example Session</a></li>
         
             
-            <li data-order="4"><a href="/rvi_sota_server/dev/database-style-guide.html">Database Style Guide</a></li>
+            <li data-order="7"><a href="/rvi_sota_server/dev/client-implementation.html">Client Implementation Reference</a></li>
         
             
-            <li data-order="3"><a href="/rvi_sota_server/dev/scala-style-guide.html">Scala Style Guide</a></li>
+            <li data-order="4"><a href="/rvi_sota_server/dev/architecture.html">SOTA Architecture</a></li>
         
             
-            <li data-order="1"><a href="/rvi_sota_server/dev/api.html">API</a></li>
+            <li data-order="6"><a href="/rvi_sota_server/dev/database-style-guide.html">Database Style Guide</a></li>
+        
+            
+            <li data-order="5"><a href="/rvi_sota_server/dev/scala-style-guide.html">Scala Style Guide</a></li>
+        
+            
+            <li data-order="1"><a href="/rvi_sota_server/dev/api.html">Web server API</a></li>
         
     
 <!-- List additional links. It is recommended to add a divider
@@ -116,28 +122,16 @@
                     <div id="content" class="col-sm-9">
                         <div id="content" class="col-sm-10">
                             <div class="page-header">
-    <h2>API
+    <h2>Web server API
         
     </h2>
 </div>
 
 <div class="paragraph">
-<p>This is the documentation page for the REST API of SOTA, including the Web Server, the Core Server, and the Resolver.</p>
+<p>The web server has an API that forwards all the relevant calls to either the core or resolver API (or both), depending on what&#8217;s appropriate. All API calls to the web server need a session authorization cookie as well.</p>
 </div>
 <div class="paragraph">
 <p>The content-type of all requests is <code>application/json</code> unless otherwise specified.</p>
-</div>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-The core, resolver, and web server all expose APIs. Calls to the web server&#8217;s API are forwarded to the appropriate entity: core, resolver, or both. Thus, the documentation here documents the core and resolver APIs; the calls to the web server are the same, but must be sent with a session authorization cookie.
-</td>
-</tr>
-</table>
 </div>
 <div id="toc" class="toc">
 <div id="toctitle" class="title">Table of Contents</div>
@@ -149,11 +143,13 @@ The core, resolver, and web server all expose APIs. Calls to the web server&#821
 <li><a href="#get-vehicles-vin-queued">GET /vehicles/:vin/queued</a></li>
 <li><a href="#get-vehicles-vin-history">GET /vehicles/:vin/history</a></li>
 <li><a href="#put-vehicles-vin-component-partnumber">PUT /vehicles/:vin/component/:partNumber</a></li>
+<li><a href="#delete-vehicles-vin-component-partnumber">DELETE /vehicles/:vin/component/:partNumber</a></li>
 <li><a href="#get-vehicles-vin-package">GET /vehicles/:vin/package</a></li>
 <li><a href="#put-vehicles-vin-package-name-version">PUT /vehicles/:vin/package/:name/:version</a></li>
+<li><a href="#delete-vehicles-vin-package-name-version">DELETE /vehicles/:vin/package/:name/:version</a></li>
+<li><a href="#put-vehicles-vin-packages">PUT /vehicles/:vin/packages</a></li>
 <li><a href="#get-packages">GET /packages</a></li>
-<li><a href="#put-packages-name-version-core">PUT /packages/:name/:version (core)</a></li>
-<li><a href="#put-packages-name-version-resolver">PUT /packages/:name/:version (resolver)</a></li>
+<li><a href="#put-packages-name-version">PUT /packages/:name/:version</a></li>
 <li><a href="#get-components">GET /components</a></li>
 <li><a href="#put-components-partnumber">PUT /components/:partNumber</a></li>
 <li><a href="#delete-components-partnumber">DELETE /components/:partNumber</a></li>
@@ -167,7 +163,7 @@ The core, resolver, and web server all expose APIs. Calls to the web server&#821
 <li><a href="#post-packagefilters">POST /packageFilters</a></li>
 <li><a href="#delete-packagefilters-packagename-packageversion-filtername">DELETE /packageFilters/:packageName/:packageVersion/:filterName</a></li>
 <li><a href="#get-packagefilters-filter-filter">GET /packageFilters?filter=:filter</a></li>
-<li><a href="#get-packagefilters-package-name-version">GET /packageFilters?package=:name[-]:version</a></li>
+<li><a href="#get-packagefilters-packagename-name-packageversion-version">GET /packageFilters?packageName=:name&amp;packageVersion=:version</a></li>
 <li><a href="#post-updates">POST /updates</a></li>
 <li><a href="#get-updates">GET /updates</a></li>
 <li><a href="#get-updates-campaignid">GET /updates/:campaignId</a></li>
@@ -181,10 +177,6 @@ The core, resolver, and web server all expose APIs. Calls to the web server&#821
 <col style="width: 82%;">
 </colgroup>
 <tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">core, resolver</p></td>
-</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Returns a list of all vehicle VINs in the database.</p></td>
@@ -229,10 +221,6 @@ The core, resolver, and web server all expose APIs. Calls to the web server&#821
 <col style="width: 82%;">
 </colgroup>
 <tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">core, resolver</p></td>
-</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Adds a vehicle VIN to the database.</p></td>
@@ -288,10 +276,6 @@ characters.</p>
 </colgroup>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">core, resolver</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Deletes a vehicle VIN from the database.</p></td>
 </tr>
@@ -346,10 +330,6 @@ characters.</p>
 </colgroup>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Returns a list of the components installed on a given vehicle.</p></td>
 </tr>
@@ -397,10 +377,6 @@ characters.</p>
 <col style="width: 82%;">
 </colgroup>
 <tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
-</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Returns a list of packages queued to be installed on a given vehicle.</p></td>
@@ -455,10 +431,6 @@ characters.</p>
 <col style="width: 82%;">
 </colgroup>
 <tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
-</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Returns the package install history of a given vehicle.</p></td>
@@ -516,12 +488,48 @@ characters.</p>
 </colgroup>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Adds a component to a given vehicle.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/vehicles/:vin/component/:partNumber</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>:vin</strong> — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.</p>
+</li>
+<li>
+<p><strong>:partNumber</strong> — The unique identifying name of a hardware component.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="delete-vehicles-vin-component-partnumber">DELETE /vehicles/:vin/component/:partNumber</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Deletes a component from a given vehicle.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
@@ -559,10 +567,6 @@ characters.</p>
 <col style="width: 82%;">
 </colgroup>
 <tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
-</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Returns a list of the packages installed on a given vehicle.</p></td>
@@ -612,10 +616,6 @@ characters.</p>
 </colgroup>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Marks a package as installed on a given vehicle.</p></td>
 </tr>
@@ -651,7 +651,7 @@ characters.</p>
 </table>
 </div>
 <div class="sect2">
-<h3 id="get-packages">GET /packages</h3>
+<h3 id="delete-vehicles-vin-package-name-version">DELETE /vehicles/:vin/package/:name/:version</h3>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
 <col style="width: 18%;">
@@ -659,9 +659,110 @@ characters.</p>
 </colgroup>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">core</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Removes a package previously marked as installed on a given vehicle.</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/vehicles/:vin/package/:name/:version</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>:vin</strong> — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.</p>
+</li>
+<li>
+<p><strong>:name</strong> — The name of the software package.</p>
+</li>
+<li>
+<p><strong>:version</strong> — The package version, in <em>x.y.z</em> format. <em>x</em>, <em>y</em>, and <em>z</em> must all contain only digits.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="put-vehicles-vin-packages">PUT /vehicles/:vin/packages</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Marks a list of packages as installed on a given vehicle.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/vehicles/:vin/packages</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>:vin</strong> — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Data Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>An array of objects containing:
+* <strong>:name</strong> — The name of a software package.
+ <strong>:version</strong> — The package version, in <em>x.y.z</em> format. <em>x</em>, <em>y</em>, and <em>z</em> must all contain only digits.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Example</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">[
+  {
+    <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>: <span style="color: #BA2121">&quot;myPackage&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;version&quot;</span>: <span style="color: #BA2121">&quot;1.2.3&quot;</span>
+  },
+  {
+    <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>: <span style="color: #BA2121">&quot;myPackage2&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;version&quot;</span>: <span style="color: #BA2121">&quot;2.3.4&quot;</span>
+  }
+]</code></pre>
+</div>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="get-packages">GET /packages</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Returns a list of packages.</p></td>
@@ -751,17 +852,13 @@ characters.</p>
 </table>
 </div>
 <div class="sect2">
-<h3 id="put-packages-name-version-core">PUT /packages/:name/:version (core)</h3>
+<h3 id="put-packages-name-version">PUT /packages/:name/:version</h3>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
 <col style="width: 18%;">
 <col style="width: 82%;">
 </colgroup>
 <tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">core</p></td>
-</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Adds a package to the database.</p></td>
@@ -825,76 +922,6 @@ characters.</p>
 </table>
 </div>
 <div class="sect2">
-<h3 id="put-packages-name-version-resolver">PUT /packages/:name/:version (resolver)</h3>
-<table class="tableblock frame-all grid-all spread">
-<colgroup>
-<col style="width: 18%;">
-<col style="width: 82%;">
-</colgroup>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Adds a package to the database.</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/packages/:name/:version</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">URL Parameters</p></td>
-<td class="tableblock halign-left valign-top"><div><div class="ulist">
-<ul>
-<li>
-<p><strong>:name</strong> — The name of the software package.</p>
-</li>
-<li>
-<p><strong>:version</strong> — The package version, in <em>x.y.z</em> format. <em>x</em>, <em>y</em>, and <em>z</em> must all contain only digits.</p>
-</li>
-</ul>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Data Parameters</p></td>
-<td class="tableblock halign-left valign-top"><div><div class="ulist">
-<ul>
-<li>
-<p><strong>description</strong> — A short description of the package.</p>
-</li>
-<li>
-<p><strong>vendor</strong> — The vendor for the software package.</p>
-</li>
-</ul>
-</div></div></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
-<td class="tableblock halign-left valign-top"><div><div class="paragraph">
-<p><strong>Code:</strong> 200</p>
-</div>
-<div class="paragraph">
-<p><strong>Content:</strong></p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="json">{
-  <span style="color: #008000; font-weight: bold">&quot;vendor&quot;</span>: <span style="color: #BA2121">&quot;AcmeSoftware&quot;</span>,
-  <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;testing&quot;</span>,
-  <span style="color: #008000; font-weight: bold">&quot;id&quot;</span>: {
-    <span style="color: #008000; font-weight: bold">&quot;version&quot;</span>: <span style="color: #BA2121">&quot;3.4.5&quot;</span>,
-    <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>: <span style="color: #BA2121">&quot;myPackage&quot;</span>
-  }
-}</code></pre>
-</div>
-</div></div></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="sect2">
 <h3 id="get-components">GET /components</h3>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
@@ -902,10 +929,6 @@ characters.</p>
 <col style="width: 82%;">
 </colgroup>
 <tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
-</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Returns a list of all hardware components in the database.</p></td>
@@ -952,10 +975,6 @@ characters.</p>
 <col style="width: 82%;">
 </colgroup>
 <tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
-</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Adds a hardware component to the database, or updates an existing hardware component&#8217;s description.</p></td>
@@ -1013,10 +1032,6 @@ characters.</p>
 </colgroup>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><div><div class="paragraph">
 <p>Deletes an unused hardware component from the database.</p>
@@ -1068,10 +1083,6 @@ You can&#8217;t delete a component that is associated with one or more VINs.
 <col style="width: 82%;">
 </colgroup>
 <tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
-</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Takes a package name and version, and returns a list of VINs it applies to, along with the packageId.</p></td>
@@ -1138,10 +1149,6 @@ You can&#8217;t delete a component that is associated with one or more VINs.
 </colgroup>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Returns a list of all filters in the database.</p></td>
 </tr>
@@ -1183,10 +1190,6 @@ You can&#8217;t delete a component that is associated with one or more VINs.
 <col style="width: 82%;">
 </colgroup>
 <tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
-</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Adds a filter to the database.</p></td>
@@ -1283,10 +1286,6 @@ You can&#8217;t delete a component that is associated with one or more VINs.
 <col style="width: 82%;">
 </colgroup>
 <tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
-</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Modifies an existing filter</p></td>
@@ -1391,10 +1390,6 @@ You can&#8217;t delete a component that is associated with one or more VINs.
 </colgroup>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Deletes an existing filter</p></td>
 </tr>
@@ -1459,10 +1454,6 @@ You can&#8217;t delete a component that is associated with one or more VINs.
 <col style="width: 82%;">
 </colgroup>
 <tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
-</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Validates the syntax of a filter.</p></td>
@@ -1529,10 +1520,6 @@ whether a filter with this name already exists.</p>
 </colgroup>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Returns a list of all package —&gt; filter associations.</p></td>
 </tr>
@@ -1575,10 +1562,6 @@ whether a filter with this name already exists.</p>
 <col style="width: 82%;">
 </colgroup>
 <tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
-</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Associate a filter with a package</p></td>
@@ -1652,10 +1635,6 @@ whether a filter with this name already exists.</p>
 </colgroup>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Delete a package &#8594; filter association</p></td>
 </tr>
@@ -1716,10 +1695,6 @@ whether a filter with this name already exists.</p>
 <col style="width: 82%;">
 </colgroup>
 <tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">web server, resolver</p></td>
-</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Returns a list of all packages associated with a
@@ -1794,7 +1769,7 @@ particular filter.</p></td>
 </table>
 </div>
 <div class="sect2">
-<h3 id="get-packagefilters-package-name-version">GET /packageFilters?package=:name[-]:version</h3>
+<h3 id="get-packagefilters-packagename-name-packageversion-version">GET /packageFilters?packageName=:name&amp;packageVersion=:version</h3>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
 <col style="width: 18%;">
@@ -1802,17 +1777,13 @@ particular filter.</p></td>
 </colgroup>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">resolver</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Returns a list of all filters associated with a particular
 package.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/packageFilters?package=:name[-]:version</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/packageFilters?packageName=:name&amp;packageVersion=:version</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">URL Parameters</p></td>
@@ -1874,10 +1845,6 @@ package.</p></td>
 <col style="width: 82%;">
 </colgroup>
 <tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">core</p></td>
-</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Create an install campaign for a package</p></td>
@@ -2087,10 +2054,6 @@ package.</p></td>
 </colgroup>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">core</p></td>
-</tr>
-<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Create an install campaign for a package</p></td>
 </tr>
@@ -2179,10 +2142,6 @@ package.</p></td>
 <col style="width: 82%;">
 </colgroup>
 <tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Availability</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">core</p></td>
-</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Create an install campaign for a package</p></td>

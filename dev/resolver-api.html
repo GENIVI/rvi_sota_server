@@ -86,6 +86,9 @@
             
                 <li class="nav-header">Developers</li>
             
+            <li data-order="10"><a href="/rvi_sota_server/dev/generated-documentation.html">Auto-generated Documentation</a></li>
+        
+            
             <li data-order="3"><a href="/rvi_sota_server/dev/resolver-api.html">Resolver API</a></li>
         
             
@@ -155,7 +158,7 @@
 <li><a href="#post-packagefilters">POST /packageFilters</a></li>
 <li><a href="#delete-packagefilters-packagename-packageversion-filtername">DELETE /packageFilters/:packageName/:packageVersion/:filterName</a></li>
 <li><a href="#get-packagefilters-filter-filter">GET /packageFilters?filter=:filter</a></li>
-<li><a href="#get-packagefilters-package-name-version">GET /packageFilters?package=:name[-]:version</a></li>
+<li><a href="#get-packagefilters-packagename-name-packageversion-version">GET /packageFilters?packageName=:name&amp;packageVersion=:version</a></li>
 </ul>
 </div>
 <div class="sect2">
@@ -1644,7 +1647,7 @@ particular filter.</p></td>
 </table>
 </div>
 <div class="sect2">
-<h3 id="get-packagefilters-package-name-version">GET /packageFilters?package=:name[-]:version</h3>
+<h3 id="get-packagefilters-packagename-name-packageversion-version">GET /packageFilters?packageName=:name&amp;packageVersion=:version</h3>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
 <col style="width: 18%;">
@@ -1658,7 +1661,7 @@ package.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/packageFilters?package=:name[-]:version</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/packageFilters?packageName=:name&amp;packageVersion=:version</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">URL Parameters</p></td>

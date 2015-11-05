@@ -89,22 +89,28 @@
             <li data-order="10"><a href="/rvi_sota_server/dev/generated-documentation.html">Auto-generated Documentation</a></li>
         
             
-            <li data-order="6"><a href="/rvi_sota_server/dev/client-implementation-example-session.html">Client Implementation Example Session</a></li>
+            <li data-order="3"><a href="/rvi_sota_server/dev/resolver-api.html">Resolver API</a></li>
         
             
-            <li data-order="5"><a href="/rvi_sota_server/dev/client-implementation.html">Client Implementation Reference</a></li>
+            <li data-order="2"><a href="/rvi_sota_server/dev/core-api.html">Core API</a></li>
         
             
-            <li data-order="2"><a href="/rvi_sota_server/dev/architecture.html">SOTA Architecture</a></li>
+            <li data-order="8"><a href="/rvi_sota_server/dev/client-implementation-example-session.html">Client Implementation Example Session</a></li>
         
             
-            <li data-order="4"><a href="/rvi_sota_server/dev/database-style-guide.html">Database Style Guide</a></li>
+            <li data-order="7"><a href="/rvi_sota_server/dev/client-implementation.html">Client Implementation Reference</a></li>
         
             
-            <li data-order="3"><a href="/rvi_sota_server/dev/scala-style-guide.html">Scala Style Guide</a></li>
+            <li data-order="4"><a href="/rvi_sota_server/dev/architecture.html">SOTA Architecture</a></li>
         
             
-            <li data-order="1"><a href="/rvi_sota_server/dev/api.html">API</a></li>
+            <li data-order="6"><a href="/rvi_sota_server/dev/database-style-guide.html">Database Style Guide</a></li>
+        
+            
+            <li data-order="5"><a href="/rvi_sota_server/dev/scala-style-guide.html">Scala Style Guide</a></li>
+        
+            
+            <li data-order="1"><a href="/rvi_sota_server/dev/api.html">Web server API</a></li>
         
     
 <!-- List additional links. It is recommended to add a divider
@@ -263,6 +269,12 @@ docker-launcher -c deploy/docker-launcher.yml deploy/deploy-sota-local.yml</code
 <h3 id="aws-prerequisites">AWS Prerequisites</h3>
 <div class="paragraph">
 <p>Deployment of rvi-sota-server requires valid AWS administrator credentials, as well as an SSH key to administer any instances launched by the vw-garage deployment scripts.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="ssl">SSL</h3>
+<div class="paragraph">
+<p>The current version of SOTA Server is SSL insensitive; for a production system using SSL use an SSL-stripping load balancer.</p>
 </div>
 <div class="sect3">
 <h4 id="create-new-user-for-deployment">Create New User for Deployment</h4>
