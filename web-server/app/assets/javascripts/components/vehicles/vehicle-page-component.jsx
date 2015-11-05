@@ -3,7 +3,7 @@ define(function(require) {
   var React = require('react'),
       Router = require('react-router'),
       AddPackageManually = require('../packages/add-package-manually-component'),
-      ListOfPackagesForVin = require('../packages/list-of-packages-for-vin'),
+      ListOfPackages = require('../packages/list-of-packages'),
       QueuedPackages = require('../packages/list-of-queued-packages-for-vin'),
       PackageHistory = require('../packages/package-update-history-for-vin'),
       AddComponent = require('../components/add-component-to-vin'),
@@ -25,7 +25,11 @@ define(function(require) {
         <div className="row">
           <div className="col-md-12">
             <h2>Installed Packages</h2>
-            <ListOfPackagesForVin Packages={db.packagesForVin} Vin={params.vin}/>
+            <ListOfPackages
+              Packages={db.packagesForVin}
+              PollEventName="poll-packages"
+              DispatchObject={{actionType: 'get-packages-for-vin', vin: params.vin}}
+              DisplayCampaignLink={false}/>
             <AddPackageManually Vin={params.vin}/>
             <h2>Installed Components</h2>
             <ComponentsOnVin Components={db.componentsOnVin} Vin={params.vin}/>
