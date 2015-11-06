@@ -46,6 +46,7 @@ class UpdateController(transferProtocolProps: Props) extends Actor with ActorLog
     case x @ StartDownload(vin, packages, clientServices) =>
       currentDownloads.get(vin) match {
         case None =>
+          log.debug(s"New transfer to vehicle $vin for $packages, count ${currentDownloads.size}")
           val actor = context.actorOf( transferProtocolProps )
           context.watch(actor)
           context.become( running( currentDownloads.updated( vin, actor ) ) )
@@ -58,9 +59,11 @@ class UpdateController(transferProtocolProps: Props) extends Actor with ActorLog
       currentDownloads.get(vin).foreach( _ ! x)
 
     case x: InstallReport =>
+      log.debug(s"Install report from vehicle ${x.vin}")
       currentDownloads.get(x.vin).foreach( _ ! x )
 
     case akka.actor.Terminated(x) =>
+      log.debug(s"Transfer actor terminated, count ${currentDownloads.size}")
       context.become( running( currentDownloads.filterNot( _._2 == x ) ) )
   }
 
@@ -118,6 +121,11 @@ class TransferProtocolActor(db: Database, rviClient: RviClient, transferActorPro
   import cats.syntax.show._
   import cats.syntax.eq._
 
+  val installTimeout : FiniteDuration = FiniteDuration(
+    context.system.settings.config.getDuration("rvi.transfer.installTimeout", TimeUnit.MILLISECONDS),
+    TimeUnit.MILLISECONDS
+  )
+
   def buildTransferQueue(specs: Iterable[UpdateSpec]) : Queue[Package] = {
     specs.foldLeft(Set.empty[Package])( (acc, x) => acc.union( x.dependencies ) ).to[Queue]
   }
@@ -131,12 +139,14 @@ class TransferProtocolActor(db: Database, rviClient: RviClient, transferActorPro
   def running(services: ClientServices, updates: Set[UpdateSpec], pending: Queue[Package],
               inProgress: Map[ActorRef, Package], done: Set[Package]) : Receive = {
     case akka.actor.Terminated(ref) =>
+      // TODO: Handle actors terminated on errors (e.g. file exception in PackageTransferActor)
       val p = inProgress.get(ref).get
       log.debug(s"Package $p uploaded.")
       val newInProgress = pending.headOption.map( startPackageUpload(services) )
         .fold( inProgress - ref)( inProgress - ref + _ )
       if( newInProgress.isEmpty ) {
         log.debug( s"All packages uploaded." )
+        context.setReceiveTimeout(installTimeout)
         updates.foreach { x =>
           context.system.eventStream.publish( UpdateEvents.PackagesTransferred( x ) )
         }
@@ -167,11 +177,17 @@ class TransferProtocolActor(db: Database, rviClient: RviClient, transferActorPro
         }
       }
 
+    case ReceiveTimeout =>
+      abortUpdate(services, updates)
+
     case UploadAborted =>
+      abortUpdate(services, updates)
+  }
+
+  def abortUpdate (services: ClientServices, updates: Set[UpdateSpec]) = {
       rviClient.sendMessage(services.abort, io.circe.Json.Empty, ttl())
       updates.foreach(x => db.run( UpdateSpecs.setStatus(x, UpdateStatus.Canceled) ))
       context.stop(self)
-
   }
 
   def ttl() : DateTime = {
