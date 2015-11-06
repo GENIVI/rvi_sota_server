@@ -137,12 +137,11 @@ object PackageFilterRepository {
    */
   def addPackageFilter(pf: PackageFilter)
                       (implicit db: Database, ec: ExecutionContext): DBIO[PackageFilter] =
-      for {
-        _ <- PackageRepository.exists(Package.Id(pf.packageName, pf.packageVersion))
-        _ <- FilterRepository.exists(pf.filterName)
-        _ <- packageFilters += pf
-      } yield pf
-
+    for {
+      _ <- PackageRepository.exists(Package.Id(pf.packageName, pf.packageVersion))
+      _ <- FilterRepository.exists(pf.filterName)
+      _ <- packageFilters += pf
+    } yield pf
 
   /**
    * Lists the packages for a filter
