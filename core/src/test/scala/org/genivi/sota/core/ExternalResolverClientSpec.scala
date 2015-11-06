@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.{HttpEntity, HttpResponse, StatusCodes, Uri}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
 import cats.data.Xor
-import eu.timepit.refined.Refined
+import eu.timepit.refined.api.Refined
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.jawn._
@@ -46,7 +46,7 @@ class ExternalResolverClientSpec extends PropSpec with Matchers with BeforeAndAf
   val s: String = s"""[["V1NBEAGLEB0ARD000",[{"version":"23.5.2","name":"rust"}]]]"""
 
   val m: Map[Vehicle.Vin, Set[Package.Id]] =
-    Map(Refined("V1NBEAGLEB0ARD000") -> Set(Package.Id(Refined("rust"), Refined("23.5.2"))))
+    Map(Refined.unsafeApply("V1NBEAGLEB0ARD000") -> Set(Package.Id(Refined.unsafeApply("rust"), Refined.unsafeApply("23.5.2"))))
 
   property("parse the external resolver's response") {
 
@@ -73,7 +73,7 @@ class ExternalResolverClientSpec extends PropSpec with Matchers with BeforeAndAf
   }
 
   override def afterAll(): Unit = {
-    system.shutdown()
+    system.terminate()
   }
 
 }

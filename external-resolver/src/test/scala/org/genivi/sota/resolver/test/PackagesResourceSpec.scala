@@ -7,7 +7,7 @@ package org.genivi.sota.resolver.test
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.ValidationRejection
 import cats.data.Xor
-import eu.timepit.refined.Refined
+import eu.timepit.refined.api.Refined
 import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
@@ -86,11 +86,11 @@ class PackagesResourceWordSpec extends ResourceWordSpec {
       addPackage("name", "1.0.0", Some("嚢"), None) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Package] shouldBe
-          Package(Package.Id(Refined("name"), Refined("1.0.0")), Some("嚢"), None)
+          Package(Package.Id(Refined.unsafeApply("name"), Refined.unsafeApply("1.0.0")), Some("嚢"), None)
       }
     }
 
-    val pkg = Package(Package.Id(Refined("apa"), Refined("1.0.0")), None, None)
+    val pkg = Package(Package.Id(Refined.unsafeApply("apa"), Refined.unsafeApply("1.0.0")), None, None)
 
     "GET /packages/:pkgName/:pkgVersion should return the package or fail" in {
       addPackage(pkg.id.name.get, pkg.id.version.get, None, None) ~> route ~> check {

@@ -3,7 +3,7 @@ package org.genivi.sota.core.transfer
 import akka.event.Logging
 import akka.http.scaladsl.model.Uri
 import akka.testkit.TestKit
-import eu.timepit.refined.Refined
+import eu.timepit.refined.api.Refined
 import org.genivi.sota.core.PackagesReader
 import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec, UpdateStatus, Vehicle}
 import org.genivi.sota.core.jsonrpc.HttpTransport
@@ -50,7 +50,7 @@ class UpdateNotifierSpec extends PropSpec with PropertyChecks with Matchers with
 
   property("notify about available updates", RequiresRvi) {
     import serverTransport.requestTransport
-    forAll( updateSpecsGen(Gen.const( Refined("VINOOLAM0FAU2DEEP") ) )) { specs =>
+    forAll( updateSpecsGen(Gen.const( Refined.unsafeApply("VINOOLAM0FAU2DEEP") ) )) { specs =>
       val futureRes = for {
         sotaServices    <- SotaServices.register( Uri("http://localhost:8080/rvi") )
         notificationRes <- Future.sequence( UpdateNotifier.notify(specs, sotaServices) )

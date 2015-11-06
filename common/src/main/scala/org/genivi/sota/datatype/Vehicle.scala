@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.datatype
 
-import eu.timepit.refined.{Predicate, Refined}
+import eu.timepit.refined.api.{Validate, Refined}
 import org.scalacheck.{Arbitrary, Gen}
 
 /*
@@ -13,7 +13,7 @@ import org.scalacheck.{Arbitrary, Gen}
  */
 trait VehicleCommon {
 
-  trait ValidVin
+  case class ValidVin()
 
   /**
     * A valid VIN, see ISO 3779 and ISO 3780, must be 17 letters or
@@ -23,12 +23,13 @@ trait VehicleCommon {
     *
     * @see {@link https://github.com/fthomas/refined}
     */
-  implicit val validVin : Predicate[ValidVin, String] = Predicate.instance(
+  implicit val validVin : Validate.Plain[String, ValidVin] = Validate.fromPredicate(
     vin => vin.length == 17
         && vin.forall(c => (c.isUpper  || c.isDigit)
                         && (c.isLetter || c.isDigit)
                         && !List('I', 'O', 'Q').contains(c)),
-    vin => s"($vin must be 17 letters or digits long and not contain 'I', 'O', or 'Q')"
+    vin => s"($vin must be 17 letters or digits long and not contain 'I', 'O', or 'Q')",
+    ValidVin()
   )
 
   type Vin = Refined[String, ValidVin]
@@ -48,7 +49,7 @@ trait VehicleCommon {
     Gen.oneOf('A' to 'Z' diff List('I', 'O', 'Q'))
 
   val genVin: Gen[Vin] =
-    Gen.listOfN(17, genVinChar).map(cs => Refined(cs.mkString))
+    Gen.listOfN(17, genVinChar).map(cs => Refined.unsafeApply(cs.mkString))
 
   implicit lazy val arbVin: Arbitrary[Vin] =
     Arbitrary(genVin)
@@ -70,7 +71,7 @@ trait VehicleCommon {
         suchThat(_.exists(c => !(c.isLetter || c.isDigit))).flatMap(_.mkString)
 
     Gen.oneOf(genTooLongVin, genTooShortVin, genNotAlphaNumVin)
-       .map(Refined(_))
+       .map(Refined.unsafeApply(_))
   }
 
 }

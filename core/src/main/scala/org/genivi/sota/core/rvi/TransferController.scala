@@ -226,9 +226,42 @@ class TransferProtocolActor(db: Database, rviClient: RviClient, transferActorPro
 }
 
 case class StartDownloadMessage( `package`: Package.Id, checksum: String, chunkscount: Int )
+
+object StartDownloadMessage {
+
+  import io.circe.generic.semiauto._
+
+  implicit val encoder: Encoder[StartDownloadMessage] =
+    deriveFor[StartDownloadMessage].encoder
+
+}
+
 case class ChunksReceived( vin: Vehicle.Vin, `package`: Package.Id, chunks: List[Int] )
+
 case class PackageChunk( `package`: Package.Id, bytes: ByteString, index: Int)
+
+object PackageChunk {
+
+  import io.circe.generic.semiauto._
+
+  implicit val encoder: Encoder[PackageChunk] =
+    deriveFor[PackageChunk].encoder
+
+  implicit val byteStringEncoder : Encoder[ByteString] =
+    Encoder[String].contramap[ByteString]( x => Base64.encodeBase64String(x.toArray) )
+
+}
+
 case class Finish(`package`: Package.Id )
+
+object Finish {
+
+  import io.circe.generic.semiauto._
+
+  implicit val encoder: Encoder[Finish] =
+    deriveFor[Finish].encoder
+
+}
 
 case object UploadAborted
 
@@ -240,9 +273,6 @@ case object UploadAborted
  */
 class PackageTransferActor( pckg: Package, services: ClientServices, rviClient: RviClient )
     extends Actor with ActorLogging {
-
-  implicit val byteStringEncoder : Encoder[ByteString] =
-    Encoder[String].contramap[ByteString]( x => Base64.encodeBase64String(x.toArray) )
 
   import io.circe.generic.auto._
   import context.dispatcher

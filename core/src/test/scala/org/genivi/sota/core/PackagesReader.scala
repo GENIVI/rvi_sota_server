@@ -1,7 +1,8 @@
 package org.genivi.sota.core
 
 import akka.http.scaladsl.model.Uri
-import eu.timepit.refined._
+import eu.timepit.refined.refineV
+import eu.timepit.refined.api.Refined
 import org.genivi.sota.core.data.Package
 
 
@@ -11,7 +12,7 @@ import org.genivi.sota.core.data.Package
 object PackagesReader {
 
   def readVersion( maybeStr: Option[String] ) : Option[Package.Version] = {
-    maybeStr.map( str => refineV[Package.ValidVersion](str).fold(_ => Refined("1.2.3"), identity ))
+    maybeStr.map( str => refineV[Package.ValidVersion](str).fold(_ => Refined.unsafeApply("1.2.3"), identity ))
   }
 
   private[this] def readPackage( src: Map[String, String] ) : Package = {
@@ -21,7 +22,7 @@ object PackagesReader {
       version     <- readVersion( src.get( "Version" ) )
       size        <- src.get("Size").map( _.toLong )
       checkSum    <- src.get("SHA1")
-    } yield Package( Package.Id( Refined(name), version), size = size, description = src.get( "Description" ),
+    } yield Package( Package.Id( Refined.unsafeApply(name), version), size = size, description = src.get( "Description" ),
                      checkSum = checkSum, uri = Uri.Empty, vendor = src.get( "Maintainer" ) )
     maybePackage.get
   }

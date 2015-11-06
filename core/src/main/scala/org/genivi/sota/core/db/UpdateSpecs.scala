@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.core.db
 
-import eu.timepit.refined.Refined
+import eu.timepit.refined.api.Refined
 import java.util.UUID
 import org.genivi.sota.core.data.Package.Id
 import org.genivi.sota.core.data.UpdateRequest

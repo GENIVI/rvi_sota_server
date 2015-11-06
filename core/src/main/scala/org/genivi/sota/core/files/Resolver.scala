@@ -5,7 +5,7 @@
 package org.genivi.sota.core.files
 
 import eu.timepit.refined.string.Uri
-import eu.timepit.refined.{Refined, Predicate}
+import eu.timepit.refined.api.{Refined, Validate}
 
 import scala.io.Source
 import java.io.File
@@ -22,10 +22,12 @@ object Types {
   type Checksum = String
   type Resolver = (String => Either[String, (File, Checksum)])
 
-  trait ValidExtension
-  implicit val validExtension : Predicate[ValidExtension, String] = Predicate.instance(
+  case class ValidExtension()
+
+  implicit val validExtension : Validate.Plain[String, ValidExtension] = Validate.fromPredicate(
     ext => ext.length >= 1 && ext.forall(c => c.isLetter || c.isDigit),
-    ext => s"(${ext} isn't a valid file extension"
+    ext => s"(${ext} isn't a valid file extension",
+    ValidExtension()
   )
 
   type FileExtension = String Refined ValidExtension

@@ -72,7 +72,7 @@ class UpdateRequestSpec extends PropSpec with PropertyChecks with Matchers with 
   }
 
   override def afterAll() : Unit = {
-    system.shutdown()
+    system.terminate()
     db.close()
   }
 }

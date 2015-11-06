@@ -8,7 +8,7 @@ import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model.{StatusCodes, Uri}
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import eu.timepit.refined.Refined
+import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import CirceMarshallingSupport._
@@ -64,7 +64,7 @@ class VehicleResourceSpec extends PropSpec with PropertyChecks
   } yield vin.mkString
 
 
-  val VehicleWithIllegalVin : Gen[Vehicle] = Gen.oneOf( tooLongVin, tooShortVin ).map( x => Vehicle( Refined(x) ) )
+  val VehicleWithIllegalVin : Gen[Vehicle] = Gen.oneOf( tooLongVin, tooShortVin ).map( x => Vehicle( Refined.unsafeApply(x) ) )
 
   property( "reject illegal vins" ) {
     forAll( VehicleWithIllegalVin ) { vehicle =>
@@ -87,7 +87,7 @@ class VehicleResourceSpec extends PropSpec with PropertyChecks
   }
 
   override def afterAll() {
-    system.shutdown()
+    system.terminate()
     db.close()
   }
 

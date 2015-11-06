@@ -111,7 +111,7 @@ class VehiclesResource(db: Database)
 class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, updateService: UpdateService)
                             (implicit system: ActorSystem, mat: ActorMaterializer) {
   import system.dispatcher
-  import eu.timepit.refined.string.uuidPredicate
+  import eu.timepit.refined.string.uuidValidate
   import org.genivi.sota.core.db.UpdateSpecs
   import UpdateSpec._
   import CirceMarshallingSupport._

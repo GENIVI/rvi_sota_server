@@ -10,7 +10,7 @@ package org.genivi.sota.refined
 
 object implicits {
   import cats.{Eq, Show}
-  import eu.timepit.refined.Refined
+  import eu.timepit.refined.api.Refined
 
   implicit def refinedEq[T, P](implicit ev: Eq[T]) : Eq[T Refined P] = Eq.instance((a, b) => ev.eqv( a.get, b.get))
 

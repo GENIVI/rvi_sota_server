@@ -14,13 +14,39 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 case class PackageUpdate( `package`: Package.Id, size: Long )
+
+object PackageUpdate {
+
+  import io.circe.Encoder
+  import io.circe.generic.semiauto._
+
+  implicit val encoder: Encoder[PackageUpdate] =
+    deriveFor[PackageUpdate].encoder
+
+}
+
 case class UpdateNotification(packages: Seq[PackageUpdate], services: ServerServices)
+
+object UpdateNotification {
+
+  import io.circe.Encoder
+  import io.circe.generic.semiauto._
+
+  implicit val encoder: Encoder[UpdateNotification] =
+    deriveFor[UpdateNotification].encoder
+
+  implicit val encoderServerServices: Encoder[ServerServices] =
+    deriveFor[ServerServices].encoder
+
+}
 
 /**
  * Send a notification to SOTA clients via RVI that there are packages that
  * can/should be updated.
  */
 object UpdateNotifier {
+
+  import io.circe.generic.auto._
 
   /**
    * Notify all the vehicles in an updated that an update is ready
