@@ -17,11 +17,14 @@ case class PackageUpdate( `package`: Package.Id, size: Long )
 
 object PackageUpdate {
 
-  import io.circe.Encoder
+  import io.circe.{Encoder, Decoder}
   import io.circe.generic.semiauto._
 
   implicit val encoder: Encoder[PackageUpdate] =
     deriveFor[PackageUpdate].encoder
+
+  implicit val decoder: Decoder[PackageUpdate] =
+    deriveFor[PackageUpdate].decoder
 
 }
 
@@ -29,14 +32,20 @@ case class UpdateNotification(packages: Seq[PackageUpdate], services: ServerServ
 
 object UpdateNotification {
 
-  import io.circe.Encoder
+  import io.circe.{Encoder, Decoder}
   import io.circe.generic.semiauto._
 
   implicit val encoder: Encoder[UpdateNotification] =
     deriveFor[UpdateNotification].encoder
 
+  implicit val decoder: Decoder[UpdateNotification] =
+    deriveFor[UpdateNotification].decoder
+
   implicit val encoderServerServices: Encoder[ServerServices] =
     deriveFor[ServerServices].encoder
+
+  implicit val decoderServerServices: Decoder[ServerServices] =
+    deriveFor[ServerServices].decoder
 
 }
 

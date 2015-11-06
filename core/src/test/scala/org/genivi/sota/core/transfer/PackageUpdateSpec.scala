@@ -59,15 +59,13 @@ object DataGenerators {
 
 }
 
-case class RviParameters[T](parameters: List[T], service_name: String  )
-
 /**
  * Dummy SotaClient object for tests
  */
 object SotaClient {
   import akka.actor.{Actor, ActorLogging, Props}
   import org.genivi.sota.core.rvi.{ClientServices, ServerServices, StartDownload,
-    StartDownloadMessage, RviClient, JsonRpcRviClient}
+    StartDownloadMessage, RviParameters, RviClient, JsonRpcRviClient}
   import io.circe._
   import io.circe.generic.auto._
   import org.genivi.sota.marshalling.CirceInstances._
@@ -83,11 +81,15 @@ object SotaClient {
 
     }
 
+    val vin = refineMV[Vehicle.ValidVin]("V1234567890123456")
+
     override def receive = {
       case UpdateNotification(packages, services ) =>
         log.debug( "Update notification received." )
-        rviClient.sendMessage(services.start,
-                              StartDownload(refineMV[Vehicle.ValidVin]("V1N00LAM0FAU2DEEP"), packages.map(_.`package`).toList, clientServices), ttl())
+        rviClient.sendMessage(
+          services.start,
+          StartDownload(vin, packages.map(_.`package`).toList, clientServices),
+          ttl())
       case m => log.debug(s"Not supported yet: $m")
     }
   }
@@ -104,11 +106,16 @@ object SotaClient {
   def buildRoute(baseUri: Uri)
                 (implicit system: ActorSystem, mat: ActorMaterializer) : Future[Route] = {
     import system.dispatcher
-    import io.circe.generic.auto._
+
     val rviUri = Uri("http://127.0.0.1:8901")
     implicit val clientTransport = HttpTransport( rviUri ).requestTransport
     val rviClient = new JsonRpcRviClient( clientTransport, system.dispatcher )
 
+    import io.circe.generic.auto._
+    import org.genivi.sota.marshalling.CirceInstances._
+    import com.github.nscala_time.time.Imports._
+
+    // TODO: Handle start,chunk,finish messages
     def route(actorRef : ActorRef) = pathPrefix("sota" / "client") {
       path("notify") {
         service("message" -> lift[RviParameters[UpdateNotification], Unit](forwardMessage(actorRef)))
@@ -227,17 +234,17 @@ class PackageUpdateSpec extends PropSpec with PropertyChecks with Matchers with 
   implicit val log = Logging(system, "org.genivi.sota.core.PackageUpload")
 
   property("updates should be transfered to device", RequiresRvi) {
-    forAll( requestsGen(Refined.unsafeApply("VINOOLAM0FAU2DEEP")) ) { (requests) =>
+    forAll( requestsGen(Refined.unsafeApply("V1234567890123456")) ) { (requests) =>
       val probe = TestProbe()
-      val serviceUri = Uri.from( scheme="http", host="192.168.1.64", port= 8080 )
+      val serviceUri = Uri.from(scheme="http", host=getLocalHostAddr, port=8088)
       system.eventStream.subscribe(probe.ref, classOf[UpdateEvents.InstallReportReceived])
       val resultFuture = for {
-        address        <- bindServices(serviceUri, startClient = false)
-        serverServices <- SotaServices.register( serviceUri.withPath( Uri.Path / "rvi") )
+        address        <- bindServices(serviceUri, startClient = true)
+        serverServices <- SotaServices.register( serviceUri.withPath(Uri.Path / "rvi") )
         updateSpecs    <- init( serverServices, requests )
       } yield updateSpecs
       resultFuture.isReadyWithin( Span( 5, Seconds ) )
-      probe.expectMsgType[UpdateEvents.InstallReportReceived](2.minutes)
+      probe.expectMsgType[UpdateEvents.InstallReportReceived](20.seconds)
     }
   }
 
@@ -245,4 +252,14 @@ class PackageUpdateSpec extends PropSpec with PropertyChecks with Matchers with 
     db.close()
     TestKit.shutdownActorSystem(system)
   }
+
+  def getLocalHostAddr = {
+    import collection.JavaConversions._
+    java.net.NetworkInterface.getNetworkInterfaces
+      .flatMap(_.getInetAddresses.toSeq)
+      .find(a => a.isSiteLocalAddress && !a.isLoopbackAddress)
+      .getOrElse(java.net.InetAddress.getLocalHost)
+      .getHostAddress
+  }
+
 }
