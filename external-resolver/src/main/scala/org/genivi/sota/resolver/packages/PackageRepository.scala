@@ -109,19 +109,24 @@ object PackageFilterRepository {
   val packageFilters = TableQuery[PackageFilterTable]
 
   /**
-   * Adds a package filter to the PackageFilter table. Updates an existing package filter
-   * if already present.
-   * @param pf    The package filter to add
-   * @return      A DBIO[PackageFilter] for added filter
-   */
-  def add(pf: PackageFilter)(implicit ec: ExecutionContext): DBIO[PackageFilter] =
-    (packageFilters += pf).map(_ => pf)
-
-  /**
    * Lists the package filters in the PackageFilter table
    * @return     A DBIO[Seq[PackageFilter]] for the package filters in the table
    */
   def list: DBIO[Seq[PackageFilter]] = packageFilters.result
+
+  case object MissingPackageFilterException extends Throwable
+
+  def exists(pf: PackageFilter)(implicit ec: ExecutionContext): DBIO[PackageFilter] =
+    packageFilters
+      .filter(r => r.packageName    === pf.packageName
+                && r.packageVersion === pf.packageVersion
+                && r.filterName     === pf.filterName)
+      .result
+      .headOption
+      .flatMap(_.
+        fold[DBIO[PackageFilter]]
+          (DBIO.failed(MissingPackageFilterException))
+          (DBIO.successful(_)))
 
   /**
    * Adds a package filter to the resolver
@@ -132,9 +137,11 @@ object PackageFilterRepository {
    */
   def addPackageFilter(pf: PackageFilter)
                       (implicit db: Database, ec: ExecutionContext): DBIO[PackageFilter] =
-      PackageRepository.exists(Package.Id(pf.packageName, pf.packageVersion)) andThen
-      FilterRepository.exists(pf.filterName) andThen
-      PackageFilterRepository.add(pf)
+      for {
+        _ <- PackageRepository.exists(Package.Id(pf.packageName, pf.packageVersion))
+        _ <- FilterRepository.exists(pf.filterName)
+        _ <- packageFilters += pf
+      } yield pf
 
 
   /**
@@ -185,21 +192,20 @@ object PackageFilterRepository {
    * @param fname   The name of the filter to delete
    * @return        A DBIO[Int] number of filters deleted
    */
-  def delete(fname: Filter.Name): DBIO[Int] =
+  def deletePackageFilterByFilterName(fname: Filter.Name): DBIO[Int] =
     packageFilters.filter(_.filterName === fname).delete
 
   /**
-   * Deletes a filter by package name and version, and filter name
-   * @param pname     The name of the package in the filter to be deleted
-   * @param pversion  The version of the package in the filter to be deleted
-   * @param fname     The name of the filter to be deleted
-   * @return          A DBIO[Int] number of filters deleted
+   * Deletes a package filter
+   * @param pf    The name of the package filter to be deleted
+   * @return      A DBIO[Int] number of filters deleted
    */
-  def deletePackageFilter(pname: Package.Name, pversion: Package.Version, fname: Filter.Name): DBIO[Int] =
+  def deletePackageFilter(pf: PackageFilter)(implicit ec: ExecutionContext): DBIO[Int] =
+    PackageFilterRepository.exists(pf) andThen
     packageFilters
-      .filter(pf => pf.packageName    === pname
-                 && pf.packageVersion === pversion
-                 && pf.filterName     === fname)
+      .filter(r => r.packageName    === pf.packageName
+                && r.packageVersion === pf.packageVersion
+                && r.filterName     === pf.filterName)
       .delete
 
 }

@@ -9,6 +9,7 @@ import eu.timepit.refined.string.Regex
 import org.genivi.sota.db.Operators.regex
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
+import org.genivi.sota.resolver.packages.PackageFilterRepository
 import scala.concurrent.ExecutionContext
 import scala.util.control.NoStackTrace
 import slick.driver.MySQLDriver.api._
@@ -49,7 +50,16 @@ object FilterRepository {
   }
 
   def delete(name: Filter.Name)(implicit ec: ExecutionContext): DBIO[Int] =
+    exists(name) andThen
     filters.filter(_.name === name).delete
+
+  def deleteFilterAndPackageFilters
+    (name: Filter.Name)
+    (implicit db: Database, ec: ExecutionContext): DBIO[Unit] =
+    for {
+      _ <- PackageFilterRepository.deletePackageFilterByFilterName(name)
+      _ <- FilterRepository.delete(name)
+    } yield ()
 
   def list: DBIO[Seq[Filter]] =
     filters.result
