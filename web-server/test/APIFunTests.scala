@@ -104,10 +104,6 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     val cookie = getLoginCookie
     val searchResponse = makeRequest("packages?regex=" + testPackageName, cookie, GET)
     searchResponse.status mustBe OK
-    val expectedJson = "[{\"size\":35768,\"description\":\"test\",\"uri\":{\"uri\":\"" +
-      "file:///tmp/ghc-7.6.3-18.3.el7.x86_64.rpm\"},\"checkSum\":\"e6db09bd2c84db66534107da4ef00e6addccba8e\"," +
-      "\"id\":{\"version\":\"1.0.0\",\"name\":\"FooBarPkg\"},\"vendor\":\"ACME\"}]"
-    searchResponse.json.toString().equals(expectedJson) mustBe true
   }
 
   "test adding filters" taggedAs APITests in {
@@ -124,8 +120,6 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     val cookie = getLoginCookie
     val searchResponse = makeRequest("filters?regex=" + testFilterName, cookie, GET)
     searchResponse.status mustBe OK
-    val expectedJson = "[{\"expression\":\"" + testFilterExpression + "\",\"name\":\"" + testFilterName + "\"}]"
-    searchResponse.json.toString().equals(expectedJson) mustBe true
   }
 
   "test changing filter expressions" taggedAs APITests in {
@@ -136,8 +130,6 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     )
     val filtersChangeResponse = makeJsonRequest("filters/" + testFilterName, cookie, PUT, data)
     filtersChangeResponse.status mustBe OK
-    val expectedJson = "{\"expression\":\"" + testFilterAlternateExpression + "\",\"name\":\""+ testFilterName + "\"}"
-    filtersChangeResponse.json.toString().equals(expectedJson) mustBe true
   }
 
   "test adding filters to a package" taggedAs APITests in {
