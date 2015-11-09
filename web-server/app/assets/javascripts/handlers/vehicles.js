@@ -44,7 +44,7 @@ define(function(require) {
               });
           break;
           case 'get-vehicles-for-package':
-            sendRequest.doGet('/api/v1/vehicles?package=' + payload.name + '-' + payload.version)
+            sendRequest.doGet('/api/v1/vehicles?packageName=' + payload.name + '&packageVersion=' + payload.version)
               .success(function(vehicles) {
                 var list = _.map(vehicles, function(vehicle) {
                   return vehicle.vin;
