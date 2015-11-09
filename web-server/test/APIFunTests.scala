@@ -92,8 +92,8 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   "test adding packages" taggedAs APITests in {
     val cookie = getLoginCookie
     val asyncHttpClient:AsyncHttpClient = WS.client.underlying
-    val putBuilder = asyncHttpClient.preparePut("http://" + webserverHost + s":$webserverPort/api/v1/packages/" + testPackageName + "/" +
-      testPackageVersion + "?description=test&vendor=ACME")
+    val putBuilder = asyncHttpClient.preparePut("http://" + webserverHost + s":$webserverPort/api/v1/packages/" +
+      testPackageName + "/" + testPackageVersion + "?description=test&vendor=ACME")
     val builder = putBuilder.addBodyPart(new FilePart("file", new File("../ghc-7.6.3-18.3.el7.x86_64.rpm")))
       .addHeader("Cookie", Cookies.encodeCookieHeader(cookie))
     val response = asyncHttpClient.executeRequest(builder.build()).get()

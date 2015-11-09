@@ -2,6 +2,7 @@
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
+
 package org.genivi.webserver.controllers
 
 import javax.inject.Inject
@@ -15,8 +16,6 @@ import play.api.data.Forms._
 import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.iteratee.Enumerator
-import play.api.libs.json.JsValue
-import play.api.libs.json.Json._
 import play.api.libs.ws._
 import play.api.mvc._
 import views.html
@@ -42,7 +41,7 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
    * @param path The path of the request
    * @return The service to proxy to
    */
-  def apiByPath(path: String) = path.split("/").toList match {
+  def apiByPath(path: String) : String = path.split("/").toList match {
     case "packages" :: _ => coreApiUri
     case "updates" :: _ => coreApiUri
     case "vehicles" :: vin :: "queued" :: _ => coreApiUri
@@ -84,7 +83,7 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
    * @param path Path of the request
    * @return
    */
-  def apiProxy(path: String) = AsyncStack(parse.raw, AuthorityKey -> Role.USER) { implicit req =>
+  def apiProxy(path: String) : Action[RawBuffer] = AsyncStack(parse.raw, AuthorityKey -> Role.USER) { implicit req =>
     { // Mitigation for C04: Log transactions to and from SOTA Server
       auditLogger.info(s"Request: $req from user ${loggedIn.name}")
     }
@@ -97,7 +96,8 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
    * @param path The path of the request
    * @return
    */
-  def apiProxyBroadcast(path: String) = AsyncStack(parse.raw, AuthorityKey -> Role.USER) { implicit req =>
+  def apiProxyBroadcast(path: String) : Action[RawBuffer] = AsyncStack(parse.raw, AuthorityKey -> Role.USER) {
+    implicit req =>
     { // Mitigation for C04: Log transactions to and from SOTA Server
       auditLogger.info(s"Request: $req from user ${loggedIn.name}")
     }
@@ -115,7 +115,7 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
    *
    * @return OK response and index html
    */
-  def index = StackAction(AuthorityKey -> Role.USER) { implicit req =>
+  def index : Action[AnyContent] = StackAction(AuthorityKey -> Role.USER) { implicit req =>
     Ok(views.html.main())
   }
 
@@ -139,7 +139,7 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
    *
    * @return OK response and login.html
    */
-  def login = Action { request =>
+  def login : Action[AnyContent] = Action { request =>
     Ok(html.login(loginForm))
   }
 
@@ -147,7 +147,7 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
    * Logs out a user
    *
    */
-  def logout = Action.async{ implicit request =>
+  def logout : Action[AnyContent] = Action.async{ implicit request =>
     gotoLogoutSucceeded
   }
 
@@ -155,7 +155,7 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
    * Authenticates a user
    *
    */
-  def authenticate = Action.async { implicit request =>
+  def authenticate : Action[AnyContent]  = Action.async { implicit request =>
     loginForm.bindFromRequest.fold(
       formWithErrors => Future.successful(BadRequest(views.html.login(formWithErrors))),
       user => gotoLoginSucceeded(user.get.email)

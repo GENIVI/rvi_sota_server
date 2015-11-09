@@ -46,13 +46,16 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
       resolverDb.createStatement().executeQuery("delete from Filter where name ='" + testDeleteFilterName + "'")
       resolverDb.createStatement().executeQuery("delete from Vehicle where vin = '" + testVinName + "'")
       coreDb.createStatement().executeQuery("delete from RequiredPackages where vin = '" + testVinName + "'")
-      coreDb.createStatement().executeQuery("delete from RequiredPackages where package_name = '" + testPackageName + "'")
+      coreDb.createStatement().executeQuery("delete from RequiredPackages where package_name = '" + testPackageName
+        + "'")
 
-      val rowCountResult = coreDb.createStatement().executeQuery("select count(*) as update_count from UpdateRequests where package_name = '" + testPackageName + "'")
+      val rowCountResult = coreDb.createStatement().executeQuery(
+        "select count(*) as update_count from UpdateRequests where package_name = '" + testPackageName + "'")
       rowCountResult.next()
       val updateCount = rowCountResult.getInt("update_count")
       if(updateCount > 0) {
-        val result = coreDb.createStatement().executeQuery("select * from UpdateRequests where package_name = '" + testPackageName + "'")
+        val result = coreDb.createStatement().executeQuery(
+          "select * from UpdateRequests where package_name = '" + testPackageName + "'")
         while(result.next()) {
           val reqId = result.getString("update_request_id")
           coreDb.createStatement().executeQuery("delete from UpdateSpecs where update_request_id = '" + reqId + "'")
@@ -82,7 +85,7 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
     contains
   }
 
-  def sharedTests(browser: BrowserInfo) = {
+  def sharedTests(browser: BrowserInfo) {
     val webHost = app.configuration.getString("test.webserver.host").get
     val webPort = app.configuration.getInt("test.webserver.port").getOrElse(port)
     "All browsers" must {
