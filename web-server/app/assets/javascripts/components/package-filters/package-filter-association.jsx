@@ -46,7 +46,7 @@ define(function(require) {
     },
 
     listItems: function(model, eventName) {
-      var label = model.id ? model.id.name + '-' + model.id.version : model.name;
+      var label = model.id ? model.id.name + '-' + model.id.version : model.filterName;
       return (
         <PackageFilterListItem Payload={this.payload(model)} eventName={eventName} label={label}/>
       );
