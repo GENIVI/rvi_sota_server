@@ -22,23 +22,12 @@ import scala.concurrent.{ExecutionContext, Future}
 import slick.jdbc.JdbcBackend.Database
 
 
-// TODO: Deprecate in favour of org.genivi.sota.db.Operators.failIfNone.
-object FutureSupport {
-
-  implicit class FutureOps[T]( x: Future[Option[T]] ) {
-
-    def failIfNone( t: Throwable )
-                  (implicit ec: ExecutionContext): Future[T] =
-      x.flatMap( _.fold[Future[T]]( FastFuture.failed(t) )(FastFuture.successful) )
-  }
-}
-
 /**
  * API routes for filters.
  * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
  */
 class FilterDirectives(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
-  import FutureSupport._
+
   /**
    * API route for filters.
    * @return      Route object containing routes for getting, creating, editing, and deleting filters
@@ -59,8 +48,7 @@ class FilterDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execut
       (put & refined[Filter.ValidName](Slash ~ Segment ~ PathEnd)
            & entity(as[Filter.ExpressionWrapper]))
       { (fname, expr) =>
-        complete(db.run(FilterRepository.update(Filter(fname, expr.expression)))
-                   .failIfNone( Errors.MissingFilterException ))
+        complete(db.run(FilterRepository.update(Filter(fname, expr.expression))))
       } ~
       (delete & refined[Filter.ValidName](Slash ~ Segment ~ PathEnd))
       { fname =>

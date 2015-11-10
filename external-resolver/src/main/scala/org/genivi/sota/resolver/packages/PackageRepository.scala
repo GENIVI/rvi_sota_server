@@ -4,12 +4,14 @@
  */
 package org.genivi.sota.resolver.packages
 
+import org.genivi.sota.db.Operators._
+import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.filters.{Filter, FilterRepository}
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
-import org.genivi.sota.db.SlickExtensions._
+
 
 /**
  * Data access object for Packages
@@ -64,10 +66,7 @@ object PackageRepository {
                     id.version === pkgId.version)
       .result
       .headOption
-      .flatMap(_.
-        fold[DBIO[Package]]
-          (DBIO.failed(Errors.MissingPackageException))
-          (DBIO.successful(_)))
+      .failIfNone(Errors.MissingPackageException)
 
   /**
    * Loads a group of Packages from the database by ID
@@ -123,10 +122,7 @@ object PackageFilterRepository {
                 && r.filterName     === pf.filterName)
       .result
       .headOption
-      .flatMap(_.
-        fold[DBIO[PackageFilter]]
-          (DBIO.failed(MissingPackageFilterException))
-          (DBIO.successful(_)))
+      .failIfNone(MissingPackageFilterException)
 
   /**
    * Adds a package filter to the resolver
