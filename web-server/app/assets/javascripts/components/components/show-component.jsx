@@ -62,7 +62,7 @@ define(function(require) {
           <VehiclesListPanel
             Vehicles={db.vinsForComponent}
             PollEventName="poll-vehicles"
-            DispatchObject={{actionType: 'search-vehicles-by-regex', regex: "."}}
+            DispatchObject={{actionType: 'get-vins-for-component', partNumber: params.partNumber}}
             Label="Vehicles with this component installed"/>
         </div>
       );
