@@ -101,15 +101,34 @@ object VehicleRepository {
            }.delete
     } yield ()
 
-  def updateInstalledPackages( vehicle: Vehicle, newPackages: Set[Package.Id], deletedPackages: Set[Package.Id] )
-                             (implicit ec: ExecutionContext) : DBIO[Unit] = DBIO.seq(
-    installedPackages.filter( ip =>
-      ip.vin === vehicle.vin &&
-      (ip.packageName.mappedTo[String] ++ ip.packageVersion.mappedTo[String])
-        .inSet( deletedPackages.map( id => id.name.get + id.version.get ))
-    ).delete,
-    installedPackages ++= newPackages.map( vehicle.vin -> _ )
-  ).transactionally
+  def updateInstalledPackages(vin: Vehicle.Vin, packages: Set[Package.Id] )
+                             (implicit ec: ExecutionContext): DBIO[Unit] = {
+
+    def checkPackagesAvailable( ids: Set[Package.Id] ) : DBIO[Unit] = {
+      PackageRepository.load(ids).map( ids -- _.map(_.id) ).flatMap { xs =>
+        if( xs.isEmpty ) DBIO.successful(()) else DBIO.failed( Errors.MissingPackageException )
+      }
+    }
+
+    def helper( vehicle: Vehicle, newPackages: Set[Package.Id], deletedPackages: Set[Package.Id] )
+                               (implicit ec: ExecutionContext) : DBIO[Unit] = DBIO.seq(
+      installedPackages.filter( ip =>
+        ip.vin === vehicle.vin &&
+        (ip.packageName.mappedTo[String] ++ ip.packageVersion.mappedTo[String])
+          .inSet( deletedPackages.map( id => id.name.get + id.version.get ))
+      ).delete,
+      installedPackages ++= newPackages.map( vehicle.vin -> _ )
+    ).transactionally
+
+    for {
+      vehicle           <- VehicleRepository.exists(vin)
+      installedPackages <- VehicleRepository.installedOn(vin)
+      newPackages       =  packages -- installedPackages
+      deletedPackages   =  installedPackages -- packages
+      _                 <- checkPackagesAvailable(newPackages)
+      _                 <- helper(vehicle, newPackages, deletedPackages)
+    } yield ()
+  }
 
   def installedOn(vin: Vehicle.Vin)
                  (implicit ec: ExecutionContext) : DBIO[Set[Package.Id]] =
