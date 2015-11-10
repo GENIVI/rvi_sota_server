@@ -262,9 +262,9 @@ object VehicleRepository {
   def resolve(pkgId: Package.Id)
              (implicit ec: ExecutionContext): DBIO[Map[Vehicle.Vin, Seq[Package.Id]]] =
     for {
-      _       <- PackageRepository.exists(pkgId)
-      (_, fs) <- PackageFilterRepository.listFiltersForPackage(pkgId)
-      vpcs    <- vinsWithPackagesAndComponents
+      _    <- PackageRepository.exists(pkgId)
+      fs   <- PackageFilterRepository.listFiltersForPackage(pkgId)
+      vpcs <- vinsWithPackagesAndComponents
     } yield ResolveFunctions.makeFakeDependencyMap(pkgId,
               vpcs.filter(query(fs.map(_.expression).map(parseValidFilter).foldLeft[FilterAST](True)(And)))
                   .map(_._1))

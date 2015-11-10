@@ -6,7 +6,6 @@ package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.ValidationRejection
-import cats.data.Xor
 import eu.timepit.refined.api.Refined
 import io.circe.Json
 import io.circe.generic.auto._

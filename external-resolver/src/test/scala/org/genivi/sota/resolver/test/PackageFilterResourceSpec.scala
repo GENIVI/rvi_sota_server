@@ -20,11 +20,12 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
 
   "Package filter resource" should {
 
-    val pkgName    = "package"
+    val pkgName    = "package1"
     val pkgVersion = "1.0.0"
     val filterName = "filter"
     val filterExpr = s"""vin_matches "^X.*""""
-    val pkgFilter  =  PackageFilter(Refined.unsafeApply(pkgName), Refined.unsafeApply(pkgVersion), Refined.unsafeApply(filterName))
+    val pkgFilter  =
+      PackageFilter(Refined.unsafeApply(pkgName), Refined.unsafeApply(pkgVersion), Refined.unsafeApply(filterName))
 
     "be able to assign exisiting filters to existing packages" in {
       addPackageOK(pkgName, pkgVersion, None, None)
@@ -60,7 +61,7 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
       }
     }
 
-    "list packages associated to a filter on GET requests to /packageFilters?filter=:filterName" in {
+    "list packages associated to a filter on GET requests to /filters/:filterName/package" in {
       listPackagesForFilter(filterName) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[List[Package]] shouldBe List(Package(Package.Id(Refined.unsafeApply(pkgName), Refined.unsafeApply(pkgVersion)), None, None))
@@ -69,18 +70,17 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
 
     "fail to list packages associated to empty filter names" in {
       listPackagesForFilter("") ~> route ~> check {
-        status shouldBe StatusCodes.BadRequest
+        status shouldBe StatusCodes.NotFound
       }
     }
 
     "fail to list packages associated to non-existant filters" in {
       listPackagesForFilter("nonexistant") ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        responseAs[ErrorRepresentation].code shouldBe Codes.FilterNotFound
       }
     }
 
-    "list filters associated to a package on GET requests to /packageFilters?packageName=:packageName&packageVersion=:packageVersion" in {
+    "list filters associated to a package on GET requests to /packages/:pkgName/:pkgVersion/filter" in {
       listFiltersForPackage(pkgName, pkgVersion) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Seq[Filter]] shouldBe List(Filter(Refined.unsafeApply(filterName), Refined.unsafeApply(filterExpr)))
@@ -89,7 +89,7 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
 
     "fail to list filters associated to a package if no package name is given" in {
       listFiltersForPackage("", pkgVersion) ~> route ~> check {
-        status shouldBe StatusCodes.BadRequest
+        status shouldBe StatusCodes.NotFound
       }
     }
 
@@ -101,7 +101,7 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
 
     "fail to list filters associated to a package if no package version is given" in {
       listFiltersForPackage(pkgName, "") ~> route ~> check {
-        status shouldBe StatusCodes.BadRequest
+        status shouldBe StatusCodes.NotFound
       }
     }
 

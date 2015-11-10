@@ -156,7 +156,7 @@ trait FilterRequests extends Matchers { self: ScalatestRouteTest =>
 trait PackageFilterRequests extends Matchers { self: ScalatestRouteTest =>
 
   def addPackageFilter(pname: String, pversion: String, fname: String): HttpRequest =
-    Post(Resource.uri("packageFilters"), PackageFilter(Refined.unsafeApply(pname), Refined.unsafeApply(pversion), Refined.unsafeApply(fname)))
+    Put(Resource.uri("packages", pname, pversion, "filter", fname))
 
   def addPackageFilterOK(pname: String, pversion: String, fname: String)(implicit route: Route): Unit =
     addPackageFilter(pname, pversion, fname) ~> route ~> check {
@@ -165,16 +165,16 @@ trait PackageFilterRequests extends Matchers { self: ScalatestRouteTest =>
     }
 
   def listPackageFilters: HttpRequest =
-    Get(Resource.uri("packageFilters"))
+    Get(Resource.uri("packages", "filter"))
 
   def listPackagesForFilter(fname: String): HttpRequest =
-    Get(Resource.uri("packageFilters") + s"?filter=$fname")
+    Get(Resource.uri("filters", fname, "package"))
 
   def listFiltersForPackage(pname: String, pversion: String): HttpRequest =
-    Get(Resource.uri("packageFilters") + s"?packageName=$pname&packageVersion=$pversion")
+    Get(Resource.uri("packages", pname, pversion, "filter"))
 
   def deletePackageFilter(pname: String, pversion: String, fname: String): HttpRequest =
-    Delete(Resource.uri("packageFilters", pname, pversion, fname))
+    Delete(Resource.uri("packages", pname, pversion, "filter", fname))
 
   def deletePackageFilterOK(pname: String, pversion: String, fname: String)(implicit route: Route): Unit =
     deletePackageFilter(pname, pversion, fname) ~> route ~> check {
