@@ -89,7 +89,7 @@ class FilterDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execut
             complete(f)
 
           case (None, None, Some(fname)) =>
-            complete(PackageFunctions.listPackagesForFilter(fname))
+            complete(db.run(PackageFilterRepository.listPackagesForFilter(fname)))
           case (None, None, None) =>
             complete(db.run(PackageFilterRepository.list))
           case _ =>
@@ -97,7 +97,7 @@ class FilterDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execut
         }
       } ~
       (post & entity(as[PackageFilter])) { pf =>
-        complete(PackageFunctions.addPackageFilter(pf))
+        complete(db.run(PackageFilterRepository.addPackageFilter(pf)))
       } ~
       (delete & refined[Package.ValidName]   (Slash ~ Segment)
               & refined[Package.ValidVersion](Slash ~ Segment)

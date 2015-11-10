@@ -8,6 +8,7 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import org.genivi.sota.db.Operators.regex
 import org.genivi.sota.refined.SlickRefined._
+import org.genivi.sota.resolver.common.Errors
 import scala.concurrent.ExecutionContext
 import scala.util.control.NoStackTrace
 import slick.driver.MySQLDriver.api._
@@ -32,10 +33,13 @@ object FilterRepository {
   def add(filter: Filter)(implicit ec: ExecutionContext): DBIO[Filter] =
     (filters += filter).map(_ => filter)
 
-  def load(name: Filter.Name)(implicit ec: ExecutionContext): DBIO[Option[Filter]] =
+  def exists(name: Filter.Name)(implicit ec: ExecutionContext): DBIO[Filter] =
     filters
       .filter(_.name === name)
-      .result.headOption
+      .result
+      .headOption
+      .flatMap(_.
+        fold[DBIO[Filter]](DBIO.failed(Errors.MissingFilterException))(DBIO.successful(_)))
 
   def update(filter: Filter)(implicit ec: ExecutionContext): DBIO[Option[Filter]] = {
     val q = for {

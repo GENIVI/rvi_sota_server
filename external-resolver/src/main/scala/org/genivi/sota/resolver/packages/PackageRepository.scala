@@ -124,19 +124,37 @@ object PackageFilterRepository {
   def list: DBIO[Seq[PackageFilter]] = packageFilters.result
 
   /**
-   * Lists the packages for a specific filter
-   * @param fname  The name of the filter for which to list packages
-   * @return       A DBIO[Seq[Package]] of packages for any matched filter
+   * Adds a package filter to the resolver
+   * @param pf   The filter to add
+   * @return     A DBIO[PackageFilter] for the added PackageFilter
+   * @throws     Errors.MissingPackageException if the named package does not exist
+   * @throws     Errors.MissingFilterException if the named filter does not exist
    */
-  def listPackagesForFilter(fname: Filter.Name): DBIO[Seq[Package]] = {
-    val q = for {
-      pf <- packageFilters.filter(_.filterName === fname)
-      ps <- PackageRepository.packages
-              .filter(pkg => pkg.name    === pf.packageName
-                          && pkg.version === pf.packageVersion)
-    } yield ps
-    q.result
-  }
+  def addPackageFilter(pf: PackageFilter)
+                      (implicit db: Database, ec: ExecutionContext): DBIO[PackageFilter] =
+      PackageRepository.exists(Package.Id(pf.packageName, pf.packageVersion)) andThen
+      FilterRepository.exists(pf.filterName) andThen
+      PackageFilterRepository.add(pf)
+
+
+  /**
+   * Lists the packages for a filter
+   * @param fname  The name of the filter for which to list the packages
+   * @return       A DBIO[Seq[Package]] of associated packages
+   * @throws       Errors.MissingFilterException if the named filter does not exist
+   */
+  def listPackagesForFilter(fname: Filter.Name)
+                           (implicit db: Database, ec: ExecutionContext): DBIO[Seq[Package]] =
+
+    FilterRepository.exists(fname) andThen {
+      val q = for {
+        pf <- packageFilters.filter(_.filterName === fname)
+        ps <- PackageRepository.packages
+                .filter(pkg => pkg.name    === pf.packageName
+                            && pkg.version === pf.packageVersion)
+      } yield ps
+      q.result
+    }
 
   /**
    * Lists the filters for a specific package
