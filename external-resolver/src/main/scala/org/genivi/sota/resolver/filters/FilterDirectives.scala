@@ -64,7 +64,7 @@ class FilterDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execut
       } ~
       (delete & refined[Filter.ValidName](Slash ~ Segment ~ PathEnd))
       { fname =>
-        complete(FilterFunctions.deleteFilterAndPackageFilters(fname))
+        complete(db.run(FilterRepository.deleteFilterAndPackageFilters(fname)))
       }
 
     }
@@ -102,12 +102,13 @@ class FilterDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execut
       (delete & refined[Package.ValidName]   (Slash ~ Segment)
               & refined[Package.ValidVersion](Slash ~ Segment)
               & refined[Filter.ValidName]    (Slash ~ Segment ~ PathEnd)) { (pname, pversion, fname) =>
-        completeOrRecoverWith(PackageFunctions.deletePackageFilter(PackageFilter(pname, pversion, fname))) {
-          case PackageFunctions.MissingPackageFilterException =>
-            complete(StatusCodes.NotFound ->
-              ErrorRepresentation( ErrorCode("filter_not_found"),
-                s"No filter with the name '$fname' defined for package $pname-$pversion" ))
-          case e                                              => failWith(e)
+        completeOrRecoverWith(db.run(
+          PackageFilterRepository.deletePackageFilter(PackageFilter(pname, pversion, fname)))) {
+            case PackageFilterRepository.MissingPackageFilterException =>
+              complete(StatusCodes.NotFound ->
+                ErrorRepresentation( ErrorCode("filter_not_found"),
+                  s"No filter with the name '$fname' defined for package $pname-$pversion" ))
+            case e                                              => failWith(e)
         }
       }
     }

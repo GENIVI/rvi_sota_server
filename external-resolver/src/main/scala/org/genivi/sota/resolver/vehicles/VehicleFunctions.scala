@@ -4,8 +4,7 @@
  */
 package org.genivi.sota.resolver.vehicles
 
-import org.genivi.sota.resolver.packages.PackageRepository
-import org.genivi.sota.resolver.packages.{Package, PackageFunctions}
+import org.genivi.sota.resolver.packages.{Package, PackageRepository}
 import org.genivi.sota.resolver.common.Errors
 import scala.concurrent.{ExecutionContext, Future}
 import slick.dbio.DBIO
