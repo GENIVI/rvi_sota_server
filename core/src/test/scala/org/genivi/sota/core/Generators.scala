@@ -65,7 +65,7 @@ trait Generators {
   def generatePackageData( template: Package ) : Package = {
     val path = Files.createTempFile(s"${template.id.name.get}-${template.id.version.get}", ".rpm" )
     path.toFile().deleteOnExit();
-    val in = Files.newByteChannel(Paths.get("/dev/random"), StandardOpenOption.READ)
+    val in = Files.newByteChannel(Paths.get("/dev/urandom"), StandardOpenOption.READ)
     val out = Files.newByteChannel(path, StandardOpenOption.WRITE)
 
     val buffer = java.nio.ByteBuffer.allocate(4096)
