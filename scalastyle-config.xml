@@ -8,10 +8,11 @@
  </check>
  <check level="error" class="org.scalastyle.file.HeaderMatchesChecker" enabled="true">
   <parameters>
-   <parameter name="header"><![CDATA[ /**
-  * Copyright: Copyright (C) 2015, Jaguar Land Rover
-  * License: MPL-2.0
-  */]]></parameter>
+   <parameter name="regex">true</parameter>
+   <parameter name="header">/\*\*
+ \* Copyright: Copyright \(C\) 2015, Jaguar Land Rover
+ \* License: MPL-2\.0
+ \*/</parameter>
   </parameters>
  </check>
  <check level="warning" class="org.scalastyle.scalariform.SpacesAfterPlusChecker" enabled="true"></check>
