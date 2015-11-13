@@ -2,6 +2,7 @@ define(function(require) {
 
   var React = require('react'),
       Router = require('react-router'),
+      SyncPackages = require('../vehicles/sync-packages'),
       AddPackageManually = require('../packages/add-package-manually-component'),
       ListOfPackages = require('../packages/list-of-packages'),
       QueuedPackages = require('../packages/list-of-queued-packages-for-vin'),
@@ -31,6 +32,7 @@ define(function(require) {
               DispatchObject={{actionType: 'get-packages-for-vin', vin: params.vin}}
               DisplayCampaignLink={false}/>
             <AddPackageManually Vin={params.vin}/>
+            <SyncPackages Vin={params.vin}/>
             <h2>Installed Components</h2>
             <ComponentsOnVin Components={db.componentsOnVin} Vin={params.vin}/>
             <AddComponent Vin={params.vin}/>
