@@ -21,7 +21,7 @@ object PackageFilterRepository {
    * DAO Mapping Class for the PackageFilters table in the database
    */
   // scalastyle:off
-  class PackageFilterTable(tag: Tag) extends Table[PackageFilter](tag, "PackageFilters") {
+  class PackageFilterTable(tag: Tag) extends Table[PackageFilter](tag, "PackageFilter") {
 
     def packageName    = column[Package.Name]("packageName")
     def packageVersion = column[Package.Version]("packageVersion")

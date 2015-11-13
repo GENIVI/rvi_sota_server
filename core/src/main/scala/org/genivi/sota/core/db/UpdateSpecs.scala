@@ -9,7 +9,7 @@ import java.util.UUID
 import org.genivi.sota.core.data.Package.Id
 import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.core.data.UpdateSpec
-import org.genivi.sota.core.db.UpdateRequests.UpdateRequestsTable
+import org.genivi.sota.core.db.UpdateRequests.UpdateRequestTable
 import org.genivi.sota.db.SlickExtensions
 import scala.collection.GenTraversable
 import eu.timepit.refined.string.Uuid
@@ -35,8 +35,8 @@ object UpdateSpecs {
    * Slick mapping definition for the UpdateSpecs table
    * @see {@link http://slick.typesafe.com/}
    */
-  class UpdateSpecsTable(tag: Tag)
-      extends Table[(UUID, Vehicle.Vin, UpdateStatus)](tag, "UpdateSpecs") {
+  class UpdateSpecTable(tag: Tag)
+      extends Table[(UUID, Vehicle.Vin, UpdateStatus)](tag, "UpdateSpec") {
     def requestId = column[UUID]("update_request_id")
     def vin = column[Vehicle.Vin]("vin")
     def status = column[UpdateStatus]("status")
@@ -47,11 +47,11 @@ object UpdateSpecs {
   }
 
   /**
-   * Slick mapping definition for the RequiredPackages table
+   * Slick mapping definition for the RequiredPackage table
    * @see {@link http://slick.typesafe.com/}
    */
-  class RequiredPackagesTable(tag: Tag)
-      extends Table[(UUID, Vehicle.Vin, Package.Name, Package.Version)](tag, "RequiredPackages") {
+  class RequiredPackageTable(tag: Tag)
+      extends Table[(UUID, Vehicle.Vin, Package.Name, Package.Version)](tag, "RequiredPackage") {
     def requestId = column[UUID]("update_request_id")
     def vin = column[Vehicle.Vin]("vin")
     def packageName = column[Package.Name]("package_name")
@@ -63,19 +63,19 @@ object UpdateSpecs {
   }
 
   /**
-   * Internal helper definition to accesss the UpdateSpecs table
+   * Internal helper definition to accesss the UpdateSpec table
    */
-  val updateSpecs = TableQuery[UpdateSpecsTable]
+  val updateSpecs = TableQuery[UpdateSpecTable]
 
   /**
    * Internal helper definition to accesss the RequiredPackages table
    */
-  val requiredPackages = TableQuery[RequiredPackagesTable]
+  val requiredPackages = TableQuery[RequiredPackageTable]
 
   /**
-   * Internal helper definition to accesss the UpdateRequests table
+   * Internal helper definition to accesss the UpdateRequest table
    */
-  val updateRequests = TableQuery[UpdateRequestsTable]
+  val updateRequests = TableQuery[UpdateRequestTable]
 
   /**
    * Add an update for a specific VIN.
