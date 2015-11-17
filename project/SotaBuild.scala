@@ -113,6 +113,7 @@ object SotaBuild extends Build {
         play.sbt.Play.autoImport.cache
       ) ++ Dependencies.Database
     ))
+    .dependsOn(common)
     .enablePlugins(PlayScala, SbtWeb)
     .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
     .settings(inConfig(IntegrationTests)(Defaults.testTasks): _*)
