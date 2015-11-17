@@ -41,27 +41,27 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
 
   def clearTables() {
     try {
-      resolverDb.createStatement().executeQuery("delete from PackageFilters where filterName ='" + testFilterName + "'")
+      resolverDb.createStatement().executeQuery("delete from PackageFilter where filterName ='" + testFilterName + "'")
       resolverDb.createStatement().executeQuery("delete from Filter where name ='" + testFilterName + "'")
       resolverDb.createStatement().executeQuery("delete from Filter where name ='" + testDeleteFilterName + "'")
       resolverDb.createStatement().executeQuery("delete from Vehicle where vin = '" + testVinName + "'")
-      coreDb.createStatement().executeQuery("delete from RequiredPackages where vin = '" + testVinName + "'")
-      coreDb.createStatement().executeQuery("delete from RequiredPackages where package_name = '" + testPackageName
+      coreDb.createStatement().executeQuery("delete from RequiredPackage where vin = '" + testVinName + "'")
+      coreDb.createStatement().executeQuery("delete from RequiredPackage where package_name = '" + testPackageName
         + "'")
 
       val rowCountResult = coreDb.createStatement().executeQuery(
-        "select count(*) as update_count from UpdateRequests where package_name = '" + testPackageName + "'")
+        "select count(*) as update_count from UpdateRequest where package_name = '" + testPackageName + "'")
       rowCountResult.next()
       val updateCount = rowCountResult.getInt("update_count")
       if(updateCount > 0) {
         val result = coreDb.createStatement().executeQuery(
-          "select * from UpdateRequests where package_name = '" + testPackageName + "'")
+          "select * from UpdateRequest where package_name = '" + testPackageName + "'")
         while(result.next()) {
           val reqId = result.getString("update_request_id")
-          coreDb.createStatement().executeQuery("delete from UpdateSpecs where update_request_id = '" + reqId + "'")
+          coreDb.createStatement().executeQuery("delete from UpdateSpec where update_request_id = '" + reqId + "'")
         }
       }
-      coreDb.createStatement().executeQuery("delete from UpdateRequests where package_name = '" + testPackageName + "'")
+      coreDb.createStatement().executeQuery("delete from UpdateRequest where package_name = '" + testPackageName + "'")
       coreDb.createStatement().executeQuery("delete from Vehicle where vin = '" + testVinName + "'")
       coreDb.createStatement().executeQuery("delete from Package where name = '" + testPackageName + "'")
     } catch {

@@ -209,6 +209,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     addFilter(testFilterNameDelete)
     val cookie = getLoginCookie
     val deleteResponse = makeRequest("filters/" + testFilterNameDelete, cookie, DELETE)
+    println(deleteResponse.body)
     deleteResponse.status mustBe OK
     val secondCookie = getLoginCookie
     val searchResponse = makeRequest("filters?regex=" + testFilterNameDelete, secondCookie, GET)

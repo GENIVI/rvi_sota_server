@@ -29,7 +29,7 @@ object UpdateRequests {
    * Slick mapping definition for the UpdateRequests table
    * @see {@link http://slick.typesafe.com/}
    */
-  class UpdateRequestsTable(tag: Tag) extends Table[UpdateRequest](tag, "UpdateRequests") {
+  class UpdateRequestTable(tag: Tag) extends Table[UpdateRequest](tag, "UpdateRequest") {
     def id = column[UUID]("update_request_id", O.PrimaryKey)
     def packageName = column[Package.Name]("package_name")
     def packageVersion = column[Package.Version]("package_version")
@@ -62,7 +62,7 @@ object UpdateRequests {
   /**
    * Internal helper definition to accesss the SQL table
    */
-  val all = TableQuery[UpdateRequestsTable]
+  val all = TableQuery[UpdateRequestTable]
 
   /**
    * List all the package updates that have been ever created
