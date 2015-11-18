@@ -42,6 +42,7 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
    * @return The service to proxy to
    */
   def apiByPath(path: String) : String = path.split("/").toList match {
+    case "packages" :: _ :: _ :: "filter" :: _ => resolverApiUri
     case "packages" :: _ => coreApiUri
     case "updates" :: _ => coreApiUri
     case "vehicles" :: vin :: part :: _
