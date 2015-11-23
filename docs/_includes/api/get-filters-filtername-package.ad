@@ -6,10 +6,10 @@
 |Description |Returns a list of all packages associated with a
 particular filter.
 
-|URL |/api/v1/packageFilters?filter=:filter
+|URL |/api/v1/filters/:filterName/package
 
 |URL Parameters a|
-* *:filter* — A filter name.
+* *:filterName* — A filter name.
 
 |Success Response a|
 A list of packages and their information.

@@ -6,11 +6,11 @@
 |Description |Returns a list of all filters associated with a particular
 package.
 
-|URL |/api/v1/packageFilters?packageName=:name&packageVersion=:version
+|URL |/api/v1/packages/:packageName/:packageVersion/filter
 
 |URL Parameters a|
-* *:name* — A package name.
-* *:version* — A package version, in _x.y.z_ format. __x__, __y__, and __z__ must all exist, and contain only digits.
+* *:packageName* — A package name.
+* *:packageVersion* — A package version, in _x.y.z_ format. __x__, __y__, and __z__ must all exist, and contain only digits.
 
 |Success Response a|
 *Code:* 200

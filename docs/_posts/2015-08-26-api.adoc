@@ -106,25 +106,25 @@ include::../_includes/api/delete-filters-filter.ad[]
 
 include::../_includes/api/post-validate-filter.ad[]
 
-=== GET /packageFilters
+=== GET /packages/filter
 
-include::../_includes/api/get-packagefilters.ad[]
+include::../_includes/api/get-packages-filter.ad[]
 
-=== POST /packageFilters
+=== PUT /packages/:packageName/:packageVersion/filter/:filterName
 
-include::../_includes/api/post-packagefilters.ad[]
+include::../_includes/api/put-packages-packagename-packageversion-filter-filtername.ad[]
 
-=== DELETE /packageFilters/:packageName/:packageVersion/:filterName
+=== DELETE /:packageName/:packageVersion/filter/:filterName
 
-include::../_includes/api/delete-packagefilters-packagename-packageversion-filtername.ad[]
+include::../_includes/api/delete-packages-packagename-packageversion-filter-filtername.ad[]
 
-=== GET /packageFilters?filter=:filter
+=== GET /filters/:filterName/package
 
-include::../_includes/api/get-packagefilters-filter-filter.ad[]
+include::../_includes/api/get-filters-filtername-package.ad[]
 
-=== GET /packageFilters?packageName=:name&packageVersion=:version
+=== GET /packages/:packageName/:packageVersion/filter
 
-include::../_includes/api/get-packagefilters-packagename-name-packageversion-version.ad[]
+include::../_includes/api/get-packages-packagename-packageversion-filter.ad[]
 
 === POST /updates
 
