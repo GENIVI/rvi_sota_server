@@ -11,6 +11,7 @@ import scala.util.parsing.combinator.{PackratParsers, ImplicitConversions}
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.vehicles.Vehicle
+import org.scalacheck._
 
 
 sealed abstract trait FilterAST
@@ -104,4 +105,45 @@ object FilterAST extends StandardTokenParsers with PackratParsers with ImplicitC
       case False                => false
     }
   }
+
+  def genFilterHelper(i: Int): Gen[FilterAST] = {
+
+    def genNullary = Gen.oneOf(True, False)
+
+    def genUnary(n: Int) = for {
+        f     <- genFilterHelper(n / 2)
+        unary <- Gen.oneOf(Not, Not)
+      } yield unary(f)
+
+    def genBinary(n: Int) = for {
+        l      <- genFilterHelper(n / 2)
+        r      <- genFilterHelper(n / 2)
+        binary <- Gen.oneOf(Or, And)
+      } yield binary(l, r)
+
+    def genLeaf = Gen.oneOf(
+        for {
+          s <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaNumChar)
+          leaf <- Gen.oneOf(VinMatches, HasComponent)
+        } yield leaf(Refined.unsafeApply(s.mkString)),
+        for {
+          s <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaNumChar)
+          t <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaNumChar)
+        } yield HasPackage(Refined.unsafeApply(s.mkString), Refined.unsafeApply(t.mkString))
+    )
+
+    i match {
+      case 0 => genLeaf
+      case n => Gen.frequency(
+        (2, genNullary),
+        (8, genUnary(n)),
+        (10, genBinary(n))
+      )
+    }
+  }
+
+  def genFilterAST: Gen[FilterAST] = Gen.sized(genFilterHelper)
+
+  implicit lazy val arbFilterAST: Arbitrary[FilterAST] =
+    Arbitrary(genFilterAST)
 }

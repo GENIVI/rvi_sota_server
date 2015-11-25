@@ -102,36 +102,9 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
 }
 
 /**
- * Arbitrary filter object
- * Used in property-based testing
- */
-object ArbitraryFilter {
-
-  import ArbitraryFilterAST.arbFilterAST
-  import org.scalacheck._
-
-  val genName: Gen[String] =
-    for {
-      // We don't want name clashes so keep the names long.
-      n  <- Gen.choose(20, 50)
-      cs <- Gen.listOfN(n, Gen.alphaNumChar)
-    } yield cs.mkString
-
-  val genFilter: Gen[Filter] =
-    for {
-      name <- genName
-      expr <- ArbitraryFilterAST.genFilter
-    } yield Filter(Refined.unsafeApply(name), Refined.unsafeApply(ppFilter(expr)))
-
-  implicit lazy val arbFilter = Arbitrary(genFilter)
-}
-
-/**
  * Filter resource property spec
  */
 class FiltersResourcePropSpec extends ResourcePropSpec {
-
-  import ArbitraryFilter.arbFilter
 
   property("Posting random filters should work") {
 

@@ -5,7 +5,8 @@
 package org.genivi.sota.resolver.filters
 
 import eu.timepit.refined.api.{Validate, Refined}
-import org.genivi.sota.resolver.filters.FilterAST.parseFilter
+import org.genivi.sota.resolver.filters.FilterAST._
+import org.scalacheck._
 
 
 case class Filter(
@@ -43,4 +44,20 @@ object Filter {
       },
       ValidExpression()
     )
+
+
+  val genName: Gen[String] =
+    for {
+      // We don't want name clashes so keep the names long.
+      n  <- Gen.choose(20, 50)
+      cs <- Gen.listOfN(n, Gen.alphaNumChar)
+    } yield cs.mkString
+
+  val genFilter: Gen[Filter] =
+    for {
+      name <- genName
+      expr <- genFilterAST
+    } yield Filter(Refined.unsafeApply(name), Refined.unsafeApply(ppFilter(expr)))
+
+  implicit lazy val arbFilter = Arbitrary(genFilter)
 }

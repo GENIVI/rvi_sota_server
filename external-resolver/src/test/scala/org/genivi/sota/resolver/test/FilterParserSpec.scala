@@ -151,59 +151,9 @@ class FilterQuerySpec extends ResourceWordSpec {
 }
 
 /**
- * An arbitrary filter abstract syntax tree
- * Used for property based testing of filter expressions
- */
-object ArbitraryFilterAST {
-
-  def genFilterHelper(i: Int): Gen[FilterAST] = {
-
-    def genNullary = Gen.oneOf(True, False)
-
-    def genUnary(n: Int) = for {
-        f     <- genFilterHelper(n / 2)
-        unary <- Gen.oneOf(Not, Not)
-      } yield unary(f)
-
-    def genBinary(n: Int) = for {
-        l      <- genFilterHelper(n / 2)
-        r      <- genFilterHelper(n / 2)
-        binary <- Gen.oneOf(Or, And)
-      } yield binary(l, r)
-
-    def genLeaf = Gen.oneOf(
-        for {
-          s <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaNumChar)
-          leaf <- Gen.oneOf(VinMatches, HasComponent)
-        } yield leaf(Refined.unsafeApply(s.mkString)),
-        for {
-          s <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaNumChar)
-          t <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaNumChar)
-        } yield HasPackage(Refined.unsafeApply(s.mkString), Refined.unsafeApply(t.mkString))
-    )
-
-    i match {
-      case 0 => genLeaf
-      case n => Gen.frequency(
-        (2, genNullary),
-        (8, genUnary(n)),
-        (10, genBinary(n))
-      )
-    }
-  }
-
-  def genFilter: Gen[FilterAST] = Gen.sized(genFilterHelper)
-
-  implicit lazy val arbFilterAST: Arbitrary[FilterAST] =
-    Arbitrary(genFilter)
-}
-
-/**
  * Property Spec for the filter parser
  */
 object FilterParserPropSpec extends ResourcePropSpec {
-
-  import ArbitraryFilterAST.arbFilterAST
 
   property("The filter parser parses pretty printed filters") {
     forAll { f: FilterAST =>

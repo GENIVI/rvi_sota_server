@@ -59,7 +59,7 @@ object SotaBuild extends Build {
 
   lazy val externalResolver = Project(id = "resolver", base = file("external-resolver"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Scalaz :+ Dependencies.Refined :+ Dependencies.ParserCombinators,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.ParserCombinators,
       parallelExecution in Test := false,
       dockerExposedPorts := Seq(8081),
       flywayUrl := sys.env.get("RESOLVER_DB_URL").orElse( sys.props.get("resolver.db.url") ).getOrElse("jdbc:mysql://localhost:3306/sota_resolver"),
@@ -141,7 +141,7 @@ object Dependencies {
   lazy val Akka = Seq(
     "com.typesafe.akka" % "akka-http-core-experimental_2.11" % AkkaHttpVersion,
     "com.typesafe.akka" % "akka-http-experimental_2.11" % AkkaHttpVersion,
-    "com.typesafe.akka" %% "akka-http-testkit-experimental" % AkkaHttpVersion % Test,
+    "com.typesafe.akka" %% "akka-http-testkit-experimental" % AkkaHttpVersion,
     "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion,
     "ch.qos.logback" % "logback-classic" % "1.0.13"
   )
@@ -155,6 +155,7 @@ object Dependencies {
   lazy val Refined = "eu.timepit" %% "refined" % "0.3.1"
 
   lazy val Scalaz = "org.scalaz" %% "scalaz-core" % "7.1.3"
+  lazy val Cats   = "org.spire-math" %% "cats" % "0.3.0"
 
   lazy val ScalaTest = "org.scalatest" % "scalatest_2.11" % "2.2.4"
 

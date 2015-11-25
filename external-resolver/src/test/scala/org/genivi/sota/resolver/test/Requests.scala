@@ -4,20 +4,21 @@
  */
 package org.genivi.sota.resolver.test
 
+import akka.http.scaladsl.client.RequestBuilding.{Get, Put, Post}
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model.{Uri, HttpRequest, StatusCode, StatusCodes}
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
-import org.genivi.sota.marshalling.CirceMarshallingSupport
-import CirceMarshallingSupport._
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.resolve.ResolveFunctions
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.resolver.packages.{Package, PackageFilter}
 import org.genivi.sota.resolver.vehicles.Vehicle
 import org.scalatest.Matchers
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 /**
@@ -34,10 +35,27 @@ object Resource {
 /**
  * Testing Trait for building Vehicle requests
  */
-trait VehicleRequests extends Matchers { self: ScalatestRouteTest =>
+
+trait VehicleRequestsHttp {
 
   def addVehicle(vin: Vehicle.Vin): HttpRequest =
     Put(Resource.uri("vehicles", vin.get))
+
+  def installPackage(vin: Vehicle.Vin, pname: String, pversion: String): HttpRequest =
+    Put(Resource.uri("vehicles", vin.get, "package", pname, pversion))
+
+  def listVehicles: HttpRequest =
+    Get(Resource.uri("vehicles"))
+
+  def listPackagesOnVehicle(veh: Vehicle): HttpRequest =
+    Get(Resource.uri("vehicles", veh.vin.get, "package"))
+
+}
+
+trait VehicleRequests extends
+    VehicleRequestsHttp with
+    PackageRequestsHttp with
+    Matchers { self: ScalatestRouteTest =>
 
   def addVehicleOK(vin: Vehicle.Vin)(implicit route: Route): Unit = {
 
@@ -47,12 +65,6 @@ trait VehicleRequests extends Matchers { self: ScalatestRouteTest =>
       status shouldBe StatusCodes.NoContent
     }
   }
-
-  def listVehicles: HttpRequest =
-    Get(Resource.uri("vehicles"))
-
-  def installPackage(vin: Vehicle.Vin, pname: String, pversion: String): HttpRequest =
-    Put(Resource.uri("vehicles", vin.get, "package", pname, pversion))
 
   def installPackageOK(vin: Vehicle.Vin, pname: String, pversion: String)(implicit route: Route): Unit =
     installPackage(vin, pname, pversion) ~> route ~> check {
@@ -68,6 +80,19 @@ trait VehicleRequests extends Matchers { self: ScalatestRouteTest =>
       status shouldBe StatusCodes.OK
     }
 
+}
+
+trait PackageRequestsHttp {
+
+  def addPackage2(pkg: Package): HttpRequest = {
+
+    // XXX: Is this OK?
+    import scala.concurrent.ExecutionContext.Implicits.global
+
+    Put(Resource.uri("packages", pkg.id.name.get, pkg.id.version.get),
+      Package.Metadata(pkg.description, pkg.vendor))
+
+  }
 }
 
 /**
@@ -108,13 +133,25 @@ trait ComponentRequests extends Matchers { self: ScalatestRouteTest =>
 /**
  * Testing Trait for building Filter requests
  */
-trait FilterRequests extends Matchers { self: ScalatestRouteTest =>
+trait FilterRequestsHttp {
+
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   def addFilter(name: String, expr: String): HttpRequest =
     Post(Resource.uri("filters"), Filter(Refined.unsafeApply(name), Refined.unsafeApply(expr)))
 
+  def addFilter2(filt: Filter): HttpRequest =
+    Post(Resource.uri("filters"), filt)
+
   def updateFilter(name: String, expr: String): HttpRequest =
     Put(Resource.uri("filters", name), Filter.ExpressionWrapper(Refined.unsafeApply(expr)))
+
+  def listFilters: HttpRequest =
+    Get(Resource.uri("filters"))
+
+}
+
+trait FilterRequests extends FilterRequestsHttp with Matchers { self: ScalatestRouteTest =>
 
   def addFilterOK(name: String, expr: String)(implicit route: Route): Unit = {
 
@@ -142,9 +179,6 @@ trait FilterRequests extends Matchers { self: ScalatestRouteTest =>
 
   def listFiltersRegex(re: String): HttpRequest =
     Get(Resource.uri("filters") + "?regex=" + re)
-
-  def listFilters: HttpRequest =
-    Get(Resource.uri("filters"))
 
   def validateFilter(filter: Filter): HttpRequest =
     Post(Resource.uri("validate", "filter"), filter)
