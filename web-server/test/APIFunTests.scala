@@ -59,6 +59,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   case class PackageId(name: String, version: String)
   case class Uri(uri: String)
   case class Package(id: PackageId, uri: Uri, size: Long, checkSum: String, description: String, vendor: String)
+  case class PackageResolver(id: PackageId, description: String, vendor: String)
   case class Vehicle(vin: String)
   case class FilterJson(name : String, expression : String)
   case class FilterPackageJson(filterName : String, packageName : String, packageVersion : String)
@@ -125,7 +126,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
 
   def addFilter(filterName : String): Unit = {
     val data = FilterJson(filterName, testFilterExpression)
-    val response = makeJsonRequest("filters", POST, data.asJson.toString())
+    val response = makeJsonRequest("filters", POST, data.asJson.noSpaces)
     response.status mustBe OK
     val jsonResponse = decode[FilterJson](response.body)
     jsonResponse.toOption match {
@@ -136,8 +137,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   }
 
   def addFilterToPackage(packageName : String): Unit = {
-    val data = FilterPackageJson(testFilterName, packageName, testPackageVersion)
-    val response = makeJsonRequest("packageFilters", POST, data.asJson.toString())
+    val response = makeRequest("packages/" + packageName + "/" + testPackageVersion + "/filter/" + testFilterName, PUT)
     response.status mustBe OK
     val jsonResponse = decode[FilterPackageJson](response.body)
     jsonResponse.toOption match {
@@ -150,7 +150,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
 
   def addComponent(partNumber : String, description : String): Unit = {
     val data = ComponentJson(partNumber, description)
-    val response = makeJsonRequest("components/" + partNumber, PUT, data.asJson.toString())
+    val response = makeJsonRequest("components/" + partNumber, PUT, data.asJson.noSpaces)
     response.status mustBe OK
     val jsonResponse = decode[ComponentJson](response.body)
     jsonResponse.toOption match {
@@ -252,7 +252,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
 
   "test changing filter expressions" taggedAs APITests in {
     val data = FilterJson(testFilterName, testFilterAlternateExpression)
-    val response = makeJsonRequest("filters/" + testFilterName, PUT, data.asJson.toString())
+    val response = makeJsonRequest("filters/" + testFilterName, PUT, data.asJson.noSpaces)
     response.status mustBe OK
     val jsonResponse = decode[FilterJson](response.body)
     jsonResponse.toOption match {
@@ -267,7 +267,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   }
 
   "test removing filters from a package" taggedAs APITests in {
-    val response = makeRequest("packageFilters/" + testPackageName + "/" + testPackageVersion + "/" +
+    val response = makeRequest("packages/" + testPackageName + "/" + testPackageVersion + "/filter/" +
       testFilterName, DELETE)
     response.status mustBe OK
   }
@@ -277,20 +277,17 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     addFilterToPackage(testPackageName)
   }
 
-  "test removing package from a filter" taggedAs APITests in {
-    val response = makeRequest("packageFilters/" + testPackageName + "/" + testPackageVersion + "/" +
-      testFilterName, DELETE)
-    response.status mustBe OK
-  }
-
   "test viewing packages with a given filter" taggedAs APITests in {
-    val response = makeRequest("packageFilters?filter=" + testFilterName, GET)
+    val response = makeRequest("filters/" + testFilterName + "/package", GET)
     response.status mustBe OK
-    response.body.toString mustEqual "[]"
-  }
-
-  "test re-adding a package to a filter" taggedAs APITests in {
-    addFilterToPackage(testPackageName)
+    val jsonResponse = decode[List[PackageResolver]](response.body)
+    jsonResponse.toOption match {
+      case Some(resp : List[PackageResolver]) =>
+        resp.length mustBe 1
+        resp.head.id.name mustBe testPackageName
+        resp.head.id.version mustBe testPackageVersion
+      case None => fail("JSON parse error:" + jsonResponse.toString)
+    }
   }
 
   "test creating components" taggedAs APITests in {
@@ -357,7 +354,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     val response = await(WS.url("http://" + webserverHost + s":$webserverPort/api/v1/updates")
       .withHeaders("Cookie" -> Cookies.encodeCookieHeader(cookie))
       .withHeaders("Content-Type" -> "application/json")
-      .post(data.asJson.toString()))
+      .post(data.asJson.noSpaces))
     response.status mustBe OK
     val jsonResponse = decode[Set[UpdateSpec]](response.body)
     jsonResponse.toOption match {

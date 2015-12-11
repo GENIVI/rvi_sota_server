@@ -91,29 +91,19 @@ object PackageFilterRepository {
       q.result
     }
 
-  /**
-   * Lists the filters for a specific package
-   * @param pkgId  The ID of the package for which to find matching filters
-   * @return       A DBIO[(Option[Package], Seq[Filter)] of the matching Package if found
-   *               and a Seq of associated Filters, or None and the empty Seq
-   */
   def listFiltersForPackage(pkgId: Package.Id)
-                           (implicit ec: ExecutionContext): DBIO[(Option[Package], Seq[Filter])] = {
-    val qFilters = for {
-      pf <- packageFilters if pf.packageName    === pkgId.name &&
-                              pf.packageVersion === pkgId.version
-      f  <- FilterRepository.filters if f.name === pf.filterName
-    } yield f
-
-    for {
-      p  <- PackageRepository.packages
-              .filter(pkg => pkg.name    === pkgId.name
-                          && pkg.version === pkgId.version)
-              .result
-              .headOption
-      fs <- qFilters.result
-    } yield (p, fs)
+                           (implicit ec: ExecutionContext): DBIO[Seq[Filter]] = {
+    PackageRepository.exists(pkgId) andThen {
+      val q = for {
+        pf <- packageFilters.filter(pf => pf.packageName    === pkgId.name
+                                       && pf.packageVersion === pkgId.version)
+        fs <- FilterRepository.filters
+                .filter(_.name === pf.filterName)
+      } yield fs
+      q.result
+    }
   }
+
 
   /**
    * Deletes a filter by name
