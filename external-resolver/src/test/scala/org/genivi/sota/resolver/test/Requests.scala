@@ -187,6 +187,15 @@ trait FilterRequests extends FilterRequestsHttp with Matchers { self: ScalatestR
 /**
  * Testing Trait for building PackageFilter requests
  */
+
+trait PackageFilterRequestsHttp {
+
+  def addPackageFilter2(pf: PackageFilter): HttpRequest = {
+    Put(Resource.uri("packages", pf.packageName.get, pf.packageVersion.get, "filter", pf.filterName.get))
+  }
+
+}
+
 trait PackageFilterRequests extends Matchers { self: ScalatestRouteTest =>
 
   def addPackageFilter(pname: String, pversion: String, fname: String): HttpRequest =
@@ -219,13 +228,20 @@ trait PackageFilterRequests extends Matchers { self: ScalatestRouteTest =>
 /**
  * Testing Trait for building Resolve requests
  */
+
+trait ResolveRequestsHttp {
+
+  def resolve2(id: Package.Id): HttpRequest =
+    Get(Resource.uri("resolve", id.name.get, id.version.get))
+
+}
+
 trait ResolveRequests extends Matchers { self: ScalatestRouteTest =>
 
   def resolve(pname: String, pversion: String): HttpRequest =
     Get(Resource.uri("resolve", pname, pversion))
 
   def resolveOK(pname: String, pversion: String, vins: Seq[Vehicle.Vin])(implicit route: Route): Unit = {
-
 
     resolve(pname, pversion) ~> route ~> check {
       status shouldBe StatusCodes.OK

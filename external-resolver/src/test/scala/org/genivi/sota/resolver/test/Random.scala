@@ -29,15 +29,19 @@ class Random extends ResourcePropSpec {
           implicit val routeTimeout: RouteTestTimeout =
             RouteTestTimeout(10.second)
 
+          println("Request: " + sem.request)
+
           sem.request ~> route ~> check {
+            println("Response: " + responseEntity)
             status shouldBe sem.statusCode
             sem.result match {
-              case Failure(c)            => responseAs[ErrorRepresentation].code shouldBe c
+              case Failure(c)            => responseAs[ErrorRepresentation].code           shouldBe c
               case Success               => ()
-              case SuccessVehicles(vehs) => responseAs[Set[Vehicle]]    shouldBe vehs
-              case SuccessPackage(pkg)   => responseAs[Package]         shouldBe pkg
-              case SuccessPackages(pkgs) => responseAs[Set[Package.Id]] shouldBe pkgs
-              case SuccessFilters(filts) => responseAs[Set[Filter]]     shouldBe filts
+              case SuccessVehicles(vehs) => responseAs[Set[Vehicle]]                       shouldBe vehs
+              case SuccessPackage(pkg)   => responseAs[Package]                            shouldBe pkg
+              case SuccessPackages(pkgs) => responseAs[Set[Package.Id]]                    shouldBe pkgs
+              case SuccessFilters(filts) => responseAs[Set[Filter]]                        shouldBe filts
+              case SuccessVehicleMap(m)  => responseAs[Map[Vehicle.Vin, List[Package.Id]]] shouldBe m
               case r                     => sys.error(s"runSession: non-exhaustive pattern: $r")
             }
           }
@@ -53,7 +57,7 @@ class Random extends ResourcePropSpec {
   }
 
   implicit val config: PropertyCheckConfig =
-    new PropertyCheckConfig(maxSize = 20, minSuccessful = 20)
+    new PropertyCheckConfig(maxSize = 20, minSuccessful = 200)
 
   // We use a global variable to presist the state of the world between
   // the session runs.

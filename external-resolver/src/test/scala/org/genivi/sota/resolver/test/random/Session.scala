@@ -1,7 +1,7 @@
 package org.genivi.sota.resolver.test.random
 
 import cats.state.{State, StateT}
-import org.scalacheck.{Arbitrary, Gen}
+import org.scalacheck.{Arbitrary, Gen, Shrink}, Shrink.shrink
 import Command._
 import Misc._
 import Query._
@@ -30,5 +30,10 @@ object Session {
       cmds <- genCommands(n)
       qry  <- genQuery
     } yield Session(cmds, qry)
+
+  implicit def shrinkSession: Shrink[Session] =
+    Shrink { case Session(cmds, qry) =>
+      for { cmds2 <- shrink(cmds) } yield Session(cmds2, qry)
+    }
 
 }

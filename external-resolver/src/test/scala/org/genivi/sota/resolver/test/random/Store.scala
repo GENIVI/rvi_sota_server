@@ -48,12 +48,23 @@ object Store {
       n    <- lift(Gen.choose(0, pkgs.length - 1))
     } yield pkgs(n)
 
-  def hasVehicles: StateT[Gen, RawStore, Boolean] =
-    StateT.stateTMonadState[Gen, RawStore].get map
-      (_.vehicles.keys.nonEmpty)
+  def pickFilter: StateT[Gen, RawStore, Filter] =
+    for {
+      s     <- StateT.stateTMonadState[Gen, RawStore].get
+      filts =  s.filters.toVector
+      n     <- lift(Gen.choose(0, filts.length - 1))
+    } yield filts(n)
 
-  def hasPackages: StateT[Gen, RawStore, Boolean] =
+  def numberOfVehicles: StateT[Gen, RawStore, Int] =
     StateT.stateTMonadState[Gen, RawStore].get map
-      (_.packages.keys.nonEmpty)
+      (_.vehicles.keys.toList.length)
+
+  def numberOfPackages: StateT[Gen, RawStore, Int] =
+    StateT.stateTMonadState[Gen, RawStore].get map
+      (_.packages.keys.toList.length)
+
+  def numberOfFilters: StateT[Gen, RawStore, Int] =
+    StateT.stateTMonadState[Gen, RawStore].get map
+      (_.filters.toList.length)
 
 }

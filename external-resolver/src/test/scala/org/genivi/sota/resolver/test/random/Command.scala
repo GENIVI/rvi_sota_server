@@ -3,10 +3,12 @@ package org.genivi.sota.resolver.test.random
 import akka.http.scaladsl.model.{HttpRequest, StatusCode, StatusCodes}
 import cats.state.{State, StateT}
 import org.genivi.sota.resolver.filters.Filter
-import org.genivi.sota.resolver.packages.Package
+import org.genivi.sota.resolver.packages.{Package, PackageFilter}
 import org.genivi.sota.resolver.test.{Result, Success, Failure, SuccessPackage}
-import org.genivi.sota.resolver.test.{VehicleRequestsHttp, PackageRequestsHttp, FilterRequestsHttp}
+import org.genivi.sota.resolver.test.{VehicleRequestsHttp, PackageRequestsHttp, FilterRequestsHttp,
+  PackageFilterRequestsHttp}
 import org.genivi.sota.resolver.vehicles.Vehicle
+import org.genivi.sota.rest.ErrorCodes
 import org.scalacheck.{Arbitrary, Gen}
 import scala.annotation.tailrec
 import Misc._
@@ -33,7 +35,8 @@ final case class UninstallComponent()   extends Command
 object Command extends
     VehicleRequestsHttp with
     PackageRequestsHttp with
-    FilterRequestsHttp {
+    FilterRequestsHttp  with
+    PackageFilterRequestsHttp {
 
   type SemCommand = (HttpRequest, StatusCode, Result)
 
@@ -83,27 +86,61 @@ object Command extends
                s.copy(filters = s.filters + filt)
              }
       } yield Semantics(addFilter2(filt), StatusCodes.OK, Success)
+
     case EditFilter(old, neu)          => ???
     case RemoveFilter(filt)            => ???
-    case AddFilterToPackage(pkg, filt) => ???
+    case AddFilterToPackage(pkg, filt) =>
+      for {
+        s       <- State.get
+        _       <- State.set(s.copy(packages = s.packages + (pkg -> (s.packages(pkg) + filt))))
+        success =  !s.packages(pkg).contains(filt)
+      } yield
+          if (success)
+            Semantics(addPackageFilter2(PackageFilter(pkg.id.name, pkg.id.version, filt.name)),
+              StatusCodes.OK, Success)
+          else
+            Semantics(addPackageFilter2(PackageFilter(pkg.id.name, pkg.id.version, filt.name)),
+              StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry))
 
   }
 
   def genCommand: StateT[Gen, RawStore, Command] =
     for {
-      s       <- StateT.stateTMonadState[Gen, RawStore].get
-      hasVehs <- Store.hasVehicles
-      hasPkgs <- Store.hasPackages
-      cmd     <- lift(Gen.frequency(
-        (20, Vehicle.genVehicle.map(AddVehicle(_))),
-        (20, Package.genPackage.map(AddPackage(_))),
-        (20, Filter.genFilter.map(AddFilter(_))),
-        (if (hasVehs && hasPkgs) 100 else 0,
+      s     <- StateT.stateTMonadState[Gen, RawStore].get
+      vehs  <- Store.numberOfVehicles
+      pkgs  <- Store.numberOfPackages
+      filts <- Store.numberOfFilters
+      cmd   <- lift(Gen.frequency(
+
+        // If there are few vehicles, packages or filters in the world,
+        // then generate some with high probability.
+
+        (if (0 <= vehs && vehs <= 10) 100 else 1,
+          Vehicle.genVehicle.map(AddVehicle(_))),
+
+        (if (0 <= pkgs && pkgs <= 5)  100 else 1,
+          Package.genPackage.map(AddPackage(_))),
+
+        (if (0 <= filts && filts <= 3) 20 else 1,
+          Filter.genFilter(s.packages.keys.toList, s.components.toList)
+                .map(AddFilter(_))),
+
+        // If there are vehicles and packages, then install some
+        // packages on the vehicles with high probability.
+        (if (vehs > 0 && pkgs > 0) 100 else 0,
           for {
             veh <- Store.pickVehicle.runA(s)
             pkg <- Store.pickPackage.runA(s)
-          } yield InstallPackage(veh, pkg)
-        )
+          } yield InstallPackage(veh, pkg)),
+
+        // If there are packages and filters, install some filters to
+        // some package.
+        (if (pkgs > 0 && filts > 0) 50 else 0,
+          for {
+            pkg  <- Store.pickPackage.runA(s)
+            filt <- Store.pickFilter.runA(s)
+          } yield AddFilterToPackage(pkg, filt))
+
       ))
       _   <- StateT.stateTMonadState(monGen).set(semCommand(cmd).runS(s).run)
     } yield cmd

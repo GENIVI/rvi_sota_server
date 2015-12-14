@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.datatype
 
+import cats.syntax.show._
 import eu.timepit.refined.api.{Validate, Refined}
 import org.scalacheck.{Arbitrary, Gen}
 
@@ -45,14 +46,16 @@ trait VehicleCommon {
     * @see {@link https://www.scalacheck.org/}
     */
 
-  val genVinChar: Gen[Char] =
-    Gen.oneOf('A' to 'Z' diff List('I', 'O', 'Q'))
-
   val genVin: Gen[Vin] =
-    Gen.listOfN(17, genVinChar).map(cs => Refined.unsafeApply(cs.mkString))
+    for {
+      vin <- SemanticVin.genSemanticVin
+    } yield Refined.unsafeApply(vin.show)
 
   implicit lazy val arbVin: Arbitrary[Vin] =
     Arbitrary(genVin)
+
+  val genVinChar: Gen[Char] =
+    Gen.oneOf('A' to 'Z' diff List('I', 'O', 'Q'))
 
   val genInvalidVin: Gen[Vin] = {
 
@@ -75,3 +78,5 @@ trait VehicleCommon {
   }
 
 }
+
+object VehicleCommon extends VehicleCommon
