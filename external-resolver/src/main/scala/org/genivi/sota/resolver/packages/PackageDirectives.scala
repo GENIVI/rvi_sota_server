@@ -64,7 +64,7 @@ class PackageDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
       (put & refined[Filter.ValidName](Slash ~ Segment ~ PathEnd)) { fname =>
         completeOrRecoverWith(db.run(
           PackageFilterRepository.addPackageFilter(PackageFilter(id.name, id.version, fname)))) {
-            Errors.onMissingPackage orElse Errors.onMissingFilter
+            Errors.onMissingPackage orElse Errors.onMissingFilter orElse { case err => throw(err) }
           }
       } ~
       (delete & refined[Filter.ValidName] (Slash ~ Segment ~ PathEnd)) { fname =>
