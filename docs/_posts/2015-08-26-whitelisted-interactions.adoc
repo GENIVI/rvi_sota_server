@@ -8,12 +8,11 @@ date: 2015-08-26 10:34:14
 :icons: font
 
 This page details all currently whitelisted interactions. When creating
-stories in JIRA, you must note any interactions between components that
-will be required. If they are not already covered by a whitelisted
-interaction in this list, you must review them with the security
-curator, https://github.com/akxs14[Angelos Kapsimanis]. If the new
-interactions are approved, they will be added to this list. Code *will
-not be merged* if it contains non-whitelisted interactions.
+stories in JIRA, you must note any interactions between components that will
+be required. If they are not already covered by a whitelisted interaction in
+this list, you must review them with the project security curator. If the new
+interactions are approved, they will be added to this list. Code *will not be
+merged* if it contains non-whitelisted interactions.
 
 Whitelisted interactions are organized by boundary:
 
