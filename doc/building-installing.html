@@ -220,7 +220,7 @@ FLUSH <span style="color: #008000; font-weight: bold">PRIVILEGES</span>;</code><
 <i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
-If you are having trouble with flywayMigrate after an update, try deleting the sota_core, sota_core_test, sota_resolver, and sota_resolver_test databases, recreating them with the commands above, and running flywayMigrate again.
+If you are having trouble with flywayMigrate after an update, try <code>sbt flywayRepair</code>, then <code>sbt flywayMigrate</code> again. If that doesn&#8217;t work, you can delete all database tables with <code>sbt flywayClean</code>, and then re-create them with <code>sbt flywayMigrate</code>.
 </td>
 </tr>
 </table>
@@ -318,6 +318,23 @@ ln -s /var/sota-build/webserver-target/ web-server/target</pre>
 </div>
 <div class="paragraph">
 <p>If someone else has added a migration, run <code>sbt flywayMigrate</code> to update your local database.</p>
+</div>
+<div class="sect3">
+<h4 id="database-migration-troubleshooting">Database Migration Troubleshooting</h4>
+<div class="paragraph">
+<p>flywayMigrate might fail with an error like this on some updates:</p>
+</div>
+<div class="paragraph">
+<p><code><code>`
+[error] (core/*:flywayMigrate) org.flywaydb.core.api.FlywayException: Validate failed. Migration Checksum mismatch for migration 1
+[error] &#8594; Applied to database : -2049361589
+[error] &#8594; Resolved locally    : 736866586
+[error] Total time: 205 s, completed Nov 16, 2015 10:51:38 AM
+</code>`</code></p>
+</div>
+<div class="paragraph">
+<p>Try <code>sbt flywayRepair</code>, then <code>sbt flywayMigrate</code> again. If that doesn&#8217;t fix the problem, you can try <code>sbt flywayClean</code>, then <code>sbt flywayMigrate</code>, but note that <code>sbt flywayClean</code> will delete all database tables.</p>
+</div>
 </div>
 </div>
 </div>

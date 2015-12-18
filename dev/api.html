@@ -159,11 +159,11 @@
 <li><a href="#put-filters-filter">PUT /filters/:filter</a></li>
 <li><a href="#delete-filters-filter">DELETE /filters/:filter</a></li>
 <li><a href="#post-validate-filter">POST /validate/filter</a></li>
-<li><a href="#get-packagefilters">GET /packageFilters</a></li>
-<li><a href="#post-packagefilters">POST /packageFilters</a></li>
-<li><a href="#delete-packagefilters-packagename-packageversion-filtername">DELETE /packageFilters/:packageName/:packageVersion/:filterName</a></li>
-<li><a href="#get-packagefilters-filter-filter">GET /packageFilters?filter=:filter</a></li>
-<li><a href="#get-packagefilters-packagename-name-packageversion-version">GET /packageFilters?packageName=:name&amp;packageVersion=:version</a></li>
+<li><a href="#get-packages-filter">GET /packages/filter</a></li>
+<li><a href="#put-packages-packagename-packageversion-filter-filtername">PUT /packages/:packageName/:packageVersion/filter/:filterName</a></li>
+<li><a href="#delete-packagename-packageversion-filter-filtername">DELETE /:packageName/:packageVersion/filter/:filterName</a></li>
+<li><a href="#get-filters-filtername-package">GET /filters/:filterName/package</a></li>
+<li><a href="#get-packages-packagename-packageversion-filter">GET /packages/:packageName/:packageVersion/filter</a></li>
 <li><a href="#post-updates">POST /updates</a></li>
 <li><a href="#get-updates">GET /updates</a></li>
 <li><a href="#get-updates-campaignid">GET /updates/:campaignId</a></li>
@@ -1512,7 +1512,7 @@ whether a filter with this name already exists.</p>
 </table>
 </div>
 <div class="sect2">
-<h3 id="get-packagefilters">GET /packageFilters</h3>
+<h3 id="get-packages-filter">GET /packages/filter</h3>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
 <col style="width: 18%;">
@@ -1525,7 +1525,7 @@ whether a filter with this name already exists.</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/packageFilters</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/packages/filter</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Parameters</p></td>
@@ -1555,7 +1555,7 @@ whether a filter with this name already exists.</p>
 </table>
 </div>
 <div class="sect2">
-<h3 id="post-packagefilters">POST /packageFilters</h3>
+<h3 id="put-packages-packagename-packageversion-filter-filtername">PUT /packages/:packageName/:packageVersion/filter/:filterName</h3>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
 <col style="width: 18%;">
@@ -1568,10 +1568,10 @@ whether a filter with this name already exists.</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/packageFilters</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/packages/:packageName/:packageVersion/filter/:filterName</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Data Parameters</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL Parameters</p></td>
 <td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
@@ -1627,7 +1627,7 @@ whether a filter with this name already exists.</p>
 </table>
 </div>
 <div class="sect2">
-<h3 id="delete-packagefilters-packagename-packageversion-filtername">DELETE /packageFilters/:packageName/:packageVersion/:filterName</h3>
+<h3 id="delete-packagename-packageversion-filter-filtername">DELETE /:packageName/:packageVersion/filter/:filterName</h3>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
 <col style="width: 18%;">
@@ -1640,7 +1640,7 @@ whether a filter with this name already exists.</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/packageFiltersDelete/:packageName/:packageVersion/:filterName</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/packages/:packageName/:packageVersion/filter/:filterName</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">URL Parameters</p></td>
@@ -1688,7 +1688,7 @@ whether a filter with this name already exists.</p>
 </table>
 </div>
 <div class="sect2">
-<h3 id="get-packagefilters-filter-filter">GET /packageFilters?filter=:filter</h3>
+<h3 id="get-filters-filtername-package">GET /filters/:filterName/package</h3>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
 <col style="width: 18%;">
@@ -1702,14 +1702,14 @@ particular filter.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/packageFilters?filter=:filter</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/filters/:filterName/package</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">URL Parameters</p></td>
 <td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
-<p><strong>:filter</strong> — A filter name.</p>
+<p><strong>:filterName</strong> — A filter name.</p>
 </li>
 </ul>
 </div></div></td>
@@ -1769,7 +1769,7 @@ particular filter.</p></td>
 </table>
 </div>
 <div class="sect2">
-<h3 id="get-packagefilters-packagename-name-packageversion-version">GET /packageFilters?packageName=:name&amp;packageVersion=:version</h3>
+<h3 id="get-packages-packagename-packageversion-filter">GET /packages/:packageName/:packageVersion/filter</h3>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
 <col style="width: 18%;">
@@ -1783,17 +1783,17 @@ package.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/packageFilters?packageName=:name&amp;packageVersion=:version</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/packages/:packageName/:packageVersion/filter</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">URL Parameters</p></td>
 <td class="tableblock halign-left valign-top"><div><div class="ulist">
 <ul>
 <li>
-<p><strong>:name</strong> — A package name.</p>
+<p><strong>:packageName</strong> — A package name.</p>
 </li>
 <li>
-<p><strong>:version</strong> — A package version, in <em>x.y.z</em> format. <em>x</em>, <em>y</em>, and <em>z</em> must all exist, and contain only digits.</p>
+<p><strong>:packageVersion</strong> — A package version, in <em>x.y.z</em> format. <em>x</em>, <em>y</em>, and <em>z</em> must all exist, and contain only digits.</p>
 </li>
 </ul>
 </div></div></td>
