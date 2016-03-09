@@ -92,6 +92,8 @@ sbt webserver/run
 
 TIP: The SOTA Core server looks for the RVI server node on localhost by default. If your RVI node is running somewhere else (i.e. if you're running docker on a mac), you will need to specify `RVI_URI` as an environment variable. If your docker host was 192.168.99.100, for example, you would run `RVI_URI="http://192.168.99.100:8801" sbt core/run`.
 
+TIP: The version format of packages is configurable, defaulting to MAJOR.MINOR.PATCH, where MAJOR, MINOR, and PATCH are unsigned integers. To change the format, specify a regular expression in the `PACKAGES_VERSION_FORMAT` environment variable.
+
 Now open http://localhost:9000/[localhost:9000] in a browser.
 
 === Troubleshooting

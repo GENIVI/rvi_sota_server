@@ -5,6 +5,7 @@
 package org.genivi.sota.datatype
 
 import cats.{Show, Eq}
+import com.typesafe.config.ConfigFactory
 import eu.timepit.refined.api.{Validate, Refined}
 import org.scalacheck.{Arbitrary, Gen}
 
@@ -53,13 +54,14 @@ trait PackageCommon {
       ValidName()
     )
 
+  private val packageVersionFormat = ConfigFactory.load.getString("packages.versionFormat")
+
   implicit val validPackageVersion: Validate.Plain[String, ValidVersion] =
     Validate.fromPredicate(
-      _.matches( """^\d+\.\d+\.\d+$""" ),
+      _.matches( packageVersionFormat ),
       _ => "Invalid version format",
       ValidVersion()
     )
-
 
   /**
     * Use the underlaying (string) ordering, show and equality for
