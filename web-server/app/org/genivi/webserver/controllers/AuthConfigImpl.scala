@@ -2,6 +2,7 @@
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
+
 package org.genivi.webserver.controllers
 
 import jp.t2v.lab.play2.auth._
@@ -61,7 +62,7 @@ trait AuthConfigImpl extends AuthConfig {
    * Where to redirect the user after a successful login.
    */
   def loginSucceeded(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] = {
-    val uri = request.session.get("access_uri").getOrElse(routes.Application.index.url.toString)
+    val uri = request.session.get("access_uri").getOrElse(routes.Application.index().url.toString)
     Future.successful(Redirect(uri).withSession(request.session - "access_uri"))
   }
 
@@ -75,15 +76,14 @@ trait AuthConfigImpl extends AuthConfig {
    * If the user is not logged in and tries to access a protected resource then redirct them as follows:
    */
   def authenticationFailed(request: RequestHeader)(implicit ctx: ExecutionContext): Future[Result] = {
-    val redirectResponse = Redirect(routes.Application.login).withSession("access_uri" -> request.uri)
+    val redirectResponse = Redirect(routes.Application.login()).withSession("access_uri" -> request.uri)
     request.headers.get("Accept") match {
-      case Some(r) => {
+      case Some(r) =>
         if (r.contains("application/json")) {
           Future.successful(Unauthorized)
         } else {
           Future.successful(redirectResponse)
         }
-      }
       case None => Future.successful(redirectResponse)
     }
   }

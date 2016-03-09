@@ -6,27 +6,29 @@ define(function(require) {
 
   var handlers = {
     getPackagesForFilter: function(payload) {
-      sendRequest.doGet('/api/v1/packageFilters?filter=' + payload.filter)
+      sendRequest.doGet('/api/v1/filters/' + payload.filter + '/package')
         .success(function(packages) {
           db.packagesForFilter.reset(packages);
         });
     },
     getFiltersForPackage: function(payload) {
-      sendRequest.doGet('/api/v1/packageFilters?package=' + payload.name + '-' + payload.version)
+      sendRequest.doGet('/api/v1/packages/' + payload.name + '/' + payload.version + '/filter')
         .success(function(filters) {
           db.filtersForPackage.reset(filters);
         });
     },
     addPackageFilter: function(payload) {
-      sendRequest.doPost('/api/v1/packageFilters', payload.packageFilter)
+      sendRequest.doPut('/api/v1/packages/', payload.packageFilter.packageName +
+        '/' + payload.packageFilter.packageVersion +
+        '/filter/' + payload.packageFilter.filterName)
         .success(_.bind(this.refreshPackageFilters, this, payload));
     },
     destroyPackageFilter: function(payload){
       var packageFilter = payload.packageFilter;
-      var deleteUrl = '/api/v1/packageFilters' +
+      var deleteUrl = '/api/v1/packages' +
         '/' + packageFilter.packageName +
         '/' + packageFilter.packageVersion +
-        '/' + packageFilter.filterName;
+        '/filter/' + packageFilter.filterName;
       sendRequest.doDelete(deleteUrl)
         .success(_.bind(this.refreshPackageFilters, this, payload));
     },

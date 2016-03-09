@@ -5,7 +5,8 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
-import eu.timepit.refined.Refined
+import eu.timepit.refined.refineMV
+import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
@@ -26,13 +27,13 @@ class VehiclesResourcePropSpec extends ResourcePropSpec {
 
   property("Vehicles resource should create new resource on PUT request") {
     forAll { vehicle: Vehicle =>
-      addVehicleOK(vehicle.vin.get)
+      addVehicleOK(vehicle.vin)
     }
   }
 
   property("Invalid vehicles are rejected") {
     forAll(genInvalidVehicle) { vehicle: Vehicle =>
-      addVehicle(vehicle.vin.get) ~> route ~> check {
+      addVehicle(vehicle.vin) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
       }
     }
@@ -40,8 +41,8 @@ class VehiclesResourcePropSpec extends ResourcePropSpec {
 
   property("PUTting the same vin twice updates it") {
     forAll { vehicle: Vehicle  =>
-      addVehicleOK(vehicle.vin.get)
-      addVehicleOK(vehicle.vin.get)
+      addVehicleOK(vehicle.vin)
+      addVehicleOK(vehicle.vin)
     }
   }
 
@@ -66,7 +67,7 @@ class VehiclesResourcePropSpec extends ResourcePropSpec {
 
     forAll(genVehicle, stateGen) { (vehicle, state) =>
       val (installedBefore, update) = state
-      addVehicleOK(vehicle.vin.get)
+      addVehicleOK(vehicle.vin)
       installedBefore.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
       Put( Resource.uri(vehicles, vehicle.vin.get, "packages"),  update.map( _.id )) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
@@ -84,7 +85,7 @@ class VehiclesResourcePropSpec extends ResourcePropSpec {
 
     forAll(genVehicle, stateGen) { (vehicle, state) =>
       val (availablePackages, update) = state
-      addVehicleOK(vehicle.vin.get)
+      addVehicleOK(vehicle.vin)
       availablePackages.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
       Put( Resource.uri(vehicles, vehicle.vin.get, "packages"),  update.map( _.id )) ~> route ~> check {
         status shouldBe StatusCodes.NoContent
@@ -101,8 +102,10 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
 
   val vehicles = "vehicles"
 
-  val vin  = "V1N00LAM0FAU2DEEP"
-  val vin2 = "XAPABEPA123456789"
+  val vin     : Vehicle.Vin = refineMV("V1N00LAM0FAU2DEEP")
+  val vehicle : Vehicle     = Vehicle(vin)
+  val vin2    : Vehicle.Vin = refineMV("XAPABEPA123456789")
+  val vehicle2: Vehicle     = Vehicle(vin2)
 
   "Vin resource" should {
 
@@ -112,21 +115,21 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
     }
 
     "not accept too long VINs" in {
-      addVehicle(vin + "1") ~> route ~> check {
+      addVehicle(Refined.unsafeApply(vin.get + "1")) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
     "not accept too short VINs" in {
-      addVehicle(vin.drop(1)) ~> route ~> check {
+      addVehicle(Refined.unsafeApply(vin.get.drop(1))) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
     "not accept VINs which aren't alpha num" in {
-      addVehicle(vin.drop(1) + "!") ~> route ~> check {
+      addVehicle(Refined.unsafeApply(vin.get.drop(1) + "!")) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
@@ -138,15 +141,15 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
 
     "list all VINs on a GET request" in {
       listVehicles ~> route ~> check {
-        responseAs[Seq[Vehicle]] shouldBe List(Vehicle(Refined(vin)), Vehicle(Refined(vin2)))
+        responseAs[Seq[Vehicle]] shouldBe List(vehicle, vehicle2)
       }
     }
 
     "list a specific vehicle on GET /vehicles/:vin or fail if it doesn't exist" in {
-      Get(Resource.uri("vehicles", vin)) ~> route ~> check {
-        responseAs[Vehicle] shouldBe Vehicle(Refined(vin))
+      Get(Resource.uri("vehicles", vin.get)) ~> route ~> check {
+        responseAs[Vehicle] shouldBe vehicle
       }
-      Get(Resource.uri("vehicles", vin.drop(1) + "1")) ~> route ~> check {
+      Get(Resource.uri("vehicles", vin.get.drop(1) + "1")) ~> route ~> check {
         responseAs[ErrorRepresentation].code shouldBe Codes.MissingVehicle
       }
     }
@@ -158,32 +161,32 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
     }
 
     "delete a VIN" in {
-      val vin = "12345678901234V1N"
+      val vin = refineMV("12345678901234V1N"): Vehicle.Vin
       addVehicleOK(vin)
-      Delete(Resource.uri(vehicles, vin)) ~> route ~> check {
+      Delete(Resource.uri(vehicles, vin.get)) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
     }
 
     "delete a VIN and its installPackages" in {
-      val vin = "1234567890THERV1N"
+      val vin: Vehicle.Vin = refineMV("1234567890THERV1N")
       addVehicleOK(vin)
       addPackageOK("halflife", "3.0.0", None, None)
       installPackageOK(vin, "halflife", "3.0.0")
       addPackageOK("halflife", "4.0.0", None, None)
       installPackageOK(vin, "halflife", "4.0.0")
-      Delete(Resource.uri(vehicles, vin)) ~> route ~> check {
+      Delete(Resource.uri(vehicles, vin.get)) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
     }
 
     "delete a VIN and its installComponents" in {
-      val vin  = "1234567890THERV1N"
-      val comp = Refined("ashtray"): Component.PartNumber
+      val vin  = refineMV("1234567890THERV1N"): Vehicle.Vin
+      val comp = refineMV("ashtray")          : Component.PartNumber
       addVehicleOK(vin)
       addComponentOK(comp, "good to have")
-      installComponentOK(Refined(vin), comp)
-      Delete(Resource.uri(vehicles, vin)) ~> route ~> check {
+      installComponentOK(vin, comp)
+      Delete(Resource.uri(vehicles, vin.get)) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
     }
@@ -198,7 +201,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
     }
 
     "fail to install a package on a non-existing VIN" in {
-      installPackage(vin.drop(1) + "B", "bepa", "1.0.1") ~> route ~> check {
+      installPackage(Refined.unsafeApply(vin.get.drop(1) + "B"), "bepa", "1.0.1") ~> route ~> check {
         status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe Codes.MissingVehicle
       }
@@ -212,38 +215,38 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
     }
 
     "list installed packages on a VIN on GET request to /vehicles/:vin/package" in {
-      Get(Resource.uri(vehicles, vin, "package")) ~> route ~> check {
+      Get(Resource.uri(vehicles, vin.get, "package")) ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[Seq[Package.Id]] shouldBe List(Package.Id(Refined("apa"), Refined("1.0.1")))
+        responseAs[Seq[Package.Id]] shouldBe List(Package.Id(refineMV("apa"), refineMV("1.0.1")))
       }
     }
 
     "fail to list installed packages on VINs that don't exist" in {
-      Get(Resource.uri(vehicles, vin.drop(1) + "B", "package")) ~> route ~> check {
+      Get(Resource.uri(vehicles, vin.get.drop(1) + "B", "package")) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
       }
 
     }
 
     "uninstall a package on a VIN on DELETE request to /vehicles/:vin/package/:packageName/:packageVersion" in {
-      Delete(Resource.uri(vehicles, vin, "package", "apa", "1.0.1")) ~> route ~> check {
+      Delete(Resource.uri(vehicles, vin.get, "package", "apa", "1.0.1")) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
-      Get(Resource.uri(vehicles, vin, "package")) ~> route ~> check {
+      Get(Resource.uri(vehicles, vin.get, "package")) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Seq[Package.Id]] shouldBe List()
       }
     }
 
     "fail to uninstall a package from a non-existing VIN" in {
-      Delete(Resource.uri(vehicles, vin.drop(1) + "B", "package", "apa", "1.0.1")) ~> route ~> check {
+      Delete(Resource.uri(vehicles, vin.get.drop(1) + "B", "package", "apa", "1.0.1")) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe Codes.MissingVehicle
       }
     }
 
     "fail to uninstall a package that isn't installed on a VIN" in {
-      Delete(Resource.uri(vehicles, vin, "package", "bepa", "1.0.1")) ~> route ~> check {
+      Delete(Resource.uri(vehicles, vin.get, "package", "bepa", "1.0.1")) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
       }
@@ -253,7 +256,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
       installPackageOK(vin, "apa", "1.0.1")
       Get(Resource.uri(vehicles) + "?packageName=apa&packageVersion=1.0.1") ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[Seq[Vehicle]] shouldBe List(Vehicle(Refined(vin)))
+        responseAs[Seq[Vehicle]] shouldBe List(vehicle)
       }
     }
 
@@ -265,11 +268,10 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
       }
     }
 
-    "list all VINs if package parameter isn't provided properly" in {
+    "fail if package parameters ain't provided properly" in {
       installPackageOK(vin, "apa", "1.0.1")
-      Get(Resource.uri(vehicles) + "?package=") ~> route ~> check {
-        status shouldBe StatusCodes.OK
-        responseAs[Seq[Vehicle]] shouldBe List(Vehicle(Refined(vin)), Vehicle(Refined(vin2)))
+      Get(Resource.uri(vehicles) + "?packageName=&packageVersion=") ~> route ~> check {
+        status shouldBe StatusCodes.BadRequest
       }
     }
 
@@ -280,21 +282,21 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
    */
 
   "install component on VIN on PUT /vehicles/:vin/component/:partNumber" in {
-    addComponentOK(Refined("jobby0"), "nice")
-    installComponentOK(Refined(vin), Refined("jobby0"))
+    addComponentOK(Refined.unsafeApply("jobby0"), "nice")
+    installComponentOK(vin, Refined.unsafeApply("jobby0"))
   }
 
   "list components on a VIN on GET /vehicles/:vin/component" in {
-    Get(Resource.uri(vehicles, vin, "component")) ~> route ~> check {
+    Get(Resource.uri(vehicles, vin.get, "component")) ~> route ~> check {
       status shouldBe StatusCodes.OK
-      responseAs[Seq[Component.PartNumber]] shouldBe List(Refined("jobby0"))
+      responseAs[Seq[Component.PartNumber]] shouldBe List(Refined.unsafeApply("jobby0"))
     }
   }
 
   "list VINs that have a specific component on GET /vehicles?component=:partNumber" in {
     Get(Resource.uri(vehicles) + "?component=jobby0") ~> route ~> check {
       status shouldBe StatusCodes.OK
-      responseAs[Seq[Vehicle]] shouldBe List(Vehicle(Refined(vin)))
+      responseAs[Seq[Vehicle]] shouldBe List(vehicle)
     }
     Get(Resource.uri(vehicles) + "?component=jobby1") ~> route ~> check {
       status shouldBe StatusCodes.OK

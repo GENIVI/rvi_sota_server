@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.resolver.components
 
-import eu.timepit.refined.Refined
+import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import org.genivi.sota.db.Operators._
 import org.genivi.sota.refined.SlickRefined._

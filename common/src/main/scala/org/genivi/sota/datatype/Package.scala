@@ -5,7 +5,8 @@
 package org.genivi.sota.datatype
 
 import cats.{Show, Eq}
-import eu.timepit.refined.{Predicate, Refined}
+import com.typesafe.config.ConfigFactory
+import eu.timepit.refined.api.{Validate, Refined}
 import org.scalacheck.{Arbitrary, Gen}
 
 /**
@@ -15,12 +16,15 @@ import org.scalacheck.{Arbitrary, Gen}
 
 trait PackageCommon {
 
+  import eu.timepit.refined.api.Refined
+
   case class Id(
     name   : Name,
     version: Version
   )
 
   object Id {
+
     import io.circe.{Encoder, Decoder}
     import io.circe.generic.semiauto._
     import org.genivi.sota.marshalling.CirceInstances._
@@ -36,33 +40,28 @@ trait PackageCommon {
     * @see {@link https://github.com/fthomas/refined}
     */
 
-  trait ValidName
-  trait ValidVersion
-  trait ValidId
+  case class ValidName()
+  case class ValidVersion()
 
   type Name        = Refined[String, ValidName]
   type Version     = Refined[String, ValidVersion]
-  type NameVersion = Refined[String, ValidId]
 
-  implicit val validPackageName: Predicate[ValidName, String] =
-    Predicate.instance(
+  implicit val validPackageName: Validate.Plain[String, ValidName] =
+    Validate.fromPredicate(
       s => s.length > 0 && s.length <= 100
         && s.forall(c => c.isLetter || c.isDigit),
-      s => s"$s: isn't a valid package name (between 1 and 100 character long alpha numeric string)"
+      s => s"$s: isn't a valid package name (between 1 and 100 character long alpha numeric string)",
+      ValidName()
     )
 
-  implicit val validPackageVersion: Predicate[ValidVersion, String] =
-    Predicate.instance( _.matches( """^\d+\.\d+\.\d+$""" ), _ => "Invalid version format")
+  private val packageVersionFormat = ConfigFactory.load.getString("packages.versionFormat")
 
-  implicit val validPackageId: Predicate[ValidId, String] =
-    Predicate.instance(s =>
-      {
-        val nv = s.split("-")
-        nv.length == 2 &&
-          validPackageName.isValid(nv.head) &&
-          validPackageVersion.isValid(nv.tail.head)
-      }
-      , s => s"Invalid package id (should be package name dash package version): $s")
+  implicit val validPackageVersion: Validate.Plain[String, ValidVersion] =
+    Validate.fromPredicate(
+      _.matches( packageVersionFormat ),
+      _ => "Invalid version format",
+      ValidVersion()
+    )
 
   /**
     * Use the underlaying (string) ordering, show and equality for
@@ -89,9 +88,9 @@ trait PackageCommon {
 
   val genPackageId: Gen[Id] =
     for {
-      name    <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaNumChar).map(cs => Refined(cs.mkString))
+      name    <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaNumChar).map(cs => Refined.unsafeApply(cs.mkString))
               : Gen[Name]
-      version <- Gen.listOfN(3, Gen.choose(0, 999)).map(_.mkString(".")).map(Refined(_)): Gen[Version]
+      version <- Gen.listOfN(3, Gen.choose(0, 999)).map(_.mkString(".")).map(Refined.unsafeApply(_)): Gen[Version]
     } yield Id(name, version)
 
   implicit lazy val arbPackageId: Arbitrary[Id] =

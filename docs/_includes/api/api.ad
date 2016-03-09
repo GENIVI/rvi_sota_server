@@ -1,0 +1,181 @@
+=== GET /vehicles
+
+include::get-vehicles.ad[]
+
+=== PUT /vehicles/:vin
+
+include::put-vehicles-vin.ad[]
+
+=== DELETE /vehicles/:vin
+
+include::delete-vehicles-vin.ad[]
+
+ifdef::resolver[]
+=== GET /vehicles/:vin/component
+
+include::get-vehicles-vin-component.ad[]
+endif::resolver[]
+
+ifdef::core[]
+=== GET /vehicles/:vin/queued
+
+include::get-vehicles-vin-queued.ad[]
+
+ifdef::core[]
+=== GET /vehicles/:vin/history
+
+include::get-vehicles-vin-history.ad[]
+
+ifdef::resolver[]
+=== PUT /vehicles/:vin/component/:partNumber
+
+include::put-vehicles-vin-component-partnumber.ad[]
+endif::resolver[]
+
+ifdef::resolver[]
+=== DELETE /vehicles/:vin/component/:partNumber
+
+include::delete-vehicles-vin-component-partnumber.ad[]
+endif::resolver[]
+
+ifdef::resolver[]
+=== GET /vehicles/:vin/package
+
+include::get-vehicles-vin-package.ad[]
+endif::resolver[]
+
+ifdef::resolver[]
+=== PUT /vehicles/:vin/package/:name/:version
+
+include::put-vehicles-vin-package-name-version.ad[]
+endif::resolver[]
+
+ifdef::resolver[]
+=== DELETE /vehicles/:vin/package/:name/:version
+
+include::delete-vehicles-vin-package-name-version.ad[]
+endif::resolver[]
+
+ifdef::resolver[]
+=== PUT /vehicles/:vin/packages
+
+include::put-vehicles-vin-packages.ad[]
+endif::resolver[]
+
+=== GET /packages
+
+include::get-packages.ad[]
+
+endif::core[]
+=== PUT /packages/:name/:version
+
+include::put-packages-name-version-core.ad[]
+endif::core[]
+
+ifdef::resolver-only[]
+=== PUT /packages/:name/:version
+
+include::put-packages-name-version-resolver.ad[]
+endif::resolver-only[]
+
+ifdef::resolver[]
+=== GET /components
+
+include::get-components.ad[]
+endif::resolver[]
+
+ifdef::resolver[]
+=== PUT /components/:partNumber
+
+include::put-components-partnumber.ad[]
+endif::resolver[]
+
+ifdef::resolver[]
+=== DELETE /components/:partNumber
+
+include::delete-components-partnumber.ad[]
+endif::resolver[]
+
+ifdef::resolver[]
+=== GET /resolve/:name/:version
+
+include::get-resolve-name-version.ad[]
+endif::resolver[]
+
+ifdef::resolver[]
+=== GET /filters
+
+include::get-filters.ad[]
+endif::resolver[]
+
+ifdef::resolver[]
+=== POST /filters
+
+include::post-filters.ad[]
+endif::resolver[]
+
+ifdef::resolver[]
+=== PUT /filters/:filter
+
+include::put-filters-filter.ad[]
+endif::resolver[]
+
+ifdef::resolver[]
+=== DELETE /filters/:filter
+
+include::delete-filters-filter.ad[]
+endif::resolver[]
+
+ifdef::resolver[]
+=== POST /validate/filter
+
+include::post-validate-filter.ad[]
+endif::resolver[]
+
+ifdef::resolver[]
+=== GET /packages/filter
+
+include::get-packages-filter.ad[]
+endif::resolver[]
+
+ifdef::resolver[]
+=== PUT /packages/:packageName/:packageVersion/filter/:filterName
+
+include::put-packages-packagename-packageversion-filter-filtername.ad[]
+endif::resolver[]
+
+ifdef::resolver[]
+=== DELETE /:packageName/:packageVersion/filter/:filterName
+
+include::delete-packages-packagename-packageversion-filter-filtername.ad[]
+endif::resolver[]
+
+ifdef::resolver[]
+=== GET /filters/:filterName/package
+
+include::get-filters-filtername-package.ad[]
+endif::resolver[]
+
+ifdef::resolver[]
+=== GET /packages/:packageName/:packageVersion/filter
+
+include::get-packages-packagename-packageversion-filter.ad[]
+endif::resolver[]
+
+ifdef::core[]
+=== POST /updates
+
+include::post-updates.ad[]
+endif::core[]
+
+ifdef::core[]
+=== GET /updates
+
+include::get-updates.ad[]
+endif::core[]
+
+ifdef::core[]
+=== GET /updates/:campaignId
+
+include::get-updates-campaignid.ad[]
+endif::core[]

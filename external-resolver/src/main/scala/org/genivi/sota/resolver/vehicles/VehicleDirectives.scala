@@ -9,7 +9,7 @@ import akka.http.scaladsl.model.StatusCodes.NoContent
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
-import eu.timepit.refined.Refined
+import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
@@ -83,7 +83,7 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
 
   /**
    * API route for package -> vehicle associations.
-   * @return      Route object containing routes for listing packages on a vehicle, and creating and deleting 
+   * @return      Route object containing routes for listing packages on a vehicle, and creating and deleting
    *              vehicle -> package associations
    * @throws      Errors.MissingPackageException if package doesn't exist
    * @throws      Errors.MissingVehicle if vehicle doesn't exist
@@ -110,9 +110,9 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
     } ~
     path("packages") {
       handleExceptions(installedPackagesHandler) {
-        (put & entity(as[Set[Package.Id]]) ) { packageIds =>
-          onSuccess( VehicleFunctions.updateInstalledPackages(vin, packageIds ) ) {
-            complete( StatusCodes.NoContent )
+        (put & entity(as[Set[Package.Id]])) { packageIds =>
+          onSuccess(db.run(VehicleRepository.updateInstalledPackages(vin, packageIds))) {
+            complete(StatusCodes.NoContent)
           }
         }
       }
@@ -127,7 +127,7 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
 
   /**
    * API route for component -> vehicle associations.
-   * @return      Route object containing routes for listing components on a vehicle, and creating and deleting 
+   * @return      Route object containing routes for listing components on a vehicle, and creating and deleting
    *              vehicle -> component associations
    * @throws      Errors.MissingComponent if component doesn't exist
    * @throws      Errors.MissingVehicle if vehicle doesn't exist

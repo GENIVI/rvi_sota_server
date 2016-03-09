@@ -14,7 +14,11 @@ define(function(require) {
         <PackagesHeader/>
         <Errors />
         <SearchBar label="Filter" event="search-packages-by-regex"/>
-        <ListOfPackages Packages={db.searchablePackages}/>
+        <ListOfPackages
+          Packages={db.searchablePackages}
+          PollEventName="poll-packages"
+          DispatchObject={{actionType: 'search-packages-by-regex', regex: "."}}
+          DisplayCampaignLink={true}/>
       </div>
     );}
   });

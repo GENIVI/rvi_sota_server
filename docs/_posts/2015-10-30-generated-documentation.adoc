@@ -1,0 +1,23 @@
+---
+layout: page
+title: "Auto-generated Documentation"
+category: dev
+date: 2015-10-30 17:27:39
+order: 10
+---
+
+The source code of each of the components of SOTA includes comments and documentation. The auto-generated docs from those comments is linked here.
+
+=== SOTA Server
+
+link:../gen_docs/core/index.html[ScalaDocs for SOTA Core]
+
+link:../gen_docs/resolver/index.html[ScalaDocs for SOTA Resolver]
+
+link:../gen_docs/webserver/index.html[ScalaDocs for SOTA Web Server]
+
+link:../gen_docs/common/index.html[ScalaDocs for SOTA common resources]
+
+=== SOTA Client
+
+link:../gen_docs/client/sota_client/index.html[Rustdoc for SOTA Client]

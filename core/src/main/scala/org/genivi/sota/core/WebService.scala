@@ -25,8 +25,10 @@ import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.{UpdateSpecs, Packages, Vehicles, InstallHistories}
+import org.genivi.sota.core.rvi.{ServerServices, RviClient}
 import org.genivi.sota.rest.Validation._
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
+import org.joda.time.DateTime
 import scala.concurrent.Future
 import slick.driver.MySQLDriver.api.Database
 import slick.dbio.DBIO
@@ -36,7 +38,7 @@ object ErrorCodes {
   val ExternalResolverError = ErrorCode( "external_resolver_error" )
 }
 
-class VehiclesResource(db: Database)
+class VehiclesResource(db: Database, rviClient: RviClient)
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
 
   import system.dispatcher
@@ -66,6 +68,11 @@ class VehiclesResource(db: Database)
 
   val extractVin : Directive1[Vehicle.Vin] = refined[Vehicle.ValidVin](Slash ~ Segment)
 
+  def ttl() : DateTime = {
+    import com.github.nscala_time.time.Implicits._
+    DateTime.now + 5.minutes
+  }
+
   val route = pathPrefix("vehicles") {
     extractVin { vin =>
       pathEnd {
@@ -87,11 +94,18 @@ class VehiclesResource(db: Database)
           }
         }
       } ~
+      // TODO: Check that vin exists
       (path("queued") & get) {
         complete(db.run(UpdateSpecs.getPackagesQueuedForVin(vin)))
       } ~
       (path("history") & get) {
         complete(db.run(InstallHistories.list(vin)))
+      } ~
+      (path("sync") & put) {
+        // TODO: Config RVI destination path (or ClientServices.getpackages)
+        rviClient.sendMessage(s"genivi.org/vin/${vin}/sota/getpackages", io.circe.Json.Empty, ttl())
+        // TODO: Confirm getpackages in progress to vehicle?
+        complete(NoContent)
       }
     } ~
     pathEnd {
@@ -111,7 +125,7 @@ class VehiclesResource(db: Database)
 class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, updateService: UpdateService)
                             (implicit system: ActorSystem, mat: ActorMaterializer) {
   import system.dispatcher
-  import eu.timepit.refined.string.uuidPredicate
+  import eu.timepit.refined.string.uuidValidate
   import org.genivi.sota.core.db.UpdateSpecs
   import UpdateSpec._
   import CirceMarshallingSupport._
@@ -142,7 +156,6 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
 }
 
 
-import org.genivi.sota.core.rvi.{ServerServices, RviClient}
 class WebService(registeredServices: ServerServices, resolver: ExternalResolverClient, db : Database)
                 (implicit system: ActorSystem, mat: ActorMaterializer, rviClient: RviClient) extends Directives {
   implicit val log = Logging(system, "webservice")
@@ -158,7 +171,7 @@ class WebService(registeredServices: ServerServices, resolver: ExternalResolverC
         complete(HttpResponse(InternalServerError, entity = entity.toString()))
       }
   }
-  val vehicles = new VehiclesResource( db )
+  val vehicles = new VehiclesResource(db, rviClient)
   val packages = new PackagesResource(resolver, db)
   val updateRequests = new UpdateRequestsResource(db, resolver, new UpdateService(registeredServices))
 

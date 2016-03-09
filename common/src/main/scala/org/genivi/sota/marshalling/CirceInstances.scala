@@ -8,7 +8,8 @@ import java.util.UUID
 
 import akka.http.scaladsl.model.Uri
 import cats.data.Xor
-import eu.timepit.refined._
+import eu.timepit.refined.refineV
+import eu.timepit.refined.api.{Refined, Validate}
 import io.circe.{DecodingFailure, Json, Encoder, Decoder}
 import org.joda.time.{Interval, DateTime}
 import org.joda.time.format.ISODateTimeFormat
@@ -22,7 +23,7 @@ import org.joda.time.format.ISODateTimeFormat
 
 trait CirceInstances {
 
-  implicit def refinedDecoder[T, P](implicit decoder: Decoder[T], predicate: Predicate[P, T]): Decoder[Refined[T, P]] =
+  implicit def refinedDecoder[T, P](implicit decoder: Decoder[T], p: Validate.Plain[T, P]): Decoder[Refined[T, P]] =
     decoder.map(t =>
       refineV[P](t) match {
         case Left(e)  =>

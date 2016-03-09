@@ -4,12 +4,14 @@
  */
 package org.genivi.sota.resolver.packages
 
+import org.genivi.sota.db.Operators._
+import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.filters.{Filter, FilterRepository}
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
-import org.genivi.sota.db.SlickExtensions._
+
 
 /**
  * Data access object for Packages
@@ -64,10 +66,7 @@ object PackageRepository {
                     id.version === pkgId.version)
       .result
       .headOption
-      .flatMap(_.
-        fold[DBIO[Package]]
-          (DBIO.failed(Errors.MissingPackageException))
-          (DBIO.successful(_)))
+      .failIfNone(Errors.MissingPackageException)
 
   /**
    * Loads a group of Packages from the database by ID
@@ -80,108 +79,5 @@ object PackageRepository {
       x.name.mappedTo[String] ++ x.version.mappedTo[String] inSet ids.map( id => id.name.get + id.version.get )
     ).result.map( _.toSet )
   }
-
-}
-
-/**
- * Data access object for PackageFilters
- */
-object PackageFilterRepository {
-
-  /**
-   * DAO Mapping Class for the PackageFilters table in the database
-   */
-  // scalastyle:off
-  class PackageFilterTable(tag: Tag) extends Table[PackageFilter](tag, "PackageFilters") {
-
-    def packageName    = column[Package.Name]("packageName")
-    def packageVersion = column[Package.Version]("packageVersion")
-    def filterName     = column[Filter.Name]("filterName")
-
-    def pk = primaryKey("pk_packageFilter", (packageName, packageVersion, filterName))
-
-    def * = (packageName, packageVersion, filterName).shaped <>
-      (p => PackageFilter(p._1, p._2, p._3),
-        (pf: PackageFilter) => Some((pf.packageName, pf.packageVersion, pf.filterName)))
-  }
-  // scalastyle:on
-
-  val packageFilters = TableQuery[PackageFilterTable]
-
-  /**
-   * Adds a package filter to the PackageFilter table. Updates an existing package filter
-   * if already present.
-   * @param pf    The package filter to add
-   * @return      A DBIO[PackageFilter] for added filter
-   */
-  def add(pf: PackageFilter)(implicit ec: ExecutionContext): DBIO[PackageFilter] =
-    (packageFilters += pf).map(_ => pf)
-
-  /**
-   * Lists the package filters in the PackageFilter table
-   * @return     A DBIO[Seq[PackageFilter]] for the package filters in the table
-   */
-  def list: DBIO[Seq[PackageFilter]] = packageFilters.result
-
-  /**
-   * Lists the packages for a specific filter
-   * @param fname  The name of the filter for which to list packages
-   * @return       A DBIO[Seq[Package]] of packages for any matched filter
-   */
-  def listPackagesForFilter(fname: Filter.Name): DBIO[Seq[Package]] = {
-    val q = for {
-      pf <- packageFilters.filter(_.filterName === fname)
-      ps <- PackageRepository.packages
-              .filter(pkg => pkg.name    === pf.packageName
-                          && pkg.version === pf.packageVersion)
-    } yield ps
-    q.result
-  }
-
-  /**
-   * Lists the filters for a specific package
-   * @param pkgId  The ID of the package for which to find matching filters
-   * @return       A DBIO[(Option[Package], Seq[Filter)] of the matching Package if found
-   *               and a Seq of associated Filters, or None and the empty Seq
-   */
-  def listFiltersForPackage(pkgId: Package.Id)
-                           (implicit ec: ExecutionContext): DBIO[(Option[Package], Seq[Filter])] = {
-    val qFilters = for {
-      pf <- packageFilters if pf.packageName    === pkgId.name &&
-                              pf.packageVersion === pkgId.version
-      f  <- FilterRepository.filters if f.name === pf.filterName
-    } yield f
-
-    for {
-      p  <- PackageRepository.packages
-              .filter(pkg => pkg.name    === pkgId.name
-                          && pkg.version === pkgId.version)
-              .result
-              .headOption
-      fs <- qFilters.result
-    } yield (p, fs)
-  }
-
-  /**
-   * Deletes a filter by name
-   * @param fname   The name of the filter to delete
-   * @return        A DBIO[Int] number of filters deleted
-   */
-  def delete(fname: Filter.Name): DBIO[Int] =
-    packageFilters.filter(_.filterName === fname).delete
-
-  /**
-   * Deletes a filter by package name and version, and filter name
-   * @param pname     The name of the package in the filter to be deleted
-   * @param pversion  The version of the package in the filter to be deleted
-   * @param fname     The name of the filter to be deleted
-   * @return          A DBIO[Int] number of filters deleted
-   */
-  def deletePackageFilter(pname: Package.Name, pversion: Package.Version, fname: Filter.Name): DBIO[Int] =
-    packageFilters
-      .filter(pf => pf.packageName    === pname
-                 && pf.packageVersion === pversion
-                 && pf.filterName     === fname)
-      .delete
 
 }

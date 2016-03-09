@@ -6,6 +6,8 @@ RUN apt-get update \
 RUN git clone https://github.com/advancedtelematic/rvi_sota_server.git
 WORKDIR /app/rvi_sota_server
 
+RUN git pull
+
 # fetch dependencies
 RUN sbt flywayMigrate || true
 

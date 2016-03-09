@@ -4,8 +4,8 @@
  */
 package org.genivi.sota.resolver.filters
 
-import eu.timepit.refined.Refined
-import eu.timepit.refined.string.{Regex, regexPredicate}
+import eu.timepit.refined.api.Refined
+import eu.timepit.refined.string.{Regex, regexValidate}
 import scala.util.parsing.combinator.syntactical.StandardTokenParsers
 import scala.util.parsing.combinator.{PackratParsers, ImplicitConversions}
 import org.genivi.sota.resolver.components.Component
@@ -61,7 +61,7 @@ object FilterAST extends StandardTokenParsers with PackratParsers with ImplicitC
     (andP ~ ("OR" ~> orP)) ^^ Or | andP
 
   def regexLit: Parser[Refined[String, Regex]] =
-    elem("regex", t => regexPredicate.isValid(t.chars)) ^^ (t => Refined(t.chars))
+    elem("regex", t => regexValidate.isValid(t.chars)) ^^ (t => Refined.unsafeApply(t.chars))
 
   def parseFilter(input: String): Either[String, FilterAST] =
     phrase(orP)(new lexical.Scanner(input)) match {

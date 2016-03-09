@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.refined
 
-import eu.timepit.refined.{Predicate, Refined}
+import eu.timepit.refined.api.{Validate, Refined}
 import slick.driver.MySQLDriver.api._
 
 /**
@@ -19,7 +19,7 @@ trait SlickRefined {
 
   object Wrap {
     implicit val wrapRefined: Wrap[Refined] = new Wrap[Refined] {
-      override def apply[T, P](t: T): Refined[T, P] = Refined(t)
+      override def apply[T, P](t: T): Refined[T, P] = Refined.unsafeApply(t)
     }
   }
 
@@ -35,7 +35,7 @@ trait SlickRefined {
 
   implicit def refinedMappedType[T, P, F[_, _]]
       (implicit delegate: ColumnType[T],
-       predicate: Predicate[P, T],
+       p: Validate.Plain[T, P],
        wrapper: Wrap[F],
        unwrapper: Unwrap[F],
        ct: scala.reflect.ClassTag[F[T, P]] ) : ColumnType[F[T, P]] =
