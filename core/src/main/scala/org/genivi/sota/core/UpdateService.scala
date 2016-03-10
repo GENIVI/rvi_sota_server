@@ -7,15 +7,16 @@ package org.genivi.sota.core
 import akka.event.LoggingAdapter
 import akka.http.scaladsl.util.FastFuture
 import cats.Show
-import org.genivi.sota.core.data.{Download, Package, UpdateRequest, UpdateSpec, UpdateStatus}
-import org.genivi.sota.core.db.{Packages, UpdateRequests, UpdateSpecs}
+import org.genivi.sota.core.data._
+import org.genivi.sota.core.db._
+import org.genivi.sota.core.rvi.ServerServices
 import org.genivi.sota.core.transfer.UpdateNotifier
 import org.genivi.sota.data.{PackageId, Vehicle}
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NoStackTrace
 import slick.dbio.DBIO
 import slick.driver.MySQLDriver.api.Database
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.control.NoStackTrace
 
 case class PackagesNotFound(packageIds: (PackageId)*)
                            (implicit show: Show[PackageId])
@@ -34,8 +35,8 @@ object UploadConf {
 
 }
 
-import org.genivi.sota.core.rvi.{RviClient, ServerServices}
-class UpdateService(registeredServices: ServerServices)(implicit val log: LoggingAdapter, rviClient: RviClient) {
+class UpdateService(notifier: UpdateNotifier)
+                   (implicit val log: LoggingAdapter, val connectivity: Connectivity) {
   import UpdateService._
 
   def checkVins( dependencies: VinsToPackages ) : Future[Boolean] = FastFuture.successful( true )
@@ -95,7 +96,7 @@ class UpdateService(registeredServices: ServerServices)(implicit val log: Loggin
       packages       <- mapIdsToPackages(vinsToDeps)
       updateSpecs    = mkUploadSpecs(request, vinsToDeps, packages)
       _              <- persistRequest(request, updateSpecs)
-      _              <- Future.successful( UpdateNotifier.notify(updateSpecs.toSeq, registeredServices) )
+      _              <- Future.successful(notifier.notify(updateSpecs.toSeq))
     } yield updateSpecs
   }
 
