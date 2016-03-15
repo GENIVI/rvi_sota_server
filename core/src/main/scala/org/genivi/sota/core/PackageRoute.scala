@@ -12,7 +12,7 @@ import akka.http.scaladsl.model.Uri
 import akka.stream.ActorMaterializer
 import akka.stream.io.SynchronousFileSink
 import akka.util.ByteString
-import eu.timepit.refined.Refined
+import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import java.io.File
 import java.nio.file.Path

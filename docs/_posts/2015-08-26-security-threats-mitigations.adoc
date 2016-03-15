@@ -9,7 +9,7 @@ date: 2015-08-26 10:36:37
 [[potential-security-threats]]
 == Potential Security Threats
 
-[#security_table,cols=",,,,,,,,,,",opts="header"]
+[#security_table,cols=",,,,,,,",opts="header"]
 |====
 ^.^|ID ^.^|Label ^.^|STRIDE Attribute ^.^|Assets ^.^|Interactions ^.^|Attack potential vector/rating ^.^|Damage potential vector/rating ^.^|Risk Vector/Rating
 |–––––|––––––––––––––––––––––––|–––––––––––––––––––––––––––|–––––––––––––––––––––––––––––––––|–––––––––––––––––––|––––––––––––––––––––––––––––––––––––––––––––|–––––––––––––––––––––––––––|–––––––––––––––––––––––––––––––––––––––––––––––

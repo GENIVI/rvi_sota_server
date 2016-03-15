@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.resolver.vehicles
 
-import eu.timepit.refined.Refined
+import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.refined.SlickRefined._
@@ -101,15 +101,34 @@ object VehicleRepository {
            }.delete
     } yield ()
 
-  def updateInstalledPackages( vehicle: Vehicle, newPackages: Set[Package.Id], deletedPackages: Set[Package.Id] )
-                             (implicit ec: ExecutionContext) : DBIO[Unit] = DBIO.seq(
-    installedPackages.filter( ip =>
-      ip.vin === vehicle.vin &&
-      (ip.packageName.mappedTo[String] ++ ip.packageVersion.mappedTo[String])
-        .inSet( deletedPackages.map( id => id.name.get + id.version.get ))
-    ).delete,
-    installedPackages ++= newPackages.map( vehicle.vin -> _ )
-  ).transactionally
+  def updateInstalledPackages(vin: Vehicle.Vin, packages: Set[Package.Id] )
+                             (implicit ec: ExecutionContext): DBIO[Unit] = {
+
+    def checkPackagesAvailable( ids: Set[Package.Id] ) : DBIO[Unit] = {
+      PackageRepository.load(ids).map( ids -- _.map(_.id) ).flatMap { xs =>
+        if( xs.isEmpty ) DBIO.successful(()) else DBIO.failed( Errors.MissingPackageException )
+      }
+    }
+
+    def helper( vehicle: Vehicle, newPackages: Set[Package.Id], deletedPackages: Set[Package.Id] )
+                               (implicit ec: ExecutionContext) : DBIO[Unit] = DBIO.seq(
+      installedPackages.filter( ip =>
+        ip.vin === vehicle.vin &&
+        (ip.packageName.mappedTo[String] ++ ip.packageVersion.mappedTo[String])
+          .inSet( deletedPackages.map( id => id.name.get + id.version.get ))
+      ).delete,
+      installedPackages ++= newPackages.map( vehicle.vin -> _ )
+    ).transactionally
+
+    for {
+      vehicle           <- VehicleRepository.exists(vin)
+      installedPackages <- VehicleRepository.installedOn(vin)
+      newPackages       =  packages -- installedPackages
+      deletedPackages   =  installedPackages -- packages
+      _                 <- checkPackagesAvailable(newPackages)
+      _                 <- helper(vehicle, newPackages, deletedPackages)
+    } yield ()
+  }
 
   def installedOn(vin: Vehicle.Vin)
                  (implicit ec: ExecutionContext) : DBIO[Set[Package.Id]] =
@@ -220,12 +239,15 @@ object VehicleRepository {
              part      : Option[Component.PartNumber])
             (implicit ec: ExecutionContext): DBIO[Seq[Vehicle]] = {
 
+    def toRegex[T](r: Refined[String, T]): Refined[String, Regex] =
+      Refined.unsafeApply(r.get)
+
     val vins  = re.fold[FilterAST](True)(VinMatches(_))
     val pkgs  = (pkgName, pkgVersion) match
-      { case (Some(re1), Some(re2)) => HasPackage(Refined(re1.get), Refined(re2.get))
+      { case (Some(re1), Some(re2)) => HasPackage(toRegex(re1), toRegex(re2))
         case _                      => True
       }
-    val comps = part.fold[FilterAST](True)(r => HasComponent(Refined(r.get)))
+    val comps = part.fold[FilterAST](True)(r => HasComponent(toRegex(r)))
 
     for {
       vpcs <- vinsWithPackagesAndComponents
@@ -240,9 +262,9 @@ object VehicleRepository {
   def resolve(pkgId: Package.Id)
              (implicit ec: ExecutionContext): DBIO[Map[Vehicle.Vin, Seq[Package.Id]]] =
     for {
-      _       <- PackageRepository.exists(pkgId)
-      (_, fs) <- PackageFilterRepository.listFiltersForPackage(pkgId)
-      vpcs    <- vinsWithPackagesAndComponents
+      _    <- PackageRepository.exists(pkgId)
+      fs   <- PackageFilterRepository.listFiltersForPackage(pkgId)
+      vpcs <- vinsWithPackagesAndComponents
     } yield ResolveFunctions.makeFakeDependencyMap(pkgId,
               vpcs.filter(query(fs.map(_.expression).map(parseValidFilter).foldLeft[FilterAST](True)(And)))
                   .map(_._1))

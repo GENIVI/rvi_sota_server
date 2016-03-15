@@ -6,7 +6,8 @@ package org.genivi.sota.rest
 
 import akka.http.scaladsl.server.PathMatcher.{Matched, Unmatched}
 import akka.http.scaladsl.server._
-import eu.timepit.refined.{Refined, Predicate, refineV}
+import eu.timepit.refined.refineV
+import eu.timepit.refined.api.{Refined, Validate}
 import scala.reflect.ClassTag
 
 /**
@@ -22,7 +23,7 @@ import scala.reflect.ClassTag
 
 final class RefinedMatcher[P] {
   import Directives._
-  def apply[T]( pm: PathMatcher1[T] )(implicit p: Predicate[P, T], ev: ClassTag[T]) : Directive1[T Refined P] =
+  def apply[T]( pm: PathMatcher1[T] )(implicit p: Validate.Plain[T, P], ev: ClassTag[T]) : Directive1[T Refined P] =
     extractRequestContext.flatMap[Tuple1[T Refined P]] { ctx =>
       pm(ctx.unmatchedPath) match {
         case Matched(rest, Tuple1(t: T)) => refineV[P](t) match {

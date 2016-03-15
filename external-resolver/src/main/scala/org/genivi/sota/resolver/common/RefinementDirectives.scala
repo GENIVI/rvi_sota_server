@@ -18,7 +18,7 @@ object RefinementDirectives {
 
   def refinedPackageId: Directive1[Package.Id] =
     (refined[Package.ValidName]   (Slash ~ Segment) &
-     refined[Package.ValidVersion](Slash ~ Segment ~ PathEnd))
+     refined[Package.ValidVersion](Slash ~ Segment))
        .as[Package.Id](Package.Id.apply _)
 
   def refinedPartNumber: Directive1[Component.PartNumber] =

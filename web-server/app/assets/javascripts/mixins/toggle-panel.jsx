@@ -12,6 +12,7 @@ define(['jquery', 'react'], function($, React) {
         (<div className="panel-body">
            { this.panel() }
         </div>);
+      var labelText = typeof this.label === 'string' ? this.label : this.label()
       return (
         <div>
           <div className="row">
@@ -19,7 +20,7 @@ define(['jquery', 'react'], function($, React) {
               <div className="panel panel-default" id="panel1">
                 <div className="panel-heading pointer" onClick={this.togglePanel}>
                    <h4 className="panel-title">
-                     { this.label }
+                     { labelText }
                   </h4>
                 </div>
                 { panelBody }

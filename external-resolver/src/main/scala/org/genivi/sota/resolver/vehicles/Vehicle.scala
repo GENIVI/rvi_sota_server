@@ -14,6 +14,12 @@ case class Vehicle(
 
 object Vehicle extends VehicleCommon {
 
+  implicit val VehcileOrdering: Ordering[Vehicle] =
+    new Ordering[Vehicle] {
+      override def compare(veh1: Vehicle, veh2: Vehicle): Int =
+        veh1.vin.get compare veh2.vin.get
+    }
+
   val genVehicle: Gen[Vehicle] =
     genVin.map(Vehicle(_))
 

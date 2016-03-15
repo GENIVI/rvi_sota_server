@@ -1,7 +1,8 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
-import eu.timepit.refined.Refined
+import eu.timepit.refined.refineMV
+import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
@@ -24,10 +25,10 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
 
       // Add some vehicles.
       val vins = List(
-        "00RES0LVEV1N12345",
-        "01RES0LVEV1N12345",
-        "10RES0LVEV1N12345",
-        "11RES0LVEV1N12345")
+        refineMV("00RES0LVEV1N12345"),
+        refineMV("01RES0LVEV1N12345"),
+        refineMV("10RES0LVEV1N12345"),
+        refineMV("11RES0LVEV1N12345")): List[Vehicle.Vin]
 
       vins map addVehicleOK
 
@@ -48,7 +49,7 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
       addPackageFilterOK(pkgName, "0.0.1", "0xfilter")
 
       resolveOK(pkgName, "0.0.1",
-        List("00RES0LVEV1N12345", "01RES0LVEV1N12345"))
+        List(refineMV("00RES0LVEV1N12345"), refineMV("01RES0LVEV1N12345")))
     }
 
     "support filtering by installed packages on VIN" in {
@@ -59,13 +60,13 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
       deletePackageFilterOK(pkgName, "0.0.1", "0xfilter")
       addPackageOK("apa",  "1.0.0", None, None)
       addPackageOK("bepa", "1.0.0", None, None)
-      installPackageOK("10RES0LVEV1N12345", "apa", "1.0.0")
-      installPackageOK("11RES0LVEV1N12345", "apa", "1.0.0")
-      installPackageOK("00RES0LVEV1N12345", "bepa", "1.0.0")
+      installPackageOK(refineMV("10RES0LVEV1N12345"), "apa", "1.0.0")
+      installPackageOK(refineMV("11RES0LVEV1N12345"), "apa", "1.0.0")
+      installPackageOK(refineMV("00RES0LVEV1N12345"), "bepa", "1.0.0")
       addFilterOK("1xfilter", s"""has_package "^a.*" "1.*"""")
       addPackageFilterOK(pkgName, "0.0.1", "1xfilter")
       resolveOK(pkgName, "0.0.1",
-        List("10RES0LVEV1N12345", "11RES0LVEV1N12345"))
+        List(refineMV("10RES0LVEV1N12345"), refineMV("11RES0LVEV1N12345")))
     }
 
     "support filtering by hardware components on VIN" in {
@@ -74,15 +75,15 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
       // has_component instead.
 
       deletePackageFilterOK(pkgName, "0.0.1", "1xfilter")
-      addComponentOK(Refined("jobby0"), "nice")
-      addComponentOK(Refined("jobby1"), "nice")
-      installComponentOK(Refined("00RES0LVEV1N12345"), Refined("jobby0"))
-      installComponentOK(Refined("01RES0LVEV1N12345"), Refined("jobby0"))
-      installComponentOK(Refined("11RES0LVEV1N12345"), Refined("jobby1"))
+      addComponentOK(Refined.unsafeApply("jobby0"), "nice")
+      addComponentOK(Refined.unsafeApply("jobby1"), "nice")
+      installComponentOK(Refined.unsafeApply("00RES0LVEV1N12345"), Refined.unsafeApply("jobby0"))
+      installComponentOK(Refined.unsafeApply("01RES0LVEV1N12345"), Refined.unsafeApply("jobby0"))
+      installComponentOK(Refined.unsafeApply("11RES0LVEV1N12345"), Refined.unsafeApply("jobby1"))
       addFilterOK("components", s"""has_component "^.*y0"""")
       addPackageFilterOK(pkgName, "0.0.1", "components")
       resolveOK(pkgName, "0.0.1",
-        List("00RES0LVEV1N12345", "01RES0LVEV1N12345"))
+        List(refineMV("00RES0LVEV1N12345"), refineMV("01RES0LVEV1N12345")))
     }
 
     "return no VINs if the filter is trivially false" in {
@@ -118,11 +119,11 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
           status shouldBe StatusCodes.OK
 
           responseAs[io.circe.Json].noSpaces shouldBe
-            s"""[["00RES0LVEV1N12345",[{"version":"0.0.1","name":"resolvePkg"}]],["01RES0LVEV1N12345",[{"version":"0.0.1","name":"resolvePkg"}]]]"""
+            s"""[["00RES0LVEV1N12345",[{"name":"resolvePkg","version":"0.0.1"}]],["01RES0LVEV1N12345",[{"name":"resolvePkg","version":"0.0.1"}]]]"""
 
           responseAs[Map[Vehicle.Vin, Set[Package.Id]]] shouldBe
-            Map(Refined("00RES0LVEV1N12345") -> Set(Package.Id(Refined(pkgName), Refined("0.0.1"))),
-                Refined("01RES0LVEV1N12345") -> Set(Package.Id(Refined(pkgName), Refined("0.0.1"))))
+            Map(Refined.unsafeApply("00RES0LVEV1N12345") -> Set(Package.Id(Refined.unsafeApply(pkgName), Refined.unsafeApply("0.0.1"))),
+                Refined.unsafeApply("01RES0LVEV1N12345") -> Set(Package.Id(Refined.unsafeApply(pkgName), Refined.unsafeApply("0.0.1"))))
 
         }
       }
@@ -135,7 +136,6 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
  */
 class ResolveResourcePropSpec extends ResourcePropSpec {
 
-  import ArbitraryFilter.arbFilter
   import akka.http.scaladsl.model.StatusCodes
   import org.genivi.sota.resolver.resolve.ResolveFunctions.makeFakeDependencyMap
   import org.genivi.sota.resolver.filters._
@@ -154,7 +154,7 @@ class ResolveResourcePropSpec extends ResourcePropSpec {
         => {
 
           // Add some new vehicles.
-          vs map (v => addVehicleOK(v.vin.get))
+          vs map (v => addVehicleOK(v.vin))
 
           // Add some new packages.
           (p +: ps) map (q => addPackageOK(q.id.name.get, q.id.version.get, q.description, q.vendor))

@@ -7,7 +7,7 @@ define(function(require) {
       ComponentsPage = require('components/components/components-page'),
       ShowPackage = require('components/packages/show-package'),
       ShowFilter = require('components/filters/show-filter'),
-      ShowComponent = require('components/components/show-components'),
+      ShowComponent = require('components/components/show-component'),
       VehiclePageComponent = require('components/vehicles/vehicle-page-component'),
       Router = require('react-router'),
       CreateCampaign = require('components/create-campaign-page-component'),

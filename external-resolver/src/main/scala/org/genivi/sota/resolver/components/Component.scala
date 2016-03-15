@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.resolver.components
 
-import eu.timepit.refined.{Refined, Predicate}
+import eu.timepit.refined.api.{Refined, Validate}
 
 
 case class Component(
@@ -14,16 +14,17 @@ case class Component(
 
 object Component {
 
-  trait ValidPartNumber
+  case class ValidPartNumber()
 
   type PartNumber = Refined[String, ValidPartNumber]
 
   case class DescriptionWrapper(description: String)
 
-  implicit val validPartNumber: Predicate[ValidPartNumber, String] =
-    Predicate.instance(
+  implicit val validPartNumber: Validate.Plain[String, ValidPartNumber] =
+    Validate.fromPredicate(
       part => part.length > 0 && part.length <= 30 && part.forall(c => c.isLetter || c.isDigit),
-      part => s"($part isn't a 30 character or shorter alpha numeric non-empty string)"
+      part => s"($part isn't a 30 character or shorter alpha numeric non-empty string)",
+      ValidPartNumber()
     )
 
   implicit val PartNumberOrdering: Ordering[Component.PartNumber] = new Ordering[Component.PartNumber] {

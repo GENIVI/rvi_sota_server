@@ -2,7 +2,7 @@ package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.unmarshalling._
-import eu.timepit.refined.Refined
+import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.filters.Filter
@@ -15,7 +15,7 @@ class ValidateResourceSpec extends ResourceWordSpec {
 
   "Validate resource" should {
 
-    val filter = Filter(Refined("myfilter"), Refined(s"""vin_matches "SAJNX5745SC......""""))
+    val filter = Filter(Refined.unsafeApply("myfilter"), Refined.unsafeApply(s"""vin_matches "SAJNX5745SC......""""))
 
     "accept valid filters" in {
       validateFilter(filter) ~> route ~> check {
@@ -24,14 +24,14 @@ class ValidateResourceSpec extends ResourceWordSpec {
     }
 
     "reject filters with empty names" in {
-      validateFilter(filter.copy(name = Refined(""))) ~> route ~> check {
+      validateFilter(filter.copy(name = Refined.unsafeApply(""))) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }
     }
 
     "reject filters with bad filter expressions" in {
-      validateFilter(filter.copy(expression = Refined(filter.expression.get + " AND ?"))) ~> route ~> check {
+      validateFilter(filter.copy(expression = Refined.unsafeApply(filter.expression.get + " AND ?"))) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }

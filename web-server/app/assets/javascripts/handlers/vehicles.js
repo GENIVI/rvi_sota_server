@@ -44,9 +44,12 @@ define(function(require) {
               });
           break;
           case 'get-vehicles-for-package':
-            sendRequest.doGet('/api/v1/vehicles?package=' + payload.name + '-' + payload.version)
+            sendRequest.doGet('/api/v1/vehicles?packageName=' + payload.name + '&packageVersion=' + payload.version)
               .success(function(vehicles) {
-                db.vehiclesForPackage.reset(vehicles);
+                var list = _.map(vehicles, function(vehicle) {
+                  return vehicle.vin;
+                });
+                db.vehiclesForPackage.reset(list);
               });
           break;
           case 'get-package-queue-for-vin':
@@ -69,9 +72,12 @@ define(function(require) {
           break;
           case 'add-component-to-vin':
             sendRequest.doPut('/api/v1/vehicles/' + payload.vin + '/component/' + payload.partNumber)
-              .success(function(components, blah, stuff) {
+              .success(function() {
                 SotaDispatcher.dispatch({actionType: 'list-components-on-vin', vin: payload.vin});
               });
+          break;
+          case 'sync-packages-for-vin':
+            sendRequest.doPut('/api/v1/vehicles/' + payload.vin + '/sync');
           break;
         }
       };

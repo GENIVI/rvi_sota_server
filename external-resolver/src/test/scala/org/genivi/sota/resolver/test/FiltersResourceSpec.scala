@@ -6,12 +6,12 @@ package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.unmarshalling._
-import eu.timepit.refined.Refined
+import eu.timepit.refined.api.Refined
 import io.circe._
 import io.circe.generic.auto._
 import org.genivi.sota.rest.ErrorCodes
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import org.genivi.sota.resolver.filters.Filter
+import org.genivi.sota.resolver.filters.Filter, Filter._
 import org.genivi.sota.resolver.filters.FilterAST._
 import org.genivi.sota.resolver.packages.PackageFilter
 import org.genivi.sota.rest.{ErrorRepresentation, ErrorCode}
@@ -25,7 +25,7 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
 
     val filterName = "myfilter"
     val filterExpr = s"""vin_matches "SAJNX5745SC......""""
-    val filter     = Filter(Refined(filterName), Refined(filterExpr))
+    val filter     = Filter(Refined.unsafeApply(filterName), Refined.unsafeApply(filterExpr))
 
     "create a new resource on POST request" in {
       addFilterOK(filterName, filterExpr)
@@ -47,7 +47,7 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
 
     val filterName2 = "myfilter2"
     val filterExpr2 = s"""vin_matches "TAJNX5745SC......""""
-    val filter2     = Filter(Refined(filterName2), Refined(filterExpr2))
+    val filter2     = Filter(Refined.unsafeApply(filterName2), Refined.unsafeApply(filterExpr2))
 
     "list available filters on a GET request" in {
       addFilterOK(filterName2, filterExpr2)
@@ -102,36 +102,9 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
 }
 
 /**
- * Arbitrary filter object
- * Used in property-based testing
- */
-object ArbitraryFilter {
-
-  import ArbitraryFilterAST.arbFilterAST
-  import org.scalacheck._
-
-  val genName: Gen[String] =
-    for {
-      // We don't want name clashes so keep the names long.
-      n  <- Gen.choose(20, 50)
-      cs <- Gen.listOfN(n, Gen.alphaNumChar)
-    } yield cs.mkString
-
-  val genFilter: Gen[Filter] =
-    for {
-      name <- genName
-      expr <- ArbitraryFilterAST.genFilter
-    } yield Filter(Refined(name), Refined(ppFilter(expr)))
-
-  implicit lazy val arbFilter = Arbitrary(genFilter)
-}
-
-/**
  * Filter resource property spec
  */
 class FiltersResourcePropSpec extends ResourcePropSpec {
-
-  import ArbitraryFilter.arbFilter
 
   property("Posting random filters should work") {
 

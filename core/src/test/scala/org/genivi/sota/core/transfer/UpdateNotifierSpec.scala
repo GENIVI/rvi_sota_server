@@ -3,7 +3,7 @@ package org.genivi.sota.core.transfer
 import akka.event.Logging
 import akka.http.scaladsl.model.Uri
 import akka.testkit.TestKit
-import eu.timepit.refined.Refined
+import eu.timepit.refined.api.Refined
 import org.genivi.sota.core.PackagesReader
 import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec, UpdateStatus, Vehicle}
 import org.genivi.sota.core.jsonrpc.HttpTransport
@@ -50,9 +50,10 @@ class UpdateNotifierSpec extends PropSpec with PropertyChecks with Matchers with
 
   property("notify about available updates", RequiresRvi) {
     import serverTransport.requestTransport
-    forAll( updateSpecsGen(Gen.const( Refined("VINOOLAM0FAU2DEEP") ) )) { specs =>
+    val serviceUri = Uri.from(scheme="http", host=getLocalHostAddr, port=8088)
+    forAll( updateSpecsGen(Gen.const(Refined.unsafeApply("V1234567890123456"))) ) { specs =>
       val futureRes = for {
-        sotaServices    <- SotaServices.register( Uri("http://localhost:8080/rvi") )
+        sotaServices    <- SotaServices.register( serviceUri.withPath(Uri.Path / "rvi") )
         notificationRes <- Future.sequence( UpdateNotifier.notify(specs, sotaServices) )
       } yield notificationRes
       futureRes.isReadyWithin( Span(5, Seconds) )  shouldBe true
@@ -61,6 +62,15 @@ class UpdateNotifierSpec extends PropSpec with PropertyChecks with Matchers with
 
   override def afterAll() : Unit = {
     TestKit.shutdownActorSystem(system)
+  }
+
+  def getLocalHostAddr = {
+    import collection.JavaConversions._
+    java.net.NetworkInterface.getNetworkInterfaces
+      .flatMap(_.getInetAddresses.toSeq)
+      .find(a => a.isSiteLocalAddress && !a.isLoopbackAddress)
+      .getOrElse(java.net.InetAddress.getLocalHost)
+      .getHostAddress
   }
 
 }

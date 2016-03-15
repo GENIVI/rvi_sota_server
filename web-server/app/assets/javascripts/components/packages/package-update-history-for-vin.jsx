@@ -67,7 +67,7 @@ define(function(require) {
             <thead>
               <tr>
                 <td>
-                  Packages
+                  Package Name
                 </td>
                 <td>
                   Version
@@ -86,7 +86,7 @@ define(function(require) {
             <thead>
               <tr>
                 <td>
-                  Packages
+                  Package Name
                 </td>
                 <td>
                   Version

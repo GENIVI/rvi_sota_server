@@ -57,7 +57,7 @@ To update the database schema, run `sbt flywayMigrate`
 
 This will apply any new migrations in src/main/resources/db/migration, and keep your existing data. This command expects to find the databases on localhost with sota/s0ta for the username/password. The URL to the database and login details can be overridden with the `CORE_DB_URL`, `CORE_DB_USER` and `CORE_DB_PASSWORD` environment variables for the core and `RESOLVER_DB_URL`, `RESOLVER_DB_USER` and, `RESOLVER_DB_PASSWORD` for the external resolver. See `project/SotaBuild.scala` for the implementation.
 
-TIP: If you are having trouble with flywayMigrate after an update, try deleting the sota_core, sota_core_test, sota_resolver, and sota_resolver_test databases, recreating them with the commands above, and running flywayMigrate again.
+TIP: If you are having trouble with flywayMigrate after an update, try `sbt flywayRepair`, then `sbt flywayMigrate` again. If that doesn't work, you can delete all database tables with `sbt flywayClean`, and then re-create them with `sbt flywayMigrate`.
 
 === Prerequisite: RVI server node
 
@@ -75,7 +75,7 @@ If you don't need to worry about the client communication part of the server, yo
 
 [source,scala]
 ----
-sotaServices <- FastFuture.successful(ServerServices("","","","",""))
+sotaServices <- FastFuture.successful(ServerServices("","","",""))
 ----
 ****
 
@@ -126,6 +126,19 @@ ln -s /var/sota-build/webserver-target/ web-server/target
 Never make changes to migrations that already exist. Add columns by creating a new migration with an 'ALTER TABLE' statement.
 
 If someone else has added a migration, run `sbt flywayMigrate` to update your local database.
+
+==== Database Migration Troubleshooting
+
+flywayMigrate might fail with an error like this on some updates:
+
+````
+[error] (core/*:flywayMigrate) org.flywaydb.core.api.FlywayException: Validate failed. Migration Checksum mismatch for migration 1
+[error] -> Applied to database : -2049361589
+[error] -> Resolved locally    : 736866586
+[error] Total time: 205 s, completed Nov 16, 2015 10:51:38 AM
+````
+
+Try `sbt flywayRepair`, then `sbt flywayMigrate` again. If that doesn't fix the problem, you can try `sbt flywayClean`, then `sbt flywayMigrate`, but note that `sbt flywayClean` will delete all database tables.
 
 == Building rvi_sota_client Locally
 

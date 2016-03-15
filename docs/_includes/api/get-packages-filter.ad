@@ -2,7 +2,7 @@
 [width="100%",cols="18%,82%",]
 |==================================================================
 |Description |Returns a list of all package —> filter associations.
-|URL |/api/v1/packageFilters
+|URL |/api/v1/packages/filter
 |Parameters |None
 |Success Response a|
 *Code:* 200

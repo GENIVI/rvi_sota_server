@@ -3,7 +3,7 @@ package org.genivi.sota.core
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.util.FastFuture
 import akka.testkit.TestKit
-import eu.timepit.refined.Refined
+import eu.timepit.refined.api.Refined
 import java.util.UUID
 import org.genivi.sota.core.data.Vehicle, Vehicle._
 import org.genivi.sota.core.data.Package
@@ -108,7 +108,7 @@ class UpdateServiceSpec extends PropSpec with PropertyChecks with Matchers with 
     import scala.concurrent.duration.DurationInt
     forAll( updateRequestGen(AvailablePackageIdGen), dependenciesGen(packages) ) { (request, deps) =>
       whenReady( createVehicles(deps.keySet).flatMap( _ => service.queueUpdate(request, _ => Future.successful(deps))) ) { specs =>
-        val updates = Await.result( db.run( UpdateSpecs.listUpdatesById( Refined( request.id.toString ) ) ), 1.second)
+        val updates = Await.result( db.run( UpdateSpecs.listUpdatesById( Refined.unsafeApply( request.id.toString ) ) ), 1.second)
         specs.size shouldBe deps.size
       }
     }

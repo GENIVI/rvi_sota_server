@@ -16,6 +16,8 @@ object SotaBuild extends Build {
 
   lazy val IntegrationTests = config("it") extend Test
 
+  lazy val BrowserTests = config("bt") extend Test
+
   lazy val basicSettings = Seq(
     organization := "org.genivi",
     scalaVersion := "2.11.7",
@@ -57,7 +59,7 @@ object SotaBuild extends Build {
 
   lazy val externalResolver = Project(id = "resolver", base = file("external-resolver"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Scalaz :+ Dependencies.Refined :+ Dependencies.ParserCombinators,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.ParserCombinators,
       parallelExecution in Test := false,
       dockerExposedPorts := Seq(8081),
       flywayUrl := sys.env.get("RESOLVER_DB_URL").orElse( sys.props.get("resolver.db.url") ).getOrElse("jdbc:mysql://localhost:3306/sota_resolver"),
@@ -89,8 +91,9 @@ object SotaBuild extends Build {
   lazy val webServer = Project(id = "webserver", base = file("web-server"),
     settings = commonSettings ++ PlaySettings.defaultScalaSettings ++ Seq(
       RoutesKeys.routesGenerator := InjectedRoutesGenerator,
-      testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "BrowserTest"),
-      testOptions in IntegrationTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "BrowserTest"),
+      testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "APITests BrowserTests"),
+      testOptions in IntegrationTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "APITests"),
+      testOptions in BrowserTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "BrowserTests"),
       resolvers += "scalaz-bintray"  at "http://dl.bintray.com/scalaz/releases",
       dockerExposedPorts := Seq(9000),
       libraryDependencies ++= Seq (
@@ -110,10 +113,12 @@ object SotaBuild extends Build {
         play.sbt.Play.autoImport.cache
       ) ++ Dependencies.Database
     ))
+    .dependsOn(common)
     .enablePlugins(PlayScala, SbtWeb)
     .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
     .settings(inConfig(IntegrationTests)(Defaults.testTasks): _*)
-    .configs(UnitTests, IntegrationTests)
+    .settings(inConfig(BrowserTests)(Defaults.testTasks): _*)
+    .configs(UnitTests, IntegrationTests, BrowserTests)
 
   lazy val sota = Project(id = "sota", base = file("."))
     .settings( basicSettings )
@@ -130,26 +135,27 @@ object Dependencies {
 
   val AkkaVersion = "2.4.0"
 
-  val CirceVersion = "0.2.0-SNAPSHOT"
+  val CirceVersion = "0.2.0"
 
 
   lazy val Akka = Seq(
     "com.typesafe.akka" % "akka-http-core-experimental_2.11" % AkkaHttpVersion,
     "com.typesafe.akka" % "akka-http-experimental_2.11" % AkkaHttpVersion,
-    "com.typesafe.akka" %% "akka-http-testkit-experimental" % AkkaHttpVersion % Test,
+    "com.typesafe.akka" %% "akka-http-testkit-experimental" % AkkaHttpVersion,
     "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion,
     "ch.qos.logback" % "logback-classic" % "1.0.13"
   )
 
   lazy val Circe = Seq(
-    "io.circe" %% "circe-core" % CirceVersion,
+    "io.circe" %% "circe-core"    % CirceVersion,
     "io.circe" %% "circe-generic" % CirceVersion,
-    "io.circe" %% "circe-jawn" % CirceVersion
+    "io.circe" %% "circe-parse"   % CirceVersion
   )
 
-  lazy val Refined = "eu.timepit" %% "refined" % "0.2.3"
+  lazy val Refined = "eu.timepit" %% "refined" % "0.3.1"
 
   lazy val Scalaz = "org.scalaz" %% "scalaz-core" % "7.1.3"
+  lazy val Cats   = "org.spire-math" %% "cats" % "0.3.0"
 
   lazy val ScalaTest = "org.scalatest" % "scalatest_2.11" % "2.2.4"
 

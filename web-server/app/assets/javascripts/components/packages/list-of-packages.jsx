@@ -10,11 +10,11 @@ define(function(require) {
       router: React.PropTypes.func
     },
     componentWillUnmount: function(){
-      this.props.Packages.removeWatch("poll-packages");
+      this.props.Packages.removeWatch(this.props.PollEventName);
     },
     componentWillMount: function(){
-      SotaDispatcher.dispatch({actionType: 'search-packages-by-regex', regex: "."});
-      this.props.Packages.addWatch("poll-packages", _.bind(this.forceUpdate, this, null));
+      SotaDispatcher.dispatch(this.props.DispatchObject);
+      this.props.Packages.addWatch(this.props.PollEventName, _.bind(this.forceUpdate, this, null));
     },
     render: function() {
       var rows = _.map(this.props.Packages.deref(), function(package) {
@@ -28,25 +28,27 @@ define(function(require) {
             <td>
               { package.id.version }
             </td>
-            <td>
-              <Router.Link to='new-campaign' params={{name: package.id.name, version: package.id.version}}>
-                Create Campaign
-              </Router.Link>
-            </td>
+            {this.props.DisplayCampaignLink ?
+              <td>
+                <Router.Link to='new-campaign' params={{name: package.id.name, version: package.id.version}}>
+                  Create Campaign
+                </Router.Link>
+              </td>
+            : ''}
           </tr>
         );
-      });
+      }, this);
       return (
         <table className="table table-striped table-bordered">
           <thead>
             <tr>
               <td>
-                Packages
+                Package Name
               </td>
               <td>
                 Version
               </td>
-              <td/>
+              {this.props.DisplayCampaignLink ? <td/> : ''}
             </tr>
           </thead>
           <tbody>
