@@ -12,9 +12,9 @@ import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import CirceMarshallingSupport._
-import org.genivi.sota.core.data.Vehicle
 import org.genivi.sota.core.rvi.JsonRpcRviClient
 import org.genivi.sota.core.jsonrpc.HttpTransport
+import org.genivi.sota.data.Vehicle
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
@@ -50,6 +50,7 @@ class VehicleResourceSpec extends PropSpec with PropertyChecks
   def vehicleUri(vin: Vehicle.Vin)  = Uri.Empty.withPath( BasePath / vin.get )
 
   import Generators._
+  import org.genivi.sota.data.VehicleGenerators._
 
   property( "create new vehicle" ) {
     forAll { (vehicle: Vehicle) =>
@@ -70,7 +71,8 @@ class VehicleResourceSpec extends PropSpec with PropertyChecks
   } yield vin.mkString
 
 
-  val VehicleWithIllegalVin : Gen[Vehicle] = Gen.oneOf( tooLongVin, tooShortVin ).map( x => Vehicle( Refined.unsafeApply(x) ) )
+  val VehicleWithIllegalVin : Gen[Vehicle] = Gen.oneOf( tooLongVin, tooShortVin )
+      .map( x => Vehicle( Refined.unsafeApply(x) ) )
 
   property( "reject illegal vins" ) {
     forAll( VehicleWithIllegalVin ) { vehicle =>

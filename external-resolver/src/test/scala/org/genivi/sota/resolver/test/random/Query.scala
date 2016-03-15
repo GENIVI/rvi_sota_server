@@ -2,15 +2,15 @@ package org.genivi.sota.resolver.test.random
 
 import akka.http.scaladsl.model.StatusCodes
 import cats.state.{State, StateT}
-import org.genivi.sota.resolver.vehicles.Vehicle
 import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.resolve.ResolveFunctions
-import org.genivi.sota.resolver.filters.{FilterAST, And, True}, FilterAST._
-import org.genivi.sota.resolver.test.{VehicleRequestsHttp, PackageRequestsHttp, FilterRequestsHttp, ResolveRequestsHttp}
-import org.genivi.sota.resolver.test.{Result, Success, Failure,
-  SuccessVehicles, SuccessPackages, SuccessFilters, SuccessVehicleMap}
+import org.genivi.sota.resolver.filters.{And, FilterAST, True}
+import FilterAST._
+import org.genivi.sota.resolver.test.{FilterRequestsHttp, PackageRequestsHttp, ResolveRequestsHttp, VehicleRequestsHttp}
+import org.genivi.sota.resolver.test.{SuccessFilters, SuccessPackages, SuccessVehicleMap, SuccessVehicles}
 import org.scalacheck.Gen
-import Misc.{lift, monGen, function0Instance}
+import Misc.{function0Instance, lift, monGen}
+import org.genivi.sota.data.{PackageId, Vehicle}
 
 
 sealed trait Query
@@ -20,7 +20,7 @@ final case class  ListPackagesOnVehicle(veh: Vehicle) extends Query
 
 final case object ListFilters                         extends Query
 
-final case class  Resolve(id: Package.Id)             extends Query
+final case class  Resolve(id: PackageId)             extends Query
 
 
 object Query extends
@@ -44,12 +44,12 @@ object Query extends
 
     case Resolve(pkgId)                =>
 
-      def filters(s: RawStore, id: Package.Id): Set[FilterAST] = {
+      def filters(s: RawStore, id: PackageId): Set[FilterAST] = {
         val fs = s.packages.map{ case (pkg, fs) => (pkg.id, fs) }
         fs(id).map(_.expression).map(parseValidFilter)
       }
 
-      def expr(s: RawStore, id: Package.Id): FilterAST =
+      def expr(s: RawStore, id: PackageId): FilterAST =
         filters(s, id).toList.foldLeft[FilterAST](True)(And)
 
       State.get map (s => Semantics(resolve2(pkgId), StatusCodes.OK, SuccessVehicleMap(

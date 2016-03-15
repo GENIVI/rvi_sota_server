@@ -8,6 +8,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
 import io.circe.generic.auto._
+import org.genivi.sota.data.PackageId
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors
@@ -24,6 +25,7 @@ class PackageDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
 
   /**
    * API route for packages.
+ *
    * @return      Route object containing route for adding packages
    */
   def route: Route = {
@@ -52,7 +54,7 @@ class PackageDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
     }
   }
 
-  def packageFilterRoute(id: Package.Id): Route = {
+  def packageFilterRoute(id: PackageId): Route = {
 
     pathPrefix("filter") {
       (get & pathEnd) {

@@ -11,12 +11,12 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
+import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.resolve.ResolveFunctions
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.resolver.packages.{Package, PackageFilter}
-import org.genivi.sota.resolver.vehicles.Vehicle
 import org.scalatest.Matchers
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
@@ -231,7 +231,7 @@ trait PackageFilterRequests extends Matchers { self: ScalatestRouteTest =>
 
 trait ResolveRequestsHttp {
 
-  def resolve2(id: Package.Id): HttpRequest =
+  def resolve2(id: PackageId): HttpRequest =
     Get(Resource.uri("resolve", id.name.get, id.version.get))
 
 }
@@ -245,8 +245,8 @@ trait ResolveRequests extends Matchers { self: ScalatestRouteTest =>
 
     resolve(pname, pversion) ~> route ~> check {
       status shouldBe StatusCodes.OK
-      responseAs[Map[Vehicle.Vin, List[Package.Id]]] shouldBe
-        ResolveFunctions.makeFakeDependencyMap(Package.Id(Refined.unsafeApply(pname), Refined.unsafeApply(pversion)),
+      responseAs[Map[Vehicle.Vin, List[PackageId]]] shouldBe
+        ResolveFunctions.makeFakeDependencyMap(PackageId(Refined.unsafeApply(pname), Refined.unsafeApply(pversion)),
           vins.map(Vehicle(_)))
     }
   }

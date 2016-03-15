@@ -13,7 +13,7 @@ import akka.stream.ActorMaterializer
 import io.circe.Json
 import java.util.UUID
 import org.genivi.sota.core.ExternalResolverClient
-import org.genivi.sota.core.data.{Package, Vehicle}
+import org.genivi.sota.data.Vehicle
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import scala.concurrent.{ExecutionContext, Future}
 

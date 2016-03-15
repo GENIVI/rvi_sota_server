@@ -10,8 +10,8 @@ import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.common.StrictForm
 import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.model.{StatusCodes, Uri, HttpResponse}
-import akka.http.scaladsl.server.{Directive1, PathMatchers, ExceptionHandler, Directives}
+import akka.http.scaladsl.model.{HttpResponse, StatusCodes, Uri}
+import akka.http.scaladsl.server.{Directive1, Directives, ExceptionHandler, PathMatchers}
 import akka.http.scaladsl.server.PathMatchers.Slash
 import Directives._
 import akka.parboiled2.util.Base64
@@ -24,18 +24,23 @@ import eu.timepit.refined.string._
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.core.data._
-import org.genivi.sota.core.db.{UpdateSpecs, Packages, Vehicles, InstallHistories}
-import org.genivi.sota.core.rvi.{ServerServices, RviClient}
+import org.genivi.sota.core.db.{InstallHistories, Packages, UpdateSpecs, Vehicles}
+import org.genivi.sota.core.rvi.{RviClient, ServerServices}
+import org.genivi.sota.data.Vehicle
 import org.genivi.sota.rest.Validation._
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 import org.joda.time.DateTime
+
 import scala.concurrent.Future
 import slick.driver.MySQLDriver.api.Database
 import slick.dbio.DBIO
+
 import scala.util.Failure
 
 object ErrorCodes {
   val ExternalResolverError = ErrorCode( "external_resolver_error" )
+
+  val MissingVehicle = new ErrorCode("missing_vehicle")
 }
 
 class VehiclesResource(db: Database, rviClient: RviClient)
@@ -80,7 +85,7 @@ class VehiclesResource(db: Database, rviClient: RviClient)
           completeOrRecoverWith(exists(Vehicle(vin))) {
             case MissingVehicle =>
               complete(StatusCodes.NotFound ->
-                ErrorRepresentation(Vehicle.MissingVehicle, "Vehicle doesn't exist"))
+                ErrorRepresentation(ErrorCodes.MissingVehicle, "Vehicle doesn't exist"))
           }
         } ~
         put {
@@ -90,7 +95,7 @@ class VehiclesResource(db: Database, rviClient: RviClient)
           completeOrRecoverWith(deleteVin(Vehicle(vin))) {
             case MissingVehicle =>
               complete(StatusCodes.NotFound ->
-                ErrorRepresentation(Vehicle.MissingVehicle, "Vehicle doesn't exist"))
+                ErrorRepresentation(ErrorCodes.MissingVehicle, "Vehicle doesn't exist"))
           }
         }
       } ~

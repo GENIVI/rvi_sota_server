@@ -5,15 +5,12 @@
 package org.genivi.sota.core.transfer
 
 import akka.event.LoggingAdapter
-import io.circe.Json
+import org.genivi.sota.core.data.UpdateSpec
 import java.util.UUID
-import org.genivi.sota.core.data.{Vehicle, Package, UpdateSpec}
-import org.genivi.sota.core.rvi.{RviClient,ServerServices}
-import org.genivi.sota.datatype.PackageCommon
-import org.joda.time.DateTime
-import scala.concurrent.ExecutionContext
+import org.genivi.sota.core.rvi.{RviClient, ServerServices}
+import org.genivi.sota.data.Vehicle
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 case class PackageUpdate(update_id: UUID,
                          signature: String,
@@ -23,8 +20,8 @@ case class PackageUpdate(update_id: UUID,
 
 object PackageUpdate {
 
-  import io.circe.{Encoder, Decoder}
   import io.circe.generic.semiauto._
+  import io.circe.{Decoder, Encoder}
 
   implicit val encoder: Encoder[PackageUpdate] =
     deriveFor[PackageUpdate].encoder
@@ -38,8 +35,8 @@ case class UpdateNotification(update_available: PackageUpdate, services: ServerS
 
 object UpdateNotification {
 
-  import io.circe.{Encoder, Decoder}
   import io.circe.generic.semiauto._
+  import io.circe.{Decoder, Encoder}
 
   implicit val encoder: Encoder[UpdateNotification] =
     deriveFor[UpdateNotification].encoder

@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.core.data
 
+import org.genivi.sota.data.{PackageId, Vehicle}
 import org.joda.time.DateTime
 import java.util.UUID
 
@@ -34,7 +35,7 @@ case class InstallHistory(
   id            : Option[Long],
   vin           : Vehicle.Vin,
   updateId      : UUID,
-  packageId     : Package.Id,
+  packageId     : PackageId,
   success       : Boolean,
   completionTime: DateTime
 )

@@ -5,8 +5,8 @@
 package org.genivi.sota.resolver.common
 
 import akka.http.scaladsl.server.{Directives, Directive1}
+import org.genivi.sota.data.PackageId
 import org.genivi.sota.resolver.components.Component
-import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.rest.Validation._
 import Directives._
 
@@ -16,10 +16,10 @@ import Directives._
 
 object RefinementDirectives {
 
-  def refinedPackageId: Directive1[Package.Id] =
-    (refined[Package.ValidName]   (Slash ~ Segment) &
-     refined[Package.ValidVersion](Slash ~ Segment))
-       .as[Package.Id](Package.Id.apply _)
+  def refinedPackageId: Directive1[PackageId] =
+    (refined[PackageId.ValidName]   (Slash ~ Segment) &
+     refined[PackageId.ValidVersion](Slash ~ Segment))
+       .as[PackageId](PackageId.apply _)
 
   def refinedPartNumber: Directive1[Component.PartNumber] =
     refined[Component.ValidPartNumber](Slash ~ Segment ~ PathEnd)

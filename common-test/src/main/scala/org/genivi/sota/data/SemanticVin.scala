@@ -2,26 +2,26 @@
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.datatype
+package org.genivi.sota.data
 
 import cats.Show
 import cats.syntax.show._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
-import org.scalacheck.{Arbitrary, Gen}
+import org.scalacheck.Gen
 
 // https://en.wikipedia.org/wiki/VIN
 
+case class SemanticVin(
+                          wmi              : SemanticVin.WMI,
+                          vehicleAttributes: SemanticVin.VehicleAttributes,
+                          checkDigit       : SemanticVin.CheckDigit,
+                          modelYear        : SemanticVin.ModelYear,
+                          plantCode        : SemanticVin.PlantCode,
+                          sequentialNumber : SemanticVin.SequentialNumber
+                      )
 object SemanticVin {
 
-  case class SemanticVin(
-    wmi              : WMI,
-    vehicleAttributes: VehicleAttributes,
-    checkDigit       : CheckDigit,
-    modelYear        : ModelYear,
-    plantCode        : PlantCode,
-    sequentialNumber : SequentialNumber
-  )
 
   implicit val showSemanticVin: Show[SemanticVin] =
     Show.show { sv =>

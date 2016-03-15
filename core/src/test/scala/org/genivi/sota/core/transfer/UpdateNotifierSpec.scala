@@ -5,17 +5,19 @@ import akka.http.scaladsl.model.Uri
 import akka.testkit.TestKit
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.core.PackagesReader
-import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec, UpdateStatus, Vehicle}
+import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec, UpdateStatus}
 import org.genivi.sota.core.jsonrpc.HttpTransport
 import org.genivi.sota.core.rvi.JsonRpcRviClient
 import org.scalacheck.Gen
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, PropSpec}
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
+
 import scala.concurrent.Future
 import slick.jdbc.JdbcBackend.Database
 import org.genivi.sota.core.RequiresRvi
 import org.genivi.sota.core.rvi.SotaServices
+import org.genivi.sota.data.Vehicle
 
 /**
  * Property-based spec for testing update notifier

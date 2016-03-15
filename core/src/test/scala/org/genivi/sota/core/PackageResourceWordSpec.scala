@@ -11,14 +11,16 @@ import akka.http.scaladsl.server.MalformedQueryParamRejection
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.marshalling.CirceMarshallingSupport
-import org.genivi.sota.core.data.{ Package => DataPackage }
+import org.genivi.sota.core.data.{Package => DataPackage}
 import org.genivi.sota.core.db.Packages
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.ShouldMatchers
-import org.scalatest.{WordSpec, Matchers}
+import org.scalatest.{Matchers, WordSpec}
+
 import scala.concurrent.Await
 import slick.driver.MySQLDriver.api._
 import DataPackage._
+import org.genivi.sota.data.PackageId
 
 /**
  * WordSpec tests for Package REST actions
@@ -44,9 +46,11 @@ class PackageResourceWordSpec extends WordSpec
   val db = Database.forConfig(databaseName)
   lazy val service = new PackagesResource(externalResolverClient, db)
 
-  val testPackagesParams = List(("vim", "7.0.1"), ("vim", "7.1.1"), ("go", "1.4.0"), ("go", "1.5.0"), ("scala", "2.11.0"))
+  val testPackagesParams = List(
+    ("vim", "7.0.1"), ("vim", "7.1.1"), ("go", "1.4.0"), ("go", "1.5.0"), ("scala", "2.11.0"))
   val testPackages:List[DataPackage] = testPackagesParams.map { pkg =>
-    DataPackage(DataPackage.Id(Refined.unsafeApply(pkg._1), Refined.unsafeApply(pkg._2)), Uri("www.example.com"), 123, "123", None, None, None)
+    DataPackage(PackageId(Refined.unsafeApply(pkg._1), Refined.unsafeApply(pkg._2)),
+                Uri("www.example.com"), 123, "123", None, None, None)
   }
 
   override def beforeAll {
@@ -64,7 +68,9 @@ class PackageResourceWordSpec extends WordSpec
         assert(status === StatusCodes.OK)
         val packages = responseAs[Seq[DataPackage]]
         assert(packages.nonEmpty)
-        assert(packages.filter(pkg => pkg.id === DataPackage.Id(Refined.unsafeApply("scala"), Refined.unsafeApply("2.11.0"))).nonEmpty)
+        assert(packages.exists { pkg =>
+          pkg.id === PackageId(Refined.unsafeApply("scala"), Refined.unsafeApply("2.11.0"))
+        })
         assert(packages.length === 5)
       }
     }
@@ -72,7 +78,7 @@ class PackageResourceWordSpec extends WordSpec
       Get(PackagesUri + "/scala/2.11.0") ~> service.route ~> check {
         assert(status === StatusCodes.OK)
         val pkg = responseAs[DataPackage]
-        assert(pkg.id === DataPackage.Id(Refined.unsafeApply("scala"), Refined.unsafeApply("2.11.0")))
+        assert(pkg.id === PackageId(Refined.unsafeApply("scala"), Refined.unsafeApply("2.11.0")))
       }
     }
     "filter list of packages by regex '0'" in {
@@ -92,7 +98,8 @@ class PackageResourceWordSpec extends WordSpec
     "returns 400 for bad request" in {
       Get(PackagesUri + "?regex=)" ) ~> service.route ~> check {
         rejection shouldBe a [MalformedQueryParamRejection]
-        assert(rejection === MalformedQueryParamRejection("regex", "Regex predicate failed: Unmatched closing \')\'\n)", None))
+        assert(rejection === MalformedQueryParamRejection("regex", "Regex predicate failed: Unmatched closing \')\'\n)",
+          None))
       }
     }
   }

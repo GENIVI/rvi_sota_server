@@ -5,9 +5,9 @@ import eu.timepit.refined.api.{Refined, Validate}
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.resolver.packages.Package
-import org.genivi.sota.resolver.vehicles.Vehicle
 import org.scalacheck.Gen
 import Misc._
+import org.genivi.sota.data.Vehicle
 
 
 case class RawStore(

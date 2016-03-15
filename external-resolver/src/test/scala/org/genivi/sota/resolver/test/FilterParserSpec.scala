@@ -5,6 +5,7 @@
 package org.genivi.sota.resolver.test
 
 import eu.timepit.refined.api.Refined
+import org.genivi.sota.data.{PackageId, Vehicle}
 import org.scalacheck._
 import org.scalatest.FlatSpec
 import org.genivi.sota.resolver.filters._
@@ -83,7 +84,6 @@ class FilterParserSpec extends FlatSpec {
  */
 class FilterQuerySpec extends ResourceWordSpec {
 
-  import org.genivi.sota.resolver.vehicles.Vehicle
   import org.genivi.sota.resolver.packages.Package
   import org.genivi.sota.resolver.components.Component
 
@@ -93,17 +93,17 @@ class FilterQuerySpec extends ResourceWordSpec {
   val vin4 = Vehicle(Refined.unsafeApply("BEPAEPA1234567890"))
   val vin5 = Vehicle(Refined.unsafeApply("DEPAEPA1234567890"))
 
-  val pkg1 = Package.Id(Refined.unsafeApply("pkg1"), Refined.unsafeApply("1.0.0"))
-  val pkg2 = Package.Id(Refined.unsafeApply("pkg2"), Refined.unsafeApply("1.0.0"))
-  val pkg3 = Package.Id(Refined.unsafeApply("pkg3"), Refined.unsafeApply("1.0.1"))
-  val pkg4 = Package.Id(Refined.unsafeApply("pkg4"), Refined.unsafeApply("1.0.1"))
+  val pkg1 = PackageId(Refined.unsafeApply("pkg1"), Refined.unsafeApply("1.0.0"))
+  val pkg2 = PackageId(Refined.unsafeApply("pkg2"), Refined.unsafeApply("1.0.0"))
+  val pkg3 = PackageId(Refined.unsafeApply("pkg3"), Refined.unsafeApply("1.0.1"))
+  val pkg4 = PackageId(Refined.unsafeApply("pkg4"), Refined.unsafeApply("1.0.1"))
 
   val part1: Refined[String, Component.ValidPartNumber] = Refined.unsafeApply("part1")
   val part2: Refined[String, Component.ValidPartNumber] = Refined.unsafeApply("part2")
   val part3: Refined[String, Component.ValidPartNumber] = Refined.unsafeApply("part3")
   val part4: Refined[String, Component.ValidPartNumber] = Refined.unsafeApply("part4")
 
-  val vins: Seq[(Vehicle, (Seq[Package.Id], Seq[Component.PartNumber]))] =
+  val vins: Seq[(Vehicle, (Seq[PackageId], Seq[Component.PartNumber]))] =
     List( (vin1, (List(pkg1), List(part1)))
         , (vin2, (List(pkg2), List(part2)))
         , (vin3, (List(pkg3), List(part3)))
@@ -125,7 +125,7 @@ class FilterQuerySpec extends ResourceWordSpec {
     "filter by matching package" in {
 
       // Note that vin5 isn't matched, because it has no components!
-      run(HasPackage(Refined.unsafeApply(".*"),       Refined.unsafeApply(".*")))    shouldBe List(vin1, vin2, vin3, vin4)
+      run(HasPackage(Refined.unsafeApply(".*"),       Refined.unsafeApply(".*"))) shouldBe List(vin1, vin2, vin3, vin4)
 
       run(HasPackage(Refined.unsafeApply(".*"),       Refined.unsafeApply("1.0.0"))) shouldBe List(vin1, vin2)
       run(HasPackage(Refined.unsafeApply("pkg(3|4)"), Refined.unsafeApply(".*")))    shouldBe List(vin3, vin4)
@@ -153,7 +153,7 @@ class FilterQuerySpec extends ResourceWordSpec {
 /**
  * Property Spec for the filter parser
  */
-object FilterParserPropSpec extends ResourcePropSpec {
+object FilterParserPropSpec extends ResourcePropSpec with FilterGenerators {
 
   property("The filter parser parses pretty printed filters") {
     forAll { f: FilterAST =>

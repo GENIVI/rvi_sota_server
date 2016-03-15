@@ -4,32 +4,31 @@
  */
 package org.genivi.sota.core
 
+import java.nio.file.{Path, Paths}
+import java.security.MessageDigest
+
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.common.StrictForm
-import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.model.Uri
+import akka.http.scaladsl.model.{StatusCodes, Uri}
+import akka.http.scaladsl.server.Directive1
+import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import akka.stream.io.SynchronousFileSink
 import akka.util.ByteString
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
-import java.io.File
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.security.MessageDigest
 import org.apache.commons.codec.binary.Hex
-import org.genivi.sota.marshalling.RefinedMarshallingSupport._
-import org.genivi.sota.rest.{ErrorRepresentation}
-import scala.concurrent.Future
-import scala.util.Failure
-import scala.util.Success
-import slick.driver.MySQLDriver.api.Database
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.core.db.{UpdateSpecs, Packages}
-import akka.http.scaladsl.server.Directive1
-import akka.http.scaladsl.server.Directives._
+import org.genivi.sota.core.db.{Packages, UpdateSpecs}
+import org.genivi.sota.data.PackageId
+import org.genivi.sota.marshalling.RefinedMarshallingSupport._
+import org.genivi.sota.rest.ErrorRepresentation
 import org.genivi.sota.rest.Validation._
+import slick.driver.MySQLDriver.api.Database
+
+import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 class PackagesResource(resolver: ExternalResolverClient, db : Database)
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
@@ -84,7 +83,7 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
    * @return A tuple of the URI where the package is available, the package
    *         size and the package's checksum
    */
-  def savePackage( packageId: Package.Id, fileData: StrictForm.FileData ) : Future[(Uri, Long, String)] = {
+  def savePackage( packageId: PackageId, fileData: StrictForm.FileData ) : Future[(Uri, Long, String)] = {
     val fileName = fileData.filename.getOrElse(s"${packageId.name.get}-${packageId.version.get}")
     val file = storePath.resolve(fileName).toFile
     val data = fileData.entity.dataBytes
@@ -106,9 +105,9 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
    * A scala HTTP routing directive that extracts a package name/version from
    * the request URL
    */
-  val extractPackageId : Directive1[Package.Id] = (
-    refined[Package.ValidName](Slash ~ Segment) &
-    refined[Package.ValidVersion](Slash ~ Segment)).as(Package.Id.apply _)
+  val extractPackageId : Directive1[PackageId] = (
+    refined[PackageId.ValidName](Slash ~ Segment) &
+    refined[PackageId.ValidVersion](Slash ~ Segment)).as(PackageId.apply _)
 
   import io.circe.generic.auto._
   val route = pathPrefix("packages") {

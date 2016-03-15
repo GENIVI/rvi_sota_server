@@ -4,7 +4,8 @@
  */
 package org.genivi.sota.core.db
 
-import org.genivi.sota.core.data.Vehicle
+import org.genivi.sota.data.Vehicle
+
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.db.Operators.regex

@@ -12,12 +12,13 @@ import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import CirceMarshallingSupport._
-import org.genivi.sota.core.data.Vehicle
 import org.genivi.sota.core.db.Vehicles
 import org.genivi.sota.core.rvi.JsonRpcRviClient
 import org.genivi.sota.core.jsonrpc.HttpTransport
+import org.genivi.sota.data.Vehicle
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.{WordSpec, Matchers}
+import org.scalatest.{Matchers, WordSpec}
+
 import scala.concurrent.Await
 import slick.driver.MySQLDriver.api._
 
@@ -44,7 +45,9 @@ class VinResourceWordSpec extends WordSpec
   override def beforeAll() : Unit = {
     TestDatabase.resetDatabase( databaseName )
     import scala.concurrent.duration._
-    Await.ready( db.run( DBIO.seq( testVins.map( v => Vehicles.create(Vehicle(Refined.unsafeApply(v)))): _*) ), 2.seconds )
+    Await.ready(
+      db.run( DBIO.seq( testVins.map( v => Vehicles.create(Vehicle(Refined.unsafeApply(v)))): _*) ), 2.seconds
+    )
   }
 
   val VinsUri  = Uri( "/vehicles" )
@@ -56,7 +59,7 @@ class VinResourceWordSpec extends WordSpec
         assert(status === StatusCodes.OK)
         val vins = responseAs[Seq[Vehicle]]
         assert(vins.nonEmpty)
-        assert(vins.filter(v => v.vin === Refined.unsafeApply("12345678901234500")).nonEmpty)
+        assert(vins.exists(v => v.vin === Refined.unsafeApply("12345678901234500")))
         assert(vins.length === 3)
       }
     }
