@@ -40,7 +40,7 @@ define(function(require) {
               {key}
             </td>
             <td>
-              {value}
+              {value.toString()}
             </td>
           </tr>
         );
