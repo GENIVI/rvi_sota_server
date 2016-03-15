@@ -10,11 +10,12 @@ import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
-import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import org.genivi.sota.core.data.{Package, Vehicle}
 import io.circe.Json
-import scala.concurrent.{ExecutionContext, Future}
+import java.util.UUID
 import org.genivi.sota.core.ExternalResolverClient
+import org.genivi.sota.core.data.{Package, Vehicle}
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * RVI paths for server-side services.
@@ -29,18 +30,21 @@ final case class ClientServices( start: String, abort: String, chunk: String, fi
 /**
  * RVI message from client to initiate a package download.
  */
-final case class StartDownload(vin: Vehicle.Vin, packages: List[Package.Id], services: ClientServices )
+final case class StartDownload(vin: Vehicle.Vin, update_id: UUID, services: ClientServices)
 
 /**
  * RVI parameters of generic type for a specified service name.
  */
 final case class RviParameters[T](parameters: List[T], service_name: String )
 
+final case class OperationResult(id: String, result_code: Int, result_text: String)
+
+final case class UpdateReport(update_id: UUID, operation_results: List[OperationResult])
+
 /**
  * RVI message from client to report installation of a downloaded package.
  */
-final case class InstallReport(vin: Vehicle.Vin, `package`: Package.Id, status: Boolean,
-                               description: String)
+final case class InstallReport(vin: Vehicle.Vin, update: UpdateReport)
 
 /**
  * RVI message from client to report all installed packages.

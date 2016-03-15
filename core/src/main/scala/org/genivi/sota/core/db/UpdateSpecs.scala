@@ -98,18 +98,13 @@ object UpdateSpecs {
   /**
    * Install a list of specific packages on a VIN
    * @param vin The VIN to install on
-   * @param packageIds The list of packages to install
+   * @param updateId Update Id of the update to install
    */
-  def load( vin: Vehicle.Vin, packageIds: Set[Package.Id] )
+  def load(vin: Vehicle.Vin, updateId: UUID)
           (implicit ec: ExecutionContext) : DBIO[Iterable[UpdateSpec]] = {
-    val requests = UpdateRequests.all.filter(r =>
-        (r.packageName.mappedTo[String] ++ r.packageVersion.mappedTo[String])
-          .inSet( packageIds.map( id => id.name.get + id.version.get ) )
-      )
-    val specs = updateSpecs.filter(_.vin === vin)
     val q = for {
-      r  <- requests
-      s  <- specs if (r.id === s.requestId)
+      r  <- updateRequests.filter(_.id === updateId)
+      s  <- updateSpecs.filter(_.vin === vin) if (r.id === s.requestId)
       rp <- requiredPackages if (rp.vin === vin && rp.requestId === s.requestId)
       p  <- Packages.packages if (p.name === rp.packageName && p.version === rp.packageVersion)
     } yield (r, s.vin, s.status, p)

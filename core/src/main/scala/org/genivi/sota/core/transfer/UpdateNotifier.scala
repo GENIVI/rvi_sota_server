@@ -6,14 +6,20 @@ package org.genivi.sota.core.transfer
 
 import akka.event.LoggingAdapter
 import io.circe.Json
+import java.util.UUID
 import org.genivi.sota.core.data.{Vehicle, Package, UpdateSpec}
 import org.genivi.sota.core.rvi.{RviClient,ServerServices}
+import org.genivi.sota.datatype.PackageCommon
 import org.joda.time.DateTime
 import scala.concurrent.ExecutionContext
 
 import scala.concurrent.Future
 
-case class PackageUpdate( `package`: Package.Id, size: Long )
+case class PackageUpdate(update_id: UUID,
+                         signature: String,
+                         description: String,
+                         request_confirmation: Boolean,
+                         size: Long)
 
 object PackageUpdate {
 
@@ -28,7 +34,7 @@ object PackageUpdate {
 
 }
 
-case class UpdateNotification(packages: Seq[PackageUpdate], services: ServerServices)
+case class UpdateNotification(update: PackageUpdate, services: ServerServices)
 
 object UpdateNotification {
 
@@ -64,8 +70,7 @@ object UpdateNotifier {
   def notify(updateSpecs: Seq[UpdateSpec], services: ServerServices)
             (implicit rviClient: RviClient, ec: ExecutionContext, log: LoggingAdapter): Iterable[Future[Int]] = {
     log.debug(s"Sending update notifications: $updateSpecs" )
-    val updatesByVin : Map[Vehicle.Vin, Seq[UpdateSpec]] = updateSpecs.groupBy( _.vin )
-    updatesByVin.map( (notifyVehicle(services) _ ).tupled  )
+    updateSpecs.map { spec => notifyVehicle(services)(spec.vin, spec) }
   }
 
   /**
@@ -73,19 +78,19 @@ object UpdateNotifier {
    * @param vin The VIN of the vehicle to notify
    * @param updates The updates that apply to the vehicle
    */
-  def notifyVehicle(services: ServerServices)( vin: Vehicle.Vin, updates: Seq[UpdateSpec] )
-                   ( implicit rviClient: RviClient, ec: ExecutionContext): Future[Int] = {
+  def notifyVehicle(services: ServerServices)(vin: Vehicle.Vin, update: UpdateSpec)
+                   (implicit rviClient: RviClient, ec: ExecutionContext): Future[Int] = {
     import com.github.nscala_time.time.Imports._
     import io.circe.generic.auto._
 
     def toPackageUpdate( spec: UpdateSpec ) = {
-      val packageId = spec.request.packageId
-      PackageUpdate( packageId, spec.size)
+      val r = spec.request
+      PackageUpdate(r.id, r.signature, r.description.getOrElse(""), r.requestConfirmation, spec.size)
     }
 
-    val earliestExpirationDate : DateTime = updates.map( _.request.periodOfValidity.getEnd ).min
-    rviClient.sendMessage( s"genivi.org/vin/${vin.get}/sota/notify",
-                           UpdateNotification(updates.map(toPackageUpdate), services), earliestExpirationDate )
+    val expirationDate: DateTime = update.request.periodOfValidity.getEnd
+    rviClient.sendMessage(s"genivi.org/vin/${vin.get}/sota/notify",
+                          UpdateNotification(toPackageUpdate(update), services), expirationDate)
   }
 
 }

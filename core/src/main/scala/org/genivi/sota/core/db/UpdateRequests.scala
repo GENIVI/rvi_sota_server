@@ -75,11 +75,14 @@ object UpdateRequests {
    */
   def list: DBIO[Seq[UpdateRequest]] = all.result
 
+  def byId(updateId: UUID) : DBIO[Option[UpdateRequest]] =
+    all.filter {_.id === updateId }.result.headOption
+
   /**
    * Add a new package update. Package updated specify a specific package at a
    * specific version to be installed in a time window, with a given priority
    * @param request A new update request to add
    */
   def persist(request: UpdateRequest)
-             (implicit ec: ExecutionContext): DBIO[UpdateRequest] = (all += request).map( _ => request)
+             (implicit ec: ExecutionContext): DBIO[Unit] = (all += request).map( _ => ())
 }
