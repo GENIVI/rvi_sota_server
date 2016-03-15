@@ -75,7 +75,7 @@ If you don't need to worry about the client communication part of the server, yo
 
 [source,scala]
 ----
-sotaServices <- FastFuture.successful(ServerServices("","","","",""))
+sotaServices <- FastFuture.successful(ServerServices("","","",""))
 ----
 ****
 
