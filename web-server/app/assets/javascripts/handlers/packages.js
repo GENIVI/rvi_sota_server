@@ -8,7 +8,8 @@ define(function(require) {
   var createPackage = function(payload) {
     var url = '/api/v1/packages/' + payload.package.name + '/' + payload.package.version +
       '?description=' + encodeURIComponent(payload.package.description) +
-      '&vendor=' + encodeURIComponent(payload.package.vendor);
+      '&vendor=' + encodeURIComponent(payload.package.vendor) +
+      '&signature=' + encodeURIComponent(payload.package.signature);
     sendRequest.doPut(url, payload.data, {form: true})
       .success(function() {
         location.hash = "#/packages/" + payload.package.name + "/" + payload.package.version;

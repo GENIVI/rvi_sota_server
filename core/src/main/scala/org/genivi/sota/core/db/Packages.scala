@@ -38,12 +38,13 @@ object Packages {
     def checkSum = column[String]("check_sum")
     def description = column[String]("description")
     def vendor = column[String]("vendor")
+    def signature = column[String]("signature")
 
     def pk = primaryKey("pk_package", (name, version))
 
-    def * = (name, version, uri, size, checkSum, description.?, vendor.?).shaped <>
-    (x => Package(Package.Id(x._1, x._2), x._3, x._4, x._5, x._6, x._7),
-    (x: Package) => Some((x.id.name, x.id.version, x.uri, x.size, x.checkSum, x.description, x.vendor)))
+    def * = (name, version, uri, size, checkSum, description.?, vendor.?, signature.?).shaped <>
+    (x => Package(Package.Id(x._1, x._2), x._3, x._4, x._5, x._6, x._7, x._8),
+    (x: Package) => Some((x.id.name, x.id.version, x.uri, x.size, x.checkSum, x.description, x.vendor, x.signature)))
   }
   // scalastyle:on
 

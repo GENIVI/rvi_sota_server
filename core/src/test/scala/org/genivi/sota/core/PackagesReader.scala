@@ -23,7 +23,7 @@ object PackagesReader {
       size        <- src.get("Size").map( _.toLong )
       checkSum    <- src.get("SHA1")
     } yield Package( Package.Id( Refined.unsafeApply(name), version), size = size, description = src.get( "Description" ),
-                     checkSum = checkSum, uri = Uri.Empty, vendor = src.get( "Maintainer" ) )
+                     checkSum = checkSum, uri = Uri.Empty, vendor = src.get( "Maintainer" ), signature = Some("Signature") )
     maybePackage.get
   }
 
