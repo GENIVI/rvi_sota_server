@@ -2,7 +2,7 @@ logLevel := Level.Warn
 
 resolvers ++= Seq(
   "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
-  "Flyway" at "http://flywaydb.org/repo"
+  "Flyway" at "https://flywaydb.org/repo"
 )
 
 addSbtPlugin("com.typesafe.play" %% "sbt-plugin" % "2.4.2")
