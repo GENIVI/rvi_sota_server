@@ -25,13 +25,19 @@ import io.circe.generic.auto._
  *                         after the interval expires.
  * @param priority The priority. priority == 1 items are installed before
  *                 priority == 2.
+ * @param signature Signature for this updates Id
+ * @param description A descriptive text of the available update.
+ * @param requestConfirmation Flag to indicate if a user confirmation of the package is required.
  */
 case class UpdateRequest(
   id: UUID,
   packageId: Package.Id,
   creationTime: DateTime,
   periodOfValidity: Interval,
-  priority: Int)
+  priority: Int,
+  signature: String,
+  description: Option[String],
+  requestConfirmation: Boolean)
 
 /**
  * The states that an update may be in.

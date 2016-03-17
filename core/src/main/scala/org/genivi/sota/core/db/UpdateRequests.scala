@@ -37,6 +37,9 @@ object UpdateRequests {
     def startAfter = column[DateTime]("start_after")
     def finishBefore = column[DateTime]("finish_before")
     def priority = column[Int]("priority")
+    def signature = column[String]("signature")
+    def description = column[String]("description")
+    def requestConfirmation = column[Boolean]("request_confirmation")
 
     import com.github.nscala_time.time.Imports._
     import shapeless._
@@ -51,10 +54,12 @@ object UpdateRequests {
       }
     }
 
-    def * = (id, packageName, packageVersion, creationTime, startAfter, finishBefore, priority).shaped <>
-      (x => UpdateRequest(x._1, Package.Id(x._2, x._3), x._4, x._5 to x._6, x._7 ),
+    def * = (id, packageName, packageVersion, creationTime, startAfter, finishBefore,
+             priority, signature, description.?, requestConfirmation).shaped <>
+      (x => UpdateRequest(x._1, Package.Id(x._2, x._3), x._4, x._5 to x._6, x._7, x._8, x._9, x._10),
       (x: UpdateRequest) => Some((x.id, x.packageId.name, x.packageId.version, x.creationTime,
-                                  x.periodOfValidity.start, x.periodOfValidity.end, x.priority )))
+                                  x.periodOfValidity.start, x.periodOfValidity.end, x.priority,
+                                  x.signature, x.description, x.requestConfirmation)))
 
 
   }
