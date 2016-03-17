@@ -50,6 +50,10 @@ define(function(require) {
               <input type="text" className="form-control" name="vendor" ref="vendor" placeholder="Vendor name"/>
             </div>
             <div className="form-group">
+              <label htmlFor="signature">Signature</label>
+              <textarea type="text" className="form-control" name="signature" ref="signature" placeholder="Signature"/>
+            </div>
+            <div className="form-group">
               <label htmlFor="binary">Package Binary</label>
               <input type="file" className="file-upload" name="file" />
             </div>

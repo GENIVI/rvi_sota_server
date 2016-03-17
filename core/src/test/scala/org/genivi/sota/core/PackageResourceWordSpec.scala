@@ -46,7 +46,7 @@ class PackageResourceWordSpec extends WordSpec
 
   val testPackagesParams = List(("vim", "7.0.1"), ("vim", "7.1.1"), ("go", "1.4.0"), ("go", "1.5.0"), ("scala", "2.11.0"))
   val testPackages:List[DataPackage] = testPackagesParams.map { pkg =>
-    DataPackage(DataPackage.Id(Refined.unsafeApply(pkg._1), Refined.unsafeApply(pkg._2)), Uri("www.example.com"), 123, "123", None, None)
+    DataPackage(DataPackage.Id(Refined.unsafeApply(pkg._1), Refined.unsafeApply(pkg._2)), Uri("www.example.com"), 123, "123", None, None, None)
   }
 
   override def beforeAll {

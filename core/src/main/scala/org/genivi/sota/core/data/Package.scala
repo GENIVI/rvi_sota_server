@@ -17,6 +17,7 @@ import org.genivi.sota.datatype.PackageCommon
  * @param checkSum The SHA1 checksum of the package's contents
  * @param description A free-form description of the package
  * @param vendor A free-form description of the vendor who provided the package
+ * @param signature A cryptographic signature for the package
  */
 case class Package(
   id: Package.Id,
@@ -24,7 +25,8 @@ case class Package(
   size: Long,
   checkSum: String,
   description: Option[String],
-  vendor: Option[String]
+  vendor: Option[String],
+  signature: Option[String]
 )
 
 object Package extends PackageCommon
