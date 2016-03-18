@@ -4,29 +4,42 @@
  */
 package org.genivi.sota.core
 
+import java.util.UUID
+
+import akka.http.scaladsl.unmarshalling.Unmarshaller._
+
 import akka.http.scaladsl.model.Uri.Path
-import akka.http.scaladsl.model.{StatusCodes, Uri}
-import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.model._
+
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
+import org.genivi.sota.core.db.{Vehicles, UpdateSpecs, Packages, UpdateRequests}
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import CirceMarshallingSupport._
-import org.genivi.sota.core.data.Vehicle
+import org.genivi.sota.core.data._
 import org.genivi.sota.core.rvi.JsonRpcRviClient
-import org.genivi.sota.core.jsonrpc.HttpTransport
-import org.scalacheck.Gen
-import org.scalatest.prop.PropertyChecks
+import org.genivi.sota.core.jsonrpc.{JsonRpcDirectives, ErrorResponse, HttpTransport}
+import org.scalatest.concurrent.ScalaFutures
+
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
 import slick.driver.MySQLDriver.api._
+
+import org.scalacheck.Gen
+import org.scalatest.prop.PropertyChecks
+import org.scalatest.{Matchers, PropSpec}
+import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.server._
 
 /**
  * Spec tests for vehicle REST actions
  */
 class VehicleResourceSpec extends PropSpec with PropertyChecks
-    with Matchers
-    with ScalatestRouteTest
-    with BeforeAndAfterAll {
+  with Matchers
+  with ScalatestRouteTest
+  with ScalaFutures
+  with JsonRpcDirectives
+  with BeforeAndAfterAll {
 
   val databaseName = "test-database"
   val db = Database.forConfig(databaseName)
@@ -50,6 +63,19 @@ class VehicleResourceSpec extends PropSpec with PropertyChecks
   def vehicleUri(vin: Vehicle.Vin)  = Uri.Empty.withPath( BasePath / vin.get )
 
   import Generators._
+
+  val updateSpecGen: Gen[(Package, Vehicle, UpdateSpec)] = for {
+    smallSize ← Gen.chooseNum(1024, 1024 * 10)
+    packageModel ← PackageGen.map(_.copy(size = smallSize.toLong))
+    packageWithUri = Generators.generatePackageData(packageModel)
+    vehicle ← Vehicle.genVehicle
+    updateRequest ← updateRequestGen(PackageIdGen).map(_.copy(packageId = packageWithUri.id))
+  } yield {
+    val updateSpec = UpdateSpec(updateRequest, vehicle.vin,
+      UpdateStatus.Pending, List(packageWithUri).toSet)
+
+    (packageWithUri, vehicle, updateSpec)
+  }
 
   property( "create new vehicle" ) {
     forAll { (vehicle: Vehicle) =>
@@ -92,9 +118,66 @@ class VehicleResourceSpec extends PropSpec with PropertyChecks
     }
   }
 
+  property("GET to download file returns the file contents") {
+    forAll(updateSpecGen) { case (packageModel, vehicle: Vehicle, updateSpec: UpdateSpec) ⇒
+      val url = Uri.Empty.withPath(BasePath / vehicle.vin.get / "updates" / updateSpec.request.id.toString / "download")
+
+      val dbOps = DBIO.seq(
+        Vehicles.create(vehicle),
+        Packages.create(packageModel),
+        UpdateRequests.persist(updateSpec.request),
+        UpdateSpecs.persist(updateSpec)
+      )
+
+      val f = db.run(dbOps)
+
+      whenReady(f) { _ ⇒
+        Get(url) ~> service.route ~> check {
+          status shouldBe StatusCodes.OK
+
+          responseEntity.contentLengthOption should contain(packageModel.size)
+        }
+      }
+    }
+  }
+
+  property("GET returns 404 if there is no package with the given id") {
+    forAll { (vehicle: Vehicle) ⇒
+      val uuid = UUID.randomUUID()
+      val url = Uri.Empty.withPath(BasePath / vehicle.vin.get / "updates" / uuid.toString)
+
+      Get(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.NotFound
+        responseAs[String] should include("Package not found")
+      }
+    }
+  }
+
+  property("GET update requests for a vehicle returns a list of UUIDS") {
+    forAll(updateSpecGen) { case (packageModel, vehicle: Vehicle, updateSpec: UpdateSpec) ⇒
+      val url = Uri.Empty.withPath(BasePath / vehicle.vin.get / "updates")
+
+      val dbOps = DBIO.seq(
+        Vehicles.create(vehicle),
+        Packages.create(packageModel),
+        UpdateRequests.persist(updateSpec.request),
+        UpdateSpecs.persist(updateSpec)
+      )
+
+      val f = db.run(dbOps)
+
+      whenReady(f) { _ ⇒
+        Get(url) ~> service.route ~> check {
+          status shouldBe StatusCodes.OK
+          responseAs[List[UUID]] shouldNot be(empty)
+          responseAs[List[UUID]] should be(List(updateSpec.request.id))
+        }
+      }
+    }
+  }
+
   override def afterAll() {
     system.terminate()
     db.close()
   }
-
 }
