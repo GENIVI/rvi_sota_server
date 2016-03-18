@@ -10,18 +10,17 @@ import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.common.StrictForm
 import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.model.{StatusCodes, Uri, HttpResponse}
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.{Directive1, PathMatchers, ExceptionHandler, Directives}
 import akka.http.scaladsl.server.PathMatchers.Slash
 import Directives._
 import akka.parboiled2.util.Base64
 import akka.stream.ActorMaterializer
-import akka.stream.io.SynchronousFileSink
-import akka.util.ByteString
 import cats.data.Xor
 import eu.timepit.refined._
 import eu.timepit.refined.string._
 import io.circe.generic.auto._
+import org.genivi.sota.core.transfer.PackageDownloadProcess
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.{UpdateSpecs, Packages, Vehicles, InstallHistories}
@@ -105,7 +104,16 @@ class VehiclesResource(db: Database, rviClient: RviClient)
         // TODO: Config RVI destination path (or ClientServices.getpackages)
         rviClient.sendMessage(s"genivi.org/vin/${vin}/sota/getpackages", io.circe.Json.Empty, ttl())
         // TODO: Confirm getpackages in progress to vehicle?
-        complete(NoContent)
+        complete(NoContent)      } ~
+      (pathPrefix("updates") & get) {
+        pathEnd {
+          val responseF = new PackageDownloadProcess(db).buildClientPendingIdsResponse(vin)
+          complete(responseF)
+        } ~
+          (withRangeSupport & refined[Uuid](Slash ~ Segment)) { uuid ⇒
+            val responseF = new PackageDownloadProcess(db).buildClientDownloadResponse(uuid)
+            complete(responseF)
+          }
       }
     } ~
     pathEnd {

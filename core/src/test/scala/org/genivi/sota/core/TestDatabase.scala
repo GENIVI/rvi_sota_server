@@ -6,6 +6,8 @@ package org.genivi.sota.core
 
 import com.typesafe.config.ConfigFactory
 import org.flywaydb.core.Flyway
+import org.scalatest.{Suite, BeforeAndAfterAll}
+import slick.driver.MySQLDriver.api._
 
 /*
  * Helper object to configure test database for specs
@@ -23,5 +25,23 @@ object TestDatabase {
     flyway.setLocations("classpath:db.migration")
     flyway.clean()
     flyway.migrate()
+  }
+}
+
+trait DatabaseSpec extends BeforeAndAfterAll {
+  self: Suite ⇒
+
+  private val databaseId = "test-database"
+
+  lazy val db = Database.forConfig(databaseId)
+
+  override def beforeAll() {
+    TestDatabase.resetDatabase(databaseId)
+    super.beforeAll()
+  }
+
+  override def afterAll() {
+    db.close()
+    super.afterAll()
   }
 }
