@@ -47,8 +47,21 @@ object Boot extends App {
   implicit val exec         = system.dispatcher
   implicit val log          = Logging(system, "boot")
   implicit val db           = Database.forConfig("database")
+  val config = system.settings.config
 
   log.info(org.genivi.sota.resolver.BuildInfo.toString)
+
+  // Database migrations
+  if (config.getBoolean("database.migrate")) {
+    val url = config.getString("database.url")
+    val user = config.getString("database.properties.user")
+    val password = config.getString("database.properties.password")
+
+    import org.flywaydb.core.Flyway
+    val flyway = new Flyway
+    flyway.setDataSource(url, user, password)
+    flyway.migrate()
+  }
 
   val route         = new Routing
   val host          = system.settings.config.getString("server.host")

@@ -59,7 +59,7 @@ object SotaBuild extends Build {
 
   lazy val externalResolver = Project(id = "resolver", base = file("external-resolver"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.ParserCombinators,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.ParserCombinators :+ Dependencies.Flyway,
       parallelExecution in Test := false,
       dockerExposedPorts := Seq(8081),
       flywayUrl := sys.env.get("RESOLVER_DB_URL").orElse( sys.props.get("resolver.db.url") ).getOrElse("jdbc:mysql://localhost:3306/sota_resolver"),
@@ -72,7 +72,7 @@ object SotaBuild extends Build {
 
   lazy val core = Project(id = "core", base = file("core"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.NscalaTime :+ Dependencies.Scalaz,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.NscalaTime :+ Dependencies.Scalaz :+ Dependencies.Flyway,
       testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RequiresRvi"),
       testOptions in IntegrationTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RequiresRvi"),
       parallelExecution in Test := false,
@@ -161,7 +161,7 @@ object Dependencies {
 
   lazy val ScalaCheck = "org.scalacheck" %% "scalacheck" % "1.12.4"
 
-  lazy val Flyway = "org.flywaydb" % "flyway-core" % "3.2.1" % "test"
+  lazy val Flyway = "org.flywaydb" % "flyway-core" % "3.2.1"
 
   lazy val TestFrameworks = Seq( ScalaTest, ScalaCheck )
 
