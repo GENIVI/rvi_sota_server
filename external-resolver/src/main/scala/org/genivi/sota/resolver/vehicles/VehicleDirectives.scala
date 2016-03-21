@@ -36,14 +36,14 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
    */
   def installedPackagesHandler = ExceptionHandler(Errors.onMissingPackage orElse Errors.onMissingVehicle)
 
+  val extractVin : Directive1[Vehicle.Vin] = refined[Vehicle.ValidVin](Slash ~ Segment)
+
   /**
    * Base API route for vehicles.
    * @return      Route object containing routes for creating, deleting, and listing vehicles
    * @throws      Errors.MissingVehicle if vehicle doesn't exist
    */
   def route: Route = {
-
-    val extractVin : Directive1[Vehicle.Vin] = refined[Vehicle.ValidVin](Slash ~ Segment)
 
     pathPrefix("vehicles") {
       get {
@@ -77,6 +77,17 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
         } ~
         packageRoute(vin) ~
         componentRoute(vin)
+      }
+    } ~
+    pathPrefix("firmware") {
+      extractVin { vin =>
+        get {
+          pathEnd {
+            completeOrRecoverWith(db.run(VehicleRepository.firmwareOnVin(vin))) {
+              Errors.onMissingVehicle
+            }
+          }
+        }
       }
     }
   }

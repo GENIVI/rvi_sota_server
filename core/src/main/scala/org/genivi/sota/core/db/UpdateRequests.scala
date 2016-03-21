@@ -5,12 +5,11 @@
 package org.genivi.sota.core.db
 
 import java.util.UUID
-import org.genivi.sota.core.data.Package
-import org.genivi.sota.db.SlickExtensions
+
+import org.genivi.sota.core.data.{Package, UpdateRequest}
 import org.joda.time.DateTime
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
-import org.genivi.sota.core.data.UpdateRequest
 
 /**
  * Database mapping definition for the UpdateRequests table.
@@ -21,9 +20,9 @@ import org.genivi.sota.core.data.UpdateRequest
  */
 object UpdateRequests {
 
-  import org.genivi.sota.refined.SlickRefined._
-  import Mappings._
+  import org.genivi.sota.db._
   import SlickExtensions._
+  import org.genivi.sota.refined.SlickRefined._
 
   /**
    * Slick mapping definition for the UpdateRequests table

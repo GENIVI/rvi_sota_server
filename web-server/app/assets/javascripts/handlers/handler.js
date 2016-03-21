@@ -8,6 +8,7 @@ define(function(require) {
       vehiclesHandler = require('./vehicles'),
       packageFiltersHandler = require('./package-filters'),
       componentsHandler = require('./components'),
+      firmwareHandler = require('./firmware'),
       packagesHandler = require('./packages');
 
   var Handler = (function() {

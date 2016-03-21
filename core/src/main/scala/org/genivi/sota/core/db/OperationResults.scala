@@ -6,7 +6,6 @@ package org.genivi.sota.core.db
 
 import java.util.UUID
 import org.genivi.sota.core.data.OperationResult
-import org.genivi.sota.db.SlickExtensions
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
@@ -16,9 +15,9 @@ import slick.driver.MySQLDriver.api._
  */
 object OperationResults {
 
-  import org.genivi.sota.refined.SlickRefined._
-  import Mappings._
+  import org.genivi.sota.db._
   import SlickExtensions._
+  import org.genivi.sota.refined.SlickRefined._
 
   /**
    * Slick mapping definition for the UpdateRequests table
