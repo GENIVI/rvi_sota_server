@@ -33,6 +33,18 @@ object Boot extends App with DatabaseConfig {
   implicit val log = Logging(system, "boot")
   val config = system.settings.config
 
+  // Database migrations
+  if (config.getBoolean("database.migrate")) {
+    val url = config.getString("database.url")
+    val user = config.getString("database.properties.user")
+    val password = config.getString("database.properties.password")
+
+    import org.flywaydb.core.Flyway
+    val flyway = new Flyway
+    flyway.setDataSource(url, user, password)
+    flyway.migrate()
+  }
+
   val externalResolverClient = new DefaultExternalResolverClient(
     Uri(config.getString("resolver.baseUri")),
     Uri(config.getString("resolver.resolveUri")),
