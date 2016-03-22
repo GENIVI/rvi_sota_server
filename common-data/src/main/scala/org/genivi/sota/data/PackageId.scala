@@ -46,19 +46,20 @@ object PackageId {
   implicit val validPackageName: Validate.Plain[String, ValidName] =
     Validate.fromPredicate(
       s => s.length > 0 && s.length <= 100
-        && s.forall(c => c.isLetter || c.isDigit),
+        && s.forall(c => c.isLetter || c.isDigit || List('-', '+', '.').contains(c)),
       s => s"$s: isn't a valid package name (between 1 and 100 character long alpha numeric string)",
       ValidName()
     )
 
-  private val packageVersionFormat = ConfigFactory.load.getString("packages.versionFormat")
+  implicit val validPackageVersion: Validate.Plain[String, ValidVersion] = {
+    val packageFormat = ConfigFactory.load().getString("packages.versionFormat")
 
-  implicit val validPackageVersion: Validate.Plain[String, ValidVersion] =
     Validate.fromPredicate(
-      _.matches( packageVersionFormat ),
+      _.matches(packageFormat),
       _ => "Invalid version format",
       ValidVersion()
     )
+  }
 
 
   /**
