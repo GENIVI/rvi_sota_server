@@ -56,6 +56,7 @@ class UpdateRequestSpec extends PropSpec with PropertyChecks with Matchers with 
   property("Update requests can be listed")  {
     new Service() {
       forAll(Gen.listOf(updateRequestGen(PackageIdGen))) { (requests: Seq[UpdateRequest]) =>
+        // TODO: I don't think this test is running, we just create a future and never wait for it's result
         Future.sequence(requests.map(r => db.run(UpdateRequests.persist(r)))).map { _ =>
           Get( Uri(path = UpdatesPath) ) ~> resource.route ~> check {
             status shouldBe StatusCodes.OK

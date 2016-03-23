@@ -4,53 +4,64 @@
  */
 package org.genivi.sota.core
 
+import akka.http.scaladsl.unmarshalling.Unmarshaller._
 import akka.http.scaladsl.model.Uri.Path
-import akka.http.scaladsl.model.{StatusCodes, Uri}
-import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
+import org.genivi.sota.data.{PackageId, Vehicle, VehicleGenerators}
+import org.genivi.sota.core.rvi._
+import org.genivi.sota.core.db.{Packages, UpdateRequests, UpdateSpecs, Vehicles}
+import io.circe.syntax._
+import org.genivi.sota.core.db._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
-import CirceMarshallingSupport._
-import org.genivi.sota.core.rvi.JsonRpcRviClient
 import org.genivi.sota.core.jsonrpc.HttpTransport
-import org.genivi.sota.data.Vehicle
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest._
+import slick.driver.MySQLDriver.api._
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
-import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
-import slick.driver.MySQLDriver.api._
+import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.server._
+import org.genivi.sota.core.data.{UpdateSpec, UpdateStatus}
+import org.genivi.sota.core.transfer.InstalledPackagesUpdate
+import org.scalatest.time.{Millis, Seconds, Span}
 
 /**
  * Spec tests for vehicle REST actions
  */
 class VehicleResourceSpec extends PropSpec with PropertyChecks
-    with Matchers
-    with ScalatestRouteTest
-    with BeforeAndAfterAll {
+  with Matchers
+  with ScalatestRouteTest
+  with ScalaFutures
+  with DatabaseSpec
+  with VehicleDatabaseSpec {
 
-  val databaseName = "test-database"
-  val db = Database.forConfig(databaseName)
+  import CirceMarshallingSupport._
+  import Generators._
+  import org.genivi.sota.data.VehicleGenerators._
+  import org.genivi.sota.data.PackageIdGenerators._
 
   val rviUri = Uri(system.settings.config.getString( "rvi.endpoint" ))
   val serverTransport = HttpTransport( rviUri )
   implicit val rviClient = new JsonRpcRviClient( serverTransport.requestTransport, system.dispatcher)
 
-  lazy val service = new VehiclesResource(db, rviClient)
+  val fakeResolver = new FakeExternalResolver()
 
-  override def beforeAll {
-    TestDatabase.resetDatabase( databaseName )
-  }
+  lazy val service = new VehiclesResource(db, rviClient, fakeResolver)
 
   val BasePath = Path("/vehicles")
+
+  implicit val patience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
+
+  implicit val _db = db
 
   def resourceUri( pathSuffix : String ) : Uri = {
     Uri.Empty.withPath(BasePath / pathSuffix)
   }
 
   def vehicleUri(vin: Vehicle.Vin)  = Uri.Empty.withPath( BasePath / vin.get )
-
-  import Generators._
-  import org.genivi.sota.data.VehicleGenerators._
 
   property( "create new vehicle" ) {
     forAll { (vehicle: Vehicle) =>
@@ -93,10 +104,4 @@ class VehicleResourceSpec extends PropSpec with PropertyChecks
       }
     }
   }
-
-  override def afterAll() {
-    system.terminate()
-    db.close()
-  }
-
 }

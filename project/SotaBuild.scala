@@ -178,15 +178,17 @@ object Dependencies {
 
   val AkkaHttpVersion = "1.0"
 
+  val AkkaStreamVersion = AkkaHttpVersion
+
   val AkkaVersion = "2.4.0"
 
   val CirceVersion = "0.2.0"
-
 
   lazy val Akka = Seq(
     "com.typesafe.akka" % "akka-http-core-experimental_2.11" % AkkaHttpVersion,
     "com.typesafe.akka" % "akka-http-experimental_2.11" % AkkaHttpVersion,
     "com.typesafe.akka" %% "akka-http-testkit-experimental" % AkkaHttpVersion,
+    "com.typesafe.akka" %% "akka-stream-experimental" % AkkaStreamVersion,
     "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion,
     "ch.qos.logback" % "logback-classic" % "1.0.13"
   )

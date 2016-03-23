@@ -9,6 +9,10 @@ import java.util.UUID
 
 import akka.http.scaladsl.model.Uri
 import org.joda.time.DateTime
+
+import eu.timepit.refined.api.Refined
+import eu.timepit.refined.string.Uuid
+
 import slick.ast.{Node, TypedType}
 import slick.driver.MySQLDriver.api._
 import slick.lifted.Rep
@@ -43,4 +47,7 @@ object SlickExtensions {
   import scala.language.implicitConversions
 
   implicit def mappedColumnExtensions(c: Rep[_]) : MappedExtensionMethods = new MappedExtensionMethods(c.toNode)
+
+  implicit def uuidToJava(refined: Refined[String, Uuid]): Rep[UUID] =
+    UUID.fromString(refined.get).bind
 }
