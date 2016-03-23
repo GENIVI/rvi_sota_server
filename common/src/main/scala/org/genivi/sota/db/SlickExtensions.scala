@@ -4,8 +4,11 @@
  */
 package org.genivi.sota.db
 
-import akka.http.scaladsl.model.Uri
+import java.sql.Timestamp
 import java.util.UUID
+
+import akka.http.scaladsl.model.Uri
+import org.joda.time.DateTime
 import slick.ast.{Node, TypedType}
 import slick.driver.MySQLDriver.api._
 import slick.lifted.Rep
@@ -21,6 +24,15 @@ object SlickExtensions {
   implicit val UriColumnType = MappedColumnType.base[Uri, String](_.toString(), Uri.apply)
 
   implicit val uuidColumnType = MappedColumnType.base[UUID, String]( _.toString(), UUID.fromString )
+
+  /**
+    * Define how to store a Joda Date time in the SQL database.
+    */
+  implicit val jodaDateTimeMapping = {
+    MappedColumnType.base[DateTime, Timestamp](
+      dt => new Timestamp(dt.getMillis),
+      ts => new DateTime(ts))
+  }
 
   final class MappedExtensionMethods(val n: Node) extends AnyVal {
 

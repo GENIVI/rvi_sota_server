@@ -9,6 +9,7 @@ define(function(require) {
       PackageHistory = require('../packages/package-update-history-for-vin'),
       AddComponent = require('../components/add-component-to-vin'),
       ComponentsOnVin = require('../components/list-of-components-on-vin'),
+      FirmwareOnVin = require('../firmware/list-of-firmware-on-vin'),
       db = require('stores/db'),
       SearchBar = require('../search-bar');
 
@@ -33,6 +34,8 @@ define(function(require) {
               DisplayCampaignLink={false}/>
             <AddPackageManually Vin={params.vin}/>
             <SyncPackages Vin={params.vin}/>
+            <h2>Installed Firmware</h2>
+            <FirmwareOnVin Firmware={db.firmwareOnVin} Vin={params.vin}/>
             <h2>Installed Components</h2>
             <ComponentsOnVin Components={db.componentsOnVin} Vin={params.vin}/>
             <AddComponent Vin={params.vin}/>

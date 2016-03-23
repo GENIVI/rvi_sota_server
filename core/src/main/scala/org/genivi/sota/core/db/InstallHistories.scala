@@ -17,7 +17,7 @@ import slick.driver.MySQLDriver.api._
  */
 object InstallHistories {
 
-  import Mappings._
+  import org.genivi.sota.db.SlickExtensions._
   import org.genivi.sota.refined.SlickRefined._
 
   /**

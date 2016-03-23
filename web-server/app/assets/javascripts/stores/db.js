@@ -13,6 +13,7 @@ define(function(require) {
       this.packageQueueForVin = atom.createAtom([]);
       this.packageHistoryForVin = atom.createAtom([]);
       this.componentsOnVin = atom.createAtom([]);
+      this.firmwareOnVin = atom.createAtom([]);
       this.filtersForPackage = atom.createAtom([]);
       this.vehiclesForPackage = atom.createAtom([]);
       this.vehiclesQueuedForPackage = atom.createAtom([]);
