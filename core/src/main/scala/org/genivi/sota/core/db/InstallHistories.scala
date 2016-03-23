@@ -11,9 +11,9 @@ import slick.driver.MySQLDriver.api._
 
 /**
  * Database mapping definition for the InstallHistory table.
- * This provides a history of package installs that have been attempted on a
- * VIN.  It records the identity of the package which was attempted to be
- * installed, the time of the attempt and whether the install was successful
+ * This provides a history of update installs that have been attempted on a
+ * VIN. It records the identity of the update, thi VIN, the time of the attempt
+ * and whether the install was successful
  */
 object InstallHistories {
 
@@ -29,15 +29,14 @@ object InstallHistories {
 
     def id             = column[Long]           ("id", O.PrimaryKey, O.AutoInc)
     def vin            = column[Vehicle.Vin]    ("vin")
-    def packageName    = column[Package.Name]   ("packageName")
-    def packageVersion = column[Package.Version]("packageVersion")
+    def updateId       = column[java.util.UUID] ("update_request_id")
     def success        = column[Boolean]        ("success")
     def completionTime = column[DateTime]       ("completionTime")
 
-    def * = (id.?, vin, packageName, packageVersion, success, completionTime).shaped <>
-      (r => InstallHistory(r._1, r._2, Package.Id(r._3, r._4), r._5, r._6),
+    def * = (id.?, vin, updateId, success, completionTime).shaped <>
+      (r => InstallHistory(r._1, r._2, r._3, r._4, r._5),
         (h: InstallHistory) =>
-          Some((h.id, h.vin, h.packageId.name, h.packageId.version, h.success, h.completionTime)))
+          Some((h.id, h.vin, h.updateId, h.success, h.completionTime)))
   }
   // scalastyle:on
 
@@ -59,10 +58,10 @@ object InstallHistories {
    * Record the outcome of a install attempt on a specific VIN. The result of
    * the install is returned from the SOTA client via RVI.
    * @param vin The VIN that the install attempt ran on
-   * @param pkgId The name/version of the package that was attempted to be installed
+   * @param updateId The Id of the update that was attempted to be installed
    * @param success Whether the install was successful
    */
-  def log(vin: Vehicle.Vin, pkgId: Package.Id, success: Boolean): DBIO[Int] =
-    installHistories += InstallHistory(None, vin, pkgId, success, DateTime.now)
+  def log(vin: Vehicle.Vin, updateId: java.util.UUID, success: Boolean): DBIO[Int] =
+    installHistories += InstallHistory(None, vin, updateId, success, DateTime.now)
 
 }
