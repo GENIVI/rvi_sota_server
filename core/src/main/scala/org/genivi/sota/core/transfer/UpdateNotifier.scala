@@ -34,7 +34,7 @@ object PackageUpdate {
 
 }
 
-case class UpdateNotification(update: PackageUpdate, services: ServerServices)
+case class UpdateNotification(update_available: PackageUpdate, services: ServerServices)
 
 object UpdateNotification {
 
