@@ -84,11 +84,11 @@ object SotaClient {
     val vin = refineMV[Vehicle.ValidVin]("V1234567890123456")
 
     override def receive = {
-      case UpdateNotification(packages, services ) =>
+      case UpdateNotification(update, services ) =>
         log.debug( "Update notification received." )
         rviClient.sendMessage(
           services.start,
-          StartDownload(vin, packages.map(_.`package`).toList, clientServices),
+          StartDownload(vin, update.update_id, clientServices),
           ttl())
       case m => log.debug(s"Not supported yet: $m")
     }

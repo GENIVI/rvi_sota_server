@@ -23,12 +23,15 @@ object Errors {
   object Codes {
     val FilterNotFound     = ErrorCode("filter_not_found")
     val PackageNotFound    = ErrorCode("package_not_found")
+    val FirmwareNotFound   = ErrorCode("firmware_not_found")
     val MissingVehicle     = ErrorCode("missing_vehicle")
     val MissingComponent   = ErrorCode("missing_component")
     val ComponentInstalled = ErrorCode("component_is_installed")
   }
 
   case object MissingPackageException       extends Throwable with NoStackTrace
+
+  case object MissingFirmwareException      extends Throwable with NoStackTrace
 
   case object MissingFilterException        extends Throwable with NoStackTrace
 
@@ -47,6 +50,11 @@ object Errors {
   val onMissingPackage : PF = {
     case Errors.MissingPackageException =>
       complete( StatusCodes.NotFound -> ErrorRepresentation( Codes.PackageNotFound, "Package not found") )
+  }
+
+  val onMissingFirmware : PF = {
+    case Errors.MissingFirmwareException =>
+      complete(StatusCodes.NotFound -> ErrorRepresentation(Codes.FirmwareNotFound, "Firmware doesn't exist"))
   }
 
   val onMissingVehicle : PF = {

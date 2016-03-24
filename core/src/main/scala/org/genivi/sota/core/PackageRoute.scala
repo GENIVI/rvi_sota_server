@@ -135,14 +135,14 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
         } ~
         put {
         // TODO: Fix form fields metadata causing error for large upload
-        parameters('description.?, 'vendor.?) { (description, vendor) =>
+        parameters('description.?, 'vendor.?, 'signature.?) { (description, vendor, signature) =>
           formFields('file.as[StrictForm.FileData]) { fileData =>
             completeOrRecoverWith(
               for {
                 _                   <- resolver.putPackage(packageId, description, vendor)
                 (uri, size, digest) <- savePackage(packageId, fileData)
                 _                   <- db.run(Packages.create(
-                                        Package(packageId, uri, size, digest, description, vendor)))
+                                        Package(packageId, uri, size, digest, description, vendor, signature)))
               } yield StatusCodes.NoContent
             ) {
               case ExternalResolverRequestFailed(msg, cause) =>

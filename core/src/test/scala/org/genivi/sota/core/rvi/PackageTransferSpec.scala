@@ -14,6 +14,7 @@ import io.circe.Encoder
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
+import java.util.UUID
 import java.security.MessageDigest
 import org.apache.commons.codec.binary.Hex
 import org.genivi.sota.core.Generators
@@ -37,8 +38,8 @@ class ClientActor(vin: Vehicle.Vin, probe: ActorRef, chunksToConsume: Int)
   val chunks = scala.collection.mutable.ListBuffer.empty[PackageChunk]
 
   def consumeChunks(uploader: ActorRef) : Receive = {
-    case StartDownloadMessage(pid, _, _) =>
-      uploader ! ChunksReceived(vin, pid, List.empty)
+    case StartDownloadMessage(id, _, _) =>
+      uploader ! ChunksReceived(vin, id, List.empty)
 
     case PackageChunk(_, _, index) if index > chunksToConsume =>
       // do nothing, uploader will time out.
@@ -47,7 +48,7 @@ class ClientActor(vin: Vehicle.Vin, probe: ActorRef, chunksToConsume: Int)
       chunks += x
       uploader ! ChunksReceived(vin, pid, chunks.toList.map( _.index ) )
 
-    case Finish(_) =>
+    case Finish =>
       probe ! ClientActor.Report(chunks.toList)
       context stop self
   }
@@ -115,12 +116,20 @@ class PackageTransferSpec extends PropSpec with Matchers with PropertyChecks wit
   val services = ClientServices("", "", "", "", "")
 
   ignore("all chunks transferred") {
-    forAll( genVehicle, Gen.oneOf( packages ) ) { (vehicle, p) =>
+    val testDataGen = for {
+      vehicle <- genVehicle
+      p <- Gen.oneOf(packages)
+      updateId <- Gen.uuid
+      signature <- Gen.alphaStr
+    } yield (vehicle, p, updateId, signature)
+
+    forAll(testDataGen) { testData =>
+      val (vehicle, p, updateId, signature) = testData
       val pckg = Generators.generatePackageData(p)
       val probe = TestProbe()
       val clientActor = system.actorOf( ClientActor.props(vehicle.vin, probe.ref), "sota-client" )
       val rviClient = new AccRviClient( clientActor )
-      val underTest = system.actorOf( PackageTransferActor.props(rviClient)(services, pckg) )
+      val underTest = system.actorOf(PackageTransferActor.props(rviClient)(updateId, signature, pckg, services))
       clientActor ! ClientActor.SetUploader( underTest )
       val report = probe.expectMsgType[ClientActor.Report]
       val digest = MessageDigest.getInstance("SHA-1")
@@ -132,21 +141,23 @@ class PackageTransferSpec extends PropSpec with Matchers with PropertyChecks wit
   ignore("transfer aborts after x attempts to deliver a chunk") {
     val chunkSize = system.settings.config.getBytes("rvi.transfer.chunkSize").intValue()
     val testDataGen = for {
-      vehicle <- genVehicle
-      p       <- Gen.oneOf( packages.filter( _.size > chunkSize ) )
-      chunks  <- Gen.choose(0,
-                           (BigDecimal(p.size) / BigDecimal(chunkSize) setScale(0, RoundingMode.CEILING)).toInt - 1)
-    } yield (vehicle, p, chunks)
+      vehicle   <- genVehicle
+      p         <- Gen.oneOf( packages.filter( _.size > chunkSize ) )
+      updateId  <- Gen.uuid
+      signature <- Gen.alphaStr
+      chunks    <- Gen.choose(0,
+                              (BigDecimal(p.size) / BigDecimal(chunkSize) setScale(0, RoundingMode.CEILING)).toInt - 1)
+    } yield (vehicle, p, updateId, signature, chunks)
 
     forAll( testDataGen ) { testData =>
-      val (vehicle, p, chunksTransferred) = testData
+      val (vehicle, p, updateId, signature, chunksTransferred) = testData
       val pckg = Generators.generatePackageData(p)
       val probe = TestProbe()
       val clientActor = system.actorOf( ClientActor.props(vehicle.vin, probe.ref, chunksTransferred), "sota-client" )
       val rviClient = new AccRviClient( clientActor )
       val proxy = system.actorOf(
         Props(new Actor {
-                val underTest = context.actorOf( PackageTransferActor.props(rviClient)(services, pckg) )
+                val underTest = context.actorOf(PackageTransferActor.props(rviClient)(updateId, signature, pckg, services))
                 def receive = {
                   case x if sender == underTest => probe.ref forward x
                   case x                        => underTest forward x

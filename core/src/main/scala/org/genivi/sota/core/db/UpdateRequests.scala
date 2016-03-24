@@ -5,12 +5,11 @@
 package org.genivi.sota.core.db
 
 import java.util.UUID
-import org.genivi.sota.core.data.Package
-import org.genivi.sota.db.SlickExtensions
+
+import org.genivi.sota.core.data.{Package, UpdateRequest}
 import org.joda.time.DateTime
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
-import org.genivi.sota.core.data.UpdateRequest
 
 /**
  * Database mapping definition for the UpdateRequests table.
@@ -21,9 +20,9 @@ import org.genivi.sota.core.data.UpdateRequest
  */
 object UpdateRequests {
 
-  import org.genivi.sota.refined.SlickRefined._
-  import Mappings._
+  import org.genivi.sota.db._
   import SlickExtensions._
+  import org.genivi.sota.refined.SlickRefined._
 
   /**
    * Slick mapping definition for the UpdateRequests table
@@ -37,6 +36,9 @@ object UpdateRequests {
     def startAfter = column[DateTime]("start_after")
     def finishBefore = column[DateTime]("finish_before")
     def priority = column[Int]("priority")
+    def signature = column[String]("signature")
+    def description = column[String]("description")
+    def requestConfirmation = column[Boolean]("request_confirmation")
 
     import com.github.nscala_time.time.Imports._
     import shapeless._
@@ -51,10 +53,12 @@ object UpdateRequests {
       }
     }
 
-    def * = (id, packageName, packageVersion, creationTime, startAfter, finishBefore, priority).shaped <>
-      (x => UpdateRequest(x._1, Package.Id(x._2, x._3), x._4, x._5 to x._6, x._7 ),
+    def * = (id, packageName, packageVersion, creationTime, startAfter, finishBefore,
+             priority, signature, description.?, requestConfirmation).shaped <>
+      (x => UpdateRequest(x._1, Package.Id(x._2, x._3), x._4, x._5 to x._6, x._7, x._8, x._9, x._10),
       (x: UpdateRequest) => Some((x.id, x.packageId.name, x.packageId.version, x.creationTime,
-                                  x.periodOfValidity.start, x.periodOfValidity.end, x.priority )))
+                                  x.periodOfValidity.start, x.periodOfValidity.end, x.priority,
+                                  x.signature, x.description, x.requestConfirmation)))
 
 
   }
@@ -70,11 +74,14 @@ object UpdateRequests {
    */
   def list: DBIO[Seq[UpdateRequest]] = all.result
 
+  def byId(updateId: UUID) : DBIO[Option[UpdateRequest]] =
+    all.filter {_.id === updateId }.result.headOption
+
   /**
    * Add a new package update. Package updated specify a specific package at a
    * specific version to be installed in a time window, with a given priority
    * @param request A new update request to add
    */
   def persist(request: UpdateRequest)
-             (implicit ec: ExecutionContext): DBIO[UpdateRequest] = (all += request).map( _ => request)
+             (implicit ec: ExecutionContext): DBIO[Unit] = (all += request).map( _ => ())
 }

@@ -38,7 +38,7 @@ trait Generators {
     cs      <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaChar)
     desc    <- Gen.option(Arbitrary.arbitrary[String])
     vendor  <- Gen.option(Gen.alphaStr)
-  } yield Package(id, Uri(path = Uri.Path / "tmp" / s"${id.name.get}-${id.version.get}.rpm"), size, cs.mkString, desc, vendor)
+  } yield Package(id, Uri(path = Uri.Path / "tmp" / s"${id.name.get}-${id.version.get}.rpm"), size, cs.mkString, desc, vendor, None)
 
   implicit val arbitrayPackage: Arbitrary[Package] = Arbitrary( PackageGen )
 
@@ -49,7 +49,11 @@ trait Generators {
     startAfter   <- Gen.choose(10, 100).map( DateTime.now + _.days)
     finishBefore <- Gen.choose(10, 100).map(x => startAfter + x.days)
     prio         <- Gen.choose(1, 10)
-  } yield UpdateRequest( UUID.randomUUID(), packageId, DateTime.now, startAfter to finishBefore, prio )
+    sig          <- Gen.alphaStr
+    desc         <- Gen.option(Arbitrary.arbitrary[String])
+    reqConfirm   <- Arbitrary.arbitrary[Boolean]
+  } yield UpdateRequest(UUID.randomUUID(), packageId, DateTime.now, startAfter to finishBefore,
+                        prio, sig, desc, reqConfirm)
 
   def vinDepGen(packages: Seq[Package]) : Gen[(Vehicle.Vin, Set[Package.Id])] = for {
     vin               <- genVin

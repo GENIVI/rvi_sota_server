@@ -5,27 +5,25 @@
 package org.genivi.sota.core.rvi
 
 import akka.actor.ReceiveTimeout
+import akka.actor.{Actor, ActorLogging, ActorRef, Props, Status}
+import akka.util.ByteString
+import io.circe.Encoder
 import java.net.URI
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.file.{Paths, StandardOpenOption}
-
-import akka.actor.{Actor, ActorLogging, ActorRef, Props, Status}
-import akka.util.ByteString
-import io.circe.Encoder
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 import org.apache.commons.codec.binary.Base64
-import org.genivi.sota.core.data.UpdateStatus
-import org.genivi.sota.core.data.Vehicle
-import org.genivi.sota.core.data.{Package, UpdateSpec, Vehicle}
-import org.genivi.sota.core.db.{UpdateSpecs, InstallHistories}
+import org.genivi.sota.core.data._
+import org.genivi.sota.core.db._
 import org.joda.time.DateTime
+import scala.collection.immutable.Queue
+import scala.concurrent.Future
 import scala.concurrent.duration.{FiniteDuration, Duration}
+import scala.math.BigDecimal.RoundingMode
 import scala.util.control.NoStackTrace
 import slick.driver.MySQLDriver.api.Database
-
-import scala.collection.immutable.Queue
-import scala.math.BigDecimal.RoundingMode
 
 /**
  * Actor to handle events received from the RVI node.
@@ -43,17 +41,17 @@ class UpdateController(transferProtocolProps: Props) extends Actor with ActorLog
    * @param currentDownloads the map of VIN to the actor handling that vehicle
    */
   def running( currentDownloads: Map[Vehicle.Vin, ActorRef] ) : Receive = {
-    case x @ StartDownload(vin, packages, clientServices) =>
+    case x @ StartDownload(vin, updateId, clientServices) =>
       currentDownloads.get(vin) match {
         case None =>
-          log.debug(s"New transfer to vehicle $vin for $packages, count ${currentDownloads.size}")
+          log.debug(s"New transfer to vehicle $vin for update $updateId, count ${currentDownloads.size}")
           val actor = context.actorOf( transferProtocolProps )
           context.watch(actor)
           context.become( running( currentDownloads.updated( vin, actor ) ) )
           actor ! x
         case Some(x) =>
           log.warning(
-            s"There is an active transfer for vehicle $vin. Request to transfer packages $packages will be ignored." )
+            s"There is an active transfer for vehicle $vin. Request to transfer update $updateId will be ignored." )
       }
     case x @ ChunksReceived(vin, _, _) =>
       currentDownloads.get(vin).foreach( _ ! x)
@@ -90,7 +88,7 @@ object TransferProtocolActor {
   /**
    * Configuration class for creating the TransferProtocolActor actor.
    */
-  def props(db: Database, rviClient: RviClient, transferActorProps: (ClientServices, Package) => Props) =
+  def props(db: Database, rviClient: RviClient, transferActorProps: (UUID, String, Package, ClientServices) => Props) =
     Props( new TransferProtocolActor( db, rviClient, transferActorProps) )
 }
 
@@ -115,7 +113,8 @@ object UpdateEvents {
  * @param rviClient the client to the RVI node
  * @param transferActorProps the configuration class for creating the PackageTransferActor
  */
-class TransferProtocolActor(db: Database, rviClient: RviClient, transferActorProps: (ClientServices, Package) => Props)
+class TransferProtocolActor(db: Database, rviClient: RviClient,
+                            transferActorProps: (UUID, String, Package, ClientServices) => Props)
     extends Actor with ActorLogging {
   import context.dispatcher
   import cats.syntax.show._
@@ -126,9 +125,10 @@ class TransferProtocolActor(db: Database, rviClient: RviClient, transferActorPro
     TimeUnit.MILLISECONDS
   )
 
-  def buildTransferQueue(specs: Iterable[UpdateSpec]) : Queue[Package] = {
-    specs.foldLeft(Set.empty[Package])( (acc, x) => acc.union( x.dependencies ) ).to[Queue]
-  }
+  def buildTransferQueue(specs: Iterable[UpdateSpec]) : Queue[(UpdateSpec, Package)] = (for {
+    spec <- specs
+    pkg <- spec.dependencies
+  } yield (spec, pkg)).to[Queue]
 
   /**
    * Create actors to handle each transfer to the vehicle.
@@ -136,45 +136,55 @@ class TransferProtocolActor(db: Database, rviClient: RviClient, transferActorPro
    * Terminate when all updates and dependencies are successfully transferred,
    * or when the transfer is aborted because the vehicle is not responding.
    */
-  def running(services: ClientServices, updates: Set[UpdateSpec], pending: Queue[Package],
-              inProgress: Map[ActorRef, Package], done: Set[Package]) : Receive = {
+  def running(services: ClientServices, updates: Set[UpdateSpec], pending: Queue[(UpdateSpec, Package)],
+              inProgress: Map[ActorRef, (UpdateSpec, Package)], done: Set[Package]) : Receive = {
     case akka.actor.Terminated(ref) =>
       // TODO: Handle actors terminated on errors (e.g. file exception in PackageTransferActor)
-      val p = inProgress.get(ref).get
-      log.debug(s"Package $p uploaded.")
-      val newInProgress = pending.headOption.map( startPackageUpload(services) )
-        .fold( inProgress - ref)( inProgress - ref + _ )
-      if( newInProgress.isEmpty ) {
+      val (oldUpdate, oldPkg) = inProgress.get(ref).get
+      log.debug(s"Package for update $oldUpdate uploaded.")
+      val newInProgress = pending.headOption.map { case (update, pkg) =>
+        startPackageUpload(services)(update, pkg) }
+        .fold(inProgress - ref)(inProgress - ref + _)
+
+      if (newInProgress.isEmpty) {
         log.debug( s"All packages uploaded." )
         context.setReceiveTimeout(installTimeout)
         updates.foreach { x =>
           context.system.eventStream.publish( UpdateEvents.PackagesTransferred( x ) )
         }
       } else {
-        val finishedPackageTransfers = done + p
-        val (finishedUpdates, unfinishedUpdates) = updates.span(_.dependencies.diff( finishedPackageTransfers ).isEmpty)
+        val finishedPackageTransfers = done + oldPkg
+        val (finishedUpdates, unfinishedUpdates) =
+          updates.span(_.dependencies.diff(finishedPackageTransfers).isEmpty)
         context.become(
-          running( services, unfinishedUpdates, if(pending.isEmpty) pending else pending.tail,
-                   newInProgress, finishedPackageTransfers) )
+          running(services, unfinishedUpdates, if (pending.isEmpty) pending else pending.tail,
+                  newInProgress, finishedPackageTransfers))
       }
 
-    case x @ ChunksReceived(vin, p, _) =>
-      inProgress.find( _._2.id == p).foreach( _._1 ! x)
+    case x @ ChunksReceived(_, updateId, _) =>
+      inProgress.find { case (_, (spec: UpdateSpec, _)) =>
+        spec.request.id == updateId
+      }.foreach { case (ref: ActorRef, _) =>
+        ref ! x
+      }
 
-    case r @ InstallReport(vin, packageId, success, msg) =>
+    case r @ InstallReport(vin, update) =>
       context.system.eventStream.publish( UpdateEvents.InstallReportReceived(r) )
-      log.debug(s"Install report received from $vin: ${packageId.show} installed $success, $msg")
-      updates.find( _.request.packageId === packageId ).foreach { finishedSpec =>
-        val pendingSpecs = updates - finishedSpec
-        db.run( UpdateSpecs.setStatus( finishedSpec, if( success ) UpdateStatus.Finished  else UpdateStatus.Failed ) )
-        db.run( InstallHistories.log(vin, packageId, success) )
-        if( pendingSpecs.isEmpty ) {
-          log.debug( "All installation reports received." )
+      log.debug(s"Install report received from $vin: ${update.update_id} installed with ${update.operation_results}")
+      updates.find(_.request.id == update.update_id).headOption match {
+        case Some(spec) => {
+          db.run(UpdateSpecs.setStatus(spec, UpdateStatus.Finished))
+          update.operation_results.foreach { r: OperationResult =>
+            db.run(OperationResults.persist(org.genivi.sota.core.data.OperationResult(
+              r.id, update.update_id, r.result_code, r.result_text)))
+          }
+          db.run(UpdateRequests.byId(update.update_id)).map { updateRequestO =>
+            db.run(InstallHistories.log(vin, update.update_id, updateRequestO.get.packageId, true))
+          }
           rviClient.sendMessage(services.getpackages, io.circe.Json.Empty, ttl())
           context.stop( self )
-        } else {
-          context.become(running( services, pendingSpecs, pending, inProgress, done ))
         }
+        case None => log.error(s"Update ${update.update_id} for corresponding install report does not exist!")
       }
 
     case ReceiveTimeout =>
@@ -195,16 +205,20 @@ class TransferProtocolActor(db: Database, rviClient: RviClient, transferActorPro
     DateTime.now + 5.minutes
   }
 
-  def startPackageUpload( services: ClientServices)( p: Package ) : (ActorRef, Package) = {
-    val ref = context.actorOf( transferActorProps(services, p), s"${p.id.name.get}-${p.id.version.get}")
+  def startPackageUpload(services: ClientServices)
+                        (update: UpdateSpec,
+                         pkg: Package): (ActorRef, (UpdateSpec, Package)) = {
+    val r = update.request
+    val ref = context.actorOf(transferActorProps(r.id, r.signature, pkg, services), r.id.toString)
     context.watch(ref)
-    ref -> p
+    (ref, (update, pkg))
   }
 
   def loadSpecs(services: ClientServices) : Receive = {
     case TransferProtocolActor.Specs(values) =>
       val todo = buildTransferQueue(values)
-      val workers : Map[ActorRef, Package] = todo.take(3).map( startPackageUpload(services) ).toMap
+      val workers : Map[ActorRef, (UpdateSpec, Package)] =
+        todo.take(3).map { case (update, pkg) => startPackageUpload(services)(update, pkg) }.toMap
       context become running( services, values.toSet, todo.drop(3), workers, Set.empty )
 
     case Status.Failure(t) =>
@@ -216,16 +230,16 @@ class TransferProtocolActor(db: Database, rviClient: RviClient, transferActorPro
    * Entry point to this actor when the vehicle initiates a download.
    */
   override def receive : Receive = {
-    case StartDownload(vin, packages, services) =>
-      log.debug(s"$vin requested packages $packages")
+    case StartDownload(vin, updateId, services) =>
+      log.debug(s"$vin requested update $updateId")
       import akka.pattern.pipe
-      db.run( UpdateSpecs.load(vin, packages.toSet) ).map(TransferProtocolActor.Specs.apply) pipeTo self
+      db.run(UpdateSpecs.load(vin, updateId)).map(TransferProtocolActor.Specs.apply) pipeTo self
       context become loadSpecs(services)
   }
 
 }
 
-case class StartDownloadMessage( `package`: Package.Id, checksum: String, chunkscount: Int )
+case class StartDownloadMessage(update_id: UUID, checksum: String, chunkscount: Int)
 
 object StartDownloadMessage {
 
@@ -236,9 +250,9 @@ object StartDownloadMessage {
 
 }
 
-case class ChunksReceived( vin: Vehicle.Vin, `package`: Package.Id, chunks: List[Int] )
+case class ChunksReceived(vin: Vehicle.Vin, update_id: UUID, chunks: List[Int])
 
-case class PackageChunk( `package`: Package.Id, bytes: ByteString, index: Int)
+case class PackageChunk(update_id: UUID, bytes: ByteString, index: Int)
 
 object PackageChunk {
 
@@ -252,7 +266,7 @@ object PackageChunk {
 
 }
 
-case class Finish(`package`: Package.Id )
+case class Finish(update_id: UUID, signature: String)
 
 object Finish {
 
@@ -268,10 +282,15 @@ case object UploadAborted
 /**
  * Actor to handle transferring chunks to a vehicle.
  *
+ * @param updateId Unique Id of the update.
  * @param pckg the package to transfer
  * @param services the service paths available on the vehicle
  */
-class PackageTransferActor( pckg: Package, services: ClientServices, rviClient: RviClient )
+class PackageTransferActor(updateId: UUID,
+                           signature: String,
+                           pckg: Package,
+                           services: ClientServices,
+                           rviClient: RviClient)
     extends Actor with ActorLogging {
 
   import io.circe.generic.auto._
@@ -301,18 +320,18 @@ class PackageTransferActor( pckg: Package, services: ClientServices, rviClient: 
     buffer.clear()
     val bytesRead = channel.read( buffer )
     buffer.flip()
-    rviClient.sendMessage( services.chunk, PackageChunk( pckg.id,  ByteString( buffer ), index), ttl() )
+    rviClient.sendMessage(services.chunk, PackageChunk(updateId, ByteString(buffer), index), ttl())
     context.setReceiveTimeout( ackTimeout )
   }
 
   def finish() : Unit = {
-    rviClient.sendMessage( services.finish, Finish(pckg.id), ttl() )
+    rviClient.sendMessage(services.finish, Finish(updateId, signature), ttl())
     context stop self
   }
 
   override def preStart() : Unit = {
     log.debug(s"Starting transfer of the package $pckg. Chunk size: $chunkSize, chunks to transfer: $lastIndex")
-    rviClient.sendMessage( services.start, StartDownloadMessage(pckg.id, pckg.checkSum, lastIndex), ttl() )
+    rviClient.sendMessage( services.start, StartDownloadMessage(updateId, pckg.checkSum, lastIndex), ttl() )
   }
 
   val maxAttempts : Int = 5
@@ -372,7 +391,7 @@ object PackageTransferActor {
   /**
    * Configuration class for creating PackageTransferActor.
    */
-  def props( rviClient: RviClient )( services: ClientServices, pckg: Package) : Props =
-    Props( new PackageTransferActor(pckg, services, rviClient) )
+  def props(rviClient: RviClient)(updateId: UUID, signature: String, pckg: Package, services: ClientServices): Props =
+    Props(new PackageTransferActor(updateId, signature, pckg, services, rviClient))
 
 }

@@ -65,7 +65,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   case class FilterPackageJson(filterName : String, packageName : String, packageVersion : String)
   case class ComponentJson(partNumber : String, description : String)
   case class UpdateRequest(id: String, packageId: PackageId, creationTime: String, periodOfValidity: String,
-                           priority: Int)
+                           priority: Int, signature: String, description: String, requestConfirmation: Boolean)
   import UpdateStatus._
   case class UpdateSpec(request: UpdateRequest, vin: String, status: UpdateStatus, dependencies: Set[Package])
   object UpdateSpec {
@@ -117,7 +117,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     val cookie = getLoginCookie
     val asyncHttpClient:AsyncHttpClient = WS.client.underlying
     val putBuilder = asyncHttpClient.preparePut("http://" + webserverHost + s":$webserverPort/api/v1/packages/" +
-      packageName + "/" + packageVersion + "?description=test&vendor=ACME")
+      packageName + "/" + packageVersion + "?description=test&vendor=ACME&signature=none")
     val builder = putBuilder.addBodyPart(new FilePart("file", new File("../packages/ghc-7.6.3-18.3.el7.x86_64.rpm")))
       .addHeader("Cookie", Cookies.encodeCookieHeader(cookie))
     val response = asyncHttpClient.executeRequest(builder.build()).get()
@@ -350,7 +350,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     val tomorrowTimestamp = DateTimeFormat.forPattern(pattern).print(new DateTime().plusDays(1))
     val uuid = UUID.randomUUID().toString
     val data = UpdateRequest(uuid, PackageId(testPackageName, testPackageVersion), currentTimestamp,
-      currentTimestamp + "/" + tomorrowTimestamp, 1)
+      currentTimestamp + "/" + tomorrowTimestamp, 1, "sig", "desc", true)
     val response = await(WS.url("http://" + webserverHost + s":$webserverPort/api/v1/updates")
       .withHeaders("Cookie" -> Cookies.encodeCookieHeader(cookie))
       .withHeaders("Content-Type" -> "application/json")

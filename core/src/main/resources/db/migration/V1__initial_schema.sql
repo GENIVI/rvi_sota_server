@@ -43,14 +43,14 @@ CREATE TABLE UpdateSpec (
 );
 
 CREATE TABLE RequiredPackage (
-  update_request_id CHAR(36) NOT NULL,
-  vin varchar(64) NOT NULL,
-  package_name VARCHAR(200) NOT NULL,
-  package_version VARCHAR(200) NOT NULL,
+    update_request_id CHAR(36) NOT NULL,
+    vin varchar(64) NOT NULL,
+    package_name VARCHAR(200) NOT NULL,
+    package_version VARCHAR(200) NOT NULL,
 
-  PRIMARY KEY (update_request_id, vin, package_name, package_version),
-  FOREIGN KEY fk_downloads_update_specs (update_request_id, vin) REFERENCES UpdateSpec(update_request_id, vin),
-  FOREIGN KEY fk_downloads_package (package_name, package_version) REFERENCES Package(name, version)
+    PRIMARY KEY (update_request_id, vin, package_name, package_version),
+    FOREIGN KEY fk_downloads_update_specs (update_request_id, vin) REFERENCES UpdateSpec(update_request_id, vin),
+    FOREIGN KEY fk_downloads_package (package_name, package_version) REFERENCES Package(name, version)
 );
 
 CREATE TABLE InstallHistory (
