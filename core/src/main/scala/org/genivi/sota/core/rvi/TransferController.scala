@@ -15,10 +15,8 @@ import java.nio.file.{Paths, StandardOpenOption}
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import org.apache.commons.codec.binary.Base64
-import org.genivi.sota.core.data.UpdateStatus
-import org.genivi.sota.core.data.Vehicle
-import org.genivi.sota.core.data.{Package, UpdateSpec, Vehicle}
-import org.genivi.sota.core.db.{UpdateSpecs, InstallHistories, OperationResults, UpdateRequests}
+import org.genivi.sota.core.data._
+import org.genivi.sota.core.db._
 import org.joda.time.DateTime
 import scala.collection.immutable.Queue
 import scala.concurrent.Future
@@ -180,7 +178,9 @@ class TransferProtocolActor(db: Database, rviClient: RviClient,
             db.run(OperationResults.persist(org.genivi.sota.core.data.OperationResult(
               r.id, update.update_id, r.result_code, r.result_text)))
           }
-          db.run(InstallHistories.log(vin, update.update_id, true))
+          db.run(UpdateRequests.byId(update.update_id)).map { updateRequestO =>
+            db.run(InstallHistories.log(vin, update.update_id, updateRequestO.get.packageId, true))
+          }
           rviClient.sendMessage(services.getpackages, io.circe.Json.Empty, ttl())
           context.stop( self )
         }

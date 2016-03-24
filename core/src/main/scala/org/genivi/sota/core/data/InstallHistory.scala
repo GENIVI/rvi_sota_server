@@ -26,6 +26,7 @@ case class OperationResult(
  * @param id The Id in the database. Initialize to Option.None
  * @param vin The VIN that this install history belongs to
  * @param updateId The Id of the update
+ * @param packageId Id of package which belongs to this update.
  * @param success The outcome of the install attempt
  * @param completionTime The date the install was attempted
  */
@@ -33,6 +34,7 @@ case class InstallHistory(
   id            : Option[Long],
   vin           : Vehicle.Vin,
   updateId      : UUID,
+  packageId     : Package.Id,
   success       : Boolean,
   completionTime: DateTime
 )
