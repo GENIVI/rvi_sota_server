@@ -127,10 +127,10 @@ class TransferProtocolActor(db: Database, rviClient: RviClient,
     TimeUnit.MILLISECONDS
   )
 
-  def buildTransferQueue(specs: Iterable[UpdateSpec]) : Queue[(UUID, String, Package)] = (for {
+  def buildTransferQueue(specs: Iterable[UpdateSpec]) : Queue[(UpdateSpec, Package)] = (for {
     spec <- specs
     pkg <- spec.dependencies
-  } yield (spec.request.id, spec.request.signature, pkg)).to[Queue]
+  } yield (spec, pkg)).to[Queue]
 
   /**
    * Create actors to handle each transfer to the vehicle.
@@ -138,31 +138,37 @@ class TransferProtocolActor(db: Database, rviClient: RviClient,
    * Terminate when all updates and dependencies are successfully transferred,
    * or when the transfer is aborted because the vehicle is not responding.
    */
-  def running(services: ClientServices, updates: Set[UpdateSpec], pending: Queue[(UUID, String, Package)],
-              inProgress: Map[ActorRef, Package], done: Set[Package]) : Receive = {
+  def running(services: ClientServices, updates: Set[UpdateSpec], pending: Queue[(UpdateSpec, Package)],
+              inProgress: Map[ActorRef, (UpdateSpec, Package)], done: Set[Package]) : Receive = {
     case akka.actor.Terminated(ref) =>
       // TODO: Handle actors terminated on errors (e.g. file exception in PackageTransferActor)
-      val p = inProgress.get(ref).get
-      log.debug(s"Package $p uploaded.")
-      val newInProgress = pending.headOption.map { case (id, signature, pkg) =>
-        startPackageUpload(services)(id, signature, pkg) }
+      val (oldUpdate, oldPkg) = inProgress.get(ref).get
+      log.debug(s"Package for update $oldUpdate uploaded.")
+      val newInProgress = pending.headOption.map { case (update, pkg) =>
+        startPackageUpload(services)(update, pkg) }
         .fold(inProgress - ref)(inProgress - ref + _)
-      if( newInProgress.isEmpty ) {
+
+      if (newInProgress.isEmpty) {
         log.debug( s"All packages uploaded." )
         context.setReceiveTimeout(installTimeout)
         updates.foreach { x =>
           context.system.eventStream.publish( UpdateEvents.PackagesTransferred( x ) )
         }
       } else {
-        val finishedPackageTransfers = done + p
-        val (finishedUpdates, unfinishedUpdates) = updates.span(_.dependencies.diff(finishedPackageTransfers).isEmpty)
+        val finishedPackageTransfers = done + oldPkg
+        val (finishedUpdates, unfinishedUpdates) =
+          updates.span(_.dependencies.diff(finishedPackageTransfers).isEmpty)
         context.become(
-          running( services, unfinishedUpdates, if(pending.isEmpty) pending else pending.tail,
-                   newInProgress, finishedPackageTransfers) )
+          running(services, unfinishedUpdates, if (pending.isEmpty) pending else pending.tail,
+                  newInProgress, finishedPackageTransfers))
       }
 
-    case x @ ChunksReceived(vin, updateId, _) =>
-      inProgress.find( _._2.id == updateId).foreach( _._1 ! x)
+    case x @ ChunksReceived(_, updateId, _) =>
+      inProgress.find { case (_, (spec: UpdateSpec, _)) =>
+        spec.request.id == updateId
+      }.foreach { case (ref: ActorRef, _) =>
+        ref ! x
+      }
 
     case r @ InstallReport(vin, update) =>
       context.system.eventStream.publish( UpdateEvents.InstallReportReceived(r) )
@@ -200,19 +206,19 @@ class TransferProtocolActor(db: Database, rviClient: RviClient,
   }
 
   def startPackageUpload(services: ClientServices)
-                        (updateId: UUID,
-                         signature: String,
-                         pkg: Package): (ActorRef, Package) = {
-    val ref = context.actorOf(transferActorProps(updateId, signature, pkg, services), updateId.toString)
+                        (update: UpdateSpec,
+                         pkg: Package): (ActorRef, (UpdateSpec, Package)) = {
+    val r = update.request
+    val ref = context.actorOf(transferActorProps(r.id, r.signature, pkg, services), r.id.toString)
     context.watch(ref)
-    ref -> pkg
+    (ref, (update, pkg))
   }
 
   def loadSpecs(services: ClientServices) : Receive = {
     case TransferProtocolActor.Specs(values) =>
       val todo = buildTransferQueue(values)
-      val workers : Map[ActorRef, Package] =
-        todo.take(3).map { case (id, signature, pkg) => startPackageUpload(services)(id, signature, pkg) }.toMap
+      val workers : Map[ActorRef, (UpdateSpec, Package)] =
+        todo.take(3).map { case (update, pkg) => startPackageUpload(services)(update, pkg) }.toMap
       context become running( services, values.toSet, todo.drop(3), workers, Set.empty )
 
     case Status.Failure(t) =>
