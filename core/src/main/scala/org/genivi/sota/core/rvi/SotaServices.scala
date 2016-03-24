@@ -44,7 +44,7 @@ final case class UpdateReport(update_id: UUID, operation_results: List[Operation
 /**
  * RVI message from client to report installation of a downloaded package.
  */
-final case class InstallReport(vin: Vehicle.Vin, update: UpdateReport)
+final case class InstallReport(vin: Vehicle.Vin, update_report: UpdateReport)
 
 /**
  * RVI message from client to report all installed packages.
