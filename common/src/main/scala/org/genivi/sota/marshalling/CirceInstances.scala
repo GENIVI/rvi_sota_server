@@ -10,9 +10,12 @@ import akka.http.scaladsl.model.Uri
 import cats.data.Xor
 import eu.timepit.refined.refineV
 import eu.timepit.refined.api.{Refined, Validate}
-import io.circe.{DecodingFailure, Json, Encoder, Decoder}
-import org.joda.time.{Interval, DateTime}
-import org.joda.time.format.ISODateTimeFormat
+import io.circe.{Decoder, DecodingFailure, Encoder, Json}
+import org.joda.time.{DateTime, Interval}
+import org.joda.time.format.{DateTimeFormatter, ISODateTimeFormat}
+
+import scala.annotation.tailrec
+import scala.util.{Failure, Success, Try}
 
 /**
   * Some datatypes we use don't have predefined JSON encoders and
@@ -60,10 +63,23 @@ trait CirceInstances {
   implicit val dateTimeDecoder : Decoder[DateTime] = Decoder.instance { c =>
     c.focus.asString match {
       case None       => Xor.left(DecodingFailure("DataTime", c.history))
-      case Some(date) => try { Xor.right(ISODateTimeFormat.dateTimeNoMillis().parseDateTime(date)) }
-      catch {
-        case _: IllegalArgumentException => Xor.left(DecodingFailure("DateTime", c.history))
-      }
+      case Some(date) =>
+        val parsers = List(ISODateTimeFormat.dateTimeNoMillis(), ISODateTimeFormat.dateTime())
+        tryParsers(date, parsers, DecodingFailure("DateTime", c.history))
+    }
+  }
+
+  @tailrec
+  private def tryParsers(string: String, parsers: List[DateTimeFormatter],
+                         error: DecodingFailure): Xor[DecodingFailure, DateTime] = {
+    parsers match {
+      case parser :: otherParsers ⇒
+        try { Xor.right(parser.parseDateTime(string)) }
+        catch {
+          case t: IllegalArgumentException ⇒
+            tryParsers(string, otherParsers, error)
+        }
+      case Nil ⇒ Xor.left(error)
     }
   }
 
