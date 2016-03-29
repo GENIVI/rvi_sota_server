@@ -73,13 +73,13 @@ trait CirceInstances {
   private def tryParsers(string: String, parsers: List[DateTimeFormatter],
                          error: DecodingFailure): Xor[DecodingFailure, DateTime] = {
     parsers match {
-      case parser :: otherParsers ⇒
+      case parser :: otherParsers =>
         try { Xor.right(parser.parseDateTime(string)) }
         catch {
-          case t: IllegalArgumentException ⇒
+          case t: IllegalArgumentException =>
             tryParsers(string, otherParsers, error)
         }
-      case Nil ⇒ Xor.left(error)
+      case Nil => Xor.left(error)
     }
   }
 

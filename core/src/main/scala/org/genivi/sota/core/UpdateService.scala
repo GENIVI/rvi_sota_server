@@ -17,6 +17,8 @@ import scala.util.control.NoStackTrace
 import slick.dbio.DBIO
 import slick.driver.MySQLDriver.api.Database
 
+import scala.collection.immutable.ListSet
+import scala.concurrent.{ExecutionContext, Future}
 
 case class PackagesNotFound(packageIds: (PackageId)*)
                            (implicit show: Show[PackageId])
@@ -98,6 +100,19 @@ class UpdateService(notifier: UpdateNotifier)
       _              <- persistRequest(request, updateSpecs)
       _              <- Future.successful(notifier.notify(updateSpecs.toSeq))
     } yield updateSpecs
+  }
+
+  def queueVehicleUpdate(vin: Vehicle.Vin, packageId: PackageId)
+                        (implicit db: Database, ec: ExecutionContext): Future[UpdateRequest] = {
+    val newUpdateRequest = UpdateRequest.default(packageId)
+
+    for {
+      p <- loadPackage(packageId)
+      updateRequest = newUpdateRequest.copy(signature = p.signature.getOrElse(newUpdateRequest.signature),
+        description = p.description)
+      spec = UpdateSpec(updateRequest, vin, UpdateStatus.Pending, Set.empty)
+      dbSpec <- persistRequest(updateRequest, ListSet(spec))
+    } yield updateRequest
   }
 
   def all(implicit db: Database, ec: ExecutionContext): Future[Set[UpdateRequest]] =
