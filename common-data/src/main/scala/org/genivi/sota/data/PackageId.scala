@@ -7,6 +7,7 @@ package org.genivi.sota.data
 
 import cats.{Eq, Show}
 import eu.timepit.refined.api.Validate
+import com.typesafe.config.ConfigFactory
 
 case class PackageId(
                  name   : PackageId.Name,
@@ -45,17 +46,20 @@ object PackageId {
   implicit val validPackageName: Validate.Plain[String, ValidName] =
     Validate.fromPredicate(
       s => s.length > 0 && s.length <= 100
-        && s.forall(c => c.isLetter || c.isDigit),
+        && s.forall(c => c.isLetter || c.isDigit || List('-', '+', '.').contains(c)),
       s => s"$s: isn't a valid package name (between 1 and 100 character long alpha numeric string)",
       ValidName()
     )
 
-  implicit val validPackageVersion: Validate.Plain[String, ValidVersion] =
+  implicit val validPackageVersion: Validate.Plain[String, ValidVersion] = {
+    val packageFormat = ConfigFactory.load().getString("packages.versionFormat")
+
     Validate.fromPredicate(
-      _.matches( """^\d+\.\d+\.\d+$""" ),
+      _.matches(packageFormat),
       _ => "Invalid version format",
       ValidVersion()
     )
+  }
 
 
   /**

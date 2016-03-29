@@ -219,7 +219,9 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
     "list installed packages on a VIN on GET request to /vehicles/:vin/package" in {
       Get(Resource.uri(vehicles, vin.get, "package")) ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[Seq[PackageId]] shouldBe List(PackageId(refineMV("apa"), refineMV("1.0.1")))
+        val name: PackageId.Name = Refined.unsafeApply("apa")
+        val version: PackageId.Version = Refined.unsafeApply("1.0.1")
+        responseAs[Seq[PackageId]] shouldBe List(PackageId(name, version))
       }
     }
 

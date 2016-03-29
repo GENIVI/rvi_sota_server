@@ -90,7 +90,7 @@ object SotaBuild extends Build {
 
   lazy val commonData = Project(id = "common-data", base = file("common-data"))
     .settings(basicSettings ++ compilerSettings)
-    .settings(libraryDependencies ++= Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
+    .settings(libraryDependencies ++= Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.CommonsCodec :+ Dependencies.TypesafeConfig)
     .settings(publishSettings)
 
   lazy val commonTest = Project(id = "common-test", base = file("common-test"))
@@ -209,6 +209,8 @@ object Dependencies {
   lazy val Flyway = "org.flywaydb" % "flyway-core" % "3.2.1"
 
   lazy val TestFrameworks = Seq( ScalaTest, ScalaCheck )
+
+  lazy val TypesafeConfig = "com.typesafe" % "config" % "1.3.0"
 
   lazy val Database = Seq (
     "com.typesafe.slick" %% "slick" % "3.0.2",
