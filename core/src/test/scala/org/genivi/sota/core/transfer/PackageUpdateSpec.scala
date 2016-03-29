@@ -15,7 +15,7 @@ import org.genivi.sota.core.DefaultExternalResolverClient
 import org.genivi.sota.core.{PackagesReader, RequiresRvi, TestDatabase, UpdateService}
 import org.genivi.sota.core.Generators
 import org.genivi.sota.core.Generators.updateRequestGen
-import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateSpec, Vehicle}
+import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateSpec}
 import org.genivi.sota.core.db.Packages
 import org.genivi.sota.core.jsonrpc.HttpTransport
 import org.genivi.sota.core.rvi.{JsonRpcRviClient, SotaServices}
@@ -26,9 +26,11 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
 import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture, whenReady}
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
+
 import scala.concurrent.{Await, ExecutionContext, Future}
 import slick.jdbc.JdbcBackend.Database
 import org.genivi.sota.core.rvi.{RviClient, ServerServices}
+import org.genivi.sota.data.{PackageId, Vehicle}
 
 
 /**
@@ -38,10 +40,10 @@ object DataGenerators {
 
   val packages = scala.util.Random.shuffle( PackagesReader.read().take(10).map(Generators.generatePackageData ) )
 
-  def dependenciesGen(packageId: Package.Id, vin: Vehicle.Vin) : Gen[UpdateService.VinsToPackages] =
+  def dependenciesGen(packageId: PackageId, vin: Vehicle.Vin) : Gen[UpdateService.VinsToPackages] =
     for {
       n                <- Gen.choose(1, 3)
-      requiredPackages <- Gen.containerOfN[Set, Package.Id](n, Gen.oneOf(packages ).map( _.id ))
+      requiredPackages <- Gen.containerOfN[Set, PackageId](n, Gen.oneOf(packages ).map( _.id ))
     } yield Map( vin -> (requiredPackages + packageId) )
 
 
@@ -197,7 +199,8 @@ class PackageUpdateSpec extends PropSpec with PropertyChecks with Matchers with 
     Await.ready( Future.sequence( packages.map( p => db.run( Packages.create(p) ) )), 50.seconds)
   }
 
-  def init( services: ServerServices, generatedData: Map[UpdateRequest, UpdateService.VinsToPackages] ) : Future[Set[UpdateSpec]] = {
+  def init( services: ServerServices,
+            generatedData: Map[UpdateRequest, UpdateService.VinsToPackages] ): Future[Set[UpdateSpec]] = {
     val updateService = new UpdateService( services )( akka.event.Logging(system, "sota.core.updateQueue"), rviClient )
     val vins : Set[Vehicle.Vin] =
       generatedData.values.map( _.keySet ).fold(Set.empty[Vehicle.Vin])( _ union _)

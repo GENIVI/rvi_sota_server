@@ -4,14 +4,13 @@ import akka.http.scaladsl.model.{HttpRequest, StatusCode, StatusCodes}
 import cats.state.{State, StateT}
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.resolver.packages.{Package, PackageFilter}
-import org.genivi.sota.resolver.test.{Result, Success, Failure, SuccessPackage}
-import org.genivi.sota.resolver.test.{VehicleRequestsHttp, PackageRequestsHttp, FilterRequestsHttp,
-  PackageFilterRequestsHttp}
-import org.genivi.sota.resolver.vehicles.Vehicle
+import org.genivi.sota.resolver.test._
 import org.genivi.sota.rest.ErrorCodes
 import org.scalacheck.{Arbitrary, Gen}
+
 import scala.annotation.tailrec
 import Misc._
+import org.genivi.sota.data.{Vehicle, VehicleGenerators}
 
 
 sealed trait Command
@@ -116,13 +115,13 @@ object Command extends
         // then generate some with high probability.
 
         (if (0 <= vehs && vehs <= 10) 100 else 1,
-          Vehicle.genVehicle.map(AddVehicle(_))),
+          VehicleGenerators.genVehicle.map(AddVehicle(_))),
 
         (if (0 <= pkgs && pkgs <= 5)  100 else 1,
-          Package.genPackage.map(AddPackage(_))),
+          PackageGenerators.genPackage.map(AddPackage(_))),
 
         (if (0 <= filts && filts <= 3) 20 else 1,
-          Filter.genFilter(s.packages.keys.toList, s.components.toList)
+          FilterGenerators.genFilter(s.packages.keys.toList, s.components.toList)
                 .map(AddFilter(_))),
 
         // If there are vehicles and packages, then install some

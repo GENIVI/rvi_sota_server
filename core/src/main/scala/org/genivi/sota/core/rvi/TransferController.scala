@@ -4,31 +4,30 @@
  */
 package org.genivi.sota.core.rvi
 
-import akka.actor.ReceiveTimeout
-import akka.actor.{Actor, ActorLogging, ActorRef, Props, Status}
 import akka.util.ByteString
 import io.circe.Encoder
 import java.net.URI
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.file.{Paths, StandardOpenOption}
-import java.util.UUID
 import java.util.concurrent.TimeUnit
+import java.util.UUID
+import akka.actor._
 import org.apache.commons.codec.binary.Base64
-import org.genivi.sota.core.data._
-import org.genivi.sota.core.db._
+import org.genivi.sota.core.data.{Package, UpdateSpec, UpdateStatus}
+import org.genivi.sota.core.db.{UpdateSpecs, InstallHistories, OperationResults, UpdateRequests}
+import org.genivi.sota.data.{PackageId, Vehicle}
 import org.joda.time.DateTime
 import scala.collection.immutable.Queue
 import scala.concurrent.Future
-import scala.concurrent.duration.{FiniteDuration, Duration}
 import scala.math.BigDecimal.RoundingMode
-import scala.util.control.NoStackTrace
 import slick.driver.MySQLDriver.api.Database
 
+import scala.concurrent.duration.{Duration, FiniteDuration}
 /**
  * Actor to handle events received from the RVI node.
  *
- * @param transferActorProps the configuration class for creating actors to handle a single vehicle
+ * @param transferProtocolProps the configuration class for creating actors to handle a single vehicle
  * @see SotaServices
  */
 class UpdateController(transferProtocolProps: Props) extends Actor with ActorLogging {
@@ -116,9 +115,9 @@ object UpdateEvents {
 class TransferProtocolActor(db: Database, rviClient: RviClient,
                             transferActorProps: (UUID, String, Package, ClientServices) => Props)
     extends Actor with ActorLogging {
-  import context.dispatcher
-  import cats.syntax.show._
   import cats.syntax.eq._
+  import cats.syntax.show._
+  import context.dispatcher
 
   val installTimeout : FiniteDuration = FiniteDuration(
     context.system.settings.config.getDuration("rvi.transfer.installTimeout", TimeUnit.MILLISECONDS),
@@ -194,7 +193,7 @@ class TransferProtocolActor(db: Database, rviClient: RviClient,
       abortUpdate(services, updates)
   }
 
-  def abortUpdate (services: ClientServices, updates: Set[UpdateSpec]) = {
+  def abortUpdate (services: ClientServices, updates: Set[UpdateSpec]): Unit = {
       rviClient.sendMessage(services.abort, io.circe.Json.Empty, ttl())
       updates.foreach(x => db.run( UpdateSpecs.setStatus(x, UpdateStatus.Canceled) ))
       context.stop(self)
@@ -293,9 +292,8 @@ class PackageTransferActor(updateId: UUID,
                            rviClient: RviClient)
     extends Actor with ActorLogging {
 
-  import io.circe.generic.auto._
-  import context.dispatcher
   import cats.syntax.show._
+  import io.circe.generic.auto._
 
   val chunkSize = context.system.settings.config.getBytes("rvi.transfer.chunkSize").intValue()
   val ackTimeout : FiniteDuration = FiniteDuration(
@@ -336,6 +334,7 @@ class PackageTransferActor(updateId: UUID,
 
   val maxAttempts : Int = 5
 
+  // scalastyle:off
   /**
    * Send the next chunk or resend last chunk if vehicle doesn't acknowledge with ChunksReceived.
    * Abort transfer if maxAttempts exceeded.
@@ -369,11 +368,12 @@ class PackageTransferActor(updateId: UUID,
       sendChunk(lastSentChunk)
       context.become( transferring(lastSentChunk, attempt + 1) )
   }
+  // scalastyle:on
 
   /**
    * Entry point to this actor starting with first chunk.
    */
-  override def receive = {
+  override def receive: Receive = {
     case ChunksReceived(_, _, Nil) =>
       sendChunk(1)
       context.become( transferring(1, 1) )

@@ -104,7 +104,7 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
 /**
  * Filter resource property spec
  */
-class FiltersResourcePropSpec extends ResourcePropSpec {
+class FiltersResourcePropSpec extends ResourcePropSpec with FilterGenerators {
 
   property("Posting random filters should work") {
 

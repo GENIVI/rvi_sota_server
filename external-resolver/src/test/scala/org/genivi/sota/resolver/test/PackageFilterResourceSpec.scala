@@ -7,6 +7,7 @@ package org.genivi.sota.resolver.test
 import akka.http.scaladsl.model.StatusCodes
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
+import org.genivi.sota.data.PackageId
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
 import org.genivi.sota.resolver.filters.Filter
@@ -64,7 +65,7 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec {
     "list packages associated to a filter on GET requests to /filters/:filterName/package" in {
       listPackagesForFilter(filterName) ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[List[Package]] shouldBe List(Package(Package.Id(Refined.unsafeApply(pkgName), Refined.unsafeApply(pkgVersion)), None, None))
+        responseAs[List[Package]] shouldBe List(Package(PackageId(Refined.unsafeApply(pkgName), Refined.unsafeApply(pkgVersion)), None, None))
       }
     }
 

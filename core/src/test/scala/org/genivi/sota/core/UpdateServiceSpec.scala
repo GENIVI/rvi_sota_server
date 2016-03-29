@@ -5,16 +5,18 @@ import akka.http.scaladsl.util.FastFuture
 import akka.testkit.TestKit
 import eu.timepit.refined.api.Refined
 import java.util.UUID
-import org.genivi.sota.core.data.Vehicle, Vehicle._
+
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.core.db.{UpdateSpecs, Packages, Vehicles}
+import org.genivi.sota.core.db.{Packages, UpdateSpecs, Vehicles}
+import org.genivi.sota.data.{PackageId, Vehicle, VehicleGenerators}
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 import org.scalatest.time.Millis
 import org.scalatest.time.Second
 import org.scalatest.time.Span
-import org.scalatest.{BeforeAndAfterAll, PropSpec, Matchers}
+import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
 import org.scalatest.prop.PropertyChecks
+
 import scala.util.Random
 import slick.jdbc.JdbcBackend._
 
@@ -75,15 +77,15 @@ class UpdateServiceSpec extends PropSpec with PropertyChecks with Matchers with 
   }
 
   property("decline if some of dependencies not found") {
-    def vinDepGen(missingPackages: Seq[Package.Id]) : Gen[(Vehicle.Vin, Set[Package.Id])] = for {
-      vin               <- genVin
+    def vinDepGen(missingPackages: Seq[PackageId]) : Gen[(Vehicle.Vin, Set[PackageId])] = for {
+      vin               <- VehicleGenerators.genVin
       m                 <- Gen.choose(1, 10)
       availablePackages <- Gen.pick(m, packages).map( _.map(_.id) )
       n                 <- Gen.choose(1, missingPackages.length)
       deps              <- Gen.pick(n, missingPackages).map( xs => Random.shuffle(availablePackages ++ xs).toSet )
     } yield vin -> deps
 
-    val resolverGen : Gen[(Seq[Package.Id], UpdateService.DependencyResolver)] = for {
+    val resolverGen : Gen[(Seq[PackageId], UpdateService.DependencyResolver)] = for {
       n                 <- Gen.choose(1, 10)
       missingPackages   <- Gen.listOfN(n, PackageIdGen).map( _.toSeq )
       m                 <- Gen.choose(1, 10)

@@ -9,18 +9,18 @@ import akka.http.scaladsl.server.ValidationRejection
 import eu.timepit.refined.api.Refined
 import io.circe.Json
 import io.circe.generic.auto._
+import org.genivi.sota.data.PackageId
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
 import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.packages.Package._
 import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
-import org.scalacheck._
 
 
 /**
  * Spec for Packages REST actions
  */
-class PackagesResourcePropSpec extends ResourcePropSpec {
+class PackagesResourcePropSpec extends ResourcePropSpec with PackageGenerators {
 
   property("create a new resource on PUT request") {
     forAll { (p : Package) =>
@@ -85,11 +85,11 @@ class PackagesResourceWordSpec extends ResourceWordSpec {
       addPackage("name", "1.0.0", Some("嚢"), None) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Package] shouldBe
-          Package(Package.Id(Refined.unsafeApply("name"), Refined.unsafeApply("1.0.0")), Some("嚢"), None)
+          Package(PackageId(Refined.unsafeApply("name"), Refined.unsafeApply("1.0.0")), Some("嚢"), None)
       }
     }
 
-    val pkg = Package(Package.Id(Refined.unsafeApply("apa"), Refined.unsafeApply("1.0.0")), None, None)
+    val pkg = Package(PackageId(Refined.unsafeApply("apa"), Refined.unsafeApply("1.0.0")), None, None)
 
     "GET /packages/:pkgName/:pkgVersion should return the package or fail" in {
       addPackage(pkg.id.name.get, pkg.id.version.get, None, None) ~> route ~> check {

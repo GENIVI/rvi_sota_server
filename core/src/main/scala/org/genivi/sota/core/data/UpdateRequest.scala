@@ -5,11 +5,10 @@
 package org.genivi.sota.core.data
 
 import java.util.UUID
-import cats.Foldable
-import org.joda.time.{Interval, DateTime}
 
+import org.joda.time.{DateTime, Interval}
 import io.circe._
-import io.circe.generic.auto._
+import org.genivi.sota.data.{PackageId, Vehicle}
 
 /**
  * Domain object for an update request.
@@ -31,7 +30,7 @@ import io.circe.generic.auto._
  */
 case class UpdateRequest(
   id: UUID,
-  packageId: Package.Id,
+  packageId: PackageId,
   creationTime: DateTime,
   periodOfValidity: Interval,
   priority: Int,
@@ -74,11 +73,11 @@ case class UpdateSpec(
 
 /**
  * Implicits to implement a JSON encoding/decoding for UpdateStatus
- * @see {@link http://circe.io/}
+ * @see [[http://circe.io/]]
  */
 object UpdateSpec {
   implicit val updateStatusEncoder : Encoder[UpdateStatus] = Encoder[String].contramap(_.toString)
-  implicit val updateStatusDecoder : Decoder[UpdateStatus] = Decoder[String].map(UpdateStatus.withName(_))
+  implicit val updateStatusDecoder : Decoder[UpdateStatus] = Decoder[String].map(UpdateStatus.withName)
 }
 
 /**

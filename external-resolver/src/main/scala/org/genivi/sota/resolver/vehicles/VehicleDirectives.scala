@@ -12,6 +12,7 @@ import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
+import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors
@@ -26,6 +27,7 @@ import slick.jdbc.JdbcBackend.Database
 
 /**
  * API routes for everything related to vehicles: creation, deletion, and package and component association.
+ *
  * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
  */
 class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
@@ -40,6 +42,7 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
 
   /**
    * Base API route for vehicles.
+ *
    * @return      Route object containing routes for creating, deleting, and listing vehicles
    * @throws      Errors.MissingVehicle if vehicle doesn't exist
    */
@@ -48,8 +51,8 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
     pathPrefix("vehicles") {
       get {
         pathEnd {
-          parameters('regex.as[Refined[String, Regex]].?, 'packageName.as[Package.Name].?,
-            'packageVersion.as[Package.Version].?, 'component.as[Component.PartNumber].?)
+          parameters('regex.as[Refined[String, Regex]].?, 'packageName.as[PackageId.Name].?,
+            'packageVersion.as[PackageId.Version].?, 'component.as[Component.PartNumber].?)
           { case (re, pn, pv, cp) =>
               complete(db.run(VehicleRepository.search(re, pn , pv, cp)))
           }
@@ -94,6 +97,7 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
 
   /**
    * API route for package -> vehicle associations.
+ *
    * @return      Route object containing routes for listing packages on a vehicle, and creating and deleting
    *              vehicle -> package associations
    * @throws      Errors.MissingPackageException if package doesn't exist
@@ -121,7 +125,7 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
     } ~
     path("packages") {
       handleExceptions(installedPackagesHandler) {
-        (put & entity(as[Set[Package.Id]])) { packageIds =>
+        (put & entity(as[Set[PackageId]])) { packageIds =>
           onSuccess(db.run(VehicleRepository.updateInstalledPackages(vin, packageIds))) {
             complete(StatusCodes.NoContent)
           }
@@ -138,6 +142,7 @@ class VehicleDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
 
   /**
    * API route for component -> vehicle associations.
+ *
    * @return      Route object containing routes for listing components on a vehicle, and creating and deleting
    *              vehicle -> component associations
    * @throws      Errors.MissingComponent if component doesn't exist

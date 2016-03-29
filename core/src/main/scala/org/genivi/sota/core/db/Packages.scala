@@ -5,13 +5,13 @@
 package org.genivi.sota.core.db
 
 import akka.http.scaladsl.model.Uri
-import eu.timepit.refined.api.Refined
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.db.SlickExtensions._
-import scala.concurrent.ExecutionContext
-import slick.driver.MySQLDriver.api._
+import org.genivi.sota.data.PackageId
 import org.genivi.sota.db.Operators.regex
-import slick.lifted.{LiteralColumn, ExtensionMethods, Rep, StringColumnExtensionMethods}
+import org.genivi.sota.db.SlickExtensions._
+import slick.driver.MySQLDriver.api._
+
+import scala.concurrent.ExecutionContext
 
 /**
  * Database mapping definition for the Package SQL table. This defines all the
@@ -26,13 +26,13 @@ object Packages {
 
   /**
    * Slick mapping definition for the Package table
-   * @see {@link http://slick.typesafe.com/}
+   * @see [[http://slick.typesafe.com/]]
    */
   // scalastyle:off
   class PackageTable(tag: Tag) extends Table[Package](tag, "Package") {
 
-    def name = column[Package.Name]("name")
-    def version = column[Package.Version]("version")
+    def name = column[PackageId.Name]("name")
+    def version = column[PackageId.Version]("version")
     def uri = column[Uri]("uri")
     def size = column[Long]("file_size")
     def checkSum = column[String]("check_sum")
@@ -43,7 +43,7 @@ object Packages {
     def pk = primaryKey("pk_package", (name, version))
 
     def * = (name, version, uri, size, checkSum, description.?, vendor.?, signature.?).shaped <>
-    (x => Package(Package.Id(x._1, x._2), x._3, x._4, x._5, x._6, x._7, x._8),
+    (x => Package(PackageId(x._1, x._2), x._3, x._4, x._5, x._6, x._7, x._8),
     (x: Package) => Some((x.id.name, x.id.version, x.uri, x.size, x.checkSum, x.description, x.vendor, x.signature)))
   }
   // scalastyle:on
@@ -80,7 +80,7 @@ object Packages {
    * @param id The name/version of the package to fetch
    * @return The full package information
    */
-  def byId(id : Package.Id) : DBIO[Option[Package]] =
+  def byId(id : PackageId) : DBIO[Option[Package]] =
     packages.filter( p => p.name === id.name && p.version === id.version ).result.headOption
 
   /**
@@ -89,7 +89,7 @@ object Packages {
     * @param ids A set of package names/values to look up
     * @return A list of package definitions
     */
-  def byIds(ids : Set[Package.Id] )
+  def byIds(ids : Set[PackageId] )
            (implicit ec: ExecutionContext): DBIO[Seq[Package]] = {
 
     packages.filter( x =>

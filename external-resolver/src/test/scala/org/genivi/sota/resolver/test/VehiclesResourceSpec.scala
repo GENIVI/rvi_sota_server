@@ -8,12 +8,12 @@ import akka.http.scaladsl.model.StatusCodes
 import eu.timepit.refined.refineMV
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
+import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
 import org.genivi.sota.resolver.packages.{Package, PackageFilter}
 import org.genivi.sota.resolver.packages.Package._
 import org.genivi.sota.resolver.components.Component
-import org.genivi.sota.resolver.vehicles.Vehicle, Vehicle._
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 import org.scalacheck._
 
@@ -21,7 +21,9 @@ import org.scalacheck._
 /**
  * Spec for Vehicle REST actions
  */
-class VehiclesResourcePropSpec extends ResourcePropSpec {
+class VehiclesResourcePropSpec extends ResourcePropSpec
+    with PackageGenerators{
+  import org.genivi.sota.data.VehicleGenerators._
 
   val vehicles = "vehicles"
 
@@ -217,7 +219,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
     "list installed packages on a VIN on GET request to /vehicles/:vin/package" in {
       Get(Resource.uri(vehicles, vin.get, "package")) ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[Seq[Package.Id]] shouldBe List(Package.Id(refineMV("apa"), refineMV("1.0.1")))
+        responseAs[Seq[PackageId]] shouldBe List(PackageId(refineMV("apa"), refineMV("1.0.1")))
       }
     }
 
@@ -234,7 +236,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
       }
       Get(Resource.uri(vehicles, vin.get, "package")) ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[Seq[Package.Id]] shouldBe List()
+        responseAs[Seq[PackageId]] shouldBe List()
       }
     }
 
@@ -252,7 +254,8 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
       }
     }
 
-    "list all VINs that have a specific package installed on GET request to /vehciles?packageName=:packageName&packageVersion=:packageVersion" in {
+    "list all VINs that have a specific package installed on GET request" +
+        " to /vehciles?packageName=:packageName&packageVersion=:packageVersion" in {
       installPackageOK(vin, "apa", "1.0.1")
       Get(Resource.uri(vehicles) + "?packageName=apa&packageVersion=1.0.1") ~> route ~> check {
         status shouldBe StatusCodes.OK

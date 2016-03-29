@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.resolver.packages
 
+import org.genivi.sota.data.PackageId
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.filters.{Filter, FilterRepository}
@@ -23,8 +24,8 @@ object PackageFilterRepository {
   // scalastyle:off
   class PackageFilterTable(tag: Tag) extends Table[PackageFilter](tag, "PackageFilter") {
 
-    def packageName    = column[Package.Name]("packageName")
-    def packageVersion = column[Package.Version]("packageVersion")
+    def packageName    = column[PackageId.Name]("packageName")
+    def packageVersion = column[PackageId.Version]("packageVersion")
     def filterName     = column[Filter.Name]("filterName")
 
     def pk = primaryKey("pk_packageFilter", (packageName, packageVersion, filterName))
@@ -39,7 +40,8 @@ object PackageFilterRepository {
 
   /**
    * Lists the package filters in the PackageFilter table
-   * @return     A DBIO[Seq[PackageFilter]] for the package filters in the table
+    *
+    * @return     A DBIO[Seq[PackageFilter]] for the package filters in the table
    */
   def list: DBIO[Seq[PackageFilter]] = packageFilters.result
 
@@ -55,11 +57,12 @@ object PackageFilterRepository {
       .flatMap(_.
         fold[DBIO[PackageFilter]]
           (DBIO.failed(MissingPackageFilterException))
-          (DBIO.successful(_)))
+          (DBIO.successful))
 
   /**
    * Adds a package filter to the resolver
-   * @param pf   The filter to add
+    *
+    * @param pf   The filter to add
    * @return     A DBIO[PackageFilter] for the added PackageFilter
    * @throws     Errors.MissingPackageException if the named package does not exist
    * @throws     Errors.MissingFilterException if the named filter does not exist
@@ -67,14 +70,15 @@ object PackageFilterRepository {
   def addPackageFilter(pf: PackageFilter)
                       (implicit db: Database, ec: ExecutionContext): DBIO[PackageFilter] =
     for {
-      _ <- PackageRepository.exists(Package.Id(pf.packageName, pf.packageVersion))
+      _ <- PackageRepository.exists(PackageId(pf.packageName, pf.packageVersion))
       _ <- FilterRepository.exists(pf.filterName)
       _ <- packageFilters += pf
     } yield pf
 
   /**
    * Lists the packages for a filter
-   * @param fname  The name of the filter for which to list the packages
+    *
+    * @param fname  The name of the filter for which to list the packages
    * @return       A DBIO[Seq[Package]] of associated packages
    * @throws       Errors.MissingFilterException if the named filter does not exist
    */
@@ -91,7 +95,7 @@ object PackageFilterRepository {
       q.result
     }
 
-  def listFiltersForPackage(pkgId: Package.Id)
+  def listFiltersForPackage(pkgId: PackageId)
                            (implicit ec: ExecutionContext): DBIO[Seq[Filter]] = {
     PackageRepository.exists(pkgId) andThen {
       val q = for {
@@ -107,7 +111,8 @@ object PackageFilterRepository {
 
   /**
    * Deletes a filter by name
-   * @param fname   The name of the filter to delete
+    *
+    * @param fname   The name of the filter to delete
    * @return        A DBIO[Int] number of filters deleted
    */
   def deletePackageFilterByFilterName(fname: Filter.Name): DBIO[Int] =
@@ -115,7 +120,8 @@ object PackageFilterRepository {
 
   /**
    * Deletes a package filter
-   * @param pf    The name of the package filter to be deleted
+    *
+    * @param pf    The name of the package filter to be deleted
    * @return      A DBIO[Int] number of filters deleted
    */
   def deletePackageFilter(pf: PackageFilter)(implicit ec: ExecutionContext): DBIO[Int] =

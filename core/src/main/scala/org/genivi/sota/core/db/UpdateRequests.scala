@@ -6,10 +6,12 @@ package org.genivi.sota.core.db
 
 import java.util.UUID
 
-import org.genivi.sota.core.data.{Package, UpdateRequest}
+import org.genivi.sota.core.data.UpdateRequest
+import org.genivi.sota.data.PackageId
 import org.joda.time.DateTime
-import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
+
+import scala.concurrent.ExecutionContext
 
 /**
  * Database mapping definition for the UpdateRequests table.
@@ -26,12 +28,12 @@ object UpdateRequests {
 
   /**
    * Slick mapping definition for the UpdateRequests table
-   * @see {@link http://slick.typesafe.com/}
+   * @see [[http://slick.typesafe.com/]]
    */
   class UpdateRequestTable(tag: Tag) extends Table[UpdateRequest](tag, "UpdateRequest") {
     def id = column[UUID]("update_request_id", O.PrimaryKey)
-    def packageName = column[Package.Name]("package_name")
-    def packageVersion = column[Package.Version]("package_version")
+    def packageName = column[PackageId.Name]("package_name")
+    def packageVersion = column[PackageId.Version]("package_version")
     def creationTime = column[DateTime]("creation_time")
     def startAfter = column[DateTime]("start_after")
     def finishBefore = column[DateTime]("finish_before")
@@ -55,7 +57,7 @@ object UpdateRequests {
 
     def * = (id, packageName, packageVersion, creationTime, startAfter, finishBefore,
              priority, signature, description.?, requestConfirmation).shaped <>
-      (x => UpdateRequest(x._1, Package.Id(x._2, x._3), x._4, x._5 to x._6, x._7, x._8, x._9, x._10),
+      (x => UpdateRequest(x._1, PackageId(x._2, x._3), x._4, x._5 to x._6, x._7, x._8, x._9, x._10),
       (x: UpdateRequest) => Some((x.id, x.packageId.name, x.packageId.version, x.creationTime,
                                   x.periodOfValidity.start, x.periodOfValidity.end, x.priority,
                                   x.signature, x.description, x.requestConfirmation)))

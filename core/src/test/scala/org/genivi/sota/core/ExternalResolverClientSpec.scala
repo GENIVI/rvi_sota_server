@@ -12,9 +12,11 @@ import io.circe.generic.auto._
 import io.circe.jawn._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import CirceMarshallingSupport._
-import org.genivi.sota.core.data.{Vehicle, Package}
+import org.genivi.sota.core.data.Package
+import org.genivi.sota.data.{PackageId, Vehicle}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
+
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
@@ -45,12 +47,12 @@ class ExternalResolverClientSpec extends PropSpec with Matchers with BeforeAndAf
 
   val s: String = s"""[["V1NBEAGLEB0ARD000",[{"version":"23.5.2","name":"rust"}]]]"""
 
-  val m: Map[Vehicle.Vin, Set[Package.Id]] =
-    Map(Refined.unsafeApply("V1NBEAGLEB0ARD000") -> Set(Package.Id(Refined.unsafeApply("rust"), Refined.unsafeApply("23.5.2"))))
+  val m: Map[Vehicle.Vin, Set[PackageId]] =
+    Map(Refined.unsafeApply("V1NBEAGLEB0ARD000") -> Set(PackageId(Refined.unsafeApply("rust"), Refined.unsafeApply("23.5.2"))))
 
   property("parse the external resolver's response") {
 
-    decode[Map[Vehicle.Vin, Set[Package.Id]]](s) shouldBe Xor.Right(m)
+    decode[Map[Vehicle.Vin, Set[PackageId]]](s) shouldBe Xor.Right(m)
 
   }
 
@@ -66,7 +68,7 @@ class ExternalResolverClientSpec extends PropSpec with Matchers with BeforeAndAf
 
   property("parse from a HttpResponse as a Map") {
 
-    ScalaFutures.whenReady(Unmarshal(resp.entity).to[Map[Vehicle.Vin, Set[Package.Id]]]) { m2 =>
+    ScalaFutures.whenReady(Unmarshal(resp.entity).to[Map[Vehicle.Vin, Set[PackageId]]]) { m2 =>
       m2 shouldBe m
     }
 

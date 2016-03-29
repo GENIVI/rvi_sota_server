@@ -4,18 +4,17 @@
  */
 package org.genivi.sota.core.db
 
-import eu.timepit.refined.api.Refined
 import java.util.UUID
-import org.genivi.sota.core.data.Package.Id
-import org.genivi.sota.core.data.UpdateRequest
-import org.genivi.sota.core.data.UpdateSpec
-import org.genivi.sota.core.db.UpdateRequests.UpdateRequestTable
-import org.genivi.sota.db.SlickExtensions
-import scala.collection.GenTraversable
+
+import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Uuid
-import scala.concurrent.ExecutionContext
+import org.genivi.sota.core.data.{Package, UpdateSpec, UpdateStatus}
+import org.genivi.sota.core.db.UpdateRequests.UpdateRequestTable
+import org.genivi.sota.data.{PackageId, Vehicle}
+import org.genivi.sota.db.SlickExtensions
 import slick.driver.MySQLDriver.api._
-import org.genivi.sota.core.data.{UpdateSpec, Download, Vehicle, UpdateStatus, Package}
+
+import scala.concurrent.ExecutionContext
 
 /**
  * Database mapping definition for the UpdateSpecs and RequiredPackages tables.
@@ -25,15 +24,15 @@ import org.genivi.sota.core.data.{UpdateSpec, Download, Vehicle, UpdateStatus, P
  */
 object UpdateSpecs {
 
-  import org.genivi.sota.refined.SlickRefined._
-  import UpdateStatus._
   import SlickExtensions._
+  import UpdateStatus._
+  import org.genivi.sota.refined.SlickRefined._
 
   implicit val UpdateStatusColumn = MappedColumnType.base[UpdateStatus, String](_.value.toString, UpdateStatus.withName)
 
   /**
    * Slick mapping definition for the UpdateSpecs table
-   * @see {@link http://slick.typesafe.com/}
+   * @see [[http://slick.typesafe.com/]]
    */
   class UpdateSpecTable(tag: Tag)
       extends Table[(UUID, Vehicle.Vin, UpdateStatus)](tag, "UpdateSpec") {
@@ -51,11 +50,11 @@ object UpdateSpecs {
    * @see {@link http://slick.typesafe.com/}
    */
   class RequiredPackageTable(tag: Tag)
-      extends Table[(UUID, Vehicle.Vin, Package.Name, Package.Version)](tag, "RequiredPackage") {
+      extends Table[(UUID, Vehicle.Vin, PackageId.Name, PackageId.Version)](tag, "RequiredPackage") {
     def requestId = column[UUID]("update_request_id")
     def vin = column[Vehicle.Vin]("vin")
-    def packageName = column[Package.Name]("package_name")
-    def packageVersion = column[Package.Version]("package_version")
+    def packageName = column[PackageId.Name]("package_name")
+    def packageVersion = column[PackageId.Version]("package_version")
 
     def pk = primaryKey("pk_downloads", (requestId, vin, packageName, packageVersion))
 
@@ -131,7 +130,7 @@ object UpdateSpecs {
    * @return A List of package names + versions that are due to be installed.
    */
   def getPackagesQueuedForVin(vin: Vehicle.Vin)
-                             (implicit ec: ExecutionContext) : DBIO[Iterable[Id]] = {
+                             (implicit ec: ExecutionContext) : DBIO[Iterable[PackageId]] = {
     val specs = updateSpecs.filter(r => r.vin === vin && (r.status === UpdateStatus.InFlight ||
       r.status === UpdateStatus.Pending))
     val q = for {
@@ -139,7 +138,7 @@ object UpdateSpecs {
       u <- updateRequests if s.requestId === u.id
     } yield (u.packageName, u.packageVersion)
     q.result.map(_.map {
-      case (packageName, packageVersion) => Id(packageName, packageVersion)
+      case (packageName, packageVersion) => PackageId(packageName, packageVersion)
     })
   }
 
@@ -151,7 +150,7 @@ object UpdateSpecs {
    * @param pkgVer The version of the package to search for
    * @return A list of VINs that the package will be installed on
    */
-  def getVinsQueuedForPackage(pkgName: Package.Name, pkgVer: Package.Version) :
+  def getVinsQueuedForPackage(pkgName: PackageId.Name, pkgVer: PackageId.Version) :
     DBIO[Seq[Vehicle.Vin]] = {
     val specs = updateSpecs.filter(r => r.status === UpdateStatus.Pending)
     val q = for {

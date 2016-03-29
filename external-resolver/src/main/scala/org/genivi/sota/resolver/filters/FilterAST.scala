@@ -6,12 +6,11 @@ package org.genivi.sota.resolver.filters
 
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.{Regex, regexValidate}
+import org.genivi.sota.data.{PackageId, Vehicle}
 import scala.util.parsing.combinator.syntactical.StandardTokenParsers
 import scala.util.parsing.combinator.{PackratParsers, ImplicitConversions}
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.packages.Package
-import org.genivi.sota.resolver.vehicles.Vehicle
-import org.scalacheck._
 
 
 sealed trait FilterAST
@@ -90,8 +89,8 @@ object FilterAST extends StandardTokenParsers with PackratParsers with ImplicitC
       case False            => "FALSE"
     }
 
-  def query(f: FilterAST): Function1[(Vehicle, (Seq[Package.Id], Seq[Component.PartNumber])), Boolean] =
-  { case a@((v: Vehicle, (ps: Seq[Package.Id], cs: Seq[Component.PartNumber]))) => f match {
+  def query(f: FilterAST): Function1[(Vehicle, (Seq[PackageId], Seq[Component.PartNumber])), Boolean] =
+  { case a@((v: Vehicle, (ps: Seq[PackageId], cs: Seq[Component.PartNumber]))) => f match {
       case VinMatches(re)       => !re.get.r.findAllIn(v.vin.get).isEmpty
       case HasPackage(re1, re2) => ps.map(p => !re1.get.r.findAllIn(p.name   .get).isEmpty &&
                                                !re2.get.r.findAllIn(p.version.get).isEmpty)
@@ -106,44 +105,4 @@ object FilterAST extends StandardTokenParsers with PackratParsers with ImplicitC
     }
   }
 
-  def genFilterHelper(i: Int): Gen[FilterAST] = {
-
-    def genNullary = Gen.oneOf(True, False)
-
-    def genUnary(n: Int) = for {
-        f     <- genFilterHelper(n / 2)
-        unary <- Gen.oneOf(Not, Not)
-      } yield unary(f)
-
-    def genBinary(n: Int) = for {
-        l      <- genFilterHelper(n / 2)
-        r      <- genFilterHelper(n / 2)
-        binary <- Gen.oneOf(Or, And)
-      } yield binary(l, r)
-
-    def genLeaf = Gen.oneOf(
-        for {
-          s <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaNumChar)
-          leaf <- Gen.oneOf(VinMatches, HasComponent)
-        } yield leaf(Refined.unsafeApply(s.mkString)),
-        for {
-          s <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaNumChar)
-          t <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaNumChar)
-        } yield HasPackage(Refined.unsafeApply(s.mkString), Refined.unsafeApply(t.mkString))
-    )
-
-    i match {
-      case 0 => genLeaf
-      case n => Gen.frequency(
-        (2, genNullary),
-        (8, genUnary(n)),
-        (10, genBinary(n))
-      )
-    }
-  }
-
-  def genFilterAST: Gen[FilterAST] = Gen.sized(genFilterHelper)
-
-  implicit lazy val arbFilterAST: Arbitrary[FilterAST] =
-    Arbitrary(genFilterAST)
 }

@@ -4,9 +4,9 @@
  */
 package org.genivi.sota.core.db
 
-import org.genivi.sota.core.data.{Vehicle, Package, InstallHistory}
+import org.genivi.sota.core.data.InstallHistory
+import org.genivi.sota.data.{PackageId, Vehicle}
 import org.joda.time.DateTime
-import slick.driver.JdbcTypesComponent._
 import slick.driver.MySQLDriver.api._
 
 /**
@@ -22,8 +22,7 @@ object InstallHistories {
 
   /**
    * Slick mapping definition for the InstallHistory table
-   *
-   * @see {@link http://slick.typesafe.com/}
+   * @see [[http://slick.typesafe.com/]]
    */
   // scalastyle:off
   class InstallHistoryTable(tag: Tag) extends Table[InstallHistory](tag, "InstallHistory") {
@@ -31,13 +30,13 @@ object InstallHistories {
     def id             = column[Long]           ("id", O.PrimaryKey, O.AutoInc)
     def vin            = column[Vehicle.Vin]    ("vin")
     def updateId       = column[java.util.UUID] ("update_request_id")
-    def packageName    = column[Package.Name]   ("packageName")
-    def packageVersion = column[Package.Version]("packageVersion")
+    def packageName    = column[PackageId.Name]   ("packageName")
+    def packageVersion = column[PackageId.Version]("packageVersion")
     def success        = column[Boolean]        ("success")
     def completionTime = column[DateTime]       ("completionTime")
 
     def * = (id.?, vin, updateId, packageName, packageVersion, success, completionTime).shaped <>
-      (r => InstallHistory(r._1, r._2, r._3, Package.Id(r._4, r._5), r._6, r._7),
+      (r => InstallHistory(r._1, r._2, r._3, PackageId(r._4, r._5), r._6, r._7),
         (h: InstallHistory) =>
           Some((h.id, h.vin, h.updateId, h.packageId.name, h.packageId.version, h.success, h.completionTime)))
   }
@@ -66,7 +65,7 @@ object InstallHistories {
    * @param updateId The Id of the update that was attempted to be installed
    * @param success Whether the install was successful
    */
-  def log(vin: Vehicle.Vin, updateId: java.util.UUID, packageId: Package.Id, success: Boolean): DBIO[Int] = {
+  def log(vin: Vehicle.Vin, updateId: java.util.UUID, packageId: PackageId, success: Boolean): DBIO[Int] = {
     installHistories += InstallHistory(None, vin, updateId, packageId, success, DateTime.now)
   }
 
