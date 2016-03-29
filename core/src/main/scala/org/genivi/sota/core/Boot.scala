@@ -12,12 +12,11 @@ import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
-import scala.util.{Failure, Success, Try}
-
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.jsonrpc.HttpTransport
 import org.genivi.sota.core.rvi._
 import org.genivi.sota.core.transfer._
+import scala.util.{Failure, Success, Try}
 
 
 object Boot extends App with DatabaseConfig {
@@ -83,6 +82,10 @@ object Boot extends App with DatabaseConfig {
     case _ => {
       val notifier = DefaultUpdateNotifier
       Http().bindAndHandle(routes(notifier), host, port)
+      val hostVehicles = config.getString("server.hostVehicles")
+      val portVehicles = config.getInt("server.portVehicles")
+      val routesVehicles = new VehicleService(db).route
+      Http().bindAndHandle(routesVehicles, hostVehicles, portVehicles)
       FastFuture.successful(ServerServices("","","",""))
     }
   }
