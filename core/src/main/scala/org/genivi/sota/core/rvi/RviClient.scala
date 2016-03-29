@@ -4,26 +4,18 @@
  */
 package org.genivi.sota.core.rvi
 
-import io.circe.Encoder
+import com.github.nscala_time.time.Imports.DateTime
+import io.circe._
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.util.Random
-import com.github.nscala_time.time.Imports.DateTime
 
-/**
- * Abstract interface for sending a message to RVI.
- */
-trait RviClient {
-  def sendMessage[A](service: String, message: A, expirationDate: DateTime)
-                    (implicit encoder: Encoder[A] ) : Future[Int]
-}
-
-import io.circe._
+import org.genivi.sota.core.ConnectivityClient
 
 /**
  * Concrete implementation for sending a message to RVI in JSON-RPC format.
  */
-class JsonRpcRviClient(transport: Json => Future[Json], ec: ExecutionContext) extends RviClient {
+class JsonRpcRviClient(transport: Json => Future[Json], ec: ExecutionContext) extends ConnectivityClient {
 
   import shapeless._
   import shapeless.syntax.singleton._

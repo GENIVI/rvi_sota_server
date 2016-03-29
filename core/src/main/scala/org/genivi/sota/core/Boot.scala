@@ -12,17 +12,21 @@ import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
+import scala.util.{Failure, Success, Try}
+
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.jsonrpc.HttpTransport
 import org.genivi.sota.core.rvi._
+import org.genivi.sota.core.transfer._
 
-import scala.util.{Failure, Success, Try}
 
 object Boot extends App with DatabaseConfig {
 
   import slick.driver.MySQLDriver.api.Database
-  def startSotaServices(db: Database) : Route = {
-    val transferProtocolProps = TransferProtocolActor.props(db, rviClient, PackageTransferActor.props( rviClient ))
+  def startSotaServices(db: Database): Route = {
+    val transferProtocolProps =
+      TransferProtocolActor.props(db, connectivity.client,
+                                  PackageTransferActor.props(connectivity.client))
     val updateController = system.actorOf( UpdateController.props(transferProtocolProps ), "update-controller")
     new rvi.SotaServices(updateController, externalResolverClient).route
   }
@@ -54,23 +58,36 @@ object Boot extends App with DatabaseConfig {
 
   val host = config.getString("server.host")
   val port = config.getInt("server.port")
+  val interactionProtocol = config.getString("core.interactionProtocol")
+  log.info(s"using interaction protocol '$interactionProtocol'")
 
   import Directives._
   import org.genivi.sota.core.rvi.ServerServices
-  def routes(rviServices: ServerServices) = {
-    new WebService( rviServices, externalResolverClient, db ).route ~ startSotaServices(db)
+
+  def routes(notifier: UpdateNotifier) = {
+    new WebService(notifier, externalResolverClient, db).route ~ startSotaServices(db)
   }
 
-  val rviUri = Uri(system.settings.config.getString( "rvi.endpoint" ))
-  implicit val requestTransport = HttpTransport(rviUri).requestTransport
-  implicit val rviClient = new JsonRpcRviClient( requestTransport, system.dispatcher )
+  implicit val connectivity: Connectivity = interactionProtocol match {
+    case "rvi" => new RviConnectivity
+    case _ => DefaultConnectivity
+  }
 
-  val sotaServicesFuture = for {
-    sotaServices <- SotaServices.register( Uri(config.getString("rvi.sotaServicesUri")) )
-    binding      <- Http().bindAndHandle(routes(sotaServices), host, port)
-  } yield sotaServices
 
-  sotaServicesFuture.onComplete {
+  val startup = interactionProtocol match {
+    case "rvi" => for {
+      sotaServices <- SotaServices.register(Uri(config.getString("rvi.sotaServicesUri")))
+      notifier      = new RviUpdateNotifier(sotaServices)
+      binding      <- Http().bindAndHandle(routes(notifier), host, port)
+    } yield sotaServices
+    case _ => {
+      val notifier = DefaultUpdateNotifier
+      Http().bindAndHandle(routes(notifier), host, port)
+      FastFuture.successful(ServerServices("","","",""))
+    }
+  }
+
+  startup.onComplete {
     case Success(services) =>
       log.info(s"Server online at http://$host:$port")
     case Failure(e) =>

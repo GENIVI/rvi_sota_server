@@ -4,26 +4,28 @@
  */
 package org.genivi.sota.core.rvi
 
+import akka.actor._
 import akka.util.ByteString
 import io.circe.Encoder
 import java.net.URI
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.file.{Paths, StandardOpenOption}
-import java.util.concurrent.TimeUnit
 import java.util.UUID
-import akka.actor._
+import java.util.concurrent.TimeUnit
 import org.apache.commons.codec.binary.Base64
-import org.genivi.sota.core.data.{Package, UpdateSpec, UpdateStatus}
-import org.genivi.sota.core.db.{UpdateSpecs, InstallHistories, OperationResults, UpdateRequests}
+import org.genivi.sota.core.ConnectivityClient
+import org.genivi.sota.core.data._
+import org.genivi.sota.core.db._
 import org.genivi.sota.data.{PackageId, Vehicle}
 import org.joda.time.DateTime
 import scala.collection.immutable.Queue
 import scala.concurrent.Future
+import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.math.BigDecimal.RoundingMode
 import slick.driver.MySQLDriver.api.Database
 
-import scala.concurrent.duration.{Duration, FiniteDuration}
+
 /**
  * Actor to handle events received from the RVI node.
  *
@@ -87,7 +89,9 @@ object TransferProtocolActor {
   /**
    * Configuration class for creating the TransferProtocolActor actor.
    */
-  def props(db: Database, rviClient: RviClient, transferActorProps: (UUID, String, Package, ClientServices) => Props) =
+  def props(db: Database,
+            rviClient: ConnectivityClient,
+            transferActorProps: (UUID, String, Package, ClientServices) => Props) =
     Props( new TransferProtocolActor( db, rviClient, transferActorProps) )
 }
 
@@ -112,7 +116,7 @@ object UpdateEvents {
  * @param rviClient the client to the RVI node
  * @param transferActorProps the configuration class for creating the PackageTransferActor
  */
-class TransferProtocolActor(db: Database, rviClient: RviClient,
+class TransferProtocolActor(db: Database, rviClient: ConnectivityClient,
                             transferActorProps: (UUID, String, Package, ClientServices) => Props)
     extends Actor with ActorLogging {
   import cats.syntax.eq._
@@ -289,7 +293,7 @@ class PackageTransferActor(updateId: UUID,
                            signature: String,
                            pckg: Package,
                            services: ClientServices,
-                           rviClient: RviClient)
+                           rviClient: ConnectivityClient)
     extends Actor with ActorLogging {
 
   import cats.syntax.show._
@@ -391,7 +395,8 @@ object PackageTransferActor {
   /**
    * Configuration class for creating PackageTransferActor.
    */
-  def props(rviClient: RviClient)(updateId: UUID, signature: String, pckg: Package, services: ClientServices): Props =
+  def props(rviClient: ConnectivityClient)
+           (updateId: UUID, signature: String, pckg: Package, services: ClientServices): Props =
     Props(new PackageTransferActor(updateId, signature, pckg, services, rviClient))
 
 }

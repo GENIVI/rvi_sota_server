@@ -4,15 +4,13 @@
  */
 package org.genivi.sota.core
 
-import java.io.File
-
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.common.StrictForm
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes, Uri}
-import akka.http.scaladsl.server.{Directive1, Directives, ExceptionHandler, PathMatchers}
 import akka.http.scaladsl.server.PathMatchers.Slash
+import akka.http.scaladsl.server.{Directive1, Directives, ExceptionHandler, PathMatchers}
 import Directives._
 import akka.parboiled2.util.Base64
 import akka.stream.ActorMaterializer
@@ -22,20 +20,22 @@ import cats.data.Xor
 import eu.timepit.refined._
 import eu.timepit.refined.string._
 import io.circe.generic.auto._
-import org.genivi.sota.marshalling.CirceMarshallingSupport
+import java.io.File
 import org.genivi.sota.core.data._
-import org.genivi.sota.core.db.{InstallHistories, Packages, UpdateSpecs, Vehicles}
-import org.genivi.sota.core.rvi.{RviClient, ServerServices}
+import org.genivi.sota.core.db._
+import org.genivi.sota.core.db.{UpdateSpecs, Packages, Vehicles, InstallHistories}
+import org.genivi.sota.core.rvi.ServerServices
+import org.genivi.sota.core.transfer.UpdateNotifier
 import org.genivi.sota.data.Vehicle
+import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.rest.Validation._
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 import org.joda.time.DateTime
-
 import scala.concurrent.Future
-import slick.driver.MySQLDriver.api.Database
-import slick.dbio.DBIO
-
 import scala.util.Failure
+import slick.dbio.DBIO
+import slick.driver.MySQLDriver.api.Database
+
 
 object ErrorCodes {
   val ExternalResolverError = ErrorCode( "external_resolver_error" )
@@ -43,7 +43,7 @@ object ErrorCodes {
   val MissingVehicle = new ErrorCode("missing_vehicle")
 }
 
-class VehiclesResource(db: Database, rviClient: RviClient)
+class VehiclesResource(db: Database, client: ConnectivityClient)
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
 
   import system.dispatcher
@@ -108,7 +108,7 @@ class VehiclesResource(db: Database, rviClient: RviClient)
       } ~
       (path("sync") & put) {
         // TODO: Config RVI destination path (or ClientServices.getpackages)
-        rviClient.sendMessage(s"genivi.org/vin/${vin}/sota/getpackages", io.circe.Json.Empty, ttl())
+        client.sendMessage(s"genivi.org/vin/${vin}/sota/getpackages", io.circe.Json.Empty, ttl())
         // TODO: Confirm getpackages in progress to vehicle?
         complete(NoContent)
       }
@@ -161,8 +161,9 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
 }
 
 
-class WebService(registeredServices: ServerServices, resolver: ExternalResolverClient, db : Database)
-                (implicit system: ActorSystem, mat: ActorMaterializer, rviClient: RviClient) extends Directives {
+class WebService(notifier: UpdateNotifier, resolver: ExternalResolverClient, db : Database)
+                (implicit system: ActorSystem, mat: ActorMaterializer,
+                 connectivity: Connectivity) extends Directives {
   implicit val log = Logging(system, "webservice")
 
   import io.circe.Json
@@ -176,9 +177,9 @@ class WebService(registeredServices: ServerServices, resolver: ExternalResolverC
         complete(HttpResponse(InternalServerError, entity = entity.toString()))
       }
   }
-  val vehicles = new VehiclesResource(db, rviClient)
+  val vehicles = new VehiclesResource(db, connectivity.client)
   val packages = new PackagesResource(resolver, db)
-  val updateRequests = new UpdateRequestsResource(db, resolver, new UpdateService(registeredServices))
+  val updateRequests = new UpdateRequestsResource(db, resolver, new UpdateService(notifier))
 
   val route = pathPrefix("api" / "v1") {
     handleExceptions(exceptionHandler) {

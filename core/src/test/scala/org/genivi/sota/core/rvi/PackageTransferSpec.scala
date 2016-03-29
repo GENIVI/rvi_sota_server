@@ -18,7 +18,7 @@ import java.util.UUID
 import java.security.MessageDigest
 
 import org.apache.commons.codec.binary.Hex
-import org.genivi.sota.core.Generators
+import org.genivi.sota.core.{ConnectivityClient, Generators}
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.data.Vehicle
 import org.joda.time.DateTime
@@ -82,7 +82,7 @@ object ClientActor {
 /**
  * Dummy actor to simulate RVI Client in tests
  */
-class AccRviClient( clientActor: ActorRef ) extends RviClient {
+class AccRviClient( clientActor: ActorRef ) extends ConnectivityClient {
 
   def sendMessage[A](service: String, message: A, expirationDate: DateTime)
                  (implicit encoder: Encoder[A] ) : Future[Int] = {

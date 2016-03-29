@@ -5,22 +5,18 @@ import akka.http.scaladsl.util.FastFuture
 import akka.testkit.TestKit
 import eu.timepit.refined.api.Refined
 import java.util.UUID
-
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db.{Packages, UpdateSpecs, Vehicles}
+import org.genivi.sota.core.transfer.DefaultUpdateNotifier
 import org.genivi.sota.data.{PackageId, Vehicle, VehicleGenerators}
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
-import org.scalatest.time.Millis
-import org.scalatest.time.Second
-import org.scalatest.time.Span
-import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
 import org.scalatest.prop.PropertyChecks
-
+import org.scalatest.time.{Millis, Second, Span}
+import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
+import scala.concurrent.{Await, Future}
 import scala.util.Random
 import slick.jdbc.JdbcBackend._
-
-import scala.concurrent.{Await, Future}
 
 /**
  * Spec tests for Update service
@@ -47,17 +43,10 @@ class UpdateServiceSpec extends PropSpec with PropertyChecks with Matchers with 
 
   implicit val updateQueueLog = akka.event.Logging(system, "sota.core.updateQueue")
 
-  import org.genivi.sota.core.rvi.{RviClient, ServerServices}
-  implicit val rviClient =  new RviClient {
+  import org.genivi.sota.core.Connectivity
+  implicit val connectivity = DefaultConnectivity
 
-    import org.joda.time.DateTime
-    import io.circe.Encoder
-    def sendMessage[A](service: String, message: A, expirationDate: DateTime)
-      (implicit encoder: Encoder[A] ) : Future[Int] = FastFuture.successful(0)
-
-  }
-
-  val service = new UpdateService( ServerServices("", "", "", "") )
+  val service = new UpdateService(DefaultUpdateNotifier)
 
   import org.genivi.sota.core.data.UpdateRequest
   import org.scalatest.concurrent.ScalaFutures.{whenReady, PatienceConfig}

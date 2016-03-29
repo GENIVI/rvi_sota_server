@@ -12,10 +12,11 @@ import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import io.circe.Json
 import java.util.UUID
-import org.genivi.sota.core.ExternalResolverClient
-import org.genivi.sota.data.Vehicle
+import org.genivi.sota.core.{Connectivity, ExternalResolverClient}
+import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import scala.concurrent.{ExecutionContext, Future}
+
 
 /**
  * RVI paths for server-side services.
@@ -101,7 +102,7 @@ object SotaServices {
   import org.genivi.sota.core.jsonrpc.client
 
   private[this] def registerService(name: String, uri: Uri)
-    (implicit transport: Json => Future[Json], ec : ExecutionContext): Future[String] = {
+    (implicit connectivity: Connectivity, ec : ExecutionContext): Future[String] = {
     import shapeless._
     import record._
     import syntax.singleton._
@@ -111,7 +112,7 @@ object SotaServices {
     implicit val uriEncoder : Encoder[Uri] = Encoder[String].contramap[Uri]( _.toString() )
 
     client.register_service.request( ('service ->> name) :: ('network_address ->> uri) :: HNil, 1 )
-      .run[Record.`'service -> String`.T]( transport ).map( _.get('service) )
+      .run[Record.`'service -> String`.T](connectivity.transport).map( _.get('service))
   }
 
   /**
@@ -121,7 +122,7 @@ object SotaServices {
    * @return a future of the RVI paths for our services
    */
   def register(baseUri: Uri)
-              (implicit transport: Json => Future[Json], ec : ExecutionContext) : Future[ServerServices] = {
+              (implicit connectivity: Connectivity, ec : ExecutionContext) : Future[ServerServices] = {
     val startRegistration = registerService("/sota/start", baseUri.withPath( baseUri.path / "start"))
     val ackRegistration = registerService("/sota/ack", baseUri.withPath( baseUri.path / "ack"))
     val reportRegistration = registerService("/sota/report", baseUri.withPath( baseUri.path / "report"))
