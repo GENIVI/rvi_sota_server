@@ -19,14 +19,13 @@ import org.genivi.sota.core.transfer.UpdateNotifier
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.{InstallHistories, UpdateSpecs, Vehicles}
-
-import org.genivi.sota.data.Vehicle
-
+import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.rest.Validation._
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 import org.joda.time.DateTime
 import slick.driver.MySQLDriver.api.Database
 
+import scala.concurrent.{ExecutionContext, Future}
 
 object ErrorCodes {
   val ExternalResolverError = ErrorCode( "external_resolver_error" )
@@ -34,15 +33,18 @@ object ErrorCodes {
   val MissingVehicle = new ErrorCode("missing_vehicle")
 }
 
+object VehiclesResource {
+  val extractVin : Directive1[Vehicle.Vin] = refined[Vehicle.ValidVin](Slash ~ Segment)
+}
 
 class VehiclesResource(db: Database, client: ConnectivityClient, resolverClient: ExternalResolverClient)
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
 
   import system.dispatcher
   import CirceMarshallingSupport._
-  implicit val _db = db
+  import VehiclesResource._
 
-  import scala.concurrent.{ExecutionContext, Future}
+  implicit val _db = db
 
   case object MissingVehicle extends Throwable
 
@@ -132,21 +134,31 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
       complete(db.run(UpdateSpecs.listUpdatesById(uuid)))
     }
   } ~
-  path("updates") {
-    get {
-      complete(updateService.all(db, system.dispatcher))
-    } ~
-    post {
-      entity(as[UpdateRequest]) { req =>
-        complete(
-          updateService.queueUpdate(
-            req,
-            pkg => resolver.resolve(pkg.id).map {
-              m => m.map { case (v, p) => (v.vin, p) }
-            }
-          )
-        )
+  pathPrefix("updates") {
+    VehiclesResource.extractVin { vin =>
+      post {
+        entity(as[PackageId]) { packageId =>
+          val result = updateService.queueVehicleUpdate(vin, packageId)
+          complete(result)
+        }
       }
+    } ~
+    pathEnd {
+      get {
+        complete(updateService.all(db, system.dispatcher))
+      } ~
+        post {
+          entity(as[UpdateRequest]) { req =>
+            complete(
+              updateService.queueUpdate(
+                req,
+                pkg => resolver.resolve(pkg.id).map {
+                  m => m.map { case (v, p) => (v.vin, p) }
+                }
+              )
+            )
+          }
+        }
     }
   }
 }

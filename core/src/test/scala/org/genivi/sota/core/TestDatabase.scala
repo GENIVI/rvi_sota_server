@@ -54,7 +54,7 @@ trait DatabaseSpec extends BeforeAndAfterAll {
   }
 }
 
-trait VehicleDatabaseSpec {
+trait UpdateResourcesDatabaseSpec {
   self: DatabaseSpec =>
 
   import Generators._

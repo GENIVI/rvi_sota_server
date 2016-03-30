@@ -10,11 +10,9 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
-import org.genivi.sota.data.{PackageId, Vehicle, VehicleGenerators}
+import org.genivi.sota.data.Vehicle
 import org.genivi.sota.core.rvi._
-import org.genivi.sota.core.db.{Packages, UpdateRequests, UpdateSpecs, Vehicles}
 import io.circe.syntax._
-import org.genivi.sota.core.db._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.core.jsonrpc.HttpTransport
 import org.scalatest.concurrent.ScalaFutures
@@ -24,8 +22,6 @@ import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server._
-import org.genivi.sota.core.data.{UpdateSpec, UpdateStatus}
-import org.genivi.sota.core.transfer.InstalledPackagesUpdate
 import org.scalatest.time.{Millis, Seconds, Span}
 
 /**
@@ -36,7 +32,7 @@ class VehicleResourceSpec extends PropSpec with PropertyChecks
   with ScalatestRouteTest
   with ScalaFutures
   with DatabaseSpec
-  with VehicleDatabaseSpec {
+  with UpdateResourcesDatabaseSpec {
 
   import CirceMarshallingSupport._
   import Generators._

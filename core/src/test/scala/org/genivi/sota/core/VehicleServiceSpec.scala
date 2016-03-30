@@ -24,7 +24,7 @@ class VehicleServiceSpec extends FunSuite
   with ScalaFutures
   with DatabaseSpec
   with Inspectors
-  with VehicleDatabaseSpec {
+  with UpdateResourcesDatabaseSpec {
 
   val fakeResolver = new FakeExternalResolver()
 

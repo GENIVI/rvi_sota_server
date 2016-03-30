@@ -3,17 +3,19 @@ package org.genivi.sota.core.transfer
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import org.genivi.sota.core.db._
-import org.genivi.sota.core.{DatabaseSpec, FakeExternalResolver, Generators, VehicleDatabaseSpec}
-import org.genivi.sota.core.data._
+
 import org.genivi.sota.core.rvi.UpdateReport
 import org.genivi.sota.core.rvi.OperationResult
 import org.genivi.sota.data.VehicleGenerators
+
+import org.genivi.sota.core.{UpdateResourcesDatabaseSpec, Generators, DatabaseSpec, FakeExternalResolver}
+import org.genivi.sota.core.data.UpdateStatus
+
 import org.scalacheck.Gen
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
 import org.genivi.sota.db.SlickExtensions
 import org.scalatest.time.{Millis, Seconds, Span}
-// import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -23,7 +25,7 @@ class InstalledPackagesUpdateSpec extends FunSuite
   with Inspectors
   with ScalaFutures
   with DatabaseSpec
-  with VehicleDatabaseSpec {
+  with UpdateResourcesDatabaseSpec {
 
   import Generators._
   import SlickExtensions._

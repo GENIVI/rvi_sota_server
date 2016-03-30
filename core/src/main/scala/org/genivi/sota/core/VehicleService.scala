@@ -46,7 +46,7 @@ class VehicleService(db : Database, resolverClient: ExternalResolverClient)
   val route = pathPrefix("api" / "v1" / "vehicles") {
     handleExceptions(exceptionHandler) {
       vehicles.route ~
-        WebService.extractVin { vin ⇒
+        WebService.extractVin { vin =>
           pathPrefix("updates") {
             (pathEnd & post) {
               entity(as[List[PackageId]]) { ids =>

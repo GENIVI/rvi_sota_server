@@ -4,9 +4,9 @@
  */
 package org.genivi.sota.core.data
 
-import java.util.UUID
 
-import org.joda.time.{DateTime, Interval}
+import java.util.UUID
+import org.joda.time.{DateTime, Interval, Period}
 import io.circe._
 import org.genivi.sota.data.{PackageId, Vehicle}
 
@@ -37,6 +37,20 @@ case class UpdateRequest(
   signature: String,
   description: Option[String],
   requestConfirmation: Boolean)
+
+object UpdateRequest {
+  def default(packageId: PackageId): UpdateRequest = {
+    val updateRequestId = UUID.randomUUID()
+    val now = DateTime.now
+    val defaultPeriod = Period.days(1)
+    val defaultInterval = new Interval(now, now.plus(defaultPeriod))
+    val defaultPriority = 10
+
+    UpdateRequest(updateRequestId, packageId,
+      DateTime.now, defaultInterval, defaultPriority, "", Some(""),
+      requestConfirmation = false)
+  }
+}
 
 /**
  * The states that an update may be in.
