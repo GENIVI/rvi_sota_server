@@ -137,6 +137,13 @@
 <li><a href="#put-vehicles-vin">PUT /vehicles/:vin</a></li>
 <li><a href="#delete-vehicles-vin">DELETE /vehicles/:vin</a></li>
 <li><a href="#get-vehicles-vin-component">GET /vehicles/:vin/component</a></li>
+<li><a href="#put-vehicles-vin-component-partnumber">PUT /vehicles/:vin/component/:partNumber</a></li>
+<li><a href="#delete-vehicles-vin-component-partnumber">DELETE /vehicles/:vin/component/:partNumber</a></li>
+<li><a href="#get-vehicles-vin-package">GET /vehicles/:vin/package</a></li>
+<li><a href="#put-vehicles-vin-package-name-version">PUT /vehicles/:vin/package/:name/:version</a></li>
+<li><a href="#delete-vehicles-vin-package-name-version">DELETE /vehicles/:vin/package/:name/:version</a></li>
+<li><a href="#put-vehicles-vin-packages">PUT /vehicles/:vin/packages</a></li>
+<li><a href="#get-packages">GET /packages</a></li>
 <li><a href="#put-packages-name-version">PUT /packages/:name/:version</a></li>
 <li><a href="#get-components">GET /components</a></li>
 <li><a href="#put-components-partnumber">PUT /components/:partNumber</a></li>
@@ -348,6 +355,378 @@ characters.</p>
   <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;Acme DVD Player&quot;</span>,
   <span style="color: #008000; font-weight: bold">&quot;partNumber&quot;</span>: <span style="color: #BA2121">&quot;A-DVD-1234&quot;</span>
 }</code></pre>
+</div>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="put-vehicles-vin-component-partnumber">PUT /vehicles/:vin/component/:partNumber</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Adds a component to a given vehicle.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/vehicles/:vin/component/:partNumber</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>:vin</strong> — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.</p>
+</li>
+<li>
+<p><strong>:partNumber</strong> — The unique identifying name of a hardware component.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="delete-vehicles-vin-component-partnumber">DELETE /vehicles/:vin/component/:partNumber</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Deletes a component from a given vehicle.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/vehicles/:vin/component/:partNumber</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>:vin</strong> — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.</p>
+</li>
+<li>
+<p><strong>:partNumber</strong> — The unique identifying name of a hardware component.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="get-vehicles-vin-package">GET /vehicles/:vin/package</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Returns a list of the packages installed on a given vehicle.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/vehicles/:vin/package</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>:vin</strong> — An existing vehicle identification number.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div>
+<div class="paragraph">
+<p><strong>Content:</strong> A list of package names and versions.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">[
+  {
+    <span style="color: #008000; font-weight: bold">&quot;version&quot;</span>: <span style="color: #BA2121">&quot;1.2.3&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>: <span style="color: #BA2121">&quot;myPackage&quot;</span>
+  }
+]</code></pre>
+</div>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="put-vehicles-vin-package-name-version">PUT /vehicles/:vin/package/:name/:version</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Marks a package as installed on a given vehicle.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/vehicles/:vin/package/:name/:version</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>:vin</strong> — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.</p>
+</li>
+<li>
+<p><strong>:name</strong> — The name of the software package.</p>
+</li>
+<li>
+<p><strong>:version</strong> — The package version, in <em>x.y.z</em> format. <em>x</em>, <em>y</em>, and <em>z</em> must all contain only digits.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="delete-vehicles-vin-package-name-version">DELETE /vehicles/:vin/package/:name/:version</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Removes a package previously marked as installed on a given vehicle.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/vehicles/:vin/package/:name/:version</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>:vin</strong> — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.</p>
+</li>
+<li>
+<p><strong>:name</strong> — The name of the software package.</p>
+</li>
+<li>
+<p><strong>:version</strong> — The package version, in <em>x.y.z</em> format. <em>x</em>, <em>y</em>, and <em>z</em> must all contain only digits.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="put-vehicles-vin-packages">PUT /vehicles/:vin/packages</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Marks a list of packages as installed on a given vehicle.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/vehicles/:vin/packages</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p><strong>:vin</strong> — A vehicle identification number to be added to the database.
+Must be exactly 17 characters long, and contain only alphanumeric
+characters.</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Data Parameters</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>An array of objects containing:
+* <strong>:name</strong> — The name of a software package.
+ <strong>:version</strong> — The package version, in <em>x.y.z</em> format. <em>x</em>, <em>y</em>, and <em>z</em> must all contain only digits.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Example</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">[
+  {
+    <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>: <span style="color: #BA2121">&quot;myPackage&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;version&quot;</span>: <span style="color: #BA2121">&quot;1.2.3&quot;</span>
+  },
+  {
+    <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>: <span style="color: #BA2121">&quot;myPackage2&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;version&quot;</span>: <span style="color: #BA2121">&quot;2.3.4&quot;</span>
+  }
+]</code></pre>
+</div>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><strong>Code:</strong> 200</p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="get-packages">GET /packages</h3>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 18%;">
+<col style="width: 82%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Returns a list of packages.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">URL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/api/v1/packages</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Parameters</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Success Response</p></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>A list of package objects. Each contains:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>id</strong> — The packageId of the package to be sent. Object consisting of:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>name</strong> — Package name</p>
+</li>
+<li>
+<p><strong>version</strong> — <em>x.y.z</em></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>uri</strong> — The URI of the package binary</p>
+</li>
+<li>
+<p><strong>size</strong> — Package size in bytes</p>
+</li>
+<li>
+<p><strong>checkSum</strong> — The package&#8217;s checksum</p>
+</li>
+<li>
+<p><strong>description</strong> — The package&#8217;s description text</p>
+</li>
+<li>
+<p><strong>vendor</strong> — The package&#8217;s vendor</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="json">[
+  {
+    <span style="color: #008000; font-weight: bold">&quot;size&quot;</span>: <span style="color: #666666">35768</span>,
+    <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;testing&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;uri&quot;</span>: {
+      <span style="color: #008000; font-weight: bold">&quot;uri&quot;</span>: <span style="color: #BA2121">&quot;http://path/to/file&quot;</span>
+    },
+    <span style="color: #008000; font-weight: bold">&quot;checkSum&quot;</span>: <span style="color: #BA2121">&quot;5tsJvSyE22ZTQQfaTvAOat3Muo4=&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;id&quot;</span>: {
+      <span style="color: #008000; font-weight: bold">&quot;version&quot;</span>: <span style="color: #BA2121">&quot;1.2.3&quot;</span>,
+      <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>: <span style="color: #BA2121">&quot;myPackage&quot;</span>
+    },
+    <span style="color: #008000; font-weight: bold">&quot;vendor&quot;</span>: <span style="color: #BA2121">&quot;AcmeSoftware&quot;</span>
+  },
+  {
+    <span style="color: #008000; font-weight: bold">&quot;size&quot;</span>: <span style="color: #666666">35768</span>,
+    <span style="color: #008000; font-weight: bold">&quot;description&quot;</span>: <span style="color: #BA2121">&quot;testing&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;uri&quot;</span>: {
+      <span style="color: #008000; font-weight: bold">&quot;uri&quot;</span>: <span style="color: #BA2121">&quot;http://path/to/file&quot;</span>
+    },
+    <span style="color: #008000; font-weight: bold">&quot;checkSum&quot;</span>: <span style="color: #BA2121">&quot;5tsJvSyE22ZTQQfaTvAOat3Muo4=&quot;</span>,
+    <span style="color: #008000; font-weight: bold">&quot;id&quot;</span>: {
+      <span style="color: #008000; font-weight: bold">&quot;version&quot;</span>: <span style="color: #BA2121">&quot;2.3.4&quot;</span>,
+      <span style="color: #008000; font-weight: bold">&quot;name&quot;</span>: <span style="color: #BA2121">&quot;myPackage&quot;</span>
+    },
+    <span style="color: #008000; font-weight: bold">&quot;vendor&quot;</span>: <span style="color: #BA2121">&quot;AcmeSoftware&quot;</span>
+  }
+]</code></pre>
 </div>
 </div></div></td>
 </tr>
