@@ -16,8 +16,8 @@ import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
 import org.genivi.sota.db.SlickExtensions
 import org.scalatest.time.{Millis, Seconds, Span}
-
-import scala.concurrent.{ExecutionContext, Future}
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import scala.concurrent.ExecutionContext
 
 class InstalledPackagesUpdateSpec extends FunSuite
   with ShouldMatchers

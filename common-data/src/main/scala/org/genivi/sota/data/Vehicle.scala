@@ -5,14 +5,20 @@
 package org.genivi.sota.data
 
 import eu.timepit.refined.api.{Refined, Validate}
+import org.joda.time.DateTime
 
 /*
  * The notion of vehicle has a identification number (VIN), this is
  * shared between the core and resolver.
  */
-case class Vehicle(vin: Vehicle.Vin)
+case class Vehicle(vin: Vehicle.Vin, lastSeen: Option[DateTime] = None)
 
 object Vehicle {
+  def tupled: ((Vin, Option[DateTime])) => Vehicle = (Vehicle.apply _).tupled
+
+  def fromVin: (Vin => Vehicle) = (Vehicle.apply _).curried(_)(None)
+
+  def toVin: Vehicle => Option[Vin] = Vehicle.unapply(_).map(_._1)
 
   case class ValidVin()
 

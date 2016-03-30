@@ -2,6 +2,7 @@ package org.genivi.sota.core
 
 import akka.http.scaladsl.unmarshalling.Unmarshaller._
 import java.util.UUID
+
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model.{StatusCodes, Uri}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
@@ -17,6 +18,12 @@ import org.genivi.sota.core.db.{InstallHistories, Vehicles}
 import org.genivi.sota.core.transfer.InstalledPackagesUpdate
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.generic.auto._
+import org.genivi.sota.data.Vehicle
+import org.joda.time.DateTime
+import org.genivi.sota.core.data.{VehicleStatus, VehicleUpdateStatus}
+import org.genivi.sota.core.data.VehicleStatus._
+
+import scala.concurrent.Future
 
 class VehicleServiceSpec extends FunSuite
   with ShouldMatchers
@@ -37,6 +44,11 @@ class VehicleServiceSpec extends FunSuite
   implicit val patience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
 
   implicit val _db = db
+
+  def createVehicle(): Future[Vehicle.Vin] = {
+    val vehicle = genVehicle.sample.get
+    db.run(Vehicles.create(vehicle))
+  }
 
   test("install updates are forwarded to external resolver") {
     val fakeResolverClient = new FakeExternalResolver()
@@ -86,6 +98,40 @@ class VehicleServiceSpec extends FunSuite
         status shouldBe StatusCodes.OK
         responseAs[List[UUID]] shouldNot be(empty)
         responseAs[List[UUID]] should be(List(updateSpec.request.id))
+      }
+    }
+  }
+
+  test("sets vehicle last seen when vehicle asks for updates") {
+    whenReady(createVehicle()) { vin =>
+      val url = Uri.Empty.withPath(BasePath / vin.get / "updates")
+      val now = DateTime.now.minusSeconds(10)
+
+      Get(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+        responseAs[List[UUID]] should be(empty)
+
+        val vehicleF = db.run(Vehicles.list().map(_.find(_.vin == vin)))
+
+        whenReady(vehicleF) {
+          case Some(vehicle) =>
+            vehicle.lastSeen shouldBe defined
+            vehicle.lastSeen.get.isAfter(now) shouldBe true
+          case _ =>
+            fail("Vehicle should be in database")
+        }
+      }
+    }
+  }
+
+  test("GET on status returns current status for a vehicle") {
+    whenReady(createVehicle()) { vin =>
+      val url = Uri.Empty.withPath(BasePath / vin.get / "status")
+
+      Get(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+        responseAs[VehicleUpdateStatus].lastSeen shouldNot be(defined)
+        responseAs[VehicleUpdateStatus].status shouldBe VehicleStatus.NotSeen
       }
     }
   }
