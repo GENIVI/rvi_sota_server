@@ -6,6 +6,7 @@ package org.genivi.sota.resolver.filters
 
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
+import org.genivi.sota.data.Namespace._
 import org.genivi.sota.db.Operators._
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
@@ -20,12 +21,13 @@ object FilterRepository {
   // scalastyle:off
   class FiltersTable(tag: Tag) extends Table[Filter](tag, "Filter") {
 
+    def namespace  = column[Namespace]("namespace")
     def name       = column[Filter.Name]("name")
     def expression = column[Filter.Expression]("expression")
 
-    def pk = primaryKey("pk_filter", name)
+    def pk = primaryKey("pk_filter", (namespace, name))
 
-    def * = (name, expression) <> ((Filter.apply _).tupled, Filter.unapply)
+    def * = (namespace, name, expression) <> ((Filter.apply _).tupled, Filter.unapply)
   }
   // scalastyle:on
 
@@ -34,9 +36,9 @@ object FilterRepository {
   def add(filter: Filter)(implicit ec: ExecutionContext): DBIO[Filter] =
     (filters += filter).map(_ => filter)
 
-  def exists(name: Filter.Name)(implicit ec: ExecutionContext): DBIO[Filter] =
+  def exists(namespace: Namespace, name: Filter.Name)(implicit ec: ExecutionContext): DBIO[Filter] =
     filters
-      .filter(_.name === name)
+      .filter(i => i.namespace === namespace && i.name === name)
       .result
       .headOption
       .failIfNone(Errors.MissingFilterException)
@@ -49,22 +51,22 @@ object FilterRepository {
      .flatMap(i => if (i == 0) DBIO.failed(Errors.MissingFilterException) else DBIO.successful(filter))
   }
 
-  def delete(name: Filter.Name)(implicit ec: ExecutionContext): DBIO[Int] =
-    exists(name) andThen
-    filters.filter(_.name === name).delete
+  def delete(namespace: Namespace, name: Filter.Name)(implicit ec: ExecutionContext): DBIO[Int] =
+    exists(namespace, name) andThen
+    filters.filter(i => i.namespace === namespace && i.name === name).delete
 
   def deleteFilterAndPackageFilters
-    (name: Filter.Name)
+    (namespace: Namespace, name: Filter.Name)
     (implicit db: Database, ec: ExecutionContext): DBIO[Unit] =
     for {
-      _ <- PackageFilterRepository.deletePackageFilterByFilterName(name)
-      _ <- FilterRepository.delete(name)
+      _ <- PackageFilterRepository.deletePackageFilterByFilterName(namespace, name)
+      _ <- FilterRepository.delete(namespace, name)
     } yield ()
 
   def list: DBIO[Seq[Filter]] =
     filters.result
 
-  def searchByRegex(re: Refined[String, Regex]): DBIO[Seq[Filter]] =
-    filters.filter(filter => regex(filter.name, re.get)).result
+  def searchByRegex(namespace: Namespace, re: Refined[String, Regex]): DBIO[Seq[Filter]] =
+    filters.filter(filter => filter.namespace === namespace && regex(filter.name, re.get)).result
 
 }

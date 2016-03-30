@@ -57,7 +57,7 @@ class InstalledPackagesUpdateSpec extends FunSuite
       report = UpdateReport(updateSpec.request.id, List(result))
       _ <- InstalledPackagesUpdate.reportInstall(vehicle.vin, report)
       updatedSpec <- db.run(InstalledPackagesUpdate.findUpdateSpecFor(vehicle.vin, updateSpec.request.id))
-      history <- db.run(InstallHistories.list(vehicle.vin))
+      history <- db.run(InstallHistories.list(vehicle.namespace, vehicle.vin))
     } yield (updatedSpec.status, history)
 
     whenReady(f) { case (newStatus, history) =>

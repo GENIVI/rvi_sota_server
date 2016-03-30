@@ -17,16 +17,16 @@ import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateSpec}
 import org.genivi.sota.core.db.{Packages, Vehicles}
 import org.genivi.sota.core.jsonrpc.HttpTransport
 import org.genivi.sota.core.resolver.DefaultExternalResolverClient
-import org.genivi.sota.core.rvi.{JsonRpcRviClient, RviConnectivity, RviUpdateNotifier, ServerServices, SotaServices}
+import org.genivi.sota.core.rvi._
 import org.genivi.sota.core.{PackagesReader, RequiresRvi, TestDatabase, UpdateService}
-import org.genivi.sota.data.{PackageId, Vehicle}
+import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.{Namespaces, PackageId, Vehicle}
 import org.joda.time.DateTime
 import org.scalacheck.Gen
 import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture, whenReady}
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
-
 import scala.concurrent.{Await, ExecutionContext, Future}
 import slick.jdbc.JdbcBackend.Database
 
@@ -48,7 +48,7 @@ object DataGenerators {
   def updateWithDependencies(vin: Vehicle.Vin) : Gen[(UpdateRequest, UpdateService.VinsToPackages)] =
     for {
       packageId    <- Gen.oneOf( packages.map( _.id) )
-      request      <- updateRequestGen( packageId )
+      request      <- updateRequestGen(Namespaces.defaultNs, packageId)
       dependencies <- dependenciesGen( packageId, vin )
     } yield (request, dependencies)
 
@@ -187,7 +187,13 @@ trait SotaCore {
 /**
  * Property Spec for testing package updates
  */
-class PackageUpdateSpec extends PropSpec with PropertyChecks with Matchers with BeforeAndAfterAll with SotaCore {
+class PackageUpdateSpec extends PropSpec
+  with PropertyChecks
+  with Matchers
+  with BeforeAndAfterAll
+  with SotaCore
+  with Namespaces {
+
   import DataGenerators._
 
   override def beforeAll() : Unit = {
@@ -198,14 +204,16 @@ class PackageUpdateSpec extends PropSpec with PropertyChecks with Matchers with 
 
   def init(services: ServerServices,
            generatedData: Map[UpdateRequest, UpdateService.VinsToPackages]): Future[Set[UpdateSpec]] = {
+    import slick.driver.MySQLDriver.api._
+
     val notifier = new RviUpdateNotifier(services)
     val updateService = new UpdateService(notifier)
       (akka.event.Logging(system, "sota.core.updateQueue"), connectivity.client)
     val vins : Set[Vehicle.Vin] =
       generatedData.values.map( _.keySet ).fold(Set.empty[Vehicle.Vin])( _ union _)
-    import slick.driver.MySQLDriver.api._
+
     for {
-      _     <- db.run( DBIO.seq( vins.map( vin => Vehicles.create(Vehicle(vin))).toArray: _* ) )
+      _     <- db.run( DBIO.seq( vins.map( vin => Vehicles.create(Vehicle(defaultNs, vin))).toArray: _* ) )
       specs <- Future.sequence( generatedData.map {
                                  case (request, deps) =>
                                    updateService.queueUpdate(request, _ => FastFuture.successful(deps))

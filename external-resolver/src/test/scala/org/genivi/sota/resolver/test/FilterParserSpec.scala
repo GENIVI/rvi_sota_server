@@ -5,7 +5,7 @@
 package org.genivi.sota.resolver.test
 
 import eu.timepit.refined.api.Refined
-import org.genivi.sota.data.{PackageId, Vehicle}
+import org.genivi.sota.data.{Namespaces, PackageId, Vehicle}
 import org.scalacheck._
 import org.scalatest.FlatSpec
 import org.genivi.sota.resolver.filters._
@@ -82,16 +82,16 @@ class FilterParserSpec extends FlatSpec {
 /**
  * Specs for filter queries
  */
-class FilterQuerySpec extends ResourceWordSpec {
+class FilterQuerySpec extends ResourceWordSpec with Namespaces {
 
   import org.genivi.sota.resolver.packages.Package
   import org.genivi.sota.resolver.components.Component
 
-  val vin1 = Vehicle(Refined.unsafeApply("APABEPA1234567890"))
-  val vin2 = Vehicle(Refined.unsafeApply("APACEPA1234567890"))
-  val vin3 = Vehicle(Refined.unsafeApply("APADEPA1234567890"))
-  val vin4 = Vehicle(Refined.unsafeApply("BEPAEPA1234567890"))
-  val vin5 = Vehicle(Refined.unsafeApply("DEPAEPA1234567890"))
+  val vin1 = Vehicle(defaultNs, Refined.unsafeApply("APABEPA1234567890"))
+  val vin2 = Vehicle(defaultNs, Refined.unsafeApply("APACEPA1234567890"))
+  val vin3 = Vehicle(defaultNs, Refined.unsafeApply("APADEPA1234567890"))
+  val vin4 = Vehicle(defaultNs, Refined.unsafeApply("BEPAEPA1234567890"))
+  val vin5 = Vehicle(defaultNs, Refined.unsafeApply("DEPAEPA1234567890"))
 
   val pkg1 = PackageId(Refined.unsafeApply("pkg1"), Refined.unsafeApply("1.0.0"))
   val pkg2 = PackageId(Refined.unsafeApply("pkg2"), Refined.unsafeApply("1.0.0"))

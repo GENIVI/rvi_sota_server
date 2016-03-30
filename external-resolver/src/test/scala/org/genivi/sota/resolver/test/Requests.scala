@@ -12,7 +12,7 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
-import org.genivi.sota.data.{PackageId, Vehicle}
+import org.genivi.sota.data.{Namespaces, PackageId, Vehicle}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.resolve.ResolveFunctions
@@ -157,11 +157,11 @@ trait ComponentRequests extends
 /**
  * Testing Trait for building Filter requests
  */
-trait FilterRequestsHttp {
+trait FilterRequestsHttp extends Namespaces {
 
   def addFilter(name: String, expr: String)
                (implicit ec: ExecutionContext): HttpRequest =
-    addFilter2(Filter(Refined.unsafeApply(name), Refined.unsafeApply(expr)))
+    addFilter2(Filter(defaultNs, Refined.unsafeApply(name), Refined.unsafeApply(expr)))
 
   def addFilter2(filt: Filter)
                 (implicit ec: ExecutionContext): HttpRequest =
@@ -201,14 +201,14 @@ trait FilterRequests extends FilterRequestsHttp with Matchers { self: ScalatestR
 
     addFilter(name, expr) ~> route ~> check {
       status shouldBe StatusCodes.OK
-      responseAs[Filter] shouldBe Filter(Refined.unsafeApply(name), Refined.unsafeApply(expr))
+      responseAs[Filter] shouldBe Filter(defaultNs, Refined.unsafeApply(name), Refined.unsafeApply(expr))
     }
   }
 
   def updateFilterOK(name: String, expr: String)(implicit route: Route): Unit =
     updateFilter(name, expr) ~> route ~> check {
       status shouldBe StatusCodes.OK
-      responseAs[Filter] shouldBe Filter(Refined.unsafeApply(name), Refined.unsafeApply(expr))
+      responseAs[Filter] shouldBe Filter(defaultNs, Refined.unsafeApply(name), Refined.unsafeApply(expr))
     }
 
   def deleteFilterOK(name: String)(implicit route: Route): Unit =
@@ -246,13 +246,14 @@ trait PackageFilterRequestsHttp {
 
 trait PackageFilterRequests extends
   PackageFilterRequestsHttp with
-  Matchers { self: ScalatestRouteTest =>
+  Matchers with
+  Namespaces { self: ScalatestRouteTest =>
 
   def addPackageFilterOK(pname: String, pversion: String, fname: String)(implicit route: Route): Unit =
     addPackageFilter(pname, pversion, fname) ~> route ~> check {
       status shouldBe StatusCodes.OK
       responseAs[PackageFilter] shouldBe
-        PackageFilter(Refined.unsafeApply(pname), Refined.unsafeApply(pversion), Refined.unsafeApply(fname))
+        PackageFilter(defaultNs, Refined.unsafeApply(pname), Refined.unsafeApply(pversion), Refined.unsafeApply(fname))
     }
 
   def deletePackageFilterOK(pname: String, pversion: String, fname: String)(implicit route: Route): Unit =
@@ -276,7 +277,8 @@ trait ResolveRequestsHttp {
 
 trait ResolveRequests extends
   ResolveRequestsHttp with
-  Matchers { self: ScalatestRouteTest =>
+  Matchers with
+  Namespaces { self: ScalatestRouteTest =>
 
   def resolveOK(pname: String, pversion: String, vins: Seq[Vehicle.Vin])(implicit route: Route): Unit = {
 
@@ -284,7 +286,7 @@ trait ResolveRequests extends
       status shouldBe StatusCodes.OK
       responseAs[Map[Vehicle.Vin, List[PackageId]]] shouldBe
         ResolveFunctions.makeFakeDependencyMap(PackageId(Refined.unsafeApply(pname), Refined.unsafeApply(pversion)),
-          vins.map(Vehicle(_)))
+          vins.map(Vehicle(defaultNs, _)))
     }
   }
 

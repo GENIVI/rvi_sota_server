@@ -10,7 +10,9 @@ import akka.http.scaladsl.server.{Directive1, Directives}
 import akka.stream.ActorMaterializer
 import org.genivi.sota.core.transfer.UpdateNotifier
 import slick.driver.MySQLDriver.api.Database
+import org.genivi.sota.core.common.NamespaceDirective
 import org.genivi.sota.core.resolver.{Connectivity, ExternalResolverClient}
+import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.Vehicle
 import eu.timepit.refined.string.Uuid
 import eu.timepit.refined._
@@ -23,12 +25,11 @@ import akka.actor.ActorSystem
 
 object WebService {
   val extractVin : Directive1[Vehicle.Vin] = refined[Vehicle.ValidVin](Slash ~ Segment)
-
   val extractUuid = refined[Uuid](Slash ~ Segment)
 }
 
 class WebService(notifier: UpdateNotifier, resolver: ExternalResolverClient, db : Database)
-                (implicit system: ActorSystem, mat: ActorMaterializer,
+                (implicit val system: ActorSystem, val mat: ActorMaterializer,
                  connectivity: Connectivity) extends Directives {
   implicit val log = Logging(system, "webservice")
 

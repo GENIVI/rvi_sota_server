@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.resolver.filters
 
+import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
@@ -12,9 +13,11 @@ import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
+import org.genivi.sota.data.Namespace._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors
+import org.genivi.sota.resolver.common.NamespaceDirective._
 import org.genivi.sota.resolver.packages.PackageFilterRepository
 import org.genivi.sota.rest.Validation._
 import scala.concurrent.{ExecutionContext, Future}
@@ -25,31 +28,35 @@ import slick.jdbc.JdbcBackend.Database
  * API routes for filters.
  * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
  */
-class FilterDirectives(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
+class FilterDirectives(implicit system: ActorSystem,
+                       db: Database,
+                       mat: ActorMaterializer,
+                       ec: ExecutionContext) {
 
-  def searchFilter =
+  def searchFilter(ns: Namespace) =
     parameter('regex.as[String Refined Regex].?) { re =>
-      val query = re.fold(FilterRepository.list)(re => FilterRepository.searchByRegex(re))
+      val query = re.fold(FilterRepository.list)(re => FilterRepository.searchByRegex(ns, re))
       complete(db.run(query))
     }
 
-  def getPackages(fname: String Refined Filter.ValidName) =
-    completeOrRecoverWith(db.run(PackageFilterRepository.listPackagesForFilter(fname))) {
+  def getPackages(ns: Namespace, fname: String Refined Filter.ValidName) =
+    completeOrRecoverWith(db.run(PackageFilterRepository.listPackagesForFilter(ns, fname))) {
       Errors.onMissingFilter
     }
 
-  def createFilter =
+  def createFilter(ns: Namespace) =
     entity(as[Filter]) { filter =>
-      complete(db.run(FilterRepository.add(filter)))
+      // TODO: treat differing namespace names accordingly
+      complete(db.run(FilterRepository.add(filter.copy(namespace = ns))))
     }
 
-  def updateFilter(fname: String Refined Filter.ValidName) =
+  def updateFilter(ns: Namespace, fname: String Refined Filter.ValidName) =
     entity(as[Filter.ExpressionWrapper]) { expr =>
-      complete(db.run(FilterRepository.update(Filter(fname, expr.expression))))
+      complete(db.run(FilterRepository.update(Filter(ns, fname, expr.expression))))
     }
 
-  def deleteFilter(fname: String Refined Filter.ValidName) =
-    complete(db.run(FilterRepository.deleteFilterAndPackageFilters(fname)))
+  def deleteFilter(ns: Namespace, fname: String Refined Filter.ValidName) =
+    complete(db.run(FilterRepository.deleteFilterAndPackageFilters(ns, fname)))
 
   /**
    * API route for validating filters.
@@ -68,21 +75,21 @@ class FilterDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execut
    */
   def route: Route =
     handleExceptions(ExceptionHandler(Errors.onMissingFilter orElse Errors.onMissingPackage)) {
-      pathPrefix("filters") {
+      (pathPrefix("filters") & extractNamespace) { ns =>
         (get & pathEnd) {
-          searchFilter
+          searchFilter(ns)
         } ~
         (get & refined[Filter.ValidName](Slash ~ Segment) & path("package")) { fname =>
-          getPackages(fname)
+          getPackages(ns, fname)
         } ~
         (post & pathEnd) {
-          createFilter
+          createFilter(ns)
         } ~
         (put & refined[Filter.ValidName](Slash ~ Segment) & pathEnd) { fname =>
-          updateFilter(fname)
+          updateFilter(ns, fname)
         } ~
         (delete & refined[Filter.ValidName](Slash ~ Segment) & pathEnd) { fname =>
-          deleteFilter(fname)
+          deleteFilter(ns, fname)
         }
       } ~
       (post & path("validate" / "filter")) {

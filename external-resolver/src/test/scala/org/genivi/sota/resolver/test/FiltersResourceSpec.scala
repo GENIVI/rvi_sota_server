@@ -9,6 +9,7 @@ import akka.http.scaladsl.unmarshalling._
 import eu.timepit.refined.api.Refined
 import io.circe._
 import io.circe.generic.auto._
+import org.genivi.sota.data.Namespaces
 import org.genivi.sota.rest.ErrorCodes
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.filters.Filter, Filter._
@@ -19,13 +20,13 @@ import org.genivi.sota.rest.{ErrorRepresentation, ErrorCode}
 /**
  * Spec for Filter REST actions
  */
-class FiltersResourceWordSpec extends ResourceWordSpec {
+class FiltersResourceWordSpec extends ResourceWordSpec with Namespaces {
 
   "Filters resource" should {
 
     val filterName = "myfilter"
     val filterExpr = s"""vin_matches "SAJNX5745SC......""""
-    val filter     = Filter(Refined.unsafeApply(filterName), Refined.unsafeApply(filterExpr))
+    val filter     = Filter(defaultNs, Refined.unsafeApply(filterName), Refined.unsafeApply(filterExpr))
 
     "create a new resource on POST request" in {
       addFilterOK(filterName, filterExpr)
@@ -47,7 +48,7 @@ class FiltersResourceWordSpec extends ResourceWordSpec {
 
     val filterName2 = "myfilter2"
     val filterExpr2 = s"""vin_matches "TAJNX5745SC......""""
-    val filter2     = Filter(Refined.unsafeApply(filterName2), Refined.unsafeApply(filterExpr2))
+    val filter2     = Filter(defaultNs, Refined.unsafeApply(filterName2), Refined.unsafeApply(filterExpr2))
 
     "list available filters on a GET request" in {
       addFilterOK(filterName2, filterExpr2)

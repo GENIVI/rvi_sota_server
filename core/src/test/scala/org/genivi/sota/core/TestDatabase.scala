@@ -76,7 +76,7 @@ trait UpdateResourcesDatabaseSpec {
 trait VehicleDatabaseSpec {
   self: DatabaseSpec =>
 
-  def createVehicle()(implicit ec: ExecutionContext): Future[Vehicle.Vin] = {
+  def createVehicle()(implicit ec: ExecutionContext): Future[Vehicle] = {
     val vehicle = VehicleGenerators.genVehicle.sample.get
     db.run(Vehicles.create(vehicle))
   }

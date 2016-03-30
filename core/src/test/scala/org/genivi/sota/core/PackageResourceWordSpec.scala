@@ -48,9 +48,10 @@ class PackageResourceWordSpec extends WordSpec
   lazy val service = new PackagesResource(externalResolverClient, db)
 
   val testPackagesParams = List(
-    ("vim", "7.0.1"), ("vim", "7.1.1"), ("go", "1.4.0"), ("go", "1.5.0"), ("scala", "2.11.0"))
+    ("default", "vim", "7.0.1"), ("default", "vim", "7.1.1"),
+    ("default", "go", "1.4.0"), ("default", "go", "1.5.0"), ("default", "scala", "2.11.0"))
   val testPackages:List[DataPackage] = testPackagesParams.map { pkg =>
-    DataPackage(PackageId(Refined.unsafeApply(pkg._1), Refined.unsafeApply(pkg._2)),
+    DataPackage(Refined.unsafeApply(pkg._1), PackageId(Refined.unsafeApply(pkg._2), Refined.unsafeApply(pkg._3)),
                 Uri("www.example.com"), 123, "123", None, None, None)
   }
 

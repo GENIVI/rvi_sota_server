@@ -17,15 +17,16 @@ object VehicleGenerators extends VinGenerators {
         veh1.vin.get compare veh2.vin.get
     }
 
-  val genVehicle: Gen[Vehicle] =
-    genVin.map(Vehicle(_))
+  val genVehicle: Gen[Vehicle] = for {
+    vin <- genVin
+  } yield Vehicle(Namespaces.defaultNs, vin)
 
   implicit lazy val arbVehicle: Arbitrary[Vehicle] =
     Arbitrary(genVehicle)
 
-  val genInvalidVehicle: Gen[Vehicle] =
-    genInvalidVin.map(Vehicle(_))
-
-
+  val genInvalidVehicle: Gen[Vehicle] = for {
+    // TODO: for now, just generate an invalid VIN with a valid namespace
+    vin <- genInvalidVin
+  } yield Vehicle(Namespaces.defaultNs, vin)
 
 }

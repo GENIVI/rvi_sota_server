@@ -18,14 +18,16 @@ import org.genivi.sota.data.{PackageId, Vehicle}
 import slick.driver.MySQLDriver.api.Database
 import io.circe.generic.auto._
 import org.genivi.sota.core.db.Vehicles
+import org.genivi.sota.core.common.NamespaceDirective._
+import org.genivi.sota.data.Namespace._
 import org.genivi.sota.rest.Validation.refined
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.Json
 import org.genivi.sota.core.resolver.ExternalResolverClient
 
+
 class VehicleService(db : Database, resolverClient: ExternalResolverClient)
                     (implicit system: ActorSystem, mat: ActorMaterializer) extends Directives {
-  implicit val log = Logging(system, "vehicleservice")
 
   import Json.{obj, string}
   import WebService._
@@ -35,9 +37,9 @@ class VehicleService(db : Database, resolverClient: ExternalResolverClient)
   implicit val ec = system.dispatcher
   implicit val _db = db
 
-  def logVehicleSeen(vin: Vehicle.Vin): Directive0 = {
+  def logVehicleSeen(vehicle: Vehicle): Directive0 = {
     extractRequestContext flatMap { _ =>
-      onComplete(db.run(Vehicles.updateLastSeen(vin)))
+      onComplete(db.run(Vehicles.updateLastSeen(vehicle)))
     } flatMap (_ => pass)
   }
 
@@ -51,9 +53,9 @@ class VehicleService(db : Database, resolverClient: ExternalResolverClient)
     }
   }
 
-  def pendingPackages(vin: Vehicle.Vin) = {
-    logVehicleSeen(vin) {
-      val vehiclePackages = InstalledPackagesUpdate.findPendingPackageIdsFor(vin)
+  def pendingPackages(ns: Namespace, vin: Vehicle.Vin) = {
+    logVehicleSeen(Vehicle(ns, vin)) {
+      val vehiclePackages = InstalledPackagesUpdate.findPendingPackageIdsFor(ns, vin)
       complete(db.run(vehiclePackages))
     }
   }
@@ -78,7 +80,7 @@ class VehicleService(db : Database, resolverClient: ExternalResolverClient)
     (pathPrefix("api" / "v1" / "vehicles") &
       extractVin & pathPrefix("updates")) { vin =>
       (post & pathEnd) { updateInstalledPackages(vin) } ~
-      (get & pathEnd) { pendingPackages(vin) } ~
+      (get & extractNamespace & pathEnd) { ns => pendingPackages(ns, vin) } ~
       (get & extractUuid & path("download")) { downloadPackage } ~
       (post & extractUuid) { reportInstall }
     }

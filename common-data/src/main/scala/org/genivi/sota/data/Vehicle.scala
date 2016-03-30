@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.data
 
+import org.genivi.sota.data.Namespace._
 import eu.timepit.refined.api.{Refined, Validate}
 import org.joda.time.DateTime
 
@@ -11,16 +12,18 @@ import org.joda.time.DateTime
  * The notion of vehicle has a identification number (VIN), this is
  * shared between the core and resolver.
  */
-case class Vehicle(vin: Vehicle.Vin, lastSeen: Option[DateTime] = None) {
+case class Vehicle(namespace: Namespace, vin: Vehicle.Vin, lastSeen: Option[DateTime] = None) {
   override def toString(): String = s"Vehicle(${vin.get}, $lastSeen)"
 }
 
 object Vehicle {
-  def tupled: ((Vin, Option[DateTime])) => Vehicle = (Vehicle.apply _).tupled
+  def tupled: ((Namespace, Vin, Option[DateTime])) => Vehicle = { case (ns, vin, lastSeen) =>
+    Vehicle(ns, vin, lastSeen)
+  }
 
-  def fromVin: (Vin => Vehicle) = (Vehicle.apply _).curried(_)(None)
+  def fromVin: (((Namespace, Vin)) => Vehicle) = { case (ns, vin) => Vehicle(ns, vin, None) }
 
-  def toVin: Vehicle => Option[Vin] = Vehicle.unapply(_).map(_._1)
+  def toVin: Vehicle => Option[(Namespace, Vin)] = { v => Some((v.namespace, v.vin)) }
 
   case class ValidVin()
 

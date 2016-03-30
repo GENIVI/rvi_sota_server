@@ -7,6 +7,7 @@ package org.genivi.sota.core.db
 import java.util.UUID
 
 import org.genivi.sota.core.data.UpdateRequest
+import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.PackageId
 import org.joda.time.DateTime
 import slick.driver.MySQLDriver.api._
@@ -32,6 +33,7 @@ object UpdateRequests {
    */
   class UpdateRequestTable(tag: Tag) extends Table[UpdateRequest](tag, "UpdateRequest") {
     def id = column[UUID]("update_request_id", O.PrimaryKey)
+    def namespace = column[Namespace]("namespace")
     def packageName = column[PackageId.Name]("package_name")
     def packageVersion = column[PackageId.Version]("package_version")
     def creationTime = column[DateTime]("creation_time")
@@ -55,10 +57,10 @@ object UpdateRequests {
       }
     }
 
-    def * = (id, packageName, packageVersion, creationTime, startAfter, finishBefore,
+    def * = (id, namespace, packageName, packageVersion, creationTime, startAfter, finishBefore,
              priority, signature, description.?, requestConfirmation).shaped <>
-      (x => UpdateRequest(x._1, PackageId(x._2, x._3), x._4, x._5 to x._6, x._7, x._8, x._9, x._10),
-      (x: UpdateRequest) => Some((x.id, x.packageId.name, x.packageId.version, x.creationTime,
+      (x => UpdateRequest(x._1, x._2, PackageId(x._3, x._4), x._5, x._6 to x._7, x._8, x._9, x._10, x._11),
+      (x: UpdateRequest) => Some((x.id, x.namespace, x.packageId.name, x.packageId.version, x.creationTime,
                                   x.periodOfValidity.start, x.periodOfValidity.end, x.priority,
                                   x.signature, x.description, x.requestConfirmation)))
 

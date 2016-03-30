@@ -4,36 +4,40 @@
  */
 package org.genivi.sota.core
 
-import akka.http.scaladsl.unmarshalling.Unmarshaller._
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model._
+import akka.http.scaladsl.server._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import akka.http.scaladsl.unmarshalling.Unmarshaller._
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
-import org.genivi.sota.data.Vehicle
-import org.genivi.sota.core.rvi._
 import io.circe.syntax._
-import org.genivi.sota.marshalling.CirceMarshallingSupport
-import org.genivi.sota.core.jsonrpc.HttpTransport
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest._
-import slick.driver.MySQLDriver.api._
-import org.scalacheck.Gen
-import org.scalatest.prop.PropertyChecks
-import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server._
 import org.genivi.sota.core.data.{VehicleStatus, VehicleUpdateStatus}
+import org.genivi.sota.core.jsonrpc.HttpTransport
+import org.genivi.sota.core.rvi._
+import org.genivi.sota.data.Namespaces
+import org.genivi.sota.data.Vehicle
+import org.genivi.sota.marshalling.CirceMarshallingSupport
+import org.scalacheck.Gen
+import org.scalatest._
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
+import slick.driver.MySQLDriver.api._
+
 
 /**
  * Spec tests for vehicle REST actions
  */
-class VehicleResourceSpec extends PropSpec with PropertyChecks
+class VehicleResourceSpec extends PropSpec
+  with PropertyChecks
   with Matchers
   with ScalatestRouteTest
   with ScalaFutures
   with DatabaseSpec
-  with VehicleDatabaseSpec {
+  with VehicleDatabaseSpec
+  with Namespaces {
 
   import CirceMarshallingSupport._
   import Generators._
@@ -79,8 +83,9 @@ class VehicleResourceSpec extends PropSpec with PropertyChecks
   } yield vin.mkString
 
 
-  val VehicleWithIllegalVin : Gen[Vehicle] = Gen.oneOf( tooLongVin, tooShortVin )
-      .map( x => Vehicle( Refined.unsafeApply(x) ) )
+  val VehicleWithIllegalVin : Gen[Vehicle] = for {
+    vin <- Gen.oneOf(tooLongVin, tooShortVin)
+  } yield Vehicle(defaultNs, Refined.unsafeApply(vin))
 
   property( "reject illegal vins" ) {
     forAll( VehicleWithIllegalVin ) { vehicle =>

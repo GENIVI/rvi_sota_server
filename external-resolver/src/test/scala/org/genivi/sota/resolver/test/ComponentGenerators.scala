@@ -1,10 +1,11 @@
 package org.genivi.sota.resolver.test
 
 import eu.timepit.refined.refineV
+import org.genivi.sota.data.Namespaces
 import org.genivi.sota.resolver.components.Component
 import org.scalacheck.{Arbitrary, Gen}
 
-trait ComponentGenerators {
+trait ComponentGenerators extends Namespaces {
 
   // We don't want name clashes so keep the names long.
   val genLongIdent: Gen[String] = (for {
@@ -23,7 +24,7 @@ trait ComponentGenerators {
   val genComponent: Gen[Component] = for {
     partNumber  <- genPartNumber
     desc        <- Gen.identifier
-  } yield Component(partNumber, desc)
+  } yield Component(defaultNs, partNumber, desc)
 
   implicit val arbComponent: Arbitrary[Component] =
     Arbitrary(genComponent)

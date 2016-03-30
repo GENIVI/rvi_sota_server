@@ -4,33 +4,34 @@
  */
 package org.genivi.sota.core
 
-import java.nio.file.{Path, Paths}
-import java.security.MessageDigest
-
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.common.StrictForm
 import akka.http.scaladsl.model.{StatusCodes, Uri}
-import akka.http.scaladsl.server.{Directive0, Directive1, Route}
 import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.{Directive0, Directive1, Route}
 import akka.stream.ActorMaterializer
 import akka.stream.io.SynchronousFileSink
 import akka.util.ByteString
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
+import io.circe.generic.auto._
+import java.nio.file.{Path, Paths}
+import java.security.MessageDigest
 import org.apache.commons.codec.binary.Hex
+import org.genivi.sota.core.common.NamespaceDirective._
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db.{Packages, UpdateSpecs}
 import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
+import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.PackageId
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.rest.ErrorRepresentation
 import org.genivi.sota.rest.Validation._
-import slick.driver.MySQLDriver.api.Database
-import io.circe.generic.auto._
-
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
+import slick.driver.MySQLDriver.api.Database
+
 
 object PackagesResource {
   /**
@@ -115,36 +116,36 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
     uploadResult
   }
 
-  def searchPackage: Route = {
+  def searchPackage(ns: Namespace): Route = {
     parameters('regex.as[String Refined Regex].?) { (regex: Option[String Refined Regex]) =>
       import org.genivi.sota.marshalling.CirceMarshallingSupport._
       val query = regex match {
-        case Some(r) => Packages.searchByRegex(r.get)
+        case Some(r) => Packages.searchByRegex(ns, r.get)
         case None => Packages.list
       }
       complete(db.run(query))
     }
   }
 
-  def fetch(pid: PackageId) = {
+  def fetch(ns: Namespace, pid: PackageId) = {
     // TODO: Include error description with rejectEmptyResponse?
     rejectEmptyResponse {
       complete {
-        db.run(Packages.byId(pid))
+        db.run(Packages.byId(ns, pid))
       }
     }
   }
 
-  def updatePackage(pid: PackageId) = {
+  def updatePackage(ns: Namespace, pid: PackageId) = {
     // TODO: Fix form fields metadata causing error for large upload
     parameters('description.?, 'vendor.?, 'signature.?) { (description, vendor, signature) =>
       formFields('file.as[StrictForm.FileData]) { fileData =>
         completeOrRecoverWith(
           for {
-            _ <- resolver.putPackage(pid, description, vendor)
+            _ <- resolver.putPackage(ns, pid, description, vendor)
             (uri, size, digest) <- savePackage(pid, fileData)
             _ <- db.run(Packages.create(
-              Package(pid, uri, size, digest, description, vendor, signature)))
+              Package(ns, pid, uri, size, digest, description, vendor, signature)))
           } yield StatusCodes.NoContent
         ) {
           case ExternalResolverRequestFailed(msg, cause) =>
@@ -158,26 +159,26 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
     }
   }
 
-  def queued(pid: PackageId) = {
-    complete(db.run(UpdateSpecs.getVinsQueuedForPackage(pid.name, pid.version)))
+  def queued(ns: Namespace, pid: PackageId) = {
+    complete(db.run(UpdateSpecs.getVinsQueuedForPackage(ns, pid.name, pid.version)))
   }
 
   val route = {
     pathPrefix("packages") {
-      (pathEnd & get) {
-        searchPackage
+      (get & extractNamespace & pathEnd) { ns =>
+        searchPackage(ns)
       } ~
-      extractPackageId { pid =>
+      (extractNamespace & extractPackageId) { (ns, pid) =>
         pathEnd {
           get {
-            fetch(pid)
+            fetch(ns, pid)
           } ~
           put {
-            updatePackage(pid)
+            updatePackage(ns, pid)
           }
         } ~
         path("queued") {
-          queued(pid)
+          queued(ns, pid)
         }
       }
     }

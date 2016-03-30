@@ -4,15 +4,18 @@
  */
 package org.genivi.sota.resolver.components
 
+import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.StatusCodes.NoContent
-import akka.http.scaladsl.server.{Directives, Route}
+import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
+import org.genivi.sota.data.Namespace._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
+import org.genivi.sota.resolver.common.NamespaceDirective._
 import org.genivi.sota.resolver.common.RefinementDirectives.refinedPartNumber
 import org.genivi.sota.resolver.common.Errors
 import scala.concurrent.ExecutionContext
@@ -24,23 +27,26 @@ import Directives._
  * API routes for creating, deleting, and listing components.
  * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
  */
-class ComponentDirectives(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
+class ComponentDirectives(implicit system: ActorSystem,
+                          db: Database,
+                          mat: ActorMaterializer,
+                          ec: ExecutionContext) {
 
-  def searchComponent =
+  def searchComponent(ns: Namespace) =
     parameter('regex.as[String Refined Regex].?) { re =>
-      val query = re.fold(ComponentRepository.list)(re => ComponentRepository.searchByRegex(re))
+      val query = re.fold(ComponentRepository.list)(re => ComponentRepository.searchByRegex(ns, re))
       complete(db.run(query))
     }
 
-  def addComponent(part: Component.PartNumber) =
+  def addComponent(ns: Namespace, part: Component.PartNumber) =
     entity(as[Component.DescriptionWrapper]) { descr =>
-      val comp = Component(part, descr.description)
+      val comp = Component(ns, part, descr.description)
       complete(db.run(ComponentRepository.addComponent(comp)).map(_ => comp))
     }
 
 
-  def deleteComponent(part: Component.PartNumber) =
-    completeOrRecoverWith(db.run(ComponentRepository.removeComponent(part))) {
+  def deleteComponent(ns: Namespace, part: Component.PartNumber) =
+    completeOrRecoverWith(db.run(ComponentRepository.removeComponent(ns, part))) {
       Errors.onComponentInstalled
     }
 
@@ -50,15 +56,15 @@ class ComponentDirectives(implicit db: Database, mat: ActorMaterializer, ec: Exe
    * @throws      Errors.ComponentIsInstalledException on DELETE call, if component doesn't exist
    */
   def route: Route =
-    pathPrefix("components") {
+    (pathPrefix("components") & extractNamespace) { ns =>
       (get & pathEnd) {
-        searchComponent
+        searchComponent(ns)
       } ~
       (put & refinedPartNumber & pathEnd) { part =>
-        addComponent(part)
+        addComponent(ns, part)
       } ~
       (delete & refinedPartNumber & pathEnd) { part =>
-        deleteComponent(part)
+        deleteComponent(ns, part)
       }
     }
 

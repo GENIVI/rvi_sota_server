@@ -4,15 +4,18 @@
  */
 package org.genivi.sota.resolver.packages
 
+import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
-import io.circe.generic.auto._
 import eu.timepit.refined.api.Refined
+import io.circe.generic.auto._
+import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.PackageId
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors
+import org.genivi.sota.resolver.common.NamespaceDirective._
 import org.genivi.sota.resolver.common.RefinementDirectives._
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.rest.Validation.refined
@@ -21,7 +24,10 @@ import scala.concurrent.ExecutionContext
 import slick.jdbc.JdbcBackend.Database
 
 
-class PackageDirectives(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
+class PackageDirectives(implicit system: ActorSystem,
+                        db: Database, mat:
+                        ActorMaterializer,
+                        ec: ExecutionContext) {
   import Directives._
 
   def ok =
@@ -32,49 +38,50 @@ class PackageDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
   def getFilters =
     complete(db.run(PackageFilterRepository.list))
 
-  def getPackage(id: PackageId) =
-    completeOrRecoverWith(db.run(PackageRepository.exists(id))) {
+  def getPackage(ns: Namespace, id: PackageId) =
+    completeOrRecoverWith(db.run(PackageRepository.exists(ns, id))) {
       Errors.onMissingPackage
     }
 
-  def addPackage(id: PackageId) =
+  def addPackage(ns: Namespace, id: PackageId) =
     entity(as[Package.Metadata]) { metadata =>
-      val pkg = Package(id, metadata.description, metadata.vendor)
+      val pkg = Package(ns, id, metadata.description, metadata.vendor)
       complete(db.run(PackageRepository.add(pkg).map(_ => pkg)))
     }
 
-  def getPackageFilters(id: PackageId) =
+  def getPackageFilters(ns: Namespace, id: PackageId) =
     completeOrRecoverWith(db.run(
-      PackageFilterRepository.listFiltersForPackage(id))) {
+      PackageFilterRepository.listFiltersForPackage(ns, id))) {
         Errors.onMissingPackage
       }
 
-  def addPackageFilter(id: PackageId, fname: String Refined Filter.ValidName) =
+  def addPackageFilter(ns: Namespace, id: PackageId, fname: String Refined Filter.ValidName) =
     completeOrRecoverWith(db.run(
-      PackageFilterRepository.addPackageFilter(PackageFilter(id.name, id.version, fname)))) {
+      PackageFilterRepository.addPackageFilter(PackageFilter(ns, id.name, id.version, fname)))) {
         Errors.onMissingPackage orElse Errors.onMissingFilter orElse { case err => throw(err) }
       }
 
-  def deletePackageFilter(id: PackageId, fname: String Refined Filter.ValidName) =
+  def deletePackageFilter(ns: Namespace, id: PackageId, fname: String Refined Filter.ValidName) =
     completeOrRecoverWith(db.run(
-      PackageFilterRepository.deletePackageFilter(PackageFilter(id.name, id.version, fname)))) {
+      PackageFilterRepository.deletePackageFilter(PackageFilter(ns, id.name, id.version, fname)))) {
         case PackageFilterRepository.MissingPackageFilterException =>
           complete(StatusCodes.NotFound ->
             ErrorRepresentation( ErrorCode("filter_not_found"),
-              s"No filter with the name '${fname.get}' defined for package ${id.name}-${id.version}" ))
-        case e                                                     => failWith(e)
+              s"No filter for namespace '$ns' with the name '${fname.get}'" +
+              s"defined for package ${id.name}-${id.version}"))
+        case e => failWith(e)
     }
 
-  def packageFilterApi(id: PackageId): Route =
+  def packageFilterApi(ns: Namespace, id: PackageId): Route =
     pathPrefix("filter") {
       (get & pathEnd) {
-        getPackageFilters(id)
+        getPackageFilters(ns, id)
       } ~
       (put & refinedFilterName & pathEnd) { fname =>
-        addPackageFilter(id, fname)
+        addPackageFilter(ns, id, fname)
       } ~
       (delete & refinedFilterName & pathEnd) { fname =>
-        deletePackageFilter(id, fname)
+        deletePackageFilter(ns, id, fname)
       }
     }
 
@@ -91,14 +98,14 @@ class PackageDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
       (get & path("filter")) {
         getFilters
       } ~
-      ((get | put | delete) & refinedPackageId) { id =>
+      ((get | put | delete) & extractNamespace & refinedPackageId) { (ns, id) =>
         (get & pathEnd) {
-          getPackage(id)
+          getPackage(ns, id)
         } ~
         (put & pathEnd) {
-          addPackage(id)
+          addPackage(ns, id)
         } ~
-        packageFilterApi(id)
+        packageFilterApi(ns, id)
       }
     }
 

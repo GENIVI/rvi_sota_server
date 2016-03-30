@@ -4,11 +4,12 @@
  */
 package org.genivi.sota.core.data
 
-
-import java.util.UUID
-import org.joda.time.{DateTime, Interval, Period}
 import io.circe._
+import java.util.UUID
+import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
+import org.joda.time.{DateTime, Interval, Period}
+
 
 /**
  * Domain object for an update request.
@@ -30,6 +31,7 @@ import org.genivi.sota.data.{PackageId, Vehicle}
  */
 case class UpdateRequest(
   id: UUID,
+  namespace: Namespace,
   packageId: PackageId,
   creationTime: DateTime,
   periodOfValidity: Interval,
@@ -39,14 +41,17 @@ case class UpdateRequest(
   requestConfirmation: Boolean)
 
 object UpdateRequest {
-  def default(packageId: PackageId): UpdateRequest = {
+
+  import eu.timepit.refined.auto._
+
+  def default(namespace: Namespace, packageId: PackageId): UpdateRequest = {
     val updateRequestId = UUID.randomUUID()
     val now = DateTime.now
     val defaultPeriod = Period.days(1)
     val defaultInterval = new Interval(now, now.plus(defaultPeriod))
     val defaultPriority = 10
 
-    UpdateRequest(updateRequestId, packageId,
+    UpdateRequest(updateRequestId, namespace, packageId,
       DateTime.now, defaultInterval, defaultPriority, "", Some(""),
       requestConfirmation = false)
   }
@@ -74,6 +79,7 @@ import UpdateStatus._
  * @param dependencies The packages to be installed
  */
 case class UpdateSpec(
+  namespace: Namespace,
   request: UpdateRequest,
   vin: Vehicle.Vin,
   status: UpdateStatus,
