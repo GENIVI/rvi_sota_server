@@ -108,7 +108,7 @@ object SotaClient {
                 (implicit system: ActorSystem, mat: ActorMaterializer) : Future[Route] = {
     import system.dispatcher
 
-    val rviUri = Uri("http://127.0.0.1:8901")
+    val rviUri = Uri(system.settings.config.getString( "rvi.endpoint" ))
     implicit val clientTransport = HttpTransport( rviUri ).requestTransport
     val rviClient = new JsonRpcRviClient( clientTransport, system.dispatcher )
 

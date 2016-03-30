@@ -84,7 +84,7 @@ class UpdateService(notifier: UpdateNotifier)
   def persistRequest(request: UpdateRequest, updateSpecs: Set[UpdateSpec])
                     (implicit db: Database, ec: ExecutionContext) : Future[Unit] = {
     db.run(
-      DBIO.seq( UpdateRequests.persist(request) +: updateSpecs.map( UpdateSpecs.persist ).toArray: _*)).map( _ => ()
+      DBIO.seq(UpdateRequests.persist(request) +: updateSpecs.map( UpdateSpecs.persist ).toArray: _*)).map( _ => ()
     )
   }
 

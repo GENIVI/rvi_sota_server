@@ -12,15 +12,21 @@ import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.file.{Paths, StandardOpenOption}
 import java.util.UUID
+
 import java.util.concurrent.TimeUnit
 import org.apache.commons.codec.binary.Base64
 import org.genivi.sota.core.ConnectivityClient
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db._
-import org.genivi.sota.data.{PackageId, Vehicle}
+import akka.actor._
+import org.apache.commons.codec.binary.Base64
+import org.genivi.sota.core.data.{Package, UpdateSpec, UpdateStatus}
+import org.genivi.sota.core.db.{InstallHistories, OperationResults, UpdateRequests, UpdateSpecs}
+import org.genivi.sota.core.transfer.InstalledPackagesUpdate
+import org.genivi.sota.data.Vehicle
 import org.joda.time.DateTime
+
 import scala.collection.immutable.Queue
-import scala.concurrent.Future
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.math.BigDecimal.RoundingMode
 import slick.driver.MySQLDriver.api.Database
@@ -174,19 +180,11 @@ class TransferProtocolActor(db: Database, rviClient: ConnectivityClient,
     case r @ InstallReport(vin, update) =>
       context.system.eventStream.publish( UpdateEvents.InstallReportReceived(r) )
       log.debug(s"Install report received from $vin: ${update.update_id} installed with ${update.operation_results}")
-      updates.find(_.request.id == update.update_id).headOption match {
-        case Some(spec) => {
-          db.run(UpdateSpecs.setStatus(spec, UpdateStatus.Finished))
-          update.operation_results.foreach { r: OperationResult =>
-            db.run(OperationResults.persist(org.genivi.sota.core.data.OperationResult(
-              r.id, update.update_id, r.result_code, r.result_text)))
-          }
-          db.run(UpdateRequests.byId(update.update_id)).map { updateRequestO =>
-            db.run(InstallHistories.log(vin, update.update_id, updateRequestO.get.packageId, true))
-          }
+      updates.find(_.request.id == update.update_id) match {
+        case Some(spec) =>
+          InstalledPackagesUpdate.reportInstall(vin, update)(dispatcher, db)
           rviClient.sendMessage(services.getpackages, io.circe.Json.Empty, ttl())
           context.stop( self )
-        }
         case None => log.error(s"Update ${update.update_id} for corresponding install report does not exist!")
       }
 

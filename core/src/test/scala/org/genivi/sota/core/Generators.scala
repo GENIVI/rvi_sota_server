@@ -13,9 +13,13 @@ import java.security.MessageDigest
 import java.util.UUID
 
 import org.apache.commons.codec.binary.Hex
+
 import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.data.{PackageId, Vehicle, VehicleGenerators}
+
+import org.genivi.sota.core.data._
+
 import org.scalacheck.{Arbitrary, Gen}
 
 /**
@@ -36,7 +40,7 @@ trait Generators {
 
   val PackageGen: Gen[Package] = for {
     id <- PackageIdGen
-    size    <- Gen.choose(1000L, 999999999)
+    size    <- Gen.choose(1000L, 999999999L)
     cs      <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaChar)
     desc    <- Gen.option(Arbitrary.arbitrary[String])
     vendor  <- Gen.option(Gen.alphaStr)
@@ -94,6 +98,19 @@ trait Generators {
     out.close()
 
     template.copy( uri = Uri( path.toUri().toString() ), checkSum = Hex.encodeHexString( digest.digest() ))
+  }
+
+  val updateSpecGen: Gen[(Package, Vehicle, UpdateSpec)] = for {
+    smallSize <- Gen.chooseNum(1024, 1024 * 10)
+    packageModel <- PackageGen.map(_.copy(size = smallSize.toLong))
+    packageWithUri = Generators.generatePackageData(packageModel)
+    vehicle <- VehicleGenerators.genVehicle
+    updateRequest <- updateRequestGen(PackageIdGen).map(_.copy(packageId = packageWithUri.id))
+  } yield {
+    val updateSpec = UpdateSpec(updateRequest, vehicle.vin,
+      UpdateStatus.Pending, List(packageWithUri).toSet)
+
+    (packageWithUri, vehicle, updateSpec)
   }
 }
 

@@ -18,13 +18,27 @@ import scala.concurrent.Future
 import slick.jdbc.JdbcBackend.Database
 
 
+object UpdateNotifierSpec {
+  import org.genivi.sota.core.Generators.{dependenciesGen, updateRequestGen, vinDepGen}
+
+  val packages = scala.util.Random.shuffle( PackagesReader.read().take(100) )
+
+  def updateSpecGen(vinGen : Gen[Vehicle.Vin]) : Gen[UpdateSpec] = for {
+    updateRequest <- updateRequestGen(Gen.oneOf(packages).map( _.id) )
+    vin           <- vinGen
+    m             <- Gen.choose(1, 10)
+    packages      <- Gen.pick(m, packages).map( _.toSet )
+  } yield UpdateSpec( updateRequest, vin, UpdateStatus.Pending, packages )
+
+  def updateSpecsGen( vinGen : Gen[Vehicle.Vin] ) : Gen[Seq[UpdateSpec]] =
+    Gen.containerOf[Seq, UpdateSpec](updateSpecGen(vinGen))
+}
+
 /**
  * Property-based spec for testing update notifier
  */
 class UpdateNotifierSpec extends PropSpec with PropertyChecks with Matchers with BeforeAndAfterAll {
-  import org.genivi.sota.core.Generators.{dependenciesGen, updateRequestGen, vinDepGen}
-
-  val packages = scala.util.Random.shuffle( PackagesReader.read().take(100) )
+  import UpdateNotifierSpec._
 
   implicit val system = akka.actor.ActorSystem("UpdateServiseSpec")
   implicit val materilizer = akka.stream.ActorMaterializer()
@@ -36,16 +50,6 @@ class UpdateNotifierSpec extends PropSpec with PropertyChecks with Matchers with
   implicit override val generatorDrivenConfig = PropertyCheckConfig(minSuccessful = 20)
 
   implicit val connectivity = new RviConnectivity
-
-  def updateSpecGen(vinGen : Gen[Vehicle.Vin]) : Gen[UpdateSpec] = for {
-    updateRequest <- updateRequestGen(Gen.oneOf(packages).map( _.id) )
-    vin           <- vinGen
-    m             <- Gen.choose(1, 10)
-    packages      <- Gen.pick(m, packages).map( _.toSet )
-  } yield UpdateSpec( updateRequest, vin, UpdateStatus.Pending, packages )
-
-  def updateSpecsGen( vinGen : Gen[Vehicle.Vin] ) : Gen[Seq[UpdateSpec]] =
-    Gen.containerOf[Seq, UpdateSpec](updateSpecGen(vinGen))
 
   property("notify about available updates", RequiresRvi) {
     val serviceUri = Uri.from(scheme="http", host=getLocalHostAddr, port=8088)

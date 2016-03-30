@@ -84,7 +84,7 @@ object Boot extends App with DatabaseConfig {
       Http().bindAndHandle(routes(notifier), host, port)
       val hostVehicles = config.getString("server.hostVehicles")
       val portVehicles = config.getInt("server.portVehicles")
-      val routesVehicles = new VehicleService(db).route
+      val routesVehicles = new VehicleService(db, externalResolverClient).route
       Http().bindAndHandle(routesVehicles, hostVehicles, portVehicles)
       FastFuture.successful(ServerServices("","","",""))
     }

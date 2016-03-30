@@ -6,34 +6,25 @@ package org.genivi.sota.core
 
 import akka.actor.ActorSystem
 import akka.event.Logging
-import akka.http.scaladsl.common.StrictForm
 import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.model.{HttpResponse, StatusCodes, Uri}
+import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.PathMatchers.Slash
-import akka.http.scaladsl.server.{Directive1, Directives, ExceptionHandler, PathMatchers}
+import akka.http.scaladsl.server.{Directive1, Directives, ExceptionHandler}
 import Directives._
-import akka.parboiled2.util.Base64
 import akka.stream.ActorMaterializer
-import akka.stream.io.SynchronousFileSink
-import akka.util.ByteString
-import cats.data.Xor
 import eu.timepit.refined._
 import eu.timepit.refined.string._
 import io.circe.generic.auto._
-import java.io.File
-import org.genivi.sota.core.data._
-import org.genivi.sota.core.db._
-import org.genivi.sota.core.db.{UpdateSpecs, Packages, Vehicles, InstallHistories}
-import org.genivi.sota.core.rvi.ServerServices
 import org.genivi.sota.core.transfer.UpdateNotifier
-import org.genivi.sota.data.Vehicle
 import org.genivi.sota.marshalling.CirceMarshallingSupport
+import org.genivi.sota.core.data._
+import org.genivi.sota.core.db.{InstallHistories, UpdateSpecs, Vehicles}
+
+import org.genivi.sota.data.Vehicle
+
 import org.genivi.sota.rest.Validation._
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 import org.joda.time.DateTime
-import scala.concurrent.Future
-import scala.util.Failure
-import slick.dbio.DBIO
 import slick.driver.MySQLDriver.api.Database
 
 
@@ -43,11 +34,13 @@ object ErrorCodes {
   val MissingVehicle = new ErrorCode("missing_vehicle")
 }
 
-class VehiclesResource(db: Database, client: ConnectivityClient)
+
+class VehiclesResource(db: Database, client: ConnectivityClient, resolverClient: ExternalResolverClient)
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
 
   import system.dispatcher
   import CirceMarshallingSupport._
+  implicit val _db = db
 
   import scala.concurrent.{ExecutionContext, Future}
 
@@ -71,15 +64,13 @@ class VehiclesResource(db: Database, client: ConnectivityClient)
     } yield ()
 
 
-  val extractVin : Directive1[Vehicle.Vin] = refined[Vehicle.ValidVin](Slash ~ Segment)
-
   def ttl() : DateTime = {
     import com.github.nscala_time.time.Implicits._
     DateTime.now + 5.minutes
   }
 
   val route = pathPrefix("vehicles") {
-    extractVin { vin =>
+    WebService.extractVin { vin =>
       pathEnd {
         get {
           completeOrRecoverWith(exists(Vehicle(vin))) {
@@ -160,6 +151,10 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
   }
 }
 
+object WebService {
+  val extractVin : Directive1[Vehicle.Vin] = refined[Vehicle.ValidVin](Slash ~ Segment)
+}
+
 
 class WebService(notifier: UpdateNotifier, resolver: ExternalResolverClient, db : Database)
                 (implicit system: ActorSystem, mat: ActorMaterializer,
@@ -177,7 +172,8 @@ class WebService(notifier: UpdateNotifier, resolver: ExternalResolverClient, db 
         complete(HttpResponse(InternalServerError, entity = entity.toString()))
       }
   }
-  val vehicles = new VehiclesResource(db, connectivity.client)
+
+  val vehicles = new VehiclesResource(db, connectivity.client, resolver)
   val packages = new PackagesResource(resolver, db)
   val updateRequests = new UpdateRequestsResource(db, resolver, new UpdateService(notifier))
 
@@ -186,5 +182,4 @@ class WebService(notifier: UpdateNotifier, resolver: ExternalResolverClient, db 
        vehicles.route ~ packages.route ~ updateRequests.route
     }
   }
-
 }

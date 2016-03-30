@@ -38,7 +38,7 @@ class VinResourceWordSpec extends WordSpec
   val serverTransport = HttpTransport( rviUri )
   implicit val rviClient = new JsonRpcRviClient( serverTransport.requestTransport, system.dispatcher)
 
-  lazy val service = new VehiclesResource(db, rviClient)
+  lazy val service = new VehiclesResource(db, rviClient, new FakeExternalResolver())
 
   val testVins = List("12345678901234500", "1234567WW0123AAAA", "123456789012345WW")
 
