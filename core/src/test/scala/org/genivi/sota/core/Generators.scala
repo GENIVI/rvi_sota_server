@@ -31,7 +31,7 @@ trait Generators {
     Gen.listOfN(3, Gen.choose(0, 999)).map(_.mkString(".")).map(Refined.unsafeApply)
 
   val PackageNameGen: Gen[PackageId.Name] =
-    Gen.identifier.map(Refined.unsafeApply)
+    Gen.identifier.map(s => if (s.length > 100) s.substring(0, 100) else s).map(Refined.unsafeApply)
 
   val PackageIdGen = for {
     name    <- PackageNameGen
