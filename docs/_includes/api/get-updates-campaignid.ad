@@ -3,7 +3,7 @@
 |=======================================================================
 
 
-|Description |Create an install campaign for a package
+|Description |Report the install status of all VINs associated with a particular campaign
 
 |URL |/api/v1/updates/:campaignId
 

@@ -20,11 +20,13 @@ ifdef::core[]
 === GET /vehicles/:vin/queued
 
 include::get-vehicles-vin-queued.ad[]
+endif::core[]
 
 ifdef::core[]
 === GET /vehicles/:vin/history
 
 include::get-vehicles-vin-history.ad[]
+endif::core[]
 
 ifdef::resolver[]
 === PUT /vehicles/:vin/component/:partNumber
@@ -66,7 +68,7 @@ endif::resolver[]
 
 include::get-packages.ad[]
 
-endif::core[]
+ifdef::core[]
 === PUT /packages/:name/:version
 
 include::put-packages-name-version-core.ad[]

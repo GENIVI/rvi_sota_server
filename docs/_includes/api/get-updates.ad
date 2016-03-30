@@ -3,7 +3,7 @@
 |=======================================================================
 
 
-|Description |Create an install campaign for a package
+|Description |List all update campaigns
 
 |URL |/api/v1/updates
 
