@@ -27,7 +27,7 @@ object VehicleRepository {
   // scalastyle:off
   class VinTable(tag: Tag) extends Table[Vehicle](tag, "Vehicle") {
     def vin = column[Vehicle.Vin]("vin")
-    def * = vin <> (Vehicle.apply, Vehicle.unapply)
+    def * = vin <> (Vehicle.fromVin, Vehicle.toVin)
     def pk = primaryKey("vin", vin)  // insertOrUpdate doesn't work if
                                      // we use O.PrimaryKey in the vin
                                      // column, see Slick issue #966.
