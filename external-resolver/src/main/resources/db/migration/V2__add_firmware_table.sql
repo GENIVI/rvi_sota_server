@@ -5,7 +5,7 @@
 CREATE TABLE Firmware (
   module varchar(200) NOT NULL,
   firmware_id varchar(200) NOT NULL,
-  last_modified DATETIME NOT NULL,
+  last_modified BigInt NOT NULL,
   vin varchar(64) NOT NULL,
 
   PRIMARY KEY (module, firmware_id, vin),
@@ -13,4 +13,4 @@ CREATE TABLE Firmware (
 );
 
 ALTER TABLE Package
-ADD COLUMN last_modified DATETIME
+ADD COLUMN last_modified BigInt

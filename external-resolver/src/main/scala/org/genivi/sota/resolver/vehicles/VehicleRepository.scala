@@ -15,7 +15,6 @@ import org.genivi.sota.resolver.filters.FilterAST.{parseValidFilter, query}
 import org.genivi.sota.resolver.filters.{And, FilterAST, HasComponent, HasPackage, True, VinMatches}
 import org.genivi.sota.resolver.packages.{Package, PackageFilterRepository, PackageRepository}
 import org.genivi.sota.resolver.resolve.ResolveFunctions
-import org.joda.time._
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
@@ -66,18 +65,17 @@ object VehicleRepository {
    */
 
   // scalastyle:off
-  class InstalledFirmwareTable(tag: Tag) extends Table[(Firmware, Vehicle.Vin)](tag, "Firmware") {
+  class InstalledFirmwareTable(tag: Tag) extends
+      Table[(Firmware.Module, Firmware.FirmwareId, Long, Vehicle.Vin)](tag, "Firmware") {
 
     def module        = column[Firmware.Module]     ("module")
     def firmware_id   = column[Firmware.FirmwareId] ("firmware_id")
-    def last_modified = column[DateTime]            ("last_modified")
+    def last_modified = column[Long]                ("last_modified")
     def vin           = column[Vehicle.Vin]         ("vin")
 
     def pk = primaryKey("pk_installedFirmware", (module, firmware_id, vin))
 
-    def * = (module, firmware_id, last_modified, vin).shaped <>
-      (p => (Firmware(p._1, p._2, p._3), p._4),
-        (fw: (Firmware, Vehicle.Vin)) => Some((fw._1.module, fw._1.firmwareId, fw._1.lastModified, fw._2)))
+    def * = (module, firmware_id, last_modified, vin)
   }
   // scalastyle:on
 
@@ -88,26 +86,29 @@ object VehicleRepository {
       ifw <- installedFirmware.filter(_.module === module).result.headOption
     } yield ifw
     res.flatMap(_.fold[DBIO[Firmware.Module]]
-      (DBIO.failed(Errors.MissingFirmwareException))(x => DBIO.successful(x._1.module)))
+      (DBIO.failed(Errors.MissingFirmwareException))(x => DBIO.successful(x._1)))
   }
 
-  def installFirmware
-    (module: Firmware.Module, firmware_id: Firmware.FirmwareId, last_modified: DateTime, vin: Vehicle.Vin)
+  //This method is only intended to be called when the client reports installed firmware.
+  //It therefore clears all installed firmware for the given vin and replaces with the reported
+  //state instead.
+  def updateInstalledFirmware
+    (vin: Vehicle.Vin, firmware: Set[(Firmware.Module, Firmware.FirmwareId, Long)])
     (implicit ec: ExecutionContext): DBIO[Unit] = {
       for {
-        _ <- exists(vin)
-        _ <- firmwareExists(module)
-        _ <- installedFirmware.insertOrUpdate((Firmware(module, firmware_id, last_modified), vin))
-      } yield()
+        vehicle <- VehicleRepository.exists(vin)
+        _       <- installedFirmware.filter(_.vin === vin).delete
+        _       <- installedFirmware ++= firmware.map(fw => (fw._1, fw._2, fw._3, vin))
+      } yield ()
   }
 
   def firmwareOnVin
     (vin: Vehicle.Vin)
-    (implicit ec: ExecutionContext): DBIO[Seq[Firmware]] = {
+    (implicit ec: ExecutionContext): DBIO[Seq[(Firmware.Module, Firmware.FirmwareId)]] = {
       for {
         _  <- VehicleRepository.exists(vin)
         ps <- installedFirmware.filter(_.vin === vin).result
-      } yield ps.map(_._1)
+      } yield ps.map(row => (row._1, row._2))
   }
 
   /*
