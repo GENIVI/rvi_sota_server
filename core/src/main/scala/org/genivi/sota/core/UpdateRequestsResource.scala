@@ -16,7 +16,7 @@ import io.circe.syntax._
 import org.genivi.sota.core.common.NamespaceDirective._
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.data.client._
-import org.genivi.sota.core.db.UpdateSpecs
+import org.genivi.sota.core.db.{OperationResults, UpdateSpecs}
 import org.genivi.sota.core.resolver.ExternalResolverClient
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.marshalling.CirceMarshallingSupport

@@ -17,6 +17,8 @@ import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
+import org.genivi.sota.resolver.data.Firmware
+import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.common.NamespaceDirective._
 import org.genivi.sota.resolver.common.RefinementDirectives.{refinedPackageId, refinedPartNumber}
@@ -90,9 +92,12 @@ class VehicleDirectives(implicit system: ActorSystem,
       Errors.onMissingVehicle orElse Errors.onMissingPackage
     }
 
-  def updateInstalledPackages(ns: Namespace, vin: Vehicle.Vin): Route =
-    entity(as[Set[PackageId]]) { packageIds =>
-      onSuccess(db.run(VehicleRepository.updateInstalledPackages(ns, vin, packageIds))) {
+  def updateInstalledSoftware(ns: Namespace, vin: Vehicle.Vin): Route =
+    entity(as[InstalledSoftware]) { installedSoftware =>
+      onSuccess(db.run(for {
+        _ <- VehicleRepository.updateInstalledPackages(ns, vin, installedSoftware.packages)
+        _ <- VehicleRepository.updateInstalledFirmware(ns, vin, installedSoftware.firmware)
+      } yield ())) {
         complete(StatusCodes.NoContent)
       }
     }
@@ -120,7 +125,7 @@ class VehicleDirectives(implicit system: ActorSystem,
       }
     } ~
     (path("packages") & put & handleExceptions(installedPackagesHandler) & extractNamespace ) { ns =>
-      updateInstalledPackages(ns, vin)
+      updateInstalledSoftware(ns, vin)
     }
   }
 

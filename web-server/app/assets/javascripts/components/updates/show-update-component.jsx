@@ -64,7 +64,7 @@ define(function(require) {
               </table>
             </div>
           </div>
-          <ShowStatus UpdateStatus={db.updateStatus}/>
+          <ShowStatus UpdateStatus={db.updateStatus} OperationResults={db.operationResults}/>
         </div>
       );
     }

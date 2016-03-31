@@ -15,17 +15,22 @@ import java.util.UUID
  * @param updateId Id of update this operation belongs to.
  * @param resultCode The status of operation.
  * @param resultText The description of operation.
+ * @param vin The vin of the vehicle the operation was performed on
+ * @param namespace The namespace for the given row
  */
 case class OperationResult(
-  id : String,
-  updateId: UUID,
-  resultCode : Int,
-  resultText : String
+  id        : String,
+  updateId  : UUID,
+  resultCode: Int,
+  resultText: String,
+  vin       : Vehicle.Vin,
+  namespace : Namespace
 )
 
 /**
  * Domain object for the install history of a VIN
  * @param id The Id in the database. Initialize to Option.None
+ * @param namespace The namespace for the given row
  * @param vin The VIN that this install history belongs to
  * @param updateId The Id of the update
  * @param packageId Id of package which belongs to this update.

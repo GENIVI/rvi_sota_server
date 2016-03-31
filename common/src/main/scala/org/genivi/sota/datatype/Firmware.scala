@@ -24,7 +24,7 @@ trait FirmwareCommon {
 
   implicit val validFirmwareId: Validate.Plain[String, ValidVersion] =
     Validate.fromPredicate(
-      _.matches( """^\d+\.\d+\.\d+$""" ),
+      _.matches( """.+""" ),
       _ => "Invalid version id format",
       ValidVersion()
     )

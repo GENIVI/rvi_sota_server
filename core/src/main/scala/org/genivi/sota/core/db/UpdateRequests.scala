@@ -82,8 +82,11 @@ object UpdateRequests {
    */
   def list: DBIO[Seq[UpdateRequest]] = all.result
 
+  /**
+   * List all the update requests for a give update ID
+   */
   def byId(updateId: UUID) : DBIO[Option[UpdateRequest]] =
-    all.filter {_.id === updateId }.result.headOption
+    all.filter {_.id === updateId}.result.headOption
 
   /**
    * Add a new package update. Package updated specify a specific package at a

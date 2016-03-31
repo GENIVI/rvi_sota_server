@@ -16,7 +16,7 @@ import io.circe.generic.auto._
 import io.circe.syntax._
 import org.genivi.sota.core.common.NamespaceDirective._
 import org.genivi.sota.core.data._
-import org.genivi.sota.core.db.{InstallHistories, UpdateSpecs, Vehicles}
+import org.genivi.sota.core.db.{InstallHistories, OperationResults, UpdateSpecs, Vehicles}
 import org.genivi.sota.core.resolver.{ConnectivityClient, ExternalResolverClient}
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.Vehicle
@@ -24,6 +24,7 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.rest.ErrorRepresentation
 import org.genivi.sota.rest.Validation._
 import org.joda.time.DateTime
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.languageFeature.implicitConversions
 import scala.languageFeature.postfixOps

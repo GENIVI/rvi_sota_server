@@ -186,12 +186,11 @@ class TransferProtocolActor(db: Database, rviClient: ConnectivityClient,
     case r @ InstallReport(vin, update) =>
       context.system.eventStream.publish( UpdateEvents.InstallReportReceived(r) )
       log.debug(s"Install report received from $vin: ${update.update_id} installed with ${update.operation_results}")
+      //TODO: handle case where update is None
       updates.find(_.request.id == update.update_id) match {
         case Some(spec) =>
           VehicleUpdates.reportInstall(vin, update)(dispatcher, db)
           rviClient.sendMessage(services.getpackages, io.circe.Json.Null, ttl())
-          context.stop( self )
-        case None => log.error(s"Update ${update.update_id} for corresponding install report does not exist!")
       }
 
     case ReceiveTimeout =>

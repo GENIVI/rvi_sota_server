@@ -6,14 +6,13 @@ package org.genivi.sota.resolver.data
 
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.datatype.FirmwareCommon
-import org.joda.time.DateTime
 
 
 case class Firmware(
   namespace: Namespace,
   module: Firmware.Module,
   firmwareId: Firmware.FirmwareId,
-  lastModified: DateTime
+  lastModified: Long
 )
 
 object Firmware extends FirmwareCommon
