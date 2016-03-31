@@ -55,9 +55,10 @@ class VehicleService(db : Database, resolverClient: ExternalResolverClient)
     } flatMap (_ => pass)
   }
 
-  val route = pathPrefix("api" / "v1" / "vehicles") {
+  val route = pathPrefix("api" / "v1") {
     handleExceptions(exceptionHandler) {
       vehicles.route ~
+      pathPrefix("vehicles") {
         WebService.extractVin { vin =>
           path("status") {
             val io = for {
@@ -92,9 +93,10 @@ class VehicleService(db : Database, resolverClient: ExternalResolverClient)
                       .buildReportInstallResponse(report.vin, report.update_report)
 
                   complete(responseF)
-                }
               }
+            }
           }
+        }
         }
     }
   }
