@@ -10,6 +10,7 @@ import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.db.Operators.regex
 import org.joda.time.DateTime
+import slick.lifted.TableQuery
 
 /**
  * Database mapping definition for the Vehicles table.
@@ -47,6 +48,9 @@ object Vehicles {
    */
   def list(): DBIO[Seq[Vehicle]] = vins.result
 
+
+  def all(): TableQuery[VehicleTable] = vins
+
   /**
    * Check if a VIN exists
    * @param vin The VIN to search for
@@ -78,8 +82,7 @@ object Vehicles {
    * @param reg A regular expression
    * @return A list of matching VINs
    */
-  def searchByRegex(reg:String) : DBIO[Seq[Vehicle]] = vins.filter(vins => regex(vins.vin, reg)).result
-
+  def searchByRegex(reg:String) : Query[VehicleTable, Vehicle, Seq] = vins.filter(vins => regex(vins.vin, reg))
 
   def updateLastSeen(vin: Vehicle.Vin, lastSeen: DateTime = DateTime.now)
                     (implicit ec: ExecutionContext): DBIO[DateTime] = {

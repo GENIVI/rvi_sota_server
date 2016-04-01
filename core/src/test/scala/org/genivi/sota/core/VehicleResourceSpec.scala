@@ -22,6 +22,7 @@ import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server._
+import org.genivi.sota.core.data.{VehicleStatus, VehicleUpdateStatus}
 import org.scalatest.time.{Millis, Seconds, Span}
 
 /**
@@ -32,7 +33,7 @@ class VehicleResourceSpec extends PropSpec with PropertyChecks
   with ScalatestRouteTest
   with ScalaFutures
   with DatabaseSpec
-  with UpdateResourcesDatabaseSpec {
+  with VehicleDatabaseSpec {
 
   import CirceMarshallingSupport._
   import Generators._
@@ -97,6 +98,22 @@ class VehicleResourceSpec extends PropSpec with PropertyChecks
 
       Put( vehicleUri(vehicle.vin), vehicle ) ~> service.route ~> check {
         status shouldBe StatusCodes.NoContent
+      }
+    }
+  }
+
+  property("search with status=true returns current status for a vehicle") {
+    whenReady(createVehicle()) { vin =>
+      val url = Uri.Empty
+        .withPath(BasePath)
+        .withQuery("status" -> "true")
+
+      Get(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+        val parsedResponse = responseAs[Seq[VehicleUpdateStatus]].headOption
+
+        parsedResponse.flatMap(_.lastSeen) shouldNot be(defined)
+        parsedResponse.map(_.status) should contain(VehicleStatus.NotSeen)
       }
     }
   }

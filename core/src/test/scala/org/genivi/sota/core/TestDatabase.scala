@@ -12,7 +12,7 @@ import org.scalatest.{BeforeAndAfterAll, Suite}
 
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
-import org.genivi.sota.data.Vehicle
+import org.genivi.sota.data.{Vehicle, VehicleGenerators}
 
 import scala.concurrent.Future
 import org.genivi.sota.db.SlickExtensions
@@ -58,7 +58,7 @@ trait UpdateResourcesDatabaseSpec {
   self: DatabaseSpec =>
 
   import Generators._
-  import SlickExtensions._
+  // import SlickExtensions._
 
   def createUpdateSpec()(implicit ec: ExecutionContext): Future[(Package, Vehicle, UpdateSpec)] = {
     val (packageModel, vehicle, updateSpec) = updateSpecGen.sample.get
@@ -71,5 +71,14 @@ trait UpdateResourcesDatabaseSpec {
     )
 
     db.run(dbIO).map(_ => (packageModel, vehicle, updateSpec))
+  }
+}
+
+trait VehicleDatabaseSpec {
+  self: DatabaseSpec =>
+
+  def createVehicle()(implicit ec: ExecutionContext): Future[Vehicle.Vin] = {
+    val vehicle = VehicleGenerators.genVehicle.sample.get
+    db.run(Vehicles.create(vehicle))
   }
 }

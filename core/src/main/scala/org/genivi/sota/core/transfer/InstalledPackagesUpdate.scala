@@ -59,6 +59,15 @@ object InstalledPackagesUpdate {
     db.run(dbIO)
   }
 
+  def findPendingPackageIdsFor(vin: Vehicle.Vin)
+                              (implicit db: Database, ec: ExecutionContext) : DBIO[Seq[UUID]] = {
+    updateSpecs
+      .filter(r => r.vin === vin)
+      .filter(_.status.inSet(List(UpdateStatus.InFlight, UpdateStatus.Pending)))
+      .map(_.requestId)
+      .result
+  }
+
   def findUpdateSpecFor(vin: Vehicle.Vin, updateRequestId: UUID)
                        (implicit ec: ExecutionContext, db: Database): DBIO[UpdateSpec] = {
     updateSpecs

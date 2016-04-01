@@ -17,6 +17,7 @@ import eu.timepit.refined.string._
 import io.circe.generic.auto._
 import org.genivi.sota.core.transfer.UpdateNotifier
 import org.genivi.sota.marshalling.CirceMarshallingSupport
+import akka.http.scaladsl.marshalling.Marshaller._
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.{InstallHistories, UpdateSpecs, Vehicles}
 import org.genivi.sota.data.{PackageId, Vehicle}
@@ -24,8 +25,9 @@ import org.genivi.sota.rest.Validation._
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 import org.joda.time.DateTime
 import slick.driver.MySQLDriver.api.Database
-
+import slick.driver.MySQLDriver.api._
 import scala.concurrent.{ExecutionContext, Future}
+import io.circe.syntax._
 
 object ErrorCodes {
   val ExternalResolverError = ErrorCode( "external_resolver_error" )
@@ -108,12 +110,9 @@ class VehiclesResource(db: Database, client: ConnectivityClient, resolverClient:
     } ~
     pathEnd {
       get {
-        parameters('regex.?) { (regex) =>
-          val query = regex match {
-            case Some(r) => Vehicles.searchByRegex(r)
-            case _ => Vehicles.list()
-          }
-          complete(db.run(query))
+        parameters(('status.?(false), 'regex.?)) { (includeStatus: Boolean, regex: Option[String]) =>
+          val resultIO = VehicleSearch.search(regex, includeStatus)
+          complete(db.run(resultIO))
         }
       }
     }
