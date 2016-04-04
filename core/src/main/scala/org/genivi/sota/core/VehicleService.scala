@@ -25,8 +25,7 @@ import org.genivi.sota.core.data.VehicleSearch
 
 
 class VehicleService(db : Database, resolverClient: ExternalResolverClient)
-                    (implicit system: ActorSystem, mat: ActorMaterializer,
-                     connectivity: Connectivity) extends Directives {
+                    (implicit system: ActorSystem, mat: ActorMaterializer) extends Directives {
   implicit val log = Logging(system, "vehicleservice")
 
   import Json.{obj, string}
@@ -39,8 +38,6 @@ class VehicleService(db : Database, resolverClient: ExternalResolverClient)
         complete(HttpResponse(InternalServerError, entity = entity.toString()))
       }
   }
-
-  val vehicles = new VehiclesResource(db, connectivity.client, resolverClient)
 
   val packageDownloadProcess = new PackageDownloadProcess(db)
 
@@ -57,7 +54,6 @@ class VehicleService(db : Database, resolverClient: ExternalResolverClient)
 
   val route = pathPrefix("api" / "v1") {
     handleExceptions(exceptionHandler) {
-      vehicles.route ~
       pathPrefix("vehicles") {
         WebService.extractVin { vin =>
           pathPrefix("updates") {
