@@ -1,4 +1,4 @@
-package org.genivi.sota.core
+package org.genivi.sota.core.resolver
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.ContentTypes._
@@ -8,17 +8,14 @@ import akka.stream.ActorMaterializer
 import cats.data.Xor
 import eu.timepit.refined.api.Refined
 import io.circe.Json
-import io.circe.generic.auto._
 import io.circe.jawn._
-import org.genivi.sota.marshalling.CirceMarshallingSupport
-import CirceMarshallingSupport._
-import org.genivi.sota.core.data.Package
 import org.genivi.sota.data.{PackageId, Vehicle}
+import org.genivi.sota.marshalling.CirceMarshallingSupport
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 
 

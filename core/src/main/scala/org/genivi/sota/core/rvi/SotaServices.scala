@@ -12,9 +12,11 @@ import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import io.circe.Json
 import java.util.UUID
-import org.genivi.sota.core.{Connectivity, ExternalResolverClient}
+
+import org.genivi.sota.core.resolver.{Connectivity, ExternalResolverClient}
 import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
+
 import scala.concurrent.{ExecutionContext, Future}
 
 

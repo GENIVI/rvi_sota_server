@@ -9,9 +9,11 @@ import akka.http.scaladsl.util.FastFuture
 import cats.Show
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db._
+import org.genivi.sota.core.resolver.Connectivity
 import org.genivi.sota.core.rvi.ServerServices
 import org.genivi.sota.core.transfer.UpdateNotifier
 import org.genivi.sota.data.{PackageId, Vehicle}
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
 import slick.dbio.DBIO

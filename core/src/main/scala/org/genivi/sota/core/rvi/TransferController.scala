@@ -12,16 +12,16 @@ import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.file.{Paths, StandardOpenOption}
 import java.util.UUID
-
 import java.util.concurrent.TimeUnit
+
 import org.apache.commons.codec.binary.Base64
-import org.genivi.sota.core.ConnectivityClient
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db._
 import akka.actor._
 import org.apache.commons.codec.binary.Base64
 import org.genivi.sota.core.data.{Package, UpdateSpec, UpdateStatus}
 import org.genivi.sota.core.db.{InstallHistories, OperationResults, UpdateRequests, UpdateSpecs}
+import org.genivi.sota.core.resolver.ConnectivityClient
 import org.genivi.sota.core.transfer.InstalledPackagesUpdate
 import org.genivi.sota.data.Vehicle
 import org.joda.time.DateTime

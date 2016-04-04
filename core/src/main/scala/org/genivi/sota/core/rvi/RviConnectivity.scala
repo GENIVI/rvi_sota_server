@@ -7,10 +7,10 @@ package org.genivi.sota.core.rvi
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.http.scaladsl.model.Uri
-import scala.concurrent.ExecutionContext
 
-import org.genivi.sota.core.Connectivity
+import scala.concurrent.ExecutionContext
 import org.genivi.sota.core.jsonrpc.HttpTransport
+import org.genivi.sota.core.resolver.Connectivity
 
 
 class RviConnectivity(implicit system: ActorSystem,

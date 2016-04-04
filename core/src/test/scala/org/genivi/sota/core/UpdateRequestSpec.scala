@@ -9,17 +9,20 @@ import akka.http.scaladsl.util.FastFuture
 import io.circe.Encoder
 import io.circe.generic.auto._
 import java.util.UUID
+
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.core.db.UpdateRequests
-import org.genivi.sota.core.rvi.{ServerServices, RviConnectivity}
+import org.genivi.sota.core.rvi.{RviConnectivity, ServerServices}
 import org.genivi.sota.core.transfer.DefaultUpdateNotifier
 import org.scalacheck.Gen
 import org.scalatest.{Matchers, PropSpec}
 import org.scalatest.prop.PropertyChecks
+
 import scala.concurrent.Future
 import slick.jdbc.JdbcBackend.Database
 import CirceMarshallingSupport._
+import org.genivi.sota.core.resolver.{DefaultConnectivity, DefaultExternalResolverClient}
 
 /**
  * Spec tests for update-request REST actions

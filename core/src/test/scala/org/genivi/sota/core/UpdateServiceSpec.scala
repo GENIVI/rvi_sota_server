@@ -6,6 +6,7 @@ import akka.testkit.TestKit
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db.{Packages, UpdateSpecs, Vehicles}
+import org.genivi.sota.core.resolver.DefaultConnectivity
 import org.genivi.sota.core.transfer.DefaultUpdateNotifier
 import org.genivi.sota.data.{PackageId, Vehicle, VehicleGenerators}
 import org.scalacheck.Gen
@@ -26,6 +27,8 @@ class UpdateServiceSpec extends PropSpec
   with DatabaseSpec
   with BeforeAndAfterAll {
 
+  import org.genivi.sota.core.resolver.Connectivity
+
   val packages = PackagesReader.read().take(1000)
 
   implicit val _db = db
@@ -42,8 +45,6 @@ class UpdateServiceSpec extends PropSpec
   import Generators._
 
   implicit val updateQueueLog = akka.event.Logging(system, "sota.core.updateQueue")
-
-  import org.genivi.sota.core.Connectivity
   implicit val connectivity = DefaultConnectivity
 
   val service = new UpdateService(DefaultUpdateNotifier)

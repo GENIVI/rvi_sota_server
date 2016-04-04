@@ -11,14 +11,13 @@ import akka.stream.ActorMaterializer
 import akka.testkit.{TestKit, TestProbe}
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.refineV
-import org.genivi.sota.core.DefaultExternalResolverClient
 import org.genivi.sota.core.Generators
 import org.genivi.sota.core.Generators.updateRequestGen
 import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateSpec}
 import org.genivi.sota.core.db.{Packages, Vehicles}
 import org.genivi.sota.core.jsonrpc.HttpTransport
-import org.genivi.sota.core.rvi.{JsonRpcRviClient, SotaServices, RviConnectivity,
-  ServerServices, RviUpdateNotifier}
+import org.genivi.sota.core.resolver.DefaultExternalResolverClient
+import org.genivi.sota.core.rvi.{JsonRpcRviClient, RviConnectivity, RviUpdateNotifier, ServerServices, SotaServices}
 import org.genivi.sota.core.{PackagesReader, RequiresRvi, TestDatabase, UpdateService}
 import org.genivi.sota.data.{PackageId, Vehicle}
 import org.joda.time.DateTime
@@ -27,6 +26,7 @@ import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
+
 import scala.concurrent.{Await, ExecutionContext, Future}
 import slick.jdbc.JdbcBackend.Database
 
@@ -64,11 +64,10 @@ object DataGenerators {
  */
 object SotaClient {
   import akka.actor.{Actor, ActorLogging, Props}
-  import org.genivi.sota.core.ConnectivityClient
-  import org.genivi.sota.core.rvi.{ClientServices, ServerServices, StartDownload,
-    StartDownloadMessage, RviParameters, JsonRpcRviClient}
+  import org.genivi.sota.core.rvi.{ClientServices, JsonRpcRviClient, RviParameters, ServerServices, StartDownload, StartDownloadMessage}
   import io.circe._
   import io.circe.generic.auto._
+  import org.genivi.sota.core.resolver.ConnectivityClient
   import org.genivi.sota.marshalling.CirceInstances._
 
   class ClientActor(rviClient: ConnectivityClient, clientServices: ClientServices) extends Actor with ActorLogging {

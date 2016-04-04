@@ -58,7 +58,6 @@ trait UpdateResourcesDatabaseSpec {
   self: DatabaseSpec =>
 
   import Generators._
-  // import SlickExtensions._
 
   def createUpdateSpec()(implicit ec: ExecutionContext): Future[(Package, Vehicle, UpdateSpec)] = {
     val (packageModel, vehicle, updateSpec) = updateSpecGen.sample.get

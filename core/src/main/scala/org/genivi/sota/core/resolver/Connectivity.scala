@@ -2,14 +2,12 @@
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.core
+package org.genivi.sota.core.resolver
 
-import akka.actor.ActorSystem
 import com.github.nscala_time.time.Imports.DateTime
 import io.circe.{Encoder, Json}
-import scala.concurrent.Future
 
-import org.genivi.sota.core.jsonrpc.HttpTransport
+import scala.concurrent.Future
 
 trait Connectivity {
   implicit val transport: Json => Future[Json]
