@@ -18,12 +18,7 @@ import org.genivi.sota.core.db.{InstallHistories, Vehicles}
 import org.genivi.sota.core.transfer.InstalledPackagesUpdate
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.generic.auto._
-import org.genivi.sota.data.Vehicle
 import org.joda.time.DateTime
-import org.genivi.sota.core.data.{VehicleStatus, VehicleUpdateStatus}
-import org.genivi.sota.core.data.VehicleStatus._
-
-import scala.concurrent.Future
 
 class VehicleServiceSpec extends FunSuite
   with ShouldMatchers
@@ -31,7 +26,8 @@ class VehicleServiceSpec extends FunSuite
   with ScalaFutures
   with DatabaseSpec
   with Inspectors
-  with UpdateResourcesDatabaseSpec {
+  with UpdateResourcesDatabaseSpec
+  with VehicleDatabaseSpec {
 
   val fakeResolver = new FakeExternalResolver()
 
@@ -44,11 +40,6 @@ class VehicleServiceSpec extends FunSuite
   implicit val patience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
 
   implicit val _db = db
-
-  def createVehicle(): Future[Vehicle.Vin] = {
-    val vehicle = genVehicle.sample.get
-    db.run(Vehicles.create(vehicle))
-  }
 
   test("install updates are forwarded to external resolver") {
     val fakeResolverClient = new FakeExternalResolver()
@@ -120,18 +111,6 @@ class VehicleServiceSpec extends FunSuite
           case _ =>
             fail("Vehicle should be in database")
         }
-      }
-    }
-  }
-
-  test("GET on status returns current status for a vehicle") {
-    whenReady(createVehicle()) { vin =>
-      val url = Uri.Empty.withPath(BasePath / vin.get / "status")
-
-      Get(url) ~> service.route ~> check {
-        status shouldBe StatusCodes.OK
-        responseAs[VehicleUpdateStatus].lastSeen shouldNot be(defined)
-        responseAs[VehicleUpdateStatus].status shouldBe VehicleStatus.NotSeen
       }
     }
   }

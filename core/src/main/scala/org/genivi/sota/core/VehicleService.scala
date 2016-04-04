@@ -17,11 +17,11 @@ import org.genivi.sota.core.transfer.{InstalledPackagesUpdate, PackageDownloadPr
 import org.genivi.sota.data.{PackageId, Vehicle}
 import slick.driver.MySQLDriver.api.Database
 import io.circe.generic.auto._
-import org.genivi.sota.core.data.VehicleUpdateStatus
 import org.genivi.sota.core.db.Vehicles
 import org.genivi.sota.rest.Validation.refined
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.Json
+import org.genivi.sota.core.data.VehicleSearch
 
 
 class VehicleService(db : Database, resolverClient: ExternalResolverClient)
@@ -60,14 +60,6 @@ class VehicleService(db : Database, resolverClient: ExternalResolverClient)
       vehicles.route ~
       pathPrefix("vehicles") {
         WebService.extractVin { vin =>
-          path("status") {
-            val io = for {
-              specs <- VehicleUpdateStatus.findPackagesFor(vin)
-              vehicle <- Vehicles.findBy(vin)
-            } yield VehicleUpdateStatus.current(vehicle, specs)
-
-            complete(db.run(io))
-          } ~
           pathPrefix("updates") {
             (pathEnd & post) {
               entity(as[List[PackageId]]) { ids =>
@@ -79,7 +71,7 @@ class VehicleService(db : Database, resolverClient: ExternalResolverClient)
               }
             } ~
               (get & logVehicleSeen(vin) & pathEnd) {
-                val vehiclePackages = VehicleUpdateStatus.findPendingPackageIdsFor(vin)
+                val vehiclePackages = InstalledPackagesUpdate.findPendingPackageIdsFor(vin)
                 complete(db.run(vehiclePackages))
               } ~
               (get & withRangeSupport & extractUuid & path("download")) { uuid =>
