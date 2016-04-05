@@ -13,7 +13,9 @@ import org.genivi.sota.resolver.common.Errors.Codes
 import org.genivi.sota.resolver.packages.{Package, PackageFilter}
 import org.genivi.sota.resolver.packages.Package._
 import org.genivi.sota.resolver.components.Component
-import org.genivi.sota.resolver.vehicles.Vehicle, Vehicle._
+import org.genivi.sota.resolver.vehicles.Vehicle
+import Vehicle._
+import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 import org.scalacheck._
 
@@ -51,7 +53,8 @@ class VehiclesResourcePropSpec extends ResourcePropSpec {
 
   property("fail to set installed packages if vin does not exist") {
     forAll(genVehicle, Gen.nonEmptyListOf(genPackage)) { (vehicle, packages) =>
-      Put( Resource.uri(vehicles, vehicle.vin.get, "packages"),  packages.map( _.id )) ~> route ~> check {
+      Put( Resource.uri(vehicles, vehicle.vin.get, "packages"),
+          InstalledSoftware(packages.map( _.id ).toSet, Set())) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe Codes.MissingVehicle
       }
@@ -69,7 +72,8 @@ class VehiclesResourcePropSpec extends ResourcePropSpec {
       val (installedBefore, update) = state
       addVehicleOK(vehicle.vin)
       installedBefore.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
-      Put( Resource.uri(vehicles, vehicle.vin.get, "packages"),  update.map( _.id )) ~> route ~> check {
+      Put( Resource.uri(vehicles, vehicle.vin.get, "packages"),
+          InstalledSoftware(update.map( _.id ).toSet, Set())) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
       }
@@ -87,7 +91,8 @@ class VehiclesResourcePropSpec extends ResourcePropSpec {
       val (availablePackages, update) = state
       addVehicleOK(vehicle.vin)
       availablePackages.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
-      Put( Resource.uri(vehicles, vehicle.vin.get, "packages"),  update.map( _.id )) ~> route ~> check {
+      Put( Resource.uri(vehicles, vehicle.vin.get, "packages"),
+          InstalledSoftware(update.map( _.id ), Set())) ~> route ~> check {
         status shouldBe StatusCodes.NoContent
       }
     }

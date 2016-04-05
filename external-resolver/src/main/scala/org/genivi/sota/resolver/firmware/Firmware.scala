@@ -5,12 +5,11 @@
 package org.genivi.sota.resolver.data
 
 import org.genivi.sota.datatype.FirmwareCommon
-import org.joda.time.DateTime
 
 case class Firmware(
   module: Firmware.Module,
   firmwareId: Firmware.FirmwareId,
-  lastModified: DateTime
+  lastModified: Long
 )
 
 object Firmware extends FirmwareCommon
