@@ -72,22 +72,20 @@ object Boot extends App with DatabaseConfig {
     case _ => DefaultConnectivity
   }
 
-
   val startup = interactionProtocol match {
     case "rvi" => for {
       sotaServices <- SotaServices.register(Uri(config.getString("rvi.sotaServicesUri")))
       notifier      = new RviUpdateNotifier(sotaServices)
       binding      <- Http().bindAndHandle(routes(notifier), host, port)
     } yield sotaServices
-    case _ => {
+    case _ =>
       val notifier = DefaultUpdateNotifier
-      Http().bindAndHandle(routes(notifier), host, port)
-      val hostVehicles = config.getString("server.hostVehicles")
-      val portVehicles = config.getInt("server.portVehicles")
-      val routesVehicles = new VehicleService(db, externalResolverClient).route
-      Http().bindAndHandle(routesVehicles, hostVehicles, portVehicles)
-      FastFuture.successful(ServerServices("","","",""))
-    }
+      val vehicleService = new VehicleService(db, externalResolverClient)
+      val allRoutes = routes(notifier) ~ vehicleService.route
+
+      Http()
+        .bindAndHandle(allRoutes, host, port)
+        .map(_ => ServerServices("","","",""))
   }
 
   startup.onComplete {
