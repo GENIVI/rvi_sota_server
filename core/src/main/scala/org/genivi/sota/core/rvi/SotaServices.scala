@@ -49,7 +49,7 @@ final case class InstallReport(vin: Vehicle.Vin, update_report: UpdateReport)
 /**
  * RVI message from client to report all installed packages.
  */
-final case class InstalledPackages(vin: Vehicle.Vin, packages: Json )
+final case class InstalledPackages(vin: Vehicle.Vin, installed_software: Json )
 
 /**
  * HTTP endpoints for receiving messages from the RVI node.
@@ -91,7 +91,8 @@ class SotaServices(updateController: ActorRef, resolverClient: ExternalResolverC
   }
 
   def updatePackagesInResolver( message: InstalledPackages ) : Future[Unit] = {
-    resolverClient.setInstalledPackages(message.vin, message.packages)
+    log.debug( s"InstalledPackages from rvi: $message" )
+    resolverClient.setInstalledPackages(message.vin, message.installed_software)
   }
 
 }

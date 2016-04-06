@@ -4,21 +4,25 @@
  */
 package org.genivi.sota.resolver.test
 
-import akka.http.scaladsl.client.RequestBuilding.{Get, Put, Post}
+import akka.http.scaladsl.client.RequestBuilding.{Get, Post, Put}
 import akka.http.scaladsl.model.Uri.Path
-import akka.http.scaladsl.model.{Uri, HttpRequest, StatusCode, StatusCodes}
+import akka.http.scaladsl.model.{HttpRequest, StatusCodes, Uri}
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import eu.timepit.refined.api.Refined
-import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.resolver.components.Component
-import org.genivi.sota.resolver.resolve.ResolveFunctions
+import org.genivi.sota.resolver.data.Firmware
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.resolver.packages.{Package, PackageFilter}
+import org.genivi.sota.resolver.resolve.ResolveFunctions
 import org.genivi.sota.resolver.vehicles.Vehicle
 import org.scalatest.Matchers
 import scala.concurrent.ExecutionContext
+import io.circe.generic.auto._
+import org.genivi.sota.resolver.resolve.ResolveFunctions
+
 import scala.concurrent.duration._
 
 /**
@@ -115,6 +119,25 @@ trait PackageRequests extends Matchers { self: ScalatestRouteTest =>
 }
 
 /**
+ * Testing Trait for building Firmware requests
+ */
+trait FirmwareRequests extends Matchers { self: ScalatestRouteTest =>
+
+  def installFirmware
+    (vin: Vehicle.Vin, packages: Set[Package.Id], firmware: Set[(Firmware.Module, Firmware.FirmwareId, Long)])
+      : HttpRequest
+  = Put(Resource.uri("vehicles", vin.get, "packages"), InstalledSoftware(packages, firmware))
+
+  def installFirmwareOK
+    (vin: Vehicle.Vin, packages: Set[Package.Id], firmware: Set[(Firmware.Module, Firmware.FirmwareId, Long)])
+    (implicit route: Route)
+      : Unit
+  = installFirmware(vin, packages, firmware) ~> route ~> check {
+      status shouldBe StatusCodes.NoContent
+    }
+}
+
+/**
  * Testing Trait for building Component requests
  */
 trait ComponentRequests extends Matchers { self: ScalatestRouteTest =>
@@ -204,7 +227,8 @@ trait PackageFilterRequests extends Matchers { self: ScalatestRouteTest =>
   def addPackageFilterOK(pname: String, pversion: String, fname: String)(implicit route: Route): Unit =
     addPackageFilter(pname, pversion, fname) ~> route ~> check {
       status shouldBe StatusCodes.OK
-      responseAs[PackageFilter] shouldBe PackageFilter(Refined.unsafeApply(pname), Refined.unsafeApply(pversion), Refined.unsafeApply(fname))
+      responseAs[PackageFilter] shouldBe
+        PackageFilter(Refined.unsafeApply(pname), Refined.unsafeApply(pversion), Refined.unsafeApply(fname))
     }
 
   def listPackageFilters: HttpRequest =

@@ -28,6 +28,12 @@ define(function(require) {
                 db.updateStatus.reset(updateStatus);
               });
           break;
+          case 'get-operation-results':
+            sendRequest.doGet('api/v1/updates/' + payload.id + '/operationresults')
+              .success(function(operationResults) {
+                db.operationResults.reset(operationResults);
+              });
+          break;
         }
       };
       SotaDispatcher.register(this.dispatchCallback.bind(this));

@@ -4,6 +4,8 @@
  */
 package org.genivi.sota.core.db
 
+import eu.timepit.refined.api.Refined
+import eu.timepit.refined.string.Uuid
 import java.util.UUID
 import org.genivi.sota.core.data.OperationResult
 import scala.concurrent.ExecutionContext
@@ -37,7 +39,7 @@ object OperationResults {
   }
 
   /**
-   * Internal helper definition to accesss the SQL table
+   * Internal helper definition to access the SQL table
    */
   val all = TableQuery[OperationResultTable]
 
@@ -48,11 +50,17 @@ object OperationResults {
   def list: DBIO[Seq[OperationResult]] = all.result
 
   /**
+   * List all the update results for a give update ID
+   */
+  def byId(id: Refined[String, Uuid])(implicit ec: ExecutionContext): DBIO[Seq[OperationResult]] =
+    all.filter{_.updateId === UUID.fromString(id.get)}.result
+
+  /**
    * Add a new package update. Package updated specify a specific package at a
    * specific version to be installed in a time window, with a given priority
    * @param request A new update request to add
    */
   def persist(result: OperationResult)
-             (implicit ec: ExecutionContext): DBIO[OperationResult] = (all += result).map( _ => result)
+             (implicit ec: ExecutionContext): DBIO[OperationResult] = (all += result).map(_ => result)
 
 }

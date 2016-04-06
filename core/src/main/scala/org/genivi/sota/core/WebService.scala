@@ -24,7 +24,7 @@ import eu.timepit.refined.string._
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.core.data._
-import org.genivi.sota.core.db.{UpdateSpecs, Packages, Vehicles, InstallHistories}
+import org.genivi.sota.core.db.{UpdateSpecs, Packages, Vehicles, InstallHistories, OperationResults}
 import org.genivi.sota.core.rvi.{ServerServices, RviClient}
 import org.genivi.sota.rest.Validation._
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
@@ -132,8 +132,12 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
 
   implicit val _db = db
   val route = pathPrefix("updates") {
-    (get & refined[Uuid](Slash ~ Segment ~ PathEnd)) { uuid =>
-      complete(db.run(UpdateSpecs.listUpdatesById(uuid)))
+    (get & refined[Uuid](Slash ~ Segment)) { uuid =>
+      pathEnd {
+        complete(db.run(UpdateSpecs.listUpdatesById(uuid)))
+      } ~ path("operationresults") {
+        complete(db.run(OperationResults.byId(uuid)))
+      }
     }
   } ~
   path("updates") {

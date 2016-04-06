@@ -181,7 +181,7 @@ class TransferProtocolActor(db: Database, rviClient: RviClient,
           db.run(UpdateRequests.byId(update.update_id)).map { updateRequestO =>
             db.run(InstallHistories.log(vin, update.update_id, updateRequestO.get.packageId, true))
           }
-          rviClient.sendMessage(services.getpackages, io.circe.Json.Empty, ttl())
+          rviClient.sendMessage(services.getpackages, GetInstalledSoftware(true, true), ttl())
           context.stop( self )
         }
         case None => log.error(s"Update ${update.update_id} for corresponding install report does not exist!")
@@ -274,6 +274,17 @@ object Finish {
 
   implicit val encoder: Encoder[Finish] =
     deriveFor[Finish].encoder
+
+}
+
+case class GetInstalledSoftware(include_packages: Boolean, include_module_firmware: Boolean)
+
+object GetInstalledSoftware {
+
+  import io.circe.generic.semiauto._
+
+  implicit val encoder: Encoder[GetInstalledSoftware] =
+    deriveFor[GetInstalledSoftware].encoder
 
 }
 
