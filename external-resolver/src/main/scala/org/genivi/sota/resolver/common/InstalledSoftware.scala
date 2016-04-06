@@ -10,6 +10,6 @@ import org.genivi.sota.resolver.packages.Package
 
 case class InstalledSoftware(
   packages: Set[Package.Id],
-  firmware: Set[(Firmware.Module, Firmware.FirmwareId, Long)]
+  firmware: Set[Firmware]
 )
 

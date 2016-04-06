@@ -93,12 +93,12 @@ object VehicleRepository {
   //It therefore clears all installed firmware for the given vin and replaces with the reported
   //state instead.
   def updateInstalledFirmware
-    (vin: Vehicle.Vin, firmware: Set[(Firmware.Module, Firmware.FirmwareId, Long)])
+    (vin: Vehicle.Vin, firmware: Set[Firmware])
     (implicit ec: ExecutionContext): DBIO[Unit] = {
       for {
         vehicle <- VehicleRepository.exists(vin)
         _       <- installedFirmware.filter(_.vin === vin).delete
-        _       <- installedFirmware ++= firmware.map(fw => (fw._1, fw._2, fw._3, vin))
+        _       <- installedFirmware ++= firmware.map(fw => (fw.module, fw.firmwareId, fw.lastModified, vin))
       } yield ()
   }
 
