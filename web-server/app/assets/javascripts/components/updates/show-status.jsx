@@ -9,6 +9,7 @@ define(function(require) {
     },
     componentWillUnmount: function(){
       this.props.UpdateStatus.removeWatch("poll-update-status");
+      this.props.OperationResults.removeWatch("poll-operation-results");
     },
     componentWillMount: function(){
       SotaDispatcher.dispatch({
@@ -16,6 +17,11 @@ define(function(require) {
         id: this.context.router.getCurrentParams().id
       });
       this.props.UpdateStatus.addWatch("poll-update-status", _.bind(this.forceUpdate, this, null));
+      SotaDispatcher.dispatch({
+        actionType: 'get-operation-results',
+        id: this.context.router.getCurrentParams().id
+      });
+      this.props.OperationResults.addWatch("poll-operation-results", _.bind(this.forceUpdate, this, null));
     },
     failedVINsTable: function() {
       var failedVINRows = _.map(this.props.UpdateStatus.deref(), function(value) {
@@ -105,6 +111,21 @@ define(function(require) {
       var pendingVINs = 0;
       var failedVINs = 0;
 
+      var operationResults = _.map(this.props.OperationResults.deref(), function(value) {
+        return (
+          <tr key={value.id}>
+            <td>
+              {value.id}
+            </td>
+            <td>
+              {value.resultCode}
+            </td>
+            <td>
+              {value.resultText}
+            </td>
+          </tr>
+        );
+      });
       var rows = _.map(this.props.UpdateStatus.deref(), function(value) {
         if(Array.isArray(value)) {
           if(value[2] === "Pending") {
@@ -152,6 +173,28 @@ define(function(require) {
                   <td>Failed:</td>
                   <td>{failedVINs}</td>
                 </tr>
+              </tbody>
+              </table>
+            </div>
+          </div>
+          <div className="row">
+            <div className="col-md-12">
+              <h2>
+                Operation Results
+              </h2>
+            </div>
+          </div>
+          <br/>
+          <div className="row">
+            <div className="col-xs-12">
+              <table className="table table-striped table-bordered">
+              <tbody>
+                <tr>
+                  <td>ID</td>
+                  <td>Result Code</td>
+                  <td>Result Text</td>
+                </tr>
+                {operationResults}
               </tbody>
               </table>
             </div>
