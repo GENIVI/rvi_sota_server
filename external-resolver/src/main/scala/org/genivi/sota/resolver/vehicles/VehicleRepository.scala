@@ -157,11 +157,8 @@ object VehicleRepository {
   def updateInstalledPackages(vin: Vehicle.Vin, packages: Set[PackageId] )
                              (implicit ec: ExecutionContext): DBIO[Unit] = {
 
-    def checkPackagesAvailable( ids: Set[PackageId] ) : DBIO[Unit] = {
-      PackageRepository.load(ids).map( ids -- _.map(_.id) ).flatMap { xs =>
-        if( xs.isEmpty ) DBIO.successful(()) else DBIO.failed( Errors.MissingPackageException )
-      }
-    }
+    def filterAvailablePackages( ids: Set[PackageId] ) : DBIO[Set[PackageId]] =
+      PackageRepository.load(ids).map(_.map(_.id))
 
     def helper( vehicle: Vehicle, newPackages: Set[PackageId], deletedPackages: Set[PackageId] )
                                (implicit ec: ExecutionContext) : DBIO[Unit] = DBIO.seq(
@@ -178,8 +175,8 @@ object VehicleRepository {
       installedPackages <- VehicleRepository.installedOn(vin)
       newPackages       =  packages -- installedPackages
       deletedPackages   =  installedPackages -- packages
-      _                 <- checkPackagesAvailable(newPackages)
-      _                 <- helper(vehicle, newPackages, deletedPackages)
+      newAvailablePackages <- filterAvailablePackages(newPackages)
+      _                 <- helper(vehicle, newAvailablePackages, deletedPackages)
     } yield ()
   }
 
