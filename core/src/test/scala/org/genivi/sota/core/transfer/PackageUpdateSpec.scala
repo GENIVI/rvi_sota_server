@@ -10,7 +10,7 @@ import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import akka.testkit.{TestKit, TestProbe}
 import eu.timepit.refined.api.Refined
-import eu.timepit.refined.refineMV
+import eu.timepit.refined.refineV
 import org.genivi.sota.core.DefaultExternalResolverClient
 import org.genivi.sota.core.Generators
 import org.genivi.sota.core.Generators.updateRequestGen
@@ -82,7 +82,7 @@ object SotaClient {
 
     }
 
-    val vin = refineMV[Vehicle.ValidVin]("V1234567890123456")
+    val vin = refineV[Vehicle.ValidVin]("V1234567890123456").right.get
 
     override def receive = {
       case UpdateNotification(update, services ) =>
