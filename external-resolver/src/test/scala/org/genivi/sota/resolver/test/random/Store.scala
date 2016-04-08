@@ -9,6 +9,8 @@ import org.scalacheck.Gen
 import Misc._
 import org.genivi.sota.data.Vehicle
 
+import scala.collection.immutable.Iterable
+
 
 case class RawStore(
   vehicles  : Map[Vehicle, (Set[Package], Set[Component])],
@@ -16,6 +18,8 @@ case class RawStore(
   filters   : Set[Filter],
   components: Set[Component]
 ) {
+
+  // INSERTING
 
   def creating(veh: Vehicle): RawStore = {
     copy(vehicles = vehicles.updated(veh, (Set.empty[Package], Set.empty[Component])))
@@ -80,6 +84,22 @@ case class RawStore(
     ) yield veh
   }
 
+  def allInstalledPackages(): Iterable[Package] = {
+    for (
+      entry <- vehicles;
+      pkg   <-  entry._2._1
+    ) yield pkg
+  }
+
+  def allInstalledComponents(): Iterable[Component] = {
+    for (
+      entry <- vehicles;
+      cmpn  <-  entry._2._2
+    ) yield cmpn
+  }
+
+  // TODO isValid, update Store.validStore to use it
+
 }
 
 object Store {
@@ -92,8 +112,8 @@ object Store {
   type Store = Refined[RawStore, ValidStore]
 
   implicit val validStore : Validate.Plain[RawStore, ValidStore] = Validate.fromPredicate(
-    s => s.vehicles.values.map(_._1).forall(_.subsetOf(s.packages.keySet))
-      && s.vehicles.values.map(_._2).forall(_.subsetOf(s.components))
+    s => s.allInstalledPackages().forall(pkg => s.packages.contains(pkg))
+      && s.allInstalledComponents().forall(cmpn => s.components.contains(cmpn))
       && s.packages.values.forall(_.subsetOf(s.filters)),
     s => s"($s isn't a valid state)",
     ValidStore()
