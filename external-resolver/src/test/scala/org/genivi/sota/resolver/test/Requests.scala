@@ -52,6 +52,21 @@ trait VehicleRequestsHttp {
   def listPackagesOnVehicle(veh: Vehicle): HttpRequest =
     Get(Resource.uri("vehicles", veh.vin.get, "package"))
 
+  private def path(vin: Vehicle.Vin, part: Component.PartNumber): Uri =
+    Resource.uri("vehicles", vin.get, "component", part.get)
+
+  def installComponent(veh: Vehicle, cmpn: Component): HttpRequest =
+    installComponent(veh.vin, cmpn.partNumber)
+
+  def installComponent(vin: Vehicle.Vin, part: Component.PartNumber): HttpRequest =
+    Put(path(vin, part))
+
+  def uninstallComponent(veh: Vehicle, cmpn: Component): HttpRequest =
+    uninstallComponent(veh.vin, cmpn.partNumber)
+
+  def uninstallComponent(vin: Vehicle.Vin, part: Component.PartNumber): HttpRequest =
+    Delete(path(vin, part))
+
 }
 
 trait VehicleRequests extends
@@ -73,12 +88,15 @@ trait VehicleRequests extends
       status shouldBe StatusCodes.OK
     }
 
-  def installComponent(vin: Vehicle.Vin, part: Component.PartNumber): HttpRequest =
-    Put(Resource.uri("vehicles", vin.get, "component", part.get))
-
   def installComponentOK(vin: Vehicle.Vin, part: Component.PartNumber)
                         (implicit route: Route): Unit =
     installComponent(vin, part) ~> route ~> check {
+      status shouldBe StatusCodes.OK
+    }
+
+  def uninstallComponentOK(vin: Vehicle.Vin, part: Component.PartNumber)
+                          (implicit route: Route): Unit =
+    uninstallComponent(vin, part) ~> route ~> check {
       status shouldBe StatusCodes.OK
     }
 
@@ -129,15 +147,6 @@ trait ComponentRequestsHttp {
 
   def deleteComponent(part: Component.PartNumber): HttpRequest =
     Delete(Resource.uri("components", part.get))
-
-  private def path(veh: Vehicle, cmpn: Component): Uri =
-    Resource.uri("vehicles", veh.vin.get, "component", cmpn.partNumber.get)
-
-  def installComponent(veh: Vehicle, cmpn: Component): HttpRequest =
-    Put(path(veh, cmpn))
-
-  def uninstallComponent(veh: Vehicle, cmpn: Component): HttpRequest =
-    Delete(path(veh, cmpn))
 
 }
 
