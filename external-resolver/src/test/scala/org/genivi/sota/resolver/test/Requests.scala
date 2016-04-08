@@ -177,6 +177,14 @@ trait FilterRequestsHttp {
   def listFilters: HttpRequest =
     Get(Resource.uri("filters"))
 
+  def deleteFilter(name: String): HttpRequest =
+    Delete(Resource.uri("filters", name))
+
+  def listFiltersRegex(re: String): HttpRequest =
+    Get(Resource.uri("filters") + "?regex=" + re)
+
+  def validateFilter(filter: Filter): HttpRequest =
+    Post(Resource.uri("validate", "filter"), filter)
 }
 
 trait FilterRequests extends FilterRequestsHttp with Matchers { self: ScalatestRouteTest =>
@@ -197,19 +205,11 @@ trait FilterRequests extends FilterRequestsHttp with Matchers { self: ScalatestR
       responseAs[Filter] shouldBe Filter(Refined.unsafeApply(name), Refined.unsafeApply(expr))
     }
 
-  def deleteFilter(name: String): HttpRequest =
-    Delete(Resource.uri("filters", name))
-
   def deleteFilterOK(name: String)(implicit route: Route): Unit =
     deleteFilter(name) ~> route ~> check {
       status shouldBe StatusCodes.OK
     }
 
-  def listFiltersRegex(re: String): HttpRequest =
-    Get(Resource.uri("filters") + "?regex=" + re)
-
-  def validateFilter(filter: Filter): HttpRequest =
-    Post(Resource.uri("validate", "filter"), filter)
 }
 
 /**
