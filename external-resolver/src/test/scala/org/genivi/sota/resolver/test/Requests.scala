@@ -133,10 +133,8 @@ trait PackageRequests extends
  */
 trait ComponentRequestsHttp {
 
-  // TODO XXX: Is this OK?
-  import scala.concurrent.ExecutionContext.Implicits.global
-
-  def addComponent(part: Component.PartNumber, desc: String): HttpRequest =
+  def addComponent(part: Component.PartNumber, desc: String)
+                  (implicit ec: ExecutionContext): HttpRequest =
     Put(Resource.uri("components", part.get), Component.DescriptionWrapper(desc))
 
   def deleteComponent(part: Component.PartNumber): HttpRequest =
