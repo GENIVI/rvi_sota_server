@@ -105,7 +105,11 @@ case class RawStore(
     ) yield flt
   }
 
-  // TODO isValid, update Store.validStore to use it
+  def isValid(): Boolean = {
+    allInstalledPackages().forall(pkg => packages.contains(pkg)) &&
+      allInstalledComponents().forall(cmpn => components.contains(cmpn)) &&
+      allAssociatedFilters().forall(flt => filters.contains(flt))
+  }
 
 }
 
@@ -119,9 +123,7 @@ object Store {
   type Store = Refined[RawStore, ValidStore]
 
   implicit val validStore : Validate.Plain[RawStore, ValidStore] = Validate.fromPredicate(
-    s => s.allInstalledPackages().forall(pkg => s.packages.contains(pkg))
-      && s.allInstalledComponents().forall(cmpn => s.components.contains(cmpn))
-      && s.allAssociatedFilters().forall(flt => s.filters.contains(flt)),
+    s => s.isValid(),
     s => s"($s isn't a valid state)",
     ValidStore()
   )
