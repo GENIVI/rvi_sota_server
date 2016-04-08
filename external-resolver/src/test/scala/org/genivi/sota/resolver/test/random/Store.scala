@@ -98,6 +98,13 @@ case class RawStore(
     ) yield cmpn
   }
 
+  def allAssociatedFilters(): Iterable[Filter] = {
+    for (
+      entry <- packages;
+      flt  <-  entry._2
+    ) yield flt
+  }
+
   // TODO isValid, update Store.validStore to use it
 
 }
@@ -114,7 +121,7 @@ object Store {
   implicit val validStore : Validate.Plain[RawStore, ValidStore] = Validate.fromPredicate(
     s => s.allInstalledPackages().forall(pkg => s.packages.contains(pkg))
       && s.allInstalledComponents().forall(cmpn => s.components.contains(cmpn))
-      && s.packages.values.forall(_.subsetOf(s.filters)),
+      && s.allAssociatedFilters().forall(flt => s.filters.contains(flt)),
     s => s"($s isn't a valid state)",
     ValidStore()
   )
