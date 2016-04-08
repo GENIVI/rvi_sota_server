@@ -4,6 +4,7 @@ import akka.http.scaladsl.model.{HttpRequest, StatusCode, StatusCodes}
 import cats.state.{State, StateT}
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.resolver.packages.{Package, PackageFilter}
+import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.test._
 import org.genivi.sota.rest.ErrorCodes
 import org.scalacheck.{Arbitrary, Gen}
@@ -25,7 +26,7 @@ final case class EditFilter        (old : Filter, neu: Filter)  extends Command
 final case class RemoveFilter      (filt: Filter)               extends Command
 final case class AddFilterToPackage(pkg: Package, filt: Filter) extends Command
 
-final case class AddComponent()         extends Command
+final case class AddComponent(cmpn: Component)         extends Command
 final case class RemoveComponent()      extends Command
 final case class InstallComponent()     extends Command
 final case class UninstallComponent()   extends Command
@@ -35,6 +36,7 @@ object Command extends
     VehicleRequestsHttp with
     PackageRequestsHttp with
     FilterRequestsHttp  with
+    ComponentRequestsHttp with
     PackageFilterRequestsHttp {
 
   type SemCommand = (HttpRequest, StatusCode, Result)
@@ -103,7 +105,15 @@ object Command extends
             Semantics(addPackageFilter2(PackageFilter(pkg.id.name, pkg.id.version, filt.name)),
               StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry))
 
-    case AddComponent()         => ???
+    case AddComponent(cmpn)     =>
+      for {
+        _ <- State.modify { (s: RawStore) =>
+               s.copy(components = s.components + cmpn)
+             }
+      } yield Semantics(
+        addComponent(cmpn.partNumber, cmpn.description),
+        StatusCodes.OK, Success) // duplicate or not, OK is the reply
+
     case RemoveComponent()      => ???
     case InstallComponent()     => ???
     case UninstallComponent()   => ???

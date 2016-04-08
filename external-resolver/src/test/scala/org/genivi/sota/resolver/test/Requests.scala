@@ -4,9 +4,10 @@
  */
 package org.genivi.sota.resolver.test
 
-import akka.http.scaladsl.client.RequestBuilding.{Get, Put, Post}
+import akka.http.scaladsl.client.RequestBuilding.{Get, Post, Put}
+import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.model.Uri.Path
-import akka.http.scaladsl.model.{Uri, HttpRequest, StatusCode, StatusCodes}
+import akka.http.scaladsl.model.{HttpRequest, StatusCode, StatusCodes, Uri}
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import eu.timepit.refined.api.Refined
@@ -18,6 +19,7 @@ import org.genivi.sota.resolver.resolve.ResolveFunctions
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.resolver.packages.{Package, PackageFilter}
 import org.scalatest.Matchers
+
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
@@ -86,7 +88,7 @@ trait PackageRequestsHttp {
 
   def addPackage2(pkg: Package): HttpRequest = {
 
-    // XXX: Is this OK?
+    // TODO XXX: Is this OK?
     import scala.concurrent.ExecutionContext.Implicits.global
 
     Put(Resource.uri("packages", pkg.id.name.get, pkg.id.version.get),
@@ -117,10 +119,19 @@ trait PackageRequests extends Matchers { self: ScalatestRouteTest =>
 /**
  * Testing Trait for building Component requests
  */
-trait ComponentRequests extends Matchers { self: ScalatestRouteTest =>
+trait ComponentRequestsHttp {
+
+  // TODO XXX: Is this OK?
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   def addComponent(part: Component.PartNumber, desc: String): HttpRequest =
     Put(Resource.uri("components", part.get), Component.DescriptionWrapper(desc))
+
+}
+
+trait ComponentRequests extends
+    ComponentRequestsHttp with
+    Matchers { self: ScalatestRouteTest =>
 
   def addComponentOK(part: Component.PartNumber, desc: String)
                     (implicit route: Route): Unit =
@@ -135,6 +146,7 @@ trait ComponentRequests extends Matchers { self: ScalatestRouteTest =>
  */
 trait FilterRequestsHttp {
 
+  // TODO XXX: Is this OK?
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def addFilter(name: String, expr: String): HttpRequest =
