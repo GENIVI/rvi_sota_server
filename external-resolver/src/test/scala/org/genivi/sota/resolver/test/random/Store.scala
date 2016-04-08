@@ -25,6 +25,10 @@ case class RawStore(
     copy(packages = packages + (pkg -> Set.empty))
   }
 
+  def adding(cmpn: Component): RawStore = {
+    copy(components = components + cmpn)
+  }
+
   def installing(veh: Vehicle, cmpn: Component): RawStore = {
     val (paks, comps) = vehicles(veh)
     copy(vehicles = vehicles.updated(veh, (paks, comps + cmpn)))

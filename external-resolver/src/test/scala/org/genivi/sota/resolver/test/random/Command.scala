@@ -109,7 +109,7 @@ object Command extends
     case AddComponent(cmpn)     =>
       for {
         s <- State.get
-        _ <- State.set(s.copy(components = s.components + cmpn))
+        _ <- State.set(s.adding(cmpn))
       } yield Semantics(
         addComponent(cmpn.partNumber, cmpn.description),
         StatusCodes.OK, Success) // duplicate or not, OK is the reply
