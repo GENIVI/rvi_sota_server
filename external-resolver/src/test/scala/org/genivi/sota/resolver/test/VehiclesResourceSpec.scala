@@ -5,7 +5,7 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
-import eu.timepit.refined.refineMV
+import eu.timepit.refined.{refineMV, refineV}
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.data.{PackageId, Vehicle}
@@ -87,9 +87,9 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
 
   val vehicles = "vehicles"
 
-  val vin     : Vehicle.Vin = refineMV("V1N00LAM0FAU2DEEP")
+  val vin     : Vehicle.Vin = refineV[Vehicle.ValidVin]("V1N00LAM0FAU2DEEP").right.get
   val vehicle : Vehicle     = Vehicle(vin)
-  val vin2    : Vehicle.Vin = refineMV("XAPABEPA123456789")
+  val vin2    : Vehicle.Vin = refineV[Vehicle.ValidVin]("XAPABEPA123456789").right.get
   val vehicle2: Vehicle     = Vehicle(vin2)
 
   "Vin resource" should {
@@ -146,7 +146,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
     }
 
     "delete a VIN" in {
-      val vin = refineMV("12345678901234V1N"): Vehicle.Vin
+      val vin = refineV[Vehicle.ValidVin]("12345678901234V1N").right.get: Vehicle.Vin
       addVehicleOK(vin)
       Delete(Resource.uri(vehicles, vin.get)) ~> route ~> check {
         status shouldBe StatusCodes.OK
@@ -154,7 +154,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
     }
 
     "delete a VIN and its installPackages" in {
-      val vin: Vehicle.Vin = refineMV("1234567890THERV1N")
+      val vin: Vehicle.Vin = refineV[Vehicle.ValidVin]("1234567890THERV1N").right.get
       addVehicleOK(vin)
       addPackageOK("halflife", "3.0.0", None, None)
       installPackageOK(vin, "halflife", "3.0.0")
@@ -166,7 +166,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec {
     }
 
     "delete a VIN and its installComponents" in {
-      val vin  = refineMV("1234567890THERV1N"): Vehicle.Vin
+      val vin  = refineV[Vehicle.ValidVin]("1234567890THERV1N").right.get: Vehicle.Vin
       val comp = refineMV("ashtray")          : Component.PartNumber
       addVehicleOK(vin)
       addComponentOK(comp, "good to have")

@@ -1,7 +1,7 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
-import eu.timepit.refined.refineMV
+import eu.timepit.refined.refineV
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.data.{PackageId, Vehicle}
@@ -25,10 +25,10 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
 
       // Add some vehicles.
       val vins = List(
-        refineMV("00RES0LVEV1N12345"),
-        refineMV("01RES0LVEV1N12345"),
-        refineMV("10RES0LVEV1N12345"),
-        refineMV("11RES0LVEV1N12345")): List[Vehicle.Vin]
+        refineV[Vehicle.ValidVin]("00RES0LVEV1N12345").right.get,
+        refineV[Vehicle.ValidVin]("01RES0LVEV1N12345").right.get,
+        refineV[Vehicle.ValidVin]("10RES0LVEV1N12345").right.get,
+        refineV[Vehicle.ValidVin]("11RES0LVEV1N12345").right.get): List[Vehicle.Vin]
 
       vins map addVehicleOK
 
@@ -49,7 +49,9 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
       addPackageFilterOK(pkgName, "0.0.1", "0xfilter")
 
       resolveOK(pkgName, "0.0.1",
-        List(refineMV("00RES0LVEV1N12345"), refineMV("01RES0LVEV1N12345")))
+        List(
+          refineV[Vehicle.ValidVin]("00RES0LVEV1N12345").right.get,
+          refineV[Vehicle.ValidVin]("01RES0LVEV1N12345").right.get))
     }
 
     "support filtering by installed packages on VIN" in {
@@ -60,13 +62,15 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
       deletePackageFilterOK(pkgName, "0.0.1", "0xfilter")
       addPackageOK("apa",  "1.0.0", None, None)
       addPackageOK("bepa", "1.0.0", None, None)
-      installPackageOK(refineMV("10RES0LVEV1N12345"), "apa", "1.0.0")
-      installPackageOK(refineMV("11RES0LVEV1N12345"), "apa", "1.0.0")
-      installPackageOK(refineMV("00RES0LVEV1N12345"), "bepa", "1.0.0")
+      installPackageOK(refineV[Vehicle.ValidVin]("10RES0LVEV1N12345").right.get, "apa", "1.0.0")
+      installPackageOK(refineV[Vehicle.ValidVin]("11RES0LVEV1N12345").right.get, "apa", "1.0.0")
+      installPackageOK(refineV[Vehicle.ValidVin]("00RES0LVEV1N12345").right.get, "bepa", "1.0.0")
       addFilterOK("1xfilter", s"""has_package "^a.*" "1.*"""")
       addPackageFilterOK(pkgName, "0.0.1", "1xfilter")
       resolveOK(pkgName, "0.0.1",
-        List(refineMV("10RES0LVEV1N12345"), refineMV("11RES0LVEV1N12345")))
+        List(
+          refineV[Vehicle.ValidVin]("10RES0LVEV1N12345").right.get,
+          refineV[Vehicle.ValidVin]("11RES0LVEV1N12345").right.get))
     }
 
     "support filtering by hardware components on VIN" in {
@@ -83,7 +87,9 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
       addFilterOK("components", s"""has_component "^.*y0"""")
       addPackageFilterOK(pkgName, "0.0.1", "components")
       resolveOK(pkgName, "0.0.1",
-        List(refineMV("00RES0LVEV1N12345"), refineMV("01RES0LVEV1N12345")))
+        List(
+          refineV[Vehicle.ValidVin]("00RES0LVEV1N12345").right.get,
+          refineV[Vehicle.ValidVin]("01RES0LVEV1N12345").right.get))
     }
 
     "return no VINs if the filter is trivially false" in {
