@@ -87,7 +87,7 @@ object Command extends
     case AddFilter(filt)               =>
       for {
         s <- State.get
-        _ <- State.set(s.copy(filters = s.filters + filt))
+        _ <- State.set(s.creating(filt))
       } yield Semantics(addFilter2(filt), StatusCodes.OK, Success)
 
     case EditFilter(old, neu)          => ???

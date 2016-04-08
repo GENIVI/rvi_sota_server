@@ -29,6 +29,10 @@ case class RawStore(
     copy(components = components + cmpn)
   }
 
+  def creating(filter: Filter): RawStore = {
+    copy(filters = filters + filter)
+  }
+
   /**
     * Fails in case the given component is installed on any vin.
     * In that case,
