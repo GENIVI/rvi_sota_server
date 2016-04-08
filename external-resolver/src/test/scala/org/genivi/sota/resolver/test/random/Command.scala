@@ -125,9 +125,16 @@ object Command extends
         _ <- State.set(s.installing(veh, cmpn))
       } yield Semantics(
         installComponent(veh, cmpn),
-        StatusCodes.OK, Success) // whether it was there or not, OK is the reply
+        StatusCodes.OK, Success) // whether already installed or not, OK is the reply
 
-    case UninstallComponent(veh, cmpn)   => ???
+    case UninstallComponent(veh, cmpn)   =>
+      for {
+        s <- State.get
+        _ <- State.set(s.uninstalling(veh, cmpn))
+      } yield Semantics(
+        uninstallComponent(veh, cmpn),
+        StatusCodes.OK, Success) // whether already uninstalled or not, OK is the reply
+
   }
   // scalastyle:on
 

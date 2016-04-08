@@ -136,7 +136,7 @@ trait ComponentRequestsHttp {
   def installComponent(veh: Vehicle, cmpn: Component): HttpRequest =
     Put(path(veh, cmpn))
 
-  def deleteComponent(veh: Vehicle, cmpn: Component): HttpRequest =
+  def uninstallComponent(veh: Vehicle, cmpn: Component): HttpRequest =
     Delete(path(veh, cmpn))
 
 }

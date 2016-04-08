@@ -22,6 +22,11 @@ case class RawStore(
     copy(vehicles = vehicles.updated(veh, (paks, comps + cmpn)))
   }
 
+  def uninstalling(veh: Vehicle, cmpn: Component): RawStore = {
+    val (paks, comps) = vehicles(veh)
+    copy(vehicles = vehicles.updated(veh, (paks, comps - cmpn)))
+  }
+
 }
 
 object Store {
