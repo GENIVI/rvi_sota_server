@@ -27,7 +27,7 @@ final case class RemoveFilter      (filt: Filter)               extends Command
 final case class AddFilterToPackage(pkg: Package, filt: Filter) extends Command
 
 final case class AddComponent(cmpn: Component)         extends Command
-final case class RemoveComponent()      extends Command
+final case class RemoveComponent(cmpn: Component)      extends Command
 final case class InstallComponent()     extends Command
 final case class UninstallComponent()   extends Command
 
@@ -114,7 +114,15 @@ object Command extends
         addComponent(cmpn.partNumber, cmpn.description),
         StatusCodes.OK, Success) // duplicate or not, OK is the reply
 
-    case RemoveComponent()      => ???
+    case RemoveComponent(cmpn)      =>
+      for {
+        _ <- State.modify { (s: RawStore) =>
+          s.copy(components = s.components - cmpn)
+        }
+      } yield Semantics(
+        deleteComponent(cmpn.partNumber),
+        StatusCodes.OK, Success) // whether it was there or not, OK is the reply
+
     case InstallComponent()     => ???
     case UninstallComponent()   => ???
   }
@@ -157,6 +165,8 @@ object Command extends
             pkg  <- Store.pickPackage.runA(s)
             filt <- Store.pickFilter.runA(s)
           } yield AddFilterToPackage(pkg, filt))
+
+        // TODO generate components (add, edit, remove)
 
       ))
       _   <- StateT.stateTMonadState(monGen).set(semCommand(cmd).runS(s).run)

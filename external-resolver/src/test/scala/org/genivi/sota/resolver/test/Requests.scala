@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.resolver.test
 
-import akka.http.scaladsl.client.RequestBuilding.{Get, Post, Put}
+import akka.http.scaladsl.client.RequestBuilding.{Get, Post, Put, Delete}
 import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model.{HttpRequest, StatusCode, StatusCodes, Uri}
@@ -126,6 +126,9 @@ trait ComponentRequestsHttp {
 
   def addComponent(part: Component.PartNumber, desc: String): HttpRequest =
     Put(Resource.uri("components", part.get), Component.DescriptionWrapper(desc))
+
+  def deleteComponent(part: Component.PartNumber): HttpRequest =
+    Delete(Resource.uri("components", part.get))
 
 }
 
