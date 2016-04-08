@@ -222,18 +222,8 @@ trait PackageFilterRequestsHttp {
     Put(Resource.uri("packages", pf.packageName.get, pf.packageVersion.get, "filter", pf.filterName.get))
   }
 
-}
-
-trait PackageFilterRequests extends Matchers { self: ScalatestRouteTest =>
-
   def addPackageFilter(pname: String, pversion: String, fname: String): HttpRequest =
     Put(Resource.uri("packages", pname, pversion, "filter", fname))
-
-  def addPackageFilterOK(pname: String, pversion: String, fname: String)(implicit route: Route): Unit =
-    addPackageFilter(pname, pversion, fname) ~> route ~> check {
-      status shouldBe StatusCodes.OK
-      responseAs[PackageFilter] shouldBe PackageFilter(Refined.unsafeApply(pname), Refined.unsafeApply(pversion), Refined.unsafeApply(fname))
-    }
 
   def listPackageFilters: HttpRequest =
     Get(Resource.uri("packages", "filter"))
@@ -246,6 +236,18 @@ trait PackageFilterRequests extends Matchers { self: ScalatestRouteTest =>
 
   def deletePackageFilter(pname: String, pversion: String, fname: String): HttpRequest =
     Delete(Resource.uri("packages", pname, pversion, "filter", fname))
+
+}
+
+trait PackageFilterRequests extends
+  PackageFilterRequestsHttp with
+  Matchers { self: ScalatestRouteTest =>
+
+  def addPackageFilterOK(pname: String, pversion: String, fname: String)(implicit route: Route): Unit =
+    addPackageFilter(pname, pversion, fname) ~> route ~> check {
+      status shouldBe StatusCodes.OK
+      responseAs[PackageFilter] shouldBe PackageFilter(Refined.unsafeApply(pname), Refined.unsafeApply(pversion), Refined.unsafeApply(fname))
+    }
 
   def deletePackageFilterOK(pname: String, pversion: String, fname: String)(implicit route: Route): Unit =
     deletePackageFilter(pname, pversion, fname) ~> route ~> check {
