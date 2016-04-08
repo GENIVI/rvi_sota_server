@@ -159,16 +159,16 @@ trait ComponentRequests extends
  */
 trait FilterRequestsHttp {
 
-  // TODO XXX: Is this OK?
-  import scala.concurrent.ExecutionContext.Implicits.global
-
-  def addFilter(name: String, expr: String): HttpRequest =
+  def addFilter(name: String, expr: String)
+               (implicit ec: ExecutionContext): HttpRequest =
     addFilter2(Filter(Refined.unsafeApply(name), Refined.unsafeApply(expr)))
 
-  def addFilter2(filt: Filter): HttpRequest =
+  def addFilter2(filt: Filter)
+                (implicit ec: ExecutionContext): HttpRequest =
     Post(Resource.uri("filters"), filt)
 
-  def updateFilter(name: String, expr: String): HttpRequest =
+  def updateFilter(name: String, expr: String)
+                  (implicit ec: ExecutionContext): HttpRequest =
     Put(Resource.uri("filters", name), Filter.ExpressionWrapper(Refined.unsafeApply(expr)))
 
   def listFilters: HttpRequest =
@@ -180,7 +180,8 @@ trait FilterRequestsHttp {
   def listFiltersRegex(re: String): HttpRequest =
     Get(Resource.uri("filters") + "?regex=" + re)
 
-  def validateFilter(filter: Filter): HttpRequest =
+  def validateFilter(filter: Filter)
+                    (implicit ec: ExecutionContext): HttpRequest =
     Post(Resource.uri("validate", "filter"), filter)
 
 }
