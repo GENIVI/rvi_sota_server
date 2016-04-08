@@ -10,6 +10,8 @@ import org.genivi.sota.rest.ErrorCodes
 import org.scalacheck.{Arbitrary, Gen}
 
 import scala.annotation.tailrec
+import scala.concurrent.ExecutionContext
+
 import Misc._
 import org.genivi.sota.data.{Vehicle, VehicleGenerators}
 
@@ -41,7 +43,8 @@ object Command extends
 
   type SemCommand = (HttpRequest, StatusCode, Result)
 
-  def semCommands(cmds: List[Command]): State[RawStore, List[Semantics]] = {
+  def semCommands(cmds: List[Command])
+                 (implicit ec: ExecutionContext): State[RawStore, List[Semantics]] = {
 
     @tailrec def go(cmds0: List[Command], s0: RawStore, acc: List[Semantics]): (RawStore, List[Semantics]) =
       cmds0 match {
@@ -59,7 +62,8 @@ object Command extends
   }
 
   // scalastyle:off
-  def semCommand(cmd: Command): State[RawStore, Semantics] = cmd match {
+  def semCommand(cmd: Command)
+                (implicit ec: ExecutionContext): State[RawStore, Semantics] = cmd match {
 
     case AddVehicle(veh)          =>
       for {
@@ -139,7 +143,7 @@ object Command extends
   // scalastyle:on
 
   // scalastyle:off
-  def genCommand: StateT[Gen, RawStore, Command] =
+  def genCommand(implicit ec: ExecutionContext): StateT[Gen, RawStore, Command] =
     for {
       s     <- StateT.stateTMonadState[Gen, RawStore].get
       vehs  <- Store.numberOfVehicles
@@ -183,7 +187,8 @@ object Command extends
     } yield cmd
   // scalastyle:on
 
-  def genCommands(n: Int): StateT[Gen, RawStore, List[Command]] =
+  def genCommands(n: Int)
+                 (implicit ec: ExecutionContext): StateT[Gen, RawStore, List[Command]] =
     for {
       cmd  <- genCommand
       cmds <- if (n == 0) genCommand.map(List(_)) else genCommands(n - 1)

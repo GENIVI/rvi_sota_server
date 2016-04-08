@@ -104,13 +104,12 @@ trait VehicleRequests extends
 
 trait PackageRequestsHttp {
 
-  // TODO XXX: Is this OK?
-  import scala.concurrent.ExecutionContext.Implicits.global
-
-  def addPackage(pkg: Package): HttpRequest =
+  def addPackage(pkg: Package)
+                (implicit ec: ExecutionContext): HttpRequest =
     addPackage(pkg.id.name.get, pkg.id.version.get, pkg.description, pkg.vendor)
 
-  def addPackage(name: String, version: String, desc: Option[String], vendor: Option[String]): HttpRequest =
+  def addPackage(name: String, version: String, desc: Option[String], vendor: Option[String])
+                (implicit ec: ExecutionContext): HttpRequest =
     Put(Resource.uri("packages", name, version), Package.Metadata(desc, vendor))
 
 }
