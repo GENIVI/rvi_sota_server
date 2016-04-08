@@ -68,7 +68,7 @@ object Command extends
     case AddVehicle(veh)          =>
       for {
         s <- State.get
-        _ <- State.set(s.copy(vehicles = s.vehicles + (veh -> ((Set(), Set())))))
+        _ <- State.set(s.adding(veh))
       } yield Semantics(addVehicle(veh.vin), StatusCodes.NoContent, Success)
 
     case AddPackage(pkg)          =>
