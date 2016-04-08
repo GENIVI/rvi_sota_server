@@ -185,6 +185,7 @@ trait FilterRequestsHttp {
 
   def validateFilter(filter: Filter): HttpRequest =
     Post(Resource.uri("validate", "filter"), filter)
+
 }
 
 trait FilterRequests extends FilterRequestsHttp with Matchers { self: ScalatestRouteTest =>
@@ -215,7 +216,6 @@ trait FilterRequests extends FilterRequestsHttp with Matchers { self: ScalatestR
 /**
  * Testing Trait for building PackageFilter requests
  */
-
 trait PackageFilterRequestsHttp {
 
   def addPackageFilter2(pf: PackageFilter): HttpRequest = {
@@ -258,18 +258,19 @@ trait PackageFilterRequests extends
 /**
  * Testing Trait for building Resolve requests
  */
-
 trait ResolveRequestsHttp {
 
   def resolve2(id: PackageId): HttpRequest =
-    Get(Resource.uri("resolve", id.name.get, id.version.get))
-
-}
-
-trait ResolveRequests extends Matchers { self: ScalatestRouteTest =>
+    resolve(id.name.get, id.version.get)
 
   def resolve(pname: String, pversion: String): HttpRequest =
     Get(Resource.uri("resolve", pname, pversion))
+
+}
+
+trait ResolveRequests extends
+  ResolveRequestsHttp with
+  Matchers { self: ScalatestRouteTest =>
 
   def resolveOK(pname: String, pversion: String, vins: Seq[Vehicle.Vin])(implicit route: Route): Unit = {
 
@@ -280,4 +281,5 @@ trait ResolveRequests extends Matchers { self: ScalatestRouteTest =>
           vins.map(Vehicle(_)))
     }
   }
+
 }
