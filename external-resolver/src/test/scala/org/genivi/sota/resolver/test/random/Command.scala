@@ -56,6 +56,7 @@ object Command extends
 
   }
 
+  // scalastyle:off
   def semCommand(cmd: Command): State[RawStore, Semantics] = cmd match {
 
     case AddVehicle(veh)          =>
@@ -102,7 +103,9 @@ object Command extends
               StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry))
 
   }
+  // scalastyle:on
 
+  // scalastyle:off
   def genCommand: StateT[Gen, RawStore, Command] =
     for {
       s     <- StateT.stateTMonadState[Gen, RawStore].get
@@ -143,6 +146,7 @@ object Command extends
       ))
       _   <- StateT.stateTMonadState(monGen).set(semCommand(cmd).runS(s).run)
     } yield cmd
+  // scalastyle:on
 
   def genCommands(n: Int): StateT[Gen, RawStore, List[Command]] =
     for {
