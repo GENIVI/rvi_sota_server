@@ -15,7 +15,14 @@ case class RawStore(
   packages  : Map[Package, Set[Filter]],
   filters   : Set[Filter],
   components: Set[Component]
-)
+) {
+
+  def installing(veh: Vehicle, cmpn: Component): RawStore = {
+    val (paks, comps) = vehicles(veh)
+    copy(vehicles = vehicles.updated(veh, (paks, comps + cmpn)))
+  }
+
+}
 
 object Store {
 

@@ -130,6 +130,9 @@ trait ComponentRequestsHttp {
   def deleteComponent(part: Component.PartNumber): HttpRequest =
     Delete(Resource.uri("components", part.get))
 
+  def installComponent(veh: Vehicle, cmpn: Component): HttpRequest =
+    Put(Resource.uri("vehicles", veh.vin.get, "component", cmpn.partNumber.get))
+
 }
 
 trait ComponentRequests extends

@@ -119,7 +119,14 @@ object Command extends
         deleteComponent(cmpn.partNumber),
         StatusCodes.OK, Success) // whether it was there or not, OK is the reply
 
-    case InstallComponent(veh, cmpn)     => ???
+    case InstallComponent(veh, cmpn)     =>
+      for {
+        s <- State.get
+        _ <- State.set(s.installing(veh, cmpn))
+      } yield Semantics(
+        installComponent(veh, cmpn),
+        StatusCodes.OK, Success) // whether it was there or not, OK is the reply
+
     case UninstallComponent(veh, cmpn)   => ???
   }
   // scalastyle:on
