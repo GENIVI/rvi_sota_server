@@ -26,10 +26,10 @@ final case class EditFilter        (old : Filter, neu: Filter)  extends Command
 final case class RemoveFilter      (filt: Filter)               extends Command
 final case class AddFilterToPackage(pkg: Package, filt: Filter) extends Command
 
-final case class AddComponent(cmpn: Component)         extends Command
-final case class RemoveComponent(cmpn: Component)      extends Command
-final case class InstallComponent()     extends Command
-final case class UninstallComponent()   extends Command
+final case class AddComponent   (cmpn: Component) extends Command
+final case class RemoveComponent(cmpn: Component) extends Command
+final case class InstallComponent  (veh: Vehicle, cmpn: Component) extends Command
+final case class UninstallComponent(veh: Vehicle, cmpn: Component) extends Command
 
 
 object Command extends
@@ -123,8 +123,8 @@ object Command extends
         deleteComponent(cmpn.partNumber),
         StatusCodes.OK, Success) // whether it was there or not, OK is the reply
 
-    case InstallComponent()     => ???
-    case UninstallComponent()   => ???
+    case InstallComponent(veh, cmpn)     => ???
+    case UninstallComponent(veh, cmpn)   => ???
   }
   // scalastyle:on
 
