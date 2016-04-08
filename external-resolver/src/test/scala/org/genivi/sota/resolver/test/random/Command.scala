@@ -63,9 +63,8 @@ object Command extends
 
     case AddVehicle(veh)          =>
       for {
-        _ <- State.modify { (s: RawStore) =>
-               s.copy(vehicles = s.vehicles + (veh -> ((Set(), Set()))))
-             }
+        s <- State.get
+        _ <- State.set(s.copy(vehicles = s.vehicles + (veh -> ((Set(), Set())))))
       } yield Semantics(addVehicle(veh.vin), StatusCodes.NoContent, Success)
 
     case AddPackage(pkg)          =>
@@ -84,9 +83,8 @@ object Command extends
 
     case AddFilter(filt)               =>
       for {
-        _ <- State.modify { (s: RawStore) =>
-               s.copy(filters = s.filters + filt)
-             }
+        s <- State.get
+        _ <- State.set(s.copy(filters = s.filters + filt))
       } yield Semantics(addFilter2(filt), StatusCodes.OK, Success)
 
     case EditFilter(old, neu)          => ???
@@ -107,18 +105,16 @@ object Command extends
 
     case AddComponent(cmpn)     =>
       for {
-        _ <- State.modify { (s: RawStore) =>
-               s.copy(components = s.components + cmpn)
-             }
+        s <- State.get
+        _ <- State.set(s.copy(components = s.components + cmpn))
       } yield Semantics(
         addComponent(cmpn.partNumber, cmpn.description),
         StatusCodes.OK, Success) // duplicate or not, OK is the reply
 
     case RemoveComponent(cmpn)      =>
       for {
-        _ <- State.modify { (s: RawStore) =>
-          s.copy(components = s.components - cmpn)
-        }
+        s <- State.get
+        _ <- State.set(s.copy(components = s.components - cmpn))
       } yield Semantics(
         deleteComponent(cmpn.partNumber),
         StatusCodes.OK, Success) // whether it was there or not, OK is the reply
