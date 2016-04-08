@@ -29,6 +29,21 @@ case class RawStore(
     copy(components = components + cmpn)
   }
 
+  /**
+    * Fails in case the given component is installed on any vin.
+    * In that case,
+    * [[org.genivi.sota.resolver.test.random.RawStore!.uninstalling(Vehicle,Component):RawStore*]]
+    * should have been invoked for each such vin before attempting to remove the component.
+    */
+  def removing(cmpn: Component): RawStore = {
+    val installedOn = vehiclesHaving(cmpn)
+    if (installedOn.nonEmpty) {
+      val vins = installedOn.map(veh => veh.vin.get).mkString
+      throw new RuntimeException(s"Component $cmpn can't be removed, still installed in : $vins")
+    }
+    copy(components = components - cmpn)
+  }
+
   def installing(veh: Vehicle, cmpn: Component): RawStore = {
     val (paks, comps) = vehicles(veh)
     copy(vehicles = vehicles.updated(veh, (paks, comps + cmpn)))
@@ -42,6 +57,14 @@ case class RawStore(
   def installing(veh: Vehicle, pkg: Package): RawStore = {
     val (paks, comps) = vehicles(veh)
     copy(vehicles = vehicles.updated(veh, (paks + pkg, comps)))
+  }
+
+  def vehiclesHaving(cmpn: Component): Iterable[Vehicle] = {
+    for (
+      entry <- vehicles;
+      (veh, (paks, comps)) = entry;
+      if comps.contains(cmpn)
+    ) yield veh
   }
 
 }

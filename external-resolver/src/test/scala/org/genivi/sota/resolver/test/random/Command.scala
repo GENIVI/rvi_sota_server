@@ -117,7 +117,7 @@ object Command extends
     case RemoveComponent(cmpn)      =>
       for {
         s <- State.get
-        _ <- State.set(s.copy(components = s.components - cmpn))
+        _ <- State.set(s.removing(cmpn))
       } yield Semantics(
         deleteComponent(cmpn.partNumber),
         StatusCodes.OK, Success) // whether it was there or not, OK is the reply
