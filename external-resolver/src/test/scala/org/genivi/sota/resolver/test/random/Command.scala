@@ -89,6 +89,7 @@ object Command extends
 
     case EditFilter(old, neu)          => ???
     case RemoveFilter(filt)            => ???
+
     case AddFilterToPackage(pkg, filt) =>
       for {
         s       <- State.get
@@ -102,6 +103,10 @@ object Command extends
             Semantics(addPackageFilter2(PackageFilter(pkg.id.name, pkg.id.version, filt.name)),
               StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry))
 
+    case AddComponent()         => ???
+    case RemoveComponent()      => ???
+    case InstallComponent()     => ???
+    case UninstallComponent()   => ???
   }
   // scalastyle:on
 
