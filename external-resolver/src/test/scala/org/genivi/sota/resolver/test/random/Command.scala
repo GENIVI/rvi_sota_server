@@ -68,13 +68,13 @@ object Command extends
     case AddVehicle(veh)          =>
       for {
         s <- State.get
-        _ <- State.set(s.adding(veh))
+        _ <- State.set(s.creating(veh))
       } yield Semantics(addVehicle(veh.vin), StatusCodes.NoContent, Success)
 
     case AddPackage(pkg)          =>
       for {
         s <- State.get
-        _ <- State.set(s.adding(pkg))
+        _ <- State.set(s.creating(pkg))
       } yield Semantics(addPackage(pkg), StatusCodes.OK, SuccessPackage(pkg))
 
     case InstallPackage(veh, pkg) =>
@@ -109,7 +109,7 @@ object Command extends
     case AddComponent(cmpn)     =>
       for {
         s <- State.get
-        _ <- State.set(s.adding(cmpn))
+        _ <- State.set(s.creating(cmpn))
       } yield Semantics(
         addComponent(cmpn.partNumber, cmpn.description),
         StatusCodes.OK, Success) // duplicate or not, OK is the reply

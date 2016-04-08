@@ -17,15 +17,15 @@ case class RawStore(
   components: Set[Component]
 ) {
 
-  def adding(veh: Vehicle): RawStore = {
+  def creating(veh: Vehicle): RawStore = {
     copy(vehicles = vehicles.updated(veh, (Set.empty[Package], Set.empty[Component])))
   }
 
-  def adding(pkg: Package): RawStore = {
+  def creating(pkg: Package): RawStore = {
     copy(packages = packages + (pkg -> Set.empty))
   }
 
-  def adding(cmpn: Component): RawStore = {
+  def creating(cmpn: Component): RawStore = {
     copy(components = components + cmpn)
   }
 
