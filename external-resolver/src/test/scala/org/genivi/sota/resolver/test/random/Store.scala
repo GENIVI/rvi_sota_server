@@ -33,6 +33,8 @@ case class RawStore(
     copy(filters = filters + filter)
   }
 
+  // MANIPULATING PACKAGES AND COMPONENTS
+
   /**
     * Fails in case the given component is installed on any vin.
     * In that case,
@@ -62,6 +64,13 @@ case class RawStore(
     val (paks, comps) = vehicles(veh)
     copy(vehicles = vehicles.updated(veh, (paks + pkg, comps)))
   }
+
+  def associating(pkg: Package, filt: Filter): RawStore = {
+    val existing = packages(pkg)
+    copy(packages = packages.updated(pkg, existing + filt))
+  }
+
+  // QUERIES
 
   def vehiclesHaving(cmpn: Component): Iterable[Vehicle] = {
     for (

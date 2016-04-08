@@ -96,7 +96,7 @@ object Command extends
     case AddFilterToPackage(pkg, filt) =>
       for {
         s       <- State.get
-        _       <- State.set(s.copy(packages = s.packages + (pkg -> (s.packages(pkg) + filt))))
+        _       <- State.set(s.associating(pkg, filt))
         success =  !s.packages(pkg).contains(filt)
       } yield
           if (success)
