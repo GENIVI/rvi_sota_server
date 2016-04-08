@@ -71,7 +71,7 @@ object Command extends
       for {
         s <- State.get
         _ <- State.set(s.copy(packages = s.packages + (pkg -> Set())))
-      } yield Semantics(addPackage2(pkg), StatusCodes.OK, SuccessPackage(pkg))
+      } yield Semantics(addPackage(pkg), StatusCodes.OK, SuccessPackage(pkg))
 
     case InstallPackage(veh, pkg) =>
       for {

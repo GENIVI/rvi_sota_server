@@ -104,32 +104,27 @@ trait VehicleRequests extends
 
 trait PackageRequestsHttp {
 
-  def addPackage2(pkg: Package): HttpRequest = {
+  // TODO XXX: Is this OK?
+  import scala.concurrent.ExecutionContext.Implicits.global
 
-    // TODO XXX: Is this OK?
-    import scala.concurrent.ExecutionContext.Implicits.global
+  def addPackage(pkg: Package): HttpRequest =
+    addPackage(pkg.id.name.get, pkg.id.version.get, pkg.description, pkg.vendor)
 
-    Put(Resource.uri("packages", pkg.id.name.get, pkg.id.version.get),
-      Package.Metadata(pkg.description, pkg.vendor))
+  def addPackage(name: String, version: String, desc: Option[String], vendor: Option[String]): HttpRequest =
+    Put(Resource.uri("packages", name, version), Package.Metadata(desc, vendor))
 
-  }
 }
 
 /**
  * Testing Trait for building Package requests
  */
-trait PackageRequests extends Matchers { self: ScalatestRouteTest =>
+trait PackageRequests extends
+  PackageRequestsHttp with
+  Matchers { self: ScalatestRouteTest =>
 
-  def addPackage
-    (name: String, version: String, desc: Option[String], vendor: Option[String])
-      : HttpRequest
-  = Put(Resource.uri("packages", name, version), Package.Metadata(desc, vendor))
-
-  def addPackageOK
-    (name: String, version: String, desc: Option[String], vendor: Option[String])
-    (implicit route: Route)
-      : Unit
-  = addPackage(name, version, desc, vendor) ~> route ~> check {
+  def addPackageOK(name: String, version: String, desc: Option[String], vendor: Option[String])
+                  (implicit route: Route): Unit =
+    addPackage(name, version, desc, vendor) ~> route ~> check {
       status shouldBe StatusCodes.OK
     }
 }
@@ -171,7 +166,7 @@ trait FilterRequestsHttp {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   def addFilter(name: String, expr: String): HttpRequest =
-    Post(Resource.uri("filters"), Filter(Refined.unsafeApply(name), Refined.unsafeApply(expr)))
+    addFilter2(Filter(Refined.unsafeApply(name), Refined.unsafeApply(expr)))
 
   def addFilter2(filt: Filter): HttpRequest =
     Post(Resource.uri("filters"), filt)
