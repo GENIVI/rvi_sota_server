@@ -130,8 +130,14 @@ trait ComponentRequestsHttp {
   def deleteComponent(part: Component.PartNumber): HttpRequest =
     Delete(Resource.uri("components", part.get))
 
+  private def path(veh: Vehicle, cmpn: Component): Uri =
+    Resource.uri("vehicles", veh.vin.get, "component", cmpn.partNumber.get)
+
   def installComponent(veh: Vehicle, cmpn: Component): HttpRequest =
-    Put(Resource.uri("vehicles", veh.vin.get, "component", cmpn.partNumber.get))
+    Put(path(veh, cmpn))
+
+  def deleteComponent(veh: Vehicle, cmpn: Component): HttpRequest =
+    Delete(path(veh, cmpn))
 
 }
 
