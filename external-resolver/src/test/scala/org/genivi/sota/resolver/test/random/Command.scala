@@ -80,8 +80,7 @@ object Command extends
     case InstallPackage(veh, pkg) =>
       for {
         s <- State.get
-        _ <- State.set(s.copy(vehicles = s.vehicles +
-               (veh -> ((s.vehicles(veh)._1 + pkg, s.vehicles(veh)._2)))))
+        _ <- State.set(s.installing(veh, pkg))
       } yield Semantics(installPackage(veh.vin, pkg.id.name.get, pkg.id.version.get), StatusCodes.OK, Success)
                                        // XXX: move gets inwards...
 
