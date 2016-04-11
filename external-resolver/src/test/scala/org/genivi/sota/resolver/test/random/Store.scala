@@ -97,24 +97,27 @@ case class RawStore(
     ) yield veh
   }
 
-  def allInstalledPackages(): Iterable[Package] = {
+  def packagesInUse(): Iterable[Package] = {
     for (
       entry <- vehicles;
-      pkg   <-  entry._2._1
+      (veh, (paks, comps)) = entry;
+      pkg   <-  paks
     ) yield pkg
   }
 
-  def allInstalledComponents(): Iterable[Component] = {
+  def componentsInUse(): Iterable[Component] = {
     for (
       entry <- vehicles;
-      cmpn  <-  entry._2._2
+      (veh, (paks, comps)) = entry;
+      cmpn  <-  comps
     ) yield cmpn
   }
 
-  def allAssociatedFilters(): Iterable[Filter] = {
+  def filtersInUse(): Iterable[Filter] = {
     for (
       entry <- packages;
-      flt  <-  entry._2
+      (pkg, fs) = entry;
+      flt  <-  fs
     ) yield flt
   }
 
