@@ -66,7 +66,8 @@ object Command extends
 
   }
 
-  // scalastyle:off
+  // scalastyle:off cyclomatic.complexity
+  // scalastyle:off method.length
   def semCommand(cmd: Command)
                 (implicit ec: ExecutionContext): State[RawStore, Semantics] = cmd match {
 
@@ -107,10 +108,11 @@ object Command extends
         _       <- State.set(s.removing(filt))
         success =  s.filtersInUse.isEmpty
       } yield
-        if (success)
+        if (success) {
           Semantics(deleteFilter(filt), StatusCodes.OK, Success)
-        else
+        } else {
           Semantics(deleteFilter(filt), StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry)) // TODO Error Code
+        }
 
     case AddFilterToPackage(pkg, filt) =>
       for {
@@ -118,12 +120,13 @@ object Command extends
         _       <- State.set(s.associating(pkg, filt))
         success =  !s.packages(pkg).contains(filt)
       } yield
-          if (success)
+          if (success) {
             Semantics(addPackageFilter2(PackageFilter(pkg.id.name, pkg.id.version, filt.name)),
               StatusCodes.OK, Success)
-          else
+          } else {
             Semantics(addPackageFilter2(PackageFilter(pkg.id.name, pkg.id.version, filt.name)),
               StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry))
+          }
 
     case AddComponent(cmpn)     =>
       for {
@@ -160,7 +163,8 @@ object Command extends
   }
   // scalastyle:on
 
-  // scalastyle:off
+  // scalastyle:off cyclomatic.complexity
+  // scalastyle:off magic.number
   def genCommand(implicit ec: ExecutionContext): StateT[Gen, RawStore, Command] =
     for {
       s     <- StateT.stateTMonadState[Gen, RawStore].get
