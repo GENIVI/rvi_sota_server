@@ -18,7 +18,8 @@ import scala.concurrent.duration._
 
 
 class Random extends ResourcePropSpec {
-  // scalastyle:off
+
+  // scalastyle:off cyclomatic.complexity
   def runSession(sesh: Session)(implicit route: Route): State[RawStore, Unit] = {
 
     @tailrec def go(sems: List[Semantics]): Unit =
@@ -29,7 +30,6 @@ class Random extends ResourcePropSpec {
           implicit val routeTimeout: RouteTestTimeout =
             RouteTestTimeout(10.second)
 
-
           sem.request ~> route ~> check {
             status shouldBe sem.statusCode
             sem.result match {
@@ -37,9 +37,9 @@ class Random extends ResourcePropSpec {
               case Success               => ()
               case SuccessVehicles(vehs) => responseAs[Set[Vehicle]]                       shouldBe vehs
               case SuccessPackage(pkg)   => responseAs[Package]                            shouldBe pkg
-              case SuccessPackages(pkgs) => responseAs[Set[PackageId]]                    shouldBe pkgs
+              case SuccessPackages(pkgs) => responseAs[Set[PackageId]]                     shouldBe pkgs
               case SuccessFilters(filts) => responseAs[Set[Filter]]                        shouldBe filts
-              case SuccessVehicleMap(m)  => responseAs[Map[Vehicle.Vin, List[PackageId]]] shouldBe m
+              case SuccessVehicleMap(m)  => responseAs[Map[Vehicle.Vin, List[PackageId]]]  shouldBe m
               case r                     => sys.error(s"runSession: non-exhaustive pattern: $r")
             }
           }
@@ -53,17 +53,17 @@ class Random extends ResourcePropSpec {
     }
 
   }
+  // scalastyle:on
 
   implicit val config: PropertyCheckConfig =
-    new PropertyCheckConfig(maxSize = 20, minSuccessful = 200)
+    new PropertyCheckConfig(maxSize = 20, minSuccessful = 200) // scalastyle:ignore magic.number
 
-  // scalastyle:on
-  // We use a global variable to presist the state of the world between
-  // the session runs.
+  // We use a global variable to persist the state of the world between the session runs.
   var s: RawStore = Store.initRawStore
 
   property("Sessions") {
-    forAll { sesh: Session =>
+    val attempts = 1
+    forAll (minSuccessful(attempts)) { sesh: Session =>
       s = runSession(sesh).runS(s).run
       Store.validStore.isValid(s) shouldBe true
     }

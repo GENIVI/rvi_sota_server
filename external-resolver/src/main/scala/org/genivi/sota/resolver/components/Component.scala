@@ -10,7 +10,9 @@ import eu.timepit.refined.api.{Refined, Validate}
 case class Component(
   partNumber : Component.PartNumber,
   description: String
-)
+) {
+  override def toString(): String = { s"Filter(${partNumber.get}, $description)" }
+}
 
 object Component {
 

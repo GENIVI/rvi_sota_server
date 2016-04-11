@@ -79,9 +79,9 @@ object FilterAST extends StandardTokenParsers with PackratParsers with ImplicitC
 
   def ppFilter(f: FilterAST): String =
     f match {
-      case VinMatches(s)    => s"""vin_matches "$s""""
-      case HasPackage(s, t) => s"""has_package "$s" "$t""""
-      case HasComponent(s)  => s"""has_component "$s""""
+      case VinMatches(s)    => s"""vin_matches "${s.get}""""
+      case HasPackage(s, t) => s"""has_package "${s.get}" "${t.get}""""
+      case HasComponent(s)  => s"""has_component "${s.get}""""
       case Not(f)           => s"NOT (${ppFilter(f)})"
       case And(l, r)        => s"(${ppFilter(l)}) AND (${ppFilter(r)})"
       case Or (l, r)        => s"(${ppFilter(l)}) OR (${ppFilter(r)})"
@@ -89,14 +89,13 @@ object FilterAST extends StandardTokenParsers with PackratParsers with ImplicitC
       case False            => "FALSE"
     }
 
+  // scalastyle:off cyclomatic.complexity
   def query(f: FilterAST): Function1[(Vehicle, (Seq[PackageId], Seq[Component.PartNumber])), Boolean] =
   { case a@((v: Vehicle, (ps: Seq[PackageId], cs: Seq[Component.PartNumber]))) => f match {
-      case VinMatches(re)       => !re.get.r.findAllIn(v.vin.get).isEmpty
-      case HasPackage(re1, re2) => ps.map(p => !re1.get.r.findAllIn(p.name   .get).isEmpty &&
-                                               !re2.get.r.findAllIn(p.version.get).isEmpty)
-                                     .exists(_== true)
-      case HasComponent(re)     => cs.map(part => !re.get.r.findAllIn(part.get).isEmpty)
-                                     .exists(_== true)
+      case VinMatches(re)       => re.get.r.findAllIn(v.vin.get).nonEmpty
+      case HasPackage(re1, re2) => ps.exists(p => re1.get.r.findAllIn(p.name   .get).nonEmpty &&
+                                                  re2.get.r.findAllIn(p.version.get).nonEmpty)
+      case HasComponent(re)     => cs.exists(part => re.get.r.findAllIn(part.get).nonEmpty)
       case Not(f)               => !query(f)(a)
       case And(l, r)            => query(l)(a) && query(r)(a)
       case Or (l, r)            => query(l)(a) || query(r)(a)
@@ -104,5 +103,6 @@ object FilterAST extends StandardTokenParsers with PackratParsers with ImplicitC
       case False                => false
     }
   }
+  // scalastyle:on
 
 }

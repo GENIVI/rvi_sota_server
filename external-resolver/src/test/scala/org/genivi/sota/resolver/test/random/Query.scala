@@ -22,6 +22,10 @@ final case object ListFilters                         extends Query
 
 final case class  Resolve(id: PackageId)             extends Query
 
+// TODO Query: list components
+// TODO Query: vehicles having component
+// TODO Query: components for vehicle
+// TODO Query: filters for package
 
 object Query extends
     VehicleRequestsHttp with
@@ -60,6 +64,7 @@ object Query extends
 
   }
 
+  // scalastyle:off magic.number
   implicit val genQuery: StateT[Gen, RawStore, Query] =
     for {
       s    <- StateT.stateTMonadState[Gen, RawStore].get
@@ -78,5 +83,6 @@ object Query extends
           Store.pickPackage.runA(s).map(pkg => Resolve(pkg.id)))
       ))
     } yield qry
+  // scalastyle:on
 
 }
