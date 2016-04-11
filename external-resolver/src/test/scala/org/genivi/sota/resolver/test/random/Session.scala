@@ -11,7 +11,7 @@ import Store._
 import scala.concurrent.ExecutionContext
 
 
-case class Session(commands: List[Command], query: Query)
+case class Session(commands: List[Command], queries: List[Query])
 
 object Session {
 
@@ -20,20 +20,24 @@ object Session {
     for {
       semCmds <- semCommands(sesh.commands)
       _ = println("\n\nCommands: " + sesh.commands.mkString("\n\t", "\n\t", "\n"))
-      semQry  <- semQuery(sesh.query)
-      _ = println("Query: " + sesh.query)
-      _ = println("Result: " + semQry.result + "\n\n")
-    } yield (semCmds :+ semQry)
+      semQrys  <- semQueries(sesh.queries)
+      qas = sesh.queries zip semQrys
+      _ = qas foreach { case (q, a) =>
+        println("Query: " + q)
+        println("Result: " + a.result + "\n\n")
+      }
+    } yield (semCmds ++ semQrys)
 
   implicit def arbSession(implicit ec: ExecutionContext): Arbitrary[Session] =
     Arbitrary(genSession.runA(initRawStore))
 
   def genSession(implicit ec: ExecutionContext): StateT[Gen, RawStore, Session] =
     for {
-      n    <- lift(Gen.size)
-      cmds <- genCommands(n)
-      qry  <- genQuery
-    } yield Session(cmds, qry)
+      n1   <- lift(Gen.size)
+      cmds <- genCommands(Math.max(1, n1))
+      n2    = Math.max(1, n1/2)
+      qrys <- genQueries(n2)
+    } yield Session(cmds, qrys)
 
   implicit def shrinkSession: Shrink[Session] =
     Shrink { case Session(cmds, qry) =>
