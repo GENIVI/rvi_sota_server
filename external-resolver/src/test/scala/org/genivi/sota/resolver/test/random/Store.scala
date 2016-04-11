@@ -37,7 +37,7 @@ case class RawStore(
     copy(filters = filters + filter)
   }
 
-  // MANIPULATING PACKAGES AND COMPONENTS
+  // REMOVING
 
   /**
     * Fails in case the given component is installed on any vin.
@@ -54,6 +54,23 @@ case class RawStore(
     copy(components = components - cmpn)
   }
 
+  /**
+    * Fails in case the given filter is associated to some package.
+    * In that case,
+    * [[org.genivi.sota.resolver.test.random.RawStore!.deassociating(Package,Filter):RawStore*]]
+    * should have been invoked for each such package before attempting to remove the filter.
+    */
+  def removing(flt: Filter): RawStore = {
+    val associatedTo = packagesHaving(flt)
+    if (associatedTo.nonEmpty) {
+      val paks = associatedTo.map(pkg => pkg.id.toString).mkString
+      throw new RuntimeException(s"Filter $flt can't be removed, still installed on : $paks")
+    }
+    copy(filters = filters - flt)
+  }
+
+  // COMPONENTS FOR VEHICLES
+
   def installing(veh: Vehicle, cmpn: Component): RawStore = {
     val (paks, comps) = vehicles(veh)
     copy(vehicles = vehicles.updated(veh, (paks, comps + cmpn)))
@@ -64,10 +81,14 @@ case class RawStore(
     copy(vehicles = vehicles.updated(veh, (paks, comps - cmpn)))
   }
 
+  // PACKAGES FOR VEHICLES
+
   def installing(veh: Vehicle, pkg: Package): RawStore = {
     val (paks, comps) = vehicles(veh)
     copy(vehicles = vehicles.updated(veh, (paks + pkg, comps)))
   }
+
+  // FILTERS FOR PACKAGES
 
   def associating(pkg: Package, filt: Filter): RawStore = {
     val existing = packages(pkg)
@@ -97,6 +118,14 @@ case class RawStore(
       (veh, (paks, comps)) = entry;
       if paks.contains(pkg)
     ) yield veh
+  }
+
+  def packagesHaving(flt: Filter): Set[Package] = toSet {
+    for (
+      entry <- packages;
+      (pkg, fs) = entry;
+      if fs contains flt
+    ) yield pkg
   }
 
   def packagesInUse(): Set[Package] = toSet {
