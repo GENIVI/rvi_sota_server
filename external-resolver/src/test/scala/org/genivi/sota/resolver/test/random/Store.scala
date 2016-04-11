@@ -173,14 +173,14 @@ object Store {
 
   def numberOfVehicles: StateT[Gen, RawStore, Int] =
     StateT.stateTMonadState[Gen, RawStore].get map
-      (_.vehicles.keys.toList.length)
+      (_.vehicles.keys.size)
 
   def numberOfPackages: StateT[Gen, RawStore, Int] =
     StateT.stateTMonadState[Gen, RawStore].get map
-      (_.packages.keys.toList.length)
+      (_.packages.keys.size)
 
   def numberOfFilters: StateT[Gen, RawStore, Int] =
     StateT.stateTMonadState[Gen, RawStore].get map
-      (_.filters.toList.length)
+      (_.filters.size)
 
 }
