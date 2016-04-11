@@ -37,6 +37,20 @@ case class RawStore(
     copy(filters = filters + filter)
   }
 
+  // REPLACING
+
+  def replacing(old: Filter, neu: Filter): RawStore = {
+    var result = this
+    val paksAffected = packagesHaving(old)
+    for (p <- paksAffected) {
+      val oldFilters = result.packages(p)
+      val neuFilters = oldFilters - old + neu
+      val neuPackages = result.packages.updated(p, neuFilters)
+      result = result.copy(packages = neuPackages)
+    }
+    result
+  }
+
   // REMOVING
 
   /**

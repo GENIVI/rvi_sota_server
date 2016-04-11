@@ -27,8 +27,10 @@ final case class AddFilter         (filt: Filter)               extends Command
 final case class EditFilter        (old : Filter, neu: Filter)  extends Command
 final case class RemoveFilter      (filt: Filter)               extends Command
 final case class AddFilterToPackage(pkg: Package, filt: Filter) extends Command
+// TODO final case class RemoveFilterForPackage(pkg: Package, filt: Filter) extends Command
 
 final case class AddComponent   (cmpn: Component) extends Command
+// TODO final case class EditComponent        (old : Component, neu: Component)  extends Command
 final case class RemoveComponent(cmpn: Component) extends Command
 final case class InstallComponent  (veh: Vehicle, cmpn: Component) extends Command
 final case class UninstallComponent(veh: Vehicle, cmpn: Component) extends Command
@@ -91,7 +93,17 @@ object Command extends
       } yield Semantics(addFilter2(filt), StatusCodes.OK, Success)
 
     case EditFilter(old, neu)          => ???
-    case RemoveFilter(filt)            => ???
+
+    case RemoveFilter(filt)            =>
+      for {
+        s       <- State.get
+        _       <- State.set(s.removing(filt))
+        success =  s.filtersInUse.isEmpty
+      } yield
+        if (success)
+          Semantics(deleteFilter(filt), StatusCodes.OK, Success)
+        else
+          Semantics(deleteFilter(filt), StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry)) // TODO Error Code
 
     case AddFilterToPackage(pkg, filt) =>
       for {

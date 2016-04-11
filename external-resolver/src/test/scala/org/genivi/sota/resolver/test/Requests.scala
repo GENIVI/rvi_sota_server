@@ -174,6 +174,9 @@ trait FilterRequestsHttp {
   def listFilters: HttpRequest =
     Get(Resource.uri("filters"))
 
+  def deleteFilter(filt: Filter): HttpRequest =
+    deleteFilter(filt.name.get)
+
   def deleteFilter(name: String): HttpRequest =
     Delete(Resource.uri("filters", name))
 
