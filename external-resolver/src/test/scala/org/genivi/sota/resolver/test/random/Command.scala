@@ -179,6 +179,12 @@ object Command extends
       pkg <- Store.pickPackage.runA(s)
     } yield InstallPackage(veh, pkg)
 
+  private def genCommandAddFilterToPackage(s: RawStore): Gen[AddFilterToPackage] =
+    for {
+      pkg  <- Store.pickPackage.runA(s)
+      filt <- Store.pickFilter.runA(s)
+    } yield AddFilterToPackage(pkg, filt)
+
   // scalastyle:off cyclomatic.complexity
   // scalastyle:off magic.number
   def genCommand(implicit ec: ExecutionContext): StateT[Gen, RawStore, Command] =
@@ -202,13 +208,8 @@ object Command extends
         // packages on the vehicles with high probability.
         (if (vehs > 0 && pkgs > 0) 100 else 0, genCommandInstallPackage(s)),
 
-        // If there are packages and filters, install some filters to
-        // some package.
-        (if (pkgs > 0 && filts > 0) 50 else 0,
-          for {
-            pkg  <- Store.pickPackage.runA(s)
-            filt <- Store.pickFilter.runA(s)
-          } yield AddFilterToPackage(pkg, filt))
+        // If there are packages and filters, install some filter to some package.
+        (if (pkgs > 0 && filts > 0) 50 else 0, genCommandAddFilterToPackage(s))
 
         // TODO RemoveFilter      (filt: Filter)
         // TODO EditFilter        (old : Filter, neu: Filter)
