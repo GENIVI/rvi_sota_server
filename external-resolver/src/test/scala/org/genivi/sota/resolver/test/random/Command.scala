@@ -176,13 +176,13 @@ object Command extends
         // If there are few vehicles, packages or filters in the world,
         // then generate some with high probability.
 
-        (if (0 <= vehs && vehs <= 10) 100 else 1,
+        (if (vehs <= 10) 100 else 1,
           VehicleGenerators.genVehicle.map(AddVehicle(_))),
 
-        (if (0 <= pkgs && pkgs <= 5)  100 else 1,
+        (if (pkgs <= 5)  100 else 1,
           PackageGenerators.genPackage.map(AddPackage(_))),
 
-        (if (0 <= filts && filts <= 3) 20 else 1,
+        (if (filts <= 3) 20 else 1,
           FilterGenerators.genFilter(s.packages.keys.toList, s.components.toList)
                 .map(AddFilter(_))),
 
@@ -202,7 +202,14 @@ object Command extends
             filt <- Store.pickFilter.runA(s)
           } yield AddFilterToPackage(pkg, filt))
 
-        // TODO generate components (add, edit, remove)
+        // TODO RemoveFilter      (filt: Filter)
+        // TODO EditFilter        (old : Filter, neu: Filter)
+
+        // TODO AddComponent      (cmpn: Component)
+        // TODO EditComponent     (old : Component, neu: Component)
+        // TODO RemoveComponent   (cmpn: Component)
+        // TODO InstallComponent  (veh: Vehicle, cmpn: Component)
+        // TODO UninstallComponent(veh: Vehicle, cmpn: Component)
 
       ))
       _   <- StateT.stateTMonadState(monGen).set(semCommand(cmd).runS(s).run)
