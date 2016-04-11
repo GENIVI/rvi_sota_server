@@ -121,7 +121,7 @@ case class RawStore(
   def vehiclesHaving(cmpn: Component): Set[Vehicle] = toSet {
     for (
       entry <- vehicles;
-      (veh, (paks, comps)) = entry;
+      (veh, (paks, comps)) = entry
       if comps.contains(cmpn)
     ) yield veh
   }
@@ -129,7 +129,7 @@ case class RawStore(
   def vehiclesHaving(pkg: Package): Set[Vehicle] = toSet {
     for (
       entry <- vehicles;
-      (veh, (paks, comps)) = entry;
+      (veh, (paks, comps)) = entry
       if paks.contains(pkg)
     ) yield veh
   }
@@ -137,7 +137,7 @@ case class RawStore(
   def packagesHaving(flt: Filter): Set[Package] = toSet {
     for (
       entry <- packages;
-      (pkg, fs) = entry;
+      (pkg, fs) = entry
       if fs contains flt
     ) yield pkg
   }
@@ -176,10 +176,10 @@ case class RawStore(
 
   def isValid: Boolean = {
     vehicles.forall { entry =>
-      val (veh, (paks, comps)) = entry;
+      val (_, (paks, comps)) = entry
       paks.forall(packages.contains) && comps.forall(components.contains)
     } && packages.forall { entry =>
-      val (pkg, fs) = entry
+      val (_, fs) = entry
       fs.forall(filters.contains)
     }
   }
@@ -196,7 +196,7 @@ object Store {
   type Store = Refined[RawStore, ValidStore]
 
   implicit val validStore : Validate.Plain[RawStore, ValidStore] = Validate.fromPredicate(
-    s => s.isValid(),
+    s => s.isValid,
     s => s"($s isn't a valid state)",
     ValidStore()
   )
