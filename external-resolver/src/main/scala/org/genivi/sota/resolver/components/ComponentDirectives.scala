@@ -19,37 +19,47 @@ import scala.concurrent.ExecutionContext
 import slick.jdbc.JdbcBackend.Database
 import Directives._
 
+
 /**
  * API routes for creating, deleting, and listing components.
- * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html} 
+ * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
  */
 class ComponentDirectives(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
 
+  def searchComponent =
+    parameter('regex.as[String Refined Regex].?) { re =>
+      val query = re.fold(ComponentRepository.list)(re => ComponentRepository.searchByRegex(re))
+      complete(db.run(query))
+    }
+
+  def addComponent(part: Component.PartNumber) =
+    entity(as[Component.DescriptionWrapper]) { descr =>
+      val comp = Component(part, descr.description)
+      complete(db.run(ComponentRepository.addComponent(comp)).map(_ => comp))
+    }
+
+
+  def deleteComponent(part: Component.PartNumber) =
+    completeOrRecoverWith(db.run(ComponentRepository.removeComponent(part))) {
+      Errors.onComponentInstalled
+    }
+
   /**
-   * API route for filters.
+   * API route for components.
    * @return      Route object containing routes for creating, editing, and listing components
    * @throws      Errors.ComponentIsInstalledException on DELETE call, if component doesn't exist
    */
-  def route: Route = {
+  def route: Route =
     pathPrefix("components") {
-      get {
-        parameter('regex.as[Refined[String, Regex]].?) { re =>
-          val query = re.fold(ComponentRepository.list)(re => ComponentRepository.searchByRegex(re))
-          complete(db.run(query))
-        }
+      (get & pathEnd) {
+        searchComponent
       } ~
-      (put & refinedPartNumber & entity(as[Component.DescriptionWrapper]))
-      { (part, desc) =>
-          val comp = Component(part, desc.description)
-          complete(db.run(ComponentRepository.addComponent(comp)).map(_ => comp))
+      (put & refinedPartNumber & pathEnd) { part =>
+        addComponent(part)
       } ~
-      (delete & refinedPartNumber)
-      { part =>
-          completeOrRecoverWith(db.run(ComponentRepository.removeComponent(part))) {
-            Errors.onComponentInstalled
-          }
+      (delete & refinedPartNumber & pathEnd) { part =>
+        deleteComponent(part)
       }
     }
-  }
 
 }
