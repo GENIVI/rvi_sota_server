@@ -74,6 +74,11 @@ case class RawStore(
     copy(packages = packages.updated(pkg, existing + filt))
   }
 
+  def deassociating(pkg: Package, filt: Filter): RawStore = {
+    val existing = packages(pkg)
+    copy(packages = packages.updated(pkg, existing - filt))
+  }
+
   // QUERIES
 
   def vehiclesHaving(cmpn: Component): Iterable[Vehicle] = {
@@ -81,6 +86,14 @@ case class RawStore(
       entry <- vehicles;
       (veh, (paks, comps)) = entry;
       if comps.contains(cmpn)
+    ) yield veh
+  }
+
+  def vehiclesHaving(pkg: Package): Iterable[Vehicle] = {
+    for (
+      entry <- vehicles;
+      (veh, (paks, comps)) = entry;
+      if paks.contains(pkg)
     ) yield veh
   }
 
