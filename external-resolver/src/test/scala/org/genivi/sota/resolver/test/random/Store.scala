@@ -81,7 +81,9 @@ case class RawStore(
 
   // QUERIES
 
-  def vehiclesHaving(cmpn: Component): Iterable[Vehicle] = {
+  private def toSet[E](elems: Iterable[E]): Set[E] = { elems.toSet }
+
+  def vehiclesHaving(cmpn: Component): Set[Vehicle] = toSet {
     for (
       entry <- vehicles;
       (veh, (paks, comps)) = entry;
@@ -89,7 +91,7 @@ case class RawStore(
     ) yield veh
   }
 
-  def vehiclesHaving(pkg: Package): Iterable[Vehicle] = {
+  def vehiclesHaving(pkg: Package): Set[Vehicle] = toSet {
     for (
       entry <- vehicles;
       (veh, (paks, comps)) = entry;
@@ -97,7 +99,7 @@ case class RawStore(
     ) yield veh
   }
 
-  def packagesInUse(): Iterable[Package] = {
+  def packagesInUse(): Set[Package] = toSet {
     for (
       entry <- vehicles;
       (veh, (paks, comps)) = entry;
@@ -105,7 +107,7 @@ case class RawStore(
     ) yield pkg
   }
 
-  def componentsInUse(): Iterable[Component] = {
+  def componentsInUse(): Set[Component] = toSet {
     for (
       entry <- vehicles;
       (veh, (paks, comps)) = entry;
@@ -113,7 +115,7 @@ case class RawStore(
     ) yield cmpn
   }
 
-  def filtersInUse(): Iterable[Filter] = {
+  def filtersInUse(): Set[Filter] = toSet {
     for (
       entry <- packages;
       (pkg, fs) = entry;
