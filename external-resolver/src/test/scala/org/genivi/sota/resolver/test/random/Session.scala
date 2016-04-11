@@ -19,7 +19,7 @@ object Session {
                 (implicit ec: ExecutionContext): State[RawStore, List[Semantics]] =
     for {
       semCmds <- semCommands(sesh.commands)
-      _ = println("\n\nCommands: " + sesh.commands)
+      _ = println("\n\nCommands: " + sesh.commands.mkString("\n\t", "\n\t", "\n"))
       semQry  <- semQuery(sesh.query)
       _ = println("Query: " + sesh.query)
       _ = println("Result: " + semQry.result + "\n\n")

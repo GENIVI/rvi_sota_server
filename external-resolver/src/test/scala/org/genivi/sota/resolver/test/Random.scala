@@ -62,7 +62,8 @@ class Random extends ResourcePropSpec {
   var s: RawStore = Store.initRawStore
 
   property("Sessions") {
-    forAll { sesh: Session =>
+    val attempts = 1
+    forAll (minSuccessful(attempts)) { sesh: Session =>
       s = runSession(sesh).runS(s).run
       Store.validStore.isValid(s) shouldBe true
     }
