@@ -121,6 +121,18 @@ case class RawStore(
     ) yield flt
   }
 
+  def packagesUnused(): Set[Package] = {
+    packages.keySet -- packagesInUse
+  }
+
+  def componentsUnused(): Set[Component] = {
+    components -- componentsInUse
+  }
+
+  def filtersUnused(): Set[Filter] = {
+    filters -- filtersInUse
+  }
+
   // WELL-FORMEDNESS
 
   def isValid(): Boolean = {
