@@ -79,9 +79,9 @@ object FilterAST extends StandardTokenParsers with PackratParsers with ImplicitC
 
   def ppFilter(f: FilterAST): String =
     f match {
-      case VinMatches(s)    => s"""vin_matches "$s""""
-      case HasPackage(s, t) => s"""has_package "$s" "$t""""
-      case HasComponent(s)  => s"""has_component "$s""""
+      case VinMatches(s)    => s"""vin_matches "${s.get}""""
+      case HasPackage(s, t) => s"""has_package "${s.get}" "${t.get}""""
+      case HasComponent(s)  => s"""has_component "${s.get}""""
       case Not(f)           => s"NOT (${ppFilter(f)})"
       case And(l, r)        => s"(${ppFilter(l)}) AND (${ppFilter(r)})"
       case Or (l, r)        => s"(${ppFilter(l)}) OR (${ppFilter(r)})"
