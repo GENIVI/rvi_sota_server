@@ -163,6 +163,22 @@ object Command extends
   }
   // scalastyle:on
 
+  private def genCommandAddVehicle(): Gen[AddVehicle] =
+    VehicleGenerators.genVehicle.map(AddVehicle(_))
+
+  private def genCommandAddPackage(): Gen[AddPackage] =
+    PackageGenerators.genPackage.map(AddPackage(_))
+
+  private def genCommandAddFilter(s: RawStore): Gen[AddFilter] =
+    FilterGenerators.genFilter(s.packages.keys.toList, s.components.toList)
+      .map(AddFilter(_))
+
+  private def genCommandInstallPackage(s: RawStore): Gen[InstallPackage] =
+    for {
+      veh <- Store.pickVehicle.runA(s)
+      pkg <- Store.pickPackage.runA(s)
+    } yield InstallPackage(veh, pkg)
+
   // scalastyle:off cyclomatic.complexity
   // scalastyle:off magic.number
   def genCommand(implicit ec: ExecutionContext): StateT[Gen, RawStore, Command] =
@@ -176,23 +192,15 @@ object Command extends
         // If there are few vehicles, packages or filters in the world,
         // then generate some with high probability.
 
-        (if (vehs <= 10) 100 else 1,
-          VehicleGenerators.genVehicle.map(AddVehicle(_))),
+        (if (vehs <= 10) 100 else 1, genCommandAddVehicle),
 
-        (if (pkgs <= 5)  100 else 1,
-          PackageGenerators.genPackage.map(AddPackage(_))),
+        (if (pkgs <= 5)  100 else 1, genCommandAddPackage),
 
-        (if (filts <= 3) 20 else 1,
-          FilterGenerators.genFilter(s.packages.keys.toList, s.components.toList)
-                .map(AddFilter(_))),
+        (if (filts <= 3) 20 else 1, genCommandAddFilter(s)),
 
         // If there are vehicles and packages, then install some
         // packages on the vehicles with high probability.
-        (if (vehs > 0 && pkgs > 0) 100 else 0,
-          for {
-            veh <- Store.pickVehicle.runA(s)
-            pkg <- Store.pickPackage.runA(s)
-          } yield InstallPackage(veh, pkg)),
+        (if (vehs > 0 && pkgs > 0) 100 else 0, genCommandInstallPackage(s)),
 
         // If there are packages and filters, install some filters to
         // some package.
