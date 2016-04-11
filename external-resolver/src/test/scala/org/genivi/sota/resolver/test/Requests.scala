@@ -167,6 +167,10 @@ trait FilterRequestsHttp {
                 (implicit ec: ExecutionContext): HttpRequest =
     Post(Resource.uri("filters"), filt)
 
+  def updateFilter(filt: Filter)
+                  (implicit ec: ExecutionContext): HttpRequest =
+    updateFilter(filt.name.get, filt.expression.get)
+
   def updateFilter(name: String, expr: String)
                   (implicit ec: ExecutionContext): HttpRequest =
     Put(Resource.uri("filters", name), Filter.ExpressionWrapper(Refined.unsafeApply(expr)))

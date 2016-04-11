@@ -24,7 +24,10 @@ final case class AddPackage    (pkg: Package)               extends Command
 final case class InstallPackage(veh: Vehicle, pkg: Package) extends Command
 
 final case class AddFilter         (filt: Filter)               extends Command
-final case class EditFilter        (old : Filter, neu: Filter)  extends Command
+final case class EditFilter        (old : Filter, neu: Filter)  extends Command {
+  // restriction imposed by the endpoint allowing only a filter's expression (but not name) to be updated.
+  if (old.name.get != neu.name.get) throw new IllegalArgumentException
+}
 final case class RemoveFilter      (filt: Filter)               extends Command
 final case class AddFilterToPackage(pkg: Package, filt: Filter) extends Command
 // TODO final case class RemoveFilterForPackage(pkg: Package, filt: Filter) extends Command
@@ -92,7 +95,11 @@ object Command extends
         _ <- State.set(s.creating(filt))
       } yield Semantics(addFilter2(filt), StatusCodes.OK, Success)
 
-    case EditFilter(old, neu)          => ???
+    case EditFilter(old, neu)          =>
+      for {
+        s <- State.get
+        _ <- State.set(s.replacing(old, neu))
+      } yield Semantics(updateFilter(neu), StatusCodes.OK, Success)
 
     case RemoveFilter(filt)            =>
       for {
