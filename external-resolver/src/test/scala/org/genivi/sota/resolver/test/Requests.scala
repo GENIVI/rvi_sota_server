@@ -251,7 +251,8 @@ trait PackageFilterRequests extends
   def addPackageFilterOK(pname: String, pversion: String, fname: String)(implicit route: Route): Unit =
     addPackageFilter(pname, pversion, fname) ~> route ~> check {
       status shouldBe StatusCodes.OK
-      responseAs[PackageFilter] shouldBe PackageFilter(Refined.unsafeApply(pname), Refined.unsafeApply(pversion), Refined.unsafeApply(fname))
+      responseAs[PackageFilter] shouldBe
+        PackageFilter(Refined.unsafeApply(pname), Refined.unsafeApply(pversion), Refined.unsafeApply(fname))
     }
 
   def deletePackageFilterOK(pname: String, pversion: String, fname: String)(implicit route: Route): Unit =

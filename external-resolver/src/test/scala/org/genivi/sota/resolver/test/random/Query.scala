@@ -60,6 +60,7 @@ object Query extends
 
   }
 
+  // scalastyle:off magic.number
   implicit val genQuery: StateT[Gen, RawStore, Query] =
     for {
       s    <- StateT.stateTMonadState[Gen, RawStore].get
@@ -78,5 +79,6 @@ object Query extends
           Store.pickPackage.runA(s).map(pkg => Resolve(pkg.id)))
       ))
     } yield qry
+  // scalastyle:on
 
 }

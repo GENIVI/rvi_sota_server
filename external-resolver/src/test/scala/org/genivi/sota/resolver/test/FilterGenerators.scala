@@ -51,12 +51,14 @@ trait FilterGenerators  {
   implicit lazy val arbFilterAST: Arbitrary[FilterAST] =
     Arbitrary(genFilterAST)
 
+  // scalastyle:off magic.number
   val genFilterName: Gen[String] =
     for {
     // We don't want name clashes so keep the names long.
       n  <- Gen.choose(20, 50)
       cs <- Gen.listOfN(n, Gen.alphaNumChar)
     } yield cs.mkString
+  // scalastyle:on
 
   // These filters will be random and quite big, most likely never
   // letting any vehicles through.
