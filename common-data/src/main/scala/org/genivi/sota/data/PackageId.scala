@@ -9,10 +9,10 @@ import cats.{Eq, Show}
 import eu.timepit.refined.api.Validate
 import com.typesafe.config.ConfigFactory
 
-case class PackageId(
-                 name   : PackageId.Name,
-                 version: PackageId.Version
-             )
+case class PackageId(name   : PackageId.Name,
+                     version: PackageId.Version) {
+  override def toString(): String = s"PackageId(${name.get}, ${version.get})"
+}
 
 /**
   * A (software) package has a notion of id which is shared between the

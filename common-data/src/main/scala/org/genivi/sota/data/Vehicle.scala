@@ -11,7 +11,9 @@ import org.joda.time.DateTime
  * The notion of vehicle has a identification number (VIN), this is
  * shared between the core and resolver.
  */
-case class Vehicle(vin: Vehicle.Vin, lastSeen: Option[DateTime] = None)
+case class Vehicle(vin: Vehicle.Vin, lastSeen: Option[DateTime] = None) {
+  override def toString(): String = s"Vehicle(${vin.get}, $lastSeen)"
+}
 
 object Vehicle {
   def tupled: ((Vin, Option[DateTime])) => Vehicle = (Vehicle.apply _).tupled

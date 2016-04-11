@@ -25,7 +25,9 @@ case class PackageFilter(
   packageName   : PackageId.Name,
   packageVersion: PackageId.Version,
   filterName    : Filter.Name
-)
+) {
+  override def toString(): String = s"PackageFilter(${packageName.get}, ${packageVersion.get}, ${filterName.get})"
+}
 
 /**
  * The Package object

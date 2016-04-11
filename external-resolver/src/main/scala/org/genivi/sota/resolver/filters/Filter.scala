@@ -14,7 +14,9 @@ import org.scalacheck._
 case class Filter(
   name: Filter.Name,
   expression: Filter.Expression
-)
+) {
+  override def toString(): String = { s"Filter(${name.get}, ${expression.get})" }
+}
 
 object Filter {
 
