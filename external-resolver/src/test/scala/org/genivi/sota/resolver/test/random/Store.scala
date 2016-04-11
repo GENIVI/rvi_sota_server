@@ -142,7 +142,7 @@ case class RawStore(
     ) yield pkg
   }
 
-  def packagesInUse(): Set[Package] = toSet {
+  def packagesInUse: Set[Package] = toSet {
     for (
       entry <- vehicles;
       (veh, (paks, comps)) = entry;
@@ -150,7 +150,7 @@ case class RawStore(
     ) yield pkg
   }
 
-  def componentsInUse(): Set[Component] = toSet {
+  def componentsInUse: Set[Component] = toSet {
     for (
       entry <- vehicles;
       (veh, (paks, comps)) = entry;
@@ -158,7 +158,7 @@ case class RawStore(
     ) yield cmpn
   }
 
-  def filtersInUse(): Set[Filter] = toSet {
+  def filtersInUse: Set[Filter] = toSet {
     for (
       entry <- packages;
       (pkg, fs) = entry;
@@ -166,15 +166,15 @@ case class RawStore(
     ) yield flt
   }
 
-  def packagesUnused(): Set[Package] = { packages.keySet -- packagesInUse }
+  def packagesUnused: Set[Package] = { packages.keySet -- packagesInUse }
 
-  def componentsUnused(): Set[Component] = { components -- componentsInUse }
+  def componentsUnused: Set[Component] = { components -- componentsInUse }
 
-  def filtersUnused(): Set[Filter] = { filters -- filtersInUse }
+  def filtersUnused: Set[Filter] = { filters -- filtersInUse }
 
   // WELL-FORMEDNESS
 
-  def isValid(): Boolean = {
+  def isValid: Boolean = {
     vehicles.forall { entry =>
       val (veh, (paks, comps)) = entry;
       paks.forall(packages.contains) && comps.forall(components.contains)

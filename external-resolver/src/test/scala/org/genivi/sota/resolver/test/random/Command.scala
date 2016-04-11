@@ -7,7 +7,7 @@ import org.genivi.sota.resolver.packages.{Package, PackageFilter}
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.test._
 import org.genivi.sota.rest.ErrorCodes
-import org.scalacheck.{Arbitrary, Gen}
+import org.scalacheck.Gen
 
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
