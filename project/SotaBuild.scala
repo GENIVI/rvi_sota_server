@@ -1,11 +1,10 @@
-import com.typesafe.sbt.packager.docker.DockerPlugin
 import org.flywaydb.sbt.FlywayPlugin._
 import play.routes.compiler.InjectedRoutesGenerator
 import play.sbt.routes.RoutesKeys
-import play.sbt.{PlaySettings, PlayScala}
+import play.sbt.{PlayScala, PlaySettings}
 import sbt._
 import sbt.Keys._
-import sbtbuildinfo.{BuildInfoPlugin, BuildInfoKey}
+import sbtbuildinfo.{BuildInfoKey, BuildInfoPlugin}
 import sbtbuildinfo.BuildInfoKeys._
 import com.typesafe.sbt.packager.Keys.dockerExposedPorts
 import com.typesafe.sbt.web._
@@ -56,48 +55,23 @@ object SotaBuild extends Build {
     buildInfoPackage := organization.value + ".sota." + name.value
   )
 
-  lazy val mavenUser = sys.env.get("MAVEN_USER").orElse(sys.props.get("maven.user")).getOrElse("releaser")
-  lazy val mavenPassword = sys.env.get("MAVEN_PASSWORD").orElse(sys.props.get("maven.password")).getOrElse("")
-
-  lazy val publishSettings = Seq(
-    publishMavenStyle := true,
-    credentials += Credentials("Repository Archiva Managed internal Repository",
-      "maven.advancedtelematic.com",
-      mavenUser, mavenPassword),
-    credentials += Credentials("Repository Archiva Managed snapshots Repository",
-      "maven.advancedtelematic.com",
-      mavenUser, mavenPassword),
-    publishTo := {
-      val server = "http://maven.advancedtelematic.com/repository/"
-      if (isSnapshot.value)
-        Some("snapshots" at server + "snapshots")
-      else
-        Some("internal"  at server + "internal")
-    }
-  )
-
-  lazy val disablePublishSettings = Seq(
-    publish := (),
-    publishLocal := ()
-  )
-
   // the sub-projects
   lazy val common = Project(id = "common", base = file("common"))
     .settings(basicSettings ++ compilerSettings)
     .settings( libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.NscalaTime :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
     .dependsOn(commonData)
-    .settings(disablePublishSettings)
+    .settings(Publish.settings)
 
   lazy val commonData = Project(id = "common-data", base = file("common-data"))
     .settings(basicSettings ++ compilerSettings)
     .settings(libraryDependencies ++= Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.CommonsCodec :+ Dependencies.TypesafeConfig :+ Dependencies.NscalaTime)
-    .settings(publishSettings)
+    .settings(Publish.settings)
 
   lazy val commonTest = Project(id = "common-test", base = file("common-test"))
     .settings(basicSettings ++ compilerSettings)
     .settings(libraryDependencies ++= Seq (Dependencies.Cats, Dependencies.Refined))
     .dependsOn(commonData)
-    .settings(disablePublishSettings)
+    .settings(Publish.settings)
 
   lazy val externalResolver = Project(id = "resolver", base = file("external-resolver"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
@@ -110,7 +84,7 @@ object SotaBuild extends Build {
     ))
     .dependsOn(common, commonData, commonTest % "test")
     .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
-    .settings(disablePublishSettings)
+    .settings(Publish.disable)
 
   lazy val core = Project(id = "core", base = file("core"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
@@ -128,7 +102,7 @@ object SotaBuild extends Build {
     .configs(IntegrationTests, UnitTests)
     .dependsOn(common, commonData, commonTest % "test")
     .enablePlugins(Packaging.plugins: _*)
-    .settings(disablePublishSettings)
+    .settings(Publish.settings)
 
   import play.sbt.Play.autoImport._
   lazy val webServer = Project(id = "webserver", base = file("web-server"),
@@ -162,16 +136,15 @@ object SotaBuild extends Build {
     .settings(inConfig(IntegrationTests)(Defaults.testTasks): _*)
     .settings(inConfig(BrowserTests)(Defaults.testTasks): _*)
     .configs(UnitTests, IntegrationTests, BrowserTests)
-    .settings(disablePublishSettings)
+    .settings(Publish.disable)
 
   lazy val sota = Project(id = "sota", base = file("."))
     .settings( basicSettings )
     .settings( Versioning.settings )
-    .settings( Release.settings )
+    .settings(Release.settings(common, commonData, commonTest, core))
     .aggregate(common, commonData, commonTest, core, externalResolver, webServer)
     .enablePlugins(Versioning.Plugin)
-    .settings(disablePublishSettings)
-
+    .settings(Publish.disable)
 }
 
 object Dependencies {
