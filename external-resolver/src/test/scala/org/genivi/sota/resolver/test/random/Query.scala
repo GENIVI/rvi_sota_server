@@ -22,6 +22,10 @@ final case object ListFilters                         extends Query
 
 final case class  Resolve(id: PackageId)             extends Query
 
+// TODO Query: list components
+// TODO Query: vehicles having component
+// TODO Query: components for vehicle
+// TODO Query: filters for package
 
 object Query extends
     VehicleRequestsHttp with
