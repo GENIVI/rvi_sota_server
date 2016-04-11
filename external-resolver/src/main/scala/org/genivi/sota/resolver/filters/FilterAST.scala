@@ -91,10 +91,10 @@ object FilterAST extends StandardTokenParsers with PackratParsers with ImplicitC
 
   def query(f: FilterAST): Function1[(Vehicle, (Seq[PackageId], Seq[Component.PartNumber])), Boolean] =
   { case a@((v: Vehicle, (ps: Seq[PackageId], cs: Seq[Component.PartNumber]))) => f match {
-      case VinMatches(re)       => !re.get.r.findAllIn(v.vin.get).isEmpty
-      case HasPackage(re1, re2) => ps.exists(p => !re1.get.r.findAllIn(p.name   .get).isEmpty &&
-                                                  !re2.get.r.findAllIn(p.version.get).isEmpty)
-      case HasComponent(re)     => cs.exists(part => !re.get.r.findAllIn(part.get).isEmpty)
+      case VinMatches(re)       => re.get.r.findAllIn(v.vin.get).nonEmpty
+      case HasPackage(re1, re2) => ps.exists(p => re1.get.r.findAllIn(p.name   .get).nonEmpty &&
+                                                  re2.get.r.findAllIn(p.version.get).nonEmpty)
+      case HasComponent(re)     => cs.exists(part => re.get.r.findAllIn(part.get).nonEmpty)
       case Not(f)               => !query(f)(a)
       case And(l, r)            => query(l)(a) && query(r)(a)
       case Or (l, r)            => query(l)(a) || query(r)(a)
