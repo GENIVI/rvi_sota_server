@@ -118,10 +118,16 @@ case class RawStore(
     ) yield flt
   }
 
+  // WELL-FORMEDNESS
+
   def isValid(): Boolean = {
-    allInstalledPackages().forall(pkg => packages.contains(pkg)) &&
-      allInstalledComponents().forall(cmpn => components.contains(cmpn)) &&
-      allAssociatedFilters().forall(flt => filters.contains(flt))
+    vehicles.forall { entry =>
+      val (veh, (paks, comps)) = entry;
+      paks.forall(packages.contains) && comps.forall(components.contains)
+    } && packages.forall { entry =>
+      val (pkg, fs) = entry
+      fs.forall(filters.contains)
+    }
   }
 
 }
