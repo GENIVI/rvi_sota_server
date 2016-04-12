@@ -10,6 +10,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import io.circe.generic.auto._
+import org.genivi.sota.core.resolver.{ConnectivityClient, DefaultConnectivity}
 import org.genivi.sota.core.transfer.DefaultUpdateNotifier
 import org.joda.time.DateTime
 

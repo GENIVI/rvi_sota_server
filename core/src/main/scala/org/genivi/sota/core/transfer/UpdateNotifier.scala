@@ -6,12 +6,14 @@ package org.genivi.sota.core.transfer
 
 import akka.event.LoggingAdapter
 import java.util.UUID
-import org.genivi.sota.core.Connectivity
+
 import org.genivi.sota.core.data.UpdateSpec
 import org.genivi.sota.core.data.{Package, UpdateSpec}
+import org.genivi.sota.core.resolver.Connectivity
 import org.genivi.sota.core.rvi.ServerServices
 import org.genivi.sota.data.Vehicle
 import org.joda.time.DateTime
+
 import scala.concurrent.{ExecutionContext, Future}
 
 

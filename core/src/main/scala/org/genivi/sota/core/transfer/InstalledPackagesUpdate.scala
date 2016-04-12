@@ -10,13 +10,13 @@ import java.util.UUID
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import io.circe.syntax._
 import org.genivi.sota.data.{PackageId, Vehicle}
-import org.genivi.sota.core.ExternalResolverClient
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.{InstallHistories, OperationResults, UpdateRequests, UpdateSpecs}
 import org.genivi.sota.db.SlickExtensions
 import slick.dbio.DBIO
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.core.db.UpdateSpecs._
+import org.genivi.sota.core.resolver.ExternalResolverClient
 import org.genivi.sota.core.rvi.UpdateReport
 
 import scala.concurrent.{ExecutionContext, Future}

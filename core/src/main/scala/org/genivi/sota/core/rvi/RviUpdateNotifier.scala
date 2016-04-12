@@ -5,11 +5,12 @@
 package org.genivi.sota.core.rvi
 
 import akka.event.LoggingAdapter
-import org.genivi.sota.core.Connectivity
 import org.genivi.sota.core.data.UpdateSpec
+import org.genivi.sota.core.resolver.Connectivity
 import org.genivi.sota.core.transfer._
 import org.genivi.sota.data.Vehicle
 import org.joda.time.DateTime
+
 import scala.concurrent.{ExecutionContext, Future}
 
 

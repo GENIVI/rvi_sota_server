@@ -18,6 +18,7 @@ import org.genivi.sota.core.db.{InstallHistories, Vehicles}
 import org.genivi.sota.core.transfer.InstalledPackagesUpdate
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.generic.auto._
+import org.genivi.sota.core.resolver.DefaultConnectivity
 import org.joda.time.DateTime
 
 class VehicleServiceSpec extends FunSuite

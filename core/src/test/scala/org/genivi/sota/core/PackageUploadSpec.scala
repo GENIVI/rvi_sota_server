@@ -11,6 +11,7 @@ import java.io.File
 
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.core.data.Package
+import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
 import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.rest.ErrorRepresentation
 import org.scalatest.prop.PropertyChecks

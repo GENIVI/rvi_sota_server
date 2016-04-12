@@ -14,8 +14,10 @@ import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.jsonrpc.HttpTransport
+import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, DefaultExternalResolverClient}
 import org.genivi.sota.core.rvi._
 import org.genivi.sota.core.transfer._
+
 import scala.util.{Failure, Success, Try}
 
 

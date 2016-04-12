@@ -18,8 +18,9 @@ import java.util.UUID
 import java.security.MessageDigest
 
 import org.apache.commons.codec.binary.Hex
-import org.genivi.sota.core.{ConnectivityClient, Generators}
+import org.genivi.sota.core.Generators
 import org.genivi.sota.core.data.Package
+import org.genivi.sota.core.resolver.ConnectivityClient
 import org.genivi.sota.data.Vehicle
 import org.joda.time.DateTime
 import org.scalacheck.Gen

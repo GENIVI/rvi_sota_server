@@ -2,13 +2,14 @@
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.core
+package org.genivi.sota.core.resolver
 
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
+import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import org.genivi.sota.data.{PackageId, Vehicle}
@@ -73,8 +74,8 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
 
   import CirceMarshallingSupport._
   import io.circe._
-  import io.circe.generic.auto._
   import system.dispatcher
+  import io.circe.generic.auto._
 
   private[this] val log = Logging( system, "org.genivi.sota.externalResolverClient" )
 
@@ -157,9 +158,9 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
    */
   override def putPackage(packageId: PackageId, description: Option[String], vendor: Option[String]): Future[Unit] = {
     import akka.http.scaladsl.client.RequestBuilding._
-    import io.circe.generic.auto._
     import shapeless._
     import syntax.singleton._
+    import io.circe.generic.auto._
 
     val payload =
       ('id ->> ('name ->> packageId.name.get :: 'version ->> packageId.version.get :: HNil)) ::
