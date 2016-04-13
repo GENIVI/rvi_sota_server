@@ -7,7 +7,7 @@ import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.resolver.packages.Package
 import org.scalacheck.Gen
 import Misc._
-import org.genivi.sota.data.Vehicle
+import org.genivi.sota.data.{PackageId, Vehicle}
 
 import scala.collection.immutable.Iterable
 
@@ -118,50 +118,54 @@ case class RawStore(
 
   private def toSet[E](elems: Iterable[E]): Set[E] = { elems.toSet }
 
+  /**
+    * Vehicles with some component installed.
+    */
+  def vehiclesWithSomeComponent: Map[Vehicle, Set[Component]] = {
+    for (
+      (veh, (packs, comps)) <- vehicles
+      if comps.nonEmpty
+    ) yield (veh, comps)
+  }
+
   def vehiclesHaving(cmpn: Component): Set[Vehicle] = toSet {
     for (
-      entry <- vehicles;
-      (veh, (paks, comps)) = entry
+      (veh, (paks, comps)) <- vehicles
       if comps.contains(cmpn)
     ) yield veh
   }
 
   def vehiclesHaving(pkg: Package): Set[Vehicle] = toSet {
     for (
-      entry <- vehicles;
-      (veh, (paks, comps)) = entry
+      (veh, (paks, comps)) <- vehicles
       if paks.contains(pkg)
     ) yield veh
   }
 
   def packagesHaving(flt: Filter): Set[Package] = toSet {
     for (
-      entry <- packages;
-      (pkg, fs) = entry
+      (pkg, fs) <- packages
       if fs contains flt
     ) yield pkg
   }
 
   def packagesInUse: Set[Package] = toSet {
     for (
-      entry <- vehicles;
-      (veh, (paks, comps)) = entry;
-      pkg   <-  paks
+      (veh, (paks, comps)) <- vehicles;
+      pkg <-  paks
     ) yield pkg
   }
 
   def componentsInUse: Set[Component] = toSet {
     for (
-      entry <- vehicles;
-      (veh, (paks, comps)) = entry;
+      (veh, (paks, comps)) <- vehicles;
       cmpn  <-  comps
     ) yield cmpn
   }
 
   def filtersInUse: Set[Filter] = toSet {
     for (
-      entry <- packages;
-      (pkg, fs) = entry;
+      (pkg, fs) <- packages;
       flt  <-  fs
     ) yield flt
   }
@@ -171,6 +175,30 @@ case class RawStore(
   def componentsUnused: Set[Component] = { components -- componentsInUse }
 
   def filtersUnused: Set[Filter] = { filters -- filtersInUse }
+
+  // LOOKUPS
+
+  private def toHead[A](elems: Iterable[A]): Option[A] = elems.headOption
+
+  def lookupFilters(id: PackageId): Option[Set[Filter]] = toHead {
+    for (
+      (pkg, fs) <- packages
+      if pkg.id == id
+    ) yield fs
+  }
+
+  def lookupPkgsComps(vin: Vehicle.Vin): Option[(Set[Package], Set[Component])] = toHead {
+    for (
+      (veh, (paks, comps)) <- vehicles
+      if veh.vin == vin
+    ) yield (paks, comps)
+  }
+
+  def lookupPackages(vin: Vehicle.Vin): Option[Set[Package]] =
+    lookupPkgsComps(vin).map(_._1)
+
+  def lookupComponents(vin: Vehicle.Vin): Option[Set[Component]] =
+    lookupPkgsComps(vin).map(_._2)
 
   // WELL-FORMEDNESS
 
@@ -201,26 +229,45 @@ object Store {
     ValidStore()
   )
 
+  def pick[T](elems: collection.Iterable[T]): T = {
+    // avoiding elems.toVector thus space-efficient
+    val n = util.Random.nextInt(elems.size)
+    val it = elems.iterator.drop(n)
+    it.next
+  }
+
   def pickVehicle: StateT[Gen, RawStore, Vehicle] =
     for {
       s    <- StateT.stateTMonadState[Gen, RawStore].get
-      vehs =  s.vehicles.keys.toVector
-      n    <- lift(Gen.choose(0, vehs.length - 1))
-    } yield vehs(n)
+      vehs =  s.vehicles.keys
+    } yield pick(vehs)
 
   def pickPackage: StateT[Gen, RawStore, Package] =
     for {
       s    <- StateT.stateTMonadState[Gen, RawStore].get
-      pkgs =  s.packages.keys.toVector
-      n    <- lift(Gen.choose(0, pkgs.length - 1))
-    } yield pkgs(n)
+      pkgs =  s.packages.keys
+    } yield pick(pkgs)
 
   def pickFilter: StateT[Gen, RawStore, Filter] =
     for {
       s     <- StateT.stateTMonadState[Gen, RawStore].get
-      filts =  s.filters.toVector
-      n     <- lift(Gen.choose(0, filts.length - 1))
-    } yield filts(n)
+      filts =  s.filters
+    } yield pick(filts)
+
+  def pickComponent: StateT[Gen, RawStore, Component] =
+    for {
+      s    <- StateT.stateTMonadState[Gen, RawStore].get
+      comps =  s.components
+    } yield pick(comps)
+
+  def pickVehicleWithComponent: StateT[Gen, RawStore, (Vehicle, Component)] =
+    for {
+      s    <- StateT.stateTMonadState[Gen, RawStore].get
+      vcs   = s.vehiclesWithSomeComponent
+    } yield {
+      val (veh, comps) = pick(vcs)
+      (veh, pick(comps))
+    }
 
   def numberOfVehicles: StateT[Gen, RawStore, Int] =
     StateT.stateTMonadState[Gen, RawStore].get map
@@ -233,5 +280,13 @@ object Store {
   def numberOfFilters: StateT[Gen, RawStore, Int] =
     StateT.stateTMonadState[Gen, RawStore].get map
       (_.filters.size)
+
+  def numberOfComponents: StateT[Gen, RawStore, Int] =
+    StateT.stateTMonadState[Gen, RawStore].get map
+      (_.components.size)
+
+  def numberOfVehiclesWithSomeComponent: StateT[Gen, RawStore, Int] =
+    StateT.stateTMonadState[Gen, RawStore].get map
+      (_.vehiclesWithSomeComponent.size)
 
 }

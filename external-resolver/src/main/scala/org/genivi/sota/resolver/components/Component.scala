@@ -11,7 +11,7 @@ case class Component(
   partNumber : Component.PartNumber,
   description: String
 ) {
-  override def toString(): String = { s"Filter(${partNumber.get}, $description)" }
+  override def toString(): String = { s"Component(${partNumber.get}, $description)" }
 }
 
 object Component {

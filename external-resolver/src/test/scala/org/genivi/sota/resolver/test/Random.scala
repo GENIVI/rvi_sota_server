@@ -1,18 +1,19 @@
 package org.genivi.sota.resolver.test
 
+import io.circe.generic.auto._
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
+
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.RouteTestTimeout
 import cats.state.State
-import io.circe.generic.auto._
 import org.genivi.sota.data.{PackageId, Vehicle}
-import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.test.random.Misc._
-import org.genivi.sota.resolver.test.random.Semantics
-import org.genivi.sota.resolver.test.random.Session, Session._
-import org.genivi.sota.resolver.test.random.{Store, RawStore}
+import org.genivi.sota.resolver.test.random._
+import Session._
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.rest.ErrorRepresentation
+
 import scala.annotation.tailrec
 import scala.concurrent.duration._
 

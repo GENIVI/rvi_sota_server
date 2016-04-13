@@ -2,16 +2,18 @@ package org.genivi.sota.resolver.test.random
 
 import akka.http.scaladsl.model.StatusCodes
 import cats.state.{State, StateT}
-import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.resolve.ResolveFunctions
 import org.genivi.sota.resolver.filters.{And, FilterAST, True}
 import FilterAST._
 import org.genivi.sota.resolver.test.{FilterRequestsHttp, PackageRequestsHttp, ResolveRequestsHttp, VehicleRequestsHttp}
-import org.genivi.sota.resolver.test.{SuccessFilters, SuccessPackages, SuccessVehicleMap, SuccessVehicles}
 import org.scalacheck.Gen
-import Misc.{function0Instance, lift, monGen}
+import Misc.{lift, monGen, function0Instance}
+import org.genivi.sota.data.Vehicle.Vin
 import org.genivi.sota.data.{PackageId, Vehicle}
 
+import scala.annotation.tailrec
+import scala.collection.immutable.Iterable
+import scala.concurrent.ExecutionContext
 
 sealed trait Query
 
@@ -20,7 +22,7 @@ final case class  ListPackagesOnVehicle(veh: Vehicle) extends Query
 
 final case object ListFilters                         extends Query
 
-final case class  Resolve(id: PackageId)             extends Query
+final case class  Resolve(id: PackageId)              extends Query
 
 // TODO Query: list components
 // TODO Query: vehicles having component
@@ -33,6 +35,24 @@ object Query extends
     FilterRequestsHttp with
     ResolveRequestsHttp {
 
+  def semQueries(qrs: List[Query])
+                (implicit ec: ExecutionContext): State[RawStore, List[Semantics]] = {
+
+    @tailrec def go(qrs0: List[Query], s0: RawStore, acc: List[Semantics]): (RawStore, List[Semantics]) =
+      qrs0 match {
+        case Nil           => (s0, acc.reverse)
+        case (qr :: qrs1) =>
+          val (s1, r) = semQuery(qr).run(s0).run
+          go(qrs1, s1, r :: acc)
+      }
+
+    State.get.flatMap { s0 =>
+      val (s1, sems) = go(qrs, s0, List())
+      State.set(s1).flatMap(_ => State.pure(sems))
+    }
+
+  }
+
   def semQuery(q: Query): State[RawStore, Semantics] = q match {
 
     case ListVehicles               =>
@@ -44,28 +64,41 @@ object Query extends
         SuccessPackages(s.vehicles(veh)._1.map(_.id))))
 
     case ListFilters                =>
-      State.get map (s => Semantics(listFilters, StatusCodes.OK, SuccessFilters(s.filters)))
+      State.get map (s => Semantics(listFilters, StatusCodes.OK,
+        SuccessFilters(s.filters)))
 
     case Resolve(pkgId)                =>
-
-      def filters(s: RawStore, id: PackageId): Set[FilterAST] = {
-        val fs = s.packages.map{ case (pkg, fs) => (pkg.id, fs) }
-        fs(id).map(_.expression).map(parseValidFilter)
-      }
-
-      def expr(s: RawStore, id: PackageId): FilterAST =
-        filters(s, id).toList.foldLeft[FilterAST](True)(And)
-
-      State.get map (s => Semantics(resolve2(pkgId), StatusCodes.OK, SuccessVehicleMap(
-        ResolveFunctions.makeFakeDependencyMap(pkgId,
-          s.vehicles.keys.toList.map(v =>
-              (v, (s.vehicles(v)._1.toSeq.map(_.id), s.vehicles(v)._2.toSeq.map(_.partNumber))))
-           .filter(query(expr(s, pkgId))).map(_._1)))))
+      State.get map (s => Semantics(resolve2(pkgId), StatusCodes.OK,
+        SuccessVehicleMap(vehicleMap(s, pkgId))))
 
   }
 
+  private def vehicleMap(s: RawStore, pkgId: PackageId): Map[Vin, List[PackageId]] = {
+
+    // An AST for each filter associated to the given package.
+    val filters: Set[FilterAST] =
+      for (
+        flt <- s.lookupFilters(pkgId).get
+      ) yield parseValidFilter(flt.expression)
+
+    // An AST AND-ing the filters associated to the given package.
+    val expr: FilterAST =
+      filters.toList.foldLeft[FilterAST](True)(And)
+
+    // Apply the resulting filter to select vehicles.
+    val vehs: Iterable[Vehicle] = for (
+      (veh, (paks, comps)) <- s.vehicles;
+      pakIds = paks.map(_.id).toSeq;
+      compIds = comps.map(_.partNumber).toSeq;
+      entry2 = (veh, (pakIds, compIds));
+      if query(expr)(entry2)
+    ) yield veh
+
+    ResolveFunctions.makeFakeDependencyMap(pkgId, vehs.toSeq)
+  }
+
   // scalastyle:off magic.number
-  implicit val genQuery: StateT[Gen, RawStore, Query] =
+  def genQuery: StateT[Gen, RawStore, Query] =
     for {
       s    <- StateT.stateTMonadState[Gen, RawStore].get
       vehs <- Store.numberOfVehicles
@@ -84,5 +117,14 @@ object Query extends
       ))
     } yield qry
   // scalastyle:on
+
+  def genQueries(n: Int)
+                (implicit ec: ExecutionContext): StateT[Gen, RawStore, List[Query]] = {
+    if (n < 1) throw new IllegalArgumentException
+    for {
+      q  <- genQuery
+      qs <- if (n == 1) genQuery.map(List(_)) else genQueries(n - 1)
+    } yield q :: qs
+  }
 
 }

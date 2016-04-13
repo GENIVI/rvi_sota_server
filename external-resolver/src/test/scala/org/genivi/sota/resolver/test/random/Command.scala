@@ -107,34 +107,37 @@ object Command extends
         s       <- State.get
         _       <- State.set(s.removing(filt))
         success =  s.filtersInUse.isEmpty
-      } yield
-        if (success) {
-          Semantics(deleteFilter(filt), StatusCodes.OK, Success)
-        } else {
-          Semantics(deleteFilter(filt), StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry)) // TODO Error Code
-        }
+      } yield {
+        val req = deleteFilter(filt)
+        if (success) { Semantics(req, StatusCodes.OK, Success) }
+        else         { Semantics(req, StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry)) }
+      }
 
     case AddFilterToPackage(pkg, filt) =>
       for {
         s       <- State.get
         _       <- State.set(s.associating(pkg, filt))
         success =  !s.packages(pkg).contains(filt)
-      } yield
-          if (success) {
-            Semantics(addPackageFilter2(PackageFilter(pkg.id.name, pkg.id.version, filt.name)),
-              StatusCodes.OK, Success)
-          } else {
-            Semantics(addPackageFilter2(PackageFilter(pkg.id.name, pkg.id.version, filt.name)),
-              StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry))
-          }
+      } yield {
+        val req = addPackageFilter2(PackageFilter(pkg.id.name, pkg.id.version, filt.name))
+        if (success) { Semantics(req, StatusCodes.OK, Success) }
+        else         { Semantics(req, StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry)) }
+      }
+
+    // TODO case RemoveFilterForPackage(pkg: Package, filt: Filter)
 
     case AddComponent(cmpn)     =>
       for {
         s <- State.get
         _ <- State.set(s.creating(cmpn))
-      } yield Semantics(
-        addComponent(cmpn.partNumber, cmpn.description),
-        StatusCodes.OK, Success) // duplicate or not, OK is the reply
+        isDuplicatePK = s.components.exists(_.partNumber == cmpn.partNumber)
+      } yield {
+        val req = addComponent(cmpn.partNumber, cmpn.description)
+        if (isDuplicatePK) { Semantics(req, StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry)) }
+        else               { Semantics(req, StatusCodes.OK, Success) }
+      }
+
+    // TODO case EditComponent(old: Component, neu: Component)
 
     case RemoveComponent(cmpn)      =>
       for {
@@ -148,9 +151,12 @@ object Command extends
       for {
         s <- State.get
         _ <- State.set(s.installing(veh, cmpn))
-      } yield Semantics(
-        installComponent(veh, cmpn),
-        StatusCodes.OK, Success) // whether already installed or not, OK is the reply
+        isDuplicatePK = s.vehicles(veh)._2.contains(cmpn)
+      } yield {
+        val req = installComponent(veh, cmpn)
+        if (isDuplicatePK) { Semantics(req, StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry)) }
+        else               { Semantics(req, StatusCodes.OK, Success) }
+      }
 
     case UninstallComponent(veh, cmpn)   =>
       for {
@@ -173,17 +179,38 @@ object Command extends
     FilterGenerators.genFilter(s.packages.keys.toList, s.components.toList)
       .map(AddFilter(_))
 
+  private def genCommandAddComponent(s: RawStore): Gen[AddComponent] =
+    ComponentGenerators.genComponent.map(AddComponent(_))
+
   private def genCommandInstallPackage(s: RawStore): Gen[InstallPackage] =
     for {
       veh <- Store.pickVehicle.runA(s)
       pkg <- Store.pickPackage.runA(s)
     } yield InstallPackage(veh, pkg)
 
+  private def genCommandInstallComponent(s: RawStore): Gen[InstallComponent] =
+    for {
+      veh <- Store.pickVehicle.runA(s)
+      cmp <- Store.pickComponent.runA(s)
+    } yield InstallComponent(veh, cmp)
+
+  private def genCommandUninstallComponent(s: RawStore): Gen[UninstallComponent] =
+    for {
+      (veh, cmp) <- Store.pickVehicleWithComponent.runA(s)
+    } yield UninstallComponent(veh, cmp)
+
   private def genCommandAddFilterToPackage(s: RawStore): Gen[AddFilterToPackage] =
     for {
       pkg  <- Store.pickPackage.runA(s)
       filt <- Store.pickFilter.runA(s)
     } yield AddFilterToPackage(pkg, filt)
+
+  private def genCommandEditFilter(s: RawStore): Gen[EditFilter] =
+    for {
+      fltOld <- Store.pickFilter.runA(s)
+      fltNu0 <- FilterGenerators.genFilter(s.packages.keys.toList, s.components.toList)
+      fltNu1  = Filter(fltOld.name, fltNu0.expression)
+    } yield EditFilter(fltOld, fltNu1)
 
   // scalastyle:off cyclomatic.complexity
   // scalastyle:off magic.number
@@ -193,6 +220,8 @@ object Command extends
       vehs  <- Store.numberOfVehicles
       pkgs  <- Store.numberOfPackages
       filts <- Store.numberOfFilters
+      comps <- Store.numberOfComponents
+      vcomp <- Store.numberOfVehiclesWithSomeComponent
       cmd   <- lift(Gen.frequency(
 
         // If there are few vehicles, packages or filters in the world,
@@ -204,21 +233,25 @@ object Command extends
 
         (if (filts <= 3) 20 else 1, genCommandAddFilter(s)),
 
+        (if (comps <= 3) 20 else 1, genCommandAddComponent(s)),
+
         // If there are vehicles and packages, then install some
         // packages on the vehicles with high probability.
         (if (vehs > 0 && pkgs > 0) 100 else 0, genCommandInstallPackage(s)),
 
+        // If there are vehicles and components
+        (if (vehs > 0 && comps > 0) 100 else 0, genCommandInstallComponent(s)),
+
+        // TODO fix VehicleRepository.uninstallComponent (if (vcomp > 0) 10 else 0, genCommandUninstallComponent(s)),
+
         // If there are packages and filters, install some filter to some package.
         (if (pkgs > 0 && filts > 0) 50 else 0, genCommandAddFilterToPackage(s))
 
-        // TODO RemoveFilter      (filt: Filter)
         // TODO EditFilter        (old : Filter, neu: Filter)
+        // TODO RemoveFilter      (filt: Filter)
 
-        // TODO AddComponent      (cmpn: Component)
         // TODO EditComponent     (old : Component, neu: Component)
         // TODO RemoveComponent   (cmpn: Component)
-        // TODO InstallComponent  (veh: Vehicle, cmpn: Component)
-        // TODO UninstallComponent(veh: Vehicle, cmpn: Component)
 
       ))
       _   <- StateT.stateTMonadState(monGen).set(semCommand(cmd).runS(s).run)
@@ -226,10 +259,12 @@ object Command extends
   // scalastyle:on
 
   def genCommands(n: Int)
-                 (implicit ec: ExecutionContext): StateT[Gen, RawStore, List[Command]] =
+                 (implicit ec: ExecutionContext): StateT[Gen, RawStore, List[Command]] = {
+    if (n < 1) throw new IllegalArgumentException
     for {
       cmd  <- genCommand
-      cmds <- if (n == 0) genCommand.map(List(_)) else genCommands(n - 1)
+      cmds <- if (n == 1) genCommand.map(List(_)) else genCommands(n - 1)
     } yield cmd :: cmds
+  }
 
 }
