@@ -247,6 +247,9 @@ trait PackageFilterRequestsHttp {
   def listFiltersForPackage(pname: String, pversion: String): HttpRequest =
     Get(Resource.uri("packages", pname, pversion, "filter"))
 
+  def deletePackageFilter(pkg: Package, filt: Filter): HttpRequest =
+    deletePackageFilter(pkg.id.name.get, pkg.id.version.get, filt.name.get)
+
   def deletePackageFilter(pname: String, pversion: String, fname: String): HttpRequest =
     Delete(Resource.uri("packages", pname, pversion, "filter", fname))
 

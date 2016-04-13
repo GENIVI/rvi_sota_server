@@ -27,9 +27,9 @@ final case class EditFilter        (old : Filter, neu: Filter)  extends Command 
   // restriction imposed by the endpoint allowing only a filter's expression (but not name) to be updated.
   if (old.name.get != neu.name.get) throw new IllegalArgumentException
 }
-final case class RemoveFilter      (filt: Filter)               extends Command
-final case class AddFilterToPackage(pkg: Package, filt: Filter) extends Command
-// TODO final case class RemoveFilterForPackage(pkg: Package, filt: Filter) extends Command
+final case class RemoveFilter          (filt: Filter)               extends Command
+final case class AddFilterToPackage    (pkg: Package, filt: Filter) extends Command
+final case class RemoveFilterForPackage(pkg: Package, filt: Filter) extends Command
 
 final case class AddComponent   (cmpn: Component) extends Command
 final case class EditComponent  (old : Component, neu: Component)  extends Command
@@ -124,7 +124,13 @@ object Command extends
         else         { Semantics(req, StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry)) }
       }
 
-    // TODO case RemoveFilterForPackage(pkg: Package, filt: Filter)
+    case RemoveFilterForPackage(pkg, filt) =>
+      for {
+        s       <- State.get
+        _       <- State.set(s.deassociating(pkg, filt))
+      } yield Semantics(
+        deletePackageFilter(pkg, filt),
+        StatusCodes.OK, Success)
 
     case AddComponent(cmpn)     =>
       for {
@@ -209,6 +215,11 @@ object Command extends
       filt <- Store.pickFilter.runA(s)
     } yield AddFilterToPackage(pkg, filt)
 
+  private def genCommandRemoveFilterForPackage(s: RawStore): Gen[RemoveFilterForPackage] =
+    for {
+      (pkg, flt)  <- Store.pickPackageWithFilter.runA(s)
+    } yield RemoveFilterForPackage(pkg, flt)
+
   private def genCommandEditFilter(s: RawStore): Gen[EditFilter] =
     for {
       fltOld <- Store.pickFilter.runA(s)
@@ -233,6 +244,7 @@ object Command extends
       filts <- Store.numberOfFilters
       comps <- Store.numberOfComponents
       vcomp <- Store.numberOfVehiclesWithSomeComponent
+      pfilt <- Store.numberOfPackagesWithSomeFilter
       cmd   <- lift(Gen.frequency(
 
         // If there are few vehicles, packages or filters in the world,
@@ -260,9 +272,9 @@ object Command extends
         (if (comps > 0) 50 else 0, genCommandEditComponent(s)),
 
         // If there are packages and filters, install some filter to some package.
-        (if (pkgs > 0 && filts > 0) 50 else 0, genCommandAddFilterToPackage(s))
+        (if (pkgs > 0 && filts > 0) 50 else 0, genCommandAddFilterToPackage(s)),
 
-        // TODO EditFilter        (old : Filter, neu: Filter)
+        (if (pfilt > 0) 50 else 0, genCommandRemoveFilterForPackage(s))
         // TODO RemoveFilter      (filt: Filter)
 
         // TODO RemoveComponent   (cmpn: Component)

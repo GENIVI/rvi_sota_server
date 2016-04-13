@@ -11,7 +11,7 @@ import org.genivi.sota.data.{PackageId, Vehicle}
 
 import scala.collection.immutable.Iterable
 
-
+// scalastyle:off number.of.methods
 case class RawStore(
   vehicles  : Map[Vehicle, (Set[Package], Set[Component])],
   packages  : Map[Package, Set[Filter]],
@@ -140,6 +140,13 @@ case class RawStore(
       (veh, (packs, comps)) <- vehicles
       if comps.nonEmpty
     ) yield (veh, comps)
+  }
+
+  def packagesWithSomeFilter: Map[Package, Set[Filter]] = {
+    for (
+      (p, fs) <- packages
+      if fs.nonEmpty
+    ) yield (p, fs)
   }
 
   def vehiclesHaving(cmpn: Component): Set[Vehicle] = toSet {
@@ -283,6 +290,15 @@ object Store {
       (veh, pick(comps))
     }
 
+  def pickPackageWithFilter: StateT[Gen, RawStore, (Package, Filter)] =
+    for {
+      s    <- StateT.stateTMonadState[Gen, RawStore].get
+      pfs   = s.packagesWithSomeFilter
+    } yield {
+      val (veh, fs) = pick(pfs)
+      (veh, pick(fs))
+    }
+
   def numberOfVehicles: StateT[Gen, RawStore, Int] =
     StateT.stateTMonadState[Gen, RawStore].get map
       (_.vehicles.keys.size)
@@ -303,4 +319,8 @@ object Store {
     StateT.stateTMonadState[Gen, RawStore].get map
       (_.vehiclesWithSomeComponent.size)
 
+  def numberOfPackagesWithSomeFilter: StateT[Gen, RawStore, Int] =
+    StateT.stateTMonadState[Gen, RawStore].get map
+      (_.packagesWithSomeFilter.size)
 }
+// scalastyle:on
