@@ -84,7 +84,7 @@ object SotaBuild extends Build {
     ))
     .dependsOn(common, commonData, commonTest % "test")
     .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
-    .settings(Publish.disable)
+    .settings(Publish.settings)
 
   lazy val core = Project(id = "core", base = file("core"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
@@ -141,7 +141,7 @@ object SotaBuild extends Build {
   lazy val sota = Project(id = "sota", base = file("."))
     .settings( basicSettings )
     .settings( Versioning.settings )
-    .settings(Release.settings(common, commonData, commonTest, core))
+    .settings(Release.settings(common, commonData, commonTest, core, externalResolver))
     .aggregate(common, commonData, commonTest, core, externalResolver, webServer)
     .enablePlugins(Versioning.Plugin)
     .settings(Publish.disable)
