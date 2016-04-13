@@ -48,6 +48,7 @@ case class RawStore(
       val neuPackages = result.packages.updated(p, neuFilters)
       result = result.copy(packages = neuPackages)
     }
+    result = result.copy(filters = filters - old + neu)
     result
   }
 

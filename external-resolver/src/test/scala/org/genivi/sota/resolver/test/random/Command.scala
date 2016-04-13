@@ -245,6 +245,8 @@ object Command extends
 
         // TODO fix VehicleRepository.uninstallComponent (if (vcomp > 0) 10 else 0, genCommandUninstallComponent(s)),
 
+        (if (filts > 0) 50 else 0, genCommandEditFilter(s)),
+
         // If there are packages and filters, install some filter to some package.
         (if (pkgs > 0 && filts > 0) 50 else 0, genCommandAddFilterToPackage(s))
 
