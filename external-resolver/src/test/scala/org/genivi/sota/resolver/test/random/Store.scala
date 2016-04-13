@@ -52,6 +52,19 @@ case class RawStore(
     result
   }
 
+  def replacing(old: Component, neu: Component): RawStore = {
+    var result = this
+    val vehsAffected = vehiclesHaving(old)
+    for (v <- vehsAffected) {
+      val (paks, oldComps) = result.vehicles(v)
+      val neuComps = oldComps - old + neu
+      val neuVehicles = result.vehicles.updated(v, (paks, neuComps))
+      result = result.copy(vehicles = neuVehicles)
+    }
+    result = result.copy(components = components - old + neu)
+    result
+  }
+
   // REMOVING
 
   /**

@@ -12,7 +12,6 @@ import org.genivi.sota.rest.ErrorCodes
 import org.scalacheck.Gen
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
-
 import Misc._
 
 
@@ -33,7 +32,7 @@ final case class AddFilterToPackage(pkg: Package, filt: Filter) extends Command
 // TODO final case class RemoveFilterForPackage(pkg: Package, filt: Filter) extends Command
 
 final case class AddComponent   (cmpn: Component) extends Command
-// TODO final case class EditComponent        (old : Component, neu: Component)  extends Command
+final case class EditComponent  (old : Component, neu: Component)  extends Command
 final case class RemoveComponent(cmpn: Component) extends Command
 final case class InstallComponent  (veh: Vehicle, cmpn: Component) extends Command
 final case class UninstallComponent(veh: Vehicle, cmpn: Component) extends Command
@@ -138,7 +137,11 @@ object Command extends
         else               { Semantics(req, StatusCodes.OK, Success) }
       }
 
-    // TODO case EditComponent(old: Component, neu: Component)
+    case EditComponent(old, neu)    =>
+      for {
+        s <- State.get
+        _ <- State.set(s.replacing(old, neu))
+      } yield Semantics(updateComponent(neu), StatusCodes.OK, Success)
 
     case RemoveComponent(cmpn)      =>
       for {
@@ -213,6 +216,13 @@ object Command extends
       fltNu1  = Filter(defaultNs, fltOld.name, fltNu0.expression)
     } yield EditFilter(fltOld, fltNu1)
 
+  private def genCommandEditComponent(s: RawStore): Gen[EditComponent] =
+    for {
+      cmpOld <- Store.pickComponent.runA(s)
+      cmpNu0 <- ComponentGenerators.genComponent
+      cmpNu1  = Component(defaultNs, cmpOld.partNumber, cmpNu0.description)
+    } yield EditComponent(cmpOld, cmpNu1)
+
   // scalastyle:off cyclomatic.complexity
   // scalastyle:off magic.number
   def genCommand(implicit ec: ExecutionContext): StateT[Gen, RawStore, Command] =
@@ -247,13 +257,14 @@ object Command extends
 
         (if (filts > 0) 50 else 0, genCommandEditFilter(s)),
 
+        (if (comps > 0) 50 else 0, genCommandEditComponent(s)),
+
         // If there are packages and filters, install some filter to some package.
         (if (pkgs > 0 && filts > 0) 50 else 0, genCommandAddFilterToPackage(s))
 
         // TODO EditFilter        (old : Filter, neu: Filter)
         // TODO RemoveFilter      (filt: Filter)
 
-        // TODO EditComponent     (old : Component, neu: Component)
         // TODO RemoveComponent   (cmpn: Component)
 
       ))

@@ -140,6 +140,14 @@ trait ComponentRequestsHttp {
   def deleteComponent(part: Component.PartNumber): HttpRequest =
     Delete(Resource.uri("components", part.get))
 
+  def updateComponent(cmp: Component)
+                     (implicit ec: ExecutionContext): HttpRequest =
+    updateComponent(cmp.partNumber.get, cmp.description)
+
+  def updateComponent(partNumber: String, description: String)
+                     (implicit ec: ExecutionContext): HttpRequest =
+    Put(Resource.uri("components", partNumber), Component.DescriptionWrapper(description))
+
 }
 
 trait ComponentRequests extends
