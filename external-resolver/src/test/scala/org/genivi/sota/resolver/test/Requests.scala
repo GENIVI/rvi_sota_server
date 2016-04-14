@@ -37,7 +37,6 @@ object Resource {
 /**
  * Testing Trait for building Vehicle requests
  */
-
 trait VehicleRequestsHttp {
 
   def addVehicle(vin: Vehicle.Vin): HttpRequest =
@@ -111,6 +110,9 @@ trait VehicleRequests extends
 
 }
 
+/**
+  * Testing Trait for building Package requests
+  */
 trait PackageRequestsHttp {
 
   def addPackage(pkg: Package)
@@ -123,9 +125,6 @@ trait PackageRequestsHttp {
 
 }
 
-/**
- * Testing Trait for building Package requests
- */
 trait PackageRequests extends
   PackageRequestsHttp with
   Matchers { self: ScalatestRouteTest =>

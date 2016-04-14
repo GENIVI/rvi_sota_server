@@ -194,10 +194,10 @@ object Command extends
   }
   // scalastyle:on
 
-  private def genCommandAddVehicle(): Gen[AddVehicle] =
+  private def genCommandAddVehicle: Gen[AddVehicle] =
     VehicleGenerators.genVehicle.map(AddVehicle(_))
 
-  private def genCommandAddPackage(): Gen[AddPackage] =
+  private def genCommandAddPackage: Gen[AddPackage] =
     PackageGenerators.genPackage.map(AddPackage(_))
 
   private def genCommandAddFilter(s: RawStore): Gen[AddFilter] =

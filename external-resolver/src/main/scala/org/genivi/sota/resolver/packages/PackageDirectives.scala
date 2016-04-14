@@ -30,38 +30,38 @@ class PackageDirectives(implicit system: ActorSystem,
                         ec: ExecutionContext) {
   import Directives._
 
-  def ok =
+  def ok: StandardRoute =
     complete {
       StatusCodes.NoContent
     }
 
-  def getFilters =
+  def getFilters: StandardRoute =
     complete(db.run(PackageFilterRepository.list))
 
-  def getPackage(ns: Namespace, id: PackageId) =
+  def getPackage(ns: Namespace, id: PackageId): Route =
     completeOrRecoverWith(db.run(PackageRepository.exists(ns, id))) {
       Errors.onMissingPackage
     }
 
-  def addPackage(ns: Namespace, id: PackageId) =
+  def addPackage(ns: Namespace, id: PackageId): Route =
     entity(as[Package.Metadata]) { metadata =>
       val pkg = Package(ns, id, metadata.description, metadata.vendor)
       complete(db.run(PackageRepository.add(pkg).map(_ => pkg)))
     }
 
-  def getPackageFilters(ns: Namespace, id: PackageId) =
+  def getPackageFilters(ns: Namespace, id: PackageId): Route =
     completeOrRecoverWith(db.run(
       PackageFilterRepository.listFiltersForPackage(ns, id))) {
         Errors.onMissingPackage
       }
 
-  def addPackageFilter(ns: Namespace, id: PackageId, fname: String Refined Filter.ValidName) =
+  def addPackageFilter(ns: Namespace, id: PackageId, fname: String Refined Filter.ValidName): Route =
     completeOrRecoverWith(db.run(
       PackageFilterRepository.addPackageFilter(PackageFilter(ns, id.name, id.version, fname)))) {
         Errors.onMissingPackage orElse Errors.onMissingFilter orElse { case err => throw(err) }
       }
 
-  def deletePackageFilter(ns: Namespace, id: PackageId, fname: String Refined Filter.ValidName) =
+  def deletePackageFilter(ns: Namespace, id: PackageId, fname: String Refined Filter.ValidName): Route =
     completeOrRecoverWith(db.run(
       PackageFilterRepository.deletePackageFilter(PackageFilter(ns, id.name, id.version, fname)))) {
         case PackageFilterRepository.MissingPackageFilterException =>
