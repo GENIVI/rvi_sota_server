@@ -21,6 +21,7 @@ final case class AddVehicle    (veh: Vehicle)               extends Command
 
 final case class AddPackage    (pkg: Package)               extends Command
 final case class InstallPackage(veh: Vehicle, pkg: Package) extends Command
+final case class UninstallPackage(veh: Vehicle, pkg: Package) extends Command
 
 final case class AddFilter         (filt: Filter)               extends Command
 final case class EditFilter        (old : Filter, neu: Filter)  extends Command {
