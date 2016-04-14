@@ -259,8 +259,18 @@ object VehicleRepository {
       _ <- installedComponents += ((namespace, vin, part))
     } yield ()
 
-  def uninstallComponent(namespace: Namespace, vin: Vehicle.Vin, part: Component.PartNumber): DBIO[Int] =
-    ???
+  def uninstallComponent
+  (namespace: Namespace, vin: Vehicle.Vin, part: Component.PartNumber)
+  (implicit ec: ExecutionContext): DBIO[Unit] =
+    for {
+      _ <- exists(namespace, vin)
+      _ <- ComponentRepository.exists(namespace, part)
+      _ <- installedComponents.filter { ic =>
+        ic.namespace  === namespace &&
+        ic.vin        === vin &&
+        ic.partNumber === part
+      }.delete
+    } yield ()
 
   def componentsOnVinMap
     (namespace: Namespace)

@@ -308,7 +308,7 @@ object Command extends
 
         (if (vpaks > 0) 10 else 0, genCommandUninstallPackage(s)),
 
-        // TODO fix VehicleRepository.uninstallComponent (if (vcomp > 0) 10 else 0, genCommandUninstallComponent(s)),
+        (if (vcomp > 0) 10 else 0, genCommandUninstallComponent(s)),
 
         (if (filts > 0) 50 else 0, genCommandEditFilter(s)),
 
