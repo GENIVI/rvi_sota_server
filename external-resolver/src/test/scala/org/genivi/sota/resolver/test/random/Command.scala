@@ -10,6 +10,7 @@ import org.genivi.sota.resolver.packages.{Package, PackageFilter}
 import org.genivi.sota.resolver.test._
 import org.genivi.sota.rest.ErrorCodes
 import org.scalacheck.Gen
+
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
 import Misc._
@@ -92,7 +93,14 @@ object Command extends
         s <- State.get
         _ <- State.set(s.installing(veh, pkg))
       } yield Semantics(installPackage(veh, pkg), StatusCodes.OK, Success)
-                                       // XXX: move gets inwards...
+
+    case UninstallPackage(veh, pkg) =>
+      for {
+        s <- State.get
+        _ <- State.set(s.uninstalling(veh, pkg))
+      } yield Semantics(
+        uninstallPackage(veh, pkg),
+        StatusCodes.OK, Success) // whether already uninstalled or not, OK is the reply
 
     case AddFilter(filt)               =>
       for {
@@ -205,6 +213,11 @@ object Command extends
       pkg <- Store.pickPackage.runA(s)
     } yield InstallPackage(veh, pkg)
 
+  private def genCommandUninstallPackage(s: RawStore): Gen[UninstallPackage] =
+    for {
+      (veh, pkg) <- Store.pickVehicleWithPackage.runA(s)
+    } yield UninstallPackage(veh, pkg)
+
   private def genCommandInstallComponent(s: RawStore): Gen[InstallComponent] =
     for {
       veh <- Store.pickVehicle.runA(s)
@@ -271,6 +284,7 @@ object Command extends
       comps <- Store.numberOfComponents
       ucmps <- Store.numberOfUnusedComponents
       vcomp <- Store.numberOfVehiclesWithSomeComponent
+      vpaks <- Store.numberOfVehiclesWithSomePackage
       pfilt <- Store.numberOfPackagesWithSomeFilter
       cmd   <- lift(Gen.frequency(
 
@@ -291,6 +305,8 @@ object Command extends
 
         // If there are vehicles and components
         (if (vehs > 0 && comps > 0) 100 else 0, genCommandInstallComponent(s)),
+
+        (if (vpaks > 0) 10 else 0, genCommandUninstallPackage(s)),
 
         // TODO fix VehicleRepository.uninstallComponent (if (vcomp > 0) 10 else 0, genCommandUninstallComponent(s)),
 

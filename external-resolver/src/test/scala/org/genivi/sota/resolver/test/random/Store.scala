@@ -116,6 +116,11 @@ case class RawStore(
     copy(vehicles = vehicles.updated(veh, (paks + pkg, comps)))
   }
 
+  def uninstalling(veh: Vehicle, pkg: Package): RawStore = {
+    val (paks, comps) = vehicles(veh)
+    copy(vehicles = vehicles.updated(veh, (paks - pkg, comps)))
+  }
+
   // FILTERS FOR PACKAGES
 
   def associating(pkg: Package, filt: Filter): RawStore = {
@@ -131,6 +136,16 @@ case class RawStore(
   // QUERIES
 
   private def toSet[E](elems: Iterable[E]): Set[E] = { elems.toSet }
+
+  /**
+    * Vehicles with some package installed.
+    */
+  def vehiclesWithSomePackage: Map[Vehicle, Set[Package]] = {
+    for (
+      (veh, (packs, comps)) <- vehicles
+      if packs.nonEmpty
+    ) yield (veh, packs)
+  }
 
   /**
     * Vehicles with some component installed.
@@ -302,6 +317,15 @@ object Store {
       (veh, pick(comps))
     }
 
+  def pickVehicleWithPackage: StateT[Gen, RawStore, (Vehicle, Package)] =
+    for {
+      s    <- StateT.stateTMonadState[Gen, RawStore].get
+      vps   = s.vehiclesWithSomePackage
+    } yield {
+      val (veh, paks) = pick(vps)
+      (veh, pick(paks))
+    }
+
   def pickPackageWithFilter: StateT[Gen, RawStore, (Package, Filter)] =
     for {
       s    <- StateT.stateTMonadState[Gen, RawStore].get
@@ -334,6 +358,10 @@ object Store {
   def numberOfUnusedComponents: StateT[Gen, RawStore, Int] =
     StateT.stateTMonadState[Gen, RawStore].get map
       (_.componentsUnused.size)
+
+  def numberOfVehiclesWithSomePackage: StateT[Gen, RawStore, Int] =
+    StateT.stateTMonadState[Gen, RawStore].get map
+      (_.vehiclesWithSomePackage.size)
 
   def numberOfVehiclesWithSomeComponent: StateT[Gen, RawStore, Int] =
     StateT.stateTMonadState[Gen, RawStore].get map

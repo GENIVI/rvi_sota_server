@@ -49,6 +49,12 @@ trait VehicleRequestsHttp {
   def installPackage(vin: Vehicle.Vin, pname: String, pversion: String): HttpRequest =
     Put(Resource.uri("vehicles", vin.get, "package", pname, pversion))
 
+  def uninstallPackage(veh: Vehicle, pkg: Package): HttpRequest =
+    uninstallPackage(veh.vin, pkg.id.name.get, pkg.id.version.get)
+
+  def uninstallPackage(vin: Vehicle.Vin, pname: String, pversion: String): HttpRequest =
+    Delete(Resource.uri("vehicles", vin.get, "package", pname, pversion))
+
   def listVehicles: HttpRequest =
     Get(Resource.uri("vehicles"))
 
