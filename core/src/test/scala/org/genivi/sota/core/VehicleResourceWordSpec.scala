@@ -9,16 +9,17 @@ import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import eu.timepit.refined.api.Refined
+import eu.timepit.refined.refineMV
 import io.circe.generic.auto._
-import org.genivi.sota.marshalling.CirceMarshallingSupport
-import CirceMarshallingSupport._
+import org.genivi.sota.core.common.NamespaceDirective
 import org.genivi.sota.core.db.Vehicles
-import org.genivi.sota.core.rvi.JsonRpcRviClient
 import org.genivi.sota.core.jsonrpc.HttpTransport
+import org.genivi.sota.core.rvi.JsonRpcRviClient
+import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.Vehicle
+import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.{Matchers, WordSpec}
-
 import scala.concurrent.Await
 import slick.driver.MySQLDriver.api._
 
@@ -31,6 +32,8 @@ class VinResourceWordSpec extends WordSpec
     with ScalatestRouteTest
     with BeforeAndAfterAll {
 
+  import CirceMarshallingSupport._
+
   val databaseName = "test-database"
   val db = Database.forConfig(databaseName)
 
@@ -40,13 +43,14 @@ class VinResourceWordSpec extends WordSpec
 
   lazy val service = new VehiclesResource(db, rviClient, new FakeExternalResolver())
 
+  val testNs: Namespace = Refined.unsafeApply("default")
   val testVins = List("12345678901234500", "1234567WW0123AAAA", "123456789012345WW")
 
   override def beforeAll() : Unit = {
     TestDatabase.resetDatabase( databaseName )
     import scala.concurrent.duration._
     Await.ready(
-      db.run( DBIO.seq( testVins.map( v => Vehicles.create(Vehicle(Refined.unsafeApply(v)))): _*) ), 2.seconds
+      db.run( DBIO.seq( testVins.map( v => Vehicles.create(Vehicle(testNs, Refined.unsafeApply(v)))): _*) ), 2.seconds
     )
   }
 

@@ -4,13 +4,14 @@
  */
 package org.genivi.sota.core.db
 
+import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.Vehicle
-
-import scala.concurrent.ExecutionContext
-import slick.driver.MySQLDriver.api._
 import org.genivi.sota.db.Operators.regex
 import org.joda.time.DateTime
+import scala.concurrent.ExecutionContext
+import slick.driver.MySQLDriver.api._
 import slick.lifted.TableQuery
+
 
 /**
  * Database mapping definition for the Vehicles table.
@@ -28,37 +29,40 @@ object Vehicles {
    */
   // scalastyle:off
   class VehicleTable(tag: Tag) extends Table[Vehicle](tag, "Vehicle") {
+    def namespace = column[Namespace]("namespace")
     def vin = column[Vehicle.Vin]("vin")
     def lastSeen = column[Option[DateTime]]("last_seen")
-    def * = (vin, lastSeen) <> (Vehicle.tupled, Vehicle.unapply)
-    def pk = primaryKey("vin", vin)  // insertOrUpdate doesn't work if
-                                     // we use O.PrimaryKey in the vin
-                                     // column, see Slick issue #966.
+
+    def pk = primaryKey("vin", (namespace, vin))  // insertOrUpdate doesn't work if
+                                                  // we use O.PrimaryKey in the vin
+                                                  // column, see Slick issue #966.
+
+    def * = (namespace, vin, lastSeen) <> (Vehicle.tupled, Vehicle.unapply)
   }
   // scalastyle:on
 
   /**
    * Internal helper definition to accesss the SQL table
    */
-  val vins = TableQuery[VehicleTable]
+  val vehicles = TableQuery[VehicleTable]
 
   /**
    * List all the VINs that are known to the system
    * @return A list of Vehicles
    */
-  def list(): DBIO[Seq[Vehicle]] = vins.result
+  def list(): DBIO[Seq[Vehicle]] = vehicles.result
 
 
-  def all(): TableQuery[VehicleTable] = vins
+  def all(): TableQuery[VehicleTable] = vehicles
 
   /**
    * Check if a VIN exists
-   * @param vin The VIN to search for
+   * @param vehicle The namespaced VIN to search for
    * @return Option.Some if the vehicle is present. Option.None if it is absent
    */
-  def exists(vin: Vehicle.Vin): DBIO[Option[Vehicle]] =
-    vins
-      .filter(_.vin === vin)
+  def exists(vehicle: Vehicle): DBIO[Option[Vehicle]] =
+    vehicles
+      .filter(v => v.namespace === vehicle.namespace && v.vin === vehicle.vin)
       .result
       .headOption
 
@@ -66,8 +70,8 @@ object Vehicles {
    * Add a new VIN to SOTA.
    * @param vehicle The VIN of the vehicle
    */
-  def create(vehicle: Vehicle)(implicit ec: ExecutionContext) : DBIO[Vehicle.Vin] =
-    vins.insertOrUpdate(vehicle).map( _ => vehicle.vin )
+  def create(vehicle: Vehicle)(implicit ec: ExecutionContext) : DBIO[Vehicle] =
+    vehicles.insertOrUpdate(vehicle).map(_ => vehicle)
 
   /**
    * Delete a VIN from SOTA.
@@ -75,27 +79,29 @@ object Vehicles {
    * objects that reference this vehicle first.
    * @param vehicle The VIN to remove
    */
-  def deleteById(vehicle : Vehicle) : DBIO[Int] = vins.filter( _.vin === vehicle.vin ).delete
+  def deleteById(vehicle : Vehicle) : DBIO[Int] =
+    vehicles.filter(v => v.namespace === vehicle.namespace && v.vin === vehicle.vin).delete
 
   /**
    * Find VINs that match a regular expression
    * @param reg A regular expression
    * @return A list of matching VINs
    */
-  def searchByRegex(reg:String) : Query[VehicleTable, Vehicle, Seq] = vins.filter(vins => regex(vins.vin, reg))
+  def searchByRegex(reg:String): Query[VehicleTable, Vehicle, Seq] =
+    vehicles.filter(v => regex(v.vin, reg))
 
-  def updateLastSeen(vin: Vehicle.Vin, lastSeen: DateTime = DateTime.now)
+  def updateLastSeen(vehicle: Vehicle, lastSeen: DateTime = DateTime.now)
                     (implicit ec: ExecutionContext): DBIO[DateTime] = {
-    vins
-      .filter(_.vin === vin)
+    vehicles
+      .filter(v => v.namespace === vehicle.namespace && v.vin === vehicle.vin)
       .map(_.lastSeen)
       .update(Some(lastSeen))
       .map(_ => lastSeen)
   }
 
-  def findBy(vin: Vehicle.Vin): DBIO[Vehicle] = {
-    vins
-      .filter(_.vin === vin)
+  def findBy(vehicle: Vehicle): DBIO[Vehicle] = {
+    vehicles
+      .filter(v => v.namespace === vehicle.namespace && v.vin === vehicle.vin)
       .result
       .head
   }

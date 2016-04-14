@@ -1,6 +1,5 @@
 package org.genivi.sota.core
 
-
 import akka.http.scaladsl.util.FastFuture
 import akka.testkit.TestKit
 import eu.timepit.refined.api.Refined
@@ -8,15 +7,17 @@ import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db.{Packages, UpdateSpecs, Vehicles}
 import org.genivi.sota.core.resolver.DefaultConnectivity
 import org.genivi.sota.core.transfer.DefaultUpdateNotifier
+import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.Namespaces
 import org.genivi.sota.data.{PackageId, Vehicle, VehicleGenerators}
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Second, Span}
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
-
 import scala.concurrent.{Await, Future}
 import scala.util.Random
 import slick.jdbc.JdbcBackend._
+
 
 /**
  * Spec tests for Update service
@@ -25,7 +26,8 @@ class UpdateServiceSpec extends PropSpec
   with PropertyChecks
   with Matchers
   with DatabaseSpec
-  with BeforeAndAfterAll {
+  with BeforeAndAfterAll
+  with Namespaces {
 
   import org.genivi.sota.core.resolver.Connectivity
 
@@ -33,7 +35,7 @@ class UpdateServiceSpec extends PropSpec
 
   implicit val _db = db
 
-  val system = akka.actor.ActorSystem("UpdateServiseSpec")
+  implicit val system = akka.actor.ActorSystem("UpdateServiseSpec")
   import system.dispatcher
 
   override def beforeAll() : Unit = {
@@ -59,7 +61,7 @@ class UpdateServiceSpec extends PropSpec
   implicit override val generatorDrivenConfig = PropertyCheckConfig(minSuccessful = 20)
 
   property("decline if package not found") {
-    forAll(updateRequestGen(PackageIdGen)) { (request: UpdateRequest) =>
+    forAll(updateRequestGen(defaultNs, PackageIdGen)) { (request: UpdateRequest) =>
       whenReady( service.queueUpdate( request, _ => FastFuture.successful( Map.empty ) ).failed ) { e =>
         e shouldBe PackagesNotFound( request.packageId )
       }
@@ -82,7 +84,7 @@ class UpdateServiceSpec extends PropSpec
       vinsToDeps        <- Gen.listOfN(m, vinDepGen(missingPackages)).map( _.toMap )
     } yield (missingPackages, (_: Package) => FastFuture.successful(vinsToDeps))
 
-    forAll(updateRequestGen( AvailablePackageIdGen ), resolverGen) { (request, resolverConf) =>
+    forAll(updateRequestGen(defaultNs, AvailablePackageIdGen), resolverGen) { (request, resolverConf) =>
       val (missingPackages, resolver) = resolverConf
       whenReady(service.queueUpdate(request, resolver).failed.mapTo[PackagesNotFound]) { failure =>
         failure.packageIds.toSet.union(missingPackages.toSet) should contain theSameElementsAs missingPackages
@@ -90,16 +92,17 @@ class UpdateServiceSpec extends PropSpec
     }
   }
 
-  def createVehicles( vins: Set[Vehicle.Vin] ) : Future[Unit] = {
+  def createVehicles(ns: Namespace, vins: Set[Vehicle.Vin]) : Future[Unit] = {
     import slick.driver.MySQLDriver.api._
-    db.run( DBIO.seq( vins.map( vin => Vehicles.create(Vehicle(vin))).toArray: _* ) )
+    db.run(DBIO.seq(vins.map(vin => Vehicles.create(Vehicle(ns, vin))).toArray: _*))
   }
 
   property("upload spec per vin") {
     import slick.driver.MySQLDriver.api._
     import scala.concurrent.duration.DurationInt
-    forAll( updateRequestGen(AvailablePackageIdGen), dependenciesGen(packages) ) { (request, deps) =>
-      whenReady( createVehicles(deps.keySet).flatMap( _ => service.queueUpdate(request, _ => Future.successful(deps))) ) { specs =>
+    forAll( updateRequestGen(defaultNs, AvailablePackageIdGen), dependenciesGen(packages) ) { (request, deps) =>
+      whenReady(createVehicles(request.namespace, deps.keySet)
+        .flatMap(_ => service.queueUpdate(request, _ => Future.successful(deps)))) { specs =>
         val updates = Await.result( db.run( UpdateSpecs.listUpdatesById( Refined.unsafeApply( request.id.toString ) ) ), 1.second)
         specs.size shouldBe deps.size
       }
@@ -111,14 +114,14 @@ class UpdateServiceSpec extends PropSpec
     val newPackage = PackageGen.sample.get
 
     val dbSetup = for {
-      vin <- Vehicles.create(newVehicle)
+      vehicle <- Vehicles.create(newVehicle)
       packageM <- Packages.create(newPackage)
-    } yield (vin, packageM)
+    } yield (vehicle, packageM)
 
     val f = for {
-      (vin, packageM) <- db.run(dbSetup)
-      updateRequest <- service.queueVehicleUpdate(vin, packageM.id)
-      queuedPackages <- db.run(UpdateSpecs.getPackagesQueuedForVin(vin))
+      (vehicle, packageM) <- db.run(dbSetup)
+      updateRequest <- service.queueVehicleUpdate(vehicle.namespace, vehicle.vin, packageM.id)
+      queuedPackages <- db.run(UpdateSpecs.getPackagesQueuedForVin(vehicle.namespace, vehicle.vin))
     } yield (updateRequest, queuedPackages)
 
     whenReady(f) { case (updateRequest, queuedPackages) =>

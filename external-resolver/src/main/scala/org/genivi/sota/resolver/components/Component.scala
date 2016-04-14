@@ -5,10 +5,12 @@
 package org.genivi.sota.resolver.components
 
 import eu.timepit.refined.api.{Refined, Validate}
+import org.genivi.sota.data.Namespace._
 
 
 case class Component(
-  partNumber : Component.PartNumber,
+  namespace: Namespace,
+  partNumber: Component.PartNumber,
   description: String
 ) {
   override def toString(): String = { s"Component(${partNumber.get}, $description)" }

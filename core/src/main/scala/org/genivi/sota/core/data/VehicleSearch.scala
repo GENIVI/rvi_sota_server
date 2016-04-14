@@ -10,6 +10,7 @@ import slick.driver.MySQLDriver.api._
 import org.genivi.sota.core.data.VehicleStatus.VehicleStatus
 import org.genivi.sota.core.db.{UpdateSpecs, Vehicles}
 import org.genivi.sota.core.db.Vehicles.VehicleTable
+import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.Vehicle
 import org.joda.time.DateTime
 import org.genivi.sota.refined.SlickRefined._
@@ -36,7 +37,7 @@ object VehicleSearch {
 
   import org.genivi.sota.db.SlickExtensions.jodaDateTimeMapping
 
-  def search(regex: Option[String], includeStatus: Boolean)
+  def search(ns: Namespace, regex: Option[String], includeStatus: Boolean)
             (implicit db: Database, ec: ExecutionContext): DBIO[Json] = {
     val findQuery = regex match {
       case Some(r) => Vehicles.searchByRegex(r)

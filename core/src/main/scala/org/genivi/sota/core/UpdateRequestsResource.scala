@@ -5,32 +5,34 @@
 package org.genivi.sota.core
 
 import akka.actor.ActorSystem
+import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.server.PathMatchers.Slash
-import akka.http.scaladsl.server.Directives
-import Directives._
+import akka.http.scaladsl.server.{Directive1, Directives}
 import akka.stream.ActorMaterializer
 import eu.timepit.refined._
+import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string._
 import io.circe.generic.auto._
-import org.genivi.sota.marshalling.CirceMarshallingSupport
-import akka.http.scaladsl.marshalling.Marshaller._
-import eu.timepit.refined.api.Refined
+import io.circe.syntax._
+import org.genivi.sota.core.common.NamespaceDirective._
 import org.genivi.sota.core.data._
+import org.genivi.sota.core.db.UpdateSpecs
+import org.genivi.sota.core.resolver.ExternalResolverClient
+import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
+import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.rest.Validation._
 import slick.driver.MySQLDriver.api.Database
-import io.circe.syntax._
-import org.genivi.sota.core.resolver.ExternalResolverClient
-import org.genivi.sota.core.db.UpdateSpecs
 
 class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, updateService: UpdateService)
                             (implicit system: ActorSystem, mat: ActorMaterializer) {
 
-  import UpdateSpec._
   import CirceMarshallingSupport._
-  import system.dispatcher
-  import eu.timepit.refined.string.uuidValidate
+  import Directives._
+  import UpdateSpec._
   import WebService._
+  import eu.timepit.refined.string.uuidValidate
+  import system.dispatcher
 
   implicit val _db = db
 
@@ -38,9 +40,9 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
     complete(db.run(UpdateSpecs.listUpdatesById(uuid)))
   }
 
-  def queueVehicleUpdate(vin: Vehicle.Vin) = {
+  def queueVehicleUpdate(ns: Namespace, vin: Vehicle.Vin) = {
     entity(as[PackageId]) { packageId =>
-      val result = updateService.queueVehicleUpdate(vin, packageId)
+      val result = updateService.queueVehicleUpdate(ns, vin, packageId)
       complete(result)
     }
   }
@@ -49,12 +51,12 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
     complete(updateService.all(db, system.dispatcher))
   }
 
-  def createUpdate = {
+  def createUpdate(ns: Namespace) = {
     entity(as[UpdateRequest]) { req =>
       complete(
         updateService.queueUpdate(
           req,
-          pkg => resolver.resolve(pkg.id).map {
+          pkg => resolver.resolve(ns, pkg.id).map {
             m => m.map { case (v, p) => (v.vin, p) }
           }
         )
@@ -66,14 +68,16 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
     (get & extractUuid & pathEnd) {
       fetch
     } ~
-      (extractVin & post) { queueVehicleUpdate } ~
-      pathEnd {
-        get {
-          fetchUpdates
-        } ~
-        post {
-          createUpdate
-        }
+    (extractNamespace & extractVin & post) { (ns, vin) =>
+      queueVehicleUpdate(ns, vin)
+    } ~
+    pathEnd {
+      get {
+        fetchUpdates
+      } ~
+      (post & extractNamespace) { ns =>
+        createUpdate(ns)
+      }
     }
   }
 }

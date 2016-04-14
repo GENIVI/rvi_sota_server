@@ -12,6 +12,7 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
+import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 
@@ -19,9 +20,10 @@ import scala.concurrent.Future
 
 trait ExternalResolverClient {
 
-  def putPackage(packageId: PackageId, description: Option[String], vendor: Option[String]): Future[Unit]
+  def putPackage(namespace: Namespace, packageId: PackageId, description: Option[String],
+                 vendor: Option[String]): Future[Unit]
 
-  def resolve(packageId: PackageId): Future[Map[Vehicle, Set[PackageId]]]
+  def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Vehicle, Set[PackageId]]]
 
   def setInstalledPackages( vin: Vehicle.Vin, json: io.circe.Json) : Future[Unit]
 }
@@ -86,7 +88,7 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
    * @param packageId The name and version of the package
    * @return Which packages need to be installed on which vehicles
    */
-  override def resolve(packageId: PackageId): Future[Map[Vehicle, Set[PackageId]]] = {
+  override def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Vehicle, Set[PackageId]]] = {
     implicit val responseDecoder : Decoder[Map[Vehicle.Vin, Set[PackageId]]] =
       Decoder[Seq[(Vehicle.Vin, Set[PackageId])]].map(_.toMap)
 
@@ -98,7 +100,7 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
 
     request(packageId).flatMap { response =>
       Unmarshal(response.entity).to[Map[Vehicle.Vin, Set[PackageId]]].map { parsed =>
-        parsed.map { case (k, v) => Vehicle(k) -> v }
+        parsed.map { case (k, v) => Vehicle(namespace, k) -> v }
       }
     }.recover { case _ => Map.empty[Vehicle, Set[PackageId]] }
   }
@@ -156,11 +158,14 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
    * @param description A description of the package (optional)
    * @param vendor The vendor providing the package (optional)
    */
-  override def putPackage(packageId: PackageId, description: Option[String], vendor: Option[String]): Future[Unit] = {
+  override def putPackage(namespace: Namespace, packageId: PackageId, description: Option[String],
+                          vendor: Option[String]): Future[Unit] = {
     import akka.http.scaladsl.client.RequestBuilding._
     import shapeless._
     import syntax.singleton._
     import io.circe.generic.auto._
+
+    // TODO: actually pass the namespace
 
     val payload =
       ('id ->> ('name ->> packageId.name.get :: 'version ->> packageId.version.get :: HNil)) ::

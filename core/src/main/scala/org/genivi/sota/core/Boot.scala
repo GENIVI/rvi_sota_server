@@ -8,7 +8,7 @@ import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.Uri
-import akka.http.scaladsl.server.Directives
+import akka.http.scaladsl.server.{Directive1, Directives}
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
@@ -17,7 +17,7 @@ import org.genivi.sota.core.jsonrpc.HttpTransport
 import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, DefaultExternalResolverClient}
 import org.genivi.sota.core.rvi._
 import org.genivi.sota.core.transfer._
-
+import org.genivi.sota.data.Namespace._
 import scala.util.{Failure, Success, Try}
 
 

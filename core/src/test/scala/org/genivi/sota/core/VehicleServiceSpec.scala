@@ -95,15 +95,15 @@ class VehicleServiceSpec extends FunSuite
   }
 
   test("sets vehicle last seen when vehicle asks for updates") {
-    whenReady(createVehicle()) { vin =>
-      val url = Uri.Empty.withPath(BasePath / vin.get / "updates")
+    whenReady(createVehicle()) { vehicle =>
+      val url = Uri.Empty.withPath(BasePath / vehicle.vin.get / "updates")
       val now = DateTime.now.minusSeconds(10)
 
       Get(url) ~> service.route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[List[UUID]] should be(empty)
 
-        val vehicleF = db.run(Vehicles.list().map(_.find(_.vin == vin)))
+        val vehicleF = db.run(Vehicles.list().map(_.find(_.vin == vehicle.vin)))
 
         whenReady(vehicleF) {
           case Some(vehicle) =>
@@ -128,7 +128,7 @@ class VehicleServiceSpec extends FunSuite
 
         val dbIO = for {
           updateSpec <- InstalledPackagesUpdate.findUpdateSpecFor(vehicle.vin, updateSpec.request.id)
-          histories <- InstallHistories.list(vehicle.vin)
+          histories <- InstallHistories.list(vehicle.namespace, vehicle.vin)
         } yield (updateSpec, histories.last)
 
         whenReady(db.run(dbIO)) { case (updatedSpec, lastHistory) =>
@@ -143,9 +143,9 @@ class VehicleServiceSpec extends FunSuite
     val vehicle = genVehicle.sample.get
     val f = db.run(Vehicles.create(vehicle))
 
-    whenReady(f) { vin =>
+    whenReady(f) { vehicle =>
       val fakeUpdateRequestUuid = UUID.randomUUID()
-      val url = Uri.Empty.withPath(BasePath / vin.get / "updates" / fakeUpdateRequestUuid.toString)
+      val url = Uri.Empty.withPath(BasePath / vehicle.vin.get / "updates" / fakeUpdateRequestUuid.toString)
       val result = OperationResult(UUID.randomUUID().toString, 1, "some result")
       val updateReport = UpdateReport(fakeUpdateRequestUuid, List(result))
       val installReport = InstallReport(vehicle.vin, updateReport)

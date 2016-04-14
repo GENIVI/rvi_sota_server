@@ -9,6 +9,7 @@ import java.util.UUID
 
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import io.circe.syntax._
+import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.{InstallHistories, OperationResults, UpdateRequests, UpdateSpecs}
@@ -53,16 +54,16 @@ object InstalledPackagesUpdate {
       spec <- findUpdateSpecFor(vin, updateReport.update_id)
       _ <- DBIO.sequence(writeResultsIO)
       _ <- UpdateSpecs.setStatus(spec, UpdateStatus.Finished)
-      _ <- InstallHistories.log(vin, spec.request.id, spec.request.packageId, success = true)
+      _ <- InstallHistories.log(spec.namespace, vin, spec.request.id, spec.request.packageId, success = true)
     } yield spec.copy(status = UpdateStatus.Finished)
 
     db.run(dbIO)
   }
 
-  def findPendingPackageIdsFor(vin: Vehicle.Vin)
+  def findPendingPackageIdsFor(ns: Namespace, vin: Vehicle.Vin)
                               (implicit db: Database, ec: ExecutionContext) : DBIO[Seq[UUID]] = {
     updateSpecs
-      .filter(r => r.vin === vin)
+      .filter(r => r.namespace === ns && r.vin === vin)
       .filter(_.status.inSet(List(UpdateStatus.InFlight, UpdateStatus.Pending)))
       .map(_.requestId)
       .result
@@ -77,8 +78,9 @@ object InstalledPackagesUpdate {
       .result
       .headOption
       .flatMap {
-        case Some(((uuid, updateVin, status), updateRequest)) =>
-          val spec = UpdateSpec(updateRequest, updateVin, status, Set.empty[Package])
+        case Some(((ns: Namespace, uuid: UUID, updateVin: Vehicle.Vin, status: UpdateStatus.UpdateStatus),
+                   updateRequest: UpdateRequest)) =>
+          val spec = UpdateSpec(ns, updateRequest, updateVin, status, Set.empty[Package])
           DBIO.successful(spec)
         case None =>
           DBIO.failed(

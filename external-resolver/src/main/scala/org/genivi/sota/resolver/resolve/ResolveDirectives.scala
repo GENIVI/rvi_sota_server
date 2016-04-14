@@ -4,12 +4,15 @@
  */
 package org.genivi.sota.resolver.resolve
 
-import akka.http.scaladsl.server.{Route, Directives}
+import akka.actor.ActorSystem
+import akka.http.scaladsl.server.{Route, Directive1, Directives}
 import akka.stream.ActorMaterializer
 import io.circe.generic.auto._
 import org.genivi.sota.data.PackageId
+import org.genivi.sota.data.Namespace._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors
+import org.genivi.sota.resolver.common.NamespaceDirective._
 import org.genivi.sota.resolver.common.RefinementDirectives.refinedPackageId
 import org.genivi.sota.resolver.vehicles.VehicleRepository
 import scala.concurrent.ExecutionContext
@@ -19,10 +22,13 @@ import Directives._
 /**
  * API routes for package resolution.
  */
-class ResolveDirectives(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
+class ResolveDirectives(implicit system: ActorSystem,
+                        db: Database,
+                        mat: ActorMaterializer,
+                        ec: ExecutionContext) {
 
-  def resolvePackage(id: PackageId) =
-    completeOrRecoverWith(db.run(VehicleRepository.resolve(id))) {
+  def resolvePackage(ns: Namespace, id: PackageId) =
+    completeOrRecoverWith(db.run(VehicleRepository.resolve(ns, id))) {
       Errors.onMissingPackage
     }
 
@@ -32,8 +38,8 @@ class ResolveDirectives(implicit db: Database, mat: ActorMaterializer, ec: Execu
    * @throws 			Errors.MissingPackageException if the package doesn't exist
    */
   def route: Route =
-    (get & pathPrefix("resolve") & refinedPackageId) { id =>
-      resolvePackage(id)
+    (get & pathPrefix("resolve") & extractNamespace & refinedPackageId) { (ns, id) =>
+      resolvePackage(ns, id)
     }
 
 }

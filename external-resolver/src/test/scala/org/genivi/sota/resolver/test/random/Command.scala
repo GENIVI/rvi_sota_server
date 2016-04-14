@@ -2,18 +2,18 @@ package org.genivi.sota.resolver.test.random
 
 import akka.http.scaladsl.model.{HttpRequest, StatusCode, StatusCodes}
 import cats.state.{State, StateT}
+import org.genivi.sota.data.Namespaces
+import org.genivi.sota.data.{Vehicle, VehicleGenerators}
+import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.resolver.packages.{Package, PackageFilter}
-import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.test._
 import org.genivi.sota.rest.ErrorCodes
 import org.scalacheck.Gen
-
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
 
 import Misc._
-import org.genivi.sota.data.{Vehicle, VehicleGenerators}
 
 
 sealed trait Command
@@ -44,7 +44,8 @@ object Command extends
     PackageRequestsHttp with
     FilterRequestsHttp  with
     ComponentRequestsHttp with
-    PackageFilterRequestsHttp {
+    PackageFilterRequestsHttp with
+    Namespaces {
 
   type SemCommand = (HttpRequest, StatusCode, Result)
 
@@ -119,7 +120,7 @@ object Command extends
         _       <- State.set(s.associating(pkg, filt))
         success =  !s.packages(pkg).contains(filt)
       } yield {
-        val req = addPackageFilter2(PackageFilter(pkg.id.name, pkg.id.version, filt.name))
+        val req = addPackageFilter2(PackageFilter(pkg.namespace, pkg.id.name, pkg.id.version, filt.name))
         if (success) { Semantics(req, StatusCodes.OK, Success) }
         else         { Semantics(req, StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry)) }
       }
@@ -209,7 +210,7 @@ object Command extends
     for {
       fltOld <- Store.pickFilter.runA(s)
       fltNu0 <- FilterGenerators.genFilter(s.packages.keys.toList, s.components.toList)
-      fltNu1  = Filter(fltOld.name, fltNu0.expression)
+      fltNu1  = Filter(defaultNs, fltOld.name, fltNu0.expression)
     } yield EditFilter(fltOld, fltNu1)
 
   // scalastyle:off cyclomatic.complexity

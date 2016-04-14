@@ -8,7 +8,7 @@ import akka.http.scaladsl.model.StatusCodes
 import eu.timepit.refined.{refineMV, refineV}
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
-import org.genivi.sota.data.{PackageId, Vehicle}
+import org.genivi.sota.data.{Namespaces, PackageId, Vehicle}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
 import org.genivi.sota.resolver.packages.{Package, PackageFilter}
@@ -83,14 +83,14 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
 /**
  * Word Spec for Vehicle REST actions
  */
-class VehiclesResourceWordSpec extends ResourceWordSpec {
+class VehiclesResourceWordSpec extends ResourceWordSpec with Namespaces {
 
   val vehicles = "vehicles"
 
   val vin     : Vehicle.Vin = refineV[Vehicle.ValidVin]("V1N00LAM0FAU2DEEP").right.get
-  val vehicle : Vehicle     = Vehicle(vin)
+  val vehicle : Vehicle     = Vehicle(defaultNs, vin)
   val vin2    : Vehicle.Vin = refineV[Vehicle.ValidVin]("XAPABEPA123456789").right.get
-  val vehicle2: Vehicle     = Vehicle(vin2)
+  val vehicle2: Vehicle     = Vehicle(defaultNs, vin2)
 
   "Vin resource" should {
 

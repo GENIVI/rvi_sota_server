@@ -9,7 +9,7 @@ import akka.http.scaladsl.server.ValidationRejection
 import eu.timepit.refined.api.Refined
 import io.circe.Json
 import io.circe.generic.auto._
-import org.genivi.sota.data.PackageId
+import org.genivi.sota.data.{Namespaces, PackageId}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
 import org.genivi.sota.resolver.packages.Package
@@ -77,7 +77,7 @@ class PackagesResourcePropSpec extends ResourcePropSpec with PackageGenerators {
 /**
  * Spec for Packages REST action word processing
  */
-class PackagesResourceWordSpec extends ResourceWordSpec {
+class PackagesResourceWordSpec extends ResourceWordSpec with Namespaces {
 
   "Packages resource" should {
 
@@ -85,11 +85,11 @@ class PackagesResourceWordSpec extends ResourceWordSpec {
       addPackage("name", "1.0.0", Some("嚢"), None) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Package] shouldBe
-          Package(PackageId(Refined.unsafeApply("name"), Refined.unsafeApply("1.0.0")), Some("嚢"), None)
+          Package(defaultNs, PackageId(Refined.unsafeApply("name"), Refined.unsafeApply("1.0.0")), Some("嚢"), None)
       }
     }
 
-    val pkg = Package(PackageId(Refined.unsafeApply("apa"), Refined.unsafeApply("1.0.0")), None, None)
+    val pkg = Package(defaultNs, PackageId(Refined.unsafeApply("apa"), Refined.unsafeApply("1.0.0")), None, None)
 
     "GET /packages/:pkgName/:pkgVersion should return the package or fail" in {
       addPackage(pkg.id.name.get, pkg.id.version.get, None, None) ~> route ~> check {

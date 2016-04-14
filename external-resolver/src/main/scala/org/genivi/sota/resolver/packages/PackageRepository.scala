@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.resolver.packages
 
+import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.PackageId
 import org.genivi.sota.db.Operators._
 import org.genivi.sota.db.SlickExtensions._
@@ -25,16 +26,17 @@ object PackageRepository {
   // scalastyle:off
   private[packages] class PackageTable(tag: Tag) extends Table[Package](tag, "Package") {
 
+    def namespace   = column[Namespace]("namespace")
     def name        = column[PackageId.Name]("name")
     def version     = column[PackageId.Version]("version")
     def description = column[String]("description")
     def vendor      = column[String]("vendor")
 
-    def pk = primaryKey("pk_package", (name, version))
+    def pk = primaryKey("pk_package", (namespace, name, version))
 
-    def * = (name, version, description.?, vendor.?).shaped <>
-      (pkg => Package(PackageId(pkg._1, pkg._2), pkg._3, pkg._4),
-        (pkg: Package) => Some((pkg.id.name, pkg.id.version, pkg.description, pkg.vendor)))
+    def * = (namespace, name, version, description.?, vendor.?).shaped <>
+      (pkg => Package(pkg._1, PackageId(pkg._2, pkg._3), pkg._4, pkg._5),
+        (pkg: Package) => Some((pkg.namespace, pkg.id.name, pkg.id.version, pkg.description, pkg.vendor)))
   }
   // scalastyle:on
 
@@ -64,10 +66,11 @@ object PackageRepository {
    * @return        The DBIO[Package] if the package exists
    * @throws        Errors.MissingPackageException if thepackage does not exist
    */
-  def exists(pkgId: PackageId)(implicit ec: ExecutionContext): DBIO[Package] =
+  def exists(namespace: Namespace, pkgId: PackageId)(implicit ec: ExecutionContext): DBIO[Package] =
     packages
-      .filter(id => id.name    === pkgId.name &&
-                    id.version === pkgId.version)
+      .filter(p => p.namespace === namespace
+                && p.name      === pkgId.name
+                && p.version   === pkgId.version)
       .result
       .headOption
       .failIfNone(Errors.MissingPackageException)
@@ -78,10 +81,11 @@ object PackageRepository {
    * @param ids     A Set[Package.Id] of Ids to load
    * @return        A DBIO[Set[Package]] of matched packages
    */
-  def load(ids: Set[PackageId])
+  def load(namespace: Namespace, ids: Set[PackageId])
           (implicit ec: ExecutionContext): DBIO[Set[Package]] = {
     packages.filter( x =>
-      x.name.mappedTo[String] ++ x.version.mappedTo[String] inSet ids.map( id => id.name.get + id.version.get )
+      x.namespace === namespace &&
+      (x.name.mappedTo[String] ++ x.version.mappedTo[String] inSet ids.map(id => id.name.get + id.version.get))
     ).result.map( _.toSet )
   }
 

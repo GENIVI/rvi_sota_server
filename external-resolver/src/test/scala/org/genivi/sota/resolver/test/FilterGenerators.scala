@@ -1,14 +1,16 @@
 package org.genivi.sota.resolver.test
 
 import eu.timepit.refined.api.Refined
-import org.genivi.sota.data.SemanticVin
+import org.genivi.sota.data.{Namespaces, SemanticVin}
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.filters._
 import org.genivi.sota.resolver.filters.FilterAST._
 import org.genivi.sota.resolver.packages.Package
 import org.scalacheck.{Arbitrary, Gen}
 
-trait FilterGenerators  {
+trait FilterGenerators {
+
+  import Namespaces._
 
   def genFilterHelper(i: Int): Gen[FilterAST] = {
 
@@ -64,7 +66,7 @@ trait FilterGenerators  {
     for {
       name <- genFilterName
       expr <- genFilterAST
-    } yield Filter(Refined.unsafeApply(name), Refined.unsafeApply(ppFilter(expr)))
+    } yield Filter(defaultNs, Refined.unsafeApply(name), Refined.unsafeApply(ppFilter(expr)))
 
   implicit val arbFilter: Arbitrary[Filter] =
     Arbitrary(genFilterViaAST)
@@ -110,7 +112,7 @@ trait FilterGenerators  {
         (100, helper(depth)),
         (1,   genFilterAST)
       )
-    } yield Filter(Refined.unsafeApply(name), Refined.unsafeApply(ppFilter(expr)))
+    } yield Filter(defaultNs, Refined.unsafeApply(name), Refined.unsafeApply(ppFilter(expr)))
 
   }
 

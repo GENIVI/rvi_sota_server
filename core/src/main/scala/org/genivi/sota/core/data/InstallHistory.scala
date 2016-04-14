@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.core.data
 
+import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
 import org.joda.time.DateTime
 import java.util.UUID
@@ -33,6 +34,7 @@ case class OperationResult(
  */
 case class InstallHistory(
   id            : Option[Long],
+  namespace     : Namespace,
   vin           : Vehicle.Vin,
   updateId      : UUID,
   packageId     : PackageId,

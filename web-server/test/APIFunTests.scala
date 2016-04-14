@@ -31,6 +31,7 @@ object APITests extends Tag("APITests")
  */
 class APIFunTests extends PlaySpec with OneServerPerSuite {
 
+  val testNamespace = "default"
   val testVin = "TESTSTR0123456789"
   val testVinAlt = "TESTALT0123456789"
   val testPackageName = "TestPkg"
@@ -58,13 +59,13 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   }
   case class PackageId(name: String, version: String)
   case class Uri(uri: String)
-  case class Package(id: PackageId, uri: Uri, size: Long, checkSum: String, description: String, vendor: String)
+  case class Package(namespace: String, id: PackageId, uri: Uri, size: Long, checkSum: String, description: String, vendor: String)
   case class PackageResolver(id: PackageId, description: String, vendor: String)
-  case class Vehicle(vin: String)
-  case class FilterJson(name : String, expression : String)
-  case class FilterPackageJson(filterName : String, packageName : String, packageVersion : String)
-  case class ComponentJson(partNumber : String, description : String)
-  case class UpdateRequest(id: String, packageId: PackageId, creationTime: String, periodOfValidity: String,
+  case class Vehicle(namespace: String, vin: String)
+  case class FilterJson(namespace: String, name: String, expression: String)
+  case class FilterPackageJson(namespace: String, filterName : String, packageName : String, packageVersion : String)
+  case class ComponentJson(namespace: String, partNumber : String, description : String)
+  case class UpdateRequest(namespace: String, id: String, packageId: PackageId, creationTime: String, periodOfValidity: String,
                            priority: Int, signature: String, description: String, requestConfirmation: Boolean)
   import UpdateStatus._
   case class UpdateSpec(request: UpdateRequest, vin: String, status: UpdateStatus, dependencies: Set[Package])
@@ -124,8 +125,8 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     response.getStatusCode mustBe NO_CONTENT
   }
 
-  def addFilter(filterName : String): Unit = {
-    val data = FilterJson(filterName, testFilterExpression)
+  def addFilter(ns: String, filterName: String): Unit = {
+    val data = FilterJson(ns, filterName, testFilterExpression)
     val response = makeJsonRequest("filters", POST, data.asJson.noSpaces)
     response.status mustBe OK
     val jsonResponse = decode[FilterJson](response.body)
@@ -148,8 +149,8 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     }
   }
 
-  def addComponent(partNumber : String, description : String): Unit = {
-    val data = ComponentJson(partNumber, description)
+  def addComponent(ns: String, partNumber: String, description: String): Unit = {
+    val data = ComponentJson(ns, partNumber, description)
     val response = makeJsonRequest("components/" + partNumber, PUT, data.asJson.noSpaces)
     response.status mustBe OK
     val jsonResponse = decode[ComponentJson](response.body)
@@ -226,11 +227,11 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   }
 
   "test adding filters" taggedAs APITests in {
-    addFilter(testFilterName)
+    addFilter(testNamespace, testFilterName)
   }
 
   "test deleting filters" taggedAs APITests in {
-    addFilter(testFilterNameDelete)
+    addFilter(testNamespace, testFilterNameDelete)
     val response = makeRequest("filters/" + testFilterNameDelete, DELETE)
     response.status mustBe OK
     val searchResponse = makeRequest("filters?regex=" + testFilterNameDelete, GET)
@@ -251,7 +252,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   }
 
   "test changing filter expressions" taggedAs APITests in {
-    val data = FilterJson(testFilterName, testFilterAlternateExpression)
+    val data = FilterJson(testNamespace, testFilterName, testFilterAlternateExpression)
     val response = makeJsonRequest("filters/" + testFilterName, PUT, data.asJson.noSpaces)
     response.status mustBe OK
     val jsonResponse = decode[FilterJson](response.body)
@@ -291,7 +292,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   }
 
   "test creating components" taggedAs APITests in {
-    addComponent(testComponentName, testComponentDescription)
+    addComponent(testNamespace, testComponentName, testComponentDescription)
   }
 
   "test searching components" taggedAs APITests in {
@@ -307,7 +308,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   }
 
   "test deleting components" taggedAs APITests in {
-    addComponent(testComponentNameAlt, testComponentDescriptionAlt)
+    addComponent(testNamespace, testComponentNameAlt, testComponentDescriptionAlt)
     val response = makeRequest("components/" + testComponentNameAlt, DELETE)
     response.status mustBe OK
     val searchResponse = makeRequest("components?regex=" + testComponentNameAlt, GET)
@@ -316,7 +317,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   }
 
   "test adding component to vin" taggedAs APITests in {
-    addComponent(testComponentName, testComponentDescription)
+    addComponent(testNamespace, testComponentName, testComponentDescription)
     val response = makeRequest("vehicles/" + testVin + "/component/" + testComponentName, PUT)
     response.status mustBe OK
   }
@@ -349,7 +350,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     val currentTimestamp = DateTimeFormat.forPattern(pattern).print(new DateTime())
     val tomorrowTimestamp = DateTimeFormat.forPattern(pattern).print(new DateTime().plusDays(1))
     val uuid = UUID.randomUUID().toString
-    val data = UpdateRequest(uuid, PackageId(testPackageName, testPackageVersion), currentTimestamp,
+    val data = UpdateRequest(testNamespace, uuid, PackageId(testPackageName, testPackageVersion), currentTimestamp,
       currentTimestamp + "/" + tomorrowTimestamp, 1, "sig", "desc", true)
     val response = await(WS.url("http://" + webserverHost + s":$webserverPort/api/v1/updates")
       .withHeaders("Cookie" -> Cookies.encodeCookieHeader(cookie))
