@@ -287,6 +287,12 @@ object Store {
       comps =  s.components
     } yield pick(comps)
 
+  def pickUnusedComponent: StateT[Gen, RawStore, Component] =
+    for {
+      s    <- StateT.stateTMonadState[Gen, RawStore].get
+      comps = s.componentsUnused
+    } yield pick(comps)
+
   def pickVehicleWithComponent: StateT[Gen, RawStore, (Vehicle, Component)] =
     for {
       s    <- StateT.stateTMonadState[Gen, RawStore].get
@@ -324,6 +330,10 @@ object Store {
   def numberOfComponents: StateT[Gen, RawStore, Int] =
     StateT.stateTMonadState[Gen, RawStore].get map
       (_.components.size)
+
+  def numberOfUnusedComponents: StateT[Gen, RawStore, Int] =
+    StateT.stateTMonadState[Gen, RawStore].get map
+      (_.componentsUnused.size)
 
   def numberOfVehiclesWithSomeComponent: StateT[Gen, RawStore, Int] =
     StateT.stateTMonadState[Gen, RawStore].get map

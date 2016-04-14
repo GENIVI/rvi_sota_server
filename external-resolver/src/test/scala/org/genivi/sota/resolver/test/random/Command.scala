@@ -153,9 +153,12 @@ object Command extends
       for {
         s <- State.get
         _ <- State.set(s.removing(cmpn))
-      } yield Semantics(
-        deleteComponent(cmpn.partNumber),
-        StatusCodes.OK, Success) // whether it was there or not, OK is the reply
+        success = s.componentsUnused.contains(cmpn)
+      } yield {
+        val req = deleteComponent(cmpn.partNumber)
+        if (success) { Semantics(req, StatusCodes.OK, Success) }
+        else         { Semantics(req, StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry)) }
+      }
 
     case InstallComponent(veh, cmpn)     =>
       for {
@@ -236,6 +239,15 @@ object Command extends
       flt  <- Store.pickUnusedFilter.runA(s)
     } yield RemoveFilter(flt)
 
+  /**
+    * Pick an unsed component for removal.
+    * Note: [[semCommand]] can handle the case where the component is in use, only we don't exercise such case.
+    */
+  private def genCommandRemoveComponent(s: RawStore): Gen[RemoveComponent] =
+    for {
+      cmp  <- Store.pickUnusedComponent.runA(s)
+    } yield RemoveComponent(cmp)
+
   private def genCommandEditComponent(s: RawStore): Gen[EditComponent] =
     for {
       cmpOld <- Store.pickComponent.runA(s)
@@ -253,6 +265,7 @@ object Command extends
       filts <- Store.numberOfFilters
       uflts <- Store.numberOfUnusedFilters
       comps <- Store.numberOfComponents
+      ucmps <- Store.numberOfUnusedComponents
       vcomp <- Store.numberOfVehiclesWithSomeComponent
       pfilt <- Store.numberOfPackagesWithSomeFilter
       cmd   <- lift(Gen.frequency(
@@ -286,9 +299,9 @@ object Command extends
 
         (if (pfilt > 0) 50 else 0, genCommandRemoveFilterForPackage(s)),
 
-        (if (uflts > 0) 50 else 0, genCommandRemoveFilter(s))
+        (if (uflts > 0) 50 else 0, genCommandRemoveFilter(s)),
 
-        // TODO RemoveComponent   (cmpn: Component)
+        (if (ucmps > 0) 50 else 0, genCommandRemoveComponent(s))
 
       ))
       _   <- StateT.stateTMonadState(monGen).set(semCommand(cmd).runS(s).run)
