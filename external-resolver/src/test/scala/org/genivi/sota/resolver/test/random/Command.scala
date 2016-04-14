@@ -25,15 +25,18 @@ final case class UninstallPackage(veh: Vehicle, pkg: Package) extends Command
 
 final case class AddFilter (filt: Filter)               extends Command
 final case class EditFilter(old : Filter, neu: Filter)  extends Command {
-  // restriction imposed by the endpoint allowing only a filter's expression (but not name) to be updated.
-  if (old.name.get != neu.name.get) throw new IllegalArgumentException
+  // restriction imposed by the endpoint allowing only non-PK fields to be updated.
+  if (!(old.samePK(neu))) throw new IllegalArgumentException
 }
 final case class RemoveFilter          (filt: Filter)               extends Command
 final case class AddFilterToPackage    (pkg: Package, filt: Filter) extends Command
 final case class RemoveFilterForPackage(pkg: Package, filt: Filter) extends Command
 
 final case class AddComponent   (cmpn: Component)                  extends Command
-final case class EditComponent  (old : Component, neu: Component)  extends Command
+final case class EditComponent  (old : Component, neu: Component)  extends Command {
+  // restriction imposed by the endpoint allowing only non-PK fields to be updated.
+  if (!(old.samePK(neu))) throw new IllegalArgumentException
+}
 final case class RemoveComponent(cmpn: Component)                  extends Command
 final case class InstallComponent  (veh: Vehicle, cmpn: Component) extends Command
 final case class UninstallComponent(veh: Vehicle, cmpn: Component) extends Command
