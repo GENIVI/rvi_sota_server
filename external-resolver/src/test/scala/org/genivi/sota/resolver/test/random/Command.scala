@@ -10,31 +10,35 @@ import org.genivi.sota.resolver.packages.{Package, PackageFilter}
 import org.genivi.sota.resolver.test._
 import org.genivi.sota.rest.ErrorCodes
 import org.scalacheck.Gen
+
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
-
 import Misc._
 
 
 sealed trait Command
 
-final case class AddVehicle    (veh: Vehicle)               extends Command
+final case class AddVehicle(veh: Vehicle) extends Command
+final case class AddPackage(pkg: Package) extends Command
 
-final case class AddPackage    (pkg: Package)               extends Command
-final case class InstallPackage(veh: Vehicle, pkg: Package) extends Command
+final case class InstallPackage  (veh: Vehicle, pkg: Package) extends Command
+final case class UninstallPackage(veh: Vehicle, pkg: Package) extends Command
 
-final case class AddFilter         (filt: Filter)               extends Command
-final case class EditFilter        (old : Filter, neu: Filter)  extends Command {
-  // restriction imposed by the endpoint allowing only a filter's expression (but not name) to be updated.
-  if (old.name.get != neu.name.get) throw new IllegalArgumentException
+final case class AddFilter (filt: Filter)               extends Command
+final case class EditFilter(old : Filter, neu: Filter)  extends Command {
+  // restriction imposed by the endpoint allowing only non-PK fields to be updated.
+  if (!(old.samePK(neu))) throw new IllegalArgumentException
 }
-final case class RemoveFilter      (filt: Filter)               extends Command
-final case class AddFilterToPackage(pkg: Package, filt: Filter) extends Command
-// TODO final case class RemoveFilterForPackage(pkg: Package, filt: Filter) extends Command
+final case class RemoveFilter          (filt: Filter)               extends Command
+final case class AddFilterToPackage    (pkg: Package, filt: Filter) extends Command
+final case class RemoveFilterForPackage(pkg: Package, filt: Filter) extends Command
 
-final case class AddComponent   (cmpn: Component) extends Command
-// TODO final case class EditComponent        (old : Component, neu: Component)  extends Command
-final case class RemoveComponent(cmpn: Component) extends Command
+final case class AddComponent   (cmpn: Component)                  extends Command
+final case class EditComponent  (old : Component, neu: Component)  extends Command {
+  // restriction imposed by the endpoint allowing only non-PK fields to be updated.
+  if (!(old.samePK(neu))) throw new IllegalArgumentException
+}
+final case class RemoveComponent(cmpn: Component)                  extends Command
 final case class InstallComponent  (veh: Vehicle, cmpn: Component) extends Command
 final case class UninstallComponent(veh: Vehicle, cmpn: Component) extends Command
 
@@ -88,8 +92,15 @@ object Command extends
       for {
         s <- State.get
         _ <- State.set(s.installing(veh, pkg))
-      } yield Semantics(installPackage(veh.vin, pkg.id.name.get, pkg.id.version.get), StatusCodes.OK, Success)
-                                       // XXX: move gets inwards...
+      } yield Semantics(installPackage(veh, pkg), StatusCodes.OK, Success)
+
+    case UninstallPackage(veh, pkg) =>
+      for {
+        s <- State.get
+        _ <- State.set(s.uninstalling(veh, pkg))
+      } yield Semantics(
+        uninstallPackage(veh, pkg),
+        StatusCodes.OK, Success) // whether already uninstalled or not, OK is the reply
 
     case AddFilter(filt)               =>
       for {
@@ -107,7 +118,7 @@ object Command extends
       for {
         s       <- State.get
         _       <- State.set(s.removing(filt))
-        success =  s.filtersInUse.isEmpty
+        success =  s.filtersUnused.contains(filt)
       } yield {
         val req = deleteFilter(filt)
         if (success) { Semantics(req, StatusCodes.OK, Success) }
@@ -125,7 +136,13 @@ object Command extends
         else         { Semantics(req, StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry)) }
       }
 
-    // TODO case RemoveFilterForPackage(pkg: Package, filt: Filter)
+    case RemoveFilterForPackage(pkg, filt) =>
+      for {
+        s       <- State.get
+        _       <- State.set(s.deassociating(pkg, filt))
+      } yield Semantics(
+        deletePackageFilter(pkg, filt),
+        StatusCodes.OK, Success)
 
     case AddComponent(cmpn)     =>
       for {
@@ -138,15 +155,22 @@ object Command extends
         else               { Semantics(req, StatusCodes.OK, Success) }
       }
 
-    // TODO case EditComponent(old: Component, neu: Component)
+    case EditComponent(old, neu)    =>
+      for {
+        s <- State.get
+        _ <- State.set(s.replacing(old, neu))
+      } yield Semantics(updateComponent(neu), StatusCodes.OK, Success)
 
     case RemoveComponent(cmpn)      =>
       for {
         s <- State.get
         _ <- State.set(s.removing(cmpn))
-      } yield Semantics(
-        deleteComponent(cmpn.partNumber),
-        StatusCodes.OK, Success) // whether it was there or not, OK is the reply
+        success = s.componentsUnused.contains(cmpn)
+      } yield {
+        val req = deleteComponent(cmpn.partNumber)
+        if (success) { Semantics(req, StatusCodes.OK, Success) }
+        else         { Semantics(req, StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry)) }
+      }
 
     case InstallComponent(veh, cmpn)     =>
       for {
@@ -189,6 +213,11 @@ object Command extends
       pkg <- Store.pickPackage.runA(s)
     } yield InstallPackage(veh, pkg)
 
+  private def genCommandUninstallPackage(s: RawStore): Gen[UninstallPackage] =
+    for {
+      (veh, pkg) <- Store.pickVehicleWithPackage.runA(s)
+    } yield UninstallPackage(veh, pkg)
+
   private def genCommandInstallComponent(s: RawStore): Gen[InstallComponent] =
     for {
       veh <- Store.pickVehicle.runA(s)
@@ -206,12 +235,42 @@ object Command extends
       filt <- Store.pickFilter.runA(s)
     } yield AddFilterToPackage(pkg, filt)
 
+  private def genCommandRemoveFilterForPackage(s: RawStore): Gen[RemoveFilterForPackage] =
+    for {
+      (pkg, flt)  <- Store.pickPackageWithFilter.runA(s)
+    } yield RemoveFilterForPackage(pkg, flt)
+
   private def genCommandEditFilter(s: RawStore): Gen[EditFilter] =
     for {
       fltOld <- Store.pickFilter.runA(s)
       fltNu0 <- FilterGenerators.genFilter(s.packages.keys.toList, s.components.toList)
       fltNu1  = Filter(defaultNs, fltOld.name, fltNu0.expression)
     } yield EditFilter(fltOld, fltNu1)
+
+  /**
+    * Pick an unsed filter for removal.
+    * Note: [[semCommand]] can handle the case where the filter is in use, only we don't exercise such case.
+    */
+  private def genCommandRemoveFilter(s: RawStore): Gen[RemoveFilter] =
+    for {
+      flt  <- Store.pickUnusedFilter.runA(s)
+    } yield RemoveFilter(flt)
+
+  /**
+    * Pick an unsed component for removal.
+    * Note: [[semCommand]] can handle the case where the component is in use, only we don't exercise such case.
+    */
+  private def genCommandRemoveComponent(s: RawStore): Gen[RemoveComponent] =
+    for {
+      cmp  <- Store.pickUnusedComponent.runA(s)
+    } yield RemoveComponent(cmp)
+
+  private def genCommandEditComponent(s: RawStore): Gen[EditComponent] =
+    for {
+      cmpOld <- Store.pickComponent.runA(s)
+      cmpNu0 <- ComponentGenerators.genComponent
+      cmpNu1  = Component(defaultNs, cmpOld.partNumber, cmpNu0.description)
+    } yield EditComponent(cmpOld, cmpNu1)
 
   // scalastyle:off cyclomatic.complexity
   // scalastyle:off magic.number
@@ -221,8 +280,12 @@ object Command extends
       vehs  <- Store.numberOfVehicles
       pkgs  <- Store.numberOfPackages
       filts <- Store.numberOfFilters
+      uflts <- Store.numberOfUnusedFilters
       comps <- Store.numberOfComponents
+      ucmps <- Store.numberOfUnusedComponents
       vcomp <- Store.numberOfVehiclesWithSomeComponent
+      vpaks <- Store.numberOfVehiclesWithSomePackage
+      pfilt <- Store.numberOfPackagesWithSomeFilter
       cmd   <- lift(Gen.frequency(
 
         // If there are few vehicles, packages or filters in the world,
@@ -243,16 +306,22 @@ object Command extends
         // If there are vehicles and components
         (if (vehs > 0 && comps > 0) 100 else 0, genCommandInstallComponent(s)),
 
+        (if (vpaks > 0) 10 else 0, genCommandUninstallPackage(s)),
+
         // TODO fix VehicleRepository.uninstallComponent (if (vcomp > 0) 10 else 0, genCommandUninstallComponent(s)),
 
+        (if (filts > 0) 50 else 0, genCommandEditFilter(s)),
+
+        (if (comps > 0) 50 else 0, genCommandEditComponent(s)),
+
         // If there are packages and filters, install some filter to some package.
-        (if (pkgs > 0 && filts > 0) 50 else 0, genCommandAddFilterToPackage(s))
+        (if (pkgs > 0 && filts > 0) 50 else 0, genCommandAddFilterToPackage(s)),
 
-        // TODO EditFilter        (old : Filter, neu: Filter)
-        // TODO RemoveFilter      (filt: Filter)
+        (if (pfilt > 0) 50 else 0, genCommandRemoveFilterForPackage(s)),
 
-        // TODO EditComponent     (old : Component, neu: Component)
-        // TODO RemoveComponent   (cmpn: Component)
+        (if (uflts > 0) 50 else 0, genCommandRemoveFilter(s)),
+
+        (if (ucmps > 0) 50 else 0, genCommandRemoveComponent(s))
 
       ))
       _   <- StateT.stateTMonadState(monGen).set(semCommand(cmd).runS(s).run)

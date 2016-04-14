@@ -11,7 +11,7 @@ import org.genivi.sota.data.{PackageId, Vehicle}
 
 import scala.collection.immutable.Iterable
 
-
+// scalastyle:off number.of.methods
 case class RawStore(
   vehicles  : Map[Vehicle, (Set[Package], Set[Component])],
   packages  : Map[Package, Set[Filter]],
@@ -48,6 +48,20 @@ case class RawStore(
       val neuPackages = result.packages.updated(p, neuFilters)
       result = result.copy(packages = neuPackages)
     }
+    result = result.copy(filters = filters - old + neu)
+    result
+  }
+
+  def replacing(old: Component, neu: Component): RawStore = {
+    var result = this
+    val vehsAffected = vehiclesHaving(old)
+    for (v <- vehsAffected) {
+      val (paks, oldComps) = result.vehicles(v)
+      val neuComps = oldComps - old + neu
+      val neuVehicles = result.vehicles.updated(v, (paks, neuComps))
+      result = result.copy(vehicles = neuVehicles)
+    }
+    result = result.copy(components = components - old + neu)
     result
   }
 
@@ -102,6 +116,11 @@ case class RawStore(
     copy(vehicles = vehicles.updated(veh, (paks + pkg, comps)))
   }
 
+  def uninstalling(veh: Vehicle, pkg: Package): RawStore = {
+    val (paks, comps) = vehicles(veh)
+    copy(vehicles = vehicles.updated(veh, (paks - pkg, comps)))
+  }
+
   // FILTERS FOR PACKAGES
 
   def associating(pkg: Package, filt: Filter): RawStore = {
@@ -119,6 +138,16 @@ case class RawStore(
   private def toSet[E](elems: Iterable[E]): Set[E] = { elems.toSet }
 
   /**
+    * Vehicles with some package installed.
+    */
+  def vehiclesWithSomePackage: Map[Vehicle, Set[Package]] = {
+    for (
+      (veh, (packs, comps)) <- vehicles
+      if packs.nonEmpty
+    ) yield (veh, packs)
+  }
+
+  /**
     * Vehicles with some component installed.
     */
   def vehiclesWithSomeComponent: Map[Vehicle, Set[Component]] = {
@@ -126,6 +155,13 @@ case class RawStore(
       (veh, (packs, comps)) <- vehicles
       if comps.nonEmpty
     ) yield (veh, comps)
+  }
+
+  def packagesWithSomeFilter: Map[Package, Set[Filter]] = {
+    for (
+      (p, fs) <- packages
+      if fs.nonEmpty
+    ) yield (p, fs)
   }
 
   def vehiclesHaving(cmpn: Component): Set[Vehicle] = toSet {
@@ -254,10 +290,22 @@ object Store {
       filts =  s.filters
     } yield pick(filts)
 
+  def pickUnusedFilter: StateT[Gen, RawStore, Filter] =
+    for {
+      s     <- StateT.stateTMonadState[Gen, RawStore].get
+      uflts =  s.filtersUnused
+    } yield pick(uflts)
+
   def pickComponent: StateT[Gen, RawStore, Component] =
     for {
       s    <- StateT.stateTMonadState[Gen, RawStore].get
       comps =  s.components
+    } yield pick(comps)
+
+  def pickUnusedComponent: StateT[Gen, RawStore, Component] =
+    for {
+      s    <- StateT.stateTMonadState[Gen, RawStore].get
+      comps = s.componentsUnused
     } yield pick(comps)
 
   def pickVehicleWithComponent: StateT[Gen, RawStore, (Vehicle, Component)] =
@@ -267,6 +315,24 @@ object Store {
     } yield {
       val (veh, comps) = pick(vcs)
       (veh, pick(comps))
+    }
+
+  def pickVehicleWithPackage: StateT[Gen, RawStore, (Vehicle, Package)] =
+    for {
+      s    <- StateT.stateTMonadState[Gen, RawStore].get
+      vps   = s.vehiclesWithSomePackage
+    } yield {
+      val (veh, paks) = pick(vps)
+      (veh, pick(paks))
+    }
+
+  def pickPackageWithFilter: StateT[Gen, RawStore, (Package, Filter)] =
+    for {
+      s    <- StateT.stateTMonadState[Gen, RawStore].get
+      pfs   = s.packagesWithSomeFilter
+    } yield {
+      val (veh, fs) = pick(pfs)
+      (veh, pick(fs))
     }
 
   def numberOfVehicles: StateT[Gen, RawStore, Int] =
@@ -281,12 +347,28 @@ object Store {
     StateT.stateTMonadState[Gen, RawStore].get map
       (_.filters.size)
 
+  def numberOfUnusedFilters: StateT[Gen, RawStore, Int] =
+    StateT.stateTMonadState[Gen, RawStore].get map
+      (_.filtersUnused.size)
+
   def numberOfComponents: StateT[Gen, RawStore, Int] =
     StateT.stateTMonadState[Gen, RawStore].get map
       (_.components.size)
+
+  def numberOfUnusedComponents: StateT[Gen, RawStore, Int] =
+    StateT.stateTMonadState[Gen, RawStore].get map
+      (_.componentsUnused.size)
+
+  def numberOfVehiclesWithSomePackage: StateT[Gen, RawStore, Int] =
+    StateT.stateTMonadState[Gen, RawStore].get map
+      (_.vehiclesWithSomePackage.size)
 
   def numberOfVehiclesWithSomeComponent: StateT[Gen, RawStore, Int] =
     StateT.stateTMonadState[Gen, RawStore].get map
       (_.vehiclesWithSomeComponent.size)
 
+  def numberOfPackagesWithSomeFilter: StateT[Gen, RawStore, Int] =
+    StateT.stateTMonadState[Gen, RawStore].get map
+      (_.packagesWithSomeFilter.size)
 }
+// scalastyle:on

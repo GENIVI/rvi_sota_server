@@ -43,8 +43,17 @@ trait VehicleRequestsHttp {
   def addVehicle(vin: Vehicle.Vin): HttpRequest =
     Put(Resource.uri("vehicles", vin.get))
 
+  def installPackage(veh: Vehicle, pkg: Package): HttpRequest =
+    installPackage(veh.vin, pkg.id.name.get, pkg.id.version.get)
+
   def installPackage(vin: Vehicle.Vin, pname: String, pversion: String): HttpRequest =
     Put(Resource.uri("vehicles", vin.get, "package", pname, pversion))
+
+  def uninstallPackage(veh: Vehicle, pkg: Package): HttpRequest =
+    uninstallPackage(veh.vin, pkg.id.name.get, pkg.id.version.get)
+
+  def uninstallPackage(vin: Vehicle.Vin, pname: String, pversion: String): HttpRequest =
+    Delete(Resource.uri("vehicles", vin.get, "package", pname, pversion))
 
   def listVehicles: HttpRequest =
     Get(Resource.uri("vehicles"))
@@ -139,6 +148,14 @@ trait ComponentRequestsHttp {
 
   def deleteComponent(part: Component.PartNumber): HttpRequest =
     Delete(Resource.uri("components", part.get))
+
+  def updateComponent(cmp: Component)
+                     (implicit ec: ExecutionContext): HttpRequest =
+    updateComponent(cmp.partNumber.get, cmp.description)
+
+  def updateComponent(partNumber: String, description: String)
+                     (implicit ec: ExecutionContext): HttpRequest =
+    Put(Resource.uri("components", partNumber), Component.DescriptionWrapper(description))
 
 }
 
@@ -238,6 +255,9 @@ trait PackageFilterRequestsHttp {
 
   def listFiltersForPackage(pname: String, pversion: String): HttpRequest =
     Get(Resource.uri("packages", pname, pversion, "filter"))
+
+  def deletePackageFilter(pkg: Package, filt: Filter): HttpRequest =
+    deletePackageFilter(pkg.id.name.get, pkg.id.version.get, filt.name.get)
 
   def deletePackageFilter(pname: String, pversion: String, fname: String): HttpRequest =
     Delete(Resource.uri("packages", pname, pversion, "filter", fname))
