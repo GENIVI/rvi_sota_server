@@ -106,7 +106,7 @@ object Command extends
       for {
         s       <- State.get
         _       <- State.set(s.removing(filt))
-        success =  s.filtersInUse.isEmpty
+        success =  s.filtersUnused.contains(filt)
       } yield {
         val req = deleteFilter(filt)
         if (success) { Semantics(req, StatusCodes.OK, Success) }
@@ -227,6 +227,15 @@ object Command extends
       fltNu1  = Filter(defaultNs, fltOld.name, fltNu0.expression)
     } yield EditFilter(fltOld, fltNu1)
 
+  /**
+    * Pick an unsed filter for removal.
+    * Note: [[semCommand]] can handle the case where the filter is in use, only we don't exercise such case.
+    */
+  private def genCommandRemoveFilter(s: RawStore): Gen[RemoveFilter] =
+    for {
+      flt  <- Store.pickUnusedFilter.runA(s)
+    } yield RemoveFilter(flt)
+
   private def genCommandEditComponent(s: RawStore): Gen[EditComponent] =
     for {
       cmpOld <- Store.pickComponent.runA(s)
@@ -242,6 +251,7 @@ object Command extends
       vehs  <- Store.numberOfVehicles
       pkgs  <- Store.numberOfPackages
       filts <- Store.numberOfFilters
+      uflts <- Store.numberOfUnusedFilters
       comps <- Store.numberOfComponents
       vcomp <- Store.numberOfVehiclesWithSomeComponent
       pfilt <- Store.numberOfPackagesWithSomeFilter
@@ -274,8 +284,9 @@ object Command extends
         // If there are packages and filters, install some filter to some package.
         (if (pkgs > 0 && filts > 0) 50 else 0, genCommandAddFilterToPackage(s)),
 
-        (if (pfilt > 0) 50 else 0, genCommandRemoveFilterForPackage(s))
-        // TODO RemoveFilter      (filt: Filter)
+        (if (pfilt > 0) 50 else 0, genCommandRemoveFilterForPackage(s)),
+
+        (if (uflts > 0) 50 else 0, genCommandRemoveFilter(s))
 
         // TODO RemoveComponent   (cmpn: Component)
 

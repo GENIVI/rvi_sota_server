@@ -275,6 +275,12 @@ object Store {
       filts =  s.filters
     } yield pick(filts)
 
+  def pickUnusedFilter: StateT[Gen, RawStore, Filter] =
+    for {
+      s     <- StateT.stateTMonadState[Gen, RawStore].get
+      uflts =  s.filtersUnused
+    } yield pick(uflts)
+
   def pickComponent: StateT[Gen, RawStore, Component] =
     for {
       s    <- StateT.stateTMonadState[Gen, RawStore].get
@@ -310,6 +316,10 @@ object Store {
   def numberOfFilters: StateT[Gen, RawStore, Int] =
     StateT.stateTMonadState[Gen, RawStore].get map
       (_.filters.size)
+
+  def numberOfUnusedFilters: StateT[Gen, RawStore, Int] =
+    StateT.stateTMonadState[Gen, RawStore].get map
+      (_.filtersUnused.size)
 
   def numberOfComponents: StateT[Gen, RawStore, Int] =
     StateT.stateTMonadState[Gen, RawStore].get map
