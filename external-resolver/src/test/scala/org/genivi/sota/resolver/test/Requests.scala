@@ -43,6 +43,9 @@ trait VehicleRequestsHttp {
   def addVehicle(vin: Vehicle.Vin): HttpRequest =
     Put(Resource.uri("vehicles", vin.get))
 
+  def installPackage(veh: Vehicle, pkg: Package): HttpRequest =
+    installPackage(veh.vin, pkg.id.name.get, pkg.id.version.get)
+
   def installPackage(vin: Vehicle.Vin, pname: String, pversion: String): HttpRequest =
     Put(Resource.uri("vehicles", vin.get, "package", pname, pversion))
 

@@ -91,7 +91,7 @@ object Command extends
       for {
         s <- State.get
         _ <- State.set(s.installing(veh, pkg))
-      } yield Semantics(installPackage(veh.vin, pkg.id.name.get, pkg.id.version.get), StatusCodes.OK, Success)
+      } yield Semantics(installPackage(veh, pkg), StatusCodes.OK, Success)
                                        // XXX: move gets inwards...
 
     case AddFilter(filt)               =>
