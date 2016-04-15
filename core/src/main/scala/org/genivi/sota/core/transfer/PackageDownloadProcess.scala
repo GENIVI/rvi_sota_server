@@ -8,7 +8,7 @@ import java.io.File
 import java.net.URI
 
 import akka.http.scaladsl.model._
-import akka.stream.io.SynchronousFileSource
+import akka.stream.scaladsl.FileIO
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Uuid
 import org.genivi.sota.core.data.Package
@@ -55,7 +55,7 @@ class PackageDownloadProcess(db: Database) {
   private def fileEntity(packageModel: Package): UniversalEntity = {
     val file = new File(new URI(packageModel.uri.toString()))
     val size = file.length()
-    val source = SynchronousFileSource(file)
+    val source = FileIO.fromFile(file)
     HttpEntity(MediaTypes.`application/octet-stream`, size, source)
   }
 }

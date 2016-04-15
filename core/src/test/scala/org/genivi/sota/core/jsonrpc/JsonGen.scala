@@ -10,10 +10,10 @@ trait JsonGen {
   import org.scalacheck.Arbitrary
   import org.scalacheck.Gen
 
-  val JBooleanGen : Gen[Json] = Gen.oneOf(true, false).map( Json.bool )
-  val JStrGen : Gen[Json] = Arbitrary.arbString.arbitrary.map( Json.string )
-  val JNumGen : Gen[Json] = Arbitrary.arbInt.arbitrary.map( Json.int )
-  val JNullGen: Gen[Json] = Gen.const( Json.Empty )
+  val JBooleanGen : Gen[Json] = Gen.oneOf(true, false).map( Json.fromBoolean )
+  val JStrGen : Gen[Json] = Arbitrary.arbString.arbitrary.map( Json.fromString )
+  val JNumGen : Gen[Json] = Arbitrary.arbInt.arbitrary.map( Json.fromInt )
+  val JNullGen: Gen[Json] = Gen.const( Json.Null )
 
   val JsonGen : Gen[Json] = Gen.oneOf( JBooleanGen, JStrGen, JNumGen, JNumGen)
 

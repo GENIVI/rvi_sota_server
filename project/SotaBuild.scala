@@ -58,7 +58,7 @@ object SotaBuild extends Build {
   // the sub-projects
   lazy val common = Project(id = "common", base = file("common"))
     .settings(basicSettings ++ compilerSettings)
-    .settings( libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.NscalaTime :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
+    .settings( libraryDependencies ++= Dependencies.Rest :+ Dependencies.AkkaHttpCirceJson :+ Dependencies.NscalaTime :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
     .dependsOn(commonData)
     .settings(Publish.settings)
 
@@ -149,27 +149,35 @@ object SotaBuild extends Build {
 
 object Dependencies {
 
-  val AkkaHttpVersion = "1.0"
+  val AkkaVersion = "2.4.2"
 
-  val AkkaStreamVersion = AkkaHttpVersion
+  val CirceVersion = "0.4.0"
 
-  val AkkaVersion = "2.4.0"
+  val AkkaHttpCirceVersion = "1.5.4"
 
-  val CirceVersion = "0.2.0"
+  val LogbackVersion = "1.1.3"
+
+  val AkkaHttp = "com.typesafe.akka" %% "akka-http-experimental" % AkkaVersion
+
+  val AkkaHttpTestKit = "com.typesafe.akka" %% "akka-http-testkit" % AkkaVersion % "test"
+
+  val AkkaTestKit = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % "test"
+
+  val AkkaHttpCirceJson = "de.heikoseeberger" %% "akka-http-circe" % AkkaHttpCirceVersion
+
+  val AkkaSlf4j = "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion
+
+  val Logback = "ch.qos.logback" % "logback-classic" % LogbackVersion
 
   lazy val Akka = Seq(
-    "com.typesafe.akka" % "akka-http-core-experimental_2.11" % AkkaHttpVersion,
-    "com.typesafe.akka" % "akka-http-experimental_2.11" % AkkaHttpVersion,
-    "com.typesafe.akka" %% "akka-http-testkit-experimental" % AkkaHttpVersion,
-    "com.typesafe.akka" %% "akka-stream-experimental" % AkkaStreamVersion,
-    "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion,
-    "ch.qos.logback" % "logback-classic" % "1.0.13"
+    AkkaHttp, AkkaHttpCirceJson, AkkaHttpTestKit, AkkaTestKit, AkkaSlf4j, Logback
   )
 
-  lazy val Circe = Seq(
-    "io.circe" %% "circe-core"    % CirceVersion,
+  val Circe = Seq(
+    "io.circe" %% "circe-core" % CirceVersion,
     "io.circe" %% "circe-generic" % CirceVersion,
-    "io.circe" %% "circe-parse"   % CirceVersion
+    "io.circe" %% "circe-parser" % CirceVersion,
+    "io.circe" %% "circe-java8" % CirceVersion
   )
 
   lazy val Refined = "eu.timepit" %% "refined" % "0.3.1"

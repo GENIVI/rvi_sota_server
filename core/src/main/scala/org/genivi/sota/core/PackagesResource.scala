@@ -9,16 +9,13 @@ import akka.event.Logging
 import akka.http.scaladsl.common.StrictForm
 import akka.http.scaladsl.model.{StatusCodes, Uri}
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{Directive0, Directive1, Route}
-import akka.stream.ActorMaterializer
-import akka.stream.io.SynchronousFileSink
-import akka.util.ByteString
+import akka.http.scaladsl.server.{Directive1, Route}
+import akka.stream._
+import akka.stream.scaladsl.FileIO
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import java.nio.file.{Path, Paths}
-import java.security.MessageDigest
-import org.apache.commons.codec.binary.Hex
 import org.genivi.sota.core.common.NamespaceDirective._
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db.{Packages, UpdateSpecs}
@@ -54,34 +51,6 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
   private[this] val log = Logging.getLogger(system, "org.genivi.sota.core.PackagesResource")
 
   /**
-    * Streaming calculation of the hash of a stream.
-    * This is used by savePackage (below)
-    *
-    * @param algorithm The hash algorithm, usually "SHA-1"
-    * @return A stream that will calculate the hash of the contents fed through it
-    */
-  def digestCalculator(algorithm: String): PushPullStage[ByteString, String] = new PushPullStage[ByteString, String] {
-    val digest = MessageDigest.getInstance(algorithm)
-
-    override def onPush(chunk: ByteString, ctx: Context[String]): SyncDirective = {
-      digest.update(chunk.toArray)
-      ctx.pull()
-    }
-
-    override def onPull(ctx: Context[String]): SyncDirective = {
-      if (ctx.isFinishing) ctx.pushAndFinish(Hex.encodeHexString(digest.digest()))
-      else ctx.pull()
-    }
-
-    override def onUpstreamFinish(ctx: Context[String]): TerminationDirective = {
-      // If the stream is finished, we need to emit the last element in the onPull block.
-      // It is not allowed to directly emit elements from a termination block
-      // (onUpstreamFinish or onUpstreamFailure)
-      ctx.absorbTermination()
-    }
-  }
-
-  /**
     * The location on disk where uploaded package are stored.
     */
   val storePath: Path = Paths.get(system.settings.config.getString("upload.store"))
@@ -103,9 +72,9 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
     val file = storePath.resolve(fileName).toFile
     val data = fileData.entity.dataBytes
     val uploadResult: Future[(Uri, Long, String)] = for {
-      size <- data.runWith(SynchronousFileSink(file))
-      digest <- data.transform(() => digestCalculator("SHA-1")).runFold("")((acc, data) => acc ++ data)
-    } yield (file.toURI().toString(), size, digest)
+      ioResult <- data.runWith(FileIO.toFile(file))
+      digest <- data.via(DigestCalculator("SHA-1")).runFold("")((acc, data) => acc ++ data)
+    } yield (file.toURI().toString(), ioResult.count, digest)
 
     uploadResult.onComplete {
       case Success((uri, size, digest)) =>

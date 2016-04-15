@@ -22,8 +22,8 @@ case class ErrorRepresentation( code: ErrorCode, description: String )
 
 object ErrorRepresentation {
   import io.circe.generic.semiauto._
-  implicit val encoderInstance = deriveFor[ErrorRepresentation].encoder
-  implicit val decoderInstance = deriveFor[ErrorRepresentation].decoder
+  implicit val encoderInstance = deriveEncoder[ErrorRepresentation]
+  implicit val decoderInstance = deriveDecoder[ErrorRepresentation]
 
 }
 

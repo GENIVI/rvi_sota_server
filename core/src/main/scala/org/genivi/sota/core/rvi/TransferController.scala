@@ -183,7 +183,7 @@ class TransferProtocolActor(db: Database, rviClient: ConnectivityClient,
       updates.find(_.request.id == update.update_id) match {
         case Some(spec) =>
           InstalledPackagesUpdate.reportInstall(vin, update)(dispatcher, db)
-          rviClient.sendMessage(services.getpackages, io.circe.Json.Empty, ttl())
+          rviClient.sendMessage(services.getpackages, io.circe.Json.Null, ttl())
           context.stop( self )
         case None => log.error(s"Update ${update.update_id} for corresponding install report does not exist!")
       }
@@ -196,7 +196,7 @@ class TransferProtocolActor(db: Database, rviClient: ConnectivityClient,
   }
 
   def abortUpdate (services: ClientServices, updates: Set[UpdateSpec]): Unit = {
-      rviClient.sendMessage(services.abort, io.circe.Json.Empty, ttl())
+      rviClient.sendMessage(services.abort, io.circe.Json.Null, ttl())
       updates.foreach(x => db.run( UpdateSpecs.setStatus(x, UpdateStatus.Canceled) ))
       context.stop(self)
   }
@@ -247,7 +247,7 @@ object StartDownloadMessage {
   import io.circe.generic.semiauto._
 
   implicit val encoder: Encoder[StartDownloadMessage] =
-    deriveFor[StartDownloadMessage].encoder
+    deriveEncoder[StartDownloadMessage]
 
 }
 
@@ -260,7 +260,7 @@ object PackageChunk {
   import io.circe.generic.semiauto._
 
   implicit val encoder: Encoder[PackageChunk] =
-    deriveFor[PackageChunk].encoder
+    deriveEncoder[PackageChunk]
 
   implicit val byteStringEncoder : Encoder[ByteString] =
     Encoder[String].contramap[ByteString]( x => Base64.encodeBase64String(x.toArray) )
@@ -274,7 +274,7 @@ object Finish {
   import io.circe.generic.semiauto._
 
   implicit val encoder: Encoder[Finish] =
-    deriveFor[Finish].encoder
+    deriveEncoder[Finish]
 
 }
 

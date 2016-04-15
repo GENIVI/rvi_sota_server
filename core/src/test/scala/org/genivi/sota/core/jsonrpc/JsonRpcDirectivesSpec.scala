@@ -14,14 +14,20 @@ import scala.concurrent.Future
 /**
  * Property-based spec for testing JSON-RPC directives
  */
-class JsonRpcDirectivesSpec extends PropSpec with PropertyChecks with Matchers with akka.http.scaladsl.testkit.ScalatestRouteTest with JsonRpcDirectives {
+class JsonRpcDirectivesSpec extends PropSpec
+    with PropertyChecks
+    with Matchers
+    with akka.http.scaladsl.testkit.ScalatestRouteTest
+    with JsonRpcDirectives {
 
   property("parse errors") {
-    Post("/").withEntity( HttpEntity(ContentTypes.`application/json`, "dafdsfasfasf") ) ~> service( Map.empty[String, MethodFn]) ~> check {
-      status shouldBe StatusCodes.OK
-      responseAs[ErrorResponse].error shouldBe PredefinedErrors.ParseError
-
-    }
+    Post("/").withEntity( HttpEntity(ContentTypes.`application/json`, "dafdsfasfasf") ) ~>
+        service( Map.empty[String, MethodFn]) ~>
+        check {
+          status shouldBe StatusCodes.OK
+          responseAs[ErrorResponse].error.data.get.asString.get should include("expected json value")
+          responseAs[ErrorResponse].error.message shouldBe "Invalid request"
+        }
   }
 
   import org.genivi.sota.core.jsonrpc.JsonGen._

@@ -111,7 +111,7 @@ class VehicleResourceSpec extends PropSpec
     whenReady(createVehicle()) { vin =>
       val url = Uri.Empty
         .withPath(BasePath)
-        .withQuery("status" -> "true")
+        .withQuery(Uri.Query("status" -> "true"))
 
       Get(url) ~> service.route ~> check {
         status shouldBe StatusCodes.OK

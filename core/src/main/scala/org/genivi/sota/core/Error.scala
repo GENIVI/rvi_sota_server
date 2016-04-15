@@ -23,12 +23,12 @@ object ErrorHandler {
 
   import Json.{obj, string}
 
-  def defaultHandler(log: LoggingAdapter) =
+  def defaultHandler(log: LoggingAdapter): ExceptionHandler =
     ExceptionHandler {
       case e: Throwable =>
         extractUri { uri =>
           log.error(s"Request to $uri errored: $e")
-          val entity = obj("error" -> string(e.getMessage))
+          val entity = obj("error" -> Json.fromString(e.getMessage))
           complete(HttpResponse(InternalServerError, entity = entity.toString()))
         }
     }

@@ -207,8 +207,7 @@ class PackageUpdateSpec extends PropSpec
     import slick.driver.MySQLDriver.api._
 
     val notifier = new RviUpdateNotifier(services)
-    val updateService = new UpdateService(notifier)
-      (akka.event.Logging(system, "sota.core.updateQueue"), connectivity.client)
+    val updateService = new UpdateService(notifier)(system, connectivity)
     val vins : Set[Vehicle.Vin] =
       generatedData.values.map( _.keySet ).fold(Set.empty[Vehicle.Vin])( _ union _)
 

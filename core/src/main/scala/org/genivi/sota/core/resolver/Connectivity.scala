@@ -17,7 +17,7 @@ trait Connectivity {
 object DefaultConnectivity extends Connectivity {
   // TODO: to be implemented
   override implicit val transport = { (_: Json) =>
-    Future.successful(Json.empty)
+    Future.successful(Json.Null)
   }
   override implicit val client = DefaultConnectivityClient
 }
@@ -32,7 +32,7 @@ trait ConnectivityClient {
 
 object DefaultConnectivityClient extends ConnectivityClient {
   override def sendMessage[A](service: String, message: A, expirationDate: DateTime)
-                             (implicit encoder: Encoder[A]) = {
+                             (implicit encoder: Encoder[A]): Future[Int] = {
     // TODO: to be implemented
     Future.successful(0)
   }

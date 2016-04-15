@@ -29,10 +29,10 @@ object PackageUpdate {
   import io.circe.{Decoder, Encoder}
 
   implicit val encoder: Encoder[PackageUpdate] =
-    deriveFor[PackageUpdate].encoder
+    deriveEncoder[PackageUpdate]
 
   implicit val decoder: Decoder[PackageUpdate] =
-    deriveFor[PackageUpdate].decoder
+    deriveDecoder[PackageUpdate]
 
 }
 
@@ -44,16 +44,16 @@ object UpdateNotification {
   import io.circe.{Decoder, Encoder}
 
   implicit val encoder: Encoder[UpdateNotification] =
-    deriveFor[UpdateNotification].encoder
+    deriveEncoder[UpdateNotification]
 
   implicit val decoder: Decoder[UpdateNotification] =
-    deriveFor[UpdateNotification].decoder
+    deriveDecoder[UpdateNotification]
 
   implicit val encoderServerServices: Encoder[ServerServices] =
-    deriveFor[ServerServices].encoder
+    deriveEncoder[ServerServices]
 
   implicit val decoderServerServices: Decoder[ServerServices] =
-    deriveFor[ServerServices].decoder
+    deriveDecoder[ServerServices]
 
 }
 

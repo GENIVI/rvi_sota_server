@@ -41,7 +41,7 @@ trait CirceInstances {
     encoder.contramap(_.get)
 
   implicit val uriEncoder : Encoder[Uri] = Encoder.instance { uri =>
-    Json.obj(("uri", Json.string(uri.toString())))
+    Json.obj(("uri", Json.fromString(uri.toString())))
   }
 
   implicit val uriDecoder : Decoder[Uri] = Decoder.instance { c =>
@@ -58,7 +58,7 @@ trait CirceInstances {
   implicit val uuidDecoder : Decoder[UUID] = Decoder[String].map(UUID.fromString)
 
   implicit val dateTimeEncoder : Encoder[DateTime] =
-    Encoder.instance[DateTime]( x =>  Json.string( ISODateTimeFormat.dateTime().print(x)) )
+    Encoder.instance[DateTime]( x =>  Json.fromString( ISODateTimeFormat.dateTime().print(x)) )
 
   implicit val dateTimeDecoder : Decoder[DateTime] = Decoder.instance { c =>
     c.focus.asString match {

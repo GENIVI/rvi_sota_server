@@ -19,7 +19,7 @@ import play.api.mvc.{Cookie, Cookies}
 import play.api.test.Helpers._
 import io.circe._
 import io.circe.generic.auto._
-import io.circe.parse._
+import io.circe.parser._
 import io.circe.syntax._
 
 object APITests extends Tag("APITests")
@@ -73,7 +73,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     import io.circe.generic.semiauto._
     //circe fails to generate a decoder for UpdateStatus automatically, so we define one manually
     implicit val updateStatusDecoder : Decoder[UpdateStatus] = Decoder[String].map(UpdateStatus.withName)
-    implicit val decoderInstace = deriveFor[UpdateSpec].decoder
+    implicit val decoderInstace = deriveDecoder[UpdateSpec]
   }
 
   def getLoginCookie : Seq[Cookie] = {

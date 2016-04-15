@@ -41,7 +41,7 @@ private[this] object ResultResponse {
     ResultResponse("2.0", et(t), id)
 
   import io.circe.generic.semiauto._
-  implicit val encoderInstance = deriveFor[ResultResponse].encoder
+  implicit val encoderInstance = deriveEncoder[ResultResponse]
 }
 
 /**
@@ -77,6 +77,10 @@ trait JsonRpcDirectives {
 
     case MalformedRequestContentRejection(_, Some(DecodingFailure(msg, _))) =>
       complete(ErrorResponse( PredefinedErrors.InvalidRequest(msg.asJson), None ) )
+
+    case ml @ MalformedRequestContentRejection(msg, None) =>
+      complete(ErrorResponse( PredefinedErrors.InvalidRequest(msg.asJson), None ) )
+
   }.result()
 
   def service(methods: (String, MethodFn)*) : Route = service(methods.toMap)

@@ -6,9 +6,9 @@ package org.genivi.sota.core
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshaller._
+import akka.http.scaladsl.model.StatusCodes.NoContent
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.server.{Directive1, Directives}
+import akka.http.scaladsl.server.{Directives, Route, StandardRoute}
 import akka.stream.ActorMaterializer
 import eu.timepit.refined._
 import eu.timepit.refined.string._
@@ -65,6 +65,7 @@ class VehiclesResource(db: Database, client: ConnectivityClient, resolverClient:
   }
 
 
+
   def fetchVehicle(ns: Namespace, vin: Vehicle.Vin)  = {
     completeOrRecoverWith(exists(Vehicle(ns, vin))) {
       case MissingVehicle =>
@@ -96,10 +97,11 @@ class VehiclesResource(db: Database, client: ConnectivityClient, resolverClient:
   def sync(ns: Namespace, vin: Vehicle.Vin) = {
     // TODO: Config RVI destination path (or ClientServices.getpackages)
     // TODO: pass namespace
-    client.sendMessage(s"genivi.org/vin/${vin}/sota/getpackages", io.circe.Json.Empty, ttl())
+    client.sendMessage(s"genivi.org/vin/${vin}/sota/getpackages", io.circe.Json.Null, ttl())
     // TODO: Confirm getpackages in progress to vehicle?
     complete(NoContent)
   }
+
 
   def search(ns: Namespace) = {
     parameters(('status.?(false), 'regex.?)) { (includeStatus: Boolean, regex: Option[String]) =>
