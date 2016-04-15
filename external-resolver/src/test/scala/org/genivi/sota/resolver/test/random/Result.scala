@@ -1,6 +1,7 @@
 package org.genivi.sota.resolver.test.random
 
 import org.genivi.sota.data.{PackageId, Vehicle}
+import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.rest.ErrorCode
@@ -16,8 +17,11 @@ final case class  Failure(c: ErrorCode)                                    exten
   */
 final case object Success                                                  extends Result
 final case class  SuccessVehicles(vehs : Set[Vehicle])                     extends Result
+final case class  SuccessComponents(cs : Set[Component])                   extends Result
+final case class  SuccessPartNumbers(pns: Set[Component.PartNumber])       extends Result
 final case class  SuccessPackage (pkg  : Package)                          extends Result
-final case class  SuccessPackages(pkgs : Set[PackageId])                   extends Result
+final case class  SuccessPackages(paks : Set[Package])                     extends Result
+final case class  SuccessPackageIds(pids : Set[PackageId])                 extends Result
 final case class  SuccessFilters (filts: Set[Filter])                      extends Result
 final case class  SuccessVehicleMap(m: Map[Vehicle.Vin, List[PackageId]])  extends Result {
   override def toString(): String = {

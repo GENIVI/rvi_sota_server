@@ -32,7 +32,7 @@ trait ResourceSpec extends
   val name        = "test-database"
   implicit val db = Database.forConfig(name)
 
-  override def beforeAll() = {
+  override def beforeAll(): Unit = {
     val dbConfig = system.settings.config.getConfig(name)
     val url      = dbConfig.getString("url")
     val user     = dbConfig.getConfig("properties").getString("user")
@@ -45,7 +45,7 @@ trait ResourceSpec extends
     flyway.migrate()
   }
 
-  override def afterAll() = {
+  override def afterAll(): Unit = {
     system.terminate()
     db.close()
   }

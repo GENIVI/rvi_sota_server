@@ -58,7 +58,7 @@ object Command extends
 
     @tailrec def go(cmds0: List[Command], s0: RawStore, acc: List[Semantics]): (RawStore, List[Semantics]) =
       cmds0 match {
-        case Nil           => (s0, acc.reverse)
+        case Nil            => (s0, acc.reverse)
         case (cmd :: cmds1) =>
           val (s1, r) = semCommand(cmd).run(s0).run
           go(cmds1, s1, r :: acc)
@@ -76,13 +76,13 @@ object Command extends
   def semCommand(cmd: Command)
                 (implicit ec: ExecutionContext): State[RawStore, Semantics] = cmd match {
 
-    case AddVehicle(veh)          =>
+    case AddVehicle(veh) =>
       for {
         s <- State.get
         _ <- State.set(s.creating(veh))
       } yield Semantics(addVehicle(veh.vin), StatusCodes.NoContent, Success)
 
-    case AddPackage(pkg)          =>
+    case AddPackage(pkg) =>
       for {
         s <- State.get
         _ <- State.set(s.creating(pkg))
@@ -102,19 +102,19 @@ object Command extends
         uninstallPackage(veh, pkg),
         StatusCodes.OK, Success) // whether already uninstalled or not, OK is the reply
 
-    case AddFilter(filt)               =>
+    case AddFilter(filt) =>
       for {
         s <- State.get
         _ <- State.set(s.creating(filt))
       } yield Semantics(addFilter2(filt), StatusCodes.OK, Success)
 
-    case EditFilter(old, neu)          =>
+    case EditFilter(old, neu) =>
       for {
         s <- State.get
         _ <- State.set(s.replacing(old, neu))
       } yield Semantics(updateFilter(neu), StatusCodes.OK, Success)
 
-    case RemoveFilter(filt)            =>
+    case RemoveFilter(filt) =>
       for {
         s       <- State.get
         _       <- State.set(s.removing(filt))
@@ -144,7 +144,7 @@ object Command extends
         deletePackageFilter(pkg, filt),
         StatusCodes.OK, Success)
 
-    case AddComponent(cmpn)     =>
+    case AddComponent(cmpn) =>
       for {
         s <- State.get
         _ <- State.set(s.creating(cmpn))
@@ -155,13 +155,13 @@ object Command extends
         else               { Semantics(req, StatusCodes.OK, Success) }
       }
 
-    case EditComponent(old, neu)    =>
+    case EditComponent(old, neu) =>
       for {
         s <- State.get
         _ <- State.set(s.replacing(old, neu))
       } yield Semantics(updateComponent(neu), StatusCodes.OK, Success)
 
-    case RemoveComponent(cmpn)      =>
+    case RemoveComponent(cmpn) =>
       for {
         s <- State.get
         _ <- State.set(s.removing(cmpn))
@@ -172,7 +172,7 @@ object Command extends
         else         { Semantics(req, StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry)) }
       }
 
-    case InstallComponent(veh, cmpn)     =>
+    case InstallComponent(veh, cmpn) =>
       for {
         s <- State.get
         _ <- State.set(s.installing(veh, cmpn))
@@ -183,7 +183,7 @@ object Command extends
         else               { Semantics(req, StatusCodes.OK, Success) }
       }
 
-    case UninstallComponent(veh, cmpn)   =>
+    case UninstallComponent(veh, cmpn) =>
       for {
         s <- State.get
         _ <- State.set(s.uninstalling(veh, cmpn))

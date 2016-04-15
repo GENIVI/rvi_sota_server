@@ -4,10 +4,13 @@ import akka.http.scaladsl.model.StatusCodes
 import cats.state.{State, StateT}
 import org.genivi.sota.resolver.resolve.ResolveFunctions
 import org.genivi.sota.resolver.filters.{And, FilterAST, True}
+import org.genivi.sota.resolver.packages.Package
+import org.genivi.sota.resolver.components.Component
+import org.genivi.sota.resolver.filters.Filter
 import FilterAST._
-import org.genivi.sota.resolver.test.{FilterRequestsHttp, PackageRequestsHttp, ResolveRequestsHttp, VehicleRequestsHttp}
+import org.genivi.sota.resolver.test._
 import org.scalacheck.Gen
-import Misc.{lift, monGen, function0Instance}
+import Misc.{function0Instance, lift, monGen}
 import org.genivi.sota.data.Vehicle.Vin
 import org.genivi.sota.data.{PackageId, Vehicle}
 
@@ -19,12 +22,17 @@ sealed trait Query
 
 final case object ListVehicles                        extends Query
 final case class  ListPackagesOnVehicle(veh: Vehicle) extends Query
+final case class  ListVehiclesFor(cmp: Component)     extends Query
+final case class  ListPackagesFor(flt: Filter)        extends Query
 
 final case object ListFilters                         extends Query
+final case class  ListFiltersFor(pak: Package)        extends Query
 
 final case class  Resolve(id: PackageId)              extends Query
 
-// TODO Query: list components
+final case object ListComponents                      extends Query
+final case class  ListComponentsFor(veh: Vehicle)     extends Query
+
 // TODO Query: vehicles having component
 // TODO Query: components for vehicle
 // TODO Query: filters for package
@@ -33,6 +41,8 @@ object Query extends
     VehicleRequestsHttp with
     PackageRequestsHttp with
     FilterRequestsHttp with
+    ComponentRequestsHttp with
+    PackageFilterRequestsHttp with
     ResolveRequestsHttp {
 
   def semQueries(qrs: List[Query])
@@ -40,7 +50,7 @@ object Query extends
 
     @tailrec def go(qrs0: List[Query], s0: RawStore, acc: List[Semantics]): (RawStore, List[Semantics]) =
       qrs0 match {
-        case Nil           => (s0, acc.reverse)
+        case Nil          => (s0, acc.reverse)
         case (qr :: qrs1) =>
           val (s1, r) = semQuery(qr).run(s0).run
           go(qrs1, s1, r :: acc)
@@ -59,15 +69,35 @@ object Query extends
       State.get map (s => Semantics(listVehicles, StatusCodes.OK,
         SuccessVehicles(s.vehicles.keySet)))
 
+    case ListVehiclesFor(cmp)           =>
+      State.get map (s => Semantics(listVehiclesHaving(cmp), StatusCodes.OK,
+        SuccessVehicles(s.vehiclesHaving(cmp))))
+
+    case ListComponents             =>
+      State.get map (s => Semantics(listComponents, StatusCodes.OK,
+        SuccessComponents(s.components)))
+
+    case ListComponentsFor(veh)     =>
+      State.get map (s => Semantics(listComponentsOnVehicle(veh), StatusCodes.OK,
+        SuccessPartNumbers(s.vehicles(veh)._2.map(_.partNumber))))
+
     case ListPackagesOnVehicle(veh) =>
       State.get map (s => Semantics(listPackagesOnVehicle(veh), StatusCodes.OK,
-        SuccessPackages(s.vehicles(veh)._1.map(_.id))))
+        SuccessPackageIds(s.vehicles(veh)._1.map(_.id))))
+
+    case ListPackagesFor(flt) =>
+      State.get map (s => Semantics(listPackagesForFilter(flt), StatusCodes.OK,
+        SuccessPackages(s.packagesHaving(flt))))
 
     case ListFilters                =>
       State.get map (s => Semantics(listFilters, StatusCodes.OK,
         SuccessFilters(s.filters)))
 
-    case Resolve(pkgId)                =>
+    case ListFiltersFor(pak) =>
+      State.get map (s => Semantics(listFiltersForPackage(pak), StatusCodes.OK,
+        SuccessFilters(s.packages(pak))))
+
+    case Resolve(pkgId)             =>
       State.get map (s => Semantics(resolve2(pkgId), StatusCodes.OK,
         SuccessVehicleMap(vehicleMap(s, pkgId))))
 
@@ -103,14 +133,29 @@ object Query extends
       s    <- StateT.stateTMonadState[Gen, RawStore].get
       vehs <- Store.numberOfVehicles
       pkgs <- Store.numberOfPackages
+      cmps <- Store.numberOfComponents
+      flts <- Store.numberOfFilters
+      vcomp <- Store.numberOfVehiclesWithSomeComponent
+      vpaks <- Store.numberOfVehiclesWithSomePackage
+      pfilt <- Store.numberOfPackagesWithSomeFilter
       qry  <- lift(Gen.frequency(
 
         (10, Gen.const(ListVehicles)),
+        (10, Gen.const(ListComponents)),
+        ( 5, Gen.const(ListFilters)),
 
-        (if (vehs > 0) 10 else 0,
-          Store.pickVehicle.runA(s).map(ListPackagesOnVehicle(_))),
+        (if (vehs > 0) 10 else 0, Gen.oneOf(
+          Store.pickVehicle.runA(s).map(ListPackagesOnVehicle(_)),
+          Store.pickVehicle.runA(s).map(ListComponentsFor(_))
+        )),
 
-        (5,  Gen.const(ListFilters)),
+        (if (vcomp > 0) 10 else 0,
+          Store.pickVehicleWithComponent.runA(s) map { case (veh, cmp) => ListVehiclesFor(cmp) }),
+
+        (if (pfilt > 0) 10 else 0, Gen.oneOf(
+          Store.pickPackageWithFilter.runA(s) map { case (pkg, flt) => ListPackagesFor(flt) },
+          Store.pickPackageWithFilter.runA(s) map { case (pkg, flt) => ListFiltersFor(pkg)  }
+        )),
 
         (if (pkgs > 0) 50 else 0,
           Store.pickPackage.runA(s).map(pkg => Resolve(pkg.id)))
