@@ -1,6 +1,7 @@
 package org.genivi.sota.core
 
 import akka.actor.ActorSystem
+import akka.event.Logging
 import akka.http.scaladsl.model.{HttpResponse, Uri}
 import akka.stream.ActorMaterializer
 import io.circe.Json
@@ -14,6 +15,8 @@ class FakeExternalResolver()(implicit system: ActorSystem, mat: ActorMaterialize
 {
   val installedPackages = scala.collection.mutable.Queue.empty[PackageId]
 
+  val logger = Logging.getLogger(system, this)
+
   override def setInstalledPackages(vin: Vehicle.Vin, json: Json): Future[Unit] = {
     val ids = json.as[List[PackageId]].getOrElse(List.empty)
     installedPackages.enqueue(ids:_*)
@@ -24,5 +27,8 @@ class FakeExternalResolver()(implicit system: ActorSystem, mat: ActorMaterialize
 
   override def handlePutResponse(futureResponse: Future[HttpResponse]): Future[Unit] = ???
 
-  override def putPackage(namespace: Namespace, packageId: PackageId, description: Option[String], vendor: Option[String]): Future[Unit] = ???
+  override def putPackage(namespace: Namespace, packageId: PackageId, description: Option[String], vendor: Option[String]): Future[Unit] = {
+    logger.info(s"Fake resolver called. namespace=$namespace, packageId=${packageId.mkString}")
+    Future.successful(())
+  }
 }

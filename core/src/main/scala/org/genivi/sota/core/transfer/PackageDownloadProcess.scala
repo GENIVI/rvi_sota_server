@@ -4,16 +4,15 @@
  */
 package org.genivi.sota.core.transfer
 
-import java.io.File
-import java.net.URI
-
+import akka.actor.ActorSystem
 import akka.http.scaladsl.model._
-import akka.stream.scaladsl.FileIO
+import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Uuid
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db.Packages
 import org.genivi.sota.core.db.UpdateSpecs._
+import org.genivi.sota.core.storage.PackageStorage.PackageRetrievalOp
 import org.genivi.sota.db.SlickExtensions
 import org.genivi.sota.refined.SlickRefined._
 import slick.driver.MySQLDriver.api._
@@ -22,18 +21,18 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.language.implicitConversions
 
 
-class PackageDownloadProcess(db: Database) {
+class PackageDownloadProcess(db: Database, packageRetrieval: PackageRetrievalOp)
+                            (implicit val system: ActorSystem, mat: ActorMaterializer) {
   import SlickExtensions._
 
   def buildClientDownloadResponse(uuid: Refined[String, Uuid])(implicit ec: ExecutionContext): Future[HttpResponse] = {
     val availablePackageIO = findForDownload(uuid)
 
-    db.run(availablePackageIO).map {
+    db.run(availablePackageIO) flatMap {
       case Some(packageModel) =>
-        val entity = fileEntity(packageModel)
-        HttpResponse(StatusCodes.OK, entity = entity)
+        packageRetrieval(packageModel)
       case None =>
-        HttpResponse(StatusCodes.NotFound, entity = "Package not found")
+        Future.successful(HttpResponse(StatusCodes.NotFound, entity = "Package not found"))
     }
   }
 
@@ -50,12 +49,5 @@ class PackageDownloadProcess(db: Database) {
   private def findForDownload(updateRequestId: Refined[String, Uuid])
                              (implicit ec: ExecutionContext): DBIO[Option[Package]] = {
     findPackagesWith(updateRequestId).map(_.headOption)
-  }
-
-  private def fileEntity(packageModel: Package): UniversalEntity = {
-    val file = new File(new URI(packageModel.uri.toString()))
-    val size = file.length()
-    val source = FileIO.fromFile(file)
-    HttpEntity(MediaTypes.`application/octet-stream`, size, source)
   }
 }

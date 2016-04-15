@@ -4,7 +4,8 @@ import akka.http.scaladsl.unmarshalling.Unmarshaller._
 import java.util.UUID
 
 import akka.http.scaladsl.model.Uri.Path
-import akka.http.scaladsl.model.{StatusCodes, Uri}
+import akka.http.scaladsl.model.headers.Location
+import akka.http.scaladsl.model.{HttpResponse, StatusCodes, Uri}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.genivi.sota.core.rvi.{InstallReport, OperationResult, UpdateReport}
 import org.scalatest.concurrent.ScalaFutures
@@ -13,13 +14,15 @@ import org.genivi.sota.data.VehicleGenerators._
 import org.genivi.sota.data.PackageIdGenerators._
 import org.scalacheck.Gen
 import org.scalatest.time.{Millis, Seconds, Span}
-import org.genivi.sota.core.data.UpdateStatus
-import org.genivi.sota.core.db.{InstallHistories, Vehicles}
+import org.genivi.sota.core.data.{Package, UpdateStatus}
+import org.genivi.sota.core.db.{InstallHistories, Packages, Vehicles}
 import org.genivi.sota.core.transfer.InstalledPackagesUpdate
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.generic.auto._
 import org.genivi.sota.core.resolver.DefaultConnectivity
 import org.joda.time.DateTime
+
+import scala.concurrent.Future
 
 class VehicleServiceSpec extends FunSuite
   with ShouldMatchers
@@ -153,6 +156,29 @@ class VehicleServiceSpec extends FunSuite
       Post(url, installReport) ~> service.route ~> check {
         status shouldBe StatusCodes.NotFound
         responseAs[String] should include("Could not find an update request with id ")
+      }
+    }
+  }
+
+  test("GET to download a file returns 3xx if the package URL is an s3 URI") {
+    val service = new VehicleService(db, fakeResolver) {
+      override lazy val packageRetrievalOp: (Package) => Future[HttpResponse] = {
+        _ => Future.successful {
+          HttpResponse(StatusCodes.Found, Location("https://some-fake-place") :: Nil)
+        }
+      }
+    }
+
+    val f = for {
+      (packageModel, vehicle, updateSpec) <- createUpdateSpec()
+      _ <- db.run(Packages.create(packageModel.copy(uri = "https://amazonaws.com/file.rpm")))
+    } yield (packageModel, vehicle, updateSpec)
+
+    whenReady(f) { case (packageModel, vehicle, updateSpec) =>
+      val url = Uri.Empty.withPath(BasePath / vehicle.vin.get / "updates" / updateSpec.request.id.toString / "download")
+      Get(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.Found
+        header("Location").map(_.value()) should contain("https://some-fake-place")
       }
     }
   }

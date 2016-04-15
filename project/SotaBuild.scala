@@ -88,9 +88,9 @@ object SotaBuild extends Build {
 
   lazy val core = Project(id = "sota-core", base = file("core"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.NscalaTime :+ Dependencies.Scalaz :+ Dependencies.Flyway,
-      testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RequiresRvi"),
-      testOptions in IntegrationTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RequiresRvi"),
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.NscalaTime :+ Dependencies.Scalaz :+ Dependencies.Flyway :+ Dependencies.AmazonS3,
+      testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RequiresRvi", "-l", "IntegrationTest"),
+      testOptions in IntegrationTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RequiresRvi", "-n", "IntegrationTest"),
       parallelExecution in Test := false,
       dockerExposedPorts := Seq(8080),
       flywayUrl := sys.env.get("CORE_DB_URL").orElse( sys.props.get("core.db.url") ).getOrElse("jdbc:mysql://localhost:3306/sota_core"),
@@ -211,4 +211,5 @@ object Dependencies {
 
   lazy val Rest = Akka ++ Slick
 
+  lazy val AmazonS3 =  "com.amazonaws" % "aws-java-sdk-s3" % "1.10.69"
 }

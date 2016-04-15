@@ -12,6 +12,8 @@ import com.typesafe.config.ConfigFactory
 case class PackageId(name   : PackageId.Name,
                      version: PackageId.Version) {
   override def toString(): String = s"PackageId(${name.get}, ${version.get})"
+
+  def mkString = s"${name.get}-${version.get}"
 }
 
 /**
