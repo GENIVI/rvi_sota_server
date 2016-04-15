@@ -12,7 +12,7 @@ import akka.util.ByteString
 import org.apache.commons.codec.binary.Hex
 
 object DigestCalculator {
-  def apply(algorithm: String): DigestCalculator = new DigestCalculator(algorithm)
+  def apply(algorithm: String = "SHA-1"): DigestCalculator = new DigestCalculator(algorithm)
 }
 
 class DigestCalculator(algorithm: String) extends GraphStage[FlowShape[ByteString, String]] {
@@ -31,18 +31,16 @@ class DigestCalculator(algorithm: String) extends GraphStage[FlowShape[ByteStrin
           digest.update(chunk.toArray)
           pull(in)
         }
+
+        override def onUpstreamFinish(): Unit = {
+          val hexDigest = Hex.encodeHexString(digest.digest())
+          emit(out, hexDigest)
+          super.onUpstreamFinish()
+        }
       })
 
       setHandler(out, new OutHandler {
-        override def onPull(): Unit = {
-          if(isClosed(in)) {
-            val h = Hex.encodeHexString(digest.digest())
-            push(out, h)
-            completeStage()
-          } else {
-            pull(in)
-          }
-        }
+        override def onPull(): Unit = pull(in)
       })
     }
   }
