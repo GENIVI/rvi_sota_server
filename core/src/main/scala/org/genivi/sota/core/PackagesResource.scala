@@ -73,7 +73,7 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
     val data = fileData.entity.dataBytes
     val uploadResult: Future[(Uri, Long, String)] = for {
       ioResult <- data.runWith(FileIO.toFile(file))
-      digest <- data.via(DigestCalculator("SHA-1")).runFold("")((acc, data) => acc ++ data)
+      digest <- data.via(DigestCalculator("SHA-1")).runFold("")(_ ++ _)
     } yield (file.toURI().toString(), ioResult.count, digest)
 
     uploadResult.onComplete {
