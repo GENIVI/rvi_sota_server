@@ -33,36 +33,36 @@ class FilterDirectives(implicit system: ActorSystem,
                        mat: ActorMaterializer,
                        ec: ExecutionContext) {
 
-  def searchFilter(ns: Namespace) =
+  def searchFilter(ns: Namespace): Route =
     parameter('regex.as[String Refined Regex].?) { re =>
       val query = re.fold(FilterRepository.list)(re => FilterRepository.searchByRegex(ns, re))
       complete(db.run(query))
     }
 
-  def getPackages(ns: Namespace, fname: String Refined Filter.ValidName) =
+  def getPackages(ns: Namespace, fname: String Refined Filter.ValidName): Route =
     completeOrRecoverWith(db.run(PackageFilterRepository.listPackagesForFilter(ns, fname))) {
       Errors.onMissingFilter
     }
 
-  def createFilter(ns: Namespace) =
+  def createFilter(ns: Namespace): Route =
     entity(as[Filter]) { filter =>
       // TODO: treat differing namespace names accordingly
       complete(db.run(FilterRepository.add(filter.copy(namespace = ns))))
     }
 
-  def updateFilter(ns: Namespace, fname: String Refined Filter.ValidName) =
+  def updateFilter(ns: Namespace, fname: String Refined Filter.ValidName): Route =
     entity(as[Filter.ExpressionWrapper]) { expr =>
       complete(db.run(FilterRepository.update(Filter(ns, fname, expr.expression))))
     }
 
-  def deleteFilter(ns: Namespace, fname: String Refined Filter.ValidName) =
+  def deleteFilter(ns: Namespace, fname: String Refined Filter.ValidName): StandardRoute =
     complete(db.run(FilterRepository.deleteFilterAndPackageFilters(ns, fname)))
 
   /**
    * API route for validating filters.
    * @return      Route object containing routes for verifying that a filter is valid
    */
-  def validateFilter =
+  def validateFilter: Route =
     entity(as[Filter]) { filter =>
       complete("OK")
     }

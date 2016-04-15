@@ -194,10 +194,10 @@ object Command extends
   }
   // scalastyle:on
 
-  private def genCommandAddVehicle(): Gen[AddVehicle] =
+  private def genCommandAddVehicle: Gen[AddVehicle] =
     VehicleGenerators.genVehicle.map(AddVehicle(_))
 
-  private def genCommandAddPackage(): Gen[AddPackage] =
+  private def genCommandAddPackage: Gen[AddPackage] =
     PackageGenerators.genPackage.map(AddPackage(_))
 
   private def genCommandAddFilter(s: RawStore): Gen[AddFilter] =
@@ -308,7 +308,7 @@ object Command extends
 
         (if (vpaks > 0) 10 else 0, genCommandUninstallPackage(s)),
 
-        // TODO fix VehicleRepository.uninstallComponent (if (vcomp > 0) 10 else 0, genCommandUninstallComponent(s)),
+        (if (vcomp > 0) 10 else 0, genCommandUninstallComponent(s)),
 
         (if (filts > 0) 50 else 0, genCommandEditFilter(s)),
 

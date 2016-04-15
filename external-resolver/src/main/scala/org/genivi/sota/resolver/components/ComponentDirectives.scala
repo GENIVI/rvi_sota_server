@@ -32,20 +32,20 @@ class ComponentDirectives(implicit system: ActorSystem,
                           mat: ActorMaterializer,
                           ec: ExecutionContext) {
 
-  def searchComponent(ns: Namespace) =
+  def searchComponent(ns: Namespace): Route =
     parameter('regex.as[String Refined Regex].?) { re =>
       val query = re.fold(ComponentRepository.list)(re => ComponentRepository.searchByRegex(ns, re))
       complete(db.run(query))
     }
 
-  def addComponent(ns: Namespace, part: Component.PartNumber) =
+  def addComponent(ns: Namespace, part: Component.PartNumber): Route =
     entity(as[Component.DescriptionWrapper]) { descr =>
       val comp = Component(ns, part, descr.description)
       complete(db.run(ComponentRepository.addComponent(comp)).map(_ => comp))
     }
 
 
-  def deleteComponent(ns: Namespace, part: Component.PartNumber) =
+  def deleteComponent(ns: Namespace, part: Component.PartNumber): Route =
     completeOrRecoverWith(db.run(ComponentRepository.removeComponent(ns, part))) {
       Errors.onComponentInstalled
     }

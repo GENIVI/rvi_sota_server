@@ -27,15 +27,15 @@ class ResolveDirectives(implicit system: ActorSystem,
                         mat: ActorMaterializer,
                         ec: ExecutionContext) {
 
-  def resolvePackage(ns: Namespace, id: PackageId) =
+  def resolvePackage(ns: Namespace, id: PackageId): Route =
     completeOrRecoverWith(db.run(VehicleRepository.resolve(ns, id))) {
       Errors.onMissingPackage
     }
 
   /**
    * API route for resolving a package, i.e. returning the list of VINs it applies to.
-   * @return 			Route object containing route for package resolution
-   * @throws 			Errors.MissingPackageException if the package doesn't exist
+   * @return Route object containing route for package resolution
+   * @throws Errors.MissingPackageException if the package doesn't exist
    */
   def route: Route =
     (get & pathPrefix("resolve") & extractNamespace & refinedPackageId) { (ns, id) =>
