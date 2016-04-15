@@ -52,28 +52,28 @@ object SotaBuild extends Build {
 
   lazy val commonSettings = basicSettings ++ compilerSettings ++ Packaging.settings ++ Seq(
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
-    buildInfoPackage := organization.value + ".sota." + name.value
+    buildInfoPackage := organization.value + ".sota." + name.value.replaceAll("sota-", "")
   )
 
   // the sub-projects
-  lazy val common = Project(id = "common", base = file("common"))
+  lazy val common = Project(id = "sota-common", base = file("common"))
     .settings(basicSettings ++ compilerSettings)
     .settings( libraryDependencies ++= Dependencies.Rest :+ Dependencies.AkkaHttpCirceJson :+ Dependencies.NscalaTime :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
     .dependsOn(commonData)
     .settings(Publish.settings)
 
-  lazy val commonData = Project(id = "common-data", base = file("common-data"))
+  lazy val commonData = Project(id = "sota-common-data", base = file("common-data"))
     .settings(basicSettings ++ compilerSettings)
     .settings(libraryDependencies ++= Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.CommonsCodec :+ Dependencies.TypesafeConfig :+ Dependencies.NscalaTime)
     .settings(Publish.settings)
 
-  lazy val commonTest = Project(id = "common-test", base = file("common-test"))
+  lazy val commonTest = Project(id = "sota-common-test", base = file("common-test"))
     .settings(basicSettings ++ compilerSettings)
     .settings(libraryDependencies ++= Seq (Dependencies.Cats, Dependencies.Refined))
     .dependsOn(commonData)
     .settings(Publish.settings)
 
-  lazy val externalResolver = Project(id = "resolver", base = file("external-resolver"))
+  lazy val externalResolver = Project(id = "sota-resolver", base = file("external-resolver"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
       libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.ParserCombinators :+ Dependencies.Flyway,
       parallelExecution in Test := false,
@@ -86,7 +86,7 @@ object SotaBuild extends Build {
     .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
     .settings(Publish.settings)
 
-  lazy val core = Project(id = "core", base = file("core"))
+  lazy val core = Project(id = "sota-core", base = file("core"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
       libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.NscalaTime :+ Dependencies.Scalaz :+ Dependencies.Flyway,
       testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RequiresRvi"),
@@ -105,7 +105,7 @@ object SotaBuild extends Build {
     .settings(Publish.settings)
 
   import play.sbt.Play.autoImport._
-  lazy val webServer = Project(id = "webserver", base = file("web-server"),
+  lazy val webServer = Project(id = "sota-webserver", base = file("web-server"),
     settings = commonSettings ++ PlaySettings.defaultScalaSettings ++ Seq(
       RoutesKeys.routesGenerator := InjectedRoutesGenerator,
       testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "APITests BrowserTests"),
