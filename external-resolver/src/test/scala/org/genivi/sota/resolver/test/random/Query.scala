@@ -33,10 +33,6 @@ final case class  Resolve(id: PackageId)              extends Query
 final case object ListComponents                      extends Query
 final case class  ListComponentsFor(veh: Vehicle)     extends Query
 
-// TODO Query: vehicles having component
-// TODO Query: components for vehicle
-// TODO Query: filters for package
-
 object Query extends
     VehicleRequestsHttp with
     PackageRequestsHttp with

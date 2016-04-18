@@ -18,7 +18,19 @@ import scala.annotation.tailrec
 import scala.concurrent.duration._
 
 
+/**
+  *  Regarding test coverage: This test runs until each REST endpoint has been exercised at least once.
+  *  An alternative design (reporting test coverage as a percentage) was also explored:
+  *  <ul>
+  *    <li>The Scalatest way to summarize information for a test involves writing a custom [[org.scalatest.Reporter]]
+  *        receiving events </li>
+  *    <li>For example, [[org.scalatest.events.TestSucceeded]] events with a custom payload
+  *        (for example, which commands and queries the test in question exercised).</li>
+  *  </ul>
+  */
 class Random extends ResourcePropSpec {
+
+  val config = system.settings.config
 
   // scalastyle:off cyclomatic.complexity
   def runSession(sesh: Session)(implicit route: Route): State[RawStore, Unit] = {
@@ -62,18 +74,25 @@ class Random extends ResourcePropSpec {
   }
   // scalastyle:on
 
-  implicit val config: PropertyCheckConfig =
-    new PropertyCheckConfig(maxSize = 20, minSuccessful = 200) // scalastyle:ignore magic.number
+  implicit val propCheckConfig: PropertyCheckConfig =
+    new PropertyCheckConfig(
+      maxSize = 20, // scalastyle:ignore magic.number
+      minSuccessful = config.getInt("test.random.minSuccessful"))
 
   // We use a global variable to persist the state of the world between the session runs.
   var s: RawStore = Store.initRawStore
 
+  // accumulates test-coverage across all session
+  var accCoverage = SessionCoverage.emptyCoverageInfo
+
   property("Sessions") {
-    val attempts = 1
-    forAll (minSuccessful(attempts)) { sesh: Session =>
-      s = runSession(sesh).runS(s).run
-      Store.validStore.isValid(s) shouldBe true
-    }
+    do {
+      forAll { sesh: Session =>
+        accCoverage = accCoverage.merge(sesh.coverageInfo)
+        s = runSession(sesh).runS(s).run
+        Store.validStore.isValid(s) shouldBe true
+      }
+    } while (!accCoverage.fullCoverage)
   }
 
 }
