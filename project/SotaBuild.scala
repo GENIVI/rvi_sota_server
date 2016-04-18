@@ -149,11 +149,11 @@ object SotaBuild extends Build {
 
 object Dependencies {
 
-  val AkkaVersion = "2.4.2"
+  val AkkaVersion = "2.4.4"
 
   val CirceVersion = "0.4.0"
 
-  val AkkaHttpCirceVersion = "1.5.4"
+  val AkkaHttpCirceVersion = "1.6.0"
 
   val LogbackVersion = "1.1.3"
 
