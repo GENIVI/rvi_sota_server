@@ -16,7 +16,10 @@ class ValidateResourceSpec extends ResourceWordSpec with Namespaces {
 
   "Validate resource" should {
 
-    val filter = Filter(defaultNs, Refined.unsafeApply("myfilter"), Refined.unsafeApply(s"""vin_matches "SAJNX5745SC......""""))
+    val filter = Filter(
+      defaultNs,
+      Refined.unsafeApply("myfilter"),
+      Refined.unsafeApply(s"""vin_matches "SAJNX5745SC......""""))
 
     "accept valid filters" in {
       validateFilter(filter) ~> route ~> check {
@@ -32,7 +35,9 @@ class ValidateResourceSpec extends ResourceWordSpec with Namespaces {
     }
 
     "reject filters with bad filter expressions" in {
-      validateFilter(filter.copy(expression = Refined.unsafeApply(filter.expression.get + " AND ?"))) ~> route ~> check {
+      validateFilter(
+        filter.copy(expression = Refined.unsafeApply(filter.expression.get + " AND ?"))
+      ) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
       }

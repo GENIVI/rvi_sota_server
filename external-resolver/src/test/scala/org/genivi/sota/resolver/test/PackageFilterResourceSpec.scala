@@ -26,7 +26,11 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec with Namespaces {
     val filterName = "filter"
     val filterExpr = s"""vin_matches "^X.*""""
     val pkgFilter  =
-      PackageFilter(defaultNs, Refined.unsafeApply(pkgName), Refined.unsafeApply(pkgVersion), Refined.unsafeApply(filterName))
+      PackageFilter(
+        defaultNs,
+        Refined.unsafeApply(pkgName),
+        Refined.unsafeApply(pkgVersion),
+        Refined.unsafeApply(filterName))
 
     "be able to assign exisiting filters to existing packages" in {
       addPackageOK(pkgName, pkgVersion, None, None)
@@ -65,7 +69,8 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec with Namespaces {
     "list packages associated to a filter on GET requests to /filters/:filterName/package" in {
       listPackagesForFilter(filterName) ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[List[Package]] shouldBe List(Package(defaultNs, PackageId(Refined.unsafeApply(pkgName), Refined.unsafeApply(pkgVersion)), None, None))
+        responseAs[List[Package]] shouldBe List(
+          Package(defaultNs, PackageId(Refined.unsafeApply(pkgName), Refined.unsafeApply(pkgVersion)), None, None))
       }
     }
 
@@ -84,7 +89,8 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec with Namespaces {
     "list filters associated to a package on GET requests to /packages/:pkgName/:pkgVersion/filter" in {
       listFiltersForPackage(pkgName, pkgVersion) ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[Seq[Filter]] shouldBe List(Filter(defaultNs, Refined.unsafeApply(filterName), Refined.unsafeApply(filterExpr)))
+        responseAs[Seq[Filter]] shouldBe List(
+          Filter(defaultNs, Refined.unsafeApply(filterName), Refined.unsafeApply(filterExpr)))
       }
     }
 

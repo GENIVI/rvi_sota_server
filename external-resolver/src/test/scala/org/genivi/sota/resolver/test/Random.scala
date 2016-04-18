@@ -2,7 +2,6 @@ package org.genivi.sota.resolver.test
 
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.RouteTestTimeout
 import cats.state.State
@@ -11,6 +10,7 @@ import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.test.random.Misc._
 import org.genivi.sota.resolver.test.random._
 import Session._
+import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.rest.ErrorRepresentation
 
@@ -38,8 +38,14 @@ class Random extends ResourcePropSpec {
               case Success               => ()
               case SuccessVehicles(vehs) => responseAs[Set[Vehicle]]                       shouldBe vehs
               case SuccessPackage(pkg)   => responseAs[Package]                            shouldBe pkg
-              case SuccessPackages(pkgs) => responseAs[Set[PackageId]]                     shouldBe pkgs
+
+              // TODO Package.description roundtripped wrongly for non-Latin chars. Sidestep by comparing PackageIds.
+              case SuccessPackages(pkgs) => responseAs[Set[Package]].map(_.id)             shouldBe pkgs.map(_.id)
+
+              case SuccessPackageIds(pids) => responseAs[Set[PackageId]]                   shouldBe pids
               case SuccessFilters(filts) => responseAs[Set[Filter]]                        shouldBe filts
+              case SuccessComponents(cs) => responseAs[Set[Component]]                     shouldBe cs
+              case SuccessPartNumbers(x) => responseAs[Set[Component.PartNumber]]          shouldBe x
               case SuccessVehicleMap(m)  => responseAs[Map[Vehicle.Vin, List[PackageId]]]  shouldBe m
               case r                     => sys.error(s"runSession: non-exhaustive pattern: $r")
             }

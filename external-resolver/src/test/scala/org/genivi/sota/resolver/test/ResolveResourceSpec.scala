@@ -128,8 +128,10 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
             s"""[["00RES0LVEV1N12345",[{"name":"resolvePkg","version":"0.0.1"}]],["01RES0LVEV1N12345",[{"name":"resolvePkg","version":"0.0.1"}]]]"""
 
           responseAs[Map[Vehicle.Vin, Set[PackageId]]] shouldBe
-            Map(Refined.unsafeApply("00RES0LVEV1N12345") -> Set(PackageId(Refined.unsafeApply(pkgName), Refined.unsafeApply("0.0.1"))),
-                Refined.unsafeApply("01RES0LVEV1N12345") -> Set(PackageId(Refined.unsafeApply(pkgName), Refined.unsafeApply("0.0.1"))))
+            Map(Refined.unsafeApply("00RES0LVEV1N12345") ->
+                  Set(PackageId(Refined.unsafeApply(pkgName), Refined.unsafeApply("0.0.1"))),
+                Refined.unsafeApply("01RES0LVEV1N12345") ->
+                  Set(PackageId(Refined.unsafeApply(pkgName), Refined.unsafeApply("0.0.1"))))
 
         }
       }

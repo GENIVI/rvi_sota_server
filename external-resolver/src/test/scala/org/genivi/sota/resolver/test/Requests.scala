@@ -4,9 +4,9 @@
  */
 package org.genivi.sota.resolver.test
 
-import akka.http.scaladsl.client.RequestBuilding.{Get, Post, Put, Delete}
+import akka.http.scaladsl.client.RequestBuilding.{Delete, Get, Post, Put}
 import akka.http.scaladsl.marshalling._
-import akka.http.scaladsl.model.Uri.Path
+import akka.http.scaladsl.model.Uri.{Path, Query}
 import akka.http.scaladsl.model.{HttpRequest, StatusCode, StatusCodes, Uri}
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
@@ -57,8 +57,20 @@ trait VehicleRequestsHttp {
   def listVehicles: HttpRequest =
     Get(Resource.uri("vehicles"))
 
+  def listVehiclesHaving(cmp: Component): HttpRequest =
+    listVehiclesHaving(cmp.partNumber.get)
+
+  def listVehiclesHaving(partNumber: String): HttpRequest =
+    Get(Resource.uri("vehicles").withQuery(Query("component" -> partNumber)))
+
   def listPackagesOnVehicle(veh: Vehicle): HttpRequest =
     Get(Resource.uri("vehicles", veh.vin.get, "package"))
+
+  def listComponentsOnVehicle(veh: Vehicle): HttpRequest =
+    listComponentsOnVehicle(veh.vin.get)
+
+  def listComponentsOnVehicle(vin: String): HttpRequest =
+    Get(Resource.uri("vehicles", vin, "component"))
 
   private def path(vin: Vehicle.Vin, part: Component.PartNumber): Uri =
     Resource.uri("vehicles", vin.get, "component", part.get)
@@ -140,6 +152,9 @@ trait PackageRequests extends
  * Testing Trait for building Component requests
  */
 trait ComponentRequestsHttp {
+
+  def listComponents: HttpRequest =
+    Get(Resource.uri("components"))
 
   def addComponent(part: Component.PartNumber, desc: String)
                   (implicit ec: ExecutionContext): HttpRequest =
@@ -249,8 +264,14 @@ trait PackageFilterRequestsHttp {
   def listPackageFilters: HttpRequest =
     Get(Resource.uri("packages", "filter"))
 
+  def listPackagesForFilter(flt: Filter): HttpRequest =
+    listPackagesForFilter(flt.name.get)
+
   def listPackagesForFilter(fname: String): HttpRequest =
     Get(Resource.uri("filters", fname, "package"))
+
+  def listFiltersForPackage(pak: Package): HttpRequest =
+    listFiltersForPackage(pak.id.name.get, pak.id.version.get)
 
   def listFiltersForPackage(pname: String, pversion: String): HttpRequest =
     Get(Resource.uri("packages", pname, pversion, "filter"))
