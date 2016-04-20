@@ -9,6 +9,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.common.StrictForm
 import akka.http.scaladsl.model.{HttpEntity, HttpRequest, Uri}
 import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.FileIO
 import akka.testkit.TestKit
 import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
@@ -43,6 +44,8 @@ class S3PackageStoreSpec extends TestKit(ActorSystem("LocalPackageStoreSpec"))
   lazy val credentials = S3PackageStore.loadCredentials(system.settings.config).get
   lazy val s3 = new S3PackageStore(credentials)
 
+  implicit val ec = system.dispatcher
+
   test("stores a file on s3 with correct credentials", IntegrationTest) {
     val packageId = PackageIdGenerators.genPackageId.sample.get
 
@@ -55,7 +58,6 @@ class S3PackageStoreSpec extends TestKit(ActorSystem("LocalPackageStoreSpec"))
 
   test("returns a public URL given a package URI", IntegrationTest) {
     val packageId = PackageIdGenerators.genPackageId.sample.get
-    implicit val ec = system.dispatcher
 
     def http(uri: Uri): Future[ByteString] = {
       Http()
@@ -71,6 +73,20 @@ class S3PackageStoreSpec extends TestKit(ActorSystem("LocalPackageStoreSpec"))
 
     whenReady(f) { downloadContents =>
       downloadContents shouldBe fileData.entity.data
+    }
+  }
+
+  test("retrieves a file to a temporary file", IntegrationTest) {
+    val packageId = PackageIdGenerators.genPackageId.sample.get
+    val f = for {
+      (uri, _, _) <- s3.store(packageId, fileData)
+      file <- s3.retrieveFile(uri)
+      localContents <- FileIO.fromFile(file).runFold(ByteString.empty)(_ ++ _)
+    } yield (file, localContents)
+
+    whenReady(f) { case (file, localContents) =>
+        file.exists() shouldBe true
+        localContents shouldBe fileData.entity.data
     }
   }
 }

@@ -4,14 +4,14 @@
  */
 package org.genivi.sota.core.storage
 
-import java.io.InputStream
+import java.io.{File, InputStream}
 
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.common.StrictForm.FileData
 import akka.http.scaladsl.model._
 import akka.stream._
-import akka.stream.scaladsl.StreamConverters
+import akka.stream.scaladsl.{FileIO, StreamConverters}
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.regions.{Region, Regions}
 import com.amazonaws.services.s3.AmazonS3Client
@@ -77,10 +77,30 @@ class S3PackageStore(credentials: S3Credentials)
   override def retrieve(packageId: PackageId, packageUri: Uri): Future[(Uri, UniversalEntity)] = {
     signedUri(packageId, packageUri).map((_, HttpEntity.Empty))
   }
+
+  def retrieveFile(packageUri: Uri): Future[File] = {
+    def asyncFileDownload(fileKey: String, toFile: File) = Future {
+      val req = new GetObjectRequest(bucketId, fileKey)
+      s3client.getObject(req, toFile)
+    }
+
+    val file = File.createTempFile("s3storage-download", ".tmp")
+
+    for {
+      key <- Future.fromTry(Try(packageUri.path.reverse.head.toString))
+      _ <- asyncFileDownload(key, file)
+    } yield file
+  }
 }
 
 object S3PackageStore {
   lazy val logger = LoggerFactory.getLogger(this.getClass)
+
+  def apply(config: Config)
+           (implicit system: ActorSystem, mat: ActorMaterializer): S3PackageStore = {
+    val credentials = loadCredentials(config).get
+    new S3PackageStore(credentials)
+  }
 
   protected [storage] def loadCredentials(config: Config): Option[S3Credentials] = {
     val t = for {

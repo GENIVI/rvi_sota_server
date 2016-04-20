@@ -20,6 +20,7 @@ import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db.{Packages, UpdateSpecs}
 import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
 import org.genivi.sota.core.storage.PackageStorage
+import org.genivi.sota.core.storage.PackageStorage.PackageStorageOp
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.PackageId
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
@@ -49,7 +50,7 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
 
   private[this] val log = Logging.getLogger(system, "org.genivi.sota.core.PackagesResource")
 
-  val packageStorage = new PackageStorage()
+  val packageStorageOp: PackageStorageOp = new PackageStorage().store _
 
   def searchPackage(ns: Namespace): Route = {
     parameters('regex.as[String Refined Regex].?) { (regex: Option[String Refined Regex]) =>
@@ -77,7 +78,7 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
         completeOrRecoverWith(
           for {
             _ <- resolver.putPackage(ns, pid, description, vendor)
-            (uri, size, digest) <- packageStorage.store(pid, fileData)
+            (uri, size, digest) <- packageStorageOp(pid, fileData)
             _ <- db.run(Packages.create(
               Package(ns, pid, uri, size, digest, description, vendor, signature)))
           } yield StatusCodes.NoContent

@@ -17,7 +17,8 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.stream.scaladsl.FileIO
 import akka.util.ByteString
 import io.circe.generic.auto._
-
+import org.genivi.sota.core.storage.PackageStorage.PackageStorageOp
+import org.genivi.sota.core.storage.{LocalPackageStore, PackageStorage}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 
@@ -31,7 +32,9 @@ class PackagesResourceSpec extends FunSuite
 {
   val resolver = new FakeExternalResolver()
 
-  val subject = new PackagesResource(resolver, db)
+  val service = new PackagesResource(resolver, db) {
+    override val packageStorageOp: PackageStorageOp = new LocalPackageStore().store _
+  }
 
   val BasePath = Path("/packages")
 
@@ -49,7 +52,6 @@ class PackagesResourceSpec extends FunSuite
   }
 
   test("save packet to local file system") {
-    val service = new PackagesResource(resolver, db)
     val url = Uri.Empty.withPath(BasePath / "linux-lts" / "4.5.0")
 
     Put(url, multipartForm) ~> service.route ~> check {

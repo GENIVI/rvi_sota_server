@@ -4,6 +4,8 @@
  */
 package org.genivi.sota.core.rvi
 
+import java.io.File
+
 import akka.actor._
 import akka.util.ByteString
 import io.circe.Encoder
@@ -14,14 +16,16 @@ import java.nio.file.{Paths, StandardOpenOption}
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
-import org.apache.commons.codec.binary.Base64
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db._
 import akka.actor._
+import akka.http.scaladsl.model.Uri
+import akka.stream.ActorMaterializer
 import org.apache.commons.codec.binary.Base64
 import org.genivi.sota.core.data.{Package, UpdateSpec, UpdateStatus}
-import org.genivi.sota.core.db.{InstallHistories, OperationResults, UpdateRequests, UpdateSpecs}
+import org.genivi.sota.core.db.UpdateSpecs
 import org.genivi.sota.core.resolver.ConnectivityClient
+import org.genivi.sota.core.storage.S3PackageStore
 import org.genivi.sota.core.transfer.InstalledPackagesUpdate
 import org.genivi.sota.data.Vehicle
 import org.joda.time.DateTime
@@ -30,6 +34,8 @@ import scala.collection.immutable.Queue
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.math.BigDecimal.RoundingMode
 import slick.driver.MySQLDriver.api.Database
+
+import scala.util.Try
 
 
 /**
@@ -296,17 +302,22 @@ class PackageTransferActor(updateId: UUID,
 
   import cats.syntax.show._
   import io.circe.generic.auto._
+  import akka.pattern.pipe
 
-  val chunkSize = context.system.settings.config.getBytes("rvi.transfer.chunkSize").intValue()
+  implicit val mat = ActorMaterializer()
+
+  import context.system
+  import context.dispatcher
+
+  val chunkSize = system.settings.config.getBytes("rvi.transfer.chunkSize").intValue()
   val ackTimeout : FiniteDuration = FiniteDuration(
-    context.system.settings.config.getDuration("rvi.transfer.ackTimeout", TimeUnit.MILLISECONDS),
+    system.settings.config.getDuration("rvi.transfer.ackTimeout", TimeUnit.MILLISECONDS),
     TimeUnit.MILLISECONDS
   )
 
-
   lazy val lastIndex = (BigDecimal(pckg.size) / BigDecimal(chunkSize) setScale(0, RoundingMode.CEILING)).toInt
 
-  val channel = FileChannel.open( Paths.get( new URI( pckg.uri.toString() ) ), StandardOpenOption.READ)
+  lazy val s3PackageStore = S3PackageStore(system.settings.config)
   val buffer = ByteBuffer.allocate( chunkSize )
 
   def ttl() : DateTime = {
@@ -314,7 +325,7 @@ class PackageTransferActor(updateId: UUID,
     DateTime.now + 5.minutes
   }
 
-  def sendChunk(index: Int) : Unit = {
+  def sendChunk(channel: FileChannel, index: Int) : Unit = {
     log.debug( s"Sending chunk $index" )
     channel.position( (index - 1) * chunkSize )
     buffer.clear()
@@ -336,12 +347,49 @@ class PackageTransferActor(updateId: UUID,
 
   val maxAttempts : Int = 5
 
+  private def openChannel(uri: URI): FileChannel = {
+    FileChannel.open(Paths.get(uri), StandardOpenOption.READ)
+  }
+
+  private def isLocalFile(uri: Uri): Boolean = {
+    Try(new File(new URI(uri.toString())).exists()).getOrElse(false)
+  }
+
+  /**
+    * Makes sure the package URI is local, so it can be read by this actor
+    * and transferred to the client
+   */
+  def downloadingRemotePackage(): Receive = {
+    if(isLocalFile(pckg.uri)) {
+      self ! pckg.uri
+    } else {
+      s3PackageStore
+        .retrieveFile(packageUri = pckg.uri)
+        .map(_.toURI).pipeTo(self)
+    }
+
+    {
+      case uri: URI =>
+        val channel = openChannel(uri)
+        sendChunk(channel, 1)
+        context.become(transferring(channel, 1, 1))
+
+      case Status.Failure(ex) =>
+        log.error(ex, "Could not download remote file")
+        context.parent ! UploadAborted
+        context.stop(self)
+
+      case msg =>
+        log.warning("Unexpected msg received {}", msg)
+    }
+  }
+
   // scalastyle:off
   /**
    * Send the next chunk or resend last chunk if vehicle doesn't acknowledge with ChunksReceived.
    * Abort transfer if maxAttempts exceeded.
    */
-  def transferring( lastSentChunk: Int, attempt: Int ) : Receive = {
+  def transferring(channel: FileChannel, lastSentChunk: Int, attempt: Int) : Receive = {
     case ChunksReceived(_, _, indexes) =>
       log.debug(s"${pckg.id.show}. Chunk received by client: $indexes" )
       val nextIndex = indexes.sorted.sliding(2, 1).find {
@@ -357,8 +405,8 @@ class PackageTransferActor(updateId: UUID,
       log.debug(s"Next chunk index: $nextIndex")
       if( nextIndex > lastIndex ) finish()
       else {
-        sendChunk(nextIndex)
-        context.become( transferring(nextIndex, 1) )
+        sendChunk(channel, nextIndex)
+        context.become( transferring(channel, nextIndex, 1) )
       }
 
     case ReceiveTimeout if attempt == maxAttempts =>
@@ -367,8 +415,8 @@ class PackageTransferActor(updateId: UUID,
       context.stop( self )
 
     case ReceiveTimeout =>
-      sendChunk(lastSentChunk)
-      context.become( transferring(lastSentChunk, attempt + 1) )
+      sendChunk(channel, lastSentChunk)
+      context.become( transferring(channel, lastSentChunk, attempt + 1) )
   }
   // scalastyle:on
 
@@ -377,13 +425,11 @@ class PackageTransferActor(updateId: UUID,
    */
   override def receive: Receive = {
     case ChunksReceived(_, _, Nil) =>
-      sendChunk(1)
-      context.become( transferring(1, 1) )
+      context.become(downloadingRemotePackage())
 
   }
 
   override def postStop() : Unit = {
-    channel.close()
   }
 
 }
