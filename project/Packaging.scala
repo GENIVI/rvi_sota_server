@@ -10,7 +10,6 @@ object Packaging {
     dockerRepository in Docker := Some("advancedtelematic"),
     packageName in Docker := packageName.value,
     dockerBaseImage := "advancedtelematic/java:openjdk-8-jre",
-    version in Docker := git.gitDescribedVersion.value.get,
     dockerUpdateLatest in Docker := true
   )
 
