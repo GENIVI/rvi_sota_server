@@ -43,18 +43,18 @@ class VehicleDirectives(implicit system: ActorSystem,
   /**
    * Exception handler for package routes.
    */
-  def installedPackagesHandler =
+  def installedPackagesHandler: ExceptionHandler =
     ExceptionHandler(Errors.onMissingPackage orElse Errors.onMissingVehicle)
 
   /**
    * Exception handler for component routes.
    */
-  def installedComponentsHandler =
+  def installedComponentsHandler: ExceptionHandler =
     ExceptionHandler(Errors.onMissingVehicle orElse Errors.onMissingComponent)
 
   val extractVin : Directive1[Vehicle.Vin] = refined[Vehicle.ValidVin](Slash ~ Segment)
 
-  def searchVehicles(ns: Namespace) =
+  def searchVehicles(ns: Namespace): Route =
     parameters(('regex.as[String Refined Regex].?,
                 'packageName.as[PackageId.Name].?,
                 'packageVersion.as[PackageId.Version].?,

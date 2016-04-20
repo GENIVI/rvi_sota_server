@@ -66,7 +66,7 @@ class VehiclesResource(db: Database, client: ConnectivityClient, resolverClient:
 
 
 
-  def fetchVehicle(ns: Namespace, vin: Vehicle.Vin)  = {
+  def fetchVehicle(ns: Namespace, vin: Vehicle.Vin): Route = {
     completeOrRecoverWith(exists(Vehicle(ns, vin))) {
       case MissingVehicle =>
         complete(StatusCodes.NotFound ->
@@ -74,11 +74,11 @@ class VehiclesResource(db: Database, client: ConnectivityClient, resolverClient:
     }
   }
 
-  def updateVehicle(ns: Namespace, vin: Vehicle.Vin) = {
+  def updateVehicle(ns: Namespace, vin: Vehicle.Vin): Route = {
     complete(db.run(Vehicles.create(Vehicle(ns, vin))).map(_ => NoContent))
   }
 
-  def deleteVehicleR(ns: Namespace, vin: Vehicle.Vin) = {
+  def deleteVehicleR(ns: Namespace, vin: Vehicle.Vin): Route = {
     completeOrRecoverWith(deleteVehicle(ns, Vehicle(ns, vin))) {
       case MissingVehicle =>
         complete(StatusCodes.NotFound ->
@@ -86,15 +86,15 @@ class VehiclesResource(db: Database, client: ConnectivityClient, resolverClient:
     }
   }
 
-  def queuedPackages(ns: Namespace, vin: Vehicle.Vin) = {
+  def queuedPackages(ns: Namespace, vin: Vehicle.Vin): Route = {
     complete(db.run(UpdateSpecs.getPackagesQueuedForVin(ns, vin)))
   }
 
-  def history(ns: Namespace, vin: Vehicle.Vin) = {
+  def history(ns: Namespace, vin: Vehicle.Vin): Route = {
     complete(db.run(InstallHistories.list(ns, vin)))
   }
 
-  def sync(ns: Namespace, vin: Vehicle.Vin) = {
+  def sync(ns: Namespace, vin: Vehicle.Vin): Route = {
     // TODO: Config RVI destination path (or ClientServices.getpackages)
     // TODO: pass namespace
     client.sendMessage(s"genivi.org/vin/${vin}/sota/getpackages", io.circe.Json.Null, ttl())
@@ -103,7 +103,7 @@ class VehiclesResource(db: Database, client: ConnectivityClient, resolverClient:
   }
 
 
-  def search(ns: Namespace) = {
+  def search(ns: Namespace): Route = {
     parameters(('status.?(false), 'regex.?)) { (includeStatus: Boolean, regex: Option[String]) =>
       val resultIO = VehicleSearch.search(ns, regex, includeStatus)
       complete(db.run(resultIO))
