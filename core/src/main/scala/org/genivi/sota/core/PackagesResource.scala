@@ -96,7 +96,7 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
     }
   }
 
-  def fetch(ns: Namespace, pid: PackageId) = {
+  def fetch(ns: Namespace, pid: PackageId): Route = {
     // TODO: Include error description with rejectEmptyResponse?
     rejectEmptyResponse {
       complete {
@@ -105,7 +105,7 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
     }
   }
 
-  def updatePackage(ns: Namespace, pid: PackageId) = {
+  def updatePackage(ns: Namespace, pid: PackageId): Route = {
     // TODO: Fix form fields metadata causing error for large upload
     parameters('description.?, 'vendor.?, 'signature.?) { (description, vendor, signature) =>
       formFields('file.as[StrictForm.FileData]) { fileData =>
@@ -128,7 +128,7 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
     }
   }
 
-  def queued(ns: Namespace, pid: PackageId) = {
+  def queued(ns: Namespace, pid: PackageId): Route = {
     complete(db.run(UpdateSpecs.getVinsQueuedForPackage(ns, pid.name, pid.version)))
   }
 
