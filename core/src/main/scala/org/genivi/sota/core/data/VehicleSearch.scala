@@ -40,8 +40,8 @@ object VehicleSearch {
   def search(ns: Namespace, regex: Option[String], includeStatus: Boolean)
             (implicit db: Database, ec: ExecutionContext): DBIO[Json] = {
     val findQuery = regex match {
-      case Some(r) => Vehicles.searchByRegex(r)
-      case _ => Vehicles.all()
+      case Some(r) => Vehicles.searchByRegex(ns, r)
+      case _ => Vehicles.all(ns)
     }
 
     if(includeStatus) {

@@ -53,7 +53,7 @@ object Vehicles {
   def list(): DBIO[Seq[Vehicle]] = vehicles.result
 
 
-  def all(): TableQuery[VehicleTable] = vehicles
+  def all(namespace: Namespace) = vehicles.filter(_.namespace === namespace)
 
   /**
    * Check if a VIN exists
@@ -87,8 +87,8 @@ object Vehicles {
    * @param reg A regular expression
    * @return A list of matching VINs
    */
-  def searchByRegex(reg:String): Query[VehicleTable, Vehicle, Seq] =
-    vehicles.filter(v => regex(v.vin, reg))
+  def searchByRegex(ns: Namespace, reg:String): Query[VehicleTable, Vehicle, Seq] =
+    all(ns).filter(v => regex(v.vin, reg))
 
   def updateLastSeen(vehicle: Vehicle, lastSeen: DateTime = DateTime.now)
                     (implicit ec: ExecutionContext): DBIO[DateTime] = {
