@@ -24,6 +24,7 @@ import org.genivi.sota.rest.Validation.refined
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.Json
 import org.genivi.sota.core.resolver.ExternalResolverClient
+import org.genivi.sota.core.storage.{PackageStorage, S3PackageStore}
 
 
 class VehicleService(db : Database, resolverClient: ExternalResolverClient)
@@ -32,10 +33,13 @@ class VehicleService(db : Database, resolverClient: ExternalResolverClient)
   import Json.{obj, string}
   import WebService._
 
-  val packageDownloadProcess = new PackageDownloadProcess(db)
-
   implicit val ec = system.dispatcher
   implicit val _db = db
+  implicit val _config = system.settings.config
+
+  lazy val packageRetrievalOp = (new PackageStorage).retrieveResponse _
+
+  lazy val packageDownloadProcess = new PackageDownloadProcess(db, packageRetrievalOp)
 
   def logVehicleSeen(vehicle: Vehicle): Directive0 = {
     extractRequestContext flatMap { _ =>

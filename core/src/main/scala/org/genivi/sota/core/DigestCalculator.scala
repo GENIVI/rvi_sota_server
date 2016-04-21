@@ -10,16 +10,19 @@ import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.util.ByteString
 import org.apache.commons.codec.binary.Hex
+import org.genivi.sota.core.DigestCalculator.DigestResult
 
 object DigestCalculator {
+  type DigestResult = String
+
   def apply(algorithm: String = "SHA-1"): DigestCalculator = new DigestCalculator(algorithm)
 }
 
 class DigestCalculator(algorithm: String) extends GraphStage[FlowShape[ByteString, String]] {
   val in = Inlet[ByteString]("Digest.in")
-  val out = Outlet[String]("Digest.out")
+  val out = Outlet[DigestResult]("Digest.out")
 
-  override def shape: FlowShape[ByteString, String] = FlowShape(in, out)
+  override def shape: FlowShape[ByteString, DigestResult] = FlowShape(in, out)
 
   override def createLogic(inheritedAttributes: Attributes): GraphStageLogic = {
     new GraphStageLogic(shape) {

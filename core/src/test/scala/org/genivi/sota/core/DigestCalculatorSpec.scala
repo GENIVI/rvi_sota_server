@@ -40,7 +40,7 @@ class DigestCalculatorSpec extends TestKit(ActorSystem("DigestCalculatorTest"))
     val tempFile = File.createTempFile("testfile", ".txt")
 
     val ioResult = Source.single(ByteString("Some text"))
-        .toMat(FileIO.toFile(tempFile))(Keep.right).run()
+      .runWith(FileIO.toFile(tempFile))
 
     whenReady(ioResult) { _ =>
       val probe = TestSink.probe[String]
