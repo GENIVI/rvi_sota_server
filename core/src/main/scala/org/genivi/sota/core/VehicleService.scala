@@ -59,7 +59,7 @@ class VehicleService(db : Database, resolverClient: ExternalResolverClient)
 
   def pendingPackages(ns: Namespace, vin: Vehicle.Vin) = {
     logVehicleSeen(Vehicle(ns, vin)) {
-      val vehiclePackages = InstalledPackagesUpdate.findPendingPackageIdsFor(ns, vin)
+      val vehiclePackages = InstalledPackagesUpdate.findPendingPackageIdsFor(ns, vin, limit = 1)
       complete(db.run(vehiclePackages))
     }
   }

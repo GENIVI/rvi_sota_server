@@ -6,8 +6,10 @@ package org.genivi.sota.core
 
 import com.typesafe.config.ConfigFactory
 import org.flywaydb.core.Flyway
+import org.genivi.sota.core.common.NamespaceDirective
 import org.genivi.sota.core.data.{Package, UpdateSpec}
 import org.genivi.sota.core.db.{Packages, UpdateRequests, UpdateSpecs, Vehicles}
+import org.genivi.sota.data.Namespace.Namespace
 import org.scalatest.{BeforeAndAfterAll, Suite}
 
 import scala.concurrent.ExecutionContext
@@ -16,6 +18,12 @@ import org.genivi.sota.data.{Vehicle, VehicleGenerators}
 
 import scala.concurrent.Future
 import org.genivi.sota.db.SlickExtensions
+import org.joda.time.DateTime
+import org.scalacheck.Gen
+import org.scalatest.concurrent.{AbstractPatienceConfiguration, PatienceConfiguration}
+import org.scalatest.time.{Millis, Seconds, Span}
+
+import scala.util.Try
 
 /*
  * Helper object to configure test database for specs
@@ -36,12 +44,25 @@ object TestDatabase {
   }
 }
 
+trait DefaultDBPatience {
+  self: PatienceConfiguration =>
+
+  override implicit def patienceConfig = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
+}
+
 trait DatabaseSpec extends BeforeAndAfterAll {
   self: Suite =>
+
+  import eu.timepit.refined.auto._
 
   private val databaseId = "test-database"
 
   lazy val db = Database.forConfig(databaseId)
+
+  private lazy val config = ConfigFactory.load()
+
+  val defaultNamespace: Namespace =
+    NamespaceDirective.configNamespace(config).getOrElse("default-test-ns")
 
   override def beforeAll() {
     TestDatabase.resetDatabase(databaseId)
@@ -59,17 +80,27 @@ trait UpdateResourcesDatabaseSpec {
 
   import Generators._
 
-  def createUpdateSpec()(implicit ec: ExecutionContext): Future[(Package, Vehicle, UpdateSpec)] = {
-    val (packageModel, vehicle, updateSpec) = updateSpecGen.sample.get
+  def createUpdateSpecFor(vehicle: Vehicle, creationTime: DateTime = DateTime.now)(implicit ec: ExecutionContext): DBIO[(Package, UpdateSpec)] = {
+    val (packageModel, updateSpec) = genUpdateSpecFor(vehicle).sample.get
 
     val dbIO = DBIO.seq(
       Packages.create(packageModel),
-      Vehicles.create(vehicle),
-      UpdateRequests.persist(updateSpec.request),
+      UpdateRequests.persist(updateSpec.request.copy(creationTime = creationTime)),
       UpdateSpecs.persist(updateSpec)
     )
 
-    db.run(dbIO).map(_ => (packageModel, vehicle, updateSpec))
+    dbIO.map(_ => (packageModel, updateSpec))
+  }
+
+  def createUpdateSpec()(implicit ec: ExecutionContext): Future[(Package, Vehicle, UpdateSpec)] = {
+    val vehicle = VehicleGenerators.genVehicle.sample.get
+
+    val dbIO = for {
+      _ <- Vehicles.create(vehicle)
+      (packageModel, updateSpec) <- createUpdateSpecFor(vehicle)
+    } yield (packageModel, vehicle, updateSpec)
+
+    db.run(dbIO)
   }
 }
 
