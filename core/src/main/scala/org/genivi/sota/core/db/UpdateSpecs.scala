@@ -137,15 +137,14 @@ object UpdateSpecs {
    */
   def getPackagesQueuedForVin(ns: Namespace, vin: Vehicle.Vin)
                              (implicit ec: ExecutionContext) : DBIO[Iterable[PackageId]] = {
-    val specs = updateSpecs.filter(r => r.namespace === ns && r.vin === vin &&
-      (r.status === UpdateStatus.InFlight || r.status === UpdateStatus.Pending))
-    val q = for {
-      s <- specs
-      u <- updateRequests if s.requestId === u.id
-    } yield (u.packageName, u.packageVersion)
-    q.result.map(_.map {
-      case (packageName, packageVersion) => PackageId(packageName, packageVersion)
-    })
+    updateSpecs
+      .filter(s => s.namespace === ns && s.vin === vin)
+      .filter(s => s.status === UpdateStatus.InFlight || s.status === UpdateStatus.Pending)
+      .join(updateRequests).on(_.requestId === _.id)
+      .map(_._2)
+      .sortBy(_.creationTime.asc)
+      .result
+      .map(_.map(_.packageId))
   }
 
   /**

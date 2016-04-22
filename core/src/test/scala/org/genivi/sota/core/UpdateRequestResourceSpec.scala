@@ -19,9 +19,10 @@ import scala.concurrent.Future
 class UpdateRequestResourceSpec extends FunSuite
   with ScalatestRouteTest
   with ShouldMatchers
-  with DatabaseSpec
   with UpdateResourcesDatabaseSpec
-  with ScalaFutures {
+  with ScalaFutures
+  with DatabaseSpec
+  with DefaultDBPatience {
 
   import CirceMarshallingSupport._
 

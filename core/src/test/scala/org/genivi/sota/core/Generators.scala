@@ -97,17 +97,16 @@ trait Generators {
     template.copy( uri = Uri( path.toUri().toString() ), checkSum = Hex.encodeHexString( digest.digest() ))
   }
 
-  val updateSpecGen: Gen[(Package, Vehicle, UpdateSpec)] = for {
+  def genUpdateSpecFor(vehicle: Vehicle): Gen[(Package, UpdateSpec)] = for {
     smallSize <- Gen.chooseNum(1024, 1024 * 10)
     packageModel <- PackageGen.map(_.copy(size = smallSize.toLong))
     packageWithUri = Generators.generatePackageData(packageModel)
-    vehicle <- VehicleGenerators.genVehicle
     updateRequest <- updateRequestGen(defaultNs, PackageIdGen).map(_.copy(packageId = packageWithUri.id))
   } yield {
     val updateSpec = UpdateSpec(defaultNs, updateRequest, vehicle.vin,
-      UpdateStatus.Pending, List(packageWithUri).toSet)
+      UpdateStatus.Pending, List(packageWithUri ).toSet)
 
-    (packageWithUri, vehicle, updateSpec)
+    (packageWithUri, updateSpec)
   }
 }
 
