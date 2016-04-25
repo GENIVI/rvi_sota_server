@@ -50,10 +50,7 @@ class Random extends ResourcePropSpec {
               case Success               => ()
               case SuccessVehicles(vehs) => responseAs[Set[Vehicle]]                       shouldBe vehs
               case SuccessPackage(pkg)   => responseAs[Package]                            shouldBe pkg
-
-              // TODO Package.description roundtripped wrongly for non-Latin chars. Sidestep by comparing PackageIds.
-              case SuccessPackages(pkgs) => responseAs[Set[Package]].map(_.id)             shouldBe pkgs.map(_.id)
-
+              case SuccessPackages(pkgs) => responseAs[Set[Package]]                       shouldBe pkgs
               case SuccessPackageIds(pids) => responseAs[Set[PackageId]]                   shouldBe pids
               case SuccessFilters(filts) => responseAs[Set[Filter]]                        shouldBe filts
               case SuccessComponents(cs) => responseAs[Set[Component]]                     shouldBe cs
