@@ -41,10 +41,10 @@ For development, a local MariaDB install is required. (Note that this is *not* r
 [source,sql]
 ---------------------------------------------------------------------
 mysql -u root -p
-CREATE DATABASE sota_core;
-CREATE DATABASE sota_core_test;
-CREATE DATABASE sota_resolver;
-CREATE DATABASE sota_resolver_test;
+CREATE DATABASE sota_core CHARACTER SET utf8;
+CREATE DATABASE sota_core_test CHARACTER SET utf8;
+CREATE DATABASE sota_resolver CHARACTER SET utf8;
+CREATE DATABASE sota_resolver_test CHARACTER SET utf8;
 CREATE USER 'sota'@'localhost' IDENTIFIED BY 's0ta';
 GRANT ALL PRIVILEGES ON sota_core . * TO 'sota'@'localhost';
 GRANT ALL PRIVILEGES ON sota_core_test . * TO 'sota'@'localhost';
