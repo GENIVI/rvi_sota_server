@@ -1,3 +1,5 @@
+ALTER DATABASE CHARACTER SET = utf8;
+
 -- First, clear all foreign key constraints and update primary keys.
 ALTER TABLE InstalledPackage
 DROP FOREIGN KEY installed_package_vin_fk;
