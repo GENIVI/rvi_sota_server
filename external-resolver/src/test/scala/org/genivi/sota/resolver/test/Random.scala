@@ -90,6 +90,8 @@ class Random extends ResourcePropSpec {
         Store.validStore.isValid(s) shouldBe true
       }
     } while (!accCoverage.fullCoverage)
+    info("Coverage:")
+    accCoverage.prettyPrint.foreach(info(_))
   }
 
 }
