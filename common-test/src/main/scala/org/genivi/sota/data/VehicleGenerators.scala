@@ -24,9 +24,21 @@ object VehicleGenerators extends VinGenerators {
   implicit lazy val arbVehicle: Arbitrary[Vehicle] =
     Arbitrary(genVehicle)
 
+  def getVehicle: Vehicle = genVehicle.sample.getOrElse(getVehicle)
+
+}
+
+/**
+  * Generators for invalid data are kept in dedicated scopes
+  * to rule out their use as implicits (impersonating valid ones).
+  */
+object InvalidVehicleGenerators extends VinGenerators {
+
   val genInvalidVehicle: Gen[Vehicle] = for {
     // TODO: for now, just generate an invalid VIN with a valid namespace
     vin <- genInvalidVin
   } yield Vehicle(Namespaces.defaultNs, vin)
+
+  def getInvalidVehicle: Vehicle = genInvalidVehicle.sample.getOrElse(getInvalidVehicle)
 
 }

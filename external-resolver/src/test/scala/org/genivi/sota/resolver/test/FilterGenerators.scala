@@ -1,7 +1,7 @@
 package org.genivi.sota.resolver.test
 
 import eu.timepit.refined.api.Refined
-import org.genivi.sota.data.{Namespaces, SemanticVin}
+import org.genivi.sota.data.{InvalidIdentGenerators, Namespaces, PackageId, SemanticVin}
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.filters._
 import org.genivi.sota.resolver.filters.FilterAST._
@@ -119,3 +119,28 @@ trait FilterGenerators {
 }
 
 object FilterGenerators extends FilterGenerators
+
+/**
+  * Generators for invalid data are kept in dedicated scopes
+  * to rule out their use as implicits (impersonating valid ones).
+  */
+object InvalidFilterGenerators extends InvalidIdentGenerators {
+
+  val genInvalidFilterName: Gen[Filter.Name] = genInvalidIdent map Refined.unsafeApply
+
+  def getInvalidFilterName: Filter.Name = genInvalidFilterName.sample.getOrElse(getInvalidFilterName)
+
+  def emptyFilterName: Filter.Name = Refined.unsafeApply(EMPTY_STR)
+
+  def emptyFilterExpression: Filter.Expression = Refined.unsafeApply(EMPTY_STR)
+
+  val genInvalidFilter: Gen[Filter] = for {
+    name <- genInvalidFilterName
+    expression <- Gen.const("INVALID") // TODO more varied (invalid) filter expressions
+  } yield Filter(Namespaces.defaultNs, name, Refined.unsafeApply(expression))
+
+  def getInvalidFilter: Filter = genInvalidFilter.sample.getOrElse(getInvalidFilter)
+
+  def emptyFilter: Filter = Filter(Namespaces.defaultNs, emptyFilterName, emptyFilterExpression)
+
+}

@@ -64,8 +64,11 @@ case class SessionCoverage(occurrences: Map[Class[_], Int]) {
     */
   def fullCoverage: Boolean = untested.isEmpty
 
-  def occurrencesCommands: Map[Class[_], Int] =
-    occurrences filter { case (klazz, _) => classOf[Command].isAssignableFrom(klazz) }
+  def occurrencesWellFormedCommands: Map[Class[_], Int] =
+    occurrences filter { case (klazz, _) => classOf[WellFormedCommand].isAssignableFrom(klazz) }
+
+  def occurrencesInvalidCommands: Map[Class[_], Int] =
+    occurrences filter { case (klazz, _) => classOf[InvalidCommand].isAssignableFrom(klazz) }
 
   def occurrencesQueries: Map[Class[_], Int] =
     occurrences filter { case (klazz, _) => classOf[Query].isAssignableFrom(klazz) }
@@ -92,8 +95,9 @@ case class SessionCoverage(occurrences: Map[Class[_], Int]) {
         s.lines.sortBy(_.label).map(_.format(s.totalOccs))
       }
 
-    ("Commands" +: pp(toSummary(occurrencesCommands, Map.empty))) ++
-    ("Queries"  +: pp(toSummary(occurrencesQueries,  qryAggregates.avgSizePerQryKind )))
+    ("Well-formed commands (100%)" +: pp(toSummary(occurrencesWellFormedCommands, Map.empty))) ++
+    ("Invalid commands (100%)"     +: pp(toSummary(occurrencesInvalidCommands,    Map.empty))) ++
+    ("Queries (100%)"  +: pp(toSummary(occurrencesQueries,  qryAggregates.avgSizePerQryKind )))
   }
 
 }
@@ -154,7 +158,7 @@ object SessionCoverage {
         case None => ""
         case Some(avg) => s"Avg cardinality: ${fmtL(avg)}"
       }
-      f"\t$label%25s: $fmtNum%6s ($fmtPercent%5s) $fmtQrySize%10s"
+      f"\t$label%30s: $fmtNum%6s ($fmtPercent%5s) $fmtQrySize%10s"
     }
   }
 
@@ -175,7 +179,7 @@ object SessionCoverage {
     */
   val testSpace: Array[Class[_]] = Array(
 
-    // commands
+    // well-formed commands
     classOf[AddComponent],
     classOf[AddFilter],
     classOf[AddFilterToPackage],
@@ -190,6 +194,22 @@ object SessionCoverage {
     classOf[RemoveFilterForPackage],
     classOf[UninstallComponent],
     classOf[UninstallPackage],
+
+    // invalid commands
+    classOf[AddComponentFail],
+    classOf[AddFilterFail],
+    classOf[AddFilterToPackageFail],
+    classOf[AddPackageFail],
+    classOf[AddVehicleFail],
+    classOf[EditComponentFail],
+    classOf[EditFilterFail],
+    classOf[InstallComponentFail],
+    classOf[InstallPackageFail],
+    classOf[RemoveComponentFail],
+    classOf[RemoveFilterFail],
+    classOf[RemoveFilterForPackageFail],
+    classOf[UninstallComponentFail],
+    classOf[UninstallPackageFail],
 
     // queries
     ListVehicles.getClass,
@@ -227,7 +247,7 @@ object Session {
     for {
       n1   <- lift(Gen.size)
       cmds <- genCommands(Math.max(1, n1))
-      n2    = Math.max(1, n1/2)
+      n2    = Math.max(1, n1/4)
       qrys <- genQueries(n2)
     } yield Session(cmds, qrys)
 

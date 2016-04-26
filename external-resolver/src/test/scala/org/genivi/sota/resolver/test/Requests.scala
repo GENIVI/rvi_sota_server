@@ -156,9 +156,16 @@ trait ComponentRequestsHttp {
   def listComponents: HttpRequest =
     Get(Resource.uri("components"))
 
+  def addComponent(cmpn: Component)
+                  (implicit ec: ExecutionContext): HttpRequest =
+    addComponent(cmpn.partNumber, cmpn.description)
+
   def addComponent(part: Component.PartNumber, desc: String)
                   (implicit ec: ExecutionContext): HttpRequest =
     Put(Resource.uri("components", part.get), Component.DescriptionWrapper(desc))
+
+  def deleteComponent(cmpn: Component): HttpRequest =
+    deleteComponent(cmpn.partNumber)
 
   def deleteComponent(part: Component.PartNumber): HttpRequest =
     Delete(Resource.uri("components", part.get))

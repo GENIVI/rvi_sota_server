@@ -1,5 +1,6 @@
 package org.genivi.sota.resolver.test
 
+import eu.timepit.refined.api.Refined
 import eu.timepit.refined.refineV
 import org.genivi.sota.data.Namespaces
 import org.genivi.sota.resolver.components.Component
@@ -32,3 +33,21 @@ trait ComponentGenerators extends Namespaces {
 }
 
 object ComponentGenerators extends ComponentGenerators
+
+trait InvalidComponentGenerators {
+
+  val genInvalidIdent: Gen[String] = Gen.uuid map (_.toString)
+
+  val genInvalidPartNumber: Gen[Component.PartNumber] = genInvalidIdent map (Refined.unsafeApply)
+
+  val genInvalidComponent: Gen[Component] = for {
+    partNumber  <- genInvalidPartNumber
+    desc        <- genInvalidIdent
+  } yield Component(Namespaces.defaultNs, partNumber, desc)
+
+  def getInvalidComponent: Component = genInvalidComponent.sample.getOrElse(getInvalidComponent)
+
+}
+
+object InvalidComponentGenerators extends InvalidComponentGenerators
+

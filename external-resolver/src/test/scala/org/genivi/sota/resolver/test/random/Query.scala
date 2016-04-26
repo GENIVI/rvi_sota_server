@@ -162,7 +162,7 @@ object Query extends
           Store.pickPackageWithFilter.runA(s) map { case (pkg, flt) => ListFiltersFor(pkg)  }
         )),
 
-        (if (pkgs > 0) 50 else 0,
+        (if (pkgs > 0) 10 else 0,
           Store.pickPackage.runA(s).map(pkg => Resolve(pkg.id)))
       ))
     } yield qry

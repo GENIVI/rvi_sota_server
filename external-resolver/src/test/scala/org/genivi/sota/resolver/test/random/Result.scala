@@ -25,7 +25,11 @@ final case class  Failure(c: ErrorCode)                                    exten
 /**
   * A [[Semantics]] with [[Success]] makes [[org.genivi.sota.resolver.test.Random]]
   * check only the response's status code. To also check the response's body against expected results,
-  * provide instead another Success case class that carries those expected results.
+  * provide instead:
+  * <ul>
+  * <li>another Success case class that carries those expected results; or</li>
+  * <li>a [[Failure]]</li>
+  * </ul>
   */
 final case object Success                                                  extends Result
 final case class  SuccessVehicles(vehs : Set[Vehicle])                     extends Result
