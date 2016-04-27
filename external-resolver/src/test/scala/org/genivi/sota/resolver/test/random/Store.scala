@@ -16,8 +16,27 @@ case class RawStore(
   vehicles  : Map[Vehicle, (Set[Package], Set[Component])],
   packages  : Map[Package, Set[Filter]],
   filters   : Set[Filter],
-  components: Set[Component]
+  components: Set[Component],
+  qryAggregates: QueryKindAggregates
 ) {
+
+  /**
+    * Used to communicate immutable data between the interpreter and the stats summarizer.
+    */
+  def withQrySems(sems: List[Semantics]): RawStore = {
+    val justTheQueries = sems filter (_.isQuery)
+    copy(qryAggregates = qryAggregates.merge(aggregateByQueryKind(justTheQueries)))
+  }
+
+  private def aggregateByQueryKind(qrySems: List[Semantics]): QueryKindAggregates = {
+    val qsizes: List[(Query, Int)] = qrySems map { sem => (sem.original.get, sem.result.size.get)}
+    val grouped: Map[Class[_], List[(Query, Int)]] = qsizes groupBy { case (q, s) => q.getClass }
+    QueryKindAggregates(
+      grouped mapValues { (lst: List[(Query, Int)]) =>
+        QueryKindAggregate(lst.map(_._2).sum, lst.size)
+      }
+    )
+  }
 
   // INSERTING
 
@@ -253,7 +272,7 @@ case class RawStore(
 object Store {
 
   val initRawStore: RawStore =
-    RawStore(Map(), Map(), Set(), Set())
+    RawStore(Map(), Map(), Set(), Set(), QueryKindAggregates(Map.empty))
 
   case class ValidStore()
 

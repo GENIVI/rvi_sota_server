@@ -62,39 +62,48 @@ object Query extends
   def semQuery(q: Query): State[RawStore, Semantics] = q match {
 
     case ListVehicles               =>
-      State.get map (s => Semantics(listVehicles, StatusCodes.OK,
+      State.get map (s => Semantics(Some(q),
+        listVehicles, StatusCodes.OK,
         SuccessVehicles(s.vehicles.keySet)))
 
     case ListVehiclesFor(cmp)           =>
-      State.get map (s => Semantics(listVehiclesHaving(cmp), StatusCodes.OK,
+      State.get map (s => Semantics(Some(q),
+        listVehiclesHaving(cmp), StatusCodes.OK,
         SuccessVehicles(s.vehiclesHaving(cmp))))
 
     case ListComponents             =>
-      State.get map (s => Semantics(listComponents, StatusCodes.OK,
+      State.get map (s => Semantics(Some(q),
+        listComponents, StatusCodes.OK,
         SuccessComponents(s.components)))
 
     case ListComponentsFor(veh)     =>
-      State.get map (s => Semantics(listComponentsOnVehicle(veh), StatusCodes.OK,
+      State.get map (s => Semantics(Some(q),
+        listComponentsOnVehicle(veh), StatusCodes.OK,
         SuccessPartNumbers(s.vehicles(veh)._2.map(_.partNumber))))
 
     case ListPackagesOnVehicle(veh) =>
-      State.get map (s => Semantics(listPackagesOnVehicle(veh), StatusCodes.OK,
+      State.get map (s => Semantics(Some(q),
+        listPackagesOnVehicle(veh), StatusCodes.OK,
         SuccessPackageIds(s.vehicles(veh)._1.map(_.id))))
 
     case ListPackagesFor(flt) =>
-      State.get map (s => Semantics(listPackagesForFilter(flt), StatusCodes.OK,
+      State.get map (s => Semantics(Some(q),
+        listPackagesForFilter(flt), StatusCodes.OK,
         SuccessPackages(s.packagesHaving(flt))))
 
     case ListFilters                =>
-      State.get map (s => Semantics(listFilters, StatusCodes.OK,
+      State.get map (s => Semantics(Some(q),
+        listFilters, StatusCodes.OK,
         SuccessFilters(s.filters)))
 
     case ListFiltersFor(pak) =>
-      State.get map (s => Semantics(listFiltersForPackage(pak), StatusCodes.OK,
+      State.get map (s => Semantics(Some(q),
+        listFiltersForPackage(pak), StatusCodes.OK,
         SuccessFilters(s.packages(pak))))
 
     case Resolve(pkgId)             =>
-      State.get map (s => Semantics(resolve2(pkgId), StatusCodes.OK,
+      State.get map (s => Semantics(Some(q),
+        resolve2(pkgId), StatusCodes.OK,
         SuccessVehicleMap(vehicleMap(s, pkgId))))
 
   }
