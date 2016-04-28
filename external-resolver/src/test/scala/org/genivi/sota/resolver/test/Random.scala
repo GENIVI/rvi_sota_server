@@ -65,7 +65,7 @@ class Random extends ResourcePropSpec {
     State.modify { s0 =>
       val (s1, sems)  = semSession(sesh).run(s0).run
       val _           = go(sems)
-      s1
+      s1.withQrySems(sems)
     }
 
   }
@@ -91,7 +91,7 @@ class Random extends ResourcePropSpec {
       }
     } while (!accCoverage.fullCoverage)
     info("Coverage:")
-    accCoverage.prettyPrint.foreach(info(_))
+    accCoverage.prettyPrint(s.qryAggregates).foreach(info(_))
   }
 
 }

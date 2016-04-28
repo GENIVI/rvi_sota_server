@@ -7,7 +7,19 @@ import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.rest.ErrorCode
 
 
-sealed trait Result
+sealed trait Result extends Product {
+  def isEmptyResponse: Boolean = size.isEmpty
+  def nonEmptyResponse: Boolean = size.nonEmpty
+  def size: Option[Int] = {
+    if (productArity == 0) { None }
+    else {
+      productElement(0) match {
+        case iter: Iterable[_] => Some(iter.size)
+        case _ => None
+      }
+    }
+  }
+}
 
 final case class  Failure(c: ErrorCode)                                    extends Result
 /**
