@@ -77,16 +77,6 @@ class VinResourceWordSpec extends WordSpec
         assert(status === StatusCodes.NotFound)
       }
     }
-    "return a list of packages installed on a vin" in {
-      Get(VinsUri + "/BLAHV1N0123456789/queued") ~> service.route ~> check {
-        assert(status === StatusCodes.OK)
-      }
-    }
-    "initiate a getpackages message to a vin" in {
-      Put(VinsUri + "/V1234567890123456/sync") ~> service.route ~> check {
-        assert(status === StatusCodes.NoContent)
-      }
-    }
     "filter list of vins by regex 'WW'" in {
       Get(VinsUri + "?regex=WW") ~> service.route ~> check {
         assert(status === StatusCodes.OK)

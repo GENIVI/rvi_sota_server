@@ -17,15 +17,14 @@ import Directives._
 
 object RefinementDirectives {
 
-  def refinedFilterName: Directive1[Filter.Name] =
+  val refinedFilterName: Directive1[Filter.Name] =
     refined[Filter.ValidName](Slash ~ Segment)
 
-  def refinedPackageId: Directive1[PackageId] =
+  val refinedPackageId: Directive1[PackageId] =
     (refined[PackageId.ValidName](Slash ~ Segment) &
      refined[PackageId.ValidVersion](Slash ~ Segment))
        .as[PackageId](PackageId.apply _)
 
-  def refinedPartNumber: Directive1[Component.PartNumber] =
+  val refinedPartNumber: Directive1[Component.PartNumber] =
     refined[Component.ValidPartNumber](Slash ~ Segment)
-
 }

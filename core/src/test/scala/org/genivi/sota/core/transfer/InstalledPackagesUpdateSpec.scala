@@ -66,7 +66,7 @@ class InstalledPackagesUpdateSpec extends FunSuite
     }
   }
 
-  test("when multiple packages are pending, return only the oldest package") {
+  test("when multiple packages are pending, return all of them, sorted by creation date") {
     val secondCreationTime = DateTime.now.plusHours(1)
 
     val f = for {
@@ -77,8 +77,15 @@ class InstalledPackagesUpdateSpec extends FunSuite
 
     whenReady(f) { case (result, updateRequest0, updateRequest1)  =>
       result shouldNot be(empty)
-      result should have(size(1))
-      result.head shouldBe updateRequest0.request.id
+      result should have(size(2))
+
+      result match {
+        case Seq(first, second) =>
+          first.id shouldBe updateRequest0.request.id
+          second.id shouldBe updateRequest1.request.id
+        case _ =>
+          fail("returned package list does not have expected elements")
+      }
     }
   }
 }

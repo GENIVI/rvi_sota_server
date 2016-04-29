@@ -94,7 +94,7 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
     }
   }
 
-  def queued(ns: Namespace, pid: PackageId): Route = {
+  def queuedVins(ns: Namespace, pid: PackageId): Route = {
     complete(db.run(UpdateSpecs.getVinsQueuedForPackage(ns, pid.name, pid.version)))
   }
 
@@ -112,8 +112,8 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
             updatePackage(ns, pid)
           }
         } ~
-        path("queued") {
-          queued(ns, pid)
+        path("queued_vins") {
+          queuedVins(ns, pid)
         }
       }
     }

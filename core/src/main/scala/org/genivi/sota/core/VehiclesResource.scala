@@ -58,14 +58,6 @@ class VehiclesResource(db: Database, client: ConnectivityClient, resolverClient:
       _ <- db.run(Vehicles.deleteById(vehicle))
     } yield ()
 
-
-  def ttl() : DateTime = {
-    import com.github.nscala_time.time.Implicits._
-    DateTime.now + 5.minutes
-  }
-
-
-
   def fetchVehicle(ns: Namespace, vin: Vehicle.Vin): Route = {
     completeOrRecoverWith(exists(Vehicle(ns, vin))) {
       case MissingVehicle =>
@@ -78,30 +70,13 @@ class VehiclesResource(db: Database, client: ConnectivityClient, resolverClient:
     complete(db.run(Vehicles.create(Vehicle(ns, vin))).map(_ => NoContent))
   }
 
-  def deleteVehicleR(ns: Namespace, vin: Vehicle.Vin): Route = {
+  def deleteVehicle(ns: Namespace, vin: Vehicle.Vin): Route = {
     completeOrRecoverWith(deleteVehicle(ns, Vehicle(ns, vin))) {
       case MissingVehicle =>
         complete(StatusCodes.NotFound ->
           ErrorRepresentation(ErrorCodes.MissingVehicle, "Vehicle doesn't exist"))
     }
   }
-
-  def queuedPackages(ns: Namespace, vin: Vehicle.Vin): Route = {
-    complete(db.run(UpdateSpecs.getPackagesQueuedForVin(ns, vin)))
-  }
-
-  def history(ns: Namespace, vin: Vehicle.Vin): Route = {
-    complete(db.run(InstallHistories.list(ns, vin)))
-  }
-
-  def sync(ns: Namespace, vin: Vehicle.Vin): Route = {
-    // TODO: Config RVI destination path (or ClientServices.getpackages)
-    // TODO: pass namespace
-    client.sendMessage(s"genivi.org/vin/${vin}/sota/getpackages", io.circe.Json.Null, ttl())
-    // TODO: Confirm getpackages in progress to vehicle?
-    complete(NoContent)
-  }
-
 
   def search(ns: Namespace): Route = {
     parameters(('status.?(false), 'regex.?)) { (includeStatus: Boolean, regex: Option[String]) =>
@@ -121,22 +96,12 @@ class VehiclesResource(db: Database, client: ConnectivityClient, resolverClient:
             updateVehicle(ns, vin)
           } ~
           delete {
-            deleteVehicleR(ns, vin)
+            deleteVehicle(ns, vin)
           }
-        } ~
-        (path("queued") & get) {
-          queuedPackages(ns, vin)
-        } ~
-        (path("history") & get) {
-          history(ns, vin)
-        } ~
-        (path("sync") & put) {
-          sync(ns, vin)
         }
       } ~
       (pathEnd & get) {
         search(ns)
       }
     }
-
 }

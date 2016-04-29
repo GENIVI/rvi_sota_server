@@ -21,6 +21,7 @@ import io.circe._
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
+import io.circe.parser._
 
 object APITests extends Tag("APITests")
 
@@ -46,7 +47,8 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   val testComponentDescription = "A radio component"
   val testComponentDescriptionAlt = "A satellite navigation component"
   val webserverHost = Play.application.configuration.getString("test.webserver.host").get
-  val webserverPort = 80 //this isn't likely to change so hardcode it instead of using an env var
+  //val webserverPort = 80 //this isn't likely to change so hardcode it instead of using an env var
+  val webserverPort = port
 
   object Method extends Enumeration {
     type Method = Value
@@ -344,7 +346,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     }
   }
 
-  "test creating install campaigns" taggedAs APITests in {
+  "XXX test creating install campaigns" taggedAs APITests in {
     val cookie = getLoginCookie
     val pattern = "yyyy-MM-dd'T'HH:mm:ssZZ"
     val currentTimestamp = DateTimeFormat.forPattern(pattern).print(new DateTime())
@@ -352,7 +354,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     val uuid = UUID.randomUUID().toString
     val data = UpdateRequest(testNamespace, uuid, PackageId(testPackageName, testPackageVersion), currentTimestamp,
       currentTimestamp + "/" + tomorrowTimestamp, 1, "sig", "desc", true)
-    val response = await(WS.url("http://" + webserverHost + s":$webserverPort/api/v1/updates")
+    val response = await(WS.url("http://" + webserverHost + s":$webserverPort/api/v1/update_requests")
       .withHeaders("Cookie" -> Cookies.encodeCookieHeader(cookie))
       .withHeaders("Content-Type" -> "application/json")
       .post(data.asJson.noSpaces))
@@ -375,26 +377,22 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   }
 
   "test install queue for a vin" taggedAs APITests in {
-    val response = makeRequest("vehicles/" + testVin + "/queued", GET)
+    val response = makeRequest("vehicle_updates/" + testVin, GET)
     response.status mustBe OK
-    val jsonResponse = decode[List[PackageId]](response.body)
-    jsonResponse.toOption match {
-      case Some(resp : List[PackageId]) => resp.length mustBe 1
-        resp.head.name mustEqual testPackageName
-        resp.head.version mustEqual testPackageVersion
-      case None => fail("JSON parse error:" + jsonResponse.toString)
-    }
-  }
 
-  "test getting package queue for vin" taggedAs APITests in {
-    val response = makeRequest("vehicles/" + testVin + "/queued", GET)
-    response.status mustBe OK
-    val jsonResponse = decode[List[PackageId]](response.body)
-    jsonResponse.toOption match {
-      case Some(resp : List[PackageId]) => resp.length mustBe 1
-                                           resp.head.name mustEqual testPackageName
-                                           resp.head.version mustEqual testPackageVersion
-      case None => fail("JSON parse error:" + jsonResponse.toString)
+    val packageIdOpt = for {
+      jsonResponse <- parse(response.body).toOption
+      packages <- jsonResponse.asArray
+      pkg <- packages.headOption
+      p <- pkg.cursor.get[PackageId]("packageId").toOption
+    } yield p
+
+    packageIdOpt match {
+      case Some(packageId) =>
+        packageId.name mustEqual testPackageName
+        packageId.version mustEqual testPackageVersion
+
+      case None => fail("JSON parse error" + response.body)
     }
   }
 

@@ -7,6 +7,7 @@ import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes, Uri}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import io.circe.{Encoder, Json}
 import org.genivi.sota.core.rvi.{InstallReport, OperationResult, UpdateReport}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, Inspectors, ShouldMatchers}
@@ -14,17 +15,18 @@ import org.genivi.sota.data.VehicleGenerators._
 import org.genivi.sota.data.PackageIdGenerators._
 import org.scalacheck.Gen
 import org.scalatest.time.{Millis, Seconds, Span}
-import org.genivi.sota.core.data.{Package, UpdateStatus}
+import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateStatus}
 import org.genivi.sota.core.db.{InstallHistories, Packages, Vehicles}
 import org.genivi.sota.core.transfer.InstalledPackagesUpdate
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.generic.auto._
-import org.genivi.sota.core.resolver.DefaultConnectivity
+import org.genivi.sota.core.data.response.PendingUpdateResponse
+import org.genivi.sota.core.resolver.{Connectivity, ConnectivityClient, DefaultConnectivity}
 import org.joda.time.DateTime
 
 import scala.concurrent.Future
 
-class VehicleServiceSpec extends FunSuite
+class VehicleUpdatesResourceSpec extends FunSuite
   with ShouldMatchers
   with ScalatestRouteTest
   with ScalaFutures
@@ -35,11 +37,15 @@ class VehicleServiceSpec extends FunSuite
 
   val fakeResolver = new FakeExternalResolver()
 
-  implicit val connectivity = DefaultConnectivity
+  implicit val connectivity = new FakeConnectivity()
 
-  lazy val service = new VehicleService(db, fakeResolver)
+  lazy val service = new VehicleUpdatesResource(db, fakeResolver)
 
-  val BasePath = Path("/api/v1/vehicles")
+  val vehicle = genVehicle.sample.get
+
+  val baseUri = Uri.Empty.withPath(Path("/api/v1/vehicle_updates"))
+
+  val vehicleUri = baseUri.withPath(baseUri.path / vehicle.vin.get)
 
   implicit val patience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
 
@@ -47,14 +53,10 @@ class VehicleServiceSpec extends FunSuite
 
   test("install updates are forwarded to external resolver") {
     val fakeResolverClient = new FakeExternalResolver()
-    val vehiclesResource = new VehicleService(db, fakeResolverClient)
-
-    val vin = genVehicle.sample.get.vin
+    val vehiclesResource = new VehicleUpdatesResource(db, fakeResolverClient)
     val packageIds = Gen.listOf(genPackageId).sample.get
 
-    val uri = Uri.Empty.withPath(BasePath / vin.get / "updates")
-
-    Post(uri, packageIds) ~> vehiclesResource.route ~> check {
+    Put(vehicleUri, packageIds) ~> vehiclesResource.route ~> check {
       status shouldBe StatusCodes.NoContent
 
       packageIds.foreach { p =>
@@ -65,7 +67,8 @@ class VehicleServiceSpec extends FunSuite
 
   test("GET to download file returns the file contents") {
     whenReady(createUpdateSpec()) { case (packageModel, vehicle, updateSpec) =>
-      val url = Uri.Empty.withPath(BasePath / vehicle.vin.get / "updates" / updateSpec.request.id.toString / "download")
+      val url = baseUri.withPath(baseUri.path / vehicle.vin.get / updateSpec.request.id.toString / "download")
+
       Get(url) ~> service.route ~> check {
         status shouldBe StatusCodes.OK
 
@@ -75,9 +78,8 @@ class VehicleServiceSpec extends FunSuite
   }
 
   test("GET returns 404 if there is no package with the given id") {
-    val vehicle = genVehicle.sample.get
     val uuid = UUID.randomUUID()
-    val url = Uri.Empty.withPath(BasePath / vehicle.vin.get / "updates" / uuid.toString / "download")
+    val url = vehicleUri.withPath(vehicleUri.path / uuid.toString / "download")
 
     Get(url) ~> service.route ~> check {
       status shouldBe StatusCodes.NotFound
@@ -85,33 +87,36 @@ class VehicleServiceSpec extends FunSuite
     }
   }
 
-  test("GET update requests for a vehicle returns a list of UUIDS") {
+  test("GET update requests for a vehicle returns a list of PendingUpdateResponse") {
     whenReady(createUpdateSpec()) { case (_, vehicle, updateSpec) =>
-      val url = Uri.Empty.withPath(BasePath / vehicle.vin.get / "updates")
+      val uri = baseUri.withPath(baseUri.path / vehicle.vin.get)
 
-      Get(url) ~> service.route ~> check {
+      Get(uri) ~> service.route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[List[UUID]] shouldNot be(empty)
-        responseAs[List[UUID]] should be(List(updateSpec.request.id))
+        val parsedResponse = responseAs[List[PendingUpdateResponse]]
+        parsedResponse shouldNot be(empty)
+        parsedResponse.map(_.requestId) should be(List(updateSpec.request.id))
+        parsedResponse.map(_.packageId) should be(List(updateSpec.request.packageId))
       }
     }
   }
 
   test("sets vehicle last seen when vehicle asks for updates") {
     whenReady(createVehicle()) { vehicle =>
-      val url = Uri.Empty.withPath(BasePath / vehicle.vin.get / "updates")
+      val uri = baseUri.withPath(baseUri.path / vehicle.vin.get)
+
       val now = DateTime.now.minusSeconds(10)
 
-      Get(url) ~> service.route ~> check {
+      Get(uri) ~> service.route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[List[UUID]] should be(empty)
 
         val vehicleF = db.run(Vehicles.list().map(_.find(_.vin == vehicle.vin)))
 
         whenReady(vehicleF) {
-          case Some(vehicle) =>
-            vehicle.lastSeen shouldBe defined
-            vehicle.lastSeen.get.isAfter(now) shouldBe true
+          case Some(v) =>
+            v.lastSeen shouldBe defined
+            v.lastSeen.get.isAfter(now) shouldBe true
           case _ =>
             fail("Vehicle should be in database")
         }
@@ -121,7 +126,7 @@ class VehicleServiceSpec extends FunSuite
 
   test("POST an update report updates an UpdateSpec status") {
     whenReady(createUpdateSpec()) { case (_, vehicle, updateSpec) =>
-      val url = Uri.Empty.withPath(BasePath / vehicle.vin.get / "updates" / updateSpec.request.id.toString)
+      val url = baseUri.withPath(baseUri.path / vehicle.vin.get / updateSpec.request.id.toString)
       val result = OperationResult("opid", 1, "some result")
       val updateReport = UpdateReport(updateSpec.request.id, List(result))
       val installReport = InstallReport(vehicle.vin, updateReport)
@@ -143,12 +148,11 @@ class VehicleServiceSpec extends FunSuite
   }
 
   test("Returns 404 if package does not exist") {
-    val vehicle = genVehicle.sample.get
     val f = db.run(Vehicles.create(vehicle))
 
     whenReady(f) { vehicle =>
       val fakeUpdateRequestUuid = UUID.randomUUID()
-      val url = Uri.Empty.withPath(BasePath / vehicle.vin.get / "updates" / fakeUpdateRequestUuid.toString)
+      val url = baseUri.withPath(baseUri.path / vehicle.vin.get / fakeUpdateRequestUuid.toString)
       val result = OperationResult(UUID.randomUUID().toString, 1, "some result")
       val updateReport = UpdateReport(fakeUpdateRequestUuid, List(result))
       val installReport = InstallReport(vehicle.vin, updateReport)
@@ -161,7 +165,7 @@ class VehicleServiceSpec extends FunSuite
   }
 
   test("GET to download a file returns 3xx if the package URL is an s3 URI") {
-    val service = new VehicleService(db, fakeResolver) {
+    val service = new VehicleUpdatesResource(db, fakeResolver) {
       override lazy val packageRetrievalOp: (Package) => Future[HttpResponse] = {
         _ => Future.successful {
           HttpResponse(StatusCodes.Found, Location("https://some-fake-place") :: Nil)
@@ -175,11 +179,57 @@ class VehicleServiceSpec extends FunSuite
     } yield (packageModel, vehicle, updateSpec)
 
     whenReady(f) { case (packageModel, vehicle, updateSpec) =>
-      val url = Uri.Empty.withPath(BasePath / vehicle.vin.get / "updates" / updateSpec.request.id.toString / "download")
+      val url = baseUri.withPath(baseUri.path / vehicle.vin.get / updateSpec.request.id.toString / "download")
       Get(url) ~> service.route ~> check {
         status shouldBe StatusCodes.Found
         header("Location").map(_.value()) should contain("https://some-fake-place")
       }
+    }
+  }
+
+
+  test("POST on queues a package for update to a specific vehile") {
+    val f = createUpdateSpec()
+
+    whenReady(f) { case (packageModel, vehicle, updateSpec) =>
+      val now = DateTime.now
+      val url = baseUri.withPath(baseUri.path / vehicle.vin.get)
+
+      Post(url, packageModel.id) ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+        val updateRequest = responseAs[UpdateRequest]
+        updateRequest.packageId should be (packageModel.id)
+        updateRequest.creationTime.isAfter(now) shouldBe true
+      }
+    }
+  }
+
+  test("POST on /:vin/sync results in an rvi sync") {
+    val url = vehicleUri.withPath(vehicleUri.path / "sync")
+    Post(url) ~> service.route ~> check {
+      status shouldBe StatusCodes.NoContent
+
+      val service = s"genivi.org/vin/${vehicle.vin.get}/sota/getpackages"
+
+      connectivity.sentMessages should contain(service -> Json.Null)
+    }
+  }
+}
+
+class FakeConnectivity extends Connectivity {
+
+  val sentMessages = scala.collection.mutable.Queue.empty[(String, Json)]
+
+  override implicit val transport = { (_: Json) =>
+    Future.successful(Json.Null)
+  }
+
+  override implicit val client = new ConnectivityClient {
+    override def sendMessage[A](service: String, message: A, expirationDate: DateTime)(implicit encoder: Encoder[A]): Future[Int] = {
+      val v = (service, encoder(message))
+      sentMessages += v
+
+      Future.successful(0)
     }
   }
 }

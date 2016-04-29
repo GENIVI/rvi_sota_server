@@ -38,8 +38,9 @@ class WebService(notifier: UpdateNotifier, resolver: ExternalResolverClient, db 
   val vehicles = new VehiclesResource(db, connectivity.client, resolver)
   val packages = new PackagesResource(resolver, db)
   val updateRequests = new UpdateRequestsResource(db, resolver, new UpdateService(notifier))
+  val history = new HistoryResource(db)
 
   val route = (handleErrors & pathPrefix("api" / "v1")) {
-    vehicles.route ~ packages.route ~ updateRequests.route
+    vehicles.route ~ packages.route ~ updateRequests.route ~ history.route
   }
 }

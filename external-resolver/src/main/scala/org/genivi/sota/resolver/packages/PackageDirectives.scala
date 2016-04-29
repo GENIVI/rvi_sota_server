@@ -73,7 +73,6 @@ class PackageDirectives(implicit system: ActorSystem,
     }
 
   def packageFilterApi(ns: Namespace, id: PackageId): Route =
-    pathPrefix("filter") {
       (get & pathEnd) {
         getPackageFilters(ns, id)
       } ~
@@ -82,7 +81,6 @@ class PackageDirectives(implicit system: ActorSystem,
       } ~
       (delete & refinedFilterName & pathEnd) { fname =>
         deletePackageFilter(ns, id, fname)
-      }
     }
 
   /**
@@ -105,7 +103,7 @@ class PackageDirectives(implicit system: ActorSystem,
         (put & pathEnd) {
           addPackage(ns, id)
         } ~
-        packageFilterApi(ns, id)
+        pathPrefix("filter") { packageFilterApi(ns, id) }
       }
     }
 
