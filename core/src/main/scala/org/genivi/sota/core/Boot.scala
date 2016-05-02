@@ -82,7 +82,7 @@ object Boot extends App with DatabaseConfig {
     } yield sotaServices
     case _ =>
       val notifier = DefaultUpdateNotifier
-      val vehicleService = new VehicleService(db, externalResolverClient)
+      val vehicleService = new VehicleUpdatesResource(db, externalResolverClient)
       val allRoutes = routes(notifier) ~ vehicleService.route
 
       Http()

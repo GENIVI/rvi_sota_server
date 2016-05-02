@@ -131,23 +131,6 @@ object UpdateSpecs {
   }
 
   /**
-   * Get the packages that are queued for installation on a VIN.
-   * @param vin The VIN to query
-   * @return A List of package names + versions that are due to be installed.
-   */
-  def getPackagesQueuedForVin(ns: Namespace, vin: Vehicle.Vin)
-                             (implicit ec: ExecutionContext) : DBIO[Iterable[PackageId]] = {
-    updateSpecs
-      .filter(s => s.namespace === ns && s.vin === vin)
-      .filter(s => s.status === UpdateStatus.InFlight || s.status === UpdateStatus.Pending)
-      .join(updateRequests).on(_.requestId === _.id)
-      .map(_._2)
-      .sortBy(_.creationTime.asc)
-      .result
-      .map(_.map(_.packageId))
-  }
-
-  /**
    * Return a list of all the VINs that a specific version of a package will be
    * installed on.  Note that VINs where the package has started installation,
    * or has either been installed or where the install failed are not included.

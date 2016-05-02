@@ -60,15 +60,14 @@ object InstalledPackagesUpdate {
     db.run(dbIO)
   }
 
-  def findPendingPackageIdsFor(ns: Namespace, vin: Vehicle.Vin, limit: Int = 1)
-                              (implicit db: Database, ec: ExecutionContext) : DBIO[Seq[UUID]] = {
+  def findPendingPackageIdsFor(ns: Namespace, vin: Vehicle.Vin)
+                              (implicit db: Database, ec: ExecutionContext) : DBIO[Seq[UpdateRequest]] = {
     updateSpecs
       .filter(r => r.namespace === ns && r.vin === vin)
       .filter(_.status.inSet(List(UpdateStatus.InFlight, UpdateStatus.Pending)))
       .join(updateRequests).on(_.requestId === _.id)
       .sortBy(_._2.creationTime.asc)
-      .map(_._1.requestId)
-      .take(limit)
+      .map(_._2)
       .result
   }
 

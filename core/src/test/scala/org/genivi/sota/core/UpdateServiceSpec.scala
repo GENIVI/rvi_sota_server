@@ -6,7 +6,7 @@ import eu.timepit.refined.api.Refined
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db.{Packages, UpdateSpecs, Vehicles}
 import org.genivi.sota.core.resolver.DefaultConnectivity
-import org.genivi.sota.core.transfer.DefaultUpdateNotifier
+import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, InstalledPackagesUpdate}
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.Namespaces
 import org.genivi.sota.data.{PackageId, Vehicle, VehicleGenerators}
@@ -14,6 +14,7 @@ import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Second, Span}
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
+
 import scala.concurrent.{Await, Future}
 import scala.util.Random
 import slick.jdbc.JdbcBackend._
@@ -121,12 +122,12 @@ class UpdateServiceSpec extends PropSpec
     val f = for {
       (vehicle, packageM) <- db.run(dbSetup)
       updateRequest <- service.queueVehicleUpdate(vehicle.namespace, vehicle.vin, packageM.id)
-      queuedPackages <- db.run(UpdateSpecs.getPackagesQueuedForVin(vehicle.namespace, vehicle.vin))
+      queuedPackages <- db.run(InstalledPackagesUpdate.findPendingPackageIdsFor(vehicle.namespace, vehicle.vin))
     } yield (updateRequest, queuedPackages)
 
     whenReady(f) { case (updateRequest, queuedPackages) =>
       updateRequest.packageId shouldBe newPackage.id
-      queuedPackages should contain(newPackage.id)
+      queuedPackages.map(_.packageId) should contain(newPackage.id)
     }
   }
 

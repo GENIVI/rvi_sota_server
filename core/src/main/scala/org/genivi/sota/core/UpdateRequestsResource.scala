@@ -40,13 +40,6 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
     complete(db.run(UpdateSpecs.listUpdatesById(uuid)))
   }
 
-  def queueVehicleUpdate(ns: Namespace, vin: Vehicle.Vin) = {
-    entity(as[PackageId]) { packageId =>
-      val result = updateService.queueVehicleUpdate(ns, vin, packageId)
-      complete(result)
-    }
-  }
-
   def fetchUpdates = {
     complete(updateService.all(db, system.dispatcher))
   }
@@ -64,12 +57,9 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
     }
   }
 
-  val route = pathPrefix("updates") {
+  val route = pathPrefix("update_requests") {
     (get & extractUuid & pathEnd) {
       fetch
-    } ~
-    (extractNamespace & extractVin & post) { (ns, vin) =>
-      queueVehicleUpdate(ns, vin)
     } ~
     pathEnd {
       get {
