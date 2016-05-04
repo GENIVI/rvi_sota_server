@@ -376,26 +376,6 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     }
   }
 
-  "test install queue for a vin" taggedAs APITests in {
-    val response = makeRequest("vehicle_updates/" + testVin, GET)
-    response.status mustBe OK
-
-    val packageIdOpt = for {
-      jsonResponse <- parse(response.body).toOption
-      packages <- jsonResponse.asArray
-      pkg <- packages.headOption
-      p <- pkg.cursor.get[PackageId]("packageId").toOption
-    } yield p
-
-    packageIdOpt match {
-      case Some(packageId) =>
-        packageId.name mustEqual testPackageName
-        packageId.version mustEqual testPackageVersion
-
-      case None => fail("JSON parse error" + response.body)
-    }
-  }
-
   "test list of vins affected by update" taggedAs APITests in {
     val response = makeRequest("resolve/" + testPackageName + "/" + testPackageVersion, GET)
     response.status mustBe OK
