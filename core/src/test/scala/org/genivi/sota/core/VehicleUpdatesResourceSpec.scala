@@ -20,7 +20,7 @@ import org.genivi.sota.core.db.{InstallHistories, Packages, Vehicles}
 import org.genivi.sota.core.transfer.InstalledPackagesUpdate
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.generic.auto._
-import org.genivi.sota.core.data.response.PendingUpdateResponse
+import org.genivi.sota.core.data.client.PendingUpdateRequest
 import org.genivi.sota.core.resolver.{Connectivity, ConnectivityClient, DefaultConnectivity}
 import org.joda.time.DateTime
 
@@ -93,7 +93,7 @@ class VehicleUpdatesResourceSpec extends FunSuite
 
       Get(uri) ~> service.route ~> check {
         status shouldBe StatusCodes.OK
-        val parsedResponse = responseAs[List[PendingUpdateResponse]]
+        val parsedResponse = responseAs[List[PendingUpdateRequest]]
         parsedResponse shouldNot be(empty)
         parsedResponse.map(_.requestId) should be(List(updateSpec.request.id))
         parsedResponse.map(_.packageId) should be(List(updateSpec.request.packageId))

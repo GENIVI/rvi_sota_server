@@ -22,7 +22,7 @@ import org.genivi.sota.data.Namespace._
 import org.genivi.sota.rest.Validation.refined
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.Json
-import org.genivi.sota.core.data.response.{PendingUpdateResponse, ResponseConversions}
+import org.genivi.sota.core.data.client.ResponseConversions
 import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, ExternalResolverClient}
 import org.genivi.sota.core.storage.PackageStorage
 import org.joda.time.DateTime
@@ -64,7 +64,7 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
   }
 
   def pendingPackages(ns: Namespace, vin: Vehicle.Vin) = {
-    import PendingUpdateResponse._
+    import org.genivi.sota.core.data.client.PendingUpdateRequest._
     import ResponseConversions._
 
     logVehicleSeen(Vehicle(ns, vin)) {

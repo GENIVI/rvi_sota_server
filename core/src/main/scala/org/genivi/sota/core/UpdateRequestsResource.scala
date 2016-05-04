@@ -6,7 +6,6 @@ package org.genivi.sota.core
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshaller._
-import akka.http.scaladsl.server.PathMatchers.Slash
 import akka.http.scaladsl.server.{Directive1, Directives}
 import akka.stream.ActorMaterializer
 import eu.timepit.refined._
@@ -16,10 +15,10 @@ import io.circe.generic.auto._
 import io.circe.syntax._
 import org.genivi.sota.core.common.NamespaceDirective._
 import org.genivi.sota.core.data._
+import org.genivi.sota.core.data.client._
 import org.genivi.sota.core.db.UpdateSpecs
 import org.genivi.sota.core.resolver.ExternalResolverClient
 import org.genivi.sota.data.Namespace._
-import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.rest.Validation._
 import slick.driver.MySQLDriver.api.Database
@@ -33,6 +32,8 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
   import WebService._
   import eu.timepit.refined.string.uuidValidate
   import system.dispatcher
+  import ClientUpdateRequest._
+  import RequestConversions._
 
   implicit val _db = db
 
@@ -44,8 +45,12 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
     complete(updateService.all(db, system.dispatcher))
   }
 
+  def clientUpdateRequest(ns: Namespace): Directive1[UpdateRequest] = {
+    clientEntity(ns)
+  }
+
   def createUpdate(ns: Namespace) = {
-    entity(as[UpdateRequest]) { req =>
+    clientUpdateRequest(ns) { req: UpdateRequest =>
       complete(
         updateService.queueUpdate(
           req,
