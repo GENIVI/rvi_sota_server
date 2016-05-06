@@ -23,9 +23,12 @@ class FakeExternalResolver()(implicit system: ActorSystem, mat: ActorMaterialize
     Future.successful(())
   }
 
-  override def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Vehicle, Set[PackageId]]] = ???
+  override def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Vehicle, Set[PackageId]]] = {
+    Future.successful(Map.empty)
+  }
 
-  override def handlePutResponse(futureResponse: Future[HttpResponse]): Future[Unit] = ???
+  override def handlePutResponse(futureResponse: Future[HttpResponse]): Future[Unit] =
+    Future.successful(())
 
   override def putPackage(namespace: Namespace, packageId: PackageId, description: Option[String], vendor: Option[String]): Future[Unit] = {
     logger.info(s"Fake resolver called. namespace=$namespace, packageId=${packageId.mkString}")

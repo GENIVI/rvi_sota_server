@@ -346,7 +346,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     }
   }
 
-  "XXX test creating install campaigns" taggedAs APITests in {
+  "test creating install campaigns" taggedAs APITests in {
     val cookie = getLoginCookie
     val pattern = "yyyy-MM-dd'T'HH:mm:ssZZ"
     val currentTimestamp = DateTimeFormat.forPattern(pattern).print(new DateTime())
