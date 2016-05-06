@@ -191,10 +191,8 @@ class VehicleDirectives(implicit system: ActorSystem,
    */
   def route: Route = {
     vehicleApi ~
-    pathPrefix("firmware") {
-      (get & pathEnd & extractNamespace & extractVin) { (ns, vin) =>
+    (pathPrefix("firmware") & get & extractNamespace & extractVin) { (ns, vin) =>
         getFirmware(ns, vin)
-      }
     }
   }
 

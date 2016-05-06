@@ -8,13 +8,13 @@ define(function(require) {
       this.dispatchCallback = function(payload) {
         switch(payload.actionType) {
           case 'get-updates':
-            sendRequest.doGet('/api/v1/updates')
+            sendRequest.doGet('/api/v1/update_requests')
               .success(function(updates) {
                 db.updates.reset(updates);
               });
           break;
           case 'get-update':
-            sendRequest.doGet('/api/v1/updates')
+            sendRequest.doGet('/api/v1/update_requests')
               .success(function(updates) {
                 var showUpdate = _.find(updates, function(update) {
                   return update.id == payload.id;
@@ -23,7 +23,7 @@ define(function(require) {
               });
           break;
           case 'get-update-status':
-            sendRequest.doGet('/api/v1/updates/' + payload.id)
+            sendRequest.doGet('/api/v1/update_requests/' + payload.id)
               .success(function(updateStatus) {
                 db.updateStatus.reset(updateStatus);
               });

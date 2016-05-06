@@ -46,6 +46,7 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
     case "packages" :: _ => coreApiUri
     case "update_requests" :: _ => coreApiUri
     case "vehicle_updates" :: _ => coreApiUri
+    case "history" :: _ => coreApiUri
     case _ => resolverApiUri
   }
 
