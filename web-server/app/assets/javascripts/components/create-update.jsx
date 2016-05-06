@@ -51,6 +51,7 @@ define(function(require) {
           version: this.props.packageVersion
         },
         description: description,
+        namespace: "default", //TODO: replace with real namespace once support for them is added
         requestConfirmation: requestConfirmation,
         priority: Number(React.findDOMNode(this.refs.priority).value),
         creationTime: this.formatDateForJSON(startAfterDate, startAfterTime, startAfterTimeZone),
