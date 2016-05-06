@@ -8,18 +8,16 @@ import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.Uri
-import akka.http.scaladsl.server.{Directive1, Directives}
+import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import org.genivi.sota.core.db._
-import org.genivi.sota.core.jsonrpc.HttpTransport
 import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, DefaultExternalResolverClient}
 import org.genivi.sota.core.rvi._
 import org.genivi.sota.core.transfer._
 import org.genivi.sota.data.Namespace._
 import scala.util.{Failure, Success, Try}
-
+import org.genivi.sota.http.SotaDirectives.versionHeaders
 
 object Boot extends App with DatabaseConfig {
 
@@ -37,6 +35,11 @@ object Boot extends App with DatabaseConfig {
   implicit val exec = system.dispatcher
   implicit val log = Logging(system, "boot")
   val config = system.settings.config
+
+  lazy val version = {
+    val bi = org.genivi.sota.core.BuildInfo
+    bi.name + "/" + bi.version
+  }
 
   // Database migrations
   if (config.getBoolean("database.migrate")) {
@@ -83,10 +86,11 @@ object Boot extends App with DatabaseConfig {
     case _ =>
       val notifier = DefaultUpdateNotifier
       val vehicleService = new VehicleUpdatesResource(db, externalResolverClient)
-      val allRoutes = routes(notifier) ~ vehicleService.route
+      val allRoutes = Route.seal(routes(notifier) ~ vehicleService.route)
+      val versionRoutes = versionHeaders(version)(allRoutes)
 
       Http()
-        .bindAndHandle(allRoutes, host, port)
+        .bindAndHandle(versionRoutes, host, port)
         .map(_ => ServerServices("","","",""))
   }
 

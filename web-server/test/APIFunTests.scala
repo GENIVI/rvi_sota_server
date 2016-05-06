@@ -14,7 +14,7 @@ import org.joda.time.format.DateTimeFormat
 import org.scalatest.Tag
 import org.scalatestplus.play._
 import play.api.Play
-import play.api.libs.ws.{WSResponse, WS}
+import play.api.libs.ws.{WS, WSResponse}
 import play.api.mvc.{Cookie, Cookies}
 import play.api.test.Helpers._
 import io.circe._
@@ -22,6 +22,7 @@ import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
 import io.circe.parser._
+import org.genivi.sota.data.Vehicle.Vin
 
 object APITests extends Tag("APITests")
 
@@ -379,11 +380,14 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   "test list of vins affected by update" taggedAs APITests in {
     val response = makeRequest("resolve/" + testPackageName + "/" + testPackageVersion, GET)
     response.status mustBe OK
-    import org.genivi.sota.marshalling.CirceInstances.mapDecoder
-    val jsonResponse = decode[Map[String, Seq[PackageId]]](response.body)
+    import org.genivi.sota.marshalling.CirceInstances._
+
+    println(response.body)
+
+    val jsonResponse = decode[Map[Vin, Seq[PackageId]]](response.body)(refinedMapDecoder)
     jsonResponse.toOption match {
-      case Some(resp : Map[String, Seq[PackageId]]) => resp.toList.length mustBe 1
-                                                       resp.head._1 mustBe testVin
+      case Some(resp : Map[Vin, Seq[PackageId]]) => resp.toList.length mustBe 1
+                                                       resp.head._1.get mustBe testVin
                                                        resp.head._2.length mustBe 1
                                                        resp.head._2.head.name mustBe testPackageName
                                                        resp.head._2.head.version mustBe testPackageVersion

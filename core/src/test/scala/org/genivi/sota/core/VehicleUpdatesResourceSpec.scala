@@ -17,7 +17,7 @@ import org.scalacheck.Gen
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateStatus}
 import org.genivi.sota.core.db.{InstallHistories, Packages, Vehicles}
-import org.genivi.sota.core.transfer.InstalledPackagesUpdate
+import org.genivi.sota.core.transfer.VehicleUpdates
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.generic.auto._
 import org.genivi.sota.core.data.client.PendingUpdateRequest
@@ -55,8 +55,9 @@ class VehicleUpdatesResourceSpec extends FunSuite
     val fakeResolverClient = new FakeExternalResolver()
     val vehiclesResource = new VehicleUpdatesResource(db, fakeResolverClient)
     val packageIds = Gen.listOf(genPackageId).sample.get
+    val uri = vehicleUri.withPath(vehicleUri.path / "installed")
 
-    Put(vehicleUri, packageIds) ~> vehiclesResource.route ~> check {
+    Put(uri, packageIds) ~> vehiclesResource.route ~> check {
       status shouldBe StatusCodes.NoContent
 
       packageIds.foreach { p =>
@@ -135,7 +136,7 @@ class VehicleUpdatesResourceSpec extends FunSuite
         status shouldBe StatusCodes.NoContent
 
         val dbIO = for {
-          updateSpec <- InstalledPackagesUpdate.findUpdateSpecFor(vehicle.vin, updateSpec.request.id)
+          updateSpec <- VehicleUpdates.findUpdateSpecFor(vehicle.vin, updateSpec.request.id)
           histories <- InstallHistories.list(vehicle.namespace, vehicle.vin)
         } yield (updateSpec, histories.last)
 
@@ -214,6 +215,29 @@ class VehicleUpdatesResourceSpec extends FunSuite
       connectivity.sentMessages should contain(service -> Json.Null)
     }
   }
+
+  test("PUT to set install order should change the package install order") {
+    val dbio = for {
+      (_, spec0) <- createUpdateSpecFor(vehicle)
+      (_, spec1) <- createUpdateSpecFor(vehicle)
+    } yield (spec0.request.id, spec1.request.id)
+
+    whenReady(db.run(dbio)) { case (spec0, spec1) =>
+      val url = vehicleUri.withPath(vehicleUri.path / "order")
+      val req = Map(0 -> spec1, 1 -> spec0)
+
+      Put(url, req) ~> service.route ~> check {
+        status shouldBe StatusCodes.NoContent
+
+        Get(vehicleUri) ~> service.route ~> check {
+          val pendingUpdates =
+            responseAs[List[PendingUpdateRequest]].sortBy(_.installPos).map(_.requestId)
+
+          pendingUpdates shouldBe List(spec1, spec0)
+        }
+      }
+    }
+  }
 }
 
 class FakeConnectivity extends Connectivity {
@@ -225,7 +249,8 @@ class FakeConnectivity extends Connectivity {
   }
 
   override implicit val client = new ConnectivityClient {
-    override def sendMessage[A](service: String, message: A, expirationDate: DateTime)(implicit encoder: Encoder[A]): Future[Int] = {
+    override def sendMessage[A](service: String, message: A, expirationDate: DateTime)
+                               (implicit encoder: Encoder[A]): Future[Int] = {
       val v = (service, encoder(message))
       sentMessages += v
 

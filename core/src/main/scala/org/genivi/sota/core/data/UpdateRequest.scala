@@ -38,7 +38,8 @@ case class UpdateRequest(
   priority: Int,
   signature: String,
   description: Option[String],
-  requestConfirmation: Boolean)
+  requestConfirmation: Boolean,
+  installPos: Int = 0)
 
 object UpdateRequest {
 

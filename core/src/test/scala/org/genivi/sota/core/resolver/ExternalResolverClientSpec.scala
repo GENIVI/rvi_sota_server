@@ -10,7 +10,7 @@ import eu.timepit.refined.api.Refined
 import io.circe.Json
 import io.circe.jawn._
 import org.genivi.sota.data.{PackageId, Vehicle}
-import org.genivi.sota.marshalling.CirceMarshallingSupport
+import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
@@ -48,9 +48,8 @@ class ExternalResolverClientSpec extends PropSpec with Matchers with BeforeAndAf
     Map(Refined.unsafeApply("V1NBEAGLEB0ARD000") -> Set(PackageId(Refined.unsafeApply("rust"), Refined.unsafeApply("23.5.2"))))
 
   property("parse the external resolver's response") {
-
-    decode[Map[Vehicle.Vin, Set[PackageId]]](s) shouldBe Xor.Right(m)
-
+    import org.genivi.sota.marshalling.CirceInstances.refinedMapDecoder
+    decode[Map[Vehicle.Vin, Set[PackageId]]](s)(refinedMapDecoder) shouldBe Xor.Right(m)
   }
 
   val resp: HttpResponse = HttpResponse(entity = HttpEntity(`application/json`, s))
@@ -64,7 +63,6 @@ class ExternalResolverClientSpec extends PropSpec with Matchers with BeforeAndAf
   }
 
   property("parse from a HttpResponse as a Map") {
-
     ScalaFutures.whenReady(Unmarshal(resp.entity).to[Map[Vehicle.Vin, Set[PackageId]]]) { m2 =>
       m2 shouldBe m
     }

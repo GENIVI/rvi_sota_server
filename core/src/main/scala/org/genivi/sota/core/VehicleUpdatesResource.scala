@@ -4,6 +4,8 @@
  */
 package org.genivi.sota.core
 
+import java.util.UUID
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.model.StatusCodes._
@@ -12,7 +14,7 @@ import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Uuid
 import org.genivi.sota.core.rvi.InstallReport
-import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, InstalledPackagesUpdate, PackageDownloadProcess}
+import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, PackageDownloadProcess, VehicleUpdates}
 import org.genivi.sota.data.{PackageId, Vehicle}
 import slick.driver.MySQLDriver.api.Database
 import io.circe.generic.auto._
@@ -20,8 +22,6 @@ import org.genivi.sota.core.db.Vehicles
 import org.genivi.sota.core.common.NamespaceDirective._
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.rest.Validation.refined
-import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import io.circe.Json
 import org.genivi.sota.core.data.client.ResponseConversions
 import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, ExternalResolverClient}
 import org.genivi.sota.core.storage.PackageStorage
@@ -34,8 +34,8 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
                             (implicit system: ActorSystem, mat: ActorMaterializer,
                              connectivity: Connectivity = DefaultConnectivity) extends Directives {
 
-  import Json.{obj, string}
   import WebService._
+  import org.genivi.sota.marshalling.CirceMarshallingSupport._
 
   implicit val ec = system.dispatcher
   implicit val _db = db
@@ -55,7 +55,7 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
 
   def updateInstalledPackages(vin: Vehicle.Vin): Route = {
     entity(as[List[PackageId]]) { ids =>
-      val f = InstalledPackagesUpdate
+      val f = VehicleUpdates
         .update(vin, ids, resolverClient)
         .map(_ => NoContent)
 
@@ -69,7 +69,7 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
 
     logVehicleSeen(Vehicle(ns, vin)) {
       val vehiclePackages =
-        InstalledPackagesUpdate
+        VehicleUpdates
           .findPendingPackageIdsFor(ns, vin)
           .map(_.toResponse)
 
@@ -87,7 +87,7 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
   def reportInstall(uuid: Refined[String, Uuid]): Route = {
     entity(as[InstallReport]) { report =>
       val responseF =
-        InstalledPackagesUpdate
+        VehicleUpdates
           .buildReportInstallResponse(report.vin, report.update_report)
       complete(responseF)
     }
@@ -109,9 +109,18 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
     complete(NoContent)
   }
 
+  def setInstallOrder(vin: Vehicle.Vin): Route = {
+    entity(as[Map[Int, UUID]]) { uuids =>
+      val sorted = uuids.toList.sortBy(_._1).map(_._2)
+      val resp = VehicleUpdates.buildSetInstallOrderResponse(vin, sorted)
+      complete(resp)
+    }
+  }
+
   val route = {
     (pathPrefix("api" / "v1" / "vehicle_updates") & extractVin) { vin =>
-      (put & pathEnd) { updateInstalledPackages(vin) } ~
+      (put & path("installed")) { updateInstalledPackages(vin) } ~
+      (put & path("order")) { setInstallOrder(vin) } ~
       (post & extractNamespace & pathEnd) { ns => queueVehicleUpdate(ns, vin) } ~
       (get & extractNamespace & pathEnd) { ns => pendingPackages(ns, vin) } ~
       (get & extractUuid & path("download")) { downloadPackage } ~

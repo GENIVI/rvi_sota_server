@@ -15,10 +15,11 @@ import org.genivi.sota.db.SlickExtensions
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.joda.time.DateTime
+import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
 
-class InstalledPackagesUpdateSpec extends FunSuite
+class VehicleUpdatesSpec extends FunSuite
   with ShouldMatchers
   with BeforeAndAfterAll
   with Inspectors
@@ -28,7 +29,8 @@ class InstalledPackagesUpdateSpec extends FunSuite
 
   import Generators._
   import SlickExtensions._
-  import InstalledPackagesUpdate._
+  import VehicleUpdates._
+  import UpdateStatus._
 
   implicit val actorSystem = ActorSystem("InstalledPackagesUpdateSpec-ActorSystem")
   implicit val materializer = ActorMaterializer()
@@ -66,16 +68,14 @@ class InstalledPackagesUpdateSpec extends FunSuite
     }
   }
 
-  test("when multiple packages are pending, return all of them, sorted by creation date") {
-    val secondCreationTime = DateTime.now.plusHours(1)
-
-    val f = for {
-      (_, vehicle, updateRequest0) <- createUpdateSpec()
-      (_, updateRequest1) <- db.run(createUpdateSpecFor(vehicle, secondCreationTime))
-      result <- db.run(findPendingPackageIdsFor(defaultNamespace, vehicle.vin))
+  test("when multiple packages are pending sorted by installPos") {
+    val dbIO = for {
+      (_, vehicle, updateRequest0) <- createUpdateSpecAction()
+      (_, updateRequest1) <- createUpdateSpecFor(vehicle, _.copy(installPos = 2))
+      result <- findPendingPackageIdsFor(defaultNamespace, vehicle.vin)
     } yield (result, updateRequest0, updateRequest1)
 
-    whenReady(f) { case (result, updateRequest0, updateRequest1)  =>
+    whenReady(db.run(dbIO)) { case (result, updateRequest0, updateRequest1)  =>
       result shouldNot be(empty)
       result should have(size(2))
 
@@ -86,6 +86,56 @@ class InstalledPackagesUpdateSpec extends FunSuite
         case _ =>
           fail("returned package list does not have expected elements")
       }
+    }
+  }
+
+  test("sets install priority for one package") {
+    val dbIO = for {
+      (pck, vehicle, spec0) <- createUpdateSpecAction()
+      (_, spec1) <- createUpdateSpecFor(vehicle)
+      _ <- setInstallOrder(vehicle.vin, List(spec0.request.id, spec1.request.id))
+      dbSpecs <- findPendingPackageIdsFor(defaultNamespace, vehicle.vin)
+    } yield (dbSpecs, spec0, spec1)
+
+    whenReady(db.run(dbIO)) { case (Seq(dbSpec0, dbSpec1), spec0, spec1) =>
+      dbSpec0.id shouldBe spec0.request.id
+      dbSpec0.installPos shouldBe 0
+
+      dbSpec1.id shouldBe spec1.request.id
+      dbSpec1.installPos shouldBe 1
+    }
+  }
+
+  test("can only sort pending update requests") {
+    import UpdateSpecs._
+
+    val dbIO = for {
+      (pck, vehicle, spec0) <- createUpdateSpecAction()
+      _ <- updateSpecs.map(_.status).update(UpdateStatus.InFlight)
+      (_, spec1) <- createUpdateSpecFor(vehicle)
+      result <- setInstallOrder(vehicle.vin, List(spec0.request.id, spec1.request.id))
+    } yield result
+
+    val f = db.run(dbIO)
+
+    whenReady(f.failed) { t =>
+      t shouldBe a[SetOrderFailed]
+      t.getMessage should include("need to be pending")
+    }
+  }
+
+  test("fails when not specifying all update request in order") {
+    val dbIO = for {
+      (pck, vehicle, spec0) <- createUpdateSpecAction()
+      (_, spec1) <- createUpdateSpecFor(vehicle)
+      result <- setInstallOrder(vehicle.vin, List(spec1.request.id))
+    } yield result
+
+    val f = db.run(dbIO)
+
+    whenReady(f.failed) { t =>
+      t shouldBe a[SetOrderFailed]
+      t.getMessage should include("need to be specified")
     }
   }
 }

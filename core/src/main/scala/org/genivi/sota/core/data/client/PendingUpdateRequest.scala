@@ -12,12 +12,12 @@ import org.genivi.sota.data.PackageId
 import org.joda.time.{DateTime, Interval}
 import scala.language.implicitConversions
 
-case class PendingUpdateRequest(requestId: UUID, packageId: PackageId, createdAt: DateTime)
+case class PendingUpdateRequest(requestId: UUID, packageId: PackageId, installPos: Int, createdAt: DateTime)
 
 object PendingUpdateRequest {
   implicit def toResponseEncoder: ResponseEncoder[PendingUpdateRequest, UpdateRequest] =
     ResponseEncoder { u =>
-      PendingUpdateRequest(u.id, u.packageId, u.creationTime)
+      PendingUpdateRequest(u.id, u.packageId, u.installPos, u.creationTime)
     }
 }
 
