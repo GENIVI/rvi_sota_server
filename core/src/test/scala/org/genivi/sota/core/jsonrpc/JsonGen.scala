@@ -11,7 +11,7 @@ trait JsonGen {
   import org.scalacheck.Gen
 
   val JBooleanGen : Gen[Json] = Gen.oneOf(true, false).map( Json.fromBoolean )
-  val JStrGen : Gen[Json] = Arbitrary.arbString.arbitrary.map( Json.fromString )
+  val JStrGen : Gen[Json] = Gen.identifier.map( Json.fromString )
   val JNumGen : Gen[Json] = Arbitrary.arbInt.arbitrary.map( Json.fromInt )
   val JNullGen: Gen[Json] = Gen.const( Json.Null )
 
