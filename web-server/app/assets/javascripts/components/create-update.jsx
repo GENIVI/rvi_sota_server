@@ -60,7 +60,7 @@ define(function(require) {
           + this.formatDateForJSON(endBeforeDate, endBeforeTime, endBeforeTimeZone),
         signature: signature
       }
-      SendRequest.doPost("/api/v1/updates", payload)
+      SendRequest.doPost("/api/v1/update_requests", payload)
         .done(_.bind(function() {
           this.transitionTo("/updates/" + updateId);
         }, this))

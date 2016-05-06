@@ -53,13 +53,16 @@ define(function(require) {
               });
           break;
           case 'get-package-queue-for-vin':
-            sendRequest.doGet('/api/v1/vehicles/' + payload.vin + '/queued')
-              .success(function(packages) {
-                db.packageQueueForVin.reset(packages);
+            sendRequest.doGet('/api/v1/vehicle_updates/' + payload.vin)
+              .success(function(pendingUpdates) {
+                var pkgs = _.map(pendingUpdates, function(pendingUpdate) {
+                  return pendingUpdate.packageId
+                });
+                db.packageQueueForVin.reset(pkgs);
               });
           break;
           case 'get-package-history-for-vin':
-            sendRequest.doGet('/api/v1/vehicles/' + payload.vin + '/history')
+            sendRequest.doGet('/api/v1/history?vin=' + payload.vin)
               .success(function(packages) {
                 db.packageHistoryForVin.reset(packages);
               });
@@ -77,7 +80,7 @@ define(function(require) {
               });
           break;
           case 'sync-packages-for-vin':
-            sendRequest.doPut('/api/v1/vehicles/' + payload.vin + '/sync');
+            sendRequest.doPost('/api/v1/vehicle_updates/' + payload.vin + '/sync');
           break;
         }
       };
