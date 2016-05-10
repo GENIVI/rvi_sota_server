@@ -34,7 +34,8 @@ trait CirceInstances {
         case Right(r) => r
       })
 
-  implicit def refinedMapDecoder[K <: Refined[_, _], V](implicit keyDecoder: Decoder[K], valueDecoder: Decoder[V]): Decoder[Map[K, V]] =
+  implicit def refinedMapDecoder[K <: Refined[_, _], V]
+  (implicit keyDecoder: Decoder[K], valueDecoder: Decoder[V]): Decoder[Map[K, V]] =
     Decoder[Seq[(K, V)]].map(_.toMap)
 
   implicit def refinedEncoder[T, P](implicit encoder: Encoder[T]): Encoder[Refined[T, P]] =
@@ -86,7 +87,8 @@ trait CirceInstances {
   implicit val intervalEncoder : Encoder[Interval] = Encoder[String].contramap(_.toString)
   implicit val intervalDecoder : Decoder[Interval] = Decoder[String].map(Interval.parse)
 
-  implicit def mapRefinedEncoder[K <: Refined[_, _], V](implicit keyEncoder: Encoder[K], valueEncoder: Encoder[V]): Encoder[Map[K, V]] =
+  implicit def mapRefinedEncoder[K <: Refined[_, _], V]
+  (implicit keyEncoder: Encoder[K], valueEncoder: Encoder[V]): Encoder[Map[K, V]] =
     Encoder[Seq[(K, V)]].contramap((m: Map[K, V]) => m.toSeq)
 }
 
