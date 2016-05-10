@@ -46,7 +46,7 @@ class PackageStorage()(implicit system: ActorSystem, mat: ActorMaterializer, con
       uri.authority.host.address().endsWith("amazonaws.com")
   }
 
-  protected [storage] lazy val storage: PackageStore = {
+  protected[storage] lazy val storage: PackageStore = {
     S3PackageStore.loadCredentials(config) match {
       case Some(c) => new S3PackageStore(c)
       case None => new LocalPackageStore()
@@ -69,9 +69,9 @@ object PackageStorage {
 
   private val HASH_ALGORITHM = "SHA-1"
 
-  protected [storage] def writePackage(packageId: PackageId,
-                                       fileData: Source[ByteString, NotUsed],
-                                       sink: Sink[ByteString, Future[(Uri, PackageSize)]])
+  protected[storage] def writePackage(packageId: PackageId,
+                                      fileData: Source[ByteString, NotUsed],
+                                      sink: Sink[ByteString, Future[(Uri, PackageSize)]])
                   (implicit system: ActorSystem, mat: ActorMaterializer): Future[(Uri, PackageSize, DigestResult)] = {
     implicit val ec = system.dispatcher
     val log = Logging.getLogger(system, this)
@@ -85,7 +85,7 @@ object PackageStorage {
     writeAsync andThen logResult(log, packageId)
   }
 
-  protected [storage] def packageFileName(packageId: PackageId, providedFilename: Option[String]) = {
+  protected[storage] def packageFileName(packageId: PackageId, providedFilename: Option[String]) = {
     packageId.mkString + "-" + providedFilename.getOrElse("")
   }
 

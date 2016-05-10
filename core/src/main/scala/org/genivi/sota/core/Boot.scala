@@ -65,7 +65,7 @@ object Boot extends App with DatabaseConfig {
   import Directives._
   import org.genivi.sota.core.rvi.ServerServices
 
-  def routes(notifier: UpdateNotifier) = {
+  def routes(notifier: UpdateNotifier): Route = {
     new WebService(notifier, externalResolverClient, db).route ~ startSotaServices(db)
   }
 

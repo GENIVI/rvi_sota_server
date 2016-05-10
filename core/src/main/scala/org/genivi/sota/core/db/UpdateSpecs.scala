@@ -98,6 +98,7 @@ object UpdateSpecs {
     )
   }
 
+  // scalastyle:off cyclomatic.complexity
   /**
    * Install a list of specific packages on a VIN
    * @param vin The VIN to install on
@@ -117,6 +118,7 @@ object UpdateSpecs {
       case ((request, vin, status), xs) => UpdateSpec(request.namespace, request, vin, status, xs.map(_._4).toSet)
     })
   }
+  // scalastyle:on
 
   /**
    * Records the status of an update on a specific VIN

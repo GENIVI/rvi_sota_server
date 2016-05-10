@@ -53,7 +53,7 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
     } flatMap (_ => pass)
   }
 
-  def updateInstalledPackages(vin: Vehicle.Vin) = {
+  def updateInstalledPackages(vin: Vehicle.Vin): Route = {
     entity(as[List[PackageId]]) { ids =>
       val f = InstalledPackagesUpdate
         .update(vin, ids, resolverClient)
@@ -63,7 +63,7 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
     }
   }
 
-  def pendingPackages(ns: Namespace, vin: Vehicle.Vin) = {
+  def pendingPackages(ns: Namespace, vin: Vehicle.Vin): Route = {
     import org.genivi.sota.core.data.client.PendingUpdateRequest._
     import ResponseConversions._
 
@@ -77,14 +77,14 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
     }
   }
 
-  def downloadPackage(uuid: Refined[String, Uuid]) = {
+  def downloadPackage(uuid: Refined[String, Uuid]): Route = {
     withRangeSupport {
       val responseF = packageDownloadProcess.buildClientDownloadResponse(uuid)
       complete(responseF)
     }
   }
 
-  def reportInstall(uuid: Refined[String, Uuid]) = {
+  def reportInstall(uuid: Refined[String, Uuid]): Route = {
     entity(as[InstallReport]) { report =>
       val responseF =
         InstalledPackagesUpdate
@@ -93,7 +93,7 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
     }
   }
 
-  def queueVehicleUpdate(ns: Namespace, vin: Vehicle.Vin) = {
+  def queueVehicleUpdate(ns: Namespace, vin: Vehicle.Vin): Route = {
     entity(as[PackageId]) { packageId =>
       val result = updateService.queueVehicleUpdate(ns, vin, packageId)
       complete(result)
