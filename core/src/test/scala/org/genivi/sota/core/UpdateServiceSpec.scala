@@ -1,5 +1,7 @@
 package org.genivi.sota.core
 
+import java.util.UUID
+
 import akka.http.scaladsl.util.FastFuture
 import akka.testkit.TestKit
 import eu.timepit.refined.api.Refined
@@ -12,12 +14,11 @@ import org.genivi.sota.data.Namespaces
 import org.genivi.sota.data.{PackageId, Vehicle, VehicleGenerators}
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
-import org.scalatest.time.{Millis, Second, Span}
+import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
 
 import scala.concurrent.{Await, Future}
 import scala.util.Random
-import slick.jdbc.JdbcBackend._
 
 
 /**
@@ -29,8 +30,6 @@ class UpdateServiceSpec extends PropSpec
   with DatabaseSpec
   with BeforeAndAfterAll
   with Namespaces {
-
-  import org.genivi.sota.core.resolver.Connectivity
 
   val packages = PackagesReader.read().take(1000)
 
@@ -57,7 +56,7 @@ class UpdateServiceSpec extends PropSpec
 
   val AvailablePackageIdGen = Gen.oneOf(packages).map( _.id )
 
-  implicit val defaultPatience = PatienceConfig(timeout = Span(1, Second), interval = Span(500, Millis))
+  implicit val defaultPatience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
 
   implicit override val generatorDrivenConfig = PropertyCheckConfig(minSuccessful = 20)
 
@@ -99,12 +98,13 @@ class UpdateServiceSpec extends PropSpec
   }
 
   property("upload spec per vin") {
-    import slick.driver.MySQLDriver.api._
     import scala.concurrent.duration.DurationInt
     forAll( updateRequestGen(defaultNs, AvailablePackageIdGen), dependenciesGen(packages) ) { (request, deps) =>
-      whenReady(createVehicles(request.namespace, deps.keySet)
-        .flatMap(_ => service.queueUpdate(request, _ => Future.successful(deps)))) { specs =>
-        val updates = Await.result( db.run( UpdateSpecs.listUpdatesById( Refined.unsafeApply( request.id.toString ) ) ), 1.second)
+      val req = UpdateRequest(UUID.randomUUID(), request.namespace, request.packageId, request.creationTime,
+        request.periodOfValidity, request.priority, request.signature, request.description, request.requestConfirmation)
+      whenReady(createVehicles(req.namespace, deps.keySet)
+        .flatMap(_ => service.queueUpdate(req, _ => Future.successful(deps)))) { specs =>
+        Await.result(db.run(UpdateSpecs.listUpdatesById(Refined.unsafeApply(req.id.toString))), 1.second)
         specs.size shouldBe deps.size
       }
     }
