@@ -44,6 +44,7 @@ object UpdateRequests {
     def signature = column[String]("signature")
     def description = column[String]("description")
     def requestConfirmation = column[Boolean]("request_confirmation")
+    def installPos = column[Int]("install_pos")
     // scalastyle:on
 
     import com.github.nscala_time.time.Imports._
@@ -62,14 +63,12 @@ object UpdateRequests {
     // scalastyle:off public.methods.have.type
     // scalastyle:off method.name
     def * = (id, namespace, packageName, packageVersion, creationTime, startAfter, finishBefore,
-             priority, signature, description.?, requestConfirmation).shaped <>
-      (x => UpdateRequest(x._1, x._2, PackageId(x._3, x._4), x._5, x._6 to x._7, x._8, x._9, x._10, x._11),
+             priority, signature, description.?, requestConfirmation, installPos).shaped <>
+      (x => UpdateRequest(x._1, x._2, PackageId(x._3, x._4), x._5, x._6 to x._7, x._8, x._9, x._10, x._11, x._12),
       (x: UpdateRequest) => Some((x.id, x.namespace, x.packageId.name, x.packageId.version, x.creationTime,
                                   x.periodOfValidity.start, x.periodOfValidity.end, x.priority,
-                                  x.signature, x.description, x.requestConfirmation)))
+                                  x.signature, x.description, x.requestConfirmation, x.installPos)))
     // scalastyle:on
-
-
   }
 
   /**

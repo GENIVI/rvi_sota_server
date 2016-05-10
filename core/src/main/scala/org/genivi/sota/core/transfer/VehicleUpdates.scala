@@ -7,7 +7,7 @@ package org.genivi.sota.core.transfer
 
 import java.util.UUID
 
-import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
+import akka.http.scaladsl.model.{HttpHeader, HttpResponse, StatusCodes}
 import io.circe.syntax._
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
@@ -23,11 +23,14 @@ import org.genivi.sota.core.rvi.UpdateReport
 import scala.concurrent.{ExecutionContext, Future}
 import org.genivi.sota.refined.SlickRefined._
 
+import scala.util.control.NoStackTrace
 
-object InstalledPackagesUpdate {
+
+object VehicleUpdates {
   import SlickExtensions._
 
-  case class UpdateSpecNotFound(msg: String) extends Exception(msg)
+  case class UpdateSpecNotFound(msg: String) extends Exception(msg) with NoStackTrace
+  case class SetOrderFailed(msg: String) extends Exception(msg) with NoStackTrace
 
   def update(vin: Vehicle.Vin, packageIds: List[PackageId], resolverClient: ExternalResolverClient): Future[Unit] = {
     val ids = packageIds.asJson
@@ -66,7 +69,7 @@ object InstalledPackagesUpdate {
       .filter(r => r.namespace === ns && r.vin === vin)
       .filter(_.status.inSet(List(UpdateStatus.InFlight, UpdateStatus.Pending)))
       .join(updateRequests).on(_.requestId === _.id)
-      .sortBy(_._2.creationTime.asc)
+      .sortBy(r => (r._2.installPos.asc, r._2.creationTime.asc))
       .map(_._2)
       .result
   }
@@ -89,5 +92,53 @@ object InstalledPackagesUpdate {
             UpdateSpecNotFound(s"Could not find an update request with id $updateRequestId for vin ${vin.get}")
           )
       }
+  }
+
+
+  private def findSpecsForSorting(vin: Vehicle.Vin, specs: List[UUID])
+                                 (implicit ec: ExecutionContext): DBIO[Seq[UUID]] = {
+    updateRequests
+
+      .join(updateSpecs).on(_.id === _.requestId)
+      .filter(_._2.vin === vin)
+      .filter(_._2.status === UpdateStatus.Pending)
+      .map(_._1.id)
+      .result
+      .flatMap { r =>
+        if(r.size > specs.size)
+          DBIO.failed(SetOrderFailed("To set install order, all updates for a vehicle need to be specified"))
+        else if(r.size != specs.size)
+          DBIO.failed(SetOrderFailed("To set install order, all updates for a vehicle need to be pending"))
+        else
+          DBIO.successful(r)
+      }
+  }
+
+  def buildSetInstallOrderResponse(vin: Vehicle.Vin, order: List[UUID])
+                                  (implicit db: Database, ec: ExecutionContext): Future[HttpResponse] = {
+    db.run(setInstallOrder(vin, order))
+      .map(_ => HttpResponse(StatusCodes.NoContent))
+      .recover {
+        case SetOrderFailed(msg) =>
+          HttpResponse(StatusCodes.BadRequest, headers = Nil, msg)
+      }
+  }
+
+  def setInstallOrder(vin: Vehicle.Vin, order: List[UUID])(implicit ec: ExecutionContext): DBIO[Seq[(UUID, Int)]] = {
+    val prios = order.zipWithIndex.toMap
+
+    findSpecsForSorting(vin, order)
+      .flatMap { existingUr =>
+        DBIO.sequence {
+          existingUr.map { ur =>
+            updateRequests
+              .filter(_.id === ur)
+              .map(_.installPos)
+              .update(prios(ur))
+              .map(_ => (ur, prios(ur)))
+          }
+        }
+      }
+      .transactionally
   }
 }

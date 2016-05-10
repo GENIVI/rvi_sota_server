@@ -84,6 +84,7 @@ object SotaBuild extends Build {
     ))
     .dependsOn(common, commonData, commonTest % "test")
     .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
+    .enablePlugins(BuildInfoPlugin)
     .settings(Publish.settings)
 
   lazy val core = Project(id = "sota-core", base = file("core"))
@@ -102,6 +103,7 @@ object SotaBuild extends Build {
     .configs(IntegrationTests, UnitTests)
     .dependsOn(common, commonData, commonTest % "test")
     .enablePlugins(Packaging.plugins: _*)
+    .enablePlugins(BuildInfoPlugin)
     .settings(Publish.settings)
 
   import play.sbt.Play.autoImport._

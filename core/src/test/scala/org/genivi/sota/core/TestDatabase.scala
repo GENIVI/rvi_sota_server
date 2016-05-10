@@ -7,7 +7,7 @@ package org.genivi.sota.core
 import com.typesafe.config.ConfigFactory
 import org.flywaydb.core.Flyway
 import org.genivi.sota.core.common.NamespaceDirective
-import org.genivi.sota.core.data.{Package, UpdateSpec}
+import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateSpec}
 import org.genivi.sota.core.db.{Packages, UpdateRequests, UpdateSpecs, Vehicles}
 import org.genivi.sota.data.Namespace.Namespace
 import org.scalatest.{BeforeAndAfterAll, Suite}
@@ -80,27 +80,29 @@ trait UpdateResourcesDatabaseSpec {
 
   import Generators._
 
-  def createUpdateSpecFor(vehicle: Vehicle, creationTime: DateTime = DateTime.now)(implicit ec: ExecutionContext): DBIO[(Package, UpdateSpec)] = {
+  def createUpdateSpecFor(vehicle: Vehicle, transformFn: UpdateRequest => UpdateRequest = identity)(implicit ec: ExecutionContext): DBIO[(Package, UpdateSpec)] = {
     val (packageModel, updateSpec) = genUpdateSpecFor(vehicle).sample.get
 
     val dbIO = DBIO.seq(
       Packages.create(packageModel),
-      UpdateRequests.persist(updateSpec.request.copy(creationTime = creationTime)),
+      UpdateRequests.persist(transformFn(updateSpec.request)),
       UpdateSpecs.persist(updateSpec)
     )
 
     dbIO.map(_ => (packageModel, updateSpec))
   }
 
-  def createUpdateSpec()(implicit ec: ExecutionContext): Future[(Package, Vehicle, UpdateSpec)] = {
+  def createUpdateSpecAction()(implicit ec: ExecutionContext): DBIO[(Package, Vehicle, UpdateSpec)] = {
     val vehicle = VehicleGenerators.genVehicle.sample.get
 
-    val dbIO = for {
+    for {
       _ <- Vehicles.create(vehicle)
       (packageModel, updateSpec) <- createUpdateSpecFor(vehicle)
     } yield (packageModel, vehicle, updateSpec)
+  }
 
-    db.run(dbIO)
+  def createUpdateSpec()(implicit ec: ExecutionContext): Future[(Package, Vehicle, UpdateSpec)] = {
+    db.run(createUpdateSpecAction())
   }
 }
 

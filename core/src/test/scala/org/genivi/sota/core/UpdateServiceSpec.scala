@@ -8,7 +8,7 @@ import eu.timepit.refined.api.Refined
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db.{Packages, UpdateSpecs, Vehicles}
 import org.genivi.sota.core.resolver.DefaultConnectivity
-import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, InstalledPackagesUpdate}
+import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, VehicleUpdates}
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.Namespaces
 import org.genivi.sota.data.{PackageId, Vehicle, VehicleGenerators}
@@ -122,7 +122,7 @@ class UpdateServiceSpec extends PropSpec
     val f = for {
       (vehicle, packageM) <- db.run(dbSetup)
       updateRequest <- service.queueVehicleUpdate(vehicle.namespace, vehicle.vin, packageM.id)
-      queuedPackages <- db.run(InstalledPackagesUpdate.findPendingPackageIdsFor(vehicle.namespace, vehicle.vin))
+      queuedPackages <- db.run(VehicleUpdates.findPendingPackageIdsFor(vehicle.namespace, vehicle.vin))
     } yield (updateRequest, queuedPackages)
 
     whenReady(f) { case (updateRequest, queuedPackages) =>

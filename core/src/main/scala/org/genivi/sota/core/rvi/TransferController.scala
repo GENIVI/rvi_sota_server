@@ -26,7 +26,7 @@ import org.genivi.sota.core.data.{Package, UpdateSpec, UpdateStatus}
 import org.genivi.sota.core.db.UpdateSpecs
 import org.genivi.sota.core.resolver.ConnectivityClient
 import org.genivi.sota.core.storage.S3PackageStore
-import org.genivi.sota.core.transfer.InstalledPackagesUpdate
+import org.genivi.sota.core.transfer.VehicleUpdates
 import org.genivi.sota.data.Vehicle
 import org.joda.time.DateTime
 
@@ -188,7 +188,7 @@ class TransferProtocolActor(db: Database, rviClient: ConnectivityClient,
       log.debug(s"Install report received from $vin: ${update.update_id} installed with ${update.operation_results}")
       updates.find(_.request.id == update.update_id) match {
         case Some(spec) =>
-          InstalledPackagesUpdate.reportInstall(vin, update)(dispatcher, db)
+          VehicleUpdates.reportInstall(vin, update)(dispatcher, db)
           rviClient.sendMessage(services.getpackages, io.circe.Json.Null, ttl())
           context.stop( self )
         case None => log.error(s"Update ${update.update_id} for corresponding install report does not exist!")
