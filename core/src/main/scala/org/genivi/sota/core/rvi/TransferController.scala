@@ -103,7 +103,7 @@ object TransferProtocolActor {
    */
   def props(db: Database,
             rviClient: ConnectivityClient,
-            transferActorProps: (UUID, String, Package, ClientServices) => Props) =
+            transferActorProps: (UUID, String, Package, ClientServices) => Props): Props =
     Props( new TransferProtocolActor( db, rviClient, transferActorProps) )
 }
 

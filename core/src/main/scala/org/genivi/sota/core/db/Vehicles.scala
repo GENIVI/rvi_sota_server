@@ -53,7 +53,7 @@ object Vehicles {
   def list(): DBIO[Seq[Vehicle]] = vehicles.result
 
 
-  def all(namespace: Namespace) = vehicles.filter(_.namespace === namespace)
+  def all(namespace: Namespace): Query[VehicleTable, Vehicle, Seq] = vehicles.filter(_.namespace === namespace)
 
   /**
    * Check if a VIN exists

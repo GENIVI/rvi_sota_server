@@ -6,7 +6,7 @@ package org.genivi.sota.core
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshaller._
-import akka.http.scaladsl.server.{Directive1, Directives}
+import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
 import eu.timepit.refined._
 import eu.timepit.refined.api.Refined
@@ -37,11 +37,11 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
 
   implicit val _db = db
 
-  def fetch(uuid: Refined[String, Uuid]) = {
+  def fetch(uuid: Refined[String, Uuid]): Route = {
     complete(db.run(UpdateSpecs.listUpdatesById(uuid)))
   }
 
-  def fetchUpdates = {
+  def fetchUpdates: Route = {
     complete(updateService.all(db, system.dispatcher))
   }
 
@@ -49,7 +49,7 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
     clientEntity(ns)
   }
 
-  def createUpdate(ns: Namespace) = {
+  def createUpdate(ns: Namespace): Route = {
     clientUpdateRequest(ns) { req: UpdateRequest =>
       complete(
         updateService.queueUpdate(

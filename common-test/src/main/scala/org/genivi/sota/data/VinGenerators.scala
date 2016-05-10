@@ -33,12 +33,12 @@ trait VinGenerators {
   val genInvalidVin: Gen[Vehicle.Vin] = {
 
     val genTooLongVin: Gen[String] = for {
-      n  <- Gen.choose(18, 100)
+      n  <- Gen.choose(18, 100) // scalastyle:ignore magic.number
       cs <- Gen.listOfN(n, genVinChar)
     } yield cs.mkString
 
     val genTooShortVin: Gen[String] = for {
-      n  <- Gen.choose(1, 16)
+      n  <- Gen.choose(1, 16) // scalastyle:ignore magic.number
       cs <- Gen.listOfN(n, genVinChar)
     } yield cs.mkString
 

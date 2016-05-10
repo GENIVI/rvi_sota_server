@@ -8,7 +8,9 @@ package org.genivi.sota.refined
   * Use the underlaying equality and show instances for refined types.
   */
 
+// scalastyle:off object.name
 object implicits {
+  // scalastyle:on
   import cats.{Eq, Show}
   import eu.timepit.refined.api.Refined
 

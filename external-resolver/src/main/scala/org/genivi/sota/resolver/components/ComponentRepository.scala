@@ -43,8 +43,8 @@ object ComponentRepository {
     for {
       // TODO: namespace
       vs <- VehicleRepository.search(namespace, None, None, None, Some(part))
-      r  <- if (vs.nonEmpty) DBIO.failed(Errors.ComponentIsInstalledException)
-            else components.filter(i => i.namespace === namespace && i.partNumber === part).delete
+      r  <- if (vs.nonEmpty) { DBIO.failed(Errors.ComponentIsInstalledException) }
+            else { components.filter(i => i.namespace === namespace && i.partNumber === part).delete }
     } yield r
 
   def exists(namespace: Namespace,

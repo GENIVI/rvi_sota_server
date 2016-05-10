@@ -53,15 +53,16 @@ object VehicleSearch {
   }
 
   def currentVehicleStatus(lastSeen: Option[DateTime], updateStatuses: Seq[UpdateStatus]): VehicleStatus = {
-    if(lastSeen.isEmpty)
+    if(lastSeen.isEmpty) {
       VehicleStatus.NotSeen
-    else {
-      if(updateStatuses.contains(UpdateStatus.Failed))
+    } else {
+      if(updateStatuses.contains(UpdateStatus.Failed)) {
         Error
-      else if(!updateStatuses.forall(_ == UpdateStatus.Finished))
+      } else if(!updateStatuses.forall(_ == UpdateStatus.Finished)) {
         Outdated
-      else
+      } else {
         UpToDate
+      }
     }
   }
 
