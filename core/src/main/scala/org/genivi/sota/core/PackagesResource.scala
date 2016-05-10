@@ -71,6 +71,13 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
     }
   }
 
+  /**
+    * <ul>
+    *   <li>Resolver is notified about the new package.</li>
+    *   <li>That file is stored in S3 (obtaining an S3-URI in the process)</li>
+    *   <li>A record for the package is inserted in Core's DB (Package SQL table).</li>
+    * </ul>
+    */
   def updatePackage(ns: Namespace, pid: PackageId): Route = {
     // TODO: Fix form fields metadata causing error for large upload
     parameters('description.?, 'vendor.?, 'signature.?) { (description, vendor, signature) =>

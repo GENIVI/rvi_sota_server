@@ -32,6 +32,7 @@ object UpdateRequests {
    * @see [[http://slick.typesafe.com/]]
    */
   class UpdateRequestTable(tag: Tag) extends Table[UpdateRequest](tag, "UpdateRequest") {
+    // scalastyle:off public.methods.have.type
     def id = column[UUID]("update_request_id", O.PrimaryKey)
     def namespace = column[Namespace]("namespace")
     def packageName = column[PackageId.Name]("package_name")
@@ -43,6 +44,7 @@ object UpdateRequests {
     def signature = column[String]("signature")
     def description = column[String]("description")
     def requestConfirmation = column[Boolean]("request_confirmation")
+    // scalastyle:on
 
     import com.github.nscala_time.time.Imports._
     import shapeless._
@@ -57,12 +59,15 @@ object UpdateRequests {
       }
     }
 
+    // scalastyle:off public.methods.have.type
+    // scalastyle:off method.name
     def * = (id, namespace, packageName, packageVersion, creationTime, startAfter, finishBefore,
              priority, signature, description.?, requestConfirmation).shaped <>
       (x => UpdateRequest(x._1, x._2, PackageId(x._3, x._4), x._5, x._6 to x._7, x._8, x._9, x._10, x._11),
       (x: UpdateRequest) => Some((x.id, x.namespace, x.packageId.name, x.packageId.version, x.creationTime,
                                   x.periodOfValidity.start, x.periodOfValidity.end, x.priority,
                                   x.signature, x.description, x.requestConfirmation)))
+    // scalastyle:on
 
 
   }
