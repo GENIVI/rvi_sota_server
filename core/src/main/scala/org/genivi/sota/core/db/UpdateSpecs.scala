@@ -37,6 +37,8 @@ object UpdateSpecs {
    */
   class UpdateSpecTable(tag: Tag)
       extends Table[(Namespace, UUID, Vehicle.Vin, UpdateStatus)](tag, "UpdateSpec") {
+    // scalastyle:off public.methods.have.type
+    // scalastyle:off method.name
     def namespace = column[Namespace]("namespace")
     def requestId = column[UUID]("update_request_id")
     def vin = column[Vehicle.Vin]("vin")
@@ -45,6 +47,7 @@ object UpdateSpecs {
     def pk = primaryKey("pk_update_specs", (requestId, vin))
 
     def * = (namespace, requestId, vin, status)
+    // scalastyle:on
   }
 
   /**
@@ -53,6 +56,8 @@ object UpdateSpecs {
    */
   class RequiredPackageTable(tag: Tag)
       extends Table[(Namespace, UUID, Vehicle.Vin, PackageId.Name, PackageId.Version)](tag, "RequiredPackage") {
+    // scalastyle:off public.methods.have.type
+    // scalastyle:off method.name
     def namespace = column[Namespace]("namespace")
     def requestId = column[UUID]("update_request_id")
     def vin = column[Vehicle.Vin]("vin")
@@ -62,6 +67,7 @@ object UpdateSpecs {
     def pk = primaryKey("pk_downloads", (namespace, requestId, vin, packageName, packageVersion))
 
     def * = (namespace, requestId, vin, packageName, packageVersion)
+    // scalastyle:on
   }
 
   /**

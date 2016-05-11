@@ -102,7 +102,7 @@ object S3PackageStore {
     new S3PackageStore(credentials)
   }
 
-  protected [storage] def loadCredentials(config: Config): Option[S3Credentials] = {
+  protected[storage] def loadCredentials(config: Config): Option[S3Credentials] = {
     val t = for {
       accessKey <- Try(config.getString("core.s3.accessKey"))
       secretKey <- Try(config.getString("core.s3.secretKey"))

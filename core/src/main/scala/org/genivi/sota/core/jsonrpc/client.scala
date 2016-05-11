@@ -51,8 +51,8 @@ object client extends Dynamic {
       val rd = Decoder[Response[A]]
       for {
         version <- c.get[String]("jsonrpc")
-        _       <- if (version == "2.0") Xor.right(version)
-                   else Xor.Left(DecodingFailure(s"Illegal version: $version", c.history))
+        _       <- if (version == "2.0") { Xor.right(version) }
+                   else { Xor.Left(DecodingFailure(s"Illegal version: $version", c.history)) }
         res     <- (c.downField("error").success, c.downField("result").success) match {
           case (Some(_), None) => ed(c).map(Xor.left)
           case (None, Some(_)) => rd(c).map(Xor.right)
@@ -89,8 +89,8 @@ object client extends Dynamic {
       for {
         json     <- transport(request.asJson)
         response <- extractResponse[A](json)
-        _        <- if( response.id != id ) Future.failed( IdMismatchException(id, response.id) )
-                    else Future.successful(response)
+        _        <- if( response.id != id ) { Future.failed( IdMismatchException(id, response.id) ) }
+                    else { Future.successful(response) }
       } yield response.result
     }
 

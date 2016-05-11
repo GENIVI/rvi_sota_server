@@ -83,7 +83,7 @@ trait UpdateNotifier {
 object DefaultUpdateNotifier extends UpdateNotifier {
 
   override def notifyVehicle(vin: Vehicle.Vin, update: UpdateSpec)
-                            (implicit connectivity: Connectivity, ec: ExecutionContext) = {
+                            (implicit connectivity: Connectivity, ec: ExecutionContext): Future[Int] = {
     // TODO: missing default implementation
     Future.successful(0)
   }
