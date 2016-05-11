@@ -27,24 +27,23 @@ import org.genivi.sota.data.PackageId
  * WordSpec tests for Package REST actions
  */
 class PackageResourceWordSpec extends WordSpec
-    with Matchers
-    with ScalatestRouteTest
-    with ShouldMatchers
-    with BeforeAndAfterAll {
+  with Matchers
+  with ScalatestRouteTest
+  with ShouldMatchers
+  with DatabaseSpec
+  with BeforeAndAfterAll {
 
   import io.circe.generic.auto._
   import CirceMarshallingSupport._
 
-  val databaseName = "test-database"
+  lazy val config =system.settings.config
 
-  val config = system.settings.config
   val externalResolverClient = new DefaultExternalResolverClient(
     Uri(config.getString("resolver.baseUri")),
     Uri(config.getString("resolver.resolveUri")),
     Uri(config.getString("resolver.packagesUri")),
     Uri(config.getString("resolver.vehiclesUri"))
   )
-  val db = Database.forConfig(databaseName)
   lazy val service = new PackagesResource(externalResolverClient, db)
 
   val testPackagesParams = List(
@@ -55,8 +54,8 @@ class PackageResourceWordSpec extends WordSpec
                 Uri("www.example.com"), 123, "123", None, None, None)
   }
 
-  override def beforeAll {
-    TestDatabase.resetDatabase( databaseName )
+  override def beforeAll() {
+    super.beforeAll()
     import scala.concurrent.duration._
     Await.ready( db.run( DBIO.seq( testPackages.map( pkg => Packages.create(pkg)): _*) ), 2.seconds )
   }
@@ -108,7 +107,6 @@ class PackageResourceWordSpec extends WordSpec
 
   override def afterAll() {
     system.terminate()
-    db.close()
+    super.beforeAll()
   }
-
 }

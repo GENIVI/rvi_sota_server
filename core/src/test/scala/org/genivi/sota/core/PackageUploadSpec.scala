@@ -8,6 +8,7 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.http.scaladsl.unmarshalling._
 import io.circe.generic.auto._
 import java.io.File
+
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
 import org.genivi.sota.data.Namespace._
@@ -16,6 +17,7 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.rest.ErrorRepresentation
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{Matchers, PropSpec}
+
 import scala.concurrent.Future
 import slick.jdbc.JdbcBackend.Database
 
@@ -23,17 +25,11 @@ import slick.jdbc.JdbcBackend.Database
 /**
  * Spec tests for package upload to Core
  */
-class PackageUploadSpec extends PropSpec with PropertyChecks with Matchers with Generators with ScalatestRouteTest {
+class PackageUploadSpec extends PropSpec
+  with DatabaseSpec
+  with PropertyChecks with Matchers with Generators with ScalatestRouteTest {
 
   val PackagesPath = Path / "packages"
-
-  val databaseName = "test-database"
-
-  val db = Database.forConfig(databaseName)
-
-  override def beforeAll {
-    TestDatabase.resetDatabase( databaseName )
-  }
 
   class Service(resolverResult: Future[Unit] ) {
     val resolver = new ExternalResolverClient {

@@ -218,18 +218,19 @@ class VehicleUpdatesResourceSpec extends FunSuite
 
   test("PUT to set install order should change the package install order") {
     val dbio = for {
-      (_, spec0) <- createUpdateSpecFor(vehicle)
-      (_, spec1) <- createUpdateSpecFor(vehicle)
-    } yield (spec0.request.id, spec1.request.id)
+      (_, v, spec0) <- createUpdateSpecAction()
+      (_, spec1) <- createUpdateSpecFor(v)
+    } yield (v, spec0.request.id, spec1.request.id)
 
-    whenReady(db.run(dbio)) { case (spec0, spec1) =>
-      val url = vehicleUri.withPath(vehicleUri.path / "order")
+    whenReady(db.run(dbio)) { case (v, spec0, spec1) =>
+      val url = baseUri.withPath(baseUri.path / v.vin.get / "order")
+      val vehicleUrl = baseUri.withPath(baseUri.path / v.vin.get)
       val req = Map(0 -> spec1, 1 -> spec0)
 
       Put(url, req) ~> service.route ~> check {
         status shouldBe StatusCodes.NoContent
 
-        Get(vehicleUri) ~> service.route ~> check {
+        Get(vehicleUrl) ~> service.route ~> check {
           val pendingUpdates =
             responseAs[List[PendingUpdateRequest]].sortBy(_.installPos).map(_.requestId)
 

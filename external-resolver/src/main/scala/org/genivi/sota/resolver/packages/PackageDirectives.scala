@@ -21,7 +21,7 @@ import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.rest.Validation.refined
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 import scala.concurrent.ExecutionContext
-import slick.jdbc.JdbcBackend.Database
+import slick.driver.MySQLDriver.api._
 
 
 class PackageDirectives(implicit system: ActorSystem,

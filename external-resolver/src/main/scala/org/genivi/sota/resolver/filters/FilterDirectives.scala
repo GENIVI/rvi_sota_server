@@ -21,7 +21,7 @@ import org.genivi.sota.resolver.common.NamespaceDirective._
 import org.genivi.sota.resolver.packages.PackageFilterRepository
 import org.genivi.sota.rest.Validation._
 import scala.concurrent.{ExecutionContext, Future}
-import slick.jdbc.JdbcBackend.Database
+import slick.driver.MySQLDriver.api._
 
 
 /**

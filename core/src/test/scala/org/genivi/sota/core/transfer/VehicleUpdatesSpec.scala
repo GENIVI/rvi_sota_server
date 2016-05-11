@@ -6,7 +6,7 @@ import org.genivi.sota.core.db._
 import org.genivi.sota.core.rvi.UpdateReport
 import org.genivi.sota.core.rvi.OperationResult
 import org.genivi.sota.data.VehicleGenerators
-import org.genivi.sota.core.{DatabaseSpec, FakeExternalResolver, Generators, UpdateResourcesDatabaseSpec}
+import org.genivi.sota.core._
 import org.genivi.sota.core.data.UpdateStatus
 import org.scalacheck.Gen
 import org.scalatest._
@@ -108,10 +108,11 @@ class VehicleUpdatesSpec extends FunSuite
 
   test("can only sort pending update requests") {
     import UpdateSpecs._
+    import org.genivi.sota.refined.SlickRefined._
 
     val dbIO = for {
       (pck, vehicle, spec0) <- createUpdateSpecAction()
-      _ <- updateSpecs.map(_.status).update(UpdateStatus.InFlight)
+      _ <- updateSpecs.filter(_.vin === vehicle.vin).map(_.status).update(UpdateStatus.InFlight)
       (_, spec1) <- createUpdateSpecFor(vehicle)
       result <- persistInstallOrder(vehicle.vin, List(spec0.request.id, spec1.request.id))
     } yield result
@@ -126,9 +127,9 @@ class VehicleUpdatesSpec extends FunSuite
 
   test("fails when not specifying all update request in order") {
     val dbIO = for {
-      (pck, vehicle, spec0) <- createUpdateSpecAction()
-      (_, spec1) <- createUpdateSpecFor(vehicle)
-      result <- persistInstallOrder(vehicle.vin, List(spec1.request.id))
+      (pck, v, spec0) <- createUpdateSpecAction()
+      (_, spec1) <- createUpdateSpecFor(v)
+      result <- persistInstallOrder(v.vin, List(spec1.request.id))
     } yield result
 
     val f = db.run(dbIO)

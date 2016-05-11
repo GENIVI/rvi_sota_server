@@ -1,20 +1,19 @@
 package org.genivi.sota.core.jsonrpc
 
-import cats.data.Xor
 import io.circe._
 import io.circe.syntax._
+import org.genivi.sota.core.DefaultPatience
 import org.scalacheck.{Arbitrary, Gen}
-import org.scalatest.prop.PropertyChecks
-import org.scalatest.{Matchers, PropSpec}
-import org.scalatest.concurrent.ScalaFutures._
-
+import org.scalatest.concurrent.ScalaFutures
 import scala.concurrent.Future
 import scala.util.control.NoStackTrace
 
 /**
  * Spec for testing JsonRpc requests from the SOTA Client
  */
-class ClientSpec extends JsonRpcSpecBase {
+class ClientSpec extends JsonRpcSpecBase
+  with ScalaFutures
+  with DefaultPatience {
 
   def respondWith( id: Int, result: Json ) : Json => Future[Json] = _ => Future.successful(
     resultJson(id, result)

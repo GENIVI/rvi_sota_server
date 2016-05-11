@@ -10,14 +10,17 @@ import akka.http.scaladsl.model.{HttpEntity, Uri}
 import akka.stream.ActorMaterializer
 import akka.testkit.TestKit
 import akka.util.ByteString
+import org.genivi.sota.core.DefaultPatience
 import org.genivi.sota.data.PackageIdGenerators
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{FunSuiteLike, ShouldMatchers}
 
 class LocalPackageStoreSpec extends TestKit(ActorSystem("LocalPackageStoreSpec"))
   with FunSuiteLike
   with ShouldMatchers
-  with ScalaFutures {
+  with ScalaFutures
+  with DefaultPatience {
 
   implicit val mat = ActorMaterializer()
 

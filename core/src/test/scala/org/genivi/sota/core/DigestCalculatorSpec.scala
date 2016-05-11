@@ -21,7 +21,8 @@ import scala.concurrent.Future
 class DigestCalculatorSpec extends TestKit(ActorSystem("DigestCalculatorTest"))
   with FunSuiteLike
   with ShouldMatchers
-  with ScalaFutures {
+  with ScalaFutures
+  with DefaultPatience {
 
   implicit val mat = ActorMaterializer()
 
