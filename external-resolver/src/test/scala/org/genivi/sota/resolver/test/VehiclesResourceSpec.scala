@@ -24,6 +24,7 @@ import org.scalacheck._
 class VehiclesResourcePropSpec extends ResourcePropSpec
     with PackageGenerators{
   import org.genivi.sota.data.VehicleGenerators._
+  import org.genivi.sota.data.InvalidVehicleGenerators
 
   val vehicles = "vehicles"
 
@@ -34,7 +35,7 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
   }
 
   property("Invalid vehicles are rejected") {
-    forAll(genInvalidVehicle) { vehicle: Vehicle =>
+    forAll(InvalidVehicleGenerators.genInvalidVehicle) { vehicle: Vehicle =>
       addVehicle(vehicle.vin) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
       }

@@ -2,8 +2,7 @@ package org.genivi.sota.resolver.test.random
 
 import akka.http.scaladsl.model.{HttpRequest, StatusCode, StatusCodes}
 import cats.state.{State, StateT}
-import org.genivi.sota.data.Namespaces
-import org.genivi.sota.data.{Vehicle, VehicleGenerators}
+import org.genivi.sota.data._
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.resolver.packages.{Package, PackageFilter}
@@ -14,36 +13,70 @@ import org.scalacheck.Gen
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
 import Misc._
+import eu.timepit.refined.api.Refined
 
 
+// scalastyle:off number.of.types
 sealed trait Command
+trait WellFormedCommand extends Command
+trait InvalidCommand    extends Command
 
-final case class AddVehicle(veh: Vehicle) extends Command
-final case class AddPackage(pkg: Package) extends Command
+/**
+  * The good ones.
+  */
+final case class AddVehicle(veh: Vehicle) extends WellFormedCommand
+final case class AddPackage(pkg: Package) extends WellFormedCommand
 
-final case class InstallPackage  (veh: Vehicle, pkg: Package) extends Command
-final case class UninstallPackage(veh: Vehicle, pkg: Package) extends Command
+final case class InstallPackage  (veh: Vehicle, pkg: Package) extends WellFormedCommand
+final case class UninstallPackage(veh: Vehicle, pkg: Package) extends WellFormedCommand
 
-final case class AddFilter (filt: Filter)               extends Command
-final case class EditFilter(old : Filter, neu: Filter)  extends Command {
+final case class AddFilter (filt: Filter)               extends WellFormedCommand
+final case class EditFilter(old : Filter, neu: Filter)  extends WellFormedCommand {
   // restriction imposed by the endpoint allowing only non-PK fields to be updated.
   if (!(old.samePK(neu))) throw new IllegalArgumentException
 }
-final case class RemoveFilter          (filt: Filter)               extends Command
-final case class AddFilterToPackage    (pkg: Package, filt: Filter) extends Command
-final case class RemoveFilterForPackage(pkg: Package, filt: Filter) extends Command
+final case class RemoveFilter          (filt: Filter)               extends WellFormedCommand
+final case class AddFilterToPackage    (pkg: Package, filt: Filter) extends WellFormedCommand
+final case class RemoveFilterForPackage(pkg: Package, filt: Filter) extends WellFormedCommand
 
-final case class AddComponent   (cmpn: Component)                  extends Command
-final case class EditComponent  (old : Component, neu: Component)  extends Command {
+final case class AddComponent   (cmpn: Component)                  extends WellFormedCommand
+final case class EditComponent  (old : Component, neu: Component)  extends WellFormedCommand {
   // restriction imposed by the endpoint allowing only non-PK fields to be updated.
   if (!(old.samePK(neu))) throw new IllegalArgumentException
 }
-final case class RemoveComponent(cmpn: Component)                  extends Command
-final case class InstallComponent  (veh: Vehicle, cmpn: Component) extends Command
-final case class UninstallComponent(veh: Vehicle, cmpn: Component) extends Command
+final case class RemoveComponent(cmpn: Component)                  extends WellFormedCommand
+final case class InstallComponent  (veh: Vehicle, cmpn: Component) extends WellFormedCommand
+final case class UninstallComponent(veh: Vehicle, cmpn: Component) extends WellFormedCommand
+
+/**
+  * The bad ones.
+  */
+final case class AddVehicleFail(veh: Vehicle) extends InvalidCommand
+final case class AddPackageFail(pkg: Package, statusCode: StatusCode, result: Result) extends InvalidCommand
+
+final case class InstallPackageFail  (veh: Vehicle, pkg: Package) extends InvalidCommand
+final case class UninstallPackageFail(veh: Vehicle, pkg: Package) extends InvalidCommand
+
+final case class AddFilterFail (filt: Filter)               extends InvalidCommand
+final case class EditFilterFail(old : Filter, neu: Filter)  extends InvalidCommand {
+  // restriction imposed by the endpoint allowing only non-PK fields to be updated.
+  if (!(old.samePK(neu))) throw new IllegalArgumentException
+}
+final case class RemoveFilterFail          (filt: Filter)               extends InvalidCommand
+final case class AddFilterToPackageFail    (pkg: Package, filt: Filter) extends InvalidCommand
+final case class RemoveFilterForPackageFail(pkg: Package, filt: Filter) extends InvalidCommand
+
+final case class AddComponentFail   (cmpn: Component)                  extends InvalidCommand
+final case class EditComponentFail  (old : Component, neu: Component)  extends InvalidCommand {
+  // restriction imposed by the endpoint allowing only non-PK fields to be updated.
+  if (!(old.samePK(neu))) throw new IllegalArgumentException
+}
+final case class RemoveComponentFail(cmpn: Component)                  extends InvalidCommand
+final case class InstallComponentFail  (veh: Vehicle, cmpn: Component) extends InvalidCommand
+final case class UninstallComponentFail(veh: Vehicle, cmpn: Component) extends InvalidCommand
 
 
-object Command extends
+trait CommandUtils extends
     VehicleRequestsHttp with
     PackageRequestsHttp with
     FilterRequestsHttp  with
@@ -51,30 +84,14 @@ object Command extends
     PackageFilterRequestsHttp with
     Namespaces {
 
-  type SemCommand = (HttpRequest, StatusCode, Result)
-
-  def semCommands(cmds: List[Command])
-                 (implicit ec: ExecutionContext): State[RawStore, List[Semantics]] = {
-
-    @tailrec def go(cmds0: List[Command], s0: RawStore, acc: List[Semantics]): (RawStore, List[Semantics]) =
-      cmds0 match {
-        case Nil            => (s0, acc.reverse)
-        case (cmd :: cmds1) =>
-          val (s1, r) = semCommand(cmd).run(s0).run
-          go(cmds1, s1, r :: acc)
-      }
-
-    State.get.flatMap { s0 =>
-      val (s1, sems) = go(cmds, s0, List())
-      State.set(s1).flatMap(_ => State.pure(sems))
-    }
-
-  }
-
   // scalastyle:off cyclomatic.complexity
   // scalastyle:off method.length
-  def semCommand(cmd: Command)
-                (implicit ec: ExecutionContext): State[RawStore, Semantics] = cmd match {
+  /**
+    * Command interpreter dealing with well-formed requests. A [[Semantics]] is prepared based on the given
+    * command and the current state. Additionally, a new state may be prepared.
+    */
+  def semWellFormedCommand(cmd: WellFormedCommand)
+                          (implicit ec: ExecutionContext): State[RawStore, Semantics] = cmd match {
 
     case AddVehicle(veh) =>
       for {
@@ -194,53 +211,53 @@ object Command extends
   }
   // scalastyle:on
 
-  private def genCommandAddVehicle: Gen[AddVehicle] =
+  def genCommandAddVehicle: Gen[AddVehicle] =
     VehicleGenerators.genVehicle.map(AddVehicle(_))
 
-  private def genCommandAddPackage: Gen[AddPackage] =
+  def genCommandAddPackage: Gen[AddPackage] =
     PackageGenerators.genPackage.map(AddPackage(_))
 
-  private def genCommandAddFilter(s: RawStore): Gen[AddFilter] =
+  def genCommandAddFilter(s: RawStore): Gen[AddFilter] =
     FilterGenerators.genFilter(s.packages.keys.toList, s.components.toList)
       .map(AddFilter(_))
 
-  private def genCommandAddComponent(s: RawStore): Gen[AddComponent] =
+  def genCommandAddComponent(s: RawStore): Gen[AddComponent] =
     ComponentGenerators.genComponent.map(AddComponent(_))
 
-  private def genCommandInstallPackage(s: RawStore): Gen[InstallPackage] =
+  def genCommandInstallPackage(s: RawStore): Gen[InstallPackage] =
     for {
       veh <- Store.pickVehicle.runA(s)
       pkg <- Store.pickPackage.runA(s)
     } yield InstallPackage(veh, pkg)
 
-  private def genCommandUninstallPackage(s: RawStore): Gen[UninstallPackage] =
+  def genCommandUninstallPackage(s: RawStore): Gen[UninstallPackage] =
     for {
       (veh, pkg) <- Store.pickVehicleWithPackage.runA(s)
     } yield UninstallPackage(veh, pkg)
 
-  private def genCommandInstallComponent(s: RawStore): Gen[InstallComponent] =
+  def genCommandInstallComponent(s: RawStore): Gen[InstallComponent] =
     for {
       veh <- Store.pickVehicle.runA(s)
       cmp <- Store.pickComponent.runA(s)
     } yield InstallComponent(veh, cmp)
 
-  private def genCommandUninstallComponent(s: RawStore): Gen[UninstallComponent] =
+  def genCommandUninstallComponent(s: RawStore): Gen[UninstallComponent] =
     for {
       (veh, cmp) <- Store.pickVehicleWithComponent.runA(s)
     } yield UninstallComponent(veh, cmp)
 
-  private def genCommandAddFilterToPackage(s: RawStore): Gen[AddFilterToPackage] =
+  def genCommandAddFilterToPackage(s: RawStore): Gen[AddFilterToPackage] =
     for {
       pkg  <- Store.pickPackage.runA(s)
       filt <- Store.pickFilter.runA(s)
     } yield AddFilterToPackage(pkg, filt)
 
-  private def genCommandRemoveFilterForPackage(s: RawStore): Gen[RemoveFilterForPackage] =
+  def genCommandRemoveFilterForPackage(s: RawStore): Gen[RemoveFilterForPackage] =
     for {
       (pkg, flt)  <- Store.pickPackageWithFilter.runA(s)
     } yield RemoveFilterForPackage(pkg, flt)
 
-  private def genCommandEditFilter(s: RawStore): Gen[EditFilter] =
+  def genCommandEditFilter(s: RawStore): Gen[EditFilter] =
     for {
       fltOld <- Store.pickFilter.runA(s)
       fltNu0 <- FilterGenerators.genFilter(s.packages.keys.toList, s.components.toList)
@@ -248,29 +265,253 @@ object Command extends
     } yield EditFilter(fltOld, fltNu1)
 
   /**
-    * Pick an unsed filter for removal.
-    * Note: [[semCommand]] can handle the case where the filter is in use, only we don't exercise such case.
+    * Pick an unused filter for removal.
     */
-  private def genCommandRemoveFilter(s: RawStore): Gen[RemoveFilter] =
+  def genCommandRemoveFilter(s: RawStore): Gen[RemoveFilter] =
     for {
       flt  <- Store.pickUnusedFilter.runA(s)
     } yield RemoveFilter(flt)
 
   /**
-    * Pick an unsed component for removal.
-    * Note: [[semCommand]] can handle the case where the component is in use, only we don't exercise such case.
+    * Pick an unused component for removal.
     */
-  private def genCommandRemoveComponent(s: RawStore): Gen[RemoveComponent] =
+  def genCommandRemoveComponent(s: RawStore): Gen[RemoveComponent] =
     for {
       cmp  <- Store.pickUnusedComponent.runA(s)
     } yield RemoveComponent(cmp)
 
-  private def genCommandEditComponent(s: RawStore): Gen[EditComponent] =
+  def genCommandEditComponent(s: RawStore): Gen[EditComponent] =
     for {
       cmpOld <- Store.pickComponent.runA(s)
       cmpNu0 <- ComponentGenerators.genComponent
       cmpNu1  = Component(defaultNs, cmpOld.partNumber, cmpNu0.description)
     } yield EditComponent(cmpOld, cmpNu1)
+
+}
+
+trait InvalidCommandUtils { _: CommandUtils =>
+
+  import InvalidPackageGenerators._
+  import InvalidVehicleGenerators._
+  import InvalidFilterGenerators._
+  import InvalidComponentGenerators._
+
+  def getIdent: String = Gen.identifier.sample.getOrElse(getIdent)
+
+  def emptyPackageIdName:    PackageId.Name    = Refined.unsafeApply("")
+  def emptyPackageIdVersion: PackageId.Version = Refined.unsafeApply("")
+
+  def pickOneOf[T](g: Gen[T]): T = g.sample.getOrElse(pickOneOf(g))
+
+  def pickOneOf[T](t1: T, t2: T, tn: T*): T = pickOneOf(Gen.oneOf(t1, t2, tn: _*))
+
+  def getBadReqAddVehicle(veh: Vehicle)
+                         (implicit ec: ExecutionContext): Semantics = {
+    Semantics(addVehicle(veh.vin), StatusCodes.BadRequest, Success)
+  }
+
+  def getBadReqAddPackage(pkg: Package, statusCode: StatusCode, result: Result)
+                         (implicit ec: ExecutionContext): Semantics =
+    Semantics(addPackage(pkg), statusCode, result)
+
+  def getBadReqInstallPackage(veh: Vehicle, pkg: Package)
+                             (implicit ec: ExecutionContext): Semantics =
+    Semantics(installPackage(veh, pkg), StatusCodes.BadRequest, Success)
+
+  def getBadReqUninstallPackage(veh: Vehicle, pkg: Package)
+                               (implicit ec: ExecutionContext): Semantics =
+    Semantics(uninstallPackage(veh, pkg), StatusCodes.BadRequest, Success)
+
+  def getBadReqAddFilter(flt: Filter)
+                        (implicit ec: ExecutionContext): Semantics =
+    Semantics(addFilter2(flt), StatusCodes.BadRequest, Success)
+
+  def getBadReqEditFilter(old: Filter, neu: Filter)
+                         (implicit ec: ExecutionContext): Semantics =
+    Semantics(updateFilter(neu), StatusCodes.BadRequest, Success)
+
+  def getBadReqRemoveFilter(flt: Filter)
+                           (implicit ec: ExecutionContext): Semantics = {
+    val req = deleteFilter(flt)
+    Semantics(req, StatusCodes.BadRequest, Failure(ErrorCodes.InvalidEntity))
+  }
+
+  def getBadReqAddFilterToPackage(pkg: Package, flt: Filter)
+                                 (implicit ec: ExecutionContext): Semantics = {
+    val pkf = PackageFilter(pkg.namespace, pkg.id.name, pkg.id.version, flt.name)
+    val req = addPackageFilter2(pkf)
+    Semantics(req, StatusCodes.BadRequest, Success)
+  }
+
+  def getBadReqRemoveFilterForPackage(pkg: Package, flt: Filter)
+                                     (implicit ec: ExecutionContext): Semantics = {
+    val req = deletePackageFilter(pkg, flt)
+    Semantics(req, StatusCodes.BadRequest, Success)
+  }
+
+  def getBadReqAddComponent(cmpn: Component)
+                           (implicit ec: ExecutionContext): Semantics = {
+    val req = addComponent(cmpn)
+    Semantics(req, StatusCodes.BadRequest, Success)
+  }
+
+  def getBadReqEditComponent(old: Component, neu: Component)
+                            (implicit ec: ExecutionContext): Semantics = {
+    val req = updateComponent(neu)
+    Semantics(req, StatusCodes.BadRequest, Success)
+  }
+
+  def getBadReqRemoveComponent(cmpn: Component)
+                              (implicit ec: ExecutionContext): Semantics = {
+    val req = deleteComponent(cmpn)
+    Semantics(req, StatusCodes.BadRequest, Success)
+  }
+
+  def getBadReqInstallComponent(veh: Vehicle, cmpn: Component)
+                               (implicit ec: ExecutionContext): Semantics = {
+    val req = installComponent(veh, cmpn)
+    Semantics(req, StatusCodes.BadRequest, Success)
+  }
+
+  def getBadReqUninstallComponent(veh: Vehicle, cmpn: Component)
+                                 (implicit ec: ExecutionContext): Semantics = {
+    val req = uninstallComponent(veh, cmpn)
+    Semantics(req, StatusCodes.BadRequest, Success)
+  }
+
+  def xlateToInvalidCommand(cmd: WellFormedCommand): InvalidCommand = cmd match {
+
+    case AddVehicle(veh) =>
+      AddVehicleFail(veh.copy(vin = VehicleGenerators.getInvalidVin))
+
+    case AddPackage(pkg) =>
+      def expectNotFound(pkg: Package) =
+        AddPackageFail(pkg, StatusCodes.NotFound, Success)
+
+      def expectBadRequest(pkg: Package) =
+        AddPackageFail(pkg, StatusCodes.BadRequest, Failure(ErrorCodes.InvalidEntity))
+
+      pickOneOf(
+        // not accept empty package name
+        expectNotFound(pkg.copy(id = pkg.id.copy(name = emptyPackageIdName))),
+
+        // not accept invalid package name
+        expectBadRequest(pkg.copy(id = pkg.id.copy(name = pickOneOf(genInvalidPackageIdName)))),
+
+        // not accept empty package version
+        expectNotFound(pkg.copy(id = pkg.id.copy(version = emptyPackageIdVersion))),
+
+        // not accept invalid package versions
+        expectBadRequest(pkg.copy(id = pkg.id.copy(version = pickOneOf(genInvalidPackageIdVersion))))
+      )
+
+    case InstallPackage(veh0, pkg0) =>
+      val (veh: Vehicle, pkg: Package) = pickOneOf(
+        (getInvalidVehicle, pkg0),
+        (veh0, getInvalidPackage)
+      )
+      InstallPackageFail(veh, pkg)
+
+    case UninstallPackage(veh0, pkg0) =>
+      val (veh: Vehicle, pkg: Package) = pickOneOf(
+        (getInvalidVehicle, pkg0),
+        (veh0, getInvalidPackage)
+      )
+      UninstallPackageFail(veh, pkg)
+
+    case AddFilter(filt) =>
+      AddFilterFail(getInvalidFilter)
+
+    case EditFilter(_, _) =>
+      val flt = getInvalidFilter
+      EditFilterFail(flt, flt)
+
+    case RemoveFilter(_) =>
+      // fail on trying to delete non-existing filters
+      RemoveFilterFail(getInvalidFilter)
+
+    case AddFilterToPackage(pkg0, flt0) =>
+      val pkg = pickOneOf(
+        pkg0.copy(id = pkg0.id.copy(name = getInvalidPackageIdName)),
+        pkg0.copy(id = pkg0.id.copy(version = getInvalidPackageIdVersion))
+      )
+      val flt = flt0.copy(name = getInvalidFilterName)
+      AddFilterToPackageFail(pkg, flt)
+
+    case RemoveFilterForPackage(pkg0, flt0) =>
+      val (pkg: Package, flt: Filter) = pickOneOf(
+        (pkg0, getInvalidFilter),
+        (getInvalidPackage, flt0)
+      )
+      RemoveFilterForPackageFail(pkg, flt)
+
+    case AddComponent(_) =>
+      AddComponentFail(getInvalidComponent)
+
+    case EditComponent(_, _) =>
+      val cmpn = getInvalidComponent
+      EditComponentFail(cmpn, cmpn)
+
+    case RemoveComponent(_) =>
+      RemoveComponentFail(getInvalidComponent)
+
+    case InstallComponent(veh0, cmpn0) =>
+      val (veh: Vehicle, cmpn: Component) = pickOneOf(
+        (veh0, getInvalidComponent),
+        (getInvalidVehicle, cmpn0)
+      )
+      InstallComponentFail(veh, cmpn)
+
+    case UninstallComponent(veh0, cmpn0) =>
+      val (veh: Vehicle, cmpn: Component) = pickOneOf(
+        (veh0, getInvalidComponent),
+        (getInvalidVehicle, cmpn0)
+      )
+      UninstallComponentFail(veh, cmpn)
+
+  }
+
+}
+
+object Command extends CommandUtils with InvalidCommandUtils {
+
+  type SemCommand = (HttpRequest, StatusCode, Result)
+
+  def semCommands(cmds: List[Command])
+                 (implicit ec: ExecutionContext): State[RawStore, List[Semantics]] = {
+
+    @tailrec def go(cmds0: List[Command], s0: RawStore, acc: List[Semantics]): (RawStore, List[Semantics]) =
+      cmds0 match {
+        case Nil            => (s0, acc.reverse)
+        case (cmd :: cmds1) =>
+          val (s1, r) = semCommand(cmd).run(s0).run
+          go(cmds1, s1, r :: acc)
+      }
+
+    State.get.flatMap { s0 =>
+      val (s1, sems) = go(cmds, s0, List())
+      State.set(s1).flatMap(_ => State.pure(sems))
+    }
+
+  }
+
+  /**
+    * Command interpreter preparing a [[Semantics]] based on the command and the current state.
+    */
+  def semCommand(cmd: Command)
+                (implicit ec: ExecutionContext): State[RawStore, Semantics] = cmd match {
+    case wfc: WellFormedCommand => semWellFormedCommand(wfc)
+    case ic:  InvalidCommand    => semInvalidCommand(ic)
+  }
+
+  def genCommands(n: Int)
+                 (implicit ec: ExecutionContext): StateT[Gen, RawStore, List[Command]] = {
+    if (n < 1) throw new IllegalArgumentException
+    for {
+      cmd  <- genCommand
+      cmds <- if (n == 1) genCommand.map(List(_)) else genCommands(n - 1)
+    } yield cmd :: cmds
+  }
 
   // scalastyle:off cyclomatic.complexity
   // scalastyle:off magic.number
@@ -286,7 +527,7 @@ object Command extends
       vcomp <- Store.numberOfVehiclesWithSomeComponent
       vpaks <- Store.numberOfVehiclesWithSomePackage
       pfilt <- Store.numberOfPackagesWithSomeFilter
-      cmd   <- lift(Gen.frequency(
+      cmd0  <- lift(Gen.frequency(
 
         // If there are few vehicles, packages or filters in the world,
         // then generate some with high probability.
@@ -324,17 +565,56 @@ object Command extends
         (if (ucmps > 0) 50 else 0, genCommandRemoveComponent(s))
 
       ))
+
+      cmd <- lift(Gen.frequency(
+        (50, cmd0),
+        (50, xlateToInvalidCommand(cmd0))
+      ))
+
       _   <- StateT.stateTMonadState(monGen).set(semCommand(cmd).runS(s).run)
     } yield cmd
   // scalastyle:on
 
-  def genCommands(n: Int)
-                 (implicit ec: ExecutionContext): StateT[Gen, RawStore, List[Command]] = {
-    if (n < 1) throw new IllegalArgumentException
-    for {
-      cmd  <- genCommand
-      cmds <- if (n == 1) genCommand.map(List(_)) else genCommands(n - 1)
-    } yield cmd :: cmds
+  /**
+    * Command interpreter dealing with bad requests. For each [[InvalidCommand]] one [[Semantics]] is prepared
+    * while maintaining state.
+    */
+  def semInvalidCommand(cmd: InvalidCommand)
+                       (implicit ec: ExecutionContext): State[RawStore, Semantics] = {
+    val sem = cmd match {
+
+      case AddVehicleFail(veh) => getBadReqAddVehicle(veh)
+
+      case AddPackageFail(pkg, statusCode, result) => getBadReqAddPackage(pkg, statusCode, result)
+
+      case InstallPackageFail(veh, pkg) => getBadReqInstallPackage(veh, pkg)
+
+      case UninstallPackageFail(veh, pkg) => getBadReqUninstallPackage(veh, pkg)
+
+      case AddFilterFail(flt) => getBadReqAddFilter(flt)
+
+      case EditFilterFail(old, neu) => getBadReqEditFilter(old, neu)
+
+      case RemoveFilterFail(flt) => getBadReqRemoveFilter(flt)
+
+      case AddFilterToPackageFail(pkg, flt) => getBadReqAddFilterToPackage(pkg, flt)
+
+      case RemoveFilterForPackageFail(pkg, flt) => getBadReqRemoveFilterForPackage(pkg, flt)
+
+      case AddComponentFail(cmpn) => getBadReqAddComponent(cmpn)
+
+      case EditComponentFail(old, neu) => getBadReqEditComponent(old, neu)
+
+      case RemoveComponentFail(cmpn) => getBadReqRemoveComponent(cmpn)
+
+      case InstallComponentFail(veh, cmpn) => getBadReqInstallComponent(veh, cmpn)
+
+      case UninstallComponentFail(veh, cmpn) => getBadReqUninstallComponent(veh, cmpn)
+
+    }
+
+    State.get map { s => sem }
   }
 
 }
+// scalastyle:on
