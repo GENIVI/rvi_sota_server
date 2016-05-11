@@ -46,7 +46,7 @@ object InstallHistories {
   // scalastyle:on
 
   /**
-   * Internal helper definition to accesss the SQL table
+   * Internal helper definition to access the SQL table
    */
   private val installHistories = TableQuery[InstallHistoryTable]
 

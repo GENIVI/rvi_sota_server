@@ -42,7 +42,7 @@ object Vehicles {
   // scalastyle:on
 
   /**
-   * Internal helper definition to accesss the SQL table
+   * Internal helper definition to access the SQL table
    */
   val vehicles = TableQuery[VehicleTable]
 

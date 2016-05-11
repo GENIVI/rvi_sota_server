@@ -93,7 +93,7 @@ class VehicleUpdatesSpec extends FunSuite
     val dbIO = for {
       (pck, vehicle, spec0) <- createUpdateSpecAction()
       (_, spec1) <- createUpdateSpecFor(vehicle)
-      _ <- setInstallOrder(vehicle.vin, List(spec0.request.id, spec1.request.id))
+      _ <- persistInstallOrder(vehicle.vin, List(spec0.request.id, spec1.request.id))
       dbSpecs <- findPendingPackageIdsFor(defaultNamespace, vehicle.vin)
     } yield (dbSpecs, spec0, spec1)
 
@@ -113,7 +113,7 @@ class VehicleUpdatesSpec extends FunSuite
       (pck, vehicle, spec0) <- createUpdateSpecAction()
       _ <- updateSpecs.map(_.status).update(UpdateStatus.InFlight)
       (_, spec1) <- createUpdateSpecFor(vehicle)
-      result <- setInstallOrder(vehicle.vin, List(spec0.request.id, spec1.request.id))
+      result <- persistInstallOrder(vehicle.vin, List(spec0.request.id, spec1.request.id))
     } yield result
 
     val f = db.run(dbIO)
@@ -128,7 +128,7 @@ class VehicleUpdatesSpec extends FunSuite
     val dbIO = for {
       (pck, vehicle, spec0) <- createUpdateSpecAction()
       (_, spec1) <- createUpdateSpecFor(vehicle)
-      result <- setInstallOrder(vehicle.vin, List(spec1.request.id))
+      result <- persistInstallOrder(vehicle.vin, List(spec1.request.id))
     } yield result
 
     val f = db.run(dbIO)

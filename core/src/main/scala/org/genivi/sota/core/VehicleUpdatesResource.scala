@@ -26,6 +26,8 @@ import org.genivi.sota.core.data.client.ResponseConversions
 import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, ExternalResolverClient}
 import org.genivi.sota.core.storage.PackageStorage
 import org.joda.time.DateTime
+import org.genivi.sota.core.data.UpdateRequest
+import org.genivi.sota.core.data.client.PendingUpdateRequest
 
 import scala.language.implicitConversions
 
@@ -63,6 +65,14 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
     }
   }
 
+  /**
+    * An ota client finds out which packages should be installed by GET this route,
+    * in the form a Seq of [[PendingUpdateRequest]]
+    * whose order was specified via [[setInstallOrder]].
+    * To actually download each binary file, [[downloadPackage]] is used.
+    *
+    * @see [[data.UpdateStatus]] (two of interest: InFlight and Pending)
+    */
   def pendingPackages(ns: Namespace, vin: Vehicle.Vin): Route = {
     import org.genivi.sota.core.data.client.PendingUpdateRequest._
     import ResponseConversions._
@@ -77,9 +87,12 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
     }
   }
 
-  def downloadPackage(uuid: Refined[String, Uuid]): Route = {
+  /**
+    * An ota client GET the binary file for the package that an [[UpdateRequest]] refers to.
+    */
+  def downloadPackage(updateRequestId: Refined[String, Uuid]): Route = {
     withRangeSupport {
-      val responseF = packageDownloadProcess.buildClientDownloadResponse(uuid)
+      val responseF = packageDownloadProcess.buildClientDownloadResponse(updateRequestId)
       complete(responseF)
     }
   }
@@ -109,9 +122,12 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
     complete(NoContent)
   }
 
+  /**
+    * An ota client PUT the order for a list of [[UpdateRequest]] to be installed on a vehicle.
+    */
   def setInstallOrder(vin: Vehicle.Vin): Route = {
     entity(as[Map[Int, UUID]]) { uuids =>
-      val sorted = uuids.toList.sortBy(_._1).map(_._2)
+      val sorted: List[UUID] = uuids.toList.sortBy(_._1).map(_._2)
       val resp = VehicleUpdates.buildSetInstallOrderResponse(vin, sorted)
       complete(resp)
     }

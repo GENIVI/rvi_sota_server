@@ -8,7 +8,7 @@ import java.util.UUID
 
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Uuid
-import org.genivi.sota.core.data.{Package, UpdateSpec, UpdateStatus}
+import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateSpec, UpdateStatus}
 import org.genivi.sota.core.db.UpdateRequests.UpdateRequestTable
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
@@ -32,8 +32,7 @@ object UpdateSpecs {
   implicit val UpdateStatusColumn = MappedColumnType.base[UpdateStatus, String](_.value.toString, UpdateStatus.withName)
 
   /**
-   * Slick mapping definition for the UpdateSpecs table
-   * @see [[http://slick.typesafe.com/]]
+   * Each row of the UpdateSpec table records the [[UpdateStatus]] of an [[UpdateRequest]]
    */
   class UpdateSpecTable(tag: Tag)
       extends Table[(Namespace, UUID, Vehicle.Vin, UpdateStatus)](tag, "UpdateSpec") {
@@ -51,8 +50,9 @@ object UpdateSpecs {
   }
 
   /**
-   * Slick mapping definition for the RequiredPackage table
-   * @see {@link http://slick.typesafe.com/}
+   * Each row in this table (RequiredPackage) is associated (many-to-one) with one in [[UpdateSpecTable]],
+   * and indicates a dependency (a package) that's required for the install
+   * in the corresponding [[UpdateSpecTable]] row.
    */
   class RequiredPackageTable(tag: Tag)
       extends Table[(Namespace, UUID, Vehicle.Vin, PackageId.Name, PackageId.Version)](tag, "RequiredPackage") {
@@ -70,19 +70,10 @@ object UpdateSpecs {
     // scalastyle:on
   }
 
-  /**
-   * Internal helper definition to accesss the UpdateSpec table
-   */
   val updateSpecs = TableQuery[UpdateSpecTable]
 
-  /**
-   * Internal helper definition to accesss the RequiredPackages table
-   */
   val requiredPackages = TableQuery[RequiredPackageTable]
 
-  /**
-   * Internal helper definition to accesss the UpdateRequest table
-   */
   val updateRequests = TableQuery[UpdateRequestTable]
 
   /**

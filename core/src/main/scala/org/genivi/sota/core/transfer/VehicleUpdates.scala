@@ -94,29 +94,40 @@ object VehicleUpdates {
       }
   }
 
-
-  private def findSpecsForSorting(vin: Vehicle.Vin, specs: List[UUID])
+  /**
+    * Arguments denote the number of [[UpdateRequest]] to be installed on a vehicle.
+    * Each [[UpdateRequest]] may depend on a group of dependencies collected in an [[UpdateSpec]].
+    *
+    * @return All UpdateRequest UUIDs (for the vehicle in question) for which a pending UpdateSpec exists
+    */
+  private def findSpecsForSorting(vin: Vehicle.Vin, numUpdateRequests: Int)
                                  (implicit ec: ExecutionContext): DBIO[Seq[UUID]] = {
-    updateRequests
 
+    // all UpdateRequest UUIDs (for the vehicle in question) for which a pending UpdateSpec exists
+    val q = updateRequests
       .join(updateSpecs).on(_.id === _.requestId)
       .filter(_._2.vin === vin)
       .filter(_._2.status === UpdateStatus.Pending)
       .map(_._1.id)
-      .result
+
+     q.result
       .flatMap { r =>
-        if(r.size > specs.size)
+        if(r.size > numUpdateRequests) {
           DBIO.failed(SetOrderFailed("To set install order, all updates for a vehicle need to be specified"))
-        else if(r.size != specs.size)
+        } else if(r.size != numUpdateRequests) {
           DBIO.failed(SetOrderFailed("To set install order, all updates for a vehicle need to be pending"))
-        else
+        } else {
           DBIO.successful(r)
+        }
       }
   }
 
+  /**
+    * Arguments denote a list of [[UpdateRequest]] to be installed on a vehicle in the order given.
+    */
   def buildSetInstallOrderResponse(vin: Vehicle.Vin, order: List[UUID])
                                   (implicit db: Database, ec: ExecutionContext): Future[HttpResponse] = {
-    db.run(setInstallOrder(vin, order))
+    db.run(persistInstallOrder(vin, order))
       .map(_ => HttpResponse(StatusCodes.NoContent))
       .recover {
         case SetOrderFailed(msg) =>
@@ -124,10 +135,14 @@ object VehicleUpdates {
       }
   }
 
-  def setInstallOrder(vin: Vehicle.Vin, order: List[UUID])(implicit ec: ExecutionContext): DBIO[Seq[(UUID, Int)]] = {
+  /**
+    * Arguments denote a list of [[UpdateRequest]] to be installed on a vehicle in the order given.
+    */
+  def persistInstallOrder(vin: Vehicle.Vin, order: List[UUID])
+                         (implicit ec: ExecutionContext): DBIO[Seq[(UUID, Int)]] = {
     val prios = order.zipWithIndex.toMap
 
-    findSpecsForSorting(vin, order)
+    findSpecsForSorting(vin, order.size)
       .flatMap { existingUr =>
         DBIO.sequence {
           existingUr.map { ur =>
