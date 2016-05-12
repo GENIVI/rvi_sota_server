@@ -8,7 +8,7 @@ import akka.event.Logging
 import akka.event.Logging.LogLevel
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.http.scaladsl.model.headers.RawHeader
-import akka.http.scaladsl.server.{Directive0, Directives}
+import akka.http.scaladsl.server.{Directive, Directive0, Directives}
 
 object SotaDirectives {
   import Directives._
@@ -30,7 +30,7 @@ object SotaDirectives {
     metrics.toList.map { case (m, v) => s"$m=$v"}.mkString(" ")
   }
 
-  def logResponseMetrics(service: String, level: LogLevel = Logging.InfoLevel) = {
+  def logResponseMetrics(service: String, level: LogLevel = Logging.InfoLevel): Directive0 = {
     extractRequestContext flatMap { ctx =>
       val startAt = System.currentTimeMillis()
       mapResponse { resp =>
