@@ -17,7 +17,7 @@ import org.genivi.sota.core.rvi._
 import org.genivi.sota.core.transfer._
 import org.genivi.sota.data.Namespace._
 import scala.util.{Failure, Success, Try}
-import org.genivi.sota.http.SotaDirectives.versionHeaders
+import org.genivi.sota.http.SotaDirectives._
 
 object Boot extends App with DatabaseConfig {
 
@@ -87,7 +87,7 @@ object Boot extends App with DatabaseConfig {
       val notifier = DefaultUpdateNotifier
       val vehicleService = new VehicleUpdatesResource(db, externalResolverClient)
       val allRoutes = Route.seal(routes(notifier) ~ vehicleService.route)
-      val versionRoutes = versionHeaders(version)(allRoutes)
+      val versionRoutes = (logResponseMetrics("sota-core") & versionHeaders(version))(allRoutes)
 
       Http()
         .bindAndHandle(versionRoutes, host, port)
