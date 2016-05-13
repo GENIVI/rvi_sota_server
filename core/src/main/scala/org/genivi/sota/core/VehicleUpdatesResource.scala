@@ -8,6 +8,7 @@ import java.util.UUID
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshaller._
+import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
@@ -18,10 +19,9 @@ import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, PackageDownloadProc
 import org.genivi.sota.data.{PackageId, Vehicle}
 import slick.driver.MySQLDriver.api.Database
 import io.circe.generic.auto._
-import org.genivi.sota.core.db.{OperationResults, Vehicles}
+import org.genivi.sota.core.db.{OperationResults, Vehicles, UpdateSpecs}
 import org.genivi.sota.core.common.NamespaceDirective._
 import org.genivi.sota.data.Namespace._
-import org.genivi.sota.rest.Validation.refined
 import org.genivi.sota.core.data.client.ResponseConversions
 import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, ExternalResolverClient}
 import org.genivi.sota.core.storage.PackageStorage
@@ -30,7 +30,6 @@ import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec}
 import org.genivi.sota.core.data.client.PendingUpdateRequest
 
 import scala.language.implicitConversions
-
 
 class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClient)
                             (implicit system: ActorSystem, mat: ActorMaterializer,
@@ -91,12 +90,11 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
   }
 
   /**
-    * An ota client GET the binary file for the package that the given [[UpdateRequest]] refers to.
+    * An ota client GET the binary file for the package that the given [[UpdateRequest]] and [[Vehicle]] refers to.
     */
-  def downloadPackage(updateRequestId: Refined[String, Uuid]): Route = {
+  def downloadPackage(vin: Vehicle.Vin, uuid: Refined[String, Uuid]): Route = {
     withRangeSupport {
-      val responseF = packageDownloadProcess.buildClientDownloadResponse(updateRequestId)
-      complete(responseF)
+      complete(packageDownloadProcess.buildClientDownloadResponse(vin, uuid))
     }
   }
 
@@ -152,13 +150,24 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
     }
   }
 
+  def cancelUpdate(vin: Vehicle.Vin, uuid: Refined[String, Uuid]): Route = {
+    val response = db.run(UpdateSpecs.cancelUpdate(vin, uuid)).map {
+      i: Int => i match {
+          case 0 => HttpResponse(StatusCodes.BadRequest)
+          case _ => HttpResponse(StatusCodes.NoContent)
+        }
+    }
+    complete(response)
+  }
+
   val route = {
     (pathPrefix("api" / "v1" / "vehicle_updates") & extractVin) { vin =>
       (put & path("installed")) { updateInstalledPackages(vin) } ~
       (put & path("order")) { setInstallOrder(vin) } ~
+      (put & extractUuid & path("cancelupdate") ) { uuid => cancelUpdate(vin, uuid) } ~
       (post & extractNamespace & pathEnd) { ns => queueVehicleUpdate(ns, vin) } ~
       (get & extractNamespace & pathEnd) { ns => pendingPackages(ns, vin) } ~
-      (get & extractUuid & path("download")) { downloadPackage } ~
+      (get & extractUuid & path("download")) { uuid => downloadPackage(vin, uuid) } ~
       (get & extractNamespace & path("operationresults")) { ns => results(ns, vin) } ~
       (post & extractUuid) { reportInstall } ~
       (post & extractNamespace & path("sync")) { ns => sync(ns, vin) }
