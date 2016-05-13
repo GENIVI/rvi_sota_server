@@ -148,11 +148,11 @@ object UpdateSpecs {
   }
 
   /**
-   * Return the status of a specific update
-   * @return The update status
+   * The [[UpdateSpec]] (excluding dependencies but including status) for the given [[UpdateRequest]].
+   * Actually the result contains a single element.
    */
-  def listUpdatesById(uuid: Refined[String, Uuid]): DBIO[Seq[(Namespace, UUID, Vehicle.Vin, UpdateStatus)]] =
-    updateSpecs.filter(s => s.requestId === UUID.fromString(uuid.get)).result
+  def listUpdatesById(updateRequestId: Refined[String, Uuid]): DBIO[Seq[(Namespace, UUID, Vehicle.Vin, UpdateStatus)]] =
+    updateSpecs.filter(s => s.requestId === UUID.fromString(updateRequestId.get)).result
 
   /**
    * Delete all the updates for a specific VIN

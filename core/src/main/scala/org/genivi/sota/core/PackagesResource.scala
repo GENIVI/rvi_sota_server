@@ -52,6 +52,9 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
 
   val packageStorageOp: PackageStorageOp = new PackageStorage().store _
 
+  /**
+    * An ota client GET a Seq of [[Package]] either from regex search, or from table scan.
+    */
   def searchPackage(ns: Namespace): Route = {
     parameters('regex.as[String Refined Regex].?) { (regex: Option[String Refined Regex]) =>
       val query = regex match {
@@ -62,6 +65,9 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
     }
   }
 
+  /**
+    * An ota client GET [[Package]] info, including for example S3 uri of its binary file.
+    */
   def fetch(ns: Namespace, pid: PackageId): Route = {
     // TODO: Include error description with rejectEmptyResponse?
     rejectEmptyResponse {
@@ -72,6 +78,7 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
   }
 
   /**
+    * An ota client PUT the given [[PackageId]] and uploads a binary file for it via form submission.
     * <ul>
     *   <li>Resolver is notified about the new package.</li>
     *   <li>That file is stored in S3 (obtaining an S3-URI in the process)</li>
@@ -101,6 +108,9 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
     }
   }
 
+  /**
+    * An ota client GET the VIN-s waiting for the given [[Package]] to be installed.
+    */
   def queuedVins(ns: Namespace, pid: PackageId): Route = {
     complete(db.run(UpdateSpecs.getVinsQueuedForPackage(ns, pid.name, pid.version)))
   }
