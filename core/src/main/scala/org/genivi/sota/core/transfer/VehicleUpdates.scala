@@ -32,6 +32,9 @@ object VehicleUpdates {
   case class UpdateSpecNotFound(msg: String) extends Exception(msg) with NoStackTrace
   case class SetOrderFailed(msg: String) extends Exception(msg) with NoStackTrace
 
+  /**
+    * Tell resolver to record the given packages as installed on a vehicle, overwriting any previous such list.
+    */
   def update(vin: Vehicle.Vin, packageIds: List[PackageId], resolverClient: ExternalResolverClient): Future[Unit] = {
     val ids = packageIds.asJson
     resolverClient.setInstalledPackages(vin, ids)

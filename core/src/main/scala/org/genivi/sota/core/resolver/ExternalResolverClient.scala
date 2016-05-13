@@ -20,12 +20,39 @@ import scala.concurrent.Future
 
 trait ExternalResolverClient {
 
+  /**
+    * Add a new package to SOTA
+    * This is called when the user adds a new package to the SOTA system
+    *
+    * @param packageId The name and version of the package
+    * @param description A description of the package (optional)
+    * @param vendor The vendor providing the package (optional)
+    */
   def putPackage(namespace: Namespace, packageId: PackageId, description: Option[String],
                  vendor: Option[String]): Future[Unit]
 
+  /**
+    * Given a package name and version, return vehicles that it should be
+    * installed on.
+    *
+    * @param packageId The name and version of the package
+    * @return Which packages need to be installed on which vehicles
+    */
   def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Vehicle, Set[PackageId]]]
 
-  def setInstalledPackages( vin: Vehicle.Vin, json: io.circe.Json) : Future[Unit]
+  /**
+    * Update the list of packages that are installed on a vehicle.
+    * During normal operation SOTA will keep track of the state of of the
+    * clients that are in the field. However there may be cases where this gets
+    * out of sync for example if a ECU is replaced in the field, or when
+    * packages are loaded in the factory.
+    * The client can query the local package manager for the list of installed
+    * packages and report it via this function
+    *
+    * @param vin The VIN that is sending the update
+    * @param json A JSON encoded list of installed packages
+    */
+  def setInstalledPackages(vin: Vehicle.Vin, json: io.circe.Json) : Future[Unit]
 }
 
 /**
@@ -81,13 +108,6 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
 
   private[this] val log = Logging( system, "org.genivi.sota.externalResolverClient" )
 
-  /**
-   * Given a package name and version, return vehicles that it should be
-   * installed on.
-   *
-   * @param packageId The name and version of the package
-   * @return Which packages need to be installed on which vehicles
-   */
   override def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Vehicle, Set[PackageId]]] = {
     implicit val responseDecoder : Decoder[Map[Vehicle.Vin, Set[PackageId]]] =
       Decoder[Seq[(Vehicle.Vin, Set[PackageId])]].map(_.toMap)
@@ -118,19 +138,7 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
       case e => Future.failed( ExternalResolverRequestFailed(e) )
     }
 
-  /**
-   * Update the list of packages that are installed on a vehicle.
-   * During normal operation SOTA will keep track of the state of of the
-   * clients that are in the field. However there may be cases where this gets
-   * out of sync for example if a ECU is replaced in the field, or when
-   * packages are loaded in the factory.
-   * The client can query the local package manager for the list of installed
-   * packages and report it via this function
-   *
-   * @param vin The VIN that is sending the update
-   * @param json A JSON encoded list of installed packages
-   */
-  def setInstalledPackages( vin: Vehicle.Vin, json: io.circe.Json) : Future[Unit] = {
+  override def setInstalledPackages( vin: Vehicle.Vin, json: io.circe.Json) : Future[Unit] = {
     import akka.http.scaladsl.client.RequestBuilding.Put
     import org.genivi.sota.rest.ErrorRepresentation
 
@@ -150,14 +158,6 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
     futureResult
   }
 
-  /**
-   * Add a new package to SOTA
-   * This is called when the user adds a new package to the SOTA system
-   *
-   * @param packageId The name and version of the package
-   * @param description A description of the package (optional)
-   * @param vendor The vendor providing the package (optional)
-   */
   override def putPackage(namespace: Namespace, packageId: PackageId, description: Option[String],
                           vendor: Option[String]): Future[Unit] = {
     import akka.http.scaladsl.client.RequestBuilding._
