@@ -140,6 +140,19 @@ object SotaBuild extends Build {
     .configs(UnitTests, IntegrationTests, BrowserTests)
     .settings(Publish.disable)
 
+  lazy val deviceRegistry = Project(id = "sota-device_registry", base = file("device-registry"))
+    .settings(commonSettings ++ Migrations.settings ++ Seq(
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Refined :+ Dependencies.Flyway :+ Dependencies.Generex,
+      parallelExecution in Test := false,
+      dockerExposedPorts := Seq(8083),
+      flywayUrl := sys.env.get("DEVICE_REGISTRY_DB_URL").orElse(sys.props.get("device-registry.db.url")).getOrElse("jdbc:mysql://localhost:3306/sota_device_registry"),
+      flywayUser := sys.env.get("DEVICE_REGISTRY_DB_USER").orElse(sys.props.get("device-registry.db.user")).getOrElse("sota"),
+      flywayPassword := sys.env.get("DEVICE_REGISTRY_DB_PASSWORD").orElse(sys.props.get("device-registry.db.password")).getOrElse("s0ta")
+    ))
+    .dependsOn(common, commonData, commonTest % "test")
+    .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
+    .settings(Publish.settings)
+
   lazy val sota = Project(id = "sota", base = file("."))
     .settings( basicSettings )
     .settings( Versioning.settings )
@@ -168,6 +181,8 @@ object Dependencies {
   val AkkaHttpCirceJson = "de.heikoseeberger" %% "akka-http-circe" % AkkaHttpCirceVersion
 
   val AkkaSlf4j = "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion
+
+  val Generex = "com.github.mifmif" % "generex" % "1.0.0" % "test"
 
   val Logback = "ch.qos.logback" % "logback-classic" % LogbackVersion
 
