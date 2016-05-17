@@ -38,8 +38,7 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
   implicit val _db = db
 
   /**
-    * An ota client GET the status for the [[UpdateRequest]] given by the argument.
-    * Actually the result is a Seq containing a single element.
+    * An ota client GET (VIN, status) for the [[UpdateRequest]] given by the argument.
     */
   def fetch(updateRequestId: Refined[String, Uuid]): Route = {
     complete(db.run(UpdateSpecs.listUpdatesById(updateRequestId)))
@@ -57,8 +56,8 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
   }
 
   /**
-    * An ota client POST an [[UpdateRequest]] to locally persist it along with one or more [[UpdateSpec]]
-    * (for dependencies obtained from resolver) thus scheduling an update.
+    * An ota client POST an [[UpdateRequest]] campaign to locally persist it along with one or more [[UpdateSpec]]
+    * (one per VIN, for dependencies obtained from resolver) thus scheduling an update.
     */
   def createUpdate(ns: Namespace): Route = {
     clientUpdateRequest(ns) { req: UpdateRequest =>

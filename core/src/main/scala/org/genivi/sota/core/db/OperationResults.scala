@@ -25,29 +25,29 @@ object OperationResults {
   import SlickExtensions._
   import org.genivi.sota.refined.SlickRefined._
 
+  // scalastyle:off
   /**
    * Slick mapping definition for the UpdateRequests table
    * @see {@link http://slick.typesafe.com/}
    */
   class OperationResultTable(tag: Tag) extends Table[OperationResult](tag, "OperationResult") {
-    // scalastyle:off public.methods.have.type
-    def id          = column[String]("id", O.PrimaryKey)
+    def id          = column[String]("id")
     def updateId    = column[UUID]("update_request_id")
     def resultCode  = column[Int]("result_code")
     def resultText  = column[String]("result_text")
     def vin         = column[Vehicle.Vin]("vin")
     def namespace   = column[Namespace]("namespace")
-    // scalastyle:on
 
     import shapeless._
 
-    // scalastyle:off public.methods.have.type
-    // scalastyle:off method.name
+    // given `id` is already unique across namespaces, no need to include namespace. Also avoids Slick issue #966.
+    def pk = primaryKey("pk_OperationResultTable", (id))
+
     def * = (id, updateId, resultCode, resultText, vin, namespace).shaped <>
       (x => OperationResult(x._1, x._2, x._3, x._4, x._5, x._6),
       (x: OperationResult) => Some((x.id, x.updateId, x.resultCode, x.resultText, x.vin, x.namespace)))
-    // scalastyle:on
   }
+  // scalastyle:on
 
   /**
    * Internal helper definition to access the SQL table

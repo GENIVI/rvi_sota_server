@@ -33,9 +33,8 @@ object Vehicles {
     def vin = column[Vehicle.Vin]("vin")
     def lastSeen = column[Option[DateTime]]("last_seen")
 
-    def pk = primaryKey("vin", (namespace, vin))  // insertOrUpdate doesn't work if
-                                                  // we use O.PrimaryKey in the vin
-                                                  // column, see Slick issue #966.
+    // insertOrUpdate buggy for composite-keys, see Slick issue #966.
+    def pk = primaryKey("vin", (namespace, vin))
 
     def * = (namespace, vin, lastSeen) <> (Vehicle.tupled, Vehicle.unapply)
   }

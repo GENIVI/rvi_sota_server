@@ -26,6 +26,7 @@ object ComponentRepository {
     def partNumber  = column[Component.PartNumber]("partNumber")
     def description = column[String]              ("description")
 
+    // insertOrUpdate buggy for composite-keys, see Slick issue #966.
     def pk = primaryKey("pk_component", (namespace, partNumber))
 
     def * = (namespace, partNumber, description) <>

@@ -25,6 +25,7 @@ object FilterRepository {
     def name       = column[Filter.Name]("name")
     def expression = column[Filter.Expression]("expression")
 
+    // insertOrUpdate buggy for composite-keys, see Slick issue #966.
     def pk = primaryKey("pk_filter", (namespace, name))
 
     def * = (namespace, name, expression) <> ((Filter.apply _).tupled, Filter.unapply)

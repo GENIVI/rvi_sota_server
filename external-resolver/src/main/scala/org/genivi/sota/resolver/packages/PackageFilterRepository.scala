@@ -30,6 +30,7 @@ object PackageFilterRepository {
     def packageVersion = column[PackageId.Version]("packageVersion")
     def filterName     = column[Filter.Name]("filterName")
 
+    // insertOrUpdate buggy for composite-keys, see Slick issue #966.
     def pk = primaryKey("pk_packageFilter", (namespace, packageName, packageVersion, filterName))
 
     def * = (namespace, packageName, packageVersion, filterName).shaped <>

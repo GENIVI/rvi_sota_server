@@ -36,6 +36,7 @@ object Devices {
       DeviceId(_)
     )
 
+  // scalastyle:off
   class DeviceTable(tag: Tag) extends Table[Device](tag, "Device") {
     def namespace = column[Namespace]("namespace")
     def id = column[Id]("uuid")
@@ -47,6 +48,7 @@ object Devices {
 
     def pk = primaryKey("id", id)
   }
+  // scalastyle:on
 
   val devices = TableQuery[DeviceTable]
 

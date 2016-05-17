@@ -114,7 +114,7 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
   /**
     * A web client fetches the results of updates to a given [[Vehicle]].
     */
-  def results(ns: Namespace, vin: Vehicle.Vin) = {
+  def results(ns: Namespace, vin: Vehicle.Vin): Route = {
     complete(db.run(OperationResults.byVin(ns, vin)))
   }
 
