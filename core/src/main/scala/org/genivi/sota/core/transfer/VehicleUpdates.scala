@@ -6,10 +6,13 @@ package org.genivi.sota.core.transfer
 
 
 import java.util.UUID
+import akka.actor.ActorSystem
+import java.util.concurrent.TimeUnit
 
 import akka.http.scaladsl.model.{HttpHeader, HttpResponse, StatusCodes}
 import io.circe.syntax._
 import org.genivi.sota.data.Namespace._
+import org.genivi.sota.core.common.NamespaceDirective
 import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.{InstallHistories, OperationResults, UpdateRequests, UpdateSpecs}
@@ -20,7 +23,8 @@ import org.genivi.sota.core.db.UpdateSpecs._
 import org.genivi.sota.core.resolver.ExternalResolverClient
 import org.genivi.sota.core.rvi.UpdateReport
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.duration._
 import org.genivi.sota.refined.SlickRefined._
 
 import scala.util.control.NoStackTrace
@@ -51,9 +55,15 @@ object VehicleUpdates {
 
   def reportInstall(vin: Vehicle.Vin, updateReport: UpdateReport)
                    (implicit ec: ExecutionContext, db: Database): Future[UpdateSpec] = {
+    val namespaceQuery = for {
+      s <- updateSpecs.filter(r => r.requestId === updateReport.update_id)
+    } yield s.namespace
+    //TODO: get default namespace for now, this should be replaced with a lookup to the updates table eventually
+    val namespace = NamespaceDirective.defaultNs(ActorSystem()).get
     val writeResultsIO = updateReport
       .operation_results
-      .map(r => org.genivi.sota.core.data.OperationResult(r.id, updateReport.update_id, r.result_code, r.result_text))
+      .map(r => org.genivi.sota.core.data.OperationResult(r.id, updateReport.update_id, r.result_code, r.result_text,
+                                                          vin, namespace))
       .map(r => OperationResults.persist(r))
 
     val dbIO = for {

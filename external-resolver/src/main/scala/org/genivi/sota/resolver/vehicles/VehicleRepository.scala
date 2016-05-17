@@ -17,7 +17,6 @@ import org.genivi.sota.resolver.filters.FilterAST.{parseValidFilter, query}
 import org.genivi.sota.resolver.filters.{And, FilterAST, HasComponent, HasPackage, True, VinMatches}
 import org.genivi.sota.resolver.packages.{Package, PackageFilterRepository, PackageRepository}
 import org.genivi.sota.resolver.resolve.ResolveFunctions
-import org.joda.time._
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
@@ -71,19 +70,21 @@ object VehicleRepository {
    */
 
   // scalastyle:off
-  class InstalledFirmwareTable(tag: Tag) extends Table[(Firmware, Vehicle.Vin)](tag, "Firmware") {
+  class InstalledFirmwareTable(tag: Tag) extends
+      Table[(Firmware, Vehicle.Vin)](tag, "Firmware") {
 
     def namespace     = column[Namespace]           ("namespace")
     def module        = column[Firmware.Module]     ("module")
     def firmware_id   = column[Firmware.FirmwareId] ("firmware_id")
-    def last_modified = column[DateTime]            ("last_modified")
+    def last_modified = column[Long]                ("last_modified")
     def vin           = column[Vehicle.Vin]         ("vin")
 
     def pk = primaryKey("pk_installedFirmware", (namespace, module, firmware_id, vin))
 
     def * = (namespace, module, firmware_id, last_modified, vin).shaped <>
       (p => (Firmware(p._1, p._2, p._3, p._4), p._5),
-        (fw: (Firmware, Vehicle.Vin)) => Some((fw._1.namespace, fw._1.module, fw._1.firmwareId, fw._1.lastModified, fw._2)))
+      (fw: (Firmware, Vehicle.Vin)) =>
+        Some((fw._1.namespace, fw._1.module, fw._1.firmwareId, fw._1.lastModified, fw._2)))
   }
   // scalastyle:on
 
@@ -100,7 +101,7 @@ object VehicleRepository {
 
   def installFirmware
     (namespace: Namespace, module: Firmware.Module, firmware_id: Firmware.FirmwareId,
-     last_modified: DateTime, vin: Vehicle.Vin)
+     last_modified: Long, vin: Vehicle.Vin)
     (implicit ec: ExecutionContext): DBIO[Unit] = {
     for {
       _ <- exists(namespace, vin)
@@ -113,9 +114,23 @@ object VehicleRepository {
     (namespace: Namespace, vin: Vehicle.Vin)
     (implicit ec: ExecutionContext): DBIO[Seq[Firmware]] = {
     for {
-      _  <- VehicleRepository.exists(namespace, vin)
+      _ <- VehicleRepository.exists(namespace, vin)
       ps <- installedFirmware.filter(i => i.namespace === namespace && i.vin === vin).result
     } yield ps.map(_._1)
+  }
+
+  //This method is only intended to be called when the client reports installed firmware.
+  //It therefore clears all installed firmware for the given vin and replaces with the reported
+  //state instead.
+  def updateInstalledFirmware
+    (ns: Namespace, vin: Vehicle.Vin, firmware: Set[Firmware])
+    (implicit ec: ExecutionContext): DBIO[Unit] = {
+      (for {
+        vehicle <- exists(ns, vin)
+        _       <- installedFirmware.filter(_.vin === vin).delete
+        _       <- installedFirmware ++= firmware.map(fw =>
+                    (Firmware(fw.namespace, fw.module, fw.firmwareId, fw.lastModified), vin))
+      } yield ()).transactionally
   }
 
   /*

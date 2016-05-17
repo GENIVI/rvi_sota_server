@@ -5,19 +5,20 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.client.RequestBuilding.{Delete, Get, Post, Put}
-import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.model.Uri.{Path, Query}
-import akka.http.scaladsl.model.{HttpRequest, StatusCode, StatusCodes, Uri}
+import akka.http.scaladsl.model.{HttpRequest, StatusCodes, Uri}
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.data.{Namespaces, PackageId, Vehicle}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.resolver.components.Component
-import org.genivi.sota.resolver.resolve.ResolveFunctions
+import org.genivi.sota.resolver.data.Firmware
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.resolver.packages.{Package, PackageFilter}
+import org.genivi.sota.resolver.resolve.ResolveFunctions
 import org.scalatest.Matchers
 
 import scala.concurrent.ExecutionContext
@@ -145,6 +146,25 @@ trait PackageRequests extends
                   (implicit route: Route): Unit =
     addPackage(name, version, desc, vendor) ~> route ~> check {
       status shouldBe StatusCodes.OK
+    }
+}
+
+/**
+ * Testing Trait for building Firmware requests
+ */
+trait FirmwareRequests extends Matchers { self: ScalatestRouteTest =>
+
+  def installFirmware
+    (vin: Vehicle.Vin, packages: Set[PackageId], firmware: Set[Firmware])
+      : HttpRequest
+  = Put(Resource.uri("vehicles", vin.get, "packages"), InstalledSoftware(packages, firmware))
+
+  def installFirmwareOK
+    (vin: Vehicle.Vin, packages: Set[PackageId], firmware: Set[Firmware])
+    (implicit route: Route)
+      : Unit
+  = installFirmware(vin, packages, firmware) ~> route ~> check {
+      status shouldBe StatusCodes.NoContent
     }
 }
 

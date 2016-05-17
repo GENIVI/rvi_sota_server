@@ -7,6 +7,7 @@ define(function(require) {
       ]);
       this.showUpdate = atom.createAtom({});
       this.updateStatus = atom.createAtom({});
+      this.operationResultsForVin = atom.createAtom({});
 
       this.packagesForFilter = atom.createAtom([]);
       this.packagesForVin = atom.createAtom([]);

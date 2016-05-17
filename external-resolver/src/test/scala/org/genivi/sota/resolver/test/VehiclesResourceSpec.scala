@@ -11,11 +11,14 @@ import io.circe.generic.auto._
 import org.genivi.sota.data.{Namespaces, PackageId, Vehicle}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
-import org.genivi.sota.resolver.packages.{Package, PackageFilter}
-import org.genivi.sota.resolver.packages.Package._
+import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.components.Component
+import Vehicle._
+import akka.http.scaladsl.testkit.RouteTestTimeout
+import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 import org.scalacheck._
+import scala.concurrent.duration._
 
 
 /**
@@ -27,6 +30,7 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
   import org.genivi.sota.data.InvalidVehicleGenerators
 
   val vehicles = "vehicles"
+  implicit val routeTimeout: RouteTestTimeout = RouteTestTimeout(5.second)
 
   property("Vehicles resource should create new resource on PUT request") {
     forAll { vehicle: Vehicle =>
@@ -54,26 +58,47 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
 
   property("fail to set installed packages if vin does not exist") {
     forAll(genVehicle, Gen.nonEmptyListOf(genPackage)) { (vehicle, packages) =>
-      Put( Resource.uri(vehicles, vehicle.vin.get, "packages"),  packages.map( _.id )) ~> route ~> check {
+      Put( Resource.uri(vehicles, vehicle.vin.get, "packages"),
+          InstalledSoftware(packages.map(_.id).toSet, Set())) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe Codes.MissingVehicle
       }
     }
   }
 
+
   property("updates installed packages even if some of them does not exist") {
+    val stateGen : Gen[(Set[Package], Set[Package])] = for {
+      beforeUpdate      <- Gen.nonEmptyContainerOf[Set, Package](genPackage)
+      added             <- Gen.nonEmptyContainerOf[Set, Package](genPackage)
+      nonExistentAdded  <- Gen.nonEmptyContainerOf[Set, Package](genPackage)
+      removed           <- Gen.someOf(beforeUpdate)
+    } yield (beforeUpdate ++ added, beforeUpdate -- removed ++ added ++ nonExistentAdded)
+
+    forAll(genVehicle, stateGen) { (vehicle, state) =>
+      val (installedBefore, update) = state
+      addVehicleOK(vehicle.vin)
+      installedBefore.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
+      Put( Resource.uri(vehicles, vehicle.vin.get, "packages"),
+          InstalledSoftware(update.map(_.id), Set())) ~> route ~> check {
+        status shouldBe StatusCodes.NoContent
+      }
+    }
+  }
+
+  property("updates installed packages") {
     val stateGen : Gen[(Set[Package], Set[Package])] = for {
       beforeUpdate <- Gen.nonEmptyContainerOf[Set, Package](genPackage)
       added        <- Gen.nonEmptyContainerOf[Set, Package](genPackage)
-      nonExistentAdded <- Gen.nonEmptyContainerOf[Set, Package](genPackage)
       removed      <- Gen.someOf(beforeUpdate)
-    } yield (beforeUpdate ++ added, beforeUpdate -- removed ++ added ++ nonExistentAdded)
+    } yield (beforeUpdate ++ added, beforeUpdate -- removed ++ added)
 
     forAll(genVehicle, stateGen) { (vehicle, state) =>
       val (availablePackages, update) = state
       addVehicleOK(vehicle.vin)
       availablePackages.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
-      Put( Resource.uri(vehicles, vehicle.vin.get, "packages"),  update.map( _.id )) ~> route ~> check {
+      Put( Resource.uri(vehicles, vehicle.vin.get, "packages"),
+          InstalledSoftware(update.map(_.id), Set())) ~> route ~> check {
         status shouldBe StatusCodes.NoContent
       }
     }

@@ -18,7 +18,7 @@ import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, PackageDownloadProc
 import org.genivi.sota.data.{PackageId, Vehicle}
 import slick.driver.MySQLDriver.api.Database
 import io.circe.generic.auto._
-import org.genivi.sota.core.db.Vehicles
+import org.genivi.sota.core.db.{OperationResults, Vehicles}
 import org.genivi.sota.core.common.NamespaceDirective._
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.rest.Validation.refined
@@ -114,6 +114,13 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
   }
 
   /**
+    * A web client fetches the results of updates to a given [[Vehicle]].
+    */
+  def results(ns: Namespace, vin: Vehicle.Vin) = {
+    complete(db.run(OperationResults.byVin(ns, vin)))
+  }
+
+  /**
     * An ota client POST a [[PackageId]] to schedule installation on a vehicle.
     * Internally an [[UpdateRequest]] and an [[UpdateSpec]] are persisted for that [[PackageId]].
     * Resolver is not contacted.
@@ -152,6 +159,7 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
       (post & extractNamespace & pathEnd) { ns => queueVehicleUpdate(ns, vin) } ~
       (get & extractNamespace & pathEnd) { ns => pendingPackages(ns, vin) } ~
       (get & extractUuid & path("download")) { downloadPackage } ~
+      (get & extractNamespace & path("operationresults")) { ns => results(ns, vin) } ~
       (post & extractUuid) { reportInstall } ~
       (post & extractNamespace & path("sync")) { ns => sync(ns, vin) }
     }

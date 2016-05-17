@@ -21,6 +21,7 @@ import slick.jdbc.JdbcBackend.Database
 trait ResourceSpec extends
          VehicleRequests
     with PackageRequests
+    with FirmwareRequests
     with ComponentRequests
     with FilterRequests
     with PackageFilterRequests
