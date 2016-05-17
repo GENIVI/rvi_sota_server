@@ -24,9 +24,15 @@ import scala.language.implicitConversions
 class PackageDownloadProcess(db: Database, packageRetrieval: PackageRetrievalOp)
                             (implicit val system: ActorSystem, mat: ActorMaterializer) {
   import SlickExtensions._
+  import org.genivi.sota.core.storage.PackageStorage
+  import org.genivi.sota.core.data.UpdateRequest
 
-  def buildClientDownloadResponse(uuid: Refined[String, Uuid])(implicit ec: ExecutionContext): Future[HttpResponse] = {
-    val availablePackageIO = findForDownload(uuid)
+  /**
+    * Retrieves from [[PackageStorage]] the binary file for the package denoted by the argument.
+    */
+  def buildClientDownloadResponse(updateRequestId: Refined[String, Uuid])
+                                 (implicit ec: ExecutionContext): Future[HttpResponse] = {
+    val availablePackageIO = findForDownload(updateRequestId)
 
     db.run(availablePackageIO) flatMap {
       case Some(packageModel) =>
@@ -36,18 +42,18 @@ class PackageDownloadProcess(db: Database, packageRetrieval: PackageRetrievalOp)
     }
   }
 
-  private def findPackagesWith(updateRequestId: Refined[String, Uuid]): DBIO[Seq[Package]] = {
+  /**
+    * Each [[UpdateRequest]] refers to a single package,
+    * that this method returns after database lookup.
+    */
+  private def findForDownload(updateRequestId: Refined[String, Uuid]): DBIO[Option[Package]] = {
     updateRequests
       .filter(_.id === updateRequestId)
       .join(Packages.packages)
       .on((updateRequest, packageM) =>
         packageM.name === updateRequest.packageName && packageM.version === updateRequest.packageVersion)
       .map { case (_, packageM) => packageM }
-      .result
+      .result.headOption
   }
 
-  private def findForDownload(updateRequestId: Refined[String, Uuid])
-                             (implicit ec: ExecutionContext): DBIO[Option[Package]] = {
-    findPackagesWith(updateRequestId).map(_.headOption)
-  }
 }

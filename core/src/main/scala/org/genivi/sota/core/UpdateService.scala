@@ -109,6 +109,10 @@ class UpdateService(notifier: UpdateNotifier)
     } yield updateSpecs
   }
 
+  /**
+    * For the given [[PackageId]] and vehicle, persist an [[UpdateRequest]] and an [[UpdateSpec]].
+    * Resolver is not contacted.
+    */
   def queueVehicleUpdate(ns: Namespace, vin: Vehicle.Vin, packageId: PackageId)
                         (implicit db: Database, ec: ExecutionContext): Future[UpdateRequest] = {
     val newUpdateRequest = UpdateRequest.default(ns, packageId)

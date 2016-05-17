@@ -72,7 +72,7 @@ object UpdateRequests {
   }
 
   /**
-   * Internal helper definition to accesss the SQL table
+   * Internal helper definition to access the SQL table
    */
   val all = TableQuery[UpdateRequestTable]
 

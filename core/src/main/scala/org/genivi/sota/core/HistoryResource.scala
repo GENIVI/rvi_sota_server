@@ -14,13 +14,16 @@ import akka.http.scaladsl.marshalling.Marshaller._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
-
+import org.genivi.sota.core.data.InstallHistory
 
 class HistoryResource (db: Database)(implicit system: ActorSystem) extends Directives {
   import org.genivi.sota.core.WebService._
   import org.genivi.sota.core.common.NamespaceDirective._
   import CirceMarshallingSupport._
 
+  /**
+    * An ota client GET all install attempts, a Seq of [[InstallHistory]], for the given VIN
+    */
   def history(ns: Namespace, vin: Vin): Route = {
     complete(db.run(InstallHistories.list(ns, vin)))
   }

@@ -11,7 +11,8 @@ import org.genivi.sota.data.{PackageId, Vehicle}
 
 import scala.concurrent.Future
 
-class FakeExternalResolver()(implicit system: ActorSystem, mat: ActorMaterializer) extends DefaultExternalResolverClient(Uri.Empty, Uri.Empty, Uri.Empty, Uri.Empty)
+class FakeExternalResolver()(implicit system: ActorSystem, mat: ActorMaterializer)
+  extends DefaultExternalResolverClient(Uri.Empty, Uri.Empty, Uri.Empty, Uri.Empty)
 {
   val installedPackages = scala.collection.mutable.Queue.empty[PackageId]
 
@@ -30,7 +31,10 @@ class FakeExternalResolver()(implicit system: ActorSystem, mat: ActorMaterialize
   override def handlePutResponse(futureResponse: Future[HttpResponse]): Future[Unit] =
     Future.successful(())
 
-  override def putPackage(namespace: Namespace, packageId: PackageId, description: Option[String], vendor: Option[String]): Future[Unit] = {
+  override def putPackage(namespace: Namespace,
+                          packageId: PackageId,
+                          description: Option[String],
+                          vendor: Option[String]): Future[Unit] = {
     logger.info(s"Fake resolver called. namespace=$namespace, packageId=${packageId.mkString}")
     Future.successful(())
   }

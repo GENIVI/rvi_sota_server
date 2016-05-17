@@ -26,6 +26,8 @@ import org.genivi.sota.core.data.client.ResponseConversions
 import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, ExternalResolverClient}
 import org.genivi.sota.core.storage.PackageStorage
 import org.joda.time.DateTime
+import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec}
+import org.genivi.sota.core.data.client.PendingUpdateRequest
 
 import scala.language.implicitConversions
 
@@ -53,6 +55,9 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
     } flatMap (_ => pass)
   }
 
+  /**
+    * An ota client PUT a list of packages to record they're installed on a vehicle, overwriting any previous such list.
+    */
   def updateInstalledPackages(vin: Vehicle.Vin): Route = {
     entity(as[List[PackageId]]) { ids =>
       val f = VehicleUpdates
@@ -63,6 +68,14 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
     }
   }
 
+  /**
+    * An ota client GET which packages await installation for the given vehicle,
+    * in the form a Seq of [[PendingUpdateRequest]]
+    * whose order was specified via [[setInstallOrder]].
+    * To actually download each binary file, [[downloadPackage]] is used.
+    *
+    * @see [[data.UpdateStatus]] (two of interest: InFlight and Pending)
+    */
   def pendingPackages(ns: Namespace, vin: Vehicle.Vin): Route = {
     import org.genivi.sota.core.data.client.PendingUpdateRequest._
     import ResponseConversions._
@@ -77,13 +90,20 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
     }
   }
 
-  def downloadPackage(uuid: Refined[String, Uuid]): Route = {
+  /**
+    * An ota client GET the binary file for the package that the given [[UpdateRequest]] refers to.
+    */
+  def downloadPackage(updateRequestId: Refined[String, Uuid]): Route = {
     withRangeSupport {
-      val responseF = packageDownloadProcess.buildClientDownloadResponse(uuid)
+      val responseF = packageDownloadProcess.buildClientDownloadResponse(updateRequestId)
       complete(responseF)
     }
   }
 
+  /**
+    * An ota client POST for the given [[UpdateRequest]] an [[InstallReport]]
+    * (describing the outcome after installing the package in question).
+    */
   def reportInstall(uuid: Refined[String, Uuid]): Route = {
     entity(as[InstallReport]) { report =>
       val responseF =
@@ -93,6 +113,11 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
     }
   }
 
+  /**
+    * An ota client POST a [[PackageId]] to schedule installation on a vehicle.
+    * Internally an [[UpdateRequest]] and an [[UpdateSpec]] are persisted for that [[PackageId]].
+    * Resolver is not contacted.
+    */
   def queueVehicleUpdate(ns: Namespace, vin: Vehicle.Vin): Route = {
     entity(as[PackageId]) { packageId =>
       val result = updateService.queueVehicleUpdate(ns, vin, packageId)
@@ -109,9 +134,12 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
     complete(NoContent)
   }
 
+  /**
+    * An ota client PUT the order in which the given [[UpdateRequest]]s are to be installed on a vehicle.
+    */
   def setInstallOrder(vin: Vehicle.Vin): Route = {
     entity(as[Map[Int, UUID]]) { uuids =>
-      val sorted = uuids.toList.sortBy(_._1).map(_._2)
+      val sorted: List[UUID] = uuids.toList.sortBy(_._1).map(_._2)
       val resp = VehicleUpdates.buildSetInstallOrderResponse(vin, sorted)
       complete(resp)
     }

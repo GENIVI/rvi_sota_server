@@ -42,15 +42,15 @@ class VehiclesResource(db: Database, client: ConnectivityClient, resolverClient:
 
   case object MissingVehicle extends Throwable
 
-  def exists(vehicle: Vehicle)
-    (implicit ec: ExecutionContext): Future[Vehicle] =
+  private def exists(vehicle: Vehicle)
+                    (implicit ec: ExecutionContext): Future[Vehicle] =
     db.run(Vehicles.exists(vehicle))
       .flatMap(_
         .fold[Future[Vehicle]]
           (Future.failed(MissingVehicle))(Future.successful))
 
-  def deleteVehicle(ns: Namespace, vehicle: Vehicle)
-  (implicit ec: ExecutionContext): Future[Unit] =
+  private def deleteVehicle(ns: Namespace, vehicle: Vehicle)
+                           (implicit ec: ExecutionContext): Future[Unit] =
     for {
       _ <- exists(vehicle)
       _ <- db.run(UpdateSpecs.deleteRequiredPackageByVin(ns, vehicle))
@@ -58,6 +58,9 @@ class VehiclesResource(db: Database, client: ConnectivityClient, resolverClient:
       _ <- db.run(Vehicles.deleteById(vehicle))
     } yield ()
 
+  /**
+    * An ota client GET the [[Vehicle]] for the given VIN.
+    */
   def fetchVehicle(ns: Namespace, vin: Vehicle.Vin): Route = {
     completeOrRecoverWith(exists(Vehicle(ns, vin))) {
       case MissingVehicle =>
@@ -66,10 +69,16 @@ class VehiclesResource(db: Database, client: ConnectivityClient, resolverClient:
     }
   }
 
+  /**
+    * An ota client PUT a new [[Vehicle]].
+    */
   def updateVehicle(ns: Namespace, vin: Vehicle.Vin): Route = {
     complete(db.run(Vehicles.create(Vehicle(ns, vin))).map(_ => NoContent))
   }
 
+  /**
+    * An ota client DELETE a [[Vehicle]], deleting beforehand its rows in the `RequiredPackageTable` and [[UpdateSpec]].
+    */
   def deleteVehicle(ns: Namespace, vin: Vehicle.Vin): Route = {
     completeOrRecoverWith(deleteVehicle(ns, Vehicle(ns, vin))) {
       case MissingVehicle =>
@@ -78,6 +87,9 @@ class VehiclesResource(db: Database, client: ConnectivityClient, resolverClient:
     }
   }
 
+  /**
+    * An ota client GET a Seq of [[Vehicle]] either from regex/status search, or from table scan.
+    */
   def search(ns: Namespace): Route = {
     parameters(('status.?(false), 'regex.?)) { (includeStatus: Boolean, regex: Option[String]) =>
       val resultIO = VehicleSearch.search(ns, regex, includeStatus)
