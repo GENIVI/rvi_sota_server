@@ -29,7 +29,7 @@ object InstallHistories {
   // scalastyle:off
   class InstallHistoryTable(tag: Tag) extends Table[InstallHistory](tag, "InstallHistory") {
 
-    def id             = column[Long]             ("id", O.PrimaryKey, O.AutoInc)
+    def id             = column[Long]             ("id", O.AutoInc)
     def namespace      = column[Namespace]        ("namespace")
     def vin            = column[Vehicle.Vin]      ("vin")
     def updateId       = column[java.util.UUID]   ("update_request_id")
@@ -37,6 +37,9 @@ object InstallHistories {
     def packageVersion = column[PackageId.Version]("packageVersion")
     def success        = column[Boolean]          ("success")
     def completionTime = column[DateTime]         ("completionTime")
+
+    // given `id` is already unique across namespaces, no need to include namespace. Also avoids Slick issue #966.
+    def pk = primaryKey("pk_InstallHistoryTable", (id))
 
     def * = (id.?, namespace, vin, updateId, packageName, packageVersion, success, completionTime).shaped <>
       (r => InstallHistory(r._1, r._2, r._3, r._4, PackageId(r._5, r._6), r._7, r._8),

@@ -80,7 +80,8 @@ trait UpdateResourcesDatabaseSpec {
 
   import Generators._
 
-  def createUpdateSpecFor(vehicle: Vehicle, transformFn: UpdateRequest => UpdateRequest = identity)(implicit ec: ExecutionContext): DBIO[(Package, UpdateSpec)] = {
+  def createUpdateSpecFor(vehicle: Vehicle, transformFn: UpdateRequest => UpdateRequest = identity)
+                         (implicit ec: ExecutionContext): DBIO[(Package, UpdateSpec)] = {
     val (packageModel, updateSpec) = genUpdateSpecFor(vehicle).sample.get
 
     val dbIO = DBIO.seq(

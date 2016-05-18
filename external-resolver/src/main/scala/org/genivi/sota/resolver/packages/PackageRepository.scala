@@ -32,6 +32,7 @@ object PackageRepository {
     def description = column[String]("description")
     def vendor      = column[String]("vendor")
 
+    // insertOrUpdate buggy for composite-keys, see Slick issue #966.
     def pk = primaryKey("pk_package", (namespace, name, version))
 
     def * = (namespace, name, version, description.?, vendor.?).shaped <>

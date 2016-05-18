@@ -8,7 +8,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.model.StatusCodes.NoContent
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.{Directives, Route, StandardRoute}
+import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.ActorMaterializer
 import eu.timepit.refined._
 import eu.timepit.refined.string._
@@ -29,6 +29,8 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.languageFeature.implicitConversions
 import scala.languageFeature.postfixOps
 import slick.driver.MySQLDriver.api.Database
+import org.genivi.sota.core.db.Vehicles.VehicleTable
+import org.genivi.sota.core.db.UpdateSpecs.{RequiredPackageTable, UpdateSpecTable}
 
 
 class VehiclesResource(db: Database, client: ConnectivityClient, resolverClient: ExternalResolverClient)
@@ -71,14 +73,15 @@ class VehiclesResource(db: Database, client: ConnectivityClient, resolverClient:
   }
 
   /**
-    * An ota client PUT a new [[Vehicle]].
+    * An ota client PUT a new [[Vehicle]], adding a row in [[VehicleTable]]. Resolver is not contacted.
     */
   def updateVehicle(ns: Namespace, vin: Vehicle.Vin): Route = {
     complete(db.run(Vehicles.create(Vehicle(ns, vin))).map(_ => NoContent))
   }
 
   /**
-    * An ota client DELETE a [[Vehicle]], deleting beforehand its rows in the `RequiredPackageTable` and [[UpdateSpec]].
+    * An ota client DELETE a [[Vehicle]], deleting beforehand its rows in
+    * [[UpdateSpecTable]] and [[RequiredPackageTable]].
     */
   def deleteVehicle(ns: Namespace, vin: Vehicle.Vin): Route = {
     completeOrRecoverWith(deleteVehicle(ns, Vehicle(ns, vin))) {

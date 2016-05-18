@@ -27,13 +27,13 @@ object UpdateRequests {
   import SlickExtensions._
   import org.genivi.sota.refined.SlickRefined._
 
+  // scalastyle:off
   /**
    * Slick mapping definition for the UpdateRequests table
    * @see [[http://slick.typesafe.com/]]
    */
   class UpdateRequestTable(tag: Tag) extends Table[UpdateRequest](tag, "UpdateRequest") {
-    // scalastyle:off public.methods.have.type
-    def id = column[UUID]("update_request_id", O.PrimaryKey)
+    def id = column[UUID]("update_request_id")
     def namespace = column[Namespace]("namespace")
     def packageName = column[PackageId.Name]("package_name")
     def packageVersion = column[PackageId.Version]("package_version")
@@ -45,7 +45,6 @@ object UpdateRequests {
     def description = column[String]("description")
     def requestConfirmation = column[Boolean]("request_confirmation")
     def installPos = column[Int]("install_pos")
-    // scalastyle:on
 
     import com.github.nscala_time.time.Imports._
     import shapeless._
@@ -60,16 +59,17 @@ object UpdateRequests {
       }
     }
 
-    // scalastyle:off public.methods.have.type
-    // scalastyle:off method.name
+    // given `id` is already unique across namespaces, no need to include namespace. Also avoids Slick issue #966.
+    def pk = primaryKey("pk_UpdateRequest", (id))
+
     def * = (id, namespace, packageName, packageVersion, creationTime, startAfter, finishBefore,
              priority, signature, description.?, requestConfirmation, installPos).shaped <>
       (x => UpdateRequest(x._1, x._2, PackageId(x._3, x._4), x._5, x._6 to x._7, x._8, x._9, x._10, x._11, x._12),
       (x: UpdateRequest) => Some((x.id, x.namespace, x.packageId.name, x.packageId.version, x.creationTime,
                                   x.periodOfValidity.start, x.periodOfValidity.end, x.priority,
                                   x.signature, x.description, x.requestConfirmation, x.installPos)))
-    // scalastyle:on
   }
+  // scalastyle:on
 
   /**
    * Internal helper definition to access the SQL table

@@ -31,9 +31,8 @@ object VehicleRepository {
 
     def * = (namespace, vin) <> (Vehicle.fromVin, Vehicle.toVin)
 
-    def pk = primaryKey("vin", (namespace, vin))  // insertOrUpdate doesn't work if
-                                                  // we use O.PrimaryKey in the vin
-                                                  // column, see Slick issue #966.
+    // insertOrUpdate buggy for composite-keys, see Slick issue #966.
+    def pk = primaryKey("vin", (namespace, vin))
   }
   // scalastyle:on
 
@@ -79,6 +78,7 @@ object VehicleRepository {
     def last_modified = column[Long]                ("last_modified")
     def vin           = column[Vehicle.Vin]         ("vin")
 
+    // insertOrUpdate buggy for composite-keys, see Slick issue #966.
     def pk = primaryKey("pk_installedFirmware", (namespace, module, firmware_id, vin))
 
     def * = (namespace, module, firmware_id, last_modified, vin).shaped <>
@@ -145,6 +145,7 @@ object VehicleRepository {
     def packageName    = column[PackageId.Name]   ("packageName")
     def packageVersion = column[PackageId.Version]("packageVersion")
 
+    // insertOrUpdate buggy for composite-keys, see Slick issue #966.
     def pk = primaryKey("pk_installedPackage", (namespace, vin, packageName, packageVersion))
 
     def * = (namespace, vin, packageName, packageVersion).shaped <>
@@ -252,6 +253,7 @@ object VehicleRepository {
     def vin        = column[Vehicle.Vin]         ("vin")
     def partNumber = column[Component.PartNumber]("partNumber")
 
+    // insertOrUpdate buggy for composite-keys, see Slick issue #966.
     def pk = primaryKey("pk_installedComponent", (namespace, vin, partNumber))
 
     def * = (namespace, vin, partNumber)

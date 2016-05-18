@@ -9,6 +9,7 @@ import java.util.UUID
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
 import org.joda.time.{DateTime, Interval, Period}
+import org.genivi.sota.core.db.UpdateSpecs
 
 
 /**
@@ -28,6 +29,7 @@ import org.joda.time.{DateTime, Interval, Period}
  * @param signature Signature for this updates Id
  * @param description A descriptive text of the available update.
  * @param requestConfirmation Flag to indicate if a user confirmation of the package is required.
+ * @param installPos
  */
 case class UpdateRequest(
   id: UUID,
@@ -73,12 +75,21 @@ object UpdateStatus extends Enumeration {
 import UpdateStatus._
 
 /**
- * A set of package updates to apply to a single VIN.
- * @param request The update campaign that these updates are a part of
- * @param vin The vehicle to which these updates should be applied
- * @param status The status of the update
- * @param dependencies The packages to be installed
- */
+  * A combination (campaign, VIN, packages) --- which remain constant over time ---
+  * along with the latest [[UpdateStatus]] (for that campaign on this VIN) --- which may change over time.
+  * <br>
+  * <ul>
+  *   <li>The set of packages may include dependencies;
+  *       no individual install order is given for them but for campaigns as a whole,
+  *       see [[UpdateRequest#installPos]].</li>
+  *   <li>The campaign (ie, [[UpdateRequest]]) that initiated this [[UpdateSpec]] is linked from here.</li>
+  * </ul>
+  *
+  * @param request The campaign that these updates are a part of
+  * @param vin The vehicle to which these updates should be applied
+  * @param status The status of the update
+  * @param dependencies The packages to be installed
+  */
 case class UpdateSpec(
   namespace: Namespace,
   request: UpdateRequest,
