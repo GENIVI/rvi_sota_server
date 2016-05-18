@@ -34,6 +34,7 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, ldapAut
 
   val coreApiUri = Play.current.configuration.getString("core.api.uri").get
   val resolverApiUri = Play.current.configuration.getString("resolver.api.uri").get
+  val deviceRegistryApiUri = Play.current.configuration.getString("device_registry.api.uri").get
 
   /**
    * Returns an Option[String] of the uri of the service to proxy to
@@ -47,6 +48,7 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, ldapAut
     case "update_requests" :: _ => coreApiUri
     case "vehicle_updates" :: _ => coreApiUri
     case "history" :: _ => coreApiUri
+    case "devices" :: _ => deviceRegistryApiUri
     case _ => resolverApiUri
   }
 

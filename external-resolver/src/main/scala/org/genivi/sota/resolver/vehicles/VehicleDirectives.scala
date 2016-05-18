@@ -94,12 +94,12 @@ class VehicleDirectives(implicit system: ActorSystem,
 
   def updateInstalledSoftware(ns: Namespace, vin: Vehicle.Vin): Route =
     entity(as[InstalledSoftware]) { installedSoftware =>
-      onSuccess(db.run(for {
-        _ <- VehicleRepository.updateInstalledPackages(ns, vin, installedSoftware.packages)
-        _ <- VehicleRepository.updateInstalledFirmware(ns, vin, installedSoftware.firmware)
-      } yield ())) {
-        complete(StatusCodes.NoContent)
-      }
+      val dbIO = DBIO.seq(
+        VehicleRepository.updateInstalledPackages(ns, vin, installedSoftware.packages),
+        VehicleRepository.updateInstalledFirmware(ns, vin, installedSoftware.firmware)
+      )
+
+      complete { db.run(dbIO).map(_ => StatusCodes.NoContent) }
     }
 
   /**

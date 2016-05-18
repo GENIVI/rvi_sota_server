@@ -6,7 +6,7 @@ import akka.http.scaladsl.util.FastFuture
 import akka.testkit.TestKit
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.core.db.{Packages, UpdateSpecs, Vehicles}
+import org.genivi.sota.core.db.{Packages, UpdateSpecs}
 import org.genivi.sota.core.resolver.DefaultConnectivity
 import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, VehicleUpdates}
 import org.genivi.sota.data.Namespace._
@@ -93,8 +93,10 @@ class UpdateServiceSpec extends PropSpec
   }
 
   def createVehicles(ns: Namespace, vins: Set[Vehicle.Vin]) : Future[Unit] = {
-    import slick.driver.MySQLDriver.api._
-    db.run(DBIO.seq(vins.map(vin => Vehicles.create(Vehicle(ns, vin))).toArray: _*))
+    // TODO
+    FastFuture.successful(())
+    // import slick.driver.MySQLDriver.api._
+    // db.run(DBIO.seq(vins.map(vin => Vehicles.create(Vehicle(ns, vin))).toArray: _*))
   }
 
   property("upload spec per vin") {
@@ -115,9 +117,9 @@ class UpdateServiceSpec extends PropSpec
     val newPackage = PackageGen.sample.get
 
     val dbSetup = for {
-      vehicle <- Vehicles.create(newVehicle)
+      // vehicle <- Vehicles.create(newVehicle)
       packageM <- Packages.create(newPackage)
-    } yield (vehicle, packageM)
+    } yield (newVehicle, packageM)
 
     val f = for {
       (vehicle, packageM) <- db.run(dbSetup)

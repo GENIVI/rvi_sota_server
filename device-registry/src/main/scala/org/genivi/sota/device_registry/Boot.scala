@@ -12,7 +12,7 @@ import akka.stream.ActorMaterializer
 import org.genivi.sota.rest.Handlers.{rejectionHandler, exceptionHandler}
 import scala.concurrent.ExecutionContext
 import scala.util.Try
-import slick.jdbc.JdbcBackend.Database
+import slick.driver.MySQLDriver.api._
 
 
 /**

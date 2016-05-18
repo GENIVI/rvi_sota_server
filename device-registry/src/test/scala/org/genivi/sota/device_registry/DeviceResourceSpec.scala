@@ -9,7 +9,7 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.data.Namespaces
-import org.genivi.sota.device_registry.{Device, DeviceT}
+import org.genivi.sota.data.{Device, DeviceT}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.joda.time.DateTime
 import org.scalacheck._
@@ -47,7 +47,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
       fetchDevice(id)          ~> route ~> check { status shouldBe NotFound }
       updateDevice(id, device) ~> route ~> check { status shouldBe NotFound }
       deleteDevice(id)         ~> route ~> check { status shouldBe NotFound }
-      pingDevice(id)           ~> route ~> check { status shouldBe NotFound }
+      updateLastSeen(id)       ~> route ~> check { status shouldBe NotFound }
     }
   }
 
@@ -200,7 +200,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
 
       val id: Id = createDeviceOk(devicePre)
 
-      pingDevice(id) ~> route ~> check {
+      updateLastSeen(id) ~> route ~> check {
         status shouldBe OK
       }
 

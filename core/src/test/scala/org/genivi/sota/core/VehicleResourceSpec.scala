@@ -49,8 +49,9 @@ class VehicleResourceSpec extends PropSpec
   implicit val rviClient = new JsonRpcRviClient( serverTransport.requestTransport, system.dispatcher)
 
   val fakeResolver = new FakeExternalResolver()
+  val fakeDeviceRegistry = new FakeDeviceRegistry()
 
-  lazy val service = new VehiclesResource(db, rviClient, fakeResolver)
+  lazy val service = new VehiclesResource(db, rviClient, fakeResolver, fakeDeviceRegistry)
 
   val BasePath = Path("/vehicles")
 
@@ -63,14 +64,6 @@ class VehicleResourceSpec extends PropSpec
   }
 
   def vehicleUri(vin: Vehicle.Vin)  = Uri.Empty.withPath( BasePath / vin.get )
-
-  property( "create new vehicle" ) {
-    forAll { (vehicle: Vehicle) =>
-      Put( vehicleUri(vehicle.vin), vehicle ) ~> service.route ~> check {
-        status shouldBe StatusCodes.NoContent
-      }
-    }
-  }
 
   val tooLongVin = for {
     n <- Gen.choose(18, 100)
@@ -87,28 +80,17 @@ class VehicleResourceSpec extends PropSpec
     vin <- Gen.oneOf(tooLongVin, tooShortVin)
   } yield Vehicle(defaultNs, Refined.unsafeApply(vin))
 
-  property( "reject illegal vins" ) {
-    forAll( VehicleWithIllegalVin ) { vehicle =>
-      Put( vehicleUri(vehicle.vin), vehicle ) ~> Route.seal(service.route) ~> check {
-        status shouldBe StatusCodes.BadRequest
-      }
-    }
-  }
-
-  property( "Multiple PUT requests with the same vin are allowed" ) {
-    forAll { (vehicle: Vehicle ) =>
-      Put( vehicleUri(vehicle.vin), vehicle ) ~> service.route ~> check {
-        status shouldBe StatusCodes.NoContent
-      }
-
-      Put( vehicleUri(vehicle.vin), vehicle ) ~> service.route ~> check {
-        status shouldBe StatusCodes.NoContent
-      }
-    }
-  }
+  // TODO: move vin validation to device registry?
+  // property( "reject illegal vins" ) {
+  //   forAll( VehicleWithIllegalVin ) { vehicle =>
+  //     Put( vehicleUri(vehicle.vin), vehicle ) ~> Route.seal(service.route) ~> check {
+  //       status shouldBe StatusCodes.BadRequest
+  //     }
+  //   }
+  // }
 
   property("search with status=true returns current status for a vehicle") {
-    whenReady(createVehicle()) { vin =>
+    whenReady(createVehicle(fakeDeviceRegistry)) { _ =>
       val url = Uri.Empty
         .withPath(BasePath)
         .withQuery(Uri.Query("status" -> "true"))
@@ -122,4 +104,5 @@ class VehicleResourceSpec extends PropSpec
       }
     }
   }
+
 }
