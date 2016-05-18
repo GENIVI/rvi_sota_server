@@ -151,6 +151,7 @@ class TransferProtocolActor(db: Database, rviClient: ConnectivityClient,
    * Terminate when all updates and dependencies are successfully transferred,
    * or when the transfer is aborted because the vehicle is not responding.
    */
+  // scalastyle:off cyclomatic.complexity
   def running(services: ClientServices, updates: Set[UpdateSpec], pending: Queue[(UpdateSpec, Package)],
               inProgress: Map[ActorRef, (UpdateSpec, Package)], done: Set[Package]) : Receive = {
     case akka.actor.Terminated(ref) =>
@@ -199,6 +200,7 @@ class TransferProtocolActor(db: Database, rviClient: ConnectivityClient,
     case UploadAborted =>
       abortUpdate(services, updates)
   }
+  // scalastyle:on
 
   def abortUpdate (services: ClientServices, updates: Set[UpdateSpec]): Unit = {
       rviClient.sendMessage(services.abort, io.circe.Json.Null, ttl())

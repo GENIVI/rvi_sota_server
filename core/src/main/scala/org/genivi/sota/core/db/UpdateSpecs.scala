@@ -80,7 +80,8 @@ object UpdateSpecs {
    * Add an update for a specific VIN.
    * This update will consist of one-or-more packages that need to be installed
    * on a single VIN
-   * @param updateSpec The list of packages that should be installed
+    *
+    * @param updateSpec The list of packages that should be installed
    */
   def persist(updateSpec: UpdateSpec) : DBIO[Unit] = {
     val specProjection = (updateSpec.namespace, updateSpec.request.id, updateSpec.vin,  updateSpec.status)
@@ -98,7 +99,8 @@ object UpdateSpecs {
   // scalastyle:off cyclomatic.complexity
   /**
    * Install a list of specific packages on a VIN
-   * @param vin The VIN to install on
+    *
+    * @param vin The VIN to install on
    * @param updateId Update Id of the update to install
    */
   def load(vin: Vehicle.Vin, updateId: UUID)
@@ -119,21 +121,23 @@ object UpdateSpecs {
 
   /**
    * Records the status of an update on a specific VIN
-   * @param spec The combination of VIN and update request to record the status of
+    *
+    * @param spec The combination of VIN and update request to record the status of
    * @param newStatus The latest status of the installation. One of Pending
    *                  InFlight, Canceled, Failed or Finished.
    */
-  def setStatus( spec: UpdateSpec, newStatus: UpdateStatus ) : DBIO[Int] = {
+  def setStatus(spec: UpdateSpec, newStatus: UpdateStatus) : DBIO[Int] = {
     updateSpecs.filter(t => t.namespace === spec.namespace && t.vin === spec.vin && t.requestId === spec.request.id)
-      .map( _.status )
-      .update( newStatus )
+      .map(_.status)
+      .update(newStatus)
   }
 
   /**
    * Return a list of all the VINs that a specific version of a package will be
    * installed on.  Note that VINs where the package has started installation,
    * or has either been installed or where the install failed are not included.
-   * @param pkgName The package name to search for
+    *
+    * @param pkgName The package name to search for
    * @param pkgVer The version of the package to search for
    * @return A list of VINs that the package will be installed on
    */
@@ -148,6 +152,27 @@ object UpdateSpecs {
   }
 
   /**
+   * Set status of a given update to 'In-Flight'
+    * @param vin the vin associated with the desired update
+    * @param uuid the uuid of the update whose status should be changed
+    */
+  def setStatus(vin: Vehicle.Vin, uuid: Refined[String, Uuid], newStatus: UpdateStatus): DBIO[Int] = {
+    (for {
+      r <- updateSpecs.filter(us => us.vin === vin && us.requestId === uuid)
+    } yield r.status).update(newStatus).transactionally
+  }
+
+  /**
+    * Abort a pending update specified by uuid and vin. Updates with statuses other than 'Pending' will not be aborted
+    *
+    */
+  def cancelUpdate(vin: Vehicle.Vin, uuid: Refined[String, Uuid]): DBIO[Int] = {
+    (for {
+      u <- updateSpecs.filter(us => us.vin === vin && us.requestId === uuid && us.status === UpdateStatus.Pending)
+    } yield u.status).update(UpdateStatus.Canceled).transactionally
+  }
+
+  /**
    * The [[UpdateSpec]] (excluding dependencies but including status) for the given [[UpdateRequest]].
    * Actually the result contains a single element.
    */
@@ -157,7 +182,8 @@ object UpdateSpecs {
   /**
    * Delete all the updates for a specific VIN
    * This is part of the process for deleting a VIN from the system
-   * @param vehicle The vehicle to get the VIN to delete from
+    *
+    * @param vehicle The vehicle to get the VIN to delete from
    */
   def deleteUpdateSpecByVin(ns: Namespace, vehicle: Vehicle) : DBIO[Int] =
     updateSpecs.filter(s => s.namespace === ns && s.vin === vehicle.vin).delete
@@ -165,7 +191,8 @@ object UpdateSpecs {
   /**
    * Delete all the required packages that are needed for a VIN.
    * This is part of the process for deleting a VIN from the system
-   * @param vehicle The vehicle to get the VIN to delete from
+    *
+    * @param vehicle The vehicle to get the VIN to delete from
    */
   def deleteRequiredPackageByVin(ns: Namespace, vehicle : Vehicle) : DBIO[Int] =
     requiredPackages.filter(rp => rp.namespace === ns && rp.vin === vehicle.vin).delete

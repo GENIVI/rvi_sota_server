@@ -238,6 +238,20 @@ class VehicleUpdatesResourceSpec extends FunSuite
       }
     }
   }
+
+  test("can cancel pending updates") {
+    whenReady(createUpdateSpec()) { case (_, vehicle, updateSpec) =>
+      val url = baseUri.withPath(baseUri.path / vehicle.vin.get / updateSpec.request.id.toString / "cancelupdate")
+      Put(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.NoContent
+
+        whenReady(db.run(VehicleUpdates.findUpdateSpecFor(vehicle.vin, updateSpec.request.id))) { case updateSpec =>
+          updateSpec.status shouldBe UpdateStatus.Canceled
+        }
+      }
+    }
+  }
+
 }
 
 class FakeConnectivity extends Connectivity {
