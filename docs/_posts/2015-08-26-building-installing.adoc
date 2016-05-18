@@ -8,7 +8,9 @@ order: 1
 :toc: macro
 :icons: font
 
-For the server-side components, this project includes a https://github.com/advancedtelematic/docker-launcher[docker-launcher] configuration file to allow the cluster of components to be deployed conveniently to a developer machine or to Amazon AWS. See link:../doc/deployment-with-docker-launcher.html[Deployment with Docker Launcher] for deploying a development or evaluation system with Docker Launcher.
+Both the SOTA server components and the SOTA client are available as docker containers, and can be run quickly with https://docs.docker.com/compose[docker-compose]. For more detailed instructions on running SOTA with docker, see link:../doc/deployment-with-dockercompose.html[Deployment with docker-compose]. It is also possible to link:../doc/deployment-with-docker-launcher.html[deploy directly to EC2] using https://github.com/advancedtelematic/docker-launcher[docker-launcher], however this method is deprecated and unsupported.
+
+This page contains instructions on getting a local development system up and running.
 
 toc::[]
 
