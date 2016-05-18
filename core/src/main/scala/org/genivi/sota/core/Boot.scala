@@ -11,12 +11,12 @@ import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
+import org.genivi.sota.common.client.DeviceRegistryClient
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, DefaultExternalResolverClient}
 import org.genivi.sota.core.rvi._
 import org.genivi.sota.core.transfer._
 import org.genivi.sota.data.Namespace._
-import org.genivi.sota.device_registry.client.DeviceRegistryClient
 import org.genivi.sota.http.SotaDirectives._
 import scala.util.{Failure, Success, Try}
 

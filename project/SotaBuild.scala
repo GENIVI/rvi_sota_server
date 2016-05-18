@@ -115,7 +115,7 @@ object SotaBuild extends Build {
     .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
     .settings(inConfig(IntegrationTests)(Defaults.testTasks): _*)
     .configs(IntegrationTests, UnitTests)
-    .dependsOn(common, commonData, commonTest % "test", commonDbTest % "test", deviceRegistry)
+    .dependsOn(common, commonData, commonTest % "test", commonDbTest % "test", commonClient)
     .enablePlugins(Packaging.plugins: _*)
     .enablePlugins(BuildInfoPlugin)
     .settings(Publish.settings)
@@ -171,11 +171,16 @@ object SotaBuild extends Build {
     .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
     .settings(Publish.settings)
 
+  lazy val commonClient = Project(id = "sota-device_registry_client", base = file("common-client"))
+    .settings(commonSettings)
+    .dependsOn(common, commonData)
+    .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
+
   lazy val sota = Project(id = "sota", base = file("."))
     .settings( basicSettings )
     .settings( Versioning.settings )
-    .settings(Release.settings(common, commonData, commonTest, core, externalResolver, deviceRegistry))
-    .aggregate(common, commonData, commonTest, core, externalResolver, webServer, deviceRegistry)
+    .settings(Release.settings(common, commonData, commonTest, core, externalResolver, deviceRegistry, commonClient))
+    .aggregate(common, commonData, commonTest, core, externalResolver, webServer, deviceRegistry, commonClient)
     .enablePlugins(Versioning.Plugin)
     .settings(Publish.disable)
 }

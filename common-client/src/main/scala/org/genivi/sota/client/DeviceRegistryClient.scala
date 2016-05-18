@@ -2,7 +2,7 @@
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.device_registry.client
+package org.genivi.sota.common.client
 
 import akka.actor.ActorSystem
 import akka.event.Logging
@@ -16,8 +16,8 @@ import cats.Show
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
+import org.genivi.sota.common.IDeviceRegistry
 import org.genivi.sota.data.{Device, DeviceT}
-import org.genivi.sota.device_registry.IDeviceRegistry
 import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import scala.concurrent.{ExecutionContext, Future}

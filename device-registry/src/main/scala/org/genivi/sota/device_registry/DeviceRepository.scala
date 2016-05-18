@@ -31,6 +31,13 @@ object Devices {
       (s: String) => Id(refineV[ValidId](s).right.get)
     )
 
+  // TODO generalize
+  implicit val deviceNameColumnType =
+    MappedColumnType.base[DeviceName, String](
+      _ match { case DeviceName(value) => value.toString },
+      DeviceName(_)
+    )
+
   implicit val deviceIdColumnType =
     MappedColumnType.base[DeviceId, String](
       { case DeviceId(value) => value.toString },
@@ -41,11 +48,13 @@ object Devices {
   class DeviceTable(tag: Tag) extends Table[Device](tag, "Device") {
     def namespace = column[Namespace]("namespace")
     def id = column[Id]("uuid")
+    def deviceName = column[DeviceName]("device_name")
     def deviceId = column[Option[DeviceId]]("device_id")
     def deviceType = column[DeviceType]("device_type")
     def lastSeen = column[Option[DateTime]]("last_seen")
 
-    def * = (namespace, id, deviceId, deviceType, lastSeen).shaped <> ((Device.apply _).tupled, Device.unapply)
+    def * = (namespace, id, deviceName, deviceId, deviceType, lastSeen).shaped <>
+      ((Device.apply _).tupled, Device.unapply)
 
     def pk = primaryKey("id", id)
   }
@@ -58,13 +67,22 @@ object Devices {
   def create (ns: Namespace, device: DeviceT)
              (implicit ec: ExecutionContext): DBIO[Id] = {
     val id: Id = Id(refineV[ValidId](UUID.randomUUID.toString).right.get)
-    (devices += Device(ns, id, device.deviceId, device.deviceType)).map(_ => id)
+    (devices += Device(ns, id, device.deviceName, device.deviceId, device.deviceType)).map(_ => id)
   }
 
   def exists(ns: Namespace, id: Id)
             (implicit ec: ExecutionContext): DBIO[Device] =
     devices
       .filter(d => d.namespace === ns && d.id === id)
+      .result
+      .headOption
+      .flatMap(_.
+        fold[DBIO[Device]](DBIO.failed(Errors.MissingDevice))(DBIO.successful))
+
+  def findByDeviceName(ns: Namespace, deviceName: DeviceName)
+                      (implicit ec: ExecutionContext): DBIO[Device] =
+    devices
+      .filter(d => d.namespace === ns && d.deviceName === deviceName)
       .result
       .headOption
       .flatMap(_.
@@ -93,11 +111,11 @@ object Devices {
           case Success(_) => DBIO.failed(Errors.ConflictingDeviceId)
           case Failure(_) => DBIO.successful(())
         }
-        _ <- devices.insertOrUpdate(Device(ns, id, device.deviceId, device.deviceType))
+        _ <- devices.insertOrUpdate(Device(ns, id, device.deviceName, device.deviceId, device.deviceType))
       } yield ()
       case None => for {
         _ <- exists(ns, id)
-        _ <- devices.insertOrUpdate(Device(ns, id, device.deviceId, device.deviceType))
+        _ <- devices.insertOrUpdate(Device(ns, id, device.deviceName, device.deviceId, device.deviceType))
       } yield ()
     }
 
