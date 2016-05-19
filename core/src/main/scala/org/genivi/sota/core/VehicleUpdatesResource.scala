@@ -48,9 +48,9 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
 
   protected lazy val updateService = new UpdateService(DefaultUpdateNotifier)
 
-  def logVehicleSeen(vehicle: Vehicle): Directive0 = {
+  def logVehicleSeen(vin: Vehicle.Vin): Directive0 = {
     extractRequestContext flatMap { _ =>
-      onComplete(db.run(Vehicles.updateLastSeen(vehicle)))
+      onComplete(db.run(Vehicles.updateLastSeen(vin)))
     } flatMap (_ => pass)
   }
 
@@ -75,14 +75,14 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
     *
     * @see [[data.UpdateStatus]] (two of interest: InFlight and Pending)
     */
-  def pendingPackages(ns: Namespace, vin: Vehicle.Vin): Route = {
+  def pendingPackages(vin: Vehicle.Vin): Route = {
     import org.genivi.sota.core.data.client.PendingUpdateRequest._
     import ResponseConversions._
 
-    logVehicleSeen(Vehicle(ns, vin)) {
+    logVehicleSeen(vin) {
       val vehiclePackages =
         VehicleUpdates
-          .findPendingPackageIdsFor(ns, vin)
+          .findPendingPackageIdsFor(vin)
           .map(_.toResponse)
 
       complete(db.run(vehiclePackages))
@@ -114,8 +114,8 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
   /**
     * A web client fetches the results of updates to a given [[Vehicle]].
     */
-  def results(ns: Namespace, vin: Vehicle.Vin): Route = {
-    complete(db.run(OperationResults.byVin(ns, vin)))
+  def results(vin: Vehicle.Vin): Route = {
+    complete(db.run(OperationResults.byVin(vin)))
   }
 
   /**
@@ -130,7 +130,7 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
     }
   }
 
-  def sync(ns: Namespace, vin: Vehicle.Vin): Route = {
+  def sync(vin: Vehicle.Vin): Route = {
     val ttl = DateTime.now.plusMinutes(5)
     // TODO: Config RVI destination path (or ClientServices.getpackages)
     // TODO: pass namespace
@@ -166,11 +166,11 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
       (put & path("order")) { setInstallOrder(vin) } ~
       (put & extractUuid & path("cancelupdate") ) { uuid => cancelUpdate(vin, uuid) } ~
       (post & extractNamespace & pathEnd) { ns => queueVehicleUpdate(ns, vin) } ~
-      (get & extractNamespace & pathEnd) { ns => pendingPackages(ns, vin) } ~
+      (get & pathEnd) { pendingPackages(vin) } ~
       (get & extractUuid & path("download")) { uuid => downloadPackage(vin, uuid) } ~
-      (get & extractNamespace & path("operationresults")) { ns => results(ns, vin) } ~
+      (get & path("operationresults")) { results(vin) } ~
       (post & extractUuid) { reportInstall } ~
-      (post & extractNamespace & path("sync")) { ns => sync(ns, vin) }
+      (post & path("sync")) { sync(vin) }
     }
   }
 }

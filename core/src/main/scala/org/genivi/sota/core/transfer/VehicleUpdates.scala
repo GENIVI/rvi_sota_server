@@ -76,10 +76,10 @@ object VehicleUpdates {
     db.run(dbIO)
   }
 
-  def findPendingPackageIdsFor(ns: Namespace, vin: Vehicle.Vin)
+  def findPendingPackageIdsFor(vin: Vehicle.Vin)
                               (implicit db: Database, ec: ExecutionContext) : DBIO[Seq[UpdateRequest]] = {
     updateSpecs
-      .filter(r => r.namespace === ns && r.vin === vin)
+      .filter(_.vin === vin)
       .filter(_.status.inSet(List(UpdateStatus.InFlight, UpdateStatus.Pending)))
       .join(updateRequests).on(_.requestId === _.id)
       .sortBy(r => (r._2.installPos.asc, r._2.creationTime.asc))

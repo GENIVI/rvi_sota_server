@@ -122,7 +122,7 @@ class UpdateServiceSpec extends PropSpec
     val f = for {
       (vehicle, packageM) <- db.run(dbSetup)
       updateRequest <- service.queueVehicleUpdate(vehicle.namespace, vehicle.vin, packageM.id)
-      queuedPackages <- db.run(VehicleUpdates.findPendingPackageIdsFor(vehicle.namespace, vehicle.vin))
+      queuedPackages <- db.run(VehicleUpdates.findPendingPackageIdsFor(vehicle.vin))
     } yield (updateRequest, queuedPackages)
 
     whenReady(f) { case (updateRequest, queuedPackages) =>
