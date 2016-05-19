@@ -1,0 +1,77 @@
+version: '2'
+services:
+  
+  mysql:
+    image: advancedtelematic/mariadb
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: "sota-test"
+      MYSQL_USER: "sota"
+      MYSQL_PASSWORD: "s0ta"
+      MYSQL_DATABASES: "sota_resolver sota_resolver_test sota_core sota_core_test"
+
+
+  rvi_server:
+    image: advancedtelematic/rvi
+    ports:
+      - 8801:8801
+      - 8807:8807
+    depends_on:
+      - mysql
+    stdin_open: true
+    tty: true
+    command: server
+
+  resolver:
+    image: advancedtelematic/sota-resolver
+    ports:
+      - 8081:8081
+    expose:
+      - 8081
+    depends_on:
+      - mysql
+      - rvi_server
+      - core
+    environment:
+      HOST: 0.0.0.0
+      RESOLVER_DB_URL: "jdbc:mariadb://mysql:3306/sota_resolver"
+      RESOLVER_DB_MIGRATE: 'true'     
+
+  core:
+    image: advancedtelematic/sota-core
+    ports:
+      - 8080:8080
+    expose:
+      - 8080
+    depends_on:
+      - mysql
+      - rvi_server
+    environment:
+      HOST: 0.0.0.0
+      CORE_DB_URL: "jdbc:mariadb://mysql:3306/sota_core"
+      CORE_DB_MIGRATE: 'true'
+      RESOLVER_API_URI: "http://resolver:8081"
+      RVI_URI: "http://rvi_server:8801"
+      SOTA_SERVICES_URI: "http://core:8080/rvi"
+
+
+  webserver:
+    image: advancedtelematic/sota-webserver
+    depends_on:
+      - rvi_server
+      - resolver
+      - core
+    ports:
+      - 80:9000
+    expose:
+      - 9000
+    environment:
+      CORE_API_URI: "http://core:8080"
+      RESOLVER_API_URI: "http://resolver:8081"
+      PLAY_CRYPTO_SECRET: "YM5B6o<ywKn4tTyA;tOZ<2xUEajF4DDi=O/PPm1Q^w2LqtKISd9oqYT6b>>C1gQa"
+
+
+
