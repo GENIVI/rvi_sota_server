@@ -38,7 +38,10 @@
             
                 <li class="nav-header">Documentation</li>
             
-            <li data-order="2"><a href="/rvi_sota_server/doc/deployment-with-docker-launcher.html">Deployment with Docker Launcher</a></li>
+            <li data-order=""><a href="/rvi_sota_server/doc/deployment-with-dockercompose.html">Deployment with docker-compose</a></li>
+        
+            
+            <li data-order="2"><a href="/rvi_sota_server/doc/deployment-with-docker-launcher.html">Deployment with Docker Launcher - Deprecated</a></li>
         
             
             <li data-order="6"><a href="/rvi_sota_server/doc/contributing.html">Contributing</a></li>
@@ -128,7 +131,10 @@
 </div>
 
 <div class="paragraph">
-<p>For the server-side components, this project includes a <a href="https://github.com/advancedtelematic/docker-launcher">docker-launcher</a> configuration file to allow the cluster of components to be deployed conveniently to a developer machine or to Amazon AWS. See <a href="../doc/deployment-with-docker-launcher.html">Deployment with Docker Launcher</a> for deploying a development or evaluation system with Docker Launcher.</p>
+<p>Both the SOTA server components and the SOTA client are available as docker containers, and can be run quickly with <a href="https://docs.docker.com/compose">docker-compose</a>. For more detailed instructions on running SOTA with docker, see <a href="../doc/deployment-with-dockercompose.html">Deployment with docker-compose</a>. It is also possible to <a href="../doc/deployment-with-docker-launcher.html">deploy directly to EC2</a> using <a href="https://github.com/advancedtelematic/docker-launcher">docker-launcher</a>, however this method is deprecated and unsupported.</p>
+</div>
+<div class="paragraph">
+<p>This page contains instructions on getting a local development system up and running.</p>
 </div>
 <div id="toc" class="toc">
 <div id="toctitle" class="title">Table of Contents</div>
@@ -190,15 +196,15 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.45-b02, mixed mode)</code></pre>
 <div class="sect2">
 <h3 id="prerequisite-mariadb">Prerequisite: MariaDB</h3>
 <div class="paragraph">
-<p>For development, a local MariaDB install is required. (Note that this is <strong>not</strong> required for deployment, as Docker Launcher will handle the creation of the database. If a Docker Launcher local deployment is attempted on a machine already running a database instance, there may be conflicts.) Create two databases called 'sota_core' and 'sota_resolver':</p>
+<p>For development, a local MariaDB install is required. (Note that this is <strong>not</strong> required for deployment, as Docker Launcher will handle the creation of the database. If a Docker Launcher local deployment is attempted on a machine already running a database instance, there may be conflicts.) Create two databases called <code>sota_core</code> and <code>sota_resolver</code>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="pygments highlight"><code data-lang="sql">mysql <span style="color: #666666">-</span>u root <span style="color: #666666">-</span>p
-<span style="color: #008000; font-weight: bold">CREATE</span> <span style="color: #008000; font-weight: bold">DATABASE</span> sota_core;
-<span style="color: #008000; font-weight: bold">CREATE</span> <span style="color: #008000; font-weight: bold">DATABASE</span> sota_core_test;
-<span style="color: #008000; font-weight: bold">CREATE</span> <span style="color: #008000; font-weight: bold">DATABASE</span> sota_resolver;
-<span style="color: #008000; font-weight: bold">CREATE</span> <span style="color: #008000; font-weight: bold">DATABASE</span> sota_resolver_test;
+<span style="color: #008000; font-weight: bold">CREATE</span> <span style="color: #008000; font-weight: bold">DATABASE</span> sota_core <span style="color: #008000">CHARACTER</span> <span style="color: #008000; font-weight: bold">SET</span> utf8;
+<span style="color: #008000; font-weight: bold">CREATE</span> <span style="color: #008000; font-weight: bold">DATABASE</span> sota_core_test <span style="color: #008000">CHARACTER</span> <span style="color: #008000; font-weight: bold">SET</span> utf8;
+<span style="color: #008000; font-weight: bold">CREATE</span> <span style="color: #008000; font-weight: bold">DATABASE</span> sota_resolver <span style="color: #008000">CHARACTER</span> <span style="color: #008000; font-weight: bold">SET</span> utf8;
+<span style="color: #008000; font-weight: bold">CREATE</span> <span style="color: #008000; font-weight: bold">DATABASE</span> sota_resolver_test <span style="color: #008000">CHARACTER</span> <span style="color: #008000; font-weight: bold">SET</span> utf8;
 <span style="color: #008000; font-weight: bold">CREATE</span> <span style="color: #008000; font-weight: bold">USER</span> <span style="color: #BA2121">&#39;sota&#39;</span><span style="color: #666666">@</span><span style="color: #BA2121">&#39;localhost&#39;</span> IDENTIFIED <span style="color: #008000; font-weight: bold">BY</span> <span style="color: #BA2121">&#39;s0ta&#39;</span>;
 <span style="color: #008000; font-weight: bold">GRANT</span> <span style="color: #008000; font-weight: bold">ALL</span> <span style="color: #008000; font-weight: bold">PRIVILEGES</span> <span style="color: #008000; font-weight: bold">ON</span> sota_core . <span style="color: #666666">*</span> <span style="color: #008000; font-weight: bold">TO</span> <span style="color: #BA2121">&#39;sota&#39;</span><span style="color: #666666">@</span><span style="color: #BA2121">&#39;localhost&#39;</span>;
 <span style="color: #008000; font-weight: bold">GRANT</span> <span style="color: #008000; font-weight: bold">ALL</span> <span style="color: #008000; font-weight: bold">PRIVILEGES</span> <span style="color: #008000; font-weight: bold">ON</span> sota_core_test . <span style="color: #666666">*</span> <span style="color: #008000; font-weight: bold">TO</span> <span style="color: #BA2121">&#39;sota&#39;</span><span style="color: #666666">@</span><span style="color: #BA2121">&#39;localhost&#39;</span>;
@@ -241,11 +247,12 @@ docker run -it --name rvi-server --expose <span style="color: #666666">8801</spa
 <div class="content">
 <div class="title">Building without an active RVI node</div>
 <div class="paragraph">
-<p>If you don&#8217;t need to worry about the client communication part of the server, you might not want to bother with setting up an RVI node. You can get around this requirement by editing line 57 of <code>/core/src/main/scala/org/genivi/sota/core/Boot.scala</code> to the following:</p>
+<p>If you don&#8217;t need to worry about the client communication part of the server, you might not want to bother with setting up an RVI node. You can run without RVI by setting the <code>CORE_INTERACTION_PROTOCOL</code> environment variable to "none" before you run sota-core:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="scala">sotaServices <span style="color: #008000; font-weight: bold">&lt;-</span> <span style="color: #0000FF; font-weight: bold">FastFuture</span><span style="color: #666666">.</span>successful<span style="color: #666666">(</span><span style="color: #0000FF; font-weight: bold">ServerServices</span><span style="color: #666666">(</span><span style="color: #BA2121">&quot;&quot;</span><span style="color: #666666">,</span><span style="color: #BA2121">&quot;&quot;</span><span style="color: #666666">,</span><span style="color: #BA2121">&quot;&quot;</span><span style="color: #666666">,</span><span style="color: #BA2121">&quot;&quot;</span><span style="color: #666666">))</span></code></pre>
+<pre class="pygments highlight"><code data-lang="sh"><span style="color: #008000">export </span><span style="color: #19177C">CORE_INTERACTION_PROTOCOL</span><span style="color: #666666">=</span><span style="color: #BA2121">&quot;none&quot;</span>
+sbt sota-core/run</code></pre>
 </div>
 </div>
 </div>
@@ -258,9 +265,9 @@ docker run -it --name rvi-server --expose <span style="color: #666666">8801</spa
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="sh">sbt resolver/run
-sbt core/run
-sbt webserver/run</code></pre>
+<pre class="pygments highlight"><code data-lang="sh">sbt sota-resolver/run
+sbt sota-core/run
+sbt sota-webserver/run</code></pre>
 </div>
 </div>
 <div class="admonitionblock tip">
@@ -270,7 +277,7 @@ sbt webserver/run</code></pre>
 <i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
-The SOTA Core server looks for the RVI server node on localhost by default. If your RVI node is running somewhere else (i.e. if you&#8217;re running docker on a mac), you will need to specify <code>RVI_URI</code> as an environment variable. If your docker host was 192.168.99.100, for example, you would run <code>RVI_URI="http://192.168.99.100:8801" sbt core/run</code>.
+The SOTA Core server looks for the RVI server node on localhost by default. If your RVI node is running somewhere else (e.g. if you&#8217;re running docker on a mac), you will need to specify <code>RVI_URI</code> as an environment variable. If your docker host was 192.168.99.100, for example, you would run <code>RVI_URI="http://192.168.99.100:8801" sbt sota-core/run</code>.
 </td>
 </tr>
 </table>

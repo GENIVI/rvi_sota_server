@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <meta name="viewport" content="width=device-width">
 
-        <title>GENIVI SOTA Project : Database Style Guide</title>
+        <title>GENIVI SOTA Project : Deployment with docker-compose</title>
         <meta name="description" content="Software Updates Over the Air">
 
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
@@ -125,55 +125,35 @@
                     <div id="content" class="col-sm-9">
                         <div id="content" class="col-sm-10">
                             <div class="page-header">
-    <h2>Database Style Guide
+    <h2>Deployment with docker-compose
         
     </h2>
 </div>
 
-<div class="sect2">
-<h3 id="table-names-are-uppercamelcase-singular.">Table names are UpperCamelCase Singular.</h3>
 <div class="paragraph">
-<p>Table names should be the same as the Scala domain object that
-represents them (if it exists). By using the same casing rules as Scala,
-the domain object and SQL table names can match exactly.</p>
+<p>Docker is a great way to get SOTA running in a clean, reproducible way. sbt can build and publish local docker images to test with, and docker-compose combined with some ATS-provided images makes sure all of SOTA&#8217;s dependencies are taken care of.</p>
 </div>
 <div class="paragraph">
-<p>For more arguments on the singular/plural naming, see
-<a href="http://stackoverflow.com/questions/338156/table-naming-dilemma-singular-vs-plural-names" class="bare">http://stackoverflow.com/questions/338156/table-naming-dilemma-singular-vs-plural-names</a></p>
+<p>There are three docker-compose files included in the git repo, under <code>/deploy/docker-compose</code>:</p>
 </div>
-</div>
-<div class="sect2">
-<h3 id="column-names-are-lowercamelcase">Column names are lowerCamelCase</h3>
-<div class="paragraph">
-<p>Lower camel case column names should match scala property names.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="surrogate-primary-keys-are-called-id.">Surrogate primary keys are called 'id'.</h3>
-<div class="paragraph">
-<p>For example:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="sql">    <span style="color: #408080; font-style: italic">-- Good</span>
-    <span style="color: #008000; font-weight: bold">CREATE</span> <span style="color: #008000; font-weight: bold">TABLE</span> Person (
-      id <span style="color: #008000">int</span> <span style="color: #008000; font-weight: bold">PRIMARY</span> <span style="color: #008000; font-weight: bold">KEY</span>,
-      ...
-    );</code></pre>
-</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>server-bare.yml</code> contains all of the SOTA server components, with client communication disabled.</p>
+</li>
+<li>
+<p><code>server-rvi.yml</code> contains the server components plus the server-side RVI node, for communication with clients.</p>
+</li>
+<li>
+<p><code>server-rvi-client.yml</code> contains the server components, the server-side RVI node, plus a debug build of the SOTA client</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
-<p>rather than:</p>
+<p>As long as you have docker-compose 1.6 or higher, you should be able to run these with <code>docker-compose -p sota -f [filename].yml</code>. They will pull docker images from ATS Docker Hub respositories by default; you&#8217;ll generally want to replace the component you&#8217;re working on with a local version. <code>sbt docker:publishLocal</code> will give you docker images for the three main components. You can then modify the YAML files to point to your local images instead.</p>
 </div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="sql">    <span style="color: #408080; font-style: italic">-- BAD</span>
-    <span style="color: #008000; font-weight: bold">CREATE</span> <span style="color: #008000; font-weight: bold">TABLE</span> Person (
-      personId <span style="color: #008000">int</span> <span style="color: #008000; font-weight: bold">PRIMARY</span> <span style="color: #008000; font-weight: bold">KEY</span>, <span style="color: #408080; font-style: italic">-- BAD: should be &#39;id&#39;</span>
-      ...
-    );</code></pre>
-</div>
-</div>
+<div class="paragraph">
+<p>If you want to deploy to the cloud, docker-compose can also help you do that. The easiest way is to use <a href="https://docs.docker.com/machine/drivers/aws/">docker-machine&#8217;s AWS driver</a> to create and deploy to a remote host.</p>
 </div>
 
                         </div>
