@@ -167,24 +167,42 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="org.genivi.sota.resolver.packages.PackageFilterRepository#add" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="add(pf:org.genivi.sota.resolver.packages.PackageFilter)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[org.genivi.sota.resolver.packages.PackageFilter]"></a>
-      <a id="add(PackageFilter)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[PackageFilter]"></a>
+    </li><li name="org.genivi.sota.resolver.packages.PackageFilterRepository.MissingPackageFilterException" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MissingPackageFilterException"></a>
+      <a id="MissingPackageFilterException:MissingPackageFilterException"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="PackageFilterRepository$$MissingPackageFilterException$.html"><span class="name">MissingPackageFilterException</span></a><span class="result"> extends <span class="extype" name="scala.Throwable">Throwable</span> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageFilterRepository$@MissingPackageFilterException" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.packages.PackageFilterRepository#addPackageFilter" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="addPackageFilter(pf:org.genivi.sota.resolver.packages.PackageFilter)(implicitdb:slick.driver.MySQLDriver.api.Database,implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[org.genivi.sota.resolver.packages.PackageFilter]"></a>
+      <a id="addPackageFilter(PackageFilter)(slick.driver.JdbcProfile.API.Database,ExecutionContext):slick.driver.JdbcProfile.API.DBIO[PackageFilter]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">add</span><span class="params">(<span name="pf">pf: <a href="PackageFilter.html" class="extype" name="org.genivi.sota.resolver.packages.PackageFilter">PackageFilter</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<a href="PackageFilter.html" class="extype" name="org.genivi.sota.resolver.packages.PackageFilter">PackageFilter</a>]</span>
+        <span class="name">addPackageFilter</span><span class="params">(<span name="pf">pf: <a href="PackageFilter.html" class="extype" name="org.genivi.sota.resolver.packages.PackageFilter">PackageFilter</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="db">db: <span class="extype" name="slick.profile.BasicProfile.CommonAPI.Database">slick.driver.JdbcProfile.API.Database</span></span>, <span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<a href="PackageFilter.html" class="extype" name="org.genivi.sota.resolver.packages.PackageFilter">PackageFilter</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageFilterRepository$@add(pf:org.genivi.sota.resolver.packages.PackageFilter)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[org.genivi.sota.resolver.packages.PackageFilter]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageFilterRepository$@addPackageFilter(pf:org.genivi.sota.resolver.packages.PackageFilter)(implicitdb:slick.driver.MySQLDriver.api.Database,implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[org.genivi.sota.resolver.packages.PackageFilter]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Adds a package filter to the PackageFilter table.</p><div class="fullcomment"><div class="comment cmt"><p>Adds a package filter to the PackageFilter table. Updates an existing package filter
-if already present.</p></div><dl class="paramcmts block"><dt class="param">pf</dt><dd class="cmt"><p>The package filter to add</p></dd><dt>returns</dt><dd class="cmt"><p>A DBIO[PackageFilter] for added filter</p></dd></dl></div>
+      <p class="shortcomment cmt">Adds a package filter to the resolver
+</p><div class="fullcomment"><div class="comment cmt"><p>Adds a package filter to the resolver
+</p></div><dl class="paramcmts block"><dt class="param">pf</dt><dd class="cmt"><p>The filter to add</p></dd><dt>returns</dt><dd class="cmt"><p>A DBIO[PackageFilter] for the added PackageFilter</p></dd></dl><dl class="attributes block"> <dt>Exceptions thrown</dt><dd><span class="cmt"><p><span class="extype" name="Errors.MissingFilterException"><code>Errors.MissingFilterException</code></span> if the named filter does not exist</p></span><span class="cmt"><p><span class="extype" name="Errors.MissingPackageException"><code>Errors.MissingPackageException</code></span> if the named package does not exist</p></span></dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -225,40 +243,44 @@ if already present.</p></div><dl class="paramcmts block"><dt class="param">pf</d
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="org.genivi.sota.resolver.packages.PackageFilterRepository#delete" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="delete(fname:org.genivi.sota.resolver.filters.Filter.Name):slick.driver.MySQLDriver.api.DBIO[Int]"></a>
-      <a id="delete(Name):slick.driver.JdbcProfile.API.DBIO[Int]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">delete</span><span class="params">(<span name="fname">fname: <a href="../filters/Filter$.html#Name=eu.timepit.refined.Refined[String,org.genivi.sota.resolver.filters.Filter.ValidName]" class="extmbr" name="org.genivi.sota.resolver.filters.Filter.Name">Name</a></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Int">Int</span>]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageFilterRepository$@delete(fname:org.genivi.sota.resolver.filters.Filter.Name):slick.driver.MySQLDriver.api.DBIO[Int]" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <p class="shortcomment cmt">Deletes a filter by name</p><div class="fullcomment"><div class="comment cmt"><p>Deletes a filter by name</p></div><dl class="paramcmts block"><dt class="param">fname</dt><dd class="cmt"><p>The name of the filter to delete</p></dd><dt>returns</dt><dd class="cmt"><p>A DBIO[Int] number of filters deleted</p></dd></dl></div>
     </li><li name="org.genivi.sota.resolver.packages.PackageFilterRepository#deletePackageFilter" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="deletePackageFilter(pname:org.genivi.sota.resolver.packages.Package.Name,pversion:org.genivi.sota.resolver.packages.Package.Version,fname:org.genivi.sota.resolver.filters.Filter.Name):slick.driver.MySQLDriver.api.DBIO[Int]"></a>
-      <a id="deletePackageFilter(Package.Name,Package.Version,Name):slick.driver.JdbcProfile.API.DBIO[Int]"></a>
+      <a id="deletePackageFilter(pf:org.genivi.sota.resolver.packages.PackageFilter)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Int]"></a>
+      <a id="deletePackageFilter(PackageFilter)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Int]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">deletePackageFilter</span><span class="params">(<span name="pname">pname: <a href="Package$.html#Name=eu.timepit.refined.Refined[String,PackageCommon.this.ValidName]" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Name">Package.Name</a></span>, <span name="pversion">pversion: <a href="Package$.html#Version=eu.timepit.refined.Refined[String,PackageCommon.this.ValidVersion]" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Version">Package.Version</a></span>, <span name="fname">fname: <a href="../filters/Filter$.html#Name=eu.timepit.refined.Refined[String,org.genivi.sota.resolver.filters.Filter.ValidName]" class="extmbr" name="org.genivi.sota.resolver.filters.Filter.Name">Name</a></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Int">Int</span>]</span>
+        <span class="name">deletePackageFilter</span><span class="params">(<span name="pf">pf: <a href="PackageFilter.html" class="extype" name="org.genivi.sota.resolver.packages.PackageFilter">PackageFilter</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Int">Int</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageFilterRepository$@deletePackageFilter(pname:org.genivi.sota.resolver.packages.Package.Name,pversion:org.genivi.sota.resolver.packages.Package.Version,fname:org.genivi.sota.resolver.filters.Filter.Name):slick.driver.MySQLDriver.api.DBIO[Int]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageFilterRepository$@deletePackageFilter(pf:org.genivi.sota.resolver.packages.PackageFilter)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Int]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Deletes a filter by package name and version, and filter name</p><div class="fullcomment"><div class="comment cmt"><p>Deletes a filter by package name and version, and filter name</p></div><dl class="paramcmts block"><dt class="param">pname</dt><dd class="cmt"><p>The name of the package in the filter to be deleted</p></dd><dt class="param">pversion</dt><dd class="cmt"><p>The version of the package in the filter to be deleted</p></dd><dt class="param">fname</dt><dd class="cmt"><p>The name of the filter to be deleted</p></dd><dt>returns</dt><dd class="cmt"><p>A DBIO[Int] number of filters deleted</p></dd></dl></div>
+      <p class="shortcomment cmt">Deletes a package filter
+</p><div class="fullcomment"><div class="comment cmt"><p>Deletes a package filter
+</p></div><dl class="paramcmts block"><dt class="param">pf</dt><dd class="cmt"><p>The name of the package filter to be deleted</p></dd><dt>returns</dt><dd class="cmt"><p>A DBIO[Int] number of filters deleted</p></dd></dl></div>
+    </li><li name="org.genivi.sota.resolver.packages.PackageFilterRepository#deletePackageFilterByFilterName" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="deletePackageFilterByFilterName(namespace:org.genivi.sota.data.Namespace.Namespace,fname:org.genivi.sota.resolver.filters.Filter.Name):slick.driver.MySQLDriver.api.DBIO[Int]"></a>
+      <a id="deletePackageFilterByFilterName(Namespace,Name):slick.driver.JdbcProfile.API.DBIO[Int]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">deletePackageFilterByFilterName</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="fname">fname: <a href="../filters/Filter$.html#Name=eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.filters.Filter.ValidName]" class="extmbr" name="org.genivi.sota.resolver.filters.Filter.Name">Name</a></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Int">Int</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageFilterRepository$@deletePackageFilterByFilterName(namespace:org.genivi.sota.data.Namespace.Namespace,fname:org.genivi.sota.resolver.filters.Filter.Name):slick.driver.MySQLDriver.api.DBIO[Int]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Deletes a filter by name
+</p><div class="fullcomment"><div class="comment cmt"><p>Deletes a filter by name
+</p></div><dl class="paramcmts block"><dt class="param">fname</dt><dd class="cmt"><p>The name of the filter to delete</p></dd><dt>returns</dt><dd class="cmt"><p>A DBIO[Int] number of filters deleted</p></dd></dl></div>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
@@ -293,6 +315,23 @@ if already present.</p></div><dl class="paramcmts block"><dt class="param">pf</d
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="org.genivi.sota.resolver.packages.PackageFilterRepository#exists" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="exists(pf:org.genivi.sota.resolver.packages.PackageFilter)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[org.genivi.sota.resolver.packages.PackageFilter]"></a>
+      <a id="exists(PackageFilter)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[PackageFilter]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">exists</span><span class="params">(<span name="pf">pf: <a href="PackageFilter.html" class="extype" name="org.genivi.sota.resolver.packages.PackageFilter">PackageFilter</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<a href="PackageFilter.html" class="extype" name="org.genivi.sota.resolver.packages.PackageFilter">PackageFilter</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageFilterRepository$@exists(pf:org.genivi.sota.resolver.packages.PackageFilter)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[org.genivi.sota.resolver.packages.PackageFilter]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <a id="finalize():Unit"></a>
@@ -383,42 +422,45 @@ if already present.</p></div><dl class="paramcmts block"><dt class="param">pf</d
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Lists the package filters in the PackageFilter table</p><div class="fullcomment"><div class="comment cmt"><p>Lists the package filters in the PackageFilter table</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>A DBIO[Seq[PackageFilter]] for the package filters in the table</p></dd></dl></div>
-    </li><li name="org.genivi.sota.resolver.packages.PackageFilterRepository#listFiltersForPackage" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="listFiltersForPackage(pkgId:org.genivi.sota.resolver.packages.Package.Id)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[(Option[org.genivi.sota.resolver.packages.Package],Seq[org.genivi.sota.resolver.filters.Filter])]"></a>
-      <a id="listFiltersForPackage(Package.Id)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[(Option[Package],Seq[Filter])]"></a>
+      <p class="shortcomment cmt">Lists the package filters in the PackageFilter table
+</p><div class="fullcomment"><div class="comment cmt"><p>Lists the package filters in the PackageFilter table
+</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>A DBIO[Seq[PackageFilter]] for the package filters in the table</p></dd></dl></div>
+    </li><li name="org.genivi.sota.resolver.packages.PackageFilterRepository#listFiltersForPackage" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="listFiltersForPackage(namespace:org.genivi.sota.data.Namespace.Namespace,pkgId:org.genivi.sota.data.PackageId)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.resolver.filters.Filter]]"></a>
+      <a id="listFiltersForPackage(Namespace,PackageId)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Seq[Filter]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">listFiltersForPackage</span><span class="params">(<span name="pkgId">pkgId: <a href="Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">Package.Id</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[(<span class="extype" name="scala.Option">Option</span>[<a href="Package.html" class="extype" name="org.genivi.sota.resolver.packages.Package">Package</a>], <span class="extype" name="scala.Seq">Seq</span>[<a href="../filters/Filter.html" class="extype" name="org.genivi.sota.resolver.filters.Filter">Filter</a>])]</span>
+        <span class="name">listFiltersForPackage</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="pkgId">pkgId: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[<a href="../filters/Filter.html" class="extype" name="org.genivi.sota.resolver.filters.Filter">Filter</a>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageFilterRepository$@listFiltersForPackage(pkgId:org.genivi.sota.resolver.packages.Package.Id)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[(Option[org.genivi.sota.resolver.packages.Package],Seq[org.genivi.sota.resolver.filters.Filter])]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageFilterRepository$@listFiltersForPackage(namespace:org.genivi.sota.data.Namespace.Namespace,pkgId:org.genivi.sota.data.PackageId)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.resolver.filters.Filter]]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Lists the filters for a specific package</p><div class="fullcomment"><div class="comment cmt"><p>Lists the filters for a specific package</p></div><dl class="paramcmts block"><dt class="param">pkgId</dt><dd class="cmt"><p>The ID of the package for which to find matching filters</p></dd><dt>returns</dt><dd class="cmt"><p>A DBIO[(Option[Package], Seq[Filter)] of the matching Package if found
-              and a Seq of associated Filters, or None and the empty Seq</p></dd></dl></div>
+      
     </li><li name="org.genivi.sota.resolver.packages.PackageFilterRepository#listPackagesForFilter" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="listPackagesForFilter(fname:org.genivi.sota.resolver.filters.Filter.Name):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.resolver.packages.Package]]"></a>
-      <a id="listPackagesForFilter(Name):slick.driver.JdbcProfile.API.DBIO[Seq[Package]]"></a>
+      <a id="listPackagesForFilter(namespace:org.genivi.sota.data.Namespace.Namespace,fname:org.genivi.sota.resolver.filters.Filter.Name)(implicitdb:slick.driver.MySQLDriver.api.Database,implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.resolver.packages.Package]]"></a>
+      <a id="listPackagesForFilter(Namespace,Name)(slick.driver.JdbcProfile.API.Database,ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Seq[Package]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">listPackagesForFilter</span><span class="params">(<span name="fname">fname: <a href="../filters/Filter$.html#Name=eu.timepit.refined.Refined[String,org.genivi.sota.resolver.filters.Filter.ValidName]" class="extmbr" name="org.genivi.sota.resolver.filters.Filter.Name">Name</a></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[<a href="Package.html" class="extype" name="org.genivi.sota.resolver.packages.Package">Package</a>]]</span>
+        <span class="name">listPackagesForFilter</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="fname">fname: <a href="../filters/Filter$.html#Name=eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.filters.Filter.ValidName]" class="extmbr" name="org.genivi.sota.resolver.filters.Filter.Name">Name</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="db">db: <span class="extype" name="slick.profile.BasicProfile.CommonAPI.Database">slick.driver.JdbcProfile.API.Database</span></span>, <span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[<a href="Package.html" class="extype" name="org.genivi.sota.resolver.packages.Package">Package</a>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageFilterRepository$@listPackagesForFilter(fname:org.genivi.sota.resolver.filters.Filter.Name):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.resolver.packages.Package]]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageFilterRepository$@listPackagesForFilter(namespace:org.genivi.sota.data.Namespace.Namespace,fname:org.genivi.sota.resolver.filters.Filter.Name)(implicitdb:slick.driver.MySQLDriver.api.Database,implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.resolver.packages.Package]]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Lists the packages for a specific filter</p><div class="fullcomment"><div class="comment cmt"><p>Lists the packages for a specific filter</p></div><dl class="paramcmts block"><dt class="param">fname</dt><dd class="cmt"><p>The name of the filter for which to list packages</p></dd><dt>returns</dt><dd class="cmt"><p>A DBIO[Seq[Package]] of packages for any matched filter</p></dd></dl></div>
+      <p class="shortcomment cmt">Lists the packages for a filter
+</p><div class="fullcomment"><div class="comment cmt"><p>Lists the packages for a filter
+</p></div><dl class="paramcmts block"><dt class="param">fname</dt><dd class="cmt"><p>The name of the filter for which to list the packages</p></dd><dt>returns</dt><dd class="cmt"><p>A DBIO[Seq[Package]] of associated packages</p></dd></dl><dl class="attributes block"> <dt>Exceptions thrown</dt><dd><span class="cmt"><p><span class="extype" name="Errors.MissingFilterException"><code>Errors.MissingFilterException</code></span> if the named filter does not exist</p></span></dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>

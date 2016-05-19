@@ -45,7 +45,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">ChunksReceived</span><span class="params">(<span name="vin">vin: <a href="../data/Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.core.data.Vehicle.Vin">data.Vehicle.Vin</a></span>, <span name="package">package: <a href="../data/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">data.Package.Id</a></span>, <span name="chunks">chunks: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Int">Int</span>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <span class="name">ChunksReceived</span><span class="params">(<span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>, <span name="update_id">update_id: <span class="extype" name="java.util.UUID">UUID</span></span>, <span name="chunks">chunks: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Int">Int</span>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
@@ -89,7 +89,7 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="org.genivi.sota.core.rvi.ChunksReceived#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(vin:org.genivi.sota.core.data.Vehicle.Vin,package:org.genivi.sota.core.data.Package.Id,chunks:List[Int]):org.genivi.sota.core.rvi.ChunksReceived"></a>
+      <a id="&lt;init&gt;(vin:org.genivi.sota.data.Vehicle.Vin,update_id:java.util.UUID,chunks:List[Int]):org.genivi.sota.core.rvi.ChunksReceived"></a>
       <a id="&lt;init&gt;:ChunksReceived"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -97,10 +97,10 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">ChunksReceived</span><span class="params">(<span name="vin">vin: <a href="../data/Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.core.data.Vehicle.Vin">data.Vehicle.Vin</a></span>, <span name="package">package: <a href="../data/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">data.Package.Id</a></span>, <span name="chunks">chunks: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Int">Int</span>]</span>)</span>
+        <span class="name">ChunksReceived</span><span class="params">(<span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>, <span name="update_id">update_id: <span class="extype" name="java.util.UUID">UUID</span></span>, <span name="chunks">chunks: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Int">Int</span>]</span>)</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.rvi.ChunksReceived@&lt;init&gt;(vin:org.genivi.sota.core.data.Vehicle.Vin,package:org.genivi.sota.core.data.Package.Id,chunks:List[Int]):org.genivi.sota.core.rvi.ChunksReceived" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.rvi.ChunksReceived@&lt;init&gt;(vin:org.genivi.sota.data.Vehicle.Vin,update_id:java.util.UUID,chunks:List[Int]):org.genivi.sota.core.rvi.ChunksReceived" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -347,23 +347,6 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="org.genivi.sota.core.rvi.ChunksReceived#package" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="package:org.genivi.sota.core.data.Package.Id"></a>
-      <a id="package:data.Package.Id"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">package</span><span class="result">: <a href="../data/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">data.Package.Id</a></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.rvi.ChunksReceived@package:org.genivi.sota.core.data.Package.Id" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
       <a id="synchronized[T0](⇒T0):T0"></a>
@@ -381,19 +364,36 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="org.genivi.sota.core.rvi.ChunksReceived#vin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="vin:org.genivi.sota.core.data.Vehicle.Vin"></a>
-      <a id="vin:data.Vehicle.Vin"></a>
+    </li><li name="org.genivi.sota.core.rvi.ChunksReceived#update_id" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="update_id:java.util.UUID"></a>
+      <a id="update_id:UUID"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">vin</span><span class="result">: <a href="../data/Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.core.data.Vehicle.Vin">data.Vehicle.Vin</a></span>
+        <span class="name">update_id</span><span class="result">: <span class="extype" name="java.util.UUID">UUID</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.rvi.ChunksReceived@vin:org.genivi.sota.core.data.Vehicle.Vin" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.rvi.ChunksReceived@update_id:java.util.UUID" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.core.rvi.ChunksReceived#vin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="vin:org.genivi.sota.data.Vehicle.Vin"></a>
+      <a id="vin:Vin"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">vin</span><span class="result">: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.rvi.ChunksReceived@vin:org.genivi.sota.data.Vehicle.Vin" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>

@@ -95,23 +95,23 @@ vehicle.
 
         <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li name="org.genivi.sota.core.db.UpdateRequests.UpdateRequestsTable" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="UpdateRequestsTableextendsslick.driver.MySQLDriver.api.Table[org.genivi.sota.core.data.UpdateRequest]"></a>
-      <a id="UpdateRequestsTable:UpdateRequestsTable"></a>
+              <ol><li name="org.genivi.sota.core.db.UpdateRequests.UpdateRequestTable" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="UpdateRequestTableextendsslick.driver.MySQLDriver.api.Table[org.genivi.sota.core.data.UpdateRequest]"></a>
+      <a id="UpdateRequestTable:UpdateRequestTable"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="UpdateRequests$$UpdateRequestsTable.html"><span class="name">UpdateRequestsTable</span></a><span class="result"> extends <span class="extype" name="slick.profile.RelationalProfile.CommonAPI.Table">slick.driver.JdbcProfile.API.Table</span>[<a href="../data/UpdateRequest.html" class="extype" name="org.genivi.sota.core.data.UpdateRequest">UpdateRequest</a>]</span>
+        <a href="UpdateRequests$$UpdateRequestTable.html"><span class="name">UpdateRequestTable</span></a><span class="result"> extends <span class="extype" name="slick.profile.RelationalProfile.CommonAPI.Table">slick.driver.JdbcProfile.API.Table</span>[<a href="../data/UpdateRequest.html" class="extype" name="org.genivi.sota.core.data.UpdateRequest">UpdateRequest</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateRequests$@UpdateRequestsTableextendsslick.driver.MySQLDriver.api.Table[org.genivi.sota.core.data.UpdateRequest]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateRequests$@UpdateRequestTableextendsslick.driver.MySQLDriver.api.Table[org.genivi.sota.core.data.UpdateRequest]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Slick mapping definition for the UpdateRequests table</p><div class="fullcomment"><div class="comment cmt"><p>Slick mapping definition for the UpdateRequests table</p></div><dl class="attributes block"> <dt>See also</dt><dd><span class="cmt"><p><code><a href="http://slick.typesafe.com/" target="_blank">http://slick.typesafe.com/</a></code></p></span></dd></dl></div>
+      <p class="shortcomment cmt">Slick mapping definition for the UpdateRequests table</p><div class="fullcomment"><div class="comment cmt"><p>Slick mapping definition for the UpdateRequests table</p></div><dl class="attributes block"> <dt>See also</dt><dd><span class="cmt"><p><a href="http://slick.typesafe.com/" target="_blank">http://slick.typesafe.com/</a></p></span></dd></dl></div>
     </li></ol>
             </div>
 
@@ -171,22 +171,22 @@ vehicle.
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="org.genivi.sota.core.db.UpdateRequests#all" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="all:slick.lifted.TableQuery[org.genivi.sota.core.db.UpdateRequests.UpdateRequestsTable]"></a>
-      <a id="all:TableQuery[UpdateRequestsTable]"></a>
+      <a id="all:slick.lifted.TableQuery[org.genivi.sota.core.db.UpdateRequests.UpdateRequestTable]"></a>
+      <a id="all:TableQuery[UpdateRequestTable]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">all</span><span class="result">: <span class="extype" name="slick.lifted.TableQuery">TableQuery</span>[<a href="UpdateRequests$$UpdateRequestsTable.html" class="extype" name="org.genivi.sota.core.db.UpdateRequests.UpdateRequestsTable">UpdateRequestsTable</a>]</span>
+        <span class="name">all</span><span class="result">: <span class="extype" name="slick.lifted.TableQuery">TableQuery</span>[<a href="UpdateRequests$$UpdateRequestTable.html" class="extype" name="org.genivi.sota.core.db.UpdateRequests.UpdateRequestTable">UpdateRequestTable</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateRequests$@all:slick.lifted.TableQuery[org.genivi.sota.core.db.UpdateRequests.UpdateRequestsTable]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateRequests$@all:slick.lifted.TableQuery[org.genivi.sota.core.db.UpdateRequests.UpdateRequestTable]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Internal helper definition to accesss the SQL table
+      <p class="shortcomment cmt">Internal helper definition to access the SQL table
 </p>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
@@ -205,6 +205,24 @@ vehicle.
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="org.genivi.sota.core.db.UpdateRequests#byId" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="byId(updateId:java.util.UUID):slick.driver.MySQLDriver.api.DBIO[Option[org.genivi.sota.core.data.UpdateRequest]]"></a>
+      <a id="byId(UUID):slick.driver.JdbcProfile.API.DBIO[Option[UpdateRequest]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">byId</span><span class="params">(<span name="updateId">updateId: <span class="extype" name="java.util.UUID">UUID</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Option">Option</span>[<a href="../data/UpdateRequest.html" class="extype" name="org.genivi.sota.core.data.UpdateRequest">UpdateRequest</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateRequests$@byId(updateId:java.util.UUID):slick.driver.MySQLDriver.api.DBIO[Option[org.genivi.sota.core.data.UpdateRequest]]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">List all the update requests for a give update ID
+</p>
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
       <a id="clone():AnyRef"></a>
@@ -405,18 +423,18 @@ vehicle.
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="org.genivi.sota.core.db.UpdateRequests#persist" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="persist(request:org.genivi.sota.core.data.UpdateRequest)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[org.genivi.sota.core.data.UpdateRequest]"></a>
-      <a id="persist(UpdateRequest)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[UpdateRequest]"></a>
+      <a id="persist(request:org.genivi.sota.core.data.UpdateRequest)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]"></a>
+      <a id="persist(UpdateRequest)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Unit]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">persist</span><span class="params">(<span name="request">request: <a href="../data/UpdateRequest.html" class="extype" name="org.genivi.sota.core.data.UpdateRequest">UpdateRequest</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<a href="../data/UpdateRequest.html" class="extype" name="org.genivi.sota.core.data.UpdateRequest">UpdateRequest</a>]</span>
+        <span class="name">persist</span><span class="params">(<span name="request">request: <a href="../data/UpdateRequest.html" class="extype" name="org.genivi.sota.core.data.UpdateRequest">UpdateRequest</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateRequests$@persist(request:org.genivi.sota.core.data.UpdateRequest)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[org.genivi.sota.core.data.UpdateRequest]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateRequests$@persist(request:org.genivi.sota.core.data.UpdateRequest)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>

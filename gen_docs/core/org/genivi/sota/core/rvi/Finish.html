@@ -28,10 +28,12 @@
         </head>
         <body class="type">
       <div id="definition">
-        <img alt="Class" src="../../../../../lib/class_big.png" />
+        <a href="Finish$.html" title="See companion object"><img alt="Class/Object" src="../../../../../lib/class_to_object_big.png" /></a>
         <p id="owner"><a href="../../../../package.html" class="extype" name="org">org</a>.<a href="../../../package.html" class="extype" name="org.genivi">genivi</a>.<a href="../../package.html" class="extype" name="org.genivi.sota">sota</a>.<a href="../package.html" class="extype" name="org.genivi.sota.core">core</a>.<a href="package.html" class="extype" name="org.genivi.sota.core.rvi">rvi</a></p>
-        <h1>Finish</h1><h3><span class="morelinks"><div>Related Doc:
-            <a href="package.html" class="extype" name="org.genivi.sota.core.rvi">package rvi</a>
+        <h1><a href="Finish$.html" title="See companion object">Finish</a></h1><h3><span class="morelinks"><div>
+            Related Docs:
+            <a href="Finish$.html" title="See companion object">object Finish</a>
+            | <a href="package.html" class="extype" name="org.genivi.sota.core.rvi">package rvi</a>
           </div></span></h3><span class="permalink">
       <a href="../../../../../index.html#org.genivi.sota.core.rvi.Finish" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
@@ -45,7 +47,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">Finish</span><span class="params">(<span name="package">package: <a href="../data/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">data.Package.Id</a></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <span class="name">Finish</span><span class="params">(<span name="update_id">update_id: <span class="extype" name="java.util.UUID">UUID</span></span>, <span name="signature">signature: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
@@ -89,7 +91,7 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="org.genivi.sota.core.rvi.Finish#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(package:org.genivi.sota.core.data.Package.Id):org.genivi.sota.core.rvi.Finish"></a>
+      <a id="&lt;init&gt;(update_id:java.util.UUID,signature:String):org.genivi.sota.core.rvi.Finish"></a>
       <a id="&lt;init&gt;:Finish"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -97,10 +99,10 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">Finish</span><span class="params">(<span name="package">package: <a href="../data/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">data.Package.Id</a></span>)</span>
+        <span class="name">Finish</span><span class="params">(<span name="update_id">update_id: <span class="extype" name="java.util.UUID">UUID</span></span>, <span name="signature">signature: <span class="extype" name="scala.Predef.String">String</span></span>)</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.rvi.Finish@&lt;init&gt;(package:org.genivi.sota.core.data.Package.Id):org.genivi.sota.core.rvi.Finish" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.rvi.Finish@&lt;init&gt;(update_id:java.util.UUID,signature:String):org.genivi.sota.core.rvi.Finish" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -330,19 +332,19 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="org.genivi.sota.core.rvi.Finish#package" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="package:org.genivi.sota.core.data.Package.Id"></a>
-      <a id="package:data.Package.Id"></a>
+    </li><li name="org.genivi.sota.core.rvi.Finish#signature" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="signature:String"></a>
+      <a id="signature:String"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">package</span><span class="result">: <a href="../data/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">data.Package.Id</a></span>
+        <span class="name">signature</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.rvi.Finish@package:org.genivi.sota.core.data.Package.Id" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.rvi.Finish@signature:String" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -364,6 +366,23 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="org.genivi.sota.core.rvi.Finish#update_id" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="update_id:java.util.UUID"></a>
+      <a id="update_id:UUID"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">update_id</span><span class="result">: <span class="extype" name="java.util.UUID">UUID</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.rvi.Finish@update_id:java.util.UUID" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <a id="wait():Unit"></a>

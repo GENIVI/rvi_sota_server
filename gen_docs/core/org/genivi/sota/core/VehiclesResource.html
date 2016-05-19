@@ -89,7 +89,7 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="org.genivi.sota.core.VehiclesResource#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(db:slick.driver.MySQLDriver.api.Database)(implicitsystem:akka.actor.ActorSystem,implicitmat:akka.stream.ActorMaterializer):org.genivi.sota.core.VehiclesResource"></a>
+      <a id="&lt;init&gt;(db:slick.driver.MySQLDriver.api.Database,client:org.genivi.sota.core.resolver.ConnectivityClient,resolverClient:org.genivi.sota.core.resolver.ExternalResolverClient)(implicitsystem:akka.actor.ActorSystem,implicitmat:akka.stream.ActorMaterializer):org.genivi.sota.core.VehiclesResource"></a>
       <a id="&lt;init&gt;:VehiclesResource"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -97,10 +97,10 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">VehiclesResource</span><span class="params">(<span name="db">db: <span class="extype" name="slick.profile.BasicProfile.CommonAPI.Database">slick.driver.JdbcProfile.API.Database</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="system">system: <span class="extype" name="akka.actor.ActorSystem">ActorSystem</span></span>, <span name="mat">mat: <span class="extype" name="akka.stream.ActorMaterializer">ActorMaterializer</span></span>)</span>
+        <span class="name">VehiclesResource</span><span class="params">(<span name="db">db: <span class="extype" name="slick.profile.BasicProfile.CommonAPI.Database">slick.driver.JdbcProfile.API.Database</span></span>, <span name="client">client: <a href="resolver/ConnectivityClient.html" class="extype" name="org.genivi.sota.core.resolver.ConnectivityClient">ConnectivityClient</a></span>, <span name="resolverClient">resolverClient: <a href="resolver/ExternalResolverClient.html" class="extype" name="org.genivi.sota.core.resolver.ExternalResolverClient">ExternalResolverClient</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="system">system: <span class="extype" name="akka.actor.ActorSystem">ActorSystem</span></span>, <span name="mat">mat: <span class="extype" name="akka.stream.ActorMaterializer">ActorMaterializer</span></span>)</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../index.html#org.genivi.sota.core.VehiclesResource@&lt;init&gt;(db:slick.driver.MySQLDriver.api.Database)(implicitsystem:akka.actor.ActorSystem,implicitmat:akka.stream.ActorMaterializer):org.genivi.sota.core.VehiclesResource" title="Permalink" target="_top">
+      <a href="../../../../index.html#org.genivi.sota.core.VehiclesResource@&lt;init&gt;(db:slick.driver.MySQLDriver.api.Database,client:org.genivi.sota.core.resolver.ConnectivityClient,resolverClient:org.genivi.sota.core.resolver.ExternalResolverClient)(implicitsystem:akka.actor.ActorSystem,implicitmat:akka.stream.ActorMaterializer):org.genivi.sota.core.VehiclesResource" title="Permalink" target="_top">
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -182,6 +182,23 @@
       </a>
     </span>
       
+    </li><li name="org.genivi.sota.core.VehiclesResource#_db" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="_db:slick.driver.MySQLDriver.api.Database"></a>
+      <a id="_db:slick.driver.JdbcProfile.API.Database"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">_db</span><span class="result">: <span class="extype" name="slick.profile.BasicProfile.CommonAPI.Database">slick.driver.JdbcProfile.API.Database</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#org.genivi.sota.core.VehiclesResource@_db:slick.driver.MySQLDriver.api.Database" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -222,23 +239,24 @@
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="org.genivi.sota.core.VehiclesResource#deleteVin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="deleteVin(vehicle:org.genivi.sota.core.data.Vehicle)(implicitec:scala.concurrent.ExecutionContext):scala.concurrent.Future[Unit]"></a>
-      <a id="deleteVin(Vehicle)(ExecutionContext):Future[Unit]"></a>
+    </li><li name="org.genivi.sota.core.VehiclesResource#deleteVehicle" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="deleteVehicle(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route"></a>
+      <a id="deleteVehicle(Namespace,Vin):Route"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">deleteVin</span><span class="params">(<span name="vehicle">vehicle: <a href="data/Vehicle.html" class="extype" name="org.genivi.sota.core.data.Vehicle">Vehicle</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
+        <span class="name">deleteVehicle</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../index.html#org.genivi.sota.core.VehiclesResource@deleteVin(vehicle:org.genivi.sota.core.data.Vehicle)(implicitec:scala.concurrent.ExecutionContext):scala.concurrent.Future[Unit]" title="Permalink" target="_top">
+      <a href="../../../../index.html#org.genivi.sota.core.VehiclesResource@deleteVehicle(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <p class="shortcomment cmt">An ota client DELETE a <span class="extype" name="Vehicle">Vehicle</span>, deleting beforehand its rows in
+<span class="extype" name="UpdateSpecTable">UpdateSpecTable</span> and <span class="extype" name="RequiredPackageTable">RequiredPackageTable</span>.</p>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
@@ -273,40 +291,23 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="org.genivi.sota.core.VehiclesResource#exists" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="exists(vehicle:org.genivi.sota.core.data.Vehicle)(implicitec:scala.concurrent.ExecutionContext):scala.concurrent.Future[org.genivi.sota.core.data.Vehicle]"></a>
-      <a id="exists(Vehicle)(ExecutionContext):Future[Vehicle]"></a>
+    </li><li name="org.genivi.sota.core.VehiclesResource#fetchVehicle" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="fetchVehicle(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route"></a>
+      <a id="fetchVehicle(Namespace,Vin):Route"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">exists</span><span class="params">(<span name="vehicle">vehicle: <a href="data/Vehicle.html" class="extype" name="org.genivi.sota.core.data.Vehicle">Vehicle</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<a href="data/Vehicle.html" class="extype" name="org.genivi.sota.core.data.Vehicle">Vehicle</a>]</span>
+        <span class="name">fetchVehicle</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../index.html#org.genivi.sota.core.VehiclesResource@exists(vehicle:org.genivi.sota.core.data.Vehicle)(implicitec:scala.concurrent.ExecutionContext):scala.concurrent.Future[org.genivi.sota.core.data.Vehicle]" title="Permalink" target="_top">
+      <a href="../../../../index.html#org.genivi.sota.core.VehiclesResource@fetchVehicle(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
-    </li><li name="org.genivi.sota.core.VehiclesResource#extractVin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="extractVin:akka.http.scaladsl.server.Directive1[org.genivi.sota.core.data.Vehicle.Vin]"></a>
-      <a id="extractVin:Directive1[data.Vehicle.Vin]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">extractVin</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Directive1">Directive1</span>[<a href="data/Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.core.data.Vehicle.Vin">data.Vehicle.Vin</a>]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../index.html#org.genivi.sota.core.VehiclesResource@extractVin:akka.http.scaladsl.server.Directive1[org.genivi.sota.core.data.Vehicle.Vin]" title="Permalink" target="_top">
-        <img src="../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      
+      <p class="shortcomment cmt">An ota client GET the <span class="extype" name="Vehicle">Vehicle</span> for the given VIN.</p>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <a id="finalize():Unit"></a>
@@ -433,22 +434,39 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="org.genivi.sota.core.VehiclesResource#route" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="route:akka.http.scaladsl.server.Route"></a>
-      <a id="route:Route"></a>
+      <a id="route:akka.http.scaladsl.server.RequestContext=&gt;scala.concurrent.Future[akka.http.scaladsl.server.RouteResult]"></a>
+      <a id="route:(RequestContext)⇒Future[RouteResult]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">route</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+        <span class="name">route</span><span class="result">: (<span class="extype" name="akka.http.scaladsl.server.RequestContext">RequestContext</span>) ⇒ <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="akka.http.scaladsl.server.RouteResult">RouteResult</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../index.html#org.genivi.sota.core.VehiclesResource@route:akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+      <a href="../../../../index.html#org.genivi.sota.core.VehiclesResource@route:akka.http.scaladsl.server.RequestContext=&gt;scala.concurrent.Future[akka.http.scaladsl.server.RouteResult]" title="Permalink" target="_top">
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
+    </li><li name="org.genivi.sota.core.VehiclesResource#search" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="search(ns:org.genivi.sota.data.Namespace.Namespace):akka.http.scaladsl.server.Route"></a>
+      <a id="search(Namespace):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">search</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#org.genivi.sota.core.VehiclesResource@search(ns:org.genivi.sota.data.Namespace.Namespace):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">An ota client GET a Seq of <span class="extype" name="Vehicle">Vehicle</span> either from regex/status search, or from table scan.</p>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
       <a id="synchronized[T0](⇒T0):T0"></a>
@@ -483,6 +501,24 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="org.genivi.sota.core.VehiclesResource#updateVehicle" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="updateVehicle(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route"></a>
+      <a id="updateVehicle(Namespace,Vin):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">updateVehicle</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#org.genivi.sota.core.VehiclesResource@updateVehicle(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">An ota client PUT a new <span class="extype" name="Vehicle">Vehicle</span>, adding a row in <span class="extype" name="VehicleTable">VehicleTable</span>.</p><div class="fullcomment"><div class="comment cmt"><p>An ota client PUT a new <span class="extype" name="Vehicle">Vehicle</span>, adding a row in <span class="extype" name="VehicleTable">VehicleTable</span>. Resolver is not contacted.
+</p></div></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <a id="wait():Unit"></a>

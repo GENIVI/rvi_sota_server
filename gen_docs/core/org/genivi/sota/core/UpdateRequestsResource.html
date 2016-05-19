@@ -89,7 +89,7 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="org.genivi.sota.core.UpdateRequestsResource#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(db:slick.driver.MySQLDriver.api.Database,resolver:org.genivi.sota.core.ExternalResolverClient,updateService:org.genivi.sota.core.UpdateService)(implicitsystem:akka.actor.ActorSystem,implicitmat:akka.stream.ActorMaterializer):org.genivi.sota.core.UpdateRequestsResource"></a>
+      <a id="&lt;init&gt;(db:slick.driver.MySQLDriver.api.Database,resolver:org.genivi.sota.core.resolver.ExternalResolverClient,updateService:org.genivi.sota.core.UpdateService)(implicitsystem:akka.actor.ActorSystem,implicitmat:akka.stream.ActorMaterializer):org.genivi.sota.core.UpdateRequestsResource"></a>
       <a id="&lt;init&gt;:UpdateRequestsResource"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -97,10 +97,10 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">UpdateRequestsResource</span><span class="params">(<span name="db">db: <span class="extype" name="slick.profile.BasicProfile.CommonAPI.Database">slick.driver.JdbcProfile.API.Database</span></span>, <span name="resolver">resolver: <a href="ExternalResolverClient.html" class="extype" name="org.genivi.sota.core.ExternalResolverClient">ExternalResolverClient</a></span>, <span name="updateService">updateService: <a href="UpdateService.html" class="extype" name="org.genivi.sota.core.UpdateService">UpdateService</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="system">system: <span class="extype" name="akka.actor.ActorSystem">ActorSystem</span></span>, <span name="mat">mat: <span class="extype" name="akka.stream.ActorMaterializer">ActorMaterializer</span></span>)</span>
+        <span class="name">UpdateRequestsResource</span><span class="params">(<span name="db">db: <span class="extype" name="slick.profile.BasicProfile.CommonAPI.Database">slick.driver.JdbcProfile.API.Database</span></span>, <span name="resolver">resolver: <a href="resolver/ExternalResolverClient.html" class="extype" name="org.genivi.sota.core.resolver.ExternalResolverClient">ExternalResolverClient</a></span>, <span name="updateService">updateService: <a href="UpdateService.html" class="extype" name="org.genivi.sota.core.UpdateService">UpdateService</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="system">system: <span class="extype" name="akka.actor.ActorSystem">ActorSystem</span></span>, <span name="mat">mat: <span class="extype" name="akka.stream.ActorMaterializer">ActorMaterializer</span></span>)</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../index.html#org.genivi.sota.core.UpdateRequestsResource@&lt;init&gt;(db:slick.driver.MySQLDriver.api.Database,resolver:org.genivi.sota.core.ExternalResolverClient,updateService:org.genivi.sota.core.UpdateService)(implicitsystem:akka.actor.ActorSystem,implicitmat:akka.stream.ActorMaterializer):org.genivi.sota.core.UpdateRequestsResource" title="Permalink" target="_top">
+      <a href="../../../../index.html#org.genivi.sota.core.UpdateRequestsResource@&lt;init&gt;(db:slick.driver.MySQLDriver.api.Database,resolver:org.genivi.sota.core.resolver.ExternalResolverClient,updateService:org.genivi.sota.core.UpdateService)(implicitsystem:akka.actor.ActorSystem,implicitmat:akka.stream.ActorMaterializer):org.genivi.sota.core.UpdateRequestsResource" title="Permalink" target="_top">
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -222,6 +222,24 @@
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="org.genivi.sota.core.UpdateRequestsResource#createUpdate" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="createUpdate(ns:org.genivi.sota.data.Namespace.Namespace):akka.http.scaladsl.server.Route"></a>
+      <a id="createUpdate(Namespace):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">createUpdate</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#org.genivi.sota.core.UpdateRequestsResource@createUpdate(ns:org.genivi.sota.data.Namespace.Namespace):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">An ota client POST an <span class="extype" name="UpdateRequest">UpdateRequest</span> campaign to locally persist it along with one or more <span class="extype" name="UpdateSpec">UpdateSpec</span>
+(one per VIN, for dependencies obtained from resolver) thus scheduling an update.</p>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
@@ -256,6 +274,40 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="org.genivi.sota.core.UpdateRequestsResource#fetch" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="fetch(updateRequestId:eu.timepit.refined.api.Refined[String,eu.timepit.refined.string.Uuid]):akka.http.scaladsl.server.Route"></a>
+      <a id="fetch(Refined[String,Uuid]):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">fetch</span><span class="params">(<span name="updateRequestId">updateRequestId: <span class="extype" name="eu.timepit.refined.api.Refined">Refined</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="eu.timepit.refined.string.Uuid">Uuid</span>]</span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#org.genivi.sota.core.UpdateRequestsResource@fetch(updateRequestId:eu.timepit.refined.api.Refined[String,eu.timepit.refined.string.Uuid]):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">An ota client GET (VIN, status) for the <span class="extype" name="UpdateRequest">UpdateRequest</span> given by the argument.</p>
+    </li><li name="org.genivi.sota.core.UpdateRequestsResource#fetchUpdates" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="fetchUpdates:akka.http.scaladsl.server.Route"></a>
+      <a id="fetchUpdates:Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">fetchUpdates</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#org.genivi.sota.core.UpdateRequestsResource@fetchUpdates:akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">An ota client GET all rows in the <span class="extype" name="UpdateRequest">UpdateRequest</span> table.</p>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <a id="finalize():Unit"></a>

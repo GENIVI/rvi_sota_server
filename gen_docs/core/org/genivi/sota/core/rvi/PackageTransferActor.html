@@ -92,7 +92,7 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="org.genivi.sota.core.rvi.PackageTransferActor#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="&lt;init&gt;(pckg:org.genivi.sota.core.data.Package,services:org.genivi.sota.core.rvi.ClientServices,rviClient:org.genivi.sota.core.rvi.RviClient):org.genivi.sota.core.rvi.PackageTransferActor"></a>
+      <a id="&lt;init&gt;(updateId:java.util.UUID,signature:String,pckg:org.genivi.sota.core.data.Package,services:org.genivi.sota.core.rvi.ClientServices,rviClient:org.genivi.sota.core.resolver.ConnectivityClient):org.genivi.sota.core.rvi.PackageTransferActor"></a>
       <a id="&lt;init&gt;:PackageTransferActor"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -100,14 +100,14 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">PackageTransferActor</span><span class="params">(<span name="pckg">pckg: <a href="../data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a></span>, <span name="services">services: <a href="ClientServices.html" class="extype" name="org.genivi.sota.core.rvi.ClientServices">ClientServices</a></span>, <span name="rviClient">rviClient: <a href="RviClient.html" class="extype" name="org.genivi.sota.core.rvi.RviClient">RviClient</a></span>)</span>
+        <span class="name">PackageTransferActor</span><span class="params">(<span name="updateId">updateId: <span class="extype" name="java.util.UUID">UUID</span></span>, <span name="signature">signature: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="pckg">pckg: <a href="../data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a></span>, <span name="services">services: <a href="ClientServices.html" class="extype" name="org.genivi.sota.core.rvi.ClientServices">ClientServices</a></span>, <span name="rviClient">rviClient: <a href="../resolver/ConnectivityClient.html" class="extype" name="org.genivi.sota.core.resolver.ConnectivityClient">ConnectivityClient</a></span>)</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.rvi.PackageTransferActor@&lt;init&gt;(pckg:org.genivi.sota.core.data.Package,services:org.genivi.sota.core.rvi.ClientServices,rviClient:org.genivi.sota.core.rvi.RviClient):org.genivi.sota.core.rvi.PackageTransferActor" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.rvi.PackageTransferActor@&lt;init&gt;(updateId:java.util.UUID,signature:String,pckg:org.genivi.sota.core.data.Package,services:org.genivi.sota.core.rvi.ClientServices,rviClient:org.genivi.sota.core.resolver.ConnectivityClient):org.genivi.sota.core.rvi.PackageTransferActor" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt class="param">pckg</dt><dd class="cmt"><p>the package to transfer</p></dd><dt class="param">services</dt><dd class="cmt"><p>the service paths available on the vehicle</p></dd></dl></div>
+      <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt class="param">updateId</dt><dd class="cmt"><p>Unique Id of the update.</p></dd><dt class="param">pckg</dt><dd class="cmt"><p>the package to transfer</p></dd><dt class="param">services</dt><dd class="cmt"><p>the service paths available on the vehicle</p></dd></dl></div>
     </li></ol>
             </div>
 
@@ -324,40 +324,6 @@
       </a>
     </span>
       
-    </li><li name="org.genivi.sota.core.rvi.PackageTransferActor#byteStringEncoder" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="byteStringEncoder:io.circe.Encoder[akka.util.ByteString]"></a>
-      <a id="byteStringEncoder:Encoder[ByteString]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">byteStringEncoder</span><span class="result">: <span class="extype" name="io.circe.Encoder">Encoder</span>[<span class="extype" name="akka.util.ByteString">ByteString</span>]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.rvi.PackageTransferActor@byteStringEncoder:io.circe.Encoder[akka.util.ByteString]" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      
-    </li><li name="org.genivi.sota.core.rvi.PackageTransferActor#channel" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="channel:java.nio.channels.FileChannel"></a>
-      <a id="channel:FileChannel"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">channel</span><span class="result">: <span class="extype" name="java.nio.channels.FileChannel">FileChannel</span></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.rvi.PackageTransferActor@channel:java.nio.channels.FileChannel" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      
     </li><li name="org.genivi.sota.core.rvi.PackageTransferActor#chunkSize" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="chunkSize:Int"></a>
       <a id="chunkSize:Int"></a>
@@ -415,6 +381,25 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Actor</dd></dl></div>
+    </li><li name="org.genivi.sota.core.rvi.PackageTransferActor#downloadingRemotePackage" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="downloadingRemotePackage():PackageTransferActor.this.Receive"></a>
+      <a id="downloadingRemotePackage():Receive"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">downloadingRemotePackage</span><span class="params">()</span><span class="result">: <a href="#Receive=akka.actor.Actor.Receive" class="extmbr" name="org.genivi.sota.core.rvi.PackageTransferActor.Receive">Receive</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.rvi.PackageTransferActor@downloadingRemotePackage():PackageTransferActor.this.Receive" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Makes sure the package URI is local, so it can be read by this actor
+and transferred to the client
+</p>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
@@ -574,6 +559,23 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>ActorLogging</dd></dl></div>
+    </li><li name="org.genivi.sota.core.rvi.PackageTransferActor#mat" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="mat:akka.stream.ActorMaterializer"></a>
+      <a id="mat:ActorMaterializer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mat</span><span class="result">: <span class="extype" name="akka.stream.ActorMaterializer">ActorMaterializer</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.rvi.PackageTransferActor@mat:akka.stream.ActorMaterializer" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="org.genivi.sota.core.rvi.PackageTransferActor#maxAttempts" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="maxAttempts:Int"></a>
       <a id="maxAttempts:Int"></a>
@@ -723,23 +725,40 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="org.genivi.sota.core.rvi.PackageTransferActor">PackageTransferActor</a> → Actor</dd></dl></div>
     </li><li name="org.genivi.sota.core.rvi.PackageTransferActor#receive" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="receive:PartialFunction[Any,Unit]"></a>
-      <a id="receive:PartialFunction[Any,Unit]"></a>
+      <a id="receive:PackageTransferActor.this.Receive"></a>
+      <a id="receive:Receive"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">receive</span><span class="result">: <span class="extype" name="scala.PartialFunction">PartialFunction</span>[<span class="extype" name="scala.Any">Any</span>, <span class="extype" name="scala.Unit">Unit</span>]</span>
+        <span class="name">receive</span><span class="result">: <a href="#Receive=akka.actor.Actor.Receive" class="extmbr" name="org.genivi.sota.core.rvi.PackageTransferActor.Receive">Receive</a></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.rvi.PackageTransferActor@receive:PartialFunction[Any,Unit]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.rvi.PackageTransferActor@receive:PackageTransferActor.this.Receive" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       <p class="shortcomment cmt">Entry point to this actor starting with first chunk.</p><div class="fullcomment"><div class="comment cmt"><p>Entry point to this actor starting with first chunk.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="org.genivi.sota.core.rvi.PackageTransferActor">PackageTransferActor</a> → Actor</dd></dl></div>
+    </li><li name="org.genivi.sota.core.rvi.PackageTransferActor#s3PackageStore" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="s3PackageStore:org.genivi.sota.core.storage.S3PackageStore"></a>
+      <a id="s3PackageStore:S3PackageStore"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">lazy val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">s3PackageStore</span><span class="result">: <a href="../storage/S3PackageStore.html" class="extype" name="org.genivi.sota.core.storage.S3PackageStore">S3PackageStore</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.rvi.PackageTransferActor@s3PackageStore:org.genivi.sota.core.storage.S3PackageStore" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="akka.actor.Actor#self" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="self:akka.actor.ActorRef"></a>
       <a id="self:ActorRef"></a>
@@ -758,18 +777,18 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Actor</dd></dl></div>
     </li><li name="org.genivi.sota.core.rvi.PackageTransferActor#sendChunk" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="sendChunk(index:Int):Unit"></a>
-      <a id="sendChunk(Int):Unit"></a>
+      <a id="sendChunk(channel:java.nio.channels.FileChannel,index:Int):Unit"></a>
+      <a id="sendChunk(FileChannel,Int):Unit"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">sendChunk</span><span class="params">(<span name="index">index: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+        <span class="name">sendChunk</span><span class="params">(<span name="channel">channel: <span class="extype" name="java.nio.channels.FileChannel">FileChannel</span></span>, <span name="index">index: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.rvi.PackageTransferActor@sendChunk(index:Int):Unit" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.rvi.PackageTransferActor@sendChunk(channel:java.nio.channels.FileChannel,index:Int):Unit" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -843,18 +862,18 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="org.genivi.sota.core.rvi.PackageTransferActor#transferring" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="transferring(lastSentChunk:Int,attempt:Int):PackageTransferActor.this.Receive"></a>
-      <a id="transferring(Int,Int):Receive"></a>
+      <a id="transferring(channel:java.nio.channels.FileChannel,lastSentChunk:Int,attempt:Int):PackageTransferActor.this.Receive"></a>
+      <a id="transferring(FileChannel,Int,Int):Receive"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">transferring</span><span class="params">(<span name="lastSentChunk">lastSentChunk: <span class="extype" name="scala.Int">Int</span></span>, <span name="attempt">attempt: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="#Receive=akka.actor.Actor.Receive" class="extmbr" name="org.genivi.sota.core.rvi.PackageTransferActor.Receive">Receive</a></span>
+        <span class="name">transferring</span><span class="params">(<span name="channel">channel: <span class="extype" name="java.nio.channels.FileChannel">FileChannel</span></span>, <span name="lastSentChunk">lastSentChunk: <span class="extype" name="scala.Int">Int</span></span>, <span name="attempt">attempt: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="#Receive=akka.actor.Actor.Receive" class="extmbr" name="org.genivi.sota.core.rvi.PackageTransferActor.Receive">Receive</a></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.rvi.PackageTransferActor@transferring(lastSentChunk:Int,attempt:Int):PackageTransferActor.this.Receive" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.rvi.PackageTransferActor@transferring(channel:java.nio.channels.FileChannel,lastSentChunk:Int,attempt:Int):PackageTransferActor.this.Receive" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>

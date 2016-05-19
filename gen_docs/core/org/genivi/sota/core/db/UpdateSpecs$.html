@@ -49,11 +49,8 @@
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Database mapping definition for the UpdateSpecs and RequiredPackages tables.
-UpdateSpecs records the status of a package update for a specific VIN. One
-UpdateSpecs row has several RequiredPackages rows that detail the individual
-packages that need to be installed.
-</p></div><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Database mapping definitions for the UpdateSpecs and RequiredPackages tables.</p><ul><li>A row in UpdateSpec records the status of a package install for a specific VIN.</li><li>For each such row, one or more rows in RequiredPackage indicate the individual packages
+      (including dependencies) that need to be installed.</li></ul></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
@@ -94,40 +91,42 @@ packages that need to be installed.
 
         <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li name="org.genivi.sota.core.db.UpdateSpecs.RequiredPackagesTable" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="RequiredPackagesTableextendsslick.driver.MySQLDriver.api.Table[(java.util.UUID,org.genivi.sota.core.data.Vehicle.Vin,org.genivi.sota.core.data.Package.Name,org.genivi.sota.core.data.Package.Version)]"></a>
-      <a id="RequiredPackagesTable:RequiredPackagesTable"></a>
+              <ol><li name="org.genivi.sota.core.db.UpdateSpecs.RequiredPackageTable" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="RequiredPackageTableextendsslick.driver.MySQLDriver.api.Table[(org.genivi.sota.data.Namespace.Namespace,java.util.UUID,org.genivi.sota.data.Vehicle.Vin,org.genivi.sota.data.PackageId.Name,org.genivi.sota.data.PackageId.Version)]"></a>
+      <a id="RequiredPackageTable:RequiredPackageTable"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="UpdateSpecs$$RequiredPackagesTable.html"><span class="name">RequiredPackagesTable</span></a><span class="result"> extends <span class="extype" name="slick.profile.RelationalProfile.CommonAPI.Table">slick.driver.JdbcProfile.API.Table</span>[(<span class="extype" name="java.util.UUID">UUID</span>, <a href="../data/Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.core.data.Vehicle.Vin">data.Vehicle.Vin</a>, <a href="../data/Package$.html#Name=eu.timepit.refined.Refined[String,PackageCommon.this.ValidName]" class="extmbr" name="org.genivi.sota.core.data.Package.Name">data.Package.Name</a>, <a href="../data/Package$.html#Version=eu.timepit.refined.Refined[String,PackageCommon.this.ValidVersion]" class="extmbr" name="org.genivi.sota.core.data.Package.Version">data.Package.Version</a>)]</span>
+        <a href="UpdateSpecs$$RequiredPackageTable.html"><span class="name">RequiredPackageTable</span></a><span class="result"> extends <span class="extype" name="slick.profile.RelationalProfile.CommonAPI.Table">slick.driver.JdbcProfile.API.Table</span>[(<span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span>, <span class="extype" name="java.util.UUID">UUID</span>, <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span>, <span class="extype" name="org.genivi.sota.data.PackageId.Name">Name</span>, <span class="extype" name="org.genivi.sota.data.PackageId.Version">Version</span>)]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@RequiredPackagesTableextendsslick.driver.MySQLDriver.api.Table[(java.util.UUID,org.genivi.sota.core.data.Vehicle.Vin,org.genivi.sota.core.data.Package.Name,org.genivi.sota.core.data.Package.Version)]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@RequiredPackageTableextendsslick.driver.MySQLDriver.api.Table[(org.genivi.sota.data.Namespace.Namespace,java.util.UUID,org.genivi.sota.data.Vehicle.Vin,org.genivi.sota.data.PackageId.Name,org.genivi.sota.data.PackageId.Version)]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Slick mapping definition for the RequiredPackages table</p><div class="fullcomment"><div class="comment cmt"><p>Slick mapping definition for the RequiredPackages table</p></div><dl class="attributes block"> <dt>See also</dt><dd><span class="cmt"><p><code><a href="http://slick.typesafe.com/" target="_blank">http://slick.typesafe.com/</a></code></p></span></dd></dl></div>
-    </li><li name="org.genivi.sota.core.db.UpdateSpecs.UpdateSpecsTable" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="UpdateSpecsTableextendsslick.driver.MySQLDriver.api.Table[(java.util.UUID,org.genivi.sota.core.data.Vehicle.Vin,org.genivi.sota.core.data.UpdateStatus.UpdateStatus)]"></a>
-      <a id="UpdateSpecsTable:UpdateSpecsTable"></a>
+      <p class="shortcomment cmt">Child table of <a href="UpdateSpecs$$UpdateSpecTable.html" class="extype" name="org.genivi.sota.core.db.UpdateSpecs.UpdateSpecTable">UpdateSpecTable</a>.</p><div class="fullcomment"><div class="comment cmt"><p>Child table of <a href="UpdateSpecs$$UpdateSpecTable.html" class="extype" name="org.genivi.sota.core.db.UpdateSpecs.UpdateSpecTable">UpdateSpecTable</a>. For each row in that table there's one or more rows in this table.
+</p></div></div>
+    </li><li name="org.genivi.sota.core.db.UpdateSpecs.UpdateSpecTable" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="UpdateSpecTableextendsslick.driver.MySQLDriver.api.Table[(org.genivi.sota.data.Namespace.Namespace,java.util.UUID,org.genivi.sota.data.Vehicle.Vin,org.genivi.sota.core.data.UpdateStatus.UpdateStatus)]"></a>
+      <a id="UpdateSpecTable:UpdateSpecTable"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="UpdateSpecs$$UpdateSpecsTable.html"><span class="name">UpdateSpecsTable</span></a><span class="result"> extends <span class="extype" name="slick.profile.RelationalProfile.CommonAPI.Table">slick.driver.JdbcProfile.API.Table</span>[(<span class="extype" name="java.util.UUID">UUID</span>, <a href="../data/Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.core.data.Vehicle.Vin">data.Vehicle.Vin</a>, <a href="../data/UpdateStatus$.html#UpdateStatus=org.genivi.sota.core.data.UpdateStatus.Value" class="extmbr" name="org.genivi.sota.core.data.UpdateStatus.UpdateStatus">UpdateStatus</a>)]</span>
+        <a href="UpdateSpecs$$UpdateSpecTable.html"><span class="name">UpdateSpecTable</span></a><span class="result"> extends <span class="extype" name="slick.profile.RelationalProfile.CommonAPI.Table">slick.driver.JdbcProfile.API.Table</span>[(<span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span>, <span class="extype" name="java.util.UUID">UUID</span>, <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span>, <a href="../data/UpdateStatus$.html#UpdateStatus=org.genivi.sota.core.data.UpdateStatus.Value" class="extmbr" name="org.genivi.sota.core.data.UpdateStatus.UpdateStatus">UpdateStatus</a>)]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@UpdateSpecsTableextendsslick.driver.MySQLDriver.api.Table[(java.util.UUID,org.genivi.sota.core.data.Vehicle.Vin,org.genivi.sota.core.data.UpdateStatus.UpdateStatus)]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@UpdateSpecTableextendsslick.driver.MySQLDriver.api.Table[(org.genivi.sota.data.Namespace.Namespace,java.util.UUID,org.genivi.sota.data.Vehicle.Vin,org.genivi.sota.core.data.UpdateStatus.UpdateStatus)]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Slick mapping definition for the UpdateSpecs table</p><div class="fullcomment"><div class="comment cmt"><p>Slick mapping definition for the UpdateSpecs table</p></div><dl class="attributes block"> <dt>See also</dt><dd><span class="cmt"><p><code><a href="http://slick.typesafe.com/" target="_blank">http://slick.typesafe.com/</a></code></p></span></dd></dl></div>
+      <p class="shortcomment cmt">Each row corresponds to an <span class="extype" name="UpdateSpec">UpdateSpec</span> instance except that <code>dependencies</code> are kept in <a href="UpdateSpecs$$RequiredPackageTable.html" class="extype" name="org.genivi.sota.core.db.UpdateSpecs.RequiredPackageTable">RequiredPackageTable</a>
+</p>
     </li></ol>
             </div>
 
@@ -220,6 +219,24 @@ packages that need to be installed.
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="org.genivi.sota.core.db.UpdateSpecs#cancelUpdate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="cancelUpdate(vin:org.genivi.sota.data.Vehicle.Vin,uuid:eu.timepit.refined.api.Refined[String,eu.timepit.refined.string.Uuid]):slick.driver.MySQLDriver.api.DBIO[Int]"></a>
+      <a id="cancelUpdate(Vin,Refined[String,Uuid]):slick.driver.JdbcProfile.API.DBIO[Int]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">cancelUpdate</span><span class="params">(<span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>, <span name="uuid">uuid: <span class="extype" name="eu.timepit.refined.api.Refined">Refined</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="eu.timepit.refined.string.Uuid">Uuid</span>]</span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Int">Int</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@cancelUpdate(vin:org.genivi.sota.data.Vehicle.Vin,uuid:eu.timepit.refined.api.Refined[String,eu.timepit.refined.string.Uuid]):slick.driver.MySQLDriver.api.DBIO[Int]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Abort a pending update specified by uuid and vin.</p><div class="fullcomment"><div class="comment cmt"><p>Abort a pending update specified by uuid and vin. Updates with statuses other than 'Pending' will not be aborted
+</p></div></div>
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
       <a id="clone():AnyRef"></a>
@@ -244,42 +261,45 @@ packages that need to be installed.
               
         </dd></dl></div>
     </li><li name="org.genivi.sota.core.db.UpdateSpecs#deleteRequiredPackageByVin" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="deleteRequiredPackageByVin(vehicle:org.genivi.sota.core.data.Vehicle):slick.driver.MySQLDriver.api.DBIO[Int]"></a>
-      <a id="deleteRequiredPackageByVin(Vehicle):slick.driver.JdbcProfile.API.DBIO[Int]"></a>
+      <a id="deleteRequiredPackageByVin(ns:org.genivi.sota.data.Namespace.Namespace,vehicle:org.genivi.sota.data.Vehicle):slick.driver.MySQLDriver.api.DBIO[Int]"></a>
+      <a id="deleteRequiredPackageByVin(Namespace,Vehicle):slick.driver.JdbcProfile.API.DBIO[Int]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">deleteRequiredPackageByVin</span><span class="params">(<span name="vehicle">vehicle: <a href="../data/Vehicle.html" class="extype" name="org.genivi.sota.core.data.Vehicle">Vehicle</a></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Int">Int</span>]</span>
+        <span class="name">deleteRequiredPackageByVin</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vehicle">vehicle: <span class="extype" name="org.genivi.sota.data.Vehicle">Vehicle</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Int">Int</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@deleteRequiredPackageByVin(vehicle:org.genivi.sota.core.data.Vehicle):slick.driver.MySQLDriver.api.DBIO[Int]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@deleteRequiredPackageByVin(ns:org.genivi.sota.data.Namespace.Namespace,vehicle:org.genivi.sota.data.Vehicle):slick.driver.MySQLDriver.api.DBIO[Int]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       <p class="shortcomment cmt">Delete all the required packages that are needed for a VIN.</p><div class="fullcomment"><div class="comment cmt"><p>Delete all the required packages that are needed for a VIN.
-This is part of the process for deleting a VIN from the system</p></div><dl class="paramcmts block"><dt class="param">vehicle</dt><dd class="cmt"><p>The vehicle to get the VIN to delete from</p></dd></dl></div>
+This is part of the process for deleting a VIN from the system
+</p></div><dl class="paramcmts block"><dt class="param">vehicle</dt><dd class="cmt"><p>The vehicle to get the VIN to delete from</p></dd></dl></div>
     </li><li name="org.genivi.sota.core.db.UpdateSpecs#deleteUpdateSpecByVin" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="deleteUpdateSpecByVin(vehicle:org.genivi.sota.core.data.Vehicle):slick.driver.MySQLDriver.api.DBIO[Int]"></a>
-      <a id="deleteUpdateSpecByVin(Vehicle):slick.driver.JdbcProfile.API.DBIO[Int]"></a>
+      <a id="deleteUpdateSpecByVin(ns:org.genivi.sota.data.Namespace.Namespace,vehicle:org.genivi.sota.data.Vehicle):slick.driver.MySQLDriver.api.DBIO[Int]"></a>
+      <a id="deleteUpdateSpecByVin(Namespace,Vehicle):slick.driver.JdbcProfile.API.DBIO[Int]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">deleteUpdateSpecByVin</span><span class="params">(<span name="vehicle">vehicle: <a href="../data/Vehicle.html" class="extype" name="org.genivi.sota.core.data.Vehicle">Vehicle</a></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Int">Int</span>]</span>
+        <span class="name">deleteUpdateSpecByVin</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vehicle">vehicle: <span class="extype" name="org.genivi.sota.data.Vehicle">Vehicle</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Int">Int</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@deleteUpdateSpecByVin(vehicle:org.genivi.sota.core.data.Vehicle):slick.driver.MySQLDriver.api.DBIO[Int]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@deleteUpdateSpecByVin(ns:org.genivi.sota.data.Namespace.Namespace,vehicle:org.genivi.sota.data.Vehicle):slick.driver.MySQLDriver.api.DBIO[Int]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       <p class="shortcomment cmt">Delete all the updates for a specific VIN
-This is part of the process for deleting a VIN from the system</p><div class="fullcomment"><div class="comment cmt"><p>Delete all the updates for a specific VIN
-This is part of the process for deleting a VIN from the system</p></div><dl class="paramcmts block"><dt class="param">vehicle</dt><dd class="cmt"><p>The vehicle to get the VIN to delete from</p></dd></dl></div>
+This is part of the process for deleting a VIN from the system
+</p><div class="fullcomment"><div class="comment cmt"><p>Delete all the updates for a specific VIN
+This is part of the process for deleting a VIN from the system
+</p></div><dl class="paramcmts block"><dt class="param">vehicle</dt><dd class="cmt"><p>The vehicle to get the VIN to delete from</p></dd></dl></div>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
@@ -337,6 +357,26 @@ This is part of the process for deleting a VIN from the system</p></div><dl clas
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="org.genivi.sota.core.db.UpdateSpecs#findBy" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="findBy(arg:org.genivi.sota.core.data.UpdateSpec):slick.driver.MySQLDriver.api.DBIO[(org.genivi.sota.data.Namespace.Namespace,java.util.UUID,org.genivi.sota.data.Vehicle.Vin,org.genivi.sota.core.data.UpdateStatus.UpdateStatus)]"></a>
+      <a id="findBy(UpdateSpec):slick.driver.JdbcProfile.API.DBIO[(Namespace,UUID,Vin,UpdateStatus)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">findBy</span><span class="params">(<span name="arg">arg: <a href="../data/UpdateSpec.html" class="extype" name="org.genivi.sota.core.data.UpdateSpec">UpdateSpec</a></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[(<span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span>, <span class="extype" name="java.util.UUID">UUID</span>, <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span>, <a href="../data/UpdateStatus$.html#UpdateStatus=org.genivi.sota.core.data.UpdateStatus.Value" class="extmbr" name="org.genivi.sota.core.data.UpdateStatus.UpdateStatus">UpdateStatus</a>)]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@findBy(arg:org.genivi.sota.core.data.UpdateSpec):slick.driver.MySQLDriver.api.DBIO[(org.genivi.sota.data.Namespace.Namespace,java.util.UUID,org.genivi.sota.data.Vehicle.Vin,org.genivi.sota.core.data.UpdateStatus.UpdateStatus)]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Lookup by PK in <a href="UpdateSpecs$$UpdateSpecTable.html" class="extype" name="org.genivi.sota.core.db.UpdateSpecs.UpdateSpecTable">UpdateSpecTable</a> table.</p><div class="fullcomment"><div class="comment cmt"><p>Lookup by PK in <a href="UpdateSpecs$$UpdateSpecTable.html" class="extype" name="org.genivi.sota.core.db.UpdateSpecs.UpdateSpecTable">UpdateSpecTable</a> table.
+Note: A tuple is returned instead of an <span class="extype" name="UpdateSpec">UpdateSpec</span> instance because
+the later would require joining <a href="UpdateSpecs$$RequiredPackageTable.html" class="extype" name="org.genivi.sota.core.db.UpdateSpecs.RequiredPackageTable">RequiredPackageTable</a> to populate the <code>dependencies</code> of that instance.
+</p></div></div>
     </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <a id="getClass():Class[_]"></a>
@@ -354,43 +394,27 @@ This is part of the process for deleting a VIN from the system</p></div><dl clas
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="org.genivi.sota.core.db.UpdateSpecs#getPackagesQueuedForVin" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="getPackagesQueuedForVin(vin:org.genivi.sota.core.data.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Iterable[org.genivi.sota.core.data.Package.Id]]"></a>
-      <a id="getPackagesQueuedForVin(data.Vehicle.Vin)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Iterable[data.Package.Id]]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">getPackagesQueuedForVin</span><span class="params">(<span name="vin">vin: <a href="../data/Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.core.data.Vehicle.Vin">data.Vehicle.Vin</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Iterable">Iterable</span>[<a href="../data/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">data.Package.Id</a>]]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@getPackagesQueuedForVin(vin:org.genivi.sota.core.data.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Iterable[org.genivi.sota.core.data.Package.Id]]" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <p class="shortcomment cmt">Get the packages that are queued for installation on a VIN.</p><div class="fullcomment"><div class="comment cmt"><p>Get the packages that are queued for installation on a VIN.</p></div><dl class="paramcmts block"><dt class="param">vin</dt><dd class="cmt"><p>The VIN to query</p></dd><dt>returns</dt><dd class="cmt"><p>A List of package names + versions that are due to be installed.</p></dd></dl></div>
     </li><li name="org.genivi.sota.core.db.UpdateSpecs#getVinsQueuedForPackage" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="getVinsQueuedForPackage(pkgName:org.genivi.sota.core.data.Package.Name,pkgVer:org.genivi.sota.core.data.Package.Version):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.core.data.Vehicle.Vin]]"></a>
-      <a id="getVinsQueuedForPackage(data.Package.Name,data.Package.Version):slick.driver.JdbcProfile.API.DBIO[Seq[data.Vehicle.Vin]]"></a>
+      <a id="getVinsQueuedForPackage(ns:org.genivi.sota.data.Namespace.Namespace,pkgName:org.genivi.sota.data.PackageId.Name,pkgVer:org.genivi.sota.data.PackageId.Version):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.data.Vehicle.Vin]]"></a>
+      <a id="getVinsQueuedForPackage(Namespace,Name,Version):slick.driver.JdbcProfile.API.DBIO[Seq[Vin]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">getVinsQueuedForPackage</span><span class="params">(<span name="pkgName">pkgName: <a href="../data/Package$.html#Name=eu.timepit.refined.Refined[String,PackageCommon.this.ValidName]" class="extmbr" name="org.genivi.sota.core.data.Package.Name">data.Package.Name</a></span>, <span name="pkgVer">pkgVer: <a href="../data/Package$.html#Version=eu.timepit.refined.Refined[String,PackageCommon.this.ValidVersion]" class="extmbr" name="org.genivi.sota.core.data.Package.Version">data.Package.Version</a></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[<a href="../data/Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.core.data.Vehicle.Vin">data.Vehicle.Vin</a>]]</span>
+        <span class="name">getVinsQueuedForPackage</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="pkgName">pkgName: <span class="extype" name="org.genivi.sota.data.PackageId.Name">Name</span></span>, <span name="pkgVer">pkgVer: <span class="extype" name="org.genivi.sota.data.PackageId.Version">Version</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@getVinsQueuedForPackage(pkgName:org.genivi.sota.core.data.Package.Name,pkgVer:org.genivi.sota.core.data.Package.Version):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.core.data.Vehicle.Vin]]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@getVinsQueuedForPackage(ns:org.genivi.sota.data.Namespace.Namespace,pkgName:org.genivi.sota.data.PackageId.Name,pkgVer:org.genivi.sota.data.PackageId.Version):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.data.Vehicle.Vin]]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       <p class="shortcomment cmt">Return a list of all the VINs that a specific version of a package will be
 installed on.</p><div class="fullcomment"><div class="comment cmt"><p>Return a list of all the VINs that a specific version of a package will be
 installed on.  Note that VINs where the package has started installation,
-or has either been installed or where the install failed are not included.</p></div><dl class="paramcmts block"><dt class="param">pkgName</dt><dd class="cmt"><p>The package name to search for</p></dd><dt class="param">pkgVer</dt><dd class="cmt"><p>The version of the package to search for</p></dd><dt>returns</dt><dd class="cmt"><p>A list of VINs that the package will be installed on</p></dd></dl></div>
+or has either been installed or where the install failed are not included.
+</p></div><dl class="paramcmts block"><dt class="param">pkgName</dt><dd class="cmt"><p>The package name to search for</p></dd><dt class="param">pkgVer</dt><dd class="cmt"><p>The version of the package to search for</p></dd><dt>returns</dt><dd class="cmt"><p>A list of VINs that the package will be installed on</p></dd></dl></div>
     </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
       <a id="hashCode():Int"></a>
@@ -426,39 +450,43 @@ or has either been installed or where the install failed are not included.</p></
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="org.genivi.sota.core.db.UpdateSpecs#listUpdatesById" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="listUpdatesById(uuid:eu.timepit.refined.Refined[String,eu.timepit.refined.string.Uuid]):slick.driver.MySQLDriver.api.DBIO[Seq[(java.util.UUID,org.genivi.sota.core.data.Vehicle.Vin,org.genivi.sota.core.data.UpdateStatus.UpdateStatus)]]"></a>
-      <a id="listUpdatesById(Refined[String,Uuid]):slick.driver.JdbcProfile.API.DBIO[Seq[(UUID,data.Vehicle.Vin,UpdateStatus)]]"></a>
+      <a id="listUpdatesById(updateRequestId:eu.timepit.refined.api.Refined[String,eu.timepit.refined.string.Uuid]):slick.driver.MySQLDriver.api.DBIO[Seq[(org.genivi.sota.data.Namespace.Namespace,java.util.UUID,org.genivi.sota.data.Vehicle.Vin,org.genivi.sota.core.data.UpdateStatus.UpdateStatus)]]"></a>
+      <a id="listUpdatesById(Refined[String,Uuid]):slick.driver.JdbcProfile.API.DBIO[Seq[(Namespace,UUID,Vin,UpdateStatus)]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">listUpdatesById</span><span class="params">(<span name="uuid">uuid: <span class="extype" name="eu.timepit.refined.Refined">Refined</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="eu.timepit.refined.string.Uuid">Uuid</span>]</span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[(<span class="extype" name="java.util.UUID">UUID</span>, <a href="../data/Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.core.data.Vehicle.Vin">data.Vehicle.Vin</a>, <a href="../data/UpdateStatus$.html#UpdateStatus=org.genivi.sota.core.data.UpdateStatus.Value" class="extmbr" name="org.genivi.sota.core.data.UpdateStatus.UpdateStatus">UpdateStatus</a>)]]</span>
+        <span class="name">listUpdatesById</span><span class="params">(<span name="updateRequestId">updateRequestId: <span class="extype" name="eu.timepit.refined.api.Refined">Refined</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="eu.timepit.refined.string.Uuid">Uuid</span>]</span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[(<span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span>, <span class="extype" name="java.util.UUID">UUID</span>, <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span>, <a href="../data/UpdateStatus$.html#UpdateStatus=org.genivi.sota.core.data.UpdateStatus.Value" class="extmbr" name="org.genivi.sota.core.data.UpdateStatus.UpdateStatus">UpdateStatus</a>)]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@listUpdatesById(uuid:eu.timepit.refined.Refined[String,eu.timepit.refined.string.Uuid]):slick.driver.MySQLDriver.api.DBIO[Seq[(java.util.UUID,org.genivi.sota.core.data.Vehicle.Vin,org.genivi.sota.core.data.UpdateStatus.UpdateStatus)]]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@listUpdatesById(updateRequestId:eu.timepit.refined.api.Refined[String,eu.timepit.refined.string.Uuid]):slick.driver.MySQLDriver.api.DBIO[Seq[(org.genivi.sota.data.Namespace.Namespace,java.util.UUID,org.genivi.sota.data.Vehicle.Vin,org.genivi.sota.core.data.UpdateStatus.UpdateStatus)]]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Return the status of a specific update</p><div class="fullcomment"><div class="comment cmt"><p>Return the status of a specific update</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>The update status</p></dd></dl></div>
+      <p class="shortcomment cmt">The <span class="extype" name="UpdateSpec">UpdateSpec</span>-s (excluding dependencies but including status) for the given <span class="extype" name="UpdateRequest">UpdateRequest</span>.</p><div class="fullcomment"><div class="comment cmt"><p>The <span class="extype" name="UpdateSpec">UpdateSpec</span>-s (excluding dependencies but including status) for the given <span class="extype" name="UpdateRequest">UpdateRequest</span>.
+Each element in the result corresponds to a different VIN.
+</p></div></div>
     </li><li name="org.genivi.sota.core.db.UpdateSpecs#load" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="load(vin:org.genivi.sota.core.data.Vehicle.Vin,packageIds:Set[org.genivi.sota.core.data.Package.Id])(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Iterable[org.genivi.sota.core.data.UpdateSpec]]"></a>
-      <a id="load(data.Vehicle.Vin,Set[data.Package.Id])(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Iterable[UpdateSpec]]"></a>
+      <a id="load(vin:org.genivi.sota.data.Vehicle.Vin,updateId:java.util.UUID)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Iterable[org.genivi.sota.core.data.UpdateSpec]]"></a>
+      <a id="load(Vin,UUID)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Iterable[UpdateSpec]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">load</span><span class="params">(<span name="vin">vin: <a href="../data/Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.core.data.Vehicle.Vin">data.Vehicle.Vin</a></span>, <span name="packageIds">packageIds: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="../data/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">data.Package.Id</a>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Iterable">Iterable</span>[<a href="../data/UpdateSpec.html" class="extype" name="org.genivi.sota.core.data.UpdateSpec">UpdateSpec</a>]]</span>
+        <span class="name">load</span><span class="params">(<span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>, <span name="updateId">updateId: <span class="extype" name="java.util.UUID">UUID</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Iterable">Iterable</span>[<a href="../data/UpdateSpec.html" class="extype" name="org.genivi.sota.core.data.UpdateSpec">UpdateSpec</a>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@load(vin:org.genivi.sota.core.data.Vehicle.Vin,packageIds:Set[org.genivi.sota.core.data.Package.Id])(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Iterable[org.genivi.sota.core.data.UpdateSpec]]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@load(vin:org.genivi.sota.data.Vehicle.Vin,updateId:java.util.UUID)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Iterable[org.genivi.sota.core.data.UpdateSpec]]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Install a list of specific packages on a VIN</p><div class="fullcomment"><div class="comment cmt"><p>Install a list of specific packages on a VIN</p></div><dl class="paramcmts block"><dt class="param">vin</dt><dd class="cmt"><p>The VIN to install on</p></dd><dt class="param">packageIds</dt><dd class="cmt"><p>The list of packages to install</p></dd></dl></div>
+      <p class="shortcomment cmt">Install a list of specific packages on a VIN
+</p><div class="fullcomment"><div class="comment cmt"><p>Install a list of specific packages on a VIN
+</p></div><dl class="paramcmts block"><dt class="param">vin</dt><dd class="cmt"><p>The VIN to install on</p></dd><dt class="param">updateId</dt><dd class="cmt"><p>Update Id of the update to install</p></dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>
@@ -528,25 +556,42 @@ or has either been installed or where the install failed are not included.</p></
     </span>
       <p class="shortcomment cmt">Add an update for a specific VIN.</p><div class="fullcomment"><div class="comment cmt"><p>Add an update for a specific VIN.
 This update will consist of one-or-more packages that need to be installed
-on a single VIN</p></div><dl class="paramcmts block"><dt class="param">updateSpec</dt><dd class="cmt"><p>The list of packages that should be installed</p></dd></dl></div>
+on a single VIN
+</p></div><dl class="paramcmts block"><dt class="param">updateSpec</dt><dd class="cmt"><p>The list of packages that should be installed</p></dd></dl></div>
     </li><li name="org.genivi.sota.core.db.UpdateSpecs#requiredPackages" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="requiredPackages:slick.lifted.TableQuery[org.genivi.sota.core.db.UpdateSpecs.RequiredPackagesTable]"></a>
-      <a id="requiredPackages:TableQuery[RequiredPackagesTable]"></a>
+      <a id="requiredPackages:slick.lifted.TableQuery[org.genivi.sota.core.db.UpdateSpecs.RequiredPackageTable]"></a>
+      <a id="requiredPackages:TableQuery[RequiredPackageTable]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">requiredPackages</span><span class="result">: <span class="extype" name="slick.lifted.TableQuery">TableQuery</span>[<a href="UpdateSpecs$$RequiredPackagesTable.html" class="extype" name="org.genivi.sota.core.db.UpdateSpecs.RequiredPackagesTable">RequiredPackagesTable</a>]</span>
+        <span class="name">requiredPackages</span><span class="result">: <span class="extype" name="slick.lifted.TableQuery">TableQuery</span>[<a href="UpdateSpecs$$RequiredPackageTable.html" class="extype" name="org.genivi.sota.core.db.UpdateSpecs.RequiredPackageTable">RequiredPackageTable</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@requiredPackages:slick.lifted.TableQuery[org.genivi.sota.core.db.UpdateSpecs.RequiredPackagesTable]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@requiredPackages:slick.lifted.TableQuery[org.genivi.sota.core.db.UpdateSpecs.RequiredPackageTable]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Internal helper definition to accesss the RequiredPackages table
-</p>
+      
+    </li><li name="org.genivi.sota.core.db.UpdateSpecs#setStatus" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setStatus(vin:org.genivi.sota.data.Vehicle.Vin,uuid:eu.timepit.refined.api.Refined[String,eu.timepit.refined.string.Uuid],newStatus:org.genivi.sota.core.data.UpdateStatus.UpdateStatus):slick.driver.MySQLDriver.api.DBIO[Int]"></a>
+      <a id="setStatus(Vin,Refined[String,Uuid],UpdateStatus):slick.driver.JdbcProfile.API.DBIO[Int]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setStatus</span><span class="params">(<span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>, <span name="uuid">uuid: <span class="extype" name="eu.timepit.refined.api.Refined">Refined</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="eu.timepit.refined.string.Uuid">Uuid</span>]</span>, <span name="newStatus">newStatus: <a href="../data/UpdateStatus$.html#UpdateStatus=org.genivi.sota.core.data.UpdateStatus.Value" class="extmbr" name="org.genivi.sota.core.data.UpdateStatus.UpdateStatus">UpdateStatus</a></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Int">Int</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@setStatus(vin:org.genivi.sota.data.Vehicle.Vin,uuid:eu.timepit.refined.api.Refined[String,eu.timepit.refined.string.Uuid],newStatus:org.genivi.sota.core.data.UpdateStatus.UpdateStatus):slick.driver.MySQLDriver.api.DBIO[Int]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Set status of a given update to 'In-Flight'</p><div class="fullcomment"><div class="comment cmt"><p>Set status of a given update to 'In-Flight'</p></div><dl class="paramcmts block"><dt class="param">vin</dt><dd class="cmt"><p>the vin associated with the desired update</p></dd><dt class="param">uuid</dt><dd class="cmt"><p>the uuid of the update whose status should be changed</p></dd></dl></div>
     </li><li name="org.genivi.sota.core.db.UpdateSpecs#setStatus" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="setStatus(spec:org.genivi.sota.core.data.UpdateSpec,newStatus:org.genivi.sota.core.data.UpdateStatus.UpdateStatus):slick.driver.MySQLDriver.api.DBIO[Int]"></a>
       <a id="setStatus(UpdateSpec,UpdateStatus):slick.driver.JdbcProfile.API.DBIO[Int]"></a>
@@ -563,7 +608,8 @@ on a single VIN</p></div><dl class="paramcmts block"><dt class="param">updateSpe
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Records the status of an update on a specific VIN</p><div class="fullcomment"><div class="comment cmt"><p>Records the status of an update on a specific VIN</p></div><dl class="paramcmts block"><dt class="param">spec</dt><dd class="cmt"><p>The combination of VIN and update request to record the status of</p></dd><dt class="param">newStatus</dt><dd class="cmt"><p>The latest status of the installation. One of Pending
+      <p class="shortcomment cmt">Rewrite in the DB the status of an <span class="extype" name="UpdateSpec">UpdateSpec</span>, ie for a (campaign, VIN) combination.</p><div class="fullcomment"><div class="comment cmt"><p>Rewrite in the DB the status of an <span class="extype" name="UpdateSpec">UpdateSpec</span>, ie for a (campaign, VIN) combination.
+</p></div><dl class="paramcmts block"><dt class="param">spec</dt><dd class="cmt"><p>The combination of VIN and update request to record the status of</p></dd><dt class="param">newStatus</dt><dd class="cmt"><p>The latest status of the installation. One of Pending
                  InFlight, Canceled, Failed or Finished.</p></dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
@@ -600,41 +646,39 @@ on a single VIN</p></div><dl class="paramcmts block"><dt class="param">updateSpe
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="org.genivi.sota.core.db.UpdateSpecs#updateRequests" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="updateRequests:slick.lifted.TableQuery[org.genivi.sota.core.db.UpdateRequests.UpdateRequestsTable]"></a>
-      <a id="updateRequests:TableQuery[UpdateRequestsTable]"></a>
+      <a id="updateRequests:slick.lifted.TableQuery[org.genivi.sota.core.db.UpdateRequests.UpdateRequestTable]"></a>
+      <a id="updateRequests:TableQuery[UpdateRequestTable]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">updateRequests</span><span class="result">: <span class="extype" name="slick.lifted.TableQuery">TableQuery</span>[<a href="UpdateRequests$$UpdateRequestsTable.html" class="extype" name="org.genivi.sota.core.db.UpdateRequests.UpdateRequestsTable">UpdateRequestsTable</a>]</span>
+        <span class="name">updateRequests</span><span class="result">: <span class="extype" name="slick.lifted.TableQuery">TableQuery</span>[<a href="UpdateRequests$$UpdateRequestTable.html" class="extype" name="org.genivi.sota.core.db.UpdateRequests.UpdateRequestTable">UpdateRequestTable</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@updateRequests:slick.lifted.TableQuery[org.genivi.sota.core.db.UpdateRequests.UpdateRequestsTable]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@updateRequests:slick.lifted.TableQuery[org.genivi.sota.core.db.UpdateRequests.UpdateRequestTable]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Internal helper definition to accesss the UpdateRequests table
-</p>
+      
     </li><li name="org.genivi.sota.core.db.UpdateSpecs#updateSpecs" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="updateSpecs:slick.lifted.TableQuery[org.genivi.sota.core.db.UpdateSpecs.UpdateSpecsTable]"></a>
-      <a id="updateSpecs:TableQuery[UpdateSpecsTable]"></a>
+      <a id="updateSpecs:slick.lifted.TableQuery[org.genivi.sota.core.db.UpdateSpecs.UpdateSpecTable]"></a>
+      <a id="updateSpecs:TableQuery[UpdateSpecTable]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">updateSpecs</span><span class="result">: <span class="extype" name="slick.lifted.TableQuery">TableQuery</span>[<a href="UpdateSpecs$$UpdateSpecsTable.html" class="extype" name="org.genivi.sota.core.db.UpdateSpecs.UpdateSpecsTable">UpdateSpecsTable</a>]</span>
+        <span class="name">updateSpecs</span><span class="result">: <span class="extype" name="slick.lifted.TableQuery">TableQuery</span>[<a href="UpdateSpecs$$UpdateSpecTable.html" class="extype" name="org.genivi.sota.core.db.UpdateSpecs.UpdateSpecTable">UpdateSpecTable</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@updateSpecs:slick.lifted.TableQuery[org.genivi.sota.core.db.UpdateSpecs.UpdateSpecsTable]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.UpdateSpecs$@updateSpecs:slick.lifted.TableQuery[org.genivi.sota.core.db.UpdateSpecs.UpdateSpecTable]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Internal helper definition to accesss the UpdateSpecs table
-</p>
+      
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <a id="wait():Unit"></a>

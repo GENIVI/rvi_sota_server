@@ -66,7 +66,24 @@
 
         <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li name="org.genivi.sota.core.transfer.PackageUpdate" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+              <ol><li name="org.genivi.sota.core.transfer.PackageDownloadProcess" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PackageDownloadProcessextendsAnyRef"></a>
+      <a id="PackageDownloadProcess:PackageDownloadProcess"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="PackageDownloadProcess.html"><span class="name">PackageDownloadProcess</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.transfer.package@PackageDownloadProcessextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.core.transfer.PackageUpdate" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="PackageUpdateextendsProductwithSerializable"></a>
       <a id="PackageUpdate:PackageUpdate"></a>
       <h4 class="signature">
@@ -75,7 +92,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="PackageUpdate.html"><span class="name">PackageUpdate</span></a><span class="params">(<span name="package">package: <a href="../data/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">data.Package.Id</a></span>, <span name="size">size: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="PackageUpdate.html"><span class="name">PackageUpdate</span></a><span class="params">(<span name="update_id">update_id: <span class="extype" name="java.util.UUID">UUID</span></span>, <span name="signature">signature: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="description">description: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="request_confirmation">request_confirmation: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="size">size: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4><span class="permalink">
       <a href="../../../../../index.html#org.genivi.sota.core.transfer.package@PackageUpdateextendsProductwithSerializable" title="Permalink" target="_top">
@@ -92,10 +109,27 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="UpdateNotification.html"><span class="name">UpdateNotification</span></a><span class="params">(<span name="packages">packages: <span class="extype" name="scala.Seq">Seq</span>[<a href="PackageUpdate.html" class="extype" name="org.genivi.sota.core.transfer.PackageUpdate">PackageUpdate</a>]</span>, <span name="services">services: <a href="../rvi/ServerServices.html" class="extype" name="org.genivi.sota.core.rvi.ServerServices">ServerServices</a></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="UpdateNotification.html"><span class="name">UpdateNotification</span></a><span class="params">(<span name="update_available">update_available: <a href="PackageUpdate.html" class="extype" name="org.genivi.sota.core.transfer.PackageUpdate">PackageUpdate</a></span>, <span name="services">services: <a href="../rvi/ServerServices.html" class="extype" name="org.genivi.sota.core.rvi.ServerServices">ServerServices</a></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4><span class="permalink">
       <a href="../../../../../index.html#org.genivi.sota.core.transfer.package@UpdateNotificationextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.core.transfer.UpdateNotifier" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="UpdateNotifierextendsAnyRef"></a>
+      <a id="UpdateNotifier:UpdateNotifier"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="UpdateNotifier.html"><span class="name">UpdateNotifier</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.transfer.package@UpdateNotifierextendsAnyRef" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -107,24 +141,74 @@
 
         <div id="values" class="values members">
               <h3>Value Members</h3>
-              <ol><li name="org.genivi.sota.core.transfer.UpdateNotifier" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="UpdateNotifier"></a>
-      <a id="UpdateNotifier:UpdateNotifier"></a>
+              <ol><li name="org.genivi.sota.core.transfer.DefaultUpdateNotifier" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DefaultUpdateNotifier"></a>
+      <a id="DefaultUpdateNotifier:DefaultUpdateNotifier"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="UpdateNotifier$.html"><span class="name">UpdateNotifier</span></a>
+        <a href="DefaultUpdateNotifier$.html"><span class="name">DefaultUpdateNotifier</span></a><span class="result"> extends <a href="UpdateNotifier.html" class="extype" name="org.genivi.sota.core.transfer.UpdateNotifier">UpdateNotifier</a></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.transfer.package@UpdateNotifier" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.transfer.package@DefaultUpdateNotifier" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Send a notification to SOTA clients via RVI that there are packages that
-can/should be updated.</p>
+      
+    </li><li name="org.genivi.sota.core.transfer.PackageUpdate" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PackageUpdate"></a>
+      <a id="PackageUpdate:PackageUpdate"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="PackageUpdate$.html"><span class="name">PackageUpdate</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.transfer.package@PackageUpdate" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.core.transfer.UpdateNotification" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="UpdateNotification"></a>
+      <a id="UpdateNotification:UpdateNotification"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="UpdateNotification$.html"><span class="name">UpdateNotification</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.transfer.package@UpdateNotification" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.core.transfer.VehicleUpdates" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="VehicleUpdates"></a>
+      <a id="VehicleUpdates:VehicleUpdates"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="VehicleUpdates$.html"><span class="name">VehicleUpdates</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.transfer.package@VehicleUpdates" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li></ol>
             </div>
 

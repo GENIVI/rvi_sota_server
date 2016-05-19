@@ -28,12 +28,10 @@
         </head>
         <body class="type">
       <div id="definition">
-        <a href="Package$.html" title="See companion object"><img alt="Class/Object" src="../../../../../lib/class_to_object_big.png" /></a>
+        <img alt="Class" src="../../../../../lib/class_big.png" />
         <p id="owner"><a href="../../../../package.html" class="extype" name="org">org</a>.<a href="../../../package.html" class="extype" name="org.genivi">genivi</a>.<a href="../../package.html" class="extype" name="org.genivi.sota">sota</a>.<a href="../package.html" class="extype" name="org.genivi.sota.core">core</a>.<a href="package.html" class="extype" name="org.genivi.sota.core.data">data</a></p>
-        <h1><a href="Package$.html" title="See companion object">Package</a></h1><h3><span class="morelinks"><div>
-            Related Docs:
-            <a href="Package$.html" title="See companion object">object Package</a>
-            | <a href="package.html" class="extype" name="org.genivi.sota.core.data">package data</a>
+        <h1>Package</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="org.genivi.sota.core.data">package data</a>
           </div></span></h3><span class="permalink">
       <a href="../../../../../index.html#org.genivi.sota.core.data.Package" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
@@ -47,13 +45,13 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">Package</span><span class="params">(<span name="id">id: <a href="Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">Package.Id</a></span>, <span name="uri">uri: <span class="extype" name="akka.http.scaladsl.model.Uri">Uri</span></span>, <span name="size">size: <span class="extype" name="scala.Long">Long</span></span>, <span name="checkSum">checkSum: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="description">description: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="vendor">vendor: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <span class="name">Package</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="id">id: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>, <span name="uri">uri: <span class="extype" name="akka.http.scaladsl.model.Uri">Uri</span></span>, <span name="size">size: <span class="extype" name="scala.Long">Long</span></span>, <span name="checkSum">checkSum: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="description">description: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="vendor">vendor: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="signature">signature: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
           <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Domain object for a software package.
 Packages are the atomic unit of software installation in SOTA.</p></div><dl class="paramcmts block"><dt class="param">id</dt><dd class="cmt"><p>The name and version number of the package. This pair uniquely
-          identifies a package in SOTA</p></dd><dt class="param">uri</dt><dd class="cmt"><p>The location of the binary data for this package</p></dd><dt class="param">size</dt><dd class="cmt"><p>The size of the package in bytes</p></dd><dt class="param">checkSum</dt><dd class="cmt"><p>The SHA1 checksum of the package's contents</p></dd><dt class="param">description</dt><dd class="cmt"><p>A free-form description of the package</p></dd><dt class="param">vendor</dt><dd class="cmt"><p>A free-form description of the vendor who provided the package</p></dd></dl><div class="toggleContainer block">
+          identifies a package in SOTA</p></dd><dt class="param">uri</dt><dd class="cmt"><p>The location of the binary data for this package</p></dd><dt class="param">size</dt><dd class="cmt"><p>The size of the package in bytes</p></dd><dt class="param">checkSum</dt><dd class="cmt"><p>The SHA1 checksum of the package's contents</p></dd><dt class="param">description</dt><dd class="cmt"><p>A free-form description of the package</p></dd><dt class="param">vendor</dt><dd class="cmt"><p>A free-form description of the vendor who provided the package</p></dd><dt class="param">signature</dt><dd class="cmt"><p>A cryptographic signature for the package</p></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="scala.Serializable">Serializable</span>, <span class="extype" name="java.io.Serializable">Serializable</span>, <span class="extype" name="scala.Product">Product</span>, <span class="extype" name="scala.Equals">Equals</span>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
@@ -93,7 +91,7 @@ Packages are the atomic unit of software installation in SOTA.</p></div><dl clas
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="org.genivi.sota.core.data.Package#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="&lt;init&gt;(id:org.genivi.sota.core.data.Package.Id,uri:akka.http.scaladsl.model.Uri,size:Long,checkSum:String,description:Option[String],vendor:Option[String]):org.genivi.sota.core.data.Package"></a>
+      <a id="&lt;init&gt;(namespace:org.genivi.sota.data.Namespace.Namespace,id:org.genivi.sota.data.PackageId,uri:akka.http.scaladsl.model.Uri,size:Long,checkSum:String,description:Option[String],vendor:Option[String],signature:Option[String]):org.genivi.sota.core.data.Package"></a>
       <a id="&lt;init&gt;:Package"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -101,15 +99,15 @@ Packages are the atomic unit of software installation in SOTA.</p></div><dl clas
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">Package</span><span class="params">(<span name="id">id: <a href="Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">Package.Id</a></span>, <span name="uri">uri: <span class="extype" name="akka.http.scaladsl.model.Uri">Uri</span></span>, <span name="size">size: <span class="extype" name="scala.Long">Long</span></span>, <span name="checkSum">checkSum: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="description">description: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="vendor">vendor: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span>
+        <span class="name">Package</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="id">id: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>, <span name="uri">uri: <span class="extype" name="akka.http.scaladsl.model.Uri">Uri</span></span>, <span name="size">size: <span class="extype" name="scala.Long">Long</span></span>, <span name="checkSum">checkSum: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="description">description: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="vendor">vendor: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="signature">signature: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.data.Package@&lt;init&gt;(id:org.genivi.sota.core.data.Package.Id,uri:akka.http.scaladsl.model.Uri,size:Long,checkSum:String,description:Option[String],vendor:Option[String]):org.genivi.sota.core.data.Package" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.data.Package@&lt;init&gt;(namespace:org.genivi.sota.data.Namespace.Namespace,id:org.genivi.sota.data.PackageId,uri:akka.http.scaladsl.model.Uri,size:Long,checkSum:String,description:Option[String],vendor:Option[String],signature:Option[String]):org.genivi.sota.core.data.Package" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt class="param">id</dt><dd class="cmt"><p>The name and version number of the package. This pair uniquely
-          identifies a package in SOTA</p></dd><dt class="param">uri</dt><dd class="cmt"><p>The location of the binary data for this package</p></dd><dt class="param">size</dt><dd class="cmt"><p>The size of the package in bytes</p></dd><dt class="param">checkSum</dt><dd class="cmt"><p>The SHA1 checksum of the package's contents</p></dd><dt class="param">description</dt><dd class="cmt"><p>A free-form description of the package</p></dd><dt class="param">vendor</dt><dd class="cmt"><p>A free-form description of the vendor who provided the package</p></dd></dl></div>
+          identifies a package in SOTA</p></dd><dt class="param">uri</dt><dd class="cmt"><p>The location of the binary data for this package</p></dd><dt class="param">size</dt><dd class="cmt"><p>The size of the package in bytes</p></dd><dt class="param">checkSum</dt><dd class="cmt"><p>The SHA1 checksum of the package's contents</p></dd><dt class="param">description</dt><dd class="cmt"><p>A free-form description of the package</p></dd><dt class="param">vendor</dt><dd class="cmt"><p>A free-form description of the vendor who provided the package</p></dd><dt class="param">signature</dt><dd class="cmt"><p>A cryptographic signature for the package</p></dd></dl></div>
     </li></ol>
             </div>
 
@@ -302,18 +300,18 @@ Packages are the atomic unit of software installation in SOTA.</p></div><dl clas
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="org.genivi.sota.core.data.Package#id" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="id:org.genivi.sota.core.data.Package.Id"></a>
-      <a id="id:Package.Id"></a>
+      <a id="id:org.genivi.sota.data.PackageId"></a>
+      <a id="id:PackageId"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">id</span><span class="result">: <a href="Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">Package.Id</a></span>
+        <span class="name">id</span><span class="result">: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.data.Package@id:org.genivi.sota.core.data.Package.Id" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.data.Package@id:org.genivi.sota.data.PackageId" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -336,6 +334,23 @@ Packages are the atomic unit of software installation in SOTA.</p></div><dl clas
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="org.genivi.sota.core.data.Package#namespace" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="namespace:org.genivi.sota.data.Namespace.Namespace"></a>
+      <a id="namespace:Namespace"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">namespace</span><span class="result">: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.data.Package@namespace:org.genivi.sota.data.Namespace.Namespace" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>
@@ -387,6 +402,23 @@ Packages are the atomic unit of software installation in SOTA.</p></div><dl clas
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="org.genivi.sota.core.data.Package#signature" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="signature:Option[String]"></a>
+      <a id="signature:Option[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">signature</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.data.Package@signature:Option[String]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">A cryptographic signature for the package</p>
     </li><li name="org.genivi.sota.core.data.Package#size" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="size:Long"></a>
       <a id="size:Long"></a>

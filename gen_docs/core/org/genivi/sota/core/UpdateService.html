@@ -91,7 +91,7 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="org.genivi.sota.core.UpdateService#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(registeredServices:org.genivi.sota.core.rvi.ServerServices)(implicitlog:akka.event.LoggingAdapter,implicitrviClient:org.genivi.sota.core.rvi.RviClient):org.genivi.sota.core.UpdateService"></a>
+      <a id="&lt;init&gt;(notifier:org.genivi.sota.core.transfer.UpdateNotifier)(implicitsystem:akka.actor.ActorSystem,implicitconnectivity:org.genivi.sota.core.resolver.Connectivity):org.genivi.sota.core.UpdateService"></a>
       <a id="&lt;init&gt;:UpdateService"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -99,10 +99,10 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">UpdateService</span><span class="params">(<span name="registeredServices">registeredServices: <a href="rvi/ServerServices.html" class="extype" name="org.genivi.sota.core.rvi.ServerServices">ServerServices</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="log">log: <span class="extype" name="akka.event.LoggingAdapter">LoggingAdapter</span></span>, <span name="rviClient">rviClient: <a href="rvi/RviClient.html" class="extype" name="org.genivi.sota.core.rvi.RviClient">RviClient</a></span>)</span>
+        <span class="name">UpdateService</span><span class="params">(<span name="notifier">notifier: <a href="transfer/UpdateNotifier.html" class="extype" name="org.genivi.sota.core.transfer.UpdateNotifier">UpdateNotifier</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="system">system: <span class="extype" name="akka.actor.ActorSystem">ActorSystem</span></span>, <span name="connectivity">connectivity: <a href="resolver/Connectivity.html" class="extype" name="org.genivi.sota.core.resolver.Connectivity">Connectivity</a></span>)</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../index.html#org.genivi.sota.core.UpdateService@&lt;init&gt;(registeredServices:org.genivi.sota.core.rvi.ServerServices)(implicitlog:akka.event.LoggingAdapter,implicitrviClient:org.genivi.sota.core.rvi.RviClient):org.genivi.sota.core.UpdateService" title="Permalink" target="_top">
+      <a href="../../../../index.html#org.genivi.sota.core.UpdateService@&lt;init&gt;(notifier:org.genivi.sota.core.transfer.UpdateNotifier)(implicitsystem:akka.actor.ActorSystem,implicitconnectivity:org.genivi.sota.core.resolver.Connectivity):org.genivi.sota.core.UpdateService" title="Permalink" target="_top">
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -210,7 +210,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">checkVins</span><span class="params">(<span name="dependencies">dependencies: <a href="UpdateService$.html#VinsToPackages=Map[org.genivi.sota.core.data.Vehicle.Vin,Set[org.genivi.sota.core.data.Package.Id]]" class="extmbr" name="org.genivi.sota.core.UpdateService.VinsToPackages">VinsToPackages</a></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
+        <span class="name">checkVins</span><span class="params">(<span name="dependencies">dependencies: <a href="UpdateService$.html#VinsToPackages=Map[org.genivi.sota.data.Vehicle.Vin,Set[org.genivi.sota.data.PackageId]]" class="extmbr" name="org.genivi.sota.core.UpdateService.VinsToPackages">VinsToPackages</a></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
       </span>
       </h4><span class="permalink">
       <a href="../../../../index.html#org.genivi.sota.core.UpdateService@checkVins(dependencies:org.genivi.sota.core.UpdateService.VinsToPackages):scala.concurrent.Future[Boolean]" title="Permalink" target="_top">
@@ -241,6 +241,23 @@
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="org.genivi.sota.core.UpdateService#connectivity" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="connectivity:org.genivi.sota.core.resolver.Connectivity"></a>
+      <a id="connectivity:Connectivity"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">connectivity</span><span class="result">: <a href="resolver/Connectivity.html" class="extype" name="org.genivi.sota.core.resolver.Connectivity">Connectivity</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#org.genivi.sota.core.UpdateService@connectivity:org.genivi.sota.core.resolver.Connectivity" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
@@ -350,69 +367,52 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="org.genivi.sota.core.UpdateService#loadPackage" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="loadPackage(id:org.genivi.sota.core.data.Package.Id)(implicitdb:slick.driver.MySQLDriver.api.Database,implicitec:scala.concurrent.ExecutionContext):scala.concurrent.Future[org.genivi.sota.core.data.Package]"></a>
-      <a id="loadPackage(data.Package.Id)(slick.driver.JdbcProfile.API.Database,ExecutionContext):Future[Package]"></a>
+      <a id="loadPackage(ns:org.genivi.sota.data.Namespace.Namespace,id:org.genivi.sota.data.PackageId)(implicitdb:slick.driver.MySQLDriver.api.Database,implicitec:scala.concurrent.ExecutionContext):scala.concurrent.Future[org.genivi.sota.core.data.Package]"></a>
+      <a id="loadPackage(Namespace,PackageId)(slick.driver.JdbcProfile.API.Database,ExecutionContext):Future[Package]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">loadPackage</span><span class="params">(<span name="id">id: <a href="data/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">data.Package.Id</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="db">db: <span class="extype" name="slick.profile.BasicProfile.CommonAPI.Database">slick.driver.JdbcProfile.API.Database</span></span>, <span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<a href="data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>]</span>
+        <span class="name">loadPackage</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="id">id: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="db">db: <span class="extype" name="slick.profile.BasicProfile.CommonAPI.Database">slick.driver.JdbcProfile.API.Database</span></span>, <span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<a href="data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../index.html#org.genivi.sota.core.UpdateService@loadPackage(id:org.genivi.sota.core.data.Package.Id)(implicitdb:slick.driver.MySQLDriver.api.Database,implicitec:scala.concurrent.ExecutionContext):scala.concurrent.Future[org.genivi.sota.core.data.Package]" title="Permalink" target="_top">
-        <img src="../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      
-    </li><li name="org.genivi.sota.core.UpdateService#log" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="log:akka.event.LoggingAdapter"></a>
-      <a id="log:LoggingAdapter"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">log</span><span class="result">: <span class="extype" name="akka.event.LoggingAdapter">LoggingAdapter</span></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../index.html#org.genivi.sota.core.UpdateService@log:akka.event.LoggingAdapter" title="Permalink" target="_top">
+      <a href="../../../../index.html#org.genivi.sota.core.UpdateService@loadPackage(ns:org.genivi.sota.data.Namespace.Namespace,id:org.genivi.sota.data.PackageId)(implicitdb:slick.driver.MySQLDriver.api.Database,implicitec:scala.concurrent.ExecutionContext):scala.concurrent.Future[org.genivi.sota.core.data.Package]" title="Permalink" target="_top">
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="org.genivi.sota.core.UpdateService#mapIdsToPackages" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="mapIdsToPackages(vinsToDeps:org.genivi.sota.core.UpdateService.VinsToPackages)(implicitdb:slick.driver.MySQLDriver.api.Database,implicitec:scala.concurrent.ExecutionContext):scala.concurrent.Future[Map[org.genivi.sota.core.data.Package.Id,org.genivi.sota.core.data.Package]]"></a>
-      <a id="mapIdsToPackages(VinsToPackages)(slick.driver.JdbcProfile.API.Database,ExecutionContext):Future[Map[data.Package.Id,Package]]"></a>
+      <a id="mapIdsToPackages(ns:org.genivi.sota.data.Namespace.Namespace,vinsToDeps:org.genivi.sota.core.UpdateService.VinsToPackages)(implicitdb:slick.driver.MySQLDriver.api.Database,implicitec:scala.concurrent.ExecutionContext):scala.concurrent.Future[Map[org.genivi.sota.data.PackageId,org.genivi.sota.core.data.Package]]"></a>
+      <a id="mapIdsToPackages(Namespace,VinsToPackages)(slick.driver.JdbcProfile.API.Database,ExecutionContext):Future[Map[PackageId,Package]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">mapIdsToPackages</span><span class="params">(<span name="vinsToDeps">vinsToDeps: <a href="UpdateService$.html#VinsToPackages=Map[org.genivi.sota.core.data.Vehicle.Vin,Set[org.genivi.sota.core.data.Package.Id]]" class="extmbr" name="org.genivi.sota.core.UpdateService.VinsToPackages">VinsToPackages</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="db">db: <span class="extype" name="slick.profile.BasicProfile.CommonAPI.Database">slick.driver.JdbcProfile.API.Database</span></span>, <span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Predef.Map">Map</span>[<a href="data/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">data.Package.Id</a>, <a href="data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>]]</span>
+        <span class="name">mapIdsToPackages</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vinsToDeps">vinsToDeps: <a href="UpdateService$.html#VinsToPackages=Map[org.genivi.sota.data.Vehicle.Vin,Set[org.genivi.sota.data.PackageId]]" class="extmbr" name="org.genivi.sota.core.UpdateService.VinsToPackages">VinsToPackages</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="db">db: <span class="extype" name="slick.profile.BasicProfile.CommonAPI.Database">slick.driver.JdbcProfile.API.Database</span></span>, <span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span>, <a href="data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../index.html#org.genivi.sota.core.UpdateService@mapIdsToPackages(vinsToDeps:org.genivi.sota.core.UpdateService.VinsToPackages)(implicitdb:slick.driver.MySQLDriver.api.Database,implicitec:scala.concurrent.ExecutionContext):scala.concurrent.Future[Map[org.genivi.sota.core.data.Package.Id,org.genivi.sota.core.data.Package]]" title="Permalink" target="_top">
+      <a href="../../../../index.html#org.genivi.sota.core.UpdateService@mapIdsToPackages(ns:org.genivi.sota.data.Namespace.Namespace,vinsToDeps:org.genivi.sota.core.UpdateService.VinsToPackages)(implicitdb:slick.driver.MySQLDriver.api.Database,implicitec:scala.concurrent.ExecutionContext):scala.concurrent.Future[Map[org.genivi.sota.data.PackageId,org.genivi.sota.core.data.Package]]" title="Permalink" target="_top">
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="org.genivi.sota.core.UpdateService#mkUploadSpecs" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="mkUploadSpecs(request:org.genivi.sota.core.data.UpdateRequest,vinsToPackageIds:org.genivi.sota.core.UpdateService.VinsToPackages,idsToPackages:Map[org.genivi.sota.core.data.Package.Id,org.genivi.sota.core.data.Package]):Set[org.genivi.sota.core.data.UpdateSpec]"></a>
-      <a id="mkUploadSpecs(UpdateRequest,VinsToPackages,Map[data.Package.Id,Package]):Set[UpdateSpec]"></a>
+      <a id="mkUploadSpecs(request:org.genivi.sota.core.data.UpdateRequest,vinsToPackageIds:org.genivi.sota.core.UpdateService.VinsToPackages,idsToPackages:Map[org.genivi.sota.data.PackageId,org.genivi.sota.core.data.Package]):Set[org.genivi.sota.core.data.UpdateSpec]"></a>
+      <a id="mkUploadSpecs(UpdateRequest,VinsToPackages,Map[PackageId,Package]):Set[UpdateSpec]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">mkUploadSpecs</span><span class="params">(<span name="request">request: <a href="data/UpdateRequest.html" class="extype" name="org.genivi.sota.core.data.UpdateRequest">UpdateRequest</a></span>, <span name="vinsToPackageIds">vinsToPackageIds: <a href="UpdateService$.html#VinsToPackages=Map[org.genivi.sota.core.data.Vehicle.Vin,Set[org.genivi.sota.core.data.Package.Id]]" class="extmbr" name="org.genivi.sota.core.UpdateService.VinsToPackages">VinsToPackages</a></span>, <span name="idsToPackages">idsToPackages: <span class="extype" name="scala.Predef.Map">Map</span>[<a href="data/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">data.Package.Id</a>, <a href="data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>]</span>)</span><span class="result">: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="data/UpdateSpec.html" class="extype" name="org.genivi.sota.core.data.UpdateSpec">UpdateSpec</a>]</span>
+        <span class="name">mkUploadSpecs</span><span class="params">(<span name="request">request: <a href="data/UpdateRequest.html" class="extype" name="org.genivi.sota.core.data.UpdateRequest">UpdateRequest</a></span>, <span name="vinsToPackageIds">vinsToPackageIds: <a href="UpdateService$.html#VinsToPackages=Map[org.genivi.sota.data.Vehicle.Vin,Set[org.genivi.sota.data.PackageId]]" class="extmbr" name="org.genivi.sota.core.UpdateService.VinsToPackages">VinsToPackages</a></span>, <span name="idsToPackages">idsToPackages: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span>, <a href="data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>]</span>)</span><span class="result">: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="data/UpdateSpec.html" class="extype" name="org.genivi.sota.core.data.UpdateSpec">UpdateSpec</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../index.html#org.genivi.sota.core.UpdateService@mkUploadSpecs(request:org.genivi.sota.core.data.UpdateRequest,vinsToPackageIds:org.genivi.sota.core.UpdateService.VinsToPackages,idsToPackages:Map[org.genivi.sota.core.data.Package.Id,org.genivi.sota.core.data.Package]):Set[org.genivi.sota.core.data.UpdateSpec]" title="Permalink" target="_top">
+      <a href="../../../../index.html#org.genivi.sota.core.UpdateService@mkUploadSpecs(request:org.genivi.sota.core.data.UpdateRequest,vinsToPackageIds:org.genivi.sota.core.UpdateService.VinsToPackages,idsToPackages:Map[org.genivi.sota.data.PackageId,org.genivi.sota.core.data.Package]):Set[org.genivi.sota.core.data.UpdateSpec]" title="Permalink" target="_top">
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -502,6 +502,25 @@
       </a>
     </span>
       
+    </li><li name="org.genivi.sota.core.UpdateService#queueVehicleUpdate" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="queueVehicleUpdate(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,packageId:org.genivi.sota.data.PackageId)(implicitdb:slick.driver.MySQLDriver.api.Database,implicitec:scala.concurrent.ExecutionContext):scala.concurrent.Future[org.genivi.sota.core.data.UpdateRequest]"></a>
+      <a id="queueVehicleUpdate(Namespace,Vin,PackageId)(slick.driver.JdbcProfile.API.Database,ExecutionContext):Future[UpdateRequest]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">queueVehicleUpdate</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>, <span name="packageId">packageId: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="db">db: <span class="extype" name="slick.profile.BasicProfile.CommonAPI.Database">slick.driver.JdbcProfile.API.Database</span></span>, <span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<a href="data/UpdateRequest.html" class="extype" name="org.genivi.sota.core.data.UpdateRequest">UpdateRequest</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#org.genivi.sota.core.UpdateService@queueVehicleUpdate(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,packageId:org.genivi.sota.data.PackageId)(implicitdb:slick.driver.MySQLDriver.api.Database,implicitec:scala.concurrent.ExecutionContext):scala.concurrent.Future[org.genivi.sota.core.data.UpdateRequest]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">For the given <span class="extype" name="PackageId">PackageId</span> and vehicle, persist an <span class="extype" name="UpdateRequest">UpdateRequest</span> and an <span class="extype" name="UpdateSpec">UpdateSpec</span>.</p><div class="fullcomment"><div class="comment cmt"><p>For the given <span class="extype" name="PackageId">PackageId</span> and vehicle, persist an <span class="extype" name="UpdateRequest">UpdateRequest</span> and an <span class="extype" name="UpdateSpec">UpdateSpec</span>.
+Resolver is not contacted.
+</p></div></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
       <a id="synchronized[T0](⇒T0):T0"></a>
@@ -519,6 +538,23 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="org.genivi.sota.core.UpdateService#system" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="system:akka.actor.ActorSystem"></a>
+      <a id="system:ActorSystem"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">system</span><span class="result">: <span class="extype" name="akka.actor.ActorSystem">ActorSystem</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#org.genivi.sota.core.UpdateService@system:akka.actor.ActorSystem" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
       <a id="toString():String"></a>

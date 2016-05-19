@@ -49,7 +49,8 @@
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>API routes for everything related to vehicles: creation, deletion, and package and component association.</p></div><dl class="attributes block"> <dt>See also</dt><dd><span class="cmt"><p><code><span class="extype" name="tourl">http://pdxostc.github.io/rvi_sota_server/dev/api.html</span></code></p></span></dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>API routes for everything related to vehicles: creation, deletion, and package and component association.
+</p></div><dl class="attributes block"> <dt>See also</dt><dd><span class="cmt"><p><code><span class="extype" name="tourl">http://pdxostc.github.io/rvi_sota_server/dev/api.html</span></code></p></span></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
@@ -89,7 +90,7 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="org.genivi.sota.resolver.vehicles.VehicleDirectives#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;()(implicitdb:slick.jdbc.JdbcBackend.Database,implicitmat:akka.stream.ActorMaterializer,implicitec:scala.concurrent.ExecutionContext):org.genivi.sota.resolver.vehicles.VehicleDirectives"></a>
+      <a id="&lt;init&gt;()(implicitsystem:akka.actor.ActorSystem,implicitdb:slick.jdbc.JdbcBackend.Database,implicitmat:akka.stream.ActorMaterializer,implicitec:scala.concurrent.ExecutionContext):org.genivi.sota.resolver.vehicles.VehicleDirectives"></a>
       <a id="&lt;init&gt;:VehicleDirectives"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -97,10 +98,10 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">VehicleDirectives</span><span class="params">()</span><span class="params">(<span class="implicit">implicit </span><span name="db">db: <span class="extype" name="slick.jdbc.JdbcBackend.Database">slick.jdbc.JdbcBackend.Database</span></span>, <span name="mat">mat: <span class="extype" name="akka.stream.ActorMaterializer">ActorMaterializer</span></span>, <span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span>
+        <span class="name">VehicleDirectives</span><span class="params">()</span><span class="params">(<span class="implicit">implicit </span><span name="system">system: <span class="extype" name="akka.actor.ActorSystem">ActorSystem</span></span>, <span name="db">db: <span class="extype" name="slick.jdbc.JdbcBackend.Database">slick.jdbc.JdbcBackend.Database</span></span>, <span name="mat">mat: <span class="extype" name="akka.stream.ActorMaterializer">ActorMaterializer</span></span>, <span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleDirectives@&lt;init&gt;()(implicitdb:slick.jdbc.JdbcBackend.Database,implicitmat:akka.stream.ActorMaterializer,implicitec:scala.concurrent.ExecutionContext):org.genivi.sota.resolver.vehicles.VehicleDirectives" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleDirectives@&lt;init&gt;()(implicitsystem:akka.actor.ActorSystem,implicitdb:slick.jdbc.JdbcBackend.Database,implicitmat:akka.stream.ActorMaterializer,implicitec:scala.concurrent.ExecutionContext):org.genivi.sota.resolver.vehicles.VehicleDirectives" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -165,6 +166,23 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="org.genivi.sota.resolver.vehicles.VehicleDirectives#addVehicle" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="addVehicle(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route"></a>
+      <a id="addVehicle(Namespace,Vin):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addVehicle</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleDirectives@addVehicle(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -205,24 +223,42 @@
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="org.genivi.sota.resolver.vehicles.VehicleDirectives#componentRoute" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="componentRoute(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin):akka.http.scaladsl.server.Route"></a>
-      <a id="componentRoute(Vehicle.Vin):Route"></a>
+    </li><li name="org.genivi.sota.resolver.vehicles.VehicleDirectives#componentApi" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="componentApi(vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route"></a>
+      <a id="componentApi(Vin):Route"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">componentRoute</span><span class="params">(<span name="vin">vin: <a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.resolver.vehicles.Vehicle.Vin">Vehicle.Vin</a></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+        <span class="name">componentApi</span><span class="params">(<span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleDirectives@componentRoute(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleDirectives@componentApi(vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">API route for component -&gt; vehicle associations.</p><div class="fullcomment"><div class="comment cmt"><p>API route for component -&gt; vehicle associations.</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>Route object containing routes for listing components on a vehicle, and creating and deleting
+      <p class="shortcomment cmt">API route for component -&gt; vehicle associations.</p><div class="fullcomment"><div class="comment cmt"><p>API route for component -&gt; vehicle associations.
+</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>Route object containing routes for listing components on a vehicle, and creating and deleting
              vehicle -&gt; component associations</p></dd></dl><dl class="attributes block"> <dt>Exceptions thrown</dt><dd><span class="cmt"><p><span class="extype" name="Errors.MissingComponent"><code>Errors.MissingComponent</code></span> if component doesn't exist</p></span><span class="cmt"><p><span class="extype" name="Errors.MissingVehicle"><code>Errors.MissingVehicle</code></span> if vehicle doesn't exist</p></span></dd></dl></div>
+    </li><li name="org.genivi.sota.resolver.vehicles.VehicleDirectives#deleteVehicle" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="deleteVehicle(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route"></a>
+      <a id="deleteVehicle(Namespace,Vin):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">deleteVehicle</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleDirectives@deleteVehicle(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
@@ -257,6 +293,23 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="org.genivi.sota.resolver.vehicles.VehicleDirectives#extractVin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="extractVin:akka.http.scaladsl.server.Directive1[org.genivi.sota.data.Vehicle.Vin]"></a>
+      <a id="extractVin:Directive1[Vin]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">extractVin</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Directive1">Directive1</span>[<span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleDirectives@extractVin:akka.http.scaladsl.server.Directive1[org.genivi.sota.data.Vehicle.Vin]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <a id="finalize():Unit"></a>
@@ -297,6 +350,74 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="org.genivi.sota.resolver.vehicles.VehicleDirectives#getComponents" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getComponents(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route"></a>
+      <a id="getComponents(Namespace,Vin):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getComponents</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleDirectives@getComponents(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.vehicles.VehicleDirectives#getFirmware" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getFirmware(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route"></a>
+      <a id="getFirmware(Namespace,Vin):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getFirmware</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleDirectives@getFirmware(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.vehicles.VehicleDirectives#getPackages" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getPackages(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route"></a>
+      <a id="getPackages(Namespace,Vin):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getPackages</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleDirectives@getPackages(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.vehicles.VehicleDirectives#getVehicle" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getVehicle(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route"></a>
+      <a id="getVehicle(Namespace,Vin):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getVehicle</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleDirectives@getVehicle(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
       <a id="hashCode():Int"></a>
@@ -314,6 +435,40 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="org.genivi.sota.resolver.vehicles.VehicleDirectives#installComponent" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="installComponent(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,part:org.genivi.sota.resolver.components.Component.PartNumber):akka.http.scaladsl.server.Route"></a>
+      <a id="installComponent(Namespace,Vin,PartNumber):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">installComponent</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>, <span name="part">part: <a href="../components/Component$.html#PartNumber=eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" class="extmbr" name="org.genivi.sota.resolver.components.Component.PartNumber">PartNumber</a></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleDirectives@installComponent(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,part:org.genivi.sota.resolver.components.Component.PartNumber):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.vehicles.VehicleDirectives#installPackage" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="installPackage(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,pkgId:org.genivi.sota.data.PackageId):akka.http.scaladsl.server.Route"></a>
+      <a id="installPackage(Namespace,Vin,PackageId):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">installPackage</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>, <span name="pkgId">pkgId: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleDirectives@installPackage(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,pkgId:org.genivi.sota.data.PackageId):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleDirectives#installedComponentsHandler" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="installedComponentsHandler:akka.http.scaladsl.server.ExceptionHandler"></a>
       <a id="installedComponentsHandler:ExceptionHandler"></a>
@@ -416,23 +571,24 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="org.genivi.sota.resolver.vehicles.VehicleDirectives#packageRoute" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="packageRoute(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin):akka.http.scaladsl.server.Route"></a>
-      <a id="packageRoute(Vehicle.Vin):Route"></a>
+    </li><li name="org.genivi.sota.resolver.vehicles.VehicleDirectives#packageApi" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="packageApi(vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route"></a>
+      <a id="packageApi(Vin):Route"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">packageRoute</span><span class="params">(<span name="vin">vin: <a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.resolver.vehicles.Vehicle.Vin">Vehicle.Vin</a></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+        <span class="name">packageApi</span><span class="params">(<span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleDirectives@packageRoute(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleDirectives@packageApi(vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">API route for package -&gt; vehicle associations.</p><div class="fullcomment"><div class="comment cmt"><p>API route for package -&gt; vehicle associations.</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>Route object containing routes for listing packages on a vehicle, and creating and deleting
+      <p class="shortcomment cmt">API route for package -&gt; vehicle associations.</p><div class="fullcomment"><div class="comment cmt"><p>API route for package -&gt; vehicle associations.
+</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>Route object containing routes for listing packages on a vehicle, and creating and deleting
              vehicle -&gt; package associations</p></dd></dl><dl class="attributes block"> <dt>Exceptions thrown</dt><dd><span class="cmt"><p><span class="extype" name="Errors.MissingPackageException"><code>Errors.MissingPackageException</code></span> if package doesn't exist</p></span><span class="cmt"><p><span class="extype" name="Errors.MissingVehicle"><code>Errors.MissingVehicle</code></span> if vehicle doesn't exist</p></span></dd></dl></div>
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleDirectives#route" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="route:akka.http.scaladsl.server.Route"></a>
@@ -450,7 +606,25 @@
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Base API route for vehicles.</p><div class="fullcomment"><div class="comment cmt"><p>Base API route for vehicles.</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>Route object containing routes for creating, deleting, and listing vehicles</p></dd></dl><dl class="attributes block"> <dt>Exceptions thrown</dt><dd><span class="cmt"><p><span class="extype" name="Errors.MissingVehicle"><code>Errors.MissingVehicle</code></span> if vehicle doesn't exist</p></span></dd></dl></div>
+      <p class="shortcomment cmt">Base API route for vehicles.</p><div class="fullcomment"><div class="comment cmt"><p>Base API route for vehicles.
+</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>Route object containing routes for creating, deleting, and listing vehicles</p></dd></dl><dl class="attributes block"> <dt>Exceptions thrown</dt><dd><span class="cmt"><p><span class="extype" name="Errors.MissingVehicle"><code>Errors.MissingVehicle</code></span> if vehicle doesn't exist</p></span></dd></dl></div>
+    </li><li name="org.genivi.sota.resolver.vehicles.VehicleDirectives#searchVehicles" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="searchVehicles(ns:org.genivi.sota.data.Namespace.Namespace):akka.http.scaladsl.server.Route"></a>
+      <a id="searchVehicles(Namespace):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">searchVehicles</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleDirectives@searchVehicles(ns:org.genivi.sota.data.Namespace.Namespace):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
       <a id="synchronized[T0](⇒T0):T0"></a>
@@ -485,6 +659,74 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="org.genivi.sota.resolver.vehicles.VehicleDirectives#uninstallComponent" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="uninstallComponent(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,part:org.genivi.sota.resolver.components.Component.PartNumber):akka.http.scaladsl.server.Route"></a>
+      <a id="uninstallComponent(Namespace,Vin,PartNumber):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">uninstallComponent</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>, <span name="part">part: <a href="../components/Component$.html#PartNumber=eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" class="extmbr" name="org.genivi.sota.resolver.components.Component.PartNumber">PartNumber</a></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleDirectives@uninstallComponent(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,part:org.genivi.sota.resolver.components.Component.PartNumber):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.vehicles.VehicleDirectives#uninstallPackage" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="uninstallPackage(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,pkgId:org.genivi.sota.data.PackageId):akka.http.scaladsl.server.Route"></a>
+      <a id="uninstallPackage(Namespace,Vin,PackageId):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">uninstallPackage</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>, <span name="pkgId">pkgId: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleDirectives@uninstallPackage(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,pkgId:org.genivi.sota.data.PackageId):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.vehicles.VehicleDirectives#updateInstalledSoftware" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="updateInstalledSoftware(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route"></a>
+      <a id="updateInstalledSoftware(Namespace,Vin):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">updateInstalledSoftware</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleDirectives@updateInstalledSoftware(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.vehicles.VehicleDirectives#vehicleApi" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="vehicleApi:akka.http.scaladsl.server.Route"></a>
+      <a id="vehicleApi:Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">vehicleApi</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleDirectives@vehicleApi:akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <a id="wait():Unit"></a>

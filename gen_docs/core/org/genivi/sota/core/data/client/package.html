@@ -1,0 +1,291 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>client - org.genivi.sota.core.data.client</title>
+          <meta name="description" content="client - org.genivi.sota.core.data.client" />
+          <meta name="keywords" content="client org.genivi.sota.core.data.client" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../../index.html';
+            var hash = 'org.genivi.sota.core.data.client.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../../../package.html" class="extype" name="org">org</a>.<a href="../../../../package.html" class="extype" name="org.genivi">genivi</a>.<a href="../../../package.html" class="extype" name="org.genivi.sota">sota</a>.<a href="../../package.html" class="extype" name="org.genivi.sota.core">core</a>.<a href="../package.html" class="extype" name="org.genivi.sota.core.data">data</a></p>
+        <h1>client</h1><span class="permalink">
+      <a href="../../../../../../index.html#org.genivi.sota.core.data.client.package" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">client</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="org.genivi.sota.core.data.client.ClientUpdateRequest" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ClientUpdateRequestextendsProductwithSerializable"></a>
+      <a id="ClientUpdateRequest:ClientUpdateRequest"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="ClientUpdateRequest.html"><span class="name">ClientUpdateRequest</span></a><span class="params">(<span name="id">id: <span class="extype" name="java.util.UUID">UUID</span></span>, <span name="packageId">packageId: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>, <span name="creationTime">creationTime: <span class="extype" name="org.joda.time.DateTime">DateTime</span> = <span class="symbol"><span class="name"><a href="../../../../../package.html">DateTime.now</a></span></span></span>, <span name="periodOfValidity">periodOfValidity: <span class="extype" name="org.joda.time.Interval">Interval</span></span>, <span name="priority">priority: <span class="extype" name="scala.Int">Int</span></span>, <span name="signature">signature: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="description">description: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="requestConfirmation">requestConfirmation: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#org.genivi.sota.core.data.client.package@ClientUpdateRequestextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.core.data.client.PendingUpdateRequest" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PendingUpdateRequestextendsProductwithSerializable"></a>
+      <a id="PendingUpdateRequest:PendingUpdateRequest"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="PendingUpdateRequest.html"><span class="name">PendingUpdateRequest</span></a><span class="params">(<span name="requestId">requestId: <span class="extype" name="java.util.UUID">UUID</span></span>, <span name="packageId">packageId: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>, <span name="installPos">installPos: <span class="extype" name="scala.Int">Int</span></span>, <span name="createdAt">createdAt: <span class="extype" name="org.joda.time.DateTime">DateTime</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#org.genivi.sota.core.data.client.package@PendingUpdateRequestextendsProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.core.data.client.RequestDecoder" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="RequestDecoder[C,S,A]extendsAnyRef"></a>
+      <a id="RequestDecoder[C,S,A]:RequestDecoder[C,S,A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="RequestDecoder.html"><span class="name">RequestDecoder</span></a><span class="tparams">[<span name="C">C</span>, <span name="S">S</span>, <span name="A">A</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#org.genivi.sota.core.data.client.package@RequestDecoder[C,S,A]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.core.data.client.ResponseEncoder" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ResponseEncoder[C,S]extendsAnyRef"></a>
+      <a id="ResponseEncoder[C,S]:ResponseEncoder[C,S]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ResponseEncoder.html"><span class="name">ResponseEncoder</span></a><span class="tparams">[<span name="C">C</span>, <span name="S">S</span>]</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#org.genivi.sota.core.data.client.package@ResponseEncoder[C,S]extendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="org.genivi.sota.core.data.client.ClientUpdateRequest" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ClientUpdateRequest"></a>
+      <a id="ClientUpdateRequest:ClientUpdateRequest"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ClientUpdateRequest$.html"><span class="name">ClientUpdateRequest</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#org.genivi.sota.core.data.client.package@ClientUpdateRequest" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.core.data.client.GenericArgsDecoder" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="GenericArgsDecoder"></a>
+      <a id="GenericArgsDecoder:GenericArgsDecoder"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="GenericArgsDecoder$.html"><span class="name">GenericArgsDecoder</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#org.genivi.sota.core.data.client.package@GenericArgsDecoder" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.core.data.client.PendingUpdateRequest" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PendingUpdateRequest"></a>
+      <a id="PendingUpdateRequest:PendingUpdateRequest"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="PendingUpdateRequest$.html"><span class="name">PendingUpdateRequest</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#org.genivi.sota.core.data.client.package@PendingUpdateRequest" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.core.data.client.RequestConversions" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="RequestConversions"></a>
+      <a id="RequestConversions:RequestConversions"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="RequestConversions$.html"><span class="name">RequestConversions</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#org.genivi.sota.core.data.client.package@RequestConversions" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.core.data.client.RequestDecoder" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="RequestDecoder"></a>
+      <a id="RequestDecoder:RequestDecoder"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="RequestDecoder$.html"><span class="name">RequestDecoder</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#org.genivi.sota.core.data.client.package@RequestDecoder" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.core.data.client.ResponseConversions" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ResponseConversions"></a>
+      <a id="ResponseConversions:ResponseConversions"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ResponseConversions$.html"><span class="name">ResponseConversions</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#org.genivi.sota.core.data.client.package@ResponseConversions" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.core.data.client.ResponseEncoder" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ResponseEncoder"></a>
+      <a id="ResponseEncoder:ResponseEncoder"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ResponseEncoder$.html"><span class="name">ResponseEncoder</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../../index.html#org.genivi.sota.core.data.client.package@ResponseEncoder" title="Permalink" target="_top">
+        <img src="../../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

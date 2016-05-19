@@ -47,7 +47,7 @@
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <span class="name">Package</span><span class="result"> extends <span class="extype" name="org.genivi.sota.datatype.PackageCommon">PackageCommon</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <span class="name">Package</span><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
@@ -55,7 +55,7 @@
 Represents Packages
 </p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><span class="extype" name="scala.Serializable">Serializable</span>, <span class="extype" name="java.io.Serializable">Serializable</span>, <span class="extype" name="org.genivi.sota.datatype.PackageCommon">PackageCommon</span>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.Serializable">Serializable</span>, <span class="extype" name="java.io.Serializable">Serializable</span>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
         
 
@@ -73,7 +73,7 @@ Represents Packages
                 <span class="filtertype">Inherited<br />
                 </span>
                 <ol id="linearization">
-                  <li class="in" name="org.genivi.sota.resolver.packages.Package"><span>Package</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="org.genivi.sota.datatype.PackageCommon"><span>PackageCommon</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  <li class="in" name="org.genivi.sota.resolver.packages.Package"><span>Package</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                 </ol>
               </div><div id="ancestors">
             <span class="filtertype"></span>
@@ -94,24 +94,7 @@ Represents Packages
 
         <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li name="org.genivi.sota.datatype.PackageCommon.Id" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="IdextendsProductwithSerializable"></a>
-      <a id="Id:Id"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">case class</span>
-      </span>
-      <span class="symbol">
-        <span class="name">Id</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package$@IdextendsProductwithSerializable" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>PackageCommon</dd></dl></div>
-    </li><li name="org.genivi.sota.resolver.packages.Package.Metadata" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+              <ol><li name="org.genivi.sota.resolver.packages.Package.Metadata" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="MetadataextendsProductwithSerializable"></a>
       <a id="Metadata:Metadata"></a>
       <h4 class="signature">
@@ -128,108 +111,6 @@ Represents Packages
       </a>
     </span>
       
-    </li><li name="org.genivi.sota.datatype.PackageCommon.Name" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="Name=eu.timepit.refined.Refined[String,PackageCommon.this.ValidName]"></a>
-      <a id="Name:Name"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">type</span>
-      </span>
-      <span class="symbol">
-        <span class="name">Name</span><span class="result"> = <span class="extype" name="eu.timepit.refined.Refined">Refined</span>[<span class="extype" name="scala.Predef.String">String</span>, <a href="#ValidNameextendsAnyRef" class="extmbr" name="org.genivi.sota.resolver.packages.Package.ValidName">ValidName</a>]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package$@Name=eu.timepit.refined.Refined[String,PackageCommon.this.ValidName]" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>PackageCommon</dd></dl></div>
-    </li><li name="org.genivi.sota.datatype.PackageCommon.NameVersion" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="NameVersion=eu.timepit.refined.Refined[String,PackageCommon.this.ValidId]"></a>
-      <a id="NameVersion:NameVersion"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">type</span>
-      </span>
-      <span class="symbol">
-        <span class="name">NameVersion</span><span class="result"> = <span class="extype" name="eu.timepit.refined.Refined">Refined</span>[<span class="extype" name="scala.Predef.String">String</span>, <a href="#ValidIdextendsAnyRef" class="extmbr" name="org.genivi.sota.resolver.packages.Package.ValidId">ValidId</a>]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package$@NameVersion=eu.timepit.refined.Refined[String,PackageCommon.this.ValidId]" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>PackageCommon</dd></dl></div>
-    </li><li name="org.genivi.sota.datatype.PackageCommon.ValidId" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="ValidIdextendsAnyRef"></a>
-      <a id="ValidId:ValidId"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">trait</span>
-      </span>
-      <span class="symbol">
-        <span class="name">ValidId</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package$@ValidIdextendsAnyRef" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>PackageCommon</dd></dl></div>
-    </li><li name="org.genivi.sota.datatype.PackageCommon.ValidName" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="ValidNameextendsAnyRef"></a>
-      <a id="ValidName:ValidName"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">trait</span>
-      </span>
-      <span class="symbol">
-        <span class="name">ValidName</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package$@ValidNameextendsAnyRef" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>PackageCommon</dd></dl></div>
-    </li><li name="org.genivi.sota.datatype.PackageCommon.ValidVersion" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
-      <a id="ValidVersionextendsAnyRef"></a>
-      <a id="ValidVersion:ValidVersion"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">trait</span>
-      </span>
-      <span class="symbol">
-        <span class="name">ValidVersion</span><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package$@ValidVersionextendsAnyRef" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>PackageCommon</dd></dl></div>
-    </li><li name="org.genivi.sota.datatype.PackageCommon.Version" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="Version=eu.timepit.refined.Refined[String,PackageCommon.this.ValidVersion]"></a>
-      <a id="Version:Version"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">type</span>
-      </span>
-      <span class="symbol">
-        <span class="name">Version</span><span class="result"> = <span class="extype" name="eu.timepit.refined.Refined">Refined</span>[<span class="extype" name="scala.Predef.String">String</span>, <a href="#ValidVersionextendsAnyRef" class="extmbr" name="org.genivi.sota.resolver.packages.Package.ValidVersion">ValidVersion</a>]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package$@Version=eu.timepit.refined.Refined[String,PackageCommon.this.ValidVersion]" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>PackageCommon</dd></dl></div>
     </li></ol>
             </div>
 
@@ -288,74 +169,6 @@ Represents Packages
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="org.genivi.sota.datatype.PackageCommon.Id" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="Id"></a>
-      <a id="Id:Id"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <span class="name">Id</span><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package$@Id" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>PackageCommon</dd></dl></div>
-    </li><li name="org.genivi.sota.datatype.PackageCommon#PackageIdOrdering" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="PackageIdOrdering:Ordering[PackageCommon.this.Id]"></a>
-      <a id="PackageIdOrdering:Ordering[Id]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">PackageIdOrdering</span><span class="result">: <span class="extype" name="scala.Ordering">Ordering</span>[<a href="#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">Id</a>]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package$@PackageIdOrdering:Ordering[PackageCommon.this.Id]" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>PackageCommon</dd></dl></div>
-    </li><li name="org.genivi.sota.resolver.packages.Package#arbPackage" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="arbPackage:org.scalacheck.Arbitrary[org.genivi.sota.resolver.packages.Package]"></a>
-      <a id="arbPackage:Arbitrary[Package]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">arbPackage</span><span class="result">: <span class="extype" name="org.scalacheck.Arbitrary">Arbitrary</span>[<a href="Package.html" class="extype" name="org.genivi.sota.resolver.packages.Package">Package</a>]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package$@arbPackage:org.scalacheck.Arbitrary[org.genivi.sota.resolver.packages.Package]" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      
-    </li><li name="org.genivi.sota.datatype.PackageCommon#arbPackageId" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="arbPackageId:org.scalacheck.Arbitrary[PackageCommon.this.Id]"></a>
-      <a id="arbPackageId:Arbitrary[Id]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">lazy val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">arbPackageId</span><span class="result">: <span class="extype" name="org.scalacheck.Arbitrary">Arbitrary</span>[<a href="#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">Id</a>]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package$@arbPackageId:org.scalacheck.Arbitrary[PackageCommon.this.Id]" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>PackageCommon</dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -413,23 +226,6 @@ Represents Packages
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="org.genivi.sota.datatype.PackageCommon#eqInstance" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="eqInstance:cats.Eq[PackageCommon.this.Id]"></a>
-      <a id="eqInstance:Eq[Id]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">eqInstance</span><span class="result">: <span class="extype" name="cats.Eq">Eq</span>[<a href="#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">Id</a>]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package$@eqInstance:cats.Eq[PackageCommon.this.Id]" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>PackageCommon</dd></dl></div>
     </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="equals(x$1:Any):Boolean"></a>
       <a id="equals(Any):Boolean"></a>
@@ -470,40 +266,6 @@ Represents Packages
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="org.genivi.sota.resolver.packages.Package#genPackage" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="genPackage:org.scalacheck.Gen[org.genivi.sota.resolver.packages.Package]"></a>
-      <a id="genPackage:Gen[Package]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">genPackage</span><span class="result">: <span class="extype" name="org.scalacheck.Gen">Gen</span>[<a href="Package.html" class="extype" name="org.genivi.sota.resolver.packages.Package">Package</a>]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package$@genPackage:org.scalacheck.Gen[org.genivi.sota.resolver.packages.Package]" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      
-    </li><li name="org.genivi.sota.datatype.PackageCommon#genPackageId" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="genPackageId:org.scalacheck.Gen[PackageCommon.this.Id]"></a>
-      <a id="genPackageId:Gen[Id]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">genPackageId</span><span class="result">: <span class="extype" name="org.scalacheck.Gen">Gen</span>[<a href="#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">Id</a>]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package$@genPackageId:org.scalacheck.Gen[PackageCommon.this.Id]" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>PackageCommon</dd></dl></div>
     </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <a id="getClass():Class[_]"></a>
@@ -606,23 +368,6 @@ Represents Packages
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="org.genivi.sota.datatype.PackageCommon#showInstance" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="showInstance:cats.Show[PackageCommon.this.Id]"></a>
-      <a id="showInstance:Show[Id]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">showInstance</span><span class="result">: <span class="extype" name="cats.Show">Show</span>[<a href="#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">Id</a>]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package$@showInstance:cats.Show[PackageCommon.this.Id]" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>PackageCommon</dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
       <a id="synchronized[T0](⇒T0):T0"></a>
@@ -657,57 +402,6 @@ Represents Packages
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="org.genivi.sota.datatype.PackageCommon#validPackageId" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="validPackageId:eu.timepit.refined.Predicate[PackageCommon.this.ValidId,String]"></a>
-      <a id="validPackageId:Predicate[ValidId,String]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">validPackageId</span><span class="result">: <span class="extype" name="eu.timepit.refined.Predicate">Predicate</span>[<a href="#ValidIdextendsAnyRef" class="extmbr" name="org.genivi.sota.resolver.packages.Package.ValidId">ValidId</a>, <span class="extype" name="scala.Predef.String">String</span>]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package$@validPackageId:eu.timepit.refined.Predicate[PackageCommon.this.ValidId,String]" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>PackageCommon</dd></dl></div>
-    </li><li name="org.genivi.sota.datatype.PackageCommon#validPackageName" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="validPackageName:eu.timepit.refined.Predicate[PackageCommon.this.ValidName,String]"></a>
-      <a id="validPackageName:Predicate[ValidName,String]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">validPackageName</span><span class="result">: <span class="extype" name="eu.timepit.refined.Predicate">Predicate</span>[<a href="#ValidNameextendsAnyRef" class="extmbr" name="org.genivi.sota.resolver.packages.Package.ValidName">ValidName</a>, <span class="extype" name="scala.Predef.String">String</span>]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package$@validPackageName:eu.timepit.refined.Predicate[PackageCommon.this.ValidName,String]" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>PackageCommon</dd></dl></div>
-    </li><li name="org.genivi.sota.datatype.PackageCommon#validPackageVersion" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="validPackageVersion:eu.timepit.refined.Predicate[PackageCommon.this.ValidVersion,String]"></a>
-      <a id="validPackageVersion:Predicate[ValidVersion,String]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">implicit </span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">validPackageVersion</span><span class="result">: <span class="extype" name="eu.timepit.refined.Predicate">Predicate</span>[<a href="#ValidVersionextendsAnyRef" class="extmbr" name="org.genivi.sota.resolver.packages.Package.ValidVersion">ValidVersion</a>, <span class="extype" name="scala.Predef.String">String</span>]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package$@validPackageVersion:eu.timepit.refined.Predicate[PackageCommon.this.ValidVersion,String]" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>PackageCommon</dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <a id="wait():Unit"></a>
@@ -790,8 +484,6 @@ Represents Packages
               <h3>Inherited from <span class="extype" name="scala.Serializable">Serializable</span></h3>
             </div><div class="parent" name="java.io.Serializable">
               <h3>Inherited from <span class="extype" name="java.io.Serializable">Serializable</span></h3>
-            </div><div class="parent" name="org.genivi.sota.datatype.PackageCommon">
-              <h3>Inherited from <span class="extype" name="org.genivi.sota.datatype.PackageCommon">PackageCommon</span></h3>
             </div><div class="parent" name="scala.AnyRef">
               <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
             </div><div class="parent" name="scala.Any">

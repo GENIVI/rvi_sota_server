@@ -45,7 +45,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">InstallReport</span><span class="params">(<span name="vin">vin: <a href="../data/Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.core.data.Vehicle.Vin">data.Vehicle.Vin</a></span>, <span name="package">package: <a href="../data/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">data.Package.Id</a></span>, <span name="status">status: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="description">description: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <span class="name">InstallReport</span><span class="params">(<span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>, <span name="update_report">update_report: <a href="UpdateReport.html" class="extype" name="org.genivi.sota.core.rvi.UpdateReport">UpdateReport</a></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
@@ -90,7 +90,7 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="org.genivi.sota.core.rvi.InstallReport#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(vin:org.genivi.sota.core.data.Vehicle.Vin,package:org.genivi.sota.core.data.Package.Id,status:Boolean,description:String):org.genivi.sota.core.rvi.InstallReport"></a>
+      <a id="&lt;init&gt;(vin:org.genivi.sota.data.Vehicle.Vin,update_report:org.genivi.sota.core.rvi.UpdateReport):org.genivi.sota.core.rvi.InstallReport"></a>
       <a id="&lt;init&gt;:InstallReport"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -98,10 +98,10 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">InstallReport</span><span class="params">(<span name="vin">vin: <a href="../data/Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.core.data.Vehicle.Vin">data.Vehicle.Vin</a></span>, <span name="package">package: <a href="../data/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">data.Package.Id</a></span>, <span name="status">status: <span class="extype" name="scala.Boolean">Boolean</span></span>, <span name="description">description: <span class="extype" name="scala.Predef.String">String</span></span>)</span>
+        <span class="name">InstallReport</span><span class="params">(<span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>, <span name="update_report">update_report: <a href="UpdateReport.html" class="extype" name="org.genivi.sota.core.rvi.UpdateReport">UpdateReport</a></span>)</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.rvi.InstallReport@&lt;init&gt;(vin:org.genivi.sota.core.data.Vehicle.Vin,package:org.genivi.sota.core.data.Package.Id,status:Boolean,description:String):org.genivi.sota.core.rvi.InstallReport" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.rvi.InstallReport@&lt;init&gt;(vin:org.genivi.sota.data.Vehicle.Vin,update_report:org.genivi.sota.core.rvi.UpdateReport):org.genivi.sota.core.rvi.InstallReport" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -206,23 +206,6 @@
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="org.genivi.sota.core.rvi.InstallReport#description" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="description:String"></a>
-      <a id="description:String"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">description</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.rvi.InstallReport@description:String" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
@@ -348,40 +331,6 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="org.genivi.sota.core.rvi.InstallReport#package" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="package:org.genivi.sota.core.data.Package.Id"></a>
-      <a id="package:data.Package.Id"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">package</span><span class="result">: <a href="../data/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">data.Package.Id</a></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.rvi.InstallReport@package:org.genivi.sota.core.data.Package.Id" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      
-    </li><li name="org.genivi.sota.core.rvi.InstallReport#status" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="status:Boolean"></a>
-      <a id="status:Boolean"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">status</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.rvi.InstallReport@status:Boolean" title="Permalink" target="_top">
-        <img src="../../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
       <a id="synchronized[T0](⇒T0):T0"></a>
@@ -399,19 +348,36 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="org.genivi.sota.core.rvi.InstallReport#vin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="vin:org.genivi.sota.core.data.Vehicle.Vin"></a>
-      <a id="vin:data.Vehicle.Vin"></a>
+    </li><li name="org.genivi.sota.core.rvi.InstallReport#update_report" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="update_report:org.genivi.sota.core.rvi.UpdateReport"></a>
+      <a id="update_report:UpdateReport"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">vin</span><span class="result">: <a href="../data/Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.core.data.Vehicle.Vin">data.Vehicle.Vin</a></span>
+        <span class="name">update_report</span><span class="result">: <a href="UpdateReport.html" class="extype" name="org.genivi.sota.core.rvi.UpdateReport">UpdateReport</a></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.rvi.InstallReport@vin:org.genivi.sota.core.data.Vehicle.Vin" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.rvi.InstallReport@update_report:org.genivi.sota.core.rvi.UpdateReport" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.core.rvi.InstallReport#vin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="vin:org.genivi.sota.data.Vehicle.Vin"></a>
+      <a id="vin:Vin"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">vin</span><span class="result">: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.rvi.InstallReport@vin:org.genivi.sota.data.Vehicle.Vin" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>

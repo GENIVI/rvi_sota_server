@@ -50,9 +50,9 @@
       </h4>
       
           <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Database mapping definition for the InstallHistory table.
-This provides a history of package installs that have been attempted on a
-VIN.  It records the identity of the package which was attempted to be
-installed, the time of the attempt and whether the install was successful
+This provides a history of update installs that have been attempted on a
+VIN. It records the identity of the update, thi VIN, the time of the attempt
+and whether the install was successful
 </p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
@@ -110,7 +110,7 @@ installed, the time of the attempt and whether the install was successful
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Slick mapping definition for the InstallHistory table</p><div class="fullcomment"><div class="comment cmt"><p>Slick mapping definition for the InstallHistory table</p></div><dl class="attributes block"> <dt>See also</dt><dd><span class="cmt"><p><code><a href="http://slick.typesafe.com/" target="_blank">http://slick.typesafe.com/</a></code></p></span></dd></dl></div>
+      <p class="shortcomment cmt">Slick mapping definition for the InstallHistory table</p><div class="fullcomment"><div class="comment cmt"><p>Slick mapping definition for the InstallHistory table</p></div><dl class="attributes block"> <dt>See also</dt><dd><span class="cmt"><p><a href="http://slick.typesafe.com/" target="_blank">http://slick.typesafe.com/</a></p></span></dd></dl></div>
     </li></ol>
             </div>
 
@@ -318,42 +318,44 @@ installed, the time of the attempt and whether the install was successful
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="org.genivi.sota.core.db.InstallHistories#list" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="list(vin:org.genivi.sota.core.data.Vehicle.Vin):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.core.data.InstallHistory]]"></a>
-      <a id="list(data.Vehicle.Vin):slick.driver.JdbcProfile.API.DBIO[Seq[InstallHistory]]"></a>
+      <a id="list(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.core.data.InstallHistory]]"></a>
+      <a id="list(Namespace,Vin):slick.driver.JdbcProfile.API.DBIO[Seq[InstallHistory]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">list</span><span class="params">(<span name="vin">vin: <a href="../data/Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.core.data.Vehicle.Vin">data.Vehicle.Vin</a></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[<a href="../data/InstallHistory.html" class="extype" name="org.genivi.sota.core.data.InstallHistory">InstallHistory</a>]]</span>
+        <span class="name">list</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[<a href="../data/InstallHistory.html" class="extype" name="org.genivi.sota.core.data.InstallHistory">InstallHistory</a>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.db.InstallHistories$@list(vin:org.genivi.sota.core.data.Vehicle.Vin):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.core.data.InstallHistory]]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.InstallHistories$@list(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.core.data.InstallHistory]]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       <p class="shortcomment cmt">List the install attempts that have been made on a specific VIN
 This information is fetched from the InstallHistory SQL table.</p><div class="fullcomment"><div class="comment cmt"><p>List the install attempts that have been made on a specific VIN
-This information is fetched from the InstallHistory SQL table.</p></div><dl class="paramcmts block"><dt class="param">vin</dt><dd class="cmt"><p>The VIN to fetch data for</p></dd><dt>returns</dt><dd class="cmt"><p>A list of the install history for that VIN</p></dd></dl></div>
+This information is fetched from the InstallHistory SQL table.
+</p></div><dl class="paramcmts block"><dt class="param">vin</dt><dd class="cmt"><p>The VIN to fetch data for</p></dd><dt>returns</dt><dd class="cmt"><p>A list of the install history for that VIN</p></dd></dl></div>
     </li><li name="org.genivi.sota.core.db.InstallHistories#log" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="log(vin:org.genivi.sota.core.data.Vehicle.Vin,pkgId:org.genivi.sota.core.data.Package.Id,success:Boolean):slick.driver.MySQLDriver.api.DBIO[Int]"></a>
-      <a id="log(data.Vehicle.Vin,data.Package.Id,Boolean):slick.driver.JdbcProfile.API.DBIO[Int]"></a>
+      <a id="log(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,updateId:java.util.UUID,packageId:org.genivi.sota.data.PackageId,success:Boolean):slick.driver.MySQLDriver.api.DBIO[Int]"></a>
+      <a id="log(Namespace,Vin,UUID,PackageId,Boolean):slick.driver.JdbcProfile.API.DBIO[Int]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">log</span><span class="params">(<span name="vin">vin: <a href="../data/Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.core.data.Vehicle.Vin">data.Vehicle.Vin</a></span>, <span name="pkgId">pkgId: <a href="../data/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">data.Package.Id</a></span>, <span name="success">success: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Int">Int</span>]</span>
+        <span class="name">log</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>, <span name="updateId">updateId: <span class="extype" name="java.util.UUID">UUID</span></span>, <span name="packageId">packageId: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>, <span name="success">success: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Int">Int</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.db.InstallHistories$@log(vin:org.genivi.sota.core.data.Vehicle.Vin,pkgId:org.genivi.sota.core.data.Package.Id,success:Boolean):slick.driver.MySQLDriver.api.DBIO[Int]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.InstallHistories$@log(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,updateId:java.util.UUID,packageId:org.genivi.sota.data.PackageId,success:Boolean):slick.driver.MySQLDriver.api.DBIO[Int]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       <p class="shortcomment cmt">Record the outcome of a install attempt on a specific VIN.</p><div class="fullcomment"><div class="comment cmt"><p>Record the outcome of a install attempt on a specific VIN. The result of
-the install is returned from the SOTA client via RVI.</p></div><dl class="paramcmts block"><dt class="param">vin</dt><dd class="cmt"><p>The VIN that the install attempt ran on</p></dd><dt class="param">pkgId</dt><dd class="cmt"><p>The name/version of the package that was attempted to be installed</p></dd><dt class="param">success</dt><dd class="cmt"><p>Whether the install was successful</p></dd></dl></div>
+the install is returned from the SOTA client via RVI.
+</p></div><dl class="paramcmts block"><dt class="param">vin</dt><dd class="cmt"><p>The VIN that the install attempt ran on</p></dd><dt class="param">updateId</dt><dd class="cmt"><p>The Id of the update that was attempted to be installed</p></dd><dt class="param">success</dt><dd class="cmt"><p>Whether the install was successful</p></dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>

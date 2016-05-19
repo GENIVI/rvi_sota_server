@@ -110,29 +110,28 @@ It is a scala trait that will be mixed into the main app (in Boot.scala)
       </a>
     </span>
       <p class="shortcomment cmt">Database mapping definition for the InstallHistory table.</p><div class="fullcomment"><div class="comment cmt"><p>Database mapping definition for the InstallHistory table.
-This provides a history of package installs that have been attempted on a
-VIN.  It records the identity of the package which was attempted to be
-installed, the time of the attempt and whether the install was successful
+This provides a history of update installs that have been attempted on a
+VIN. It records the identity of the update, thi VIN, the time of the attempt
+and whether the install was successful
 </p></div></div>
-    </li><li name="org.genivi.sota.core.db.Mappings" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="Mappings"></a>
-      <a id="Mappings:Mappings"></a>
+    </li><li name="org.genivi.sota.core.db.OperationResults" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="OperationResults"></a>
+      <a id="OperationResults:OperationResults"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="Mappings$.html"><span class="name">Mappings</span></a>
+        <a href="OperationResults$.html"><span class="name">OperationResults</span></a>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.db.package@Mappings" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.package@OperationResults" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Define how to store a Joda Date time in the SQL database.</p><div class="fullcomment"><div class="comment cmt"><p>Define how to store a Joda Date time in the SQL database.
-This is imported as an implicit into the other database mapping definitions
-in this directory.
+      <p class="shortcomment cmt">Database mapping definition for the OperationResults table.</p><div class="fullcomment"><div class="comment cmt"><p>Database mapping definition for the OperationResults table.
+These refer to the results of an UpdateRequest operation.
 </p></div></div>
     </li><li name="org.genivi.sota.core.db.Packages" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="Packages"></a>
@@ -194,11 +193,8 @@ vehicle.
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Database mapping definition for the UpdateSpecs and RequiredPackages tables.</p><div class="fullcomment"><div class="comment cmt"><p>Database mapping definition for the UpdateSpecs and RequiredPackages tables.
-UpdateSpecs records the status of a package update for a specific VIN. One
-UpdateSpecs row has several RequiredPackages rows that detail the individual
-packages that need to be installed.
-</p></div></div>
+      <p class="shortcomment cmt">Database mapping definitions for the UpdateSpecs and RequiredPackages tables.</p><div class="fullcomment"><div class="comment cmt"><p>Database mapping definitions for the UpdateSpecs and RequiredPackages tables.</p><ul><li>A row in UpdateSpec records the status of a package install for a specific VIN.</li><li>For each such row, one or more rows in RequiredPackage indicate the individual packages
+      (including dependencies) that need to be installed.</li></ul></div></div>
     </li><li name="org.genivi.sota.core.db.Vehicles" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="Vehicles"></a>
       <a id="Vehicles:Vehicles"></a>

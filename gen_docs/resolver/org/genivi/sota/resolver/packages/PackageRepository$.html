@@ -162,7 +162,8 @@
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Adds a package to the Package table.</p><div class="fullcomment"><div class="comment cmt"><p>Adds a package to the Package table. Updates an existing package if already present.</p></div><dl class="paramcmts block"><dt class="param">pkg</dt><dd class="cmt"><p>The package to add</p></dd><dt>returns</dt><dd class="cmt"><p>A DBIO[Int] for the number of rows inserted</p></dd></dl></div>
+      <p class="shortcomment cmt">Adds a package to the Package table.</p><div class="fullcomment"><div class="comment cmt"><p>Adds a package to the Package table. Updates an existing package if already present.
+</p></div><dl class="paramcmts block"><dt class="param">pkg</dt><dd class="cmt"><p>The package to add</p></dd><dt>returns</dt><dd class="cmt"><p>A DBIO[Int] for the number of rows inserted</p></dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -238,22 +239,24 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="org.genivi.sota.resolver.packages.PackageRepository#exists" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="exists(pkgId:org.genivi.sota.resolver.packages.Package.Id)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[org.genivi.sota.resolver.packages.Package]"></a>
-      <a id="exists(Package.Id)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Package]"></a>
+      <a id="exists(namespace:org.genivi.sota.data.Namespace.Namespace,pkgId:org.genivi.sota.data.PackageId)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[org.genivi.sota.resolver.packages.Package]"></a>
+      <a id="exists(Namespace,PackageId)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Package]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">exists</span><span class="params">(<span name="pkgId">pkgId: <a href="Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">Package.Id</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<a href="Package.html" class="extype" name="org.genivi.sota.resolver.packages.Package">Package</a>]</span>
+        <span class="name">exists</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="pkgId">pkgId: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<a href="Package.html" class="extype" name="org.genivi.sota.resolver.packages.Package">Package</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageRepository$@exists(pkgId:org.genivi.sota.resolver.packages.Package.Id)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[org.genivi.sota.resolver.packages.Package]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageRepository$@exists(namespace:org.genivi.sota.data.Namespace.Namespace,pkgId:org.genivi.sota.data.PackageId)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[org.genivi.sota.resolver.packages.Package]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Checks to see if a package exists in the database</p><div class="fullcomment"><div class="comment cmt"><p>Checks to see if a package exists in the database</p></div><dl class="paramcmts block"><dt class="param">pkgId</dt><dd class="cmt"><p>The Id of the package to check for</p></dd><dt>returns</dt><dd class="cmt"><p>The DBIO[Package] if the package exists</p></dd></dl><dl class="attributes block"> <dt>Exceptions thrown</dt><dd><span class="cmt"><p><span class="extype" name="Errors.MissingPackageException"><code>Errors.MissingPackageException</code></span> if thepackage does not exist</p></span></dd></dl></div>
+      <p class="shortcomment cmt">Checks to see if a package exists in the database
+</p><div class="fullcomment"><div class="comment cmt"><p>Checks to see if a package exists in the database
+</p></div><dl class="paramcmts block"><dt class="param">pkgId</dt><dd class="cmt"><p>The Id of the package to check for</p></dd><dt>returns</dt><dd class="cmt"><p>The DBIO[Package] if the package exists</p></dd></dl><dl class="attributes block"> <dt>Exceptions thrown</dt><dd><span class="cmt"><p><span class="extype" name="Errors.MissingPackageException"><code>Errors.MissingPackageException</code></span> if thepackage does not exist</p></span></dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <a id="finalize():Unit"></a>
@@ -344,24 +347,28 @@
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Lists the packages in the Package table</p><div class="fullcomment"><div class="comment cmt"><p>Lists the packages in the Package table</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>A DBIO[Seq[Package]] for the packages in the table</p></dd></dl></div>
+      <p class="shortcomment cmt">Lists the packages in the Package table
+</p><div class="fullcomment"><div class="comment cmt"><p>Lists the packages in the Package table
+</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>A DBIO[Seq[Package]] for the packages in the table</p></dd></dl></div>
     </li><li name="org.genivi.sota.resolver.packages.PackageRepository#load" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="load(ids:Set[org.genivi.sota.resolver.packages.Package.Id])(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Set[org.genivi.sota.resolver.packages.Package]]"></a>
-      <a id="load(Set[Package.Id])(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Set[Package]]"></a>
+      <a id="load(namespace:org.genivi.sota.data.Namespace.Namespace,ids:Set[org.genivi.sota.data.PackageId])(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Set[org.genivi.sota.resolver.packages.Package]]"></a>
+      <a id="load(Namespace,Set[PackageId])(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Set[Package]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">load</span><span class="params">(<span name="ids">ids: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">Package.Id</a>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Predef.Set">Set</span>[<a href="Package.html" class="extype" name="org.genivi.sota.resolver.packages.Package">Package</a>]]</span>
+        <span class="name">load</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="ids">ids: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Predef.Set">Set</span>[<a href="Package.html" class="extype" name="org.genivi.sota.resolver.packages.Package">Package</a>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageRepository$@load(ids:Set[org.genivi.sota.resolver.packages.Package.Id])(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Set[org.genivi.sota.resolver.packages.Package]]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageRepository$@load(namespace:org.genivi.sota.data.Namespace.Namespace,ids:Set[org.genivi.sota.data.PackageId])(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Set[org.genivi.sota.resolver.packages.Package]]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Loads a group of Packages from the database by ID</p><div class="fullcomment"><div class="comment cmt"><p>Loads a group of Packages from the database by ID</p></div><dl class="paramcmts block"><dt class="param">ids</dt><dd class="cmt"><p>A Set[Package.Id] of Ids to load</p></dd><dt>returns</dt><dd class="cmt"><p>A DBIO[Set[Package]] of matched packages</p></dd></dl></div>
+      <p class="shortcomment cmt">Loads a group of Packages from the database by ID
+</p><div class="fullcomment"><div class="comment cmt"><p>Loads a group of Packages from the database by ID
+</p></div><dl class="paramcmts block"><dt class="param">ids</dt><dd class="cmt"><p>A Set[Package.Id] of Ids to load</p></dd><dt>returns</dt><dd class="cmt"><p>A DBIO[Set[Package]] of matched packages</p></dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>

@@ -111,7 +111,7 @@ There are also free-form descriptions about the package and vendor
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Slick mapping definition for the Package table</p><div class="fullcomment"><div class="comment cmt"><p>Slick mapping definition for the Package table</p></div><dl class="attributes block"> <dt>See also</dt><dd><span class="cmt"><p><code><a href="http://slick.typesafe.com/" target="_blank">http://slick.typesafe.com/</a></code></p></span></dd></dl></div>
+      <p class="shortcomment cmt">Slick mapping definition for the Package table</p><div class="fullcomment"><div class="comment cmt"><p>Slick mapping definition for the Package table</p></div><dl class="attributes block"> <dt>See also</dt><dd><span class="cmt"><p><a href="http://slick.typesafe.com/" target="_blank">http://slick.typesafe.com/</a></p></span></dd></dl></div>
     </li></ol>
             </div>
 
@@ -188,35 +188,35 @@ There are also free-form descriptions about the package and vendor
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="org.genivi.sota.core.db.Packages#byId" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="byId(id:org.genivi.sota.core.data.Package.Id):slick.driver.MySQLDriver.api.DBIO[Option[org.genivi.sota.core.data.Package]]"></a>
-      <a id="byId(data.Package.Id):slick.driver.JdbcProfile.API.DBIO[Option[Package]]"></a>
+      <a id="byId(ns:org.genivi.sota.data.Namespace.Namespace,id:org.genivi.sota.data.PackageId):slick.driver.MySQLDriver.api.DBIO[Option[org.genivi.sota.core.data.Package]]"></a>
+      <a id="byId(Namespace,PackageId):slick.driver.JdbcProfile.API.DBIO[Option[Package]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">byId</span><span class="params">(<span name="id">id: <a href="../data/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">data.Package.Id</a></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Option">Option</span>[<a href="../data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>]]</span>
+        <span class="name">byId</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="id">id: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Option">Option</span>[<a href="../data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.db.Packages$@byId(id:org.genivi.sota.core.data.Package.Id):slick.driver.MySQLDriver.api.DBIO[Option[org.genivi.sota.core.data.Package]]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.Packages$@byId(ns:org.genivi.sota.data.Namespace.Namespace,id:org.genivi.sota.data.PackageId):slick.driver.MySQLDriver.api.DBIO[Option[org.genivi.sota.core.data.Package]]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       <p class="shortcomment cmt">Return the information about a package from its name &amp; version</p><div class="fullcomment"><div class="comment cmt"><p>Return the information about a package from its name &amp; version</p></div><dl class="paramcmts block"><dt class="param">id</dt><dd class="cmt"><p>The name/version of the package to fetch</p></dd><dt>returns</dt><dd class="cmt"><p>The full package information</p></dd></dl></div>
     </li><li name="org.genivi.sota.core.db.Packages#byIds" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="byIds(ids:Set[org.genivi.sota.core.data.Package.Id])(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.core.data.Package]]"></a>
-      <a id="byIds(Set[data.Package.Id])(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Seq[Package]]"></a>
+      <a id="byIds(ns:org.genivi.sota.data.Namespace.Namespace,ids:Set[org.genivi.sota.data.PackageId])(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.core.data.Package]]"></a>
+      <a id="byIds(Namespace,Set[PackageId])(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Seq[Package]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">byIds</span><span class="params">(<span name="ids">ids: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="../data/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">data.Package.Id</a>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[<a href="../data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>]]</span>
+        <span class="name">byIds</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="ids">ids: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[<a href="../data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.db.Packages$@byIds(ids:Set[org.genivi.sota.core.data.Package.Id])(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.core.data.Package]]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.Packages$@byIds(ns:org.genivi.sota.data.Namespace.Namespace,ids:Set[org.genivi.sota.data.PackageId])(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.core.data.Package]]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -455,21 +455,21 @@ updated in place.</p></div><dl class="paramcmts block"><dt class="param">pkg</dt
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Internal helper definition to accesss the SQL table
+      <p class="shortcomment cmt">Internal helper definition to access the SQL table
 </p>
     </li><li name="org.genivi.sota.core.db.Packages#searchByRegex" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="searchByRegex(reg:String):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.core.data.Package]]"></a>
-      <a id="searchByRegex(String):slick.driver.JdbcProfile.API.DBIO[Seq[Package]]"></a>
+      <a id="searchByRegex(ns:org.genivi.sota.data.Namespace.Namespace,reg:String):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.core.data.Package]]"></a>
+      <a id="searchByRegex(Namespace,String):slick.driver.JdbcProfile.API.DBIO[Seq[Package]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">searchByRegex</span><span class="params">(<span name="reg">reg: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[<a href="../data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>]]</span>
+        <span class="name">searchByRegex</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="reg">reg: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[<a href="../data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.db.Packages$@searchByRegex(reg:String):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.core.data.Package]]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.db.Packages$@searchByRegex(ns:org.genivi.sota.data.Namespace.Namespace,reg:String):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.core.data.Package]]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>

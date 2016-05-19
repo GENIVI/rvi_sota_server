@@ -92,7 +92,7 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="org.genivi.sota.core.rvi.TransferProtocolActor#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="&lt;init&gt;(db:slick.driver.MySQLDriver.api.Database,rviClient:org.genivi.sota.core.rvi.RviClient,transferActorProps:(org.genivi.sota.core.rvi.ClientServices,org.genivi.sota.core.data.Package)=&gt;akka.actor.Props):org.genivi.sota.core.rvi.TransferProtocolActor"></a>
+      <a id="&lt;init&gt;(db:slick.driver.MySQLDriver.api.Database,rviClient:org.genivi.sota.core.resolver.ConnectivityClient,transferActorProps:(java.util.UUID,String,org.genivi.sota.core.data.Package,org.genivi.sota.core.rvi.ClientServices)=&gt;akka.actor.Props):org.genivi.sota.core.rvi.TransferProtocolActor"></a>
       <a id="&lt;init&gt;:TransferProtocolActor"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -100,10 +100,10 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">TransferProtocolActor</span><span class="params">(<span name="db">db: <span class="extype" name="slick.profile.BasicProfile.CommonAPI.Database">slick.driver.JdbcProfile.API.Database</span></span>, <span name="rviClient">rviClient: <a href="RviClient.html" class="extype" name="org.genivi.sota.core.rvi.RviClient">RviClient</a></span>, <span name="transferActorProps">transferActorProps: (<a href="ClientServices.html" class="extype" name="org.genivi.sota.core.rvi.ClientServices">ClientServices</a>, <a href="../data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>) ⇒ <span class="extype" name="akka.actor.Props">Props</span></span>)</span>
+        <span class="name">TransferProtocolActor</span><span class="params">(<span name="db">db: <span class="extype" name="slick.profile.BasicProfile.CommonAPI.Database">slick.driver.JdbcProfile.API.Database</span></span>, <span name="rviClient">rviClient: <a href="../resolver/ConnectivityClient.html" class="extype" name="org.genivi.sota.core.resolver.ConnectivityClient">ConnectivityClient</a></span>, <span name="transferActorProps">transferActorProps: (<span class="extype" name="java.util.UUID">UUID</span>, <span class="extype" name="scala.Predef.String">String</span>, <a href="../data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>, <a href="ClientServices.html" class="extype" name="org.genivi.sota.core.rvi.ClientServices">ClientServices</a>) ⇒ <span class="extype" name="akka.actor.Props">Props</span></span>)</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.rvi.TransferProtocolActor@&lt;init&gt;(db:slick.driver.MySQLDriver.api.Database,rviClient:org.genivi.sota.core.rvi.RviClient,transferActorProps:(org.genivi.sota.core.rvi.ClientServices,org.genivi.sota.core.data.Package)=&gt;akka.actor.Props):org.genivi.sota.core.rvi.TransferProtocolActor" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.rvi.TransferProtocolActor@&lt;init&gt;(db:slick.driver.MySQLDriver.api.Database,rviClient:org.genivi.sota.core.resolver.ConnectivityClient,transferActorProps:(java.util.UUID,String,org.genivi.sota.core.data.Package,org.genivi.sota.core.rvi.ClientServices)=&gt;akka.actor.Props):org.genivi.sota.core.rvi.TransferProtocolActor" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -188,6 +188,23 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="org.genivi.sota.core.rvi.TransferProtocolActor#abortUpdate" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="abortUpdate(services:org.genivi.sota.core.rvi.ClientServices,updates:Set[org.genivi.sota.core.data.UpdateSpec]):Unit"></a>
+      <a id="abortUpdate(ClientServices,Set[UpdateSpec]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">abortUpdate</span><span class="params">(<span name="services">services: <a href="ClientServices.html" class="extype" name="org.genivi.sota.core.rvi.ClientServices">ClientServices</a></span>, <span name="updates">updates: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="../data/UpdateSpec.html" class="extype" name="org.genivi.sota.core.data.UpdateSpec">UpdateSpec</a>]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.rvi.TransferProtocolActor@abortUpdate(services:org.genivi.sota.core.rvi.ClientServices,updates:Set[org.genivi.sota.core.data.UpdateSpec]):Unit" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="akka.actor.Actor#aroundPostRestart" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="aroundPostRestart(reason:Throwable):Unit"></a>
       <a id="aroundPostRestart(Throwable):Unit"></a>
@@ -291,18 +308,18 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="org.genivi.sota.core.rvi.TransferProtocolActor#buildTransferQueue" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="buildTransferQueue(specs:Iterable[org.genivi.sota.core.data.UpdateSpec]):scala.collection.immutable.Queue[org.genivi.sota.core.data.Package]"></a>
-      <a id="buildTransferQueue(Iterable[UpdateSpec]):Queue[Package]"></a>
+      <a id="buildTransferQueue(specs:Iterable[org.genivi.sota.core.data.UpdateSpec]):scala.collection.immutable.Queue[(org.genivi.sota.core.data.UpdateSpec,org.genivi.sota.core.data.Package)]"></a>
+      <a id="buildTransferQueue(Iterable[UpdateSpec]):Queue[(UpdateSpec,Package)]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">buildTransferQueue</span><span class="params">(<span name="specs">specs: <span class="extype" name="scala.Iterable">Iterable</span>[<a href="../data/UpdateSpec.html" class="extype" name="org.genivi.sota.core.data.UpdateSpec">UpdateSpec</a>]</span>)</span><span class="result">: <span class="extype" name="scala.collection.immutable.Queue">Queue</span>[<a href="../data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>]</span>
+        <span class="name">buildTransferQueue</span><span class="params">(<span name="specs">specs: <span class="extype" name="scala.Iterable">Iterable</span>[<a href="../data/UpdateSpec.html" class="extype" name="org.genivi.sota.core.data.UpdateSpec">UpdateSpec</a>]</span>)</span><span class="result">: <span class="extype" name="scala.collection.immutable.Queue">Queue</span>[(<a href="../data/UpdateSpec.html" class="extype" name="org.genivi.sota.core.data.UpdateSpec">UpdateSpec</a>, <a href="../data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>)]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.rvi.TransferProtocolActor@buildTransferQueue(specs:Iterable[org.genivi.sota.core.data.UpdateSpec]):scala.collection.immutable.Queue[org.genivi.sota.core.data.Package]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.rvi.TransferProtocolActor@buildTransferQueue(specs:Iterable[org.genivi.sota.core.data.UpdateSpec]):scala.collection.immutable.Queue[(org.genivi.sota.core.data.UpdateSpec,org.genivi.sota.core.data.Package)]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -438,6 +455,23 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="org.genivi.sota.core.rvi.TransferProtocolActor#installTimeout" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="installTimeout:scala.concurrent.duration.FiniteDuration"></a>
+      <a id="installTimeout:FiniteDuration"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">installTimeout</span><span class="result">: <span class="extype" name="scala.concurrent.duration.FiniteDuration">FiniteDuration</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.rvi.TransferProtocolActor@installTimeout:scala.concurrent.duration.FiniteDuration" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <a id="isInstanceOf[T0]:Boolean"></a>
@@ -651,18 +685,18 @@
       <p class="shortcomment cmt">Entry point to this actor when the vehicle initiates a download.</p><div class="fullcomment"><div class="comment cmt"><p>Entry point to this actor when the vehicle initiates a download.
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="org.genivi.sota.core.rvi.TransferProtocolActor">TransferProtocolActor</a> → Actor</dd></dl></div>
     </li><li name="org.genivi.sota.core.rvi.TransferProtocolActor#running" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="running(services:org.genivi.sota.core.rvi.ClientServices,updates:Set[org.genivi.sota.core.data.UpdateSpec],pending:scala.collection.immutable.Queue[org.genivi.sota.core.data.Package],inProgress:Map[akka.actor.ActorRef,org.genivi.sota.core.data.Package],done:Set[org.genivi.sota.core.data.Package]):TransferProtocolActor.this.Receive"></a>
-      <a id="running(ClientServices,Set[UpdateSpec],Queue[Package],Map[ActorRef,Package],Set[Package]):Receive"></a>
+      <a id="running(services:org.genivi.sota.core.rvi.ClientServices,updates:Set[org.genivi.sota.core.data.UpdateSpec],pending:scala.collection.immutable.Queue[(org.genivi.sota.core.data.UpdateSpec,org.genivi.sota.core.data.Package)],inProgress:Map[akka.actor.ActorRef,(org.genivi.sota.core.data.UpdateSpec,org.genivi.sota.core.data.Package)],done:Set[org.genivi.sota.core.data.Package]):TransferProtocolActor.this.Receive"></a>
+      <a id="running(ClientServices,Set[UpdateSpec],Queue[(UpdateSpec,Package)],Map[ActorRef,(UpdateSpec,Package)],Set[Package]):Receive"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">running</span><span class="params">(<span name="services">services: <a href="ClientServices.html" class="extype" name="org.genivi.sota.core.rvi.ClientServices">ClientServices</a></span>, <span name="updates">updates: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="../data/UpdateSpec.html" class="extype" name="org.genivi.sota.core.data.UpdateSpec">UpdateSpec</a>]</span>, <span name="pending">pending: <span class="extype" name="scala.collection.immutable.Queue">Queue</span>[<a href="../data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>]</span>, <span name="inProgress">inProgress: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="akka.actor.ActorRef">ActorRef</span>, <a href="../data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>]</span>, <span name="done">done: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="../data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>]</span>)</span><span class="result">: <a href="#Receive=akka.actor.Actor.Receive" class="extmbr" name="org.genivi.sota.core.rvi.TransferProtocolActor.Receive">Receive</a></span>
+        <span class="name">running</span><span class="params">(<span name="services">services: <a href="ClientServices.html" class="extype" name="org.genivi.sota.core.rvi.ClientServices">ClientServices</a></span>, <span name="updates">updates: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="../data/UpdateSpec.html" class="extype" name="org.genivi.sota.core.data.UpdateSpec">UpdateSpec</a>]</span>, <span name="pending">pending: <span class="extype" name="scala.collection.immutable.Queue">Queue</span>[(<a href="../data/UpdateSpec.html" class="extype" name="org.genivi.sota.core.data.UpdateSpec">UpdateSpec</a>, <a href="../data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>)]</span>, <span name="inProgress">inProgress: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="akka.actor.ActorRef">ActorRef</span>, (<a href="../data/UpdateSpec.html" class="extype" name="org.genivi.sota.core.data.UpdateSpec">UpdateSpec</a>, <a href="../data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>)]</span>, <span name="done">done: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="../data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>]</span>)</span><span class="result">: <a href="#Receive=akka.actor.Actor.Receive" class="extmbr" name="org.genivi.sota.core.rvi.TransferProtocolActor.Receive">Receive</a></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.rvi.TransferProtocolActor@running(services:org.genivi.sota.core.rvi.ClientServices,updates:Set[org.genivi.sota.core.data.UpdateSpec],pending:scala.collection.immutable.Queue[org.genivi.sota.core.data.Package],inProgress:Map[akka.actor.ActorRef,org.genivi.sota.core.data.Package],done:Set[org.genivi.sota.core.data.Package]):TransferProtocolActor.this.Receive" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.rvi.TransferProtocolActor@running(services:org.genivi.sota.core.rvi.ClientServices,updates:Set[org.genivi.sota.core.data.UpdateSpec],pending:scala.collection.immutable.Queue[(org.genivi.sota.core.data.UpdateSpec,org.genivi.sota.core.data.Package)],inProgress:Map[akka.actor.ActorRef,(org.genivi.sota.core.data.UpdateSpec,org.genivi.sota.core.data.Package)],done:Set[org.genivi.sota.core.data.Package]):TransferProtocolActor.this.Receive" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -706,18 +740,18 @@ or when the transfer is aborted because the vehicle is not responding.
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Actor</dd></dl></div>
     </li><li name="org.genivi.sota.core.rvi.TransferProtocolActor#startPackageUpload" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="startPackageUpload(services:org.genivi.sota.core.rvi.ClientServices)(p:org.genivi.sota.core.data.Package):(akka.actor.ActorRef,org.genivi.sota.core.data.Package)"></a>
-      <a id="startPackageUpload(ClientServices)(Package):(ActorRef,Package)"></a>
+      <a id="startPackageUpload(services:org.genivi.sota.core.rvi.ClientServices)(update:org.genivi.sota.core.data.UpdateSpec,pkg:org.genivi.sota.core.data.Package):(akka.actor.ActorRef,(org.genivi.sota.core.data.UpdateSpec,org.genivi.sota.core.data.Package))"></a>
+      <a id="startPackageUpload(ClientServices)(UpdateSpec,Package):(ActorRef,(UpdateSpec,Package))"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">startPackageUpload</span><span class="params">(<span name="services">services: <a href="ClientServices.html" class="extype" name="org.genivi.sota.core.rvi.ClientServices">ClientServices</a></span>)</span><span class="params">(<span name="p">p: <a href="../data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a></span>)</span><span class="result">: (<span class="extype" name="akka.actor.ActorRef">ActorRef</span>, <a href="../data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>)</span>
+        <span class="name">startPackageUpload</span><span class="params">(<span name="services">services: <a href="ClientServices.html" class="extype" name="org.genivi.sota.core.rvi.ClientServices">ClientServices</a></span>)</span><span class="params">(<span name="update">update: <a href="../data/UpdateSpec.html" class="extype" name="org.genivi.sota.core.data.UpdateSpec">UpdateSpec</a></span>, <span name="pkg">pkg: <a href="../data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a></span>)</span><span class="result">: (<span class="extype" name="akka.actor.ActorRef">ActorRef</span>, (<a href="../data/UpdateSpec.html" class="extype" name="org.genivi.sota.core.data.UpdateSpec">UpdateSpec</a>, <a href="../data/Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>))</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.rvi.TransferProtocolActor@startPackageUpload(services:org.genivi.sota.core.rvi.ClientServices)(p:org.genivi.sota.core.data.Package):(akka.actor.ActorRef,org.genivi.sota.core.data.Package)" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.rvi.TransferProtocolActor@startPackageUpload(services:org.genivi.sota.core.rvi.ClientServices)(update:org.genivi.sota.core.data.UpdateSpec,pkg:org.genivi.sota.core.data.Package):(akka.actor.ActorRef,(org.genivi.sota.core.data.UpdateSpec,org.genivi.sota.core.data.Package))" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>

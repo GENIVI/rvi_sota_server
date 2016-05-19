@@ -91,7 +91,7 @@
         <div id="types" class="types members">
               <h3>Type Members</h3>
               <ol><li name="org.genivi.sota.resolver.vehicles.VehicleRepository.InstalledComponentTable" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="InstalledComponentTableextendsslick.driver.MySQLDriver.api.Table[(org.genivi.sota.resolver.vehicles.Vehicle.Vin,org.genivi.sota.resolver.components.Component.PartNumber)]"></a>
+      <a id="InstalledComponentTableextendsslick.driver.MySQLDriver.api.Table[(org.genivi.sota.data.Namespace.Namespace,org.genivi.sota.data.Vehicle.Vin,org.genivi.sota.resolver.components.Component.PartNumber)]"></a>
       <a id="InstalledComponentTable:InstalledComponentTable"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -99,16 +99,33 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="VehicleRepository$$InstalledComponentTable.html"><span class="name">InstalledComponentTable</span></a><span class="result"> extends <span class="extype" name="slick.profile.RelationalProfile.CommonAPI.Table">slick.driver.JdbcProfile.API.Table</span>[(<a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.resolver.vehicles.Vehicle.Vin">Vehicle.Vin</a>, <a href="../components/Component$.html#PartNumber=eu.timepit.refined.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" class="extmbr" name="org.genivi.sota.resolver.components.Component.PartNumber">PartNumber</a>)]</span>
+        <a href="VehicleRepository$$InstalledComponentTable.html"><span class="name">InstalledComponentTable</span></a><span class="result"> extends <span class="extype" name="slick.profile.RelationalProfile.CommonAPI.Table">slick.driver.JdbcProfile.API.Table</span>[(<span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span>, <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span>, <a href="../components/Component$.html#PartNumber=eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" class="extmbr" name="org.genivi.sota.resolver.components.Component.PartNumber">PartNumber</a>)]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@InstalledComponentTableextendsslick.driver.MySQLDriver.api.Table[(org.genivi.sota.resolver.vehicles.Vehicle.Vin,org.genivi.sota.resolver.components.Component.PartNumber)]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@InstalledComponentTableextendsslick.driver.MySQLDriver.api.Table[(org.genivi.sota.data.Namespace.Namespace,org.genivi.sota.data.Vehicle.Vin,org.genivi.sota.resolver.components.Component.PartNumber)]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository.InstalledFirmwareTable" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="InstalledFirmwareTableextendsslick.driver.MySQLDriver.api.Table[(org.genivi.sota.resolver.data.Firmware,org.genivi.sota.data.Vehicle.Vin)]"></a>
+      <a id="InstalledFirmwareTable:InstalledFirmwareTable"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="VehicleRepository$$InstalledFirmwareTable.html"><span class="name">InstalledFirmwareTable</span></a><span class="result"> extends <span class="extype" name="slick.profile.RelationalProfile.CommonAPI.Table">slick.driver.JdbcProfile.API.Table</span>[(<a href="../data/Firmware.html" class="extype" name="org.genivi.sota.resolver.data.Firmware">Firmware</a>, <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span>)]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@InstalledFirmwareTableextendsslick.driver.MySQLDriver.api.Table[(org.genivi.sota.resolver.data.Firmware,org.genivi.sota.data.Vehicle.Vin)]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository.InstalledPackageTable" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="InstalledPackageTableextendsslick.driver.MySQLDriver.api.Table[(org.genivi.sota.resolver.vehicles.Vehicle.Vin,org.genivi.sota.resolver.packages.Package.Id)]"></a>
+      <a id="InstalledPackageTableextendsslick.driver.MySQLDriver.api.Table[(org.genivi.sota.data.Namespace.Namespace,org.genivi.sota.data.Vehicle.Vin,org.genivi.sota.data.PackageId)]"></a>
       <a id="InstalledPackageTable:InstalledPackageTable"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -116,16 +133,16 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="VehicleRepository$$InstalledPackageTable.html"><span class="name">InstalledPackageTable</span></a><span class="result"> extends <span class="extype" name="slick.profile.RelationalProfile.CommonAPI.Table">slick.driver.JdbcProfile.API.Table</span>[(<a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.resolver.vehicles.Vehicle.Vin">Vehicle.Vin</a>, <a href="../packages/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">packages.Package.Id</a>)]</span>
+        <a href="VehicleRepository$$InstalledPackageTable.html"><span class="name">InstalledPackageTable</span></a><span class="result"> extends <span class="extype" name="slick.profile.RelationalProfile.CommonAPI.Table">slick.driver.JdbcProfile.API.Table</span>[(<span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span>, <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span>, <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span>)]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@InstalledPackageTableextendsslick.driver.MySQLDriver.api.Table[(org.genivi.sota.resolver.vehicles.Vehicle.Vin,org.genivi.sota.resolver.packages.Package.Id)]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@InstalledPackageTableextendsslick.driver.MySQLDriver.api.Table[(org.genivi.sota.data.Namespace.Namespace,org.genivi.sota.data.Vehicle.Vin,org.genivi.sota.data.PackageId)]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository.VinTable" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="VinTableextendsslick.driver.MySQLDriver.api.Table[org.genivi.sota.resolver.vehicles.Vehicle]"></a>
+      <a id="VinTableextendsslick.driver.MySQLDriver.api.Table[org.genivi.sota.data.Vehicle]"></a>
       <a id="VinTable:VinTable"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -133,10 +150,10 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="VehicleRepository$$VinTable.html"><span class="name">VinTable</span></a><span class="result"> extends <span class="extype" name="slick.profile.RelationalProfile.CommonAPI.Table">slick.driver.JdbcProfile.API.Table</span>[<a href="Vehicle.html" class="extype" name="org.genivi.sota.resolver.vehicles.Vehicle">Vehicle</a>]</span>
+        <a href="VehicleRepository$$VinTable.html"><span class="name">VinTable</span></a><span class="result"> extends <span class="extype" name="slick.profile.RelationalProfile.CommonAPI.Table">slick.driver.JdbcProfile.API.Table</span>[<span class="extype" name="org.genivi.sota.data.Vehicle">Vehicle</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@VinTableextendsslick.driver.MySQLDriver.api.Table[org.genivi.sota.resolver.vehicles.Vehicle]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@VinTableextendsslick.driver.MySQLDriver.api.Table[org.genivi.sota.data.Vehicle]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -200,7 +217,7 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#add" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="add(vehicle:org.genivi.sota.resolver.vehicles.Vehicle):slick.driver.MySQLDriver.api.DBIO[Int]"></a>
+      <a id="add(vehicle:org.genivi.sota.data.Vehicle):slick.driver.MySQLDriver.api.DBIO[Int]"></a>
       <a id="add(Vehicle):slick.driver.JdbcProfile.API.DBIO[Int]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -208,10 +225,10 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">add</span><span class="params">(<span name="vehicle">vehicle: <a href="Vehicle.html" class="extype" name="org.genivi.sota.resolver.vehicles.Vehicle">Vehicle</a></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Int">Int</span>]</span>
+        <span class="name">add</span><span class="params">(<span name="vehicle">vehicle: <span class="extype" name="org.genivi.sota.data.Vehicle">Vehicle</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Int">Int</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@add(vehicle:org.genivi.sota.resolver.vehicles.Vehicle):slick.driver.MySQLDriver.api.DBIO[Int]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@add(vehicle:org.genivi.sota.data.Vehicle):slick.driver.MySQLDriver.api.DBIO[Int]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -257,103 +274,103 @@
               
         </dd></dl></div>
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#componentsOnVin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="componentsOnVin(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.resolver.components.Component.PartNumber]]"></a>
-      <a id="componentsOnVin(Vehicle.Vin)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Seq[PartNumber]]"></a>
+      <a id="componentsOnVin(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.resolver.components.Component.PartNumber]]"></a>
+      <a id="componentsOnVin(Namespace,Vin)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Seq[PartNumber]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">componentsOnVin</span><span class="params">(<span name="vin">vin: <a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.resolver.vehicles.Vehicle.Vin">Vehicle.Vin</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[<a href="../components/Component$.html#PartNumber=eu.timepit.refined.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" class="extmbr" name="org.genivi.sota.resolver.components.Component.PartNumber">PartNumber</a>]]</span>
+        <span class="name">componentsOnVin</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[<a href="../components/Component$.html#PartNumber=eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" class="extmbr" name="org.genivi.sota.resolver.components.Component.PartNumber">PartNumber</a>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@componentsOnVin(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.resolver.components.Component.PartNumber]]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@componentsOnVin(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.resolver.components.Component.PartNumber]]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#componentsOnVinMap" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="componentsOnVinMap(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Map[org.genivi.sota.resolver.vehicles.Vehicle.Vin,Seq[org.genivi.sota.resolver.components.Component.PartNumber]]]"></a>
-      <a id="componentsOnVinMap(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Map[Vehicle.Vin,Seq[PartNumber]]]"></a>
+      <a id="componentsOnVinMap(namespace:org.genivi.sota.data.Namespace.Namespace)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Map[org.genivi.sota.data.Vehicle.Vin,Seq[org.genivi.sota.resolver.components.Component.PartNumber]]]"></a>
+      <a id="componentsOnVinMap(Namespace)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Map[Vin,Seq[PartNumber]]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">componentsOnVinMap</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Predef.Map">Map</span>[<a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.resolver.vehicles.Vehicle.Vin">Vehicle.Vin</a>, <span class="extype" name="scala.Seq">Seq</span>[<a href="../components/Component$.html#PartNumber=eu.timepit.refined.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" class="extmbr" name="org.genivi.sota.resolver.components.Component.PartNumber">PartNumber</a>]]]</span>
+        <span class="name">componentsOnVinMap</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span>, <span class="extype" name="scala.Seq">Seq</span>[<a href="../components/Component$.html#PartNumber=eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" class="extmbr" name="org.genivi.sota.resolver.components.Component.PartNumber">PartNumber</a>]]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@componentsOnVinMap(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Map[org.genivi.sota.resolver.vehicles.Vehicle.Vin,Seq[org.genivi.sota.resolver.components.Component.PartNumber]]]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@componentsOnVinMap(namespace:org.genivi.sota.data.Namespace.Namespace)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Map[org.genivi.sota.data.Vehicle.Vin,Seq[org.genivi.sota.resolver.components.Component.PartNumber]]]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#delete" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="delete(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin):slick.driver.MySQLDriver.api.DBIO[Int]"></a>
-      <a id="delete(Vehicle.Vin):slick.driver.JdbcProfile.API.DBIO[Int]"></a>
+      <a id="delete(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):slick.driver.MySQLDriver.api.DBIO[Int]"></a>
+      <a id="delete(Namespace,Vin):slick.driver.JdbcProfile.API.DBIO[Int]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">delete</span><span class="params">(<span name="vin">vin: <a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.resolver.vehicles.Vehicle.Vin">Vehicle.Vin</a></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Int">Int</span>]</span>
+        <span class="name">delete</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Int">Int</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@delete(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin):slick.driver.MySQLDriver.api.DBIO[Int]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@delete(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):slick.driver.MySQLDriver.api.DBIO[Int]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#deleteInstalledComponentByVin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="deleteInstalledComponentByVin(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin):slick.driver.MySQLDriver.api.DBIO[Int]"></a>
-      <a id="deleteInstalledComponentByVin(Vehicle.Vin):slick.driver.JdbcProfile.API.DBIO[Int]"></a>
+      <a id="deleteInstalledComponentByVin(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):slick.driver.MySQLDriver.api.DBIO[Int]"></a>
+      <a id="deleteInstalledComponentByVin(Namespace,Vin):slick.driver.JdbcProfile.API.DBIO[Int]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">deleteInstalledComponentByVin</span><span class="params">(<span name="vin">vin: <a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.resolver.vehicles.Vehicle.Vin">Vehicle.Vin</a></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Int">Int</span>]</span>
+        <span class="name">deleteInstalledComponentByVin</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Int">Int</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@deleteInstalledComponentByVin(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin):slick.driver.MySQLDriver.api.DBIO[Int]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@deleteInstalledComponentByVin(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):slick.driver.MySQLDriver.api.DBIO[Int]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#deleteInstalledPackageByVin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="deleteInstalledPackageByVin(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin):slick.driver.MySQLDriver.api.DBIO[Int]"></a>
-      <a id="deleteInstalledPackageByVin(Vehicle.Vin):slick.driver.JdbcProfile.API.DBIO[Int]"></a>
+      <a id="deleteInstalledPackageByVin(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):slick.driver.MySQLDriver.api.DBIO[Int]"></a>
+      <a id="deleteInstalledPackageByVin(Namespace,Vin):slick.driver.JdbcProfile.API.DBIO[Int]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">deleteInstalledPackageByVin</span><span class="params">(<span name="vin">vin: <a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.resolver.vehicles.Vehicle.Vin">Vehicle.Vin</a></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Int">Int</span>]</span>
+        <span class="name">deleteInstalledPackageByVin</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Int">Int</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@deleteInstalledPackageByVin(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin):slick.driver.MySQLDriver.api.DBIO[Int]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@deleteInstalledPackageByVin(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin):slick.driver.MySQLDriver.api.DBIO[Int]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#deleteVin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="deleteVin(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]"></a>
-      <a id="deleteVin(Vehicle.Vin)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Unit]"></a>
+      <a id="deleteVin(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]"></a>
+      <a id="deleteVin(Namespace,Vin)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Unit]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">deleteVin</span><span class="params">(<span name="vin">vin: <a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.resolver.vehicles.Vehicle.Vin">Vehicle.Vin</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
+        <span class="name">deleteVin</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@deleteVin(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@deleteVin(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -393,18 +410,18 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#exists" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="exists(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[org.genivi.sota.resolver.vehicles.Vehicle]"></a>
-      <a id="exists(Vehicle.Vin)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Vehicle]"></a>
+      <a id="exists(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[org.genivi.sota.data.Vehicle]"></a>
+      <a id="exists(Namespace,Vin)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Vehicle]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">exists</span><span class="params">(<span name="vin">vin: <a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.resolver.vehicles.Vehicle.Vin">Vehicle.Vin</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<a href="Vehicle.html" class="extype" name="org.genivi.sota.resolver.vehicles.Vehicle">Vehicle</a>]</span>
+        <span class="name">exists</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="org.genivi.sota.data.Vehicle">Vehicle</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@exists(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[org.genivi.sota.resolver.vehicles.Vehicle]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@exists(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[org.genivi.sota.data.Vehicle]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -432,6 +449,40 @@
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#firmwareExists" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="firmwareExists(namespace:org.genivi.sota.data.Namespace.Namespace,module:org.genivi.sota.resolver.data.Firmware.Module)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[org.genivi.sota.resolver.data.Firmware.Module]"></a>
+      <a id="firmwareExists(Namespace,data.Firmware.Module)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[data.Firmware.Module]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">firmwareExists</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="module">module: <a href="../data/Firmware$.html#Module=eu.timepit.refined.api.Refined[String,FirmwareCommon.this.ValidName]" class="extmbr" name="org.genivi.sota.resolver.data.Firmware.Module">data.Firmware.Module</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<a href="../data/Firmware$.html#Module=eu.timepit.refined.api.Refined[String,FirmwareCommon.this.ValidName]" class="extmbr" name="org.genivi.sota.resolver.data.Firmware.Module">data.Firmware.Module</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@firmwareExists(namespace:org.genivi.sota.data.Namespace.Namespace,module:org.genivi.sota.resolver.data.Firmware.Module)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[org.genivi.sota.resolver.data.Firmware.Module]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#firmwareOnVin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="firmwareOnVin(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.resolver.data.Firmware]]"></a>
+      <a id="firmwareOnVin(Namespace,Vin)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Seq[Firmware]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">firmwareOnVin</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[<a href="../data/Firmware.html" class="extype" name="org.genivi.sota.resolver.data.Firmware">Firmware</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@firmwareOnVin(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.resolver.data.Firmware]]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <a id="getClass():Class[_]"></a>
@@ -467,35 +518,52 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#installComponent" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="installComponent(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin,part:org.genivi.sota.resolver.components.Component.PartNumber)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]"></a>
-      <a id="installComponent(Vehicle.Vin,PartNumber)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Unit]"></a>
+      <a id="installComponent(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,part:org.genivi.sota.resolver.components.Component.PartNumber)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]"></a>
+      <a id="installComponent(Namespace,Vin,PartNumber)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Unit]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">installComponent</span><span class="params">(<span name="vin">vin: <a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.resolver.vehicles.Vehicle.Vin">Vehicle.Vin</a></span>, <span name="part">part: <a href="../components/Component$.html#PartNumber=eu.timepit.refined.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" class="extmbr" name="org.genivi.sota.resolver.components.Component.PartNumber">PartNumber</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
+        <span class="name">installComponent</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>, <span name="part">part: <a href="../components/Component$.html#PartNumber=eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" class="extmbr" name="org.genivi.sota.resolver.components.Component.PartNumber">PartNumber</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@installComponent(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin,part:org.genivi.sota.resolver.components.Component.PartNumber)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@installComponent(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,part:org.genivi.sota.resolver.components.Component.PartNumber)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#installFirmware" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="installFirmware(namespace:org.genivi.sota.data.Namespace.Namespace,module:org.genivi.sota.resolver.data.Firmware.Module,firmware_id:org.genivi.sota.resolver.data.Firmware.FirmwareId,last_modified:Long,vin:org.genivi.sota.data.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]"></a>
+      <a id="installFirmware(Namespace,data.Firmware.Module,data.Firmware.FirmwareId,Long,Vin)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Unit]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">installFirmware</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="module">module: <a href="../data/Firmware$.html#Module=eu.timepit.refined.api.Refined[String,FirmwareCommon.this.ValidName]" class="extmbr" name="org.genivi.sota.resolver.data.Firmware.Module">data.Firmware.Module</a></span>, <span name="firmware_id">firmware_id: <a href="../data/Firmware$.html#FirmwareId=eu.timepit.refined.api.Refined[String,FirmwareCommon.this.ValidVersion]" class="extmbr" name="org.genivi.sota.resolver.data.Firmware.FirmwareId">data.Firmware.FirmwareId</a></span>, <span name="last_modified">last_modified: <span class="extype" name="scala.Long">Long</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@installFirmware(namespace:org.genivi.sota.data.Namespace.Namespace,module:org.genivi.sota.resolver.data.Firmware.Module,firmware_id:org.genivi.sota.resolver.data.Firmware.FirmwareId,last_modified:Long,vin:org.genivi.sota.data.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#installPackage" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="installPackage(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin,pkgId:org.genivi.sota.resolver.packages.Package.Id)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]"></a>
-      <a id="installPackage(Vehicle.Vin,packages.Package.Id)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Unit]"></a>
+      <a id="installPackage(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,pkgId:org.genivi.sota.data.PackageId)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]"></a>
+      <a id="installPackage(Namespace,Vin,PackageId)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Unit]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">installPackage</span><span class="params">(<span name="vin">vin: <a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.resolver.vehicles.Vehicle.Vin">Vehicle.Vin</a></span>, <span name="pkgId">pkgId: <a href="../packages/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">packages.Package.Id</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
+        <span class="name">installPackage</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>, <span name="pkgId">pkgId: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@installPackage(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin,pkgId:org.genivi.sota.resolver.packages.Package.Id)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@installPackage(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,pkgId:org.genivi.sota.data.PackageId)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -517,19 +585,36 @@
       </a>
     </span>
       
+    </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#installedFirmware" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="installedFirmware:slick.lifted.TableQuery[org.genivi.sota.resolver.vehicles.VehicleRepository.InstalledFirmwareTable]"></a>
+      <a id="installedFirmware:TableQuery[InstalledFirmwareTable]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">installedFirmware</span><span class="result">: <span class="extype" name="slick.lifted.TableQuery">TableQuery</span>[<a href="VehicleRepository$$InstalledFirmwareTable.html" class="extype" name="org.genivi.sota.resolver.vehicles.VehicleRepository.InstalledFirmwareTable">InstalledFirmwareTable</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@installedFirmware:slick.lifted.TableQuery[org.genivi.sota.resolver.vehicles.VehicleRepository.InstalledFirmwareTable]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#installedOn" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="installedOn(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Set[org.genivi.sota.resolver.packages.Package.Id]]"></a>
-      <a id="installedOn(Vehicle.Vin)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Set[packages.Package.Id]]"></a>
+      <a id="installedOn(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Set[org.genivi.sota.data.PackageId]]"></a>
+      <a id="installedOn(Namespace,Vin)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Set[PackageId]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">installedOn</span><span class="params">(<span name="vin">vin: <a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.resolver.vehicles.Vehicle.Vin">Vehicle.Vin</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Predef.Set">Set</span>[<a href="../packages/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">packages.Package.Id</a>]]</span>
+        <span class="name">installedOn</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@installedOn(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Set[org.genivi.sota.resolver.packages.Package.Id]]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@installedOn(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Set[org.genivi.sota.data.PackageId]]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -569,7 +654,7 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#list" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="list:slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.resolver.vehicles.Vehicle]]"></a>
+      <a id="list:slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.data.Vehicle]]"></a>
       <a id="list:slick.driver.JdbcProfile.API.DBIO[Seq[Vehicle]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -577,44 +662,44 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">list</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[<a href="Vehicle.html" class="extype" name="org.genivi.sota.resolver.vehicles.Vehicle">Vehicle</a>]]</span>
+        <span class="name">list</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="org.genivi.sota.data.Vehicle">Vehicle</span>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@list:slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.resolver.vehicles.Vehicle]]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@list:slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.data.Vehicle]]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#listInstalledComponents" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="listInstalledComponents:slick.driver.MySQLDriver.api.DBIO[Seq[(org.genivi.sota.resolver.vehicles.Vehicle.Vin,org.genivi.sota.resolver.components.Component.PartNumber)]]"></a>
-      <a id="listInstalledComponents:slick.driver.JdbcProfile.API.DBIO[Seq[(Vehicle.Vin,PartNumber)]]"></a>
+      <a id="listInstalledComponents:slick.driver.MySQLDriver.api.DBIO[Seq[(org.genivi.sota.data.Namespace.Namespace,org.genivi.sota.data.Vehicle.Vin,org.genivi.sota.resolver.components.Component.PartNumber)]]"></a>
+      <a id="listInstalledComponents:slick.driver.JdbcProfile.API.DBIO[Seq[(Namespace,Vin,PartNumber)]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">listInstalledComponents</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[(<a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.resolver.vehicles.Vehicle.Vin">Vehicle.Vin</a>, <a href="../components/Component$.html#PartNumber=eu.timepit.refined.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" class="extmbr" name="org.genivi.sota.resolver.components.Component.PartNumber">PartNumber</a>)]]</span>
+        <span class="name">listInstalledComponents</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[(<span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span>, <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span>, <a href="../components/Component$.html#PartNumber=eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" class="extmbr" name="org.genivi.sota.resolver.components.Component.PartNumber">PartNumber</a>)]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@listInstalledComponents:slick.driver.MySQLDriver.api.DBIO[Seq[(org.genivi.sota.resolver.vehicles.Vehicle.Vin,org.genivi.sota.resolver.components.Component.PartNumber)]]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@listInstalledComponents:slick.driver.MySQLDriver.api.DBIO[Seq[(org.genivi.sota.data.Namespace.Namespace,org.genivi.sota.data.Vehicle.Vin,org.genivi.sota.resolver.components.Component.PartNumber)]]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#listInstalledPackages" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="listInstalledPackages:slick.driver.MySQLDriver.api.DBIO[Seq[(org.genivi.sota.resolver.vehicles.Vehicle.Vin,org.genivi.sota.resolver.packages.Package.Id)]]"></a>
-      <a id="listInstalledPackages:slick.driver.JdbcProfile.API.DBIO[Seq[(Vehicle.Vin,packages.Package.Id)]]"></a>
+      <a id="listInstalledPackages:slick.driver.MySQLDriver.api.DBIO[Seq[(org.genivi.sota.data.Namespace.Namespace,org.genivi.sota.data.Vehicle.Vin,org.genivi.sota.data.PackageId)]]"></a>
+      <a id="listInstalledPackages:slick.driver.JdbcProfile.API.DBIO[Seq[(Namespace,Vin,PackageId)]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">listInstalledPackages</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[(<a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.resolver.vehicles.Vehicle.Vin">Vehicle.Vin</a>, <a href="../packages/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">packages.Package.Id</a>)]]</span>
+        <span class="name">listInstalledPackages</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[(<span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span>, <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span>, <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span>)]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@listInstalledPackages:slick.driver.MySQLDriver.api.DBIO[Seq[(org.genivi.sota.resolver.vehicles.Vehicle.Vin,org.genivi.sota.resolver.packages.Package.Id)]]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@listInstalledPackages:slick.driver.MySQLDriver.api.DBIO[Seq[(org.genivi.sota.data.Namespace.Namespace,org.genivi.sota.data.Vehicle.Vin,org.genivi.sota.data.PackageId)]]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -671,69 +756,69 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#packagesOnVin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="packagesOnVin(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.resolver.packages.Package.Id]]"></a>
-      <a id="packagesOnVin(Vehicle.Vin)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Seq[packages.Package.Id]]"></a>
+      <a id="packagesOnVin(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.data.PackageId]]"></a>
+      <a id="packagesOnVin(Namespace,Vin)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Seq[PackageId]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">packagesOnVin</span><span class="params">(<span name="vin">vin: <a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.resolver.vehicles.Vehicle.Vin">Vehicle.Vin</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[<a href="../packages/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">packages.Package.Id</a>]]</span>
+        <span class="name">packagesOnVin</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@packagesOnVin(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.resolver.packages.Package.Id]]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@packagesOnVin(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.data.PackageId]]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#packagesOnVinMap" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="packagesOnVinMap(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Map[org.genivi.sota.resolver.vehicles.Vehicle.Vin,Seq[org.genivi.sota.resolver.packages.Package.Id]]]"></a>
-      <a id="packagesOnVinMap(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Map[Vehicle.Vin,Seq[packages.Package.Id]]]"></a>
+      <a id="packagesOnVinMap(namespace:org.genivi.sota.data.Namespace.Namespace)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Map[org.genivi.sota.data.Vehicle.Vin,Seq[org.genivi.sota.data.PackageId]]]"></a>
+      <a id="packagesOnVinMap(Namespace)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Map[Vin,Seq[PackageId]]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">packagesOnVinMap</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Predef.Map">Map</span>[<a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.resolver.vehicles.Vehicle.Vin">Vehicle.Vin</a>, <span class="extype" name="scala.Seq">Seq</span>[<a href="../packages/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">packages.Package.Id</a>]]]</span>
+        <span class="name">packagesOnVinMap</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span>, <span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span>]]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@packagesOnVinMap(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Map[org.genivi.sota.resolver.vehicles.Vehicle.Vin,Seq[org.genivi.sota.resolver.packages.Package.Id]]]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@packagesOnVinMap(namespace:org.genivi.sota.data.Namespace.Namespace)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Map[org.genivi.sota.data.Vehicle.Vin,Seq[org.genivi.sota.data.PackageId]]]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#resolve" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="resolve(pkgId:org.genivi.sota.resolver.packages.Package.Id)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Map[org.genivi.sota.resolver.vehicles.Vehicle.Vin,Seq[org.genivi.sota.resolver.packages.Package.Id]]]"></a>
-      <a id="resolve(packages.Package.Id)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Map[Vehicle.Vin,Seq[packages.Package.Id]]]"></a>
+      <a id="resolve(namespace:org.genivi.sota.data.Namespace.Namespace,pkgId:org.genivi.sota.data.PackageId)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Map[org.genivi.sota.data.Vehicle.Vin,Seq[org.genivi.sota.data.PackageId]]]"></a>
+      <a id="resolve(Namespace,PackageId)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Map[Vin,Seq[PackageId]]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">resolve</span><span class="params">(<span name="pkgId">pkgId: <a href="../packages/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">packages.Package.Id</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Predef.Map">Map</span>[<a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.resolver.vehicles.Vehicle.Vin">Vehicle.Vin</a>, <span class="extype" name="scala.Seq">Seq</span>[<a href="../packages/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">packages.Package.Id</a>]]]</span>
+        <span class="name">resolve</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="pkgId">pkgId: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span>, <span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span>]]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@resolve(pkgId:org.genivi.sota.resolver.packages.Package.Id)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Map[org.genivi.sota.resolver.vehicles.Vehicle.Vin,Seq[org.genivi.sota.resolver.packages.Package.Id]]]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@resolve(namespace:org.genivi.sota.data.Namespace.Namespace,pkgId:org.genivi.sota.data.PackageId)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Map[org.genivi.sota.data.Vehicle.Vin,Seq[org.genivi.sota.data.PackageId]]]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#search" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="search(re:Option[eu.timepit.refined.Refined[String,eu.timepit.refined.string.Regex]],pkgName:Option[org.genivi.sota.resolver.packages.Package.Name],pkgVersion:Option[org.genivi.sota.resolver.packages.Package.Version],part:Option[org.genivi.sota.resolver.components.Component.PartNumber])(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.resolver.vehicles.Vehicle]]"></a>
-      <a id="search(Option[Refined[String,Regex]],Option[packages.Package.Name],Option[packages.Package.Version],Option[PartNumber])(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Seq[Vehicle]]"></a>
+      <a id="search(namespace:org.genivi.sota.data.Namespace.Namespace,re:Option[eu.timepit.refined.api.Refined[String,eu.timepit.refined.string.Regex]],pkgName:Option[org.genivi.sota.data.PackageId.Name],pkgVersion:Option[org.genivi.sota.data.PackageId.Version],part:Option[org.genivi.sota.resolver.components.Component.PartNumber])(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.data.Vehicle]]"></a>
+      <a id="search(Namespace,Option[Refined[String,Regex]],Option[Name],Option[Version],Option[PartNumber])(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Seq[Vehicle]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">search</span><span class="params">(<span name="re">re: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="eu.timepit.refined.Refined">Refined</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="eu.timepit.refined.string.Regex">Regex</span>]]</span>, <span name="pkgName">pkgName: <span class="extype" name="scala.Option">Option</span>[<a href="../packages/Package$.html#Name=eu.timepit.refined.Refined[String,PackageCommon.this.ValidName]" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Name">packages.Package.Name</a>]</span>, <span name="pkgVersion">pkgVersion: <span class="extype" name="scala.Option">Option</span>[<a href="../packages/Package$.html#Version=eu.timepit.refined.Refined[String,PackageCommon.this.ValidVersion]" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Version">packages.Package.Version</a>]</span>, <span name="part">part: <span class="extype" name="scala.Option">Option</span>[<a href="../components/Component$.html#PartNumber=eu.timepit.refined.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" class="extmbr" name="org.genivi.sota.resolver.components.Component.PartNumber">PartNumber</a>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[<a href="Vehicle.html" class="extype" name="org.genivi.sota.resolver.vehicles.Vehicle">Vehicle</a>]]</span>
+        <span class="name">search</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="re">re: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="eu.timepit.refined.api.Refined">Refined</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="eu.timepit.refined.string.Regex">Regex</span>]]</span>, <span name="pkgName">pkgName: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="org.genivi.sota.data.PackageId.Name">Name</span>]</span>, <span name="pkgVersion">pkgVersion: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="org.genivi.sota.data.PackageId.Version">Version</span>]</span>, <span name="part">part: <span class="extype" name="scala.Option">Option</span>[<a href="../components/Component$.html#PartNumber=eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" class="extmbr" name="org.genivi.sota.resolver.components.Component.PartNumber">PartNumber</a>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="org.genivi.sota.data.Vehicle">Vehicle</span>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@search(re:Option[eu.timepit.refined.Refined[String,eu.timepit.refined.string.Regex]],pkgName:Option[org.genivi.sota.resolver.packages.Package.Name],pkgVersion:Option[org.genivi.sota.resolver.packages.Package.Version],part:Option[org.genivi.sota.resolver.components.Component.PartNumber])(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.resolver.vehicles.Vehicle]]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@search(namespace:org.genivi.sota.data.Namespace.Namespace,re:Option[eu.timepit.refined.api.Refined[String,eu.timepit.refined.string.Regex]],pkgName:Option[org.genivi.sota.data.PackageId.Name],pkgVersion:Option[org.genivi.sota.data.PackageId.Version],part:Option[org.genivi.sota.resolver.components.Component.PartNumber])(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[org.genivi.sota.data.Vehicle]]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -773,52 +858,69 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#uninstallComponent" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="uninstallComponent(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin,part:org.genivi.sota.resolver.components.Component.PartNumber):slick.driver.MySQLDriver.api.DBIO[Int]"></a>
-      <a id="uninstallComponent(Vehicle.Vin,PartNumber):slick.driver.JdbcProfile.API.DBIO[Int]"></a>
+      <a id="uninstallComponent(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,part:org.genivi.sota.resolver.components.Component.PartNumber)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]"></a>
+      <a id="uninstallComponent(Namespace,Vin,PartNumber)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Unit]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">uninstallComponent</span><span class="params">(<span name="vin">vin: <a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.resolver.vehicles.Vehicle.Vin">Vehicle.Vin</a></span>, <span name="part">part: <a href="../components/Component$.html#PartNumber=eu.timepit.refined.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" class="extmbr" name="org.genivi.sota.resolver.components.Component.PartNumber">PartNumber</a></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Int">Int</span>]</span>
+        <span class="name">uninstallComponent</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>, <span name="part">part: <a href="../components/Component$.html#PartNumber=eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" class="extmbr" name="org.genivi.sota.resolver.components.Component.PartNumber">PartNumber</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@uninstallComponent(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin,part:org.genivi.sota.resolver.components.Component.PartNumber):slick.driver.MySQLDriver.api.DBIO[Int]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@uninstallComponent(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,part:org.genivi.sota.resolver.components.Component.PartNumber)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#uninstallPackage" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="uninstallPackage(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin,pkgId:org.genivi.sota.resolver.packages.Package.Id)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]"></a>
-      <a id="uninstallPackage(Vehicle.Vin,packages.Package.Id)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Unit]"></a>
+      <a id="uninstallPackage(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,pkgId:org.genivi.sota.data.PackageId)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]"></a>
+      <a id="uninstallPackage(Namespace,Vin,PackageId)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Unit]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">uninstallPackage</span><span class="params">(<span name="vin">vin: <a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.resolver.vehicles.Vehicle.Vin">Vehicle.Vin</a></span>, <span name="pkgId">pkgId: <a href="../packages/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">packages.Package.Id</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
+        <span class="name">uninstallPackage</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>, <span name="pkgId">pkgId: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@uninstallPackage(vin:org.genivi.sota.resolver.vehicles.Vehicle.Vin,pkgId:org.genivi.sota.resolver.packages.Package.Id)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@uninstallPackage(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,pkgId:org.genivi.sota.data.PackageId)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#updateInstalledFirmware" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="updateInstalledFirmware(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,firmware:Set[org.genivi.sota.resolver.data.Firmware])(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]"></a>
+      <a id="updateInstalledFirmware(Namespace,Vin,Set[Firmware])(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Unit]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">updateInstalledFirmware</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>, <span name="firmware">firmware: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="../data/Firmware.html" class="extype" name="org.genivi.sota.resolver.data.Firmware">Firmware</a>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@updateInstalledFirmware(ns:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,firmware:Set[org.genivi.sota.resolver.data.Firmware])(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#updateInstalledPackages" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="updateInstalledPackages(vehicle:org.genivi.sota.resolver.vehicles.Vehicle,newPackages:Set[org.genivi.sota.resolver.packages.Package.Id],deletedPackages:Set[org.genivi.sota.resolver.packages.Package.Id])(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]"></a>
-      <a id="updateInstalledPackages(Vehicle,Set[packages.Package.Id],Set[packages.Package.Id])(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Unit]"></a>
+      <a id="updateInstalledPackages(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,packages:Set[org.genivi.sota.data.PackageId])(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]"></a>
+      <a id="updateInstalledPackages(Namespace,Vin,Set[PackageId])(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Unit]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">updateInstalledPackages</span><span class="params">(<span name="vehicle">vehicle: <a href="Vehicle.html" class="extype" name="org.genivi.sota.resolver.vehicles.Vehicle">Vehicle</a></span>, <span name="newPackages">newPackages: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="../packages/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">packages.Package.Id</a>]</span>, <span name="deletedPackages">deletedPackages: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="../packages/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">packages.Package.Id</a>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
+        <span class="name">updateInstalledPackages</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>, <span name="packages">packages: <span class="extype" name="scala.Predef.Set">Set</span>[<span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Unit">Unit</span>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@updateInstalledPackages(vehicle:org.genivi.sota.resolver.vehicles.Vehicle,newPackages:Set[org.genivi.sota.resolver.packages.Package.Id],deletedPackages:Set[org.genivi.sota.resolver.packages.Package.Id])(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@updateInstalledPackages(namespace:org.genivi.sota.data.Namespace.Namespace,vin:org.genivi.sota.data.Vehicle.Vin,packages:Set[org.genivi.sota.data.PackageId])(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Unit]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -841,18 +943,18 @@
     </span>
       
     </li><li name="org.genivi.sota.resolver.vehicles.VehicleRepository#vinsWithPackagesAndComponents" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="vinsWithPackagesAndComponents(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[(org.genivi.sota.resolver.vehicles.Vehicle,(Seq[org.genivi.sota.resolver.packages.Package.Id],Seq[org.genivi.sota.resolver.components.Component.PartNumber]))]]"></a>
-      <a id="vinsWithPackagesAndComponents(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Seq[(Vehicle,(Seq[packages.Package.Id],Seq[PartNumber]))]]"></a>
+      <a id="vinsWithPackagesAndComponents(namespace:org.genivi.sota.data.Namespace.Namespace)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[(org.genivi.sota.data.Vehicle,(Seq[org.genivi.sota.data.PackageId],Seq[org.genivi.sota.resolver.components.Component.PartNumber]))]]"></a>
+      <a id="vinsWithPackagesAndComponents(Namespace)(ExecutionContext):slick.driver.JdbcProfile.API.DBIO[Seq[(Vehicle,(Seq[PackageId],Seq[PartNumber]))]]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">vinsWithPackagesAndComponents</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[(<a href="Vehicle.html" class="extype" name="org.genivi.sota.resolver.vehicles.Vehicle">Vehicle</a>, (<span class="extype" name="scala.Seq">Seq</span>[<a href="../packages/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">packages.Package.Id</a>], <span class="extype" name="scala.Seq">Seq</span>[<a href="../components/Component$.html#PartNumber=eu.timepit.refined.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" class="extmbr" name="org.genivi.sota.resolver.components.Component.PartNumber">PartNumber</a>]))]]</span>
+        <span class="name">vinsWithPackagesAndComponents</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span><span class="result">: <span class="extype" name="slick.lifted.Aliases.DBIO">slick.driver.JdbcProfile.API.DBIO</span>[<span class="extype" name="scala.Seq">Seq</span>[(<span class="extype" name="org.genivi.sota.data.Vehicle">Vehicle</span>, (<span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span>], <span class="extype" name="scala.Seq">Seq</span>[<a href="../components/Component$.html#PartNumber=eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" class="extmbr" name="org.genivi.sota.resolver.components.Component.PartNumber">PartNumber</a>]))]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@vinsWithPackagesAndComponents(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[(org.genivi.sota.resolver.vehicles.Vehicle,(Seq[org.genivi.sota.resolver.packages.Package.Id],Seq[org.genivi.sota.resolver.components.Component.PartNumber]))]]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.vehicles.VehicleRepository$@vinsWithPackagesAndComponents(namespace:org.genivi.sota.data.Namespace.Namespace)(implicitec:scala.concurrent.ExecutionContext):slick.driver.MySQLDriver.api.DBIO[Seq[(org.genivi.sota.data.Vehicle,(Seq[org.genivi.sota.data.PackageId],Seq[org.genivi.sota.resolver.components.Component.PartNumber]))]]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>

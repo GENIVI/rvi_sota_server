@@ -47,11 +47,15 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">UpdateSpec</span><span class="params">(<span name="request">request: <a href="UpdateRequest.html" class="extype" name="org.genivi.sota.core.data.UpdateRequest">UpdateRequest</a></span>, <span name="vin">vin: <a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.core.data.Vehicle.Vin">Vehicle.Vin</a></span>, <span name="status">status: <a href="UpdateStatus$.html#UpdateStatus=org.genivi.sota.core.data.UpdateStatus.Value" class="extmbr" name="org.genivi.sota.core.data.UpdateStatus.UpdateStatus">UpdateStatus</a></span>, <span name="dependencies">dependencies: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <span class="name">UpdateSpec</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="request">request: <a href="UpdateRequest.html" class="extype" name="org.genivi.sota.core.data.UpdateRequest">UpdateRequest</a></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>, <span name="status">status: <a href="UpdateStatus$.html#UpdateStatus=org.genivi.sota.core.data.UpdateStatus.Value" class="extmbr" name="org.genivi.sota.core.data.UpdateStatus.UpdateStatus">UpdateStatus</a></span>, <span name="dependencies">dependencies: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>A set of package updates to apply to a single VIN.</p></div><dl class="paramcmts block"><dt class="param">request</dt><dd class="cmt"><p>The update campaign that these updates are a part of</p></dd><dt class="param">vin</dt><dd class="cmt"><p>The vehicle to which these updates should be applied</p></dd><dt class="param">status</dt><dd class="cmt"><p>The status of the update</p></dd><dt class="param">dependencies</dt><dd class="cmt"><p>The packages to be installed</p></dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>A combination (campaign, VIN, packages) --- which remain constant over time ---
+along with the latest <a href="UpdateStatus$.html" class="extype" name="org.genivi.sota.core.data.UpdateStatus">UpdateStatus</a> (for that campaign on this VIN) --- which may change over time.
+<br></p><ul><li>The set of packages may include dependencies;
+      no individual install order is given for them but for campaigns as a whole,
+      see <a href="UpdateRequest.html#installPos:Int" class="extmbr" name="org.genivi.sota.core.data.UpdateRequest#installPos">UpdateRequest#installPos</a>.</li><li>The campaign (ie, <a href="UpdateRequest.html" class="extype" name="org.genivi.sota.core.data.UpdateRequest">UpdateRequest</a>) that initiated this <a href="" class="extype" name="org.genivi.sota.core.data.UpdateSpec">UpdateSpec</a> is linked from here.</li></ul></div><dl class="paramcmts block"><dt class="param">request</dt><dd class="cmt"><p>The campaign that these updates are a part of</p></dd><dt class="param">vin</dt><dd class="cmt"><p>The vehicle to which these updates should be applied</p></dd><dt class="param">status</dt><dd class="cmt"><p>The status of the update</p></dd><dt class="param">dependencies</dt><dd class="cmt"><p>The packages to be installed</p></dd></dl><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="scala.Serializable">Serializable</span>, <span class="extype" name="java.io.Serializable">Serializable</span>, <span class="extype" name="scala.Product">Product</span>, <span class="extype" name="scala.Equals">Equals</span>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
@@ -91,7 +95,7 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="org.genivi.sota.core.data.UpdateSpec#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="&lt;init&gt;(request:org.genivi.sota.core.data.UpdateRequest,vin:org.genivi.sota.core.data.Vehicle.Vin,status:org.genivi.sota.core.data.UpdateStatus.UpdateStatus,dependencies:Set[org.genivi.sota.core.data.Package]):org.genivi.sota.core.data.UpdateSpec"></a>
+      <a id="&lt;init&gt;(namespace:org.genivi.sota.data.Namespace.Namespace,request:org.genivi.sota.core.data.UpdateRequest,vin:org.genivi.sota.data.Vehicle.Vin,status:org.genivi.sota.core.data.UpdateStatus.UpdateStatus,dependencies:Set[org.genivi.sota.core.data.Package]):org.genivi.sota.core.data.UpdateSpec"></a>
       <a id="&lt;init&gt;:UpdateSpec"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -99,14 +103,14 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">UpdateSpec</span><span class="params">(<span name="request">request: <a href="UpdateRequest.html" class="extype" name="org.genivi.sota.core.data.UpdateRequest">UpdateRequest</a></span>, <span name="vin">vin: <a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.core.data.Vehicle.Vin">Vehicle.Vin</a></span>, <span name="status">status: <a href="UpdateStatus$.html#UpdateStatus=org.genivi.sota.core.data.UpdateStatus.Value" class="extmbr" name="org.genivi.sota.core.data.UpdateStatus.UpdateStatus">UpdateStatus</a></span>, <span name="dependencies">dependencies: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>]</span>)</span>
+        <span class="name">UpdateSpec</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="request">request: <a href="UpdateRequest.html" class="extype" name="org.genivi.sota.core.data.UpdateRequest">UpdateRequest</a></span>, <span name="vin">vin: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>, <span name="status">status: <a href="UpdateStatus$.html#UpdateStatus=org.genivi.sota.core.data.UpdateStatus.Value" class="extmbr" name="org.genivi.sota.core.data.UpdateStatus.UpdateStatus">UpdateStatus</a></span>, <span name="dependencies">dependencies: <span class="extype" name="scala.Predef.Set">Set</span>[<a href="Package.html" class="extype" name="org.genivi.sota.core.data.Package">Package</a>]</span>)</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.data.UpdateSpec@&lt;init&gt;(request:org.genivi.sota.core.data.UpdateRequest,vin:org.genivi.sota.core.data.Vehicle.Vin,status:org.genivi.sota.core.data.UpdateStatus.UpdateStatus,dependencies:Set[org.genivi.sota.core.data.Package]):org.genivi.sota.core.data.UpdateSpec" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.data.UpdateSpec@&lt;init&gt;(namespace:org.genivi.sota.data.Namespace.Namespace,request:org.genivi.sota.core.data.UpdateRequest,vin:org.genivi.sota.data.Vehicle.Vin,status:org.genivi.sota.core.data.UpdateStatus.UpdateStatus,dependencies:Set[org.genivi.sota.core.data.Package]):org.genivi.sota.core.data.UpdateSpec" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt class="param">request</dt><dd class="cmt"><p>The update campaign that these updates are a part of</p></dd><dt class="param">vin</dt><dd class="cmt"><p>The vehicle to which these updates should be applied</p></dd><dt class="param">status</dt><dd class="cmt"><p>The status of the update</p></dd><dt class="param">dependencies</dt><dd class="cmt"><p>The packages to be installed</p></dd></dl></div>
+      <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt class="param">request</dt><dd class="cmt"><p>The campaign that these updates are a part of</p></dd><dt class="param">vin</dt><dd class="cmt"><p>The vehicle to which these updates should be applied</p></dd><dt class="param">status</dt><dd class="cmt"><p>The status of the update</p></dd><dt class="param">dependencies</dt><dd class="cmt"><p>The packages to be installed</p></dd></dl></div>
     </li></ol>
             </div>
 
@@ -298,6 +302,23 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="org.genivi.sota.core.data.UpdateSpec#namespace" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="namespace:org.genivi.sota.data.Namespace.Namespace"></a>
+      <a id="namespace:Namespace"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">namespace</span><span class="result">: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.data.UpdateSpec@namespace:org.genivi.sota.data.Namespace.Namespace" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>
@@ -365,7 +386,7 @@
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">The update campaign that these updates are a part of</p>
+      <p class="shortcomment cmt">The campaign that these updates are a part of</p>
     </li><li name="org.genivi.sota.core.data.UpdateSpec#size" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="size:Long"></a>
       <a id="size:Long"></a>
@@ -419,18 +440,18 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="org.genivi.sota.core.data.UpdateSpec#vin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="vin:org.genivi.sota.core.data.Vehicle.Vin"></a>
-      <a id="vin:Vehicle.Vin"></a>
+      <a id="vin:org.genivi.sota.data.Vehicle.Vin"></a>
+      <a id="vin:Vin"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">vin</span><span class="result">: <a href="Vehicle$.html#Vin=eu.timepit.refined.Refined[String,VehicleCommon.this.ValidVin]" class="extmbr" name="org.genivi.sota.core.data.Vehicle.Vin">Vehicle.Vin</a></span>
+        <span class="name">vin</span><span class="result">: <span class="extype" name="org.genivi.sota.data.Vehicle.Vin">Vin</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.core.data.UpdateSpec@vin:org.genivi.sota.core.data.Vehicle.Vin" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.core.data.UpdateSpec@vin:org.genivi.sota.data.Vehicle.Vin" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>

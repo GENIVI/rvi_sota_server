@@ -45,7 +45,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">PackageFilter</span><span class="params">(<span name="packageName">packageName: <a href="Package$.html#Name=eu.timepit.refined.Refined[String,PackageCommon.this.ValidName]" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Name">Package.Name</a></span>, <span name="packageVersion">packageVersion: <a href="Package$.html#Version=eu.timepit.refined.Refined[String,PackageCommon.this.ValidVersion]" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Version">Package.Version</a></span>, <span name="filterName">filterName: <a href="../filters/Filter$.html#Name=eu.timepit.refined.Refined[String,org.genivi.sota.resolver.filters.Filter.ValidName]" class="extmbr" name="org.genivi.sota.resolver.filters.Filter.Name">Name</a></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <span class="name">PackageFilter</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="packageName">packageName: <span class="extype" name="org.genivi.sota.data.PackageId.Name">Name</span></span>, <span name="packageVersion">packageVersion: <span class="extype" name="org.genivi.sota.data.PackageId.Version">Version</span></span>, <span name="filterName">filterName: <a href="../filters/Filter$.html#Name=eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.filters.Filter.ValidName]" class="extmbr" name="org.genivi.sota.resolver.filters.Filter.Name">Name</a></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
@@ -91,7 +91,7 @@ Filters have a package name, package version and filter name
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="org.genivi.sota.resolver.packages.PackageFilter#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(packageName:org.genivi.sota.resolver.packages.Package.Name,packageVersion:org.genivi.sota.resolver.packages.Package.Version,filterName:org.genivi.sota.resolver.filters.Filter.Name):org.genivi.sota.resolver.packages.PackageFilter"></a>
+      <a id="&lt;init&gt;(namespace:org.genivi.sota.data.Namespace.Namespace,packageName:org.genivi.sota.data.PackageId.Name,packageVersion:org.genivi.sota.data.PackageId.Version,filterName:org.genivi.sota.resolver.filters.Filter.Name):org.genivi.sota.resolver.packages.PackageFilter"></a>
       <a id="&lt;init&gt;:PackageFilter"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -99,10 +99,10 @@ Filters have a package name, package version and filter name
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">PackageFilter</span><span class="params">(<span name="packageName">packageName: <a href="Package$.html#Name=eu.timepit.refined.Refined[String,PackageCommon.this.ValidName]" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Name">Package.Name</a></span>, <span name="packageVersion">packageVersion: <a href="Package$.html#Version=eu.timepit.refined.Refined[String,PackageCommon.this.ValidVersion]" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Version">Package.Version</a></span>, <span name="filterName">filterName: <a href="../filters/Filter$.html#Name=eu.timepit.refined.Refined[String,org.genivi.sota.resolver.filters.Filter.ValidName]" class="extmbr" name="org.genivi.sota.resolver.filters.Filter.Name">Name</a></span>)</span>
+        <span class="name">PackageFilter</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="packageName">packageName: <span class="extype" name="org.genivi.sota.data.PackageId.Name">Name</span></span>, <span name="packageVersion">packageVersion: <span class="extype" name="org.genivi.sota.data.PackageId.Version">Version</span></span>, <span name="filterName">filterName: <a href="../filters/Filter$.html#Name=eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.filters.Filter.ValidName]" class="extmbr" name="org.genivi.sota.resolver.filters.Filter.Name">Name</a></span>)</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageFilter@&lt;init&gt;(packageName:org.genivi.sota.resolver.packages.Package.Name,packageVersion:org.genivi.sota.resolver.packages.Package.Version,filterName:org.genivi.sota.resolver.filters.Filter.Name):org.genivi.sota.resolver.packages.PackageFilter" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageFilter@&lt;init&gt;(namespace:org.genivi.sota.data.Namespace.Namespace,packageName:org.genivi.sota.data.PackageId.Name,packageVersion:org.genivi.sota.data.PackageId.Version,filterName:org.genivi.sota.resolver.filters.Filter.Name):org.genivi.sota.resolver.packages.PackageFilter" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -233,7 +233,7 @@ Filters have a package name, package version and filter name
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">filterName</span><span class="result">: <a href="../filters/Filter$.html#Name=eu.timepit.refined.Refined[String,org.genivi.sota.resolver.filters.Filter.ValidName]" class="extmbr" name="org.genivi.sota.resolver.filters.Filter.Name">Name</a></span>
+        <span class="name">filterName</span><span class="result">: <a href="../filters/Filter$.html#Name=eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.filters.Filter.ValidName]" class="extmbr" name="org.genivi.sota.resolver.filters.Filter.Name">Name</a></span>
       </span>
       </h4><span class="permalink">
       <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageFilter@filterName:org.genivi.sota.resolver.filters.Filter.Name" title="Permalink" target="_top">
@@ -298,6 +298,23 @@ Filters have a package name, package version and filter name
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="org.genivi.sota.resolver.packages.PackageFilter#namespace" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="namespace:org.genivi.sota.data.Namespace.Namespace"></a>
+      <a id="namespace:Namespace"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">namespace</span><span class="result">: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageFilter@namespace:org.genivi.sota.data.Namespace.Namespace" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>
@@ -350,35 +367,35 @@ Filters have a package name, package version and filter name
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
     </li><li name="org.genivi.sota.resolver.packages.PackageFilter#packageName" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="packageName:org.genivi.sota.resolver.packages.Package.Name"></a>
-      <a id="packageName:Package.Name"></a>
+      <a id="packageName:org.genivi.sota.data.PackageId.Name"></a>
+      <a id="packageName:Name"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">packageName</span><span class="result">: <a href="Package$.html#Name=eu.timepit.refined.Refined[String,PackageCommon.this.ValidName]" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Name">Package.Name</a></span>
+        <span class="name">packageName</span><span class="result">: <span class="extype" name="org.genivi.sota.data.PackageId.Name">Name</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageFilter@packageName:org.genivi.sota.resolver.packages.Package.Name" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageFilter@packageName:org.genivi.sota.data.PackageId.Name" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
     </li><li name="org.genivi.sota.resolver.packages.PackageFilter#packageVersion" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="packageVersion:org.genivi.sota.resolver.packages.Package.Version"></a>
-      <a id="packageVersion:Package.Version"></a>
+      <a id="packageVersion:org.genivi.sota.data.PackageId.Version"></a>
+      <a id="packageVersion:Version"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">packageVersion</span><span class="result">: <a href="Package$.html#Version=eu.timepit.refined.Refined[String,PackageCommon.this.ValidVersion]" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Version">Package.Version</a></span>
+        <span class="name">packageVersion</span><span class="result">: <span class="extype" name="org.genivi.sota.data.PackageId.Version">Version</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageFilter@packageVersion:org.genivi.sota.resolver.packages.Package.Version" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageFilter@packageVersion:org.genivi.sota.data.PackageId.Version" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -400,6 +417,23 @@ Filters have a package name, package version and filter name
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="org.genivi.sota.resolver.packages.PackageFilter#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageFilter@toString():String" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="org.genivi.sota.resolver.packages.PackageFilter">PackageFilter</a> → AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <a id="wait():Unit"></a>

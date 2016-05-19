@@ -89,7 +89,7 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="org.genivi.sota.resolver.components.ComponentDirectives#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;()(implicitdb:slick.jdbc.JdbcBackend.Database,implicitmat:akka.stream.ActorMaterializer,implicitec:scala.concurrent.ExecutionContext):org.genivi.sota.resolver.components.ComponentDirectives"></a>
+      <a id="&lt;init&gt;()(implicitsystem:akka.actor.ActorSystem,implicitdb:slick.jdbc.JdbcBackend.Database,implicitmat:akka.stream.ActorMaterializer,implicitec:scala.concurrent.ExecutionContext):org.genivi.sota.resolver.components.ComponentDirectives"></a>
       <a id="&lt;init&gt;:ComponentDirectives"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -97,10 +97,10 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">ComponentDirectives</span><span class="params">()</span><span class="params">(<span class="implicit">implicit </span><span name="db">db: <span class="extype" name="slick.jdbc.JdbcBackend.Database">slick.jdbc.JdbcBackend.Database</span></span>, <span name="mat">mat: <span class="extype" name="akka.stream.ActorMaterializer">ActorMaterializer</span></span>, <span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span>
+        <span class="name">ComponentDirectives</span><span class="params">()</span><span class="params">(<span class="implicit">implicit </span><span name="system">system: <span class="extype" name="akka.actor.ActorSystem">ActorSystem</span></span>, <span name="db">db: <span class="extype" name="slick.jdbc.JdbcBackend.Database">slick.jdbc.JdbcBackend.Database</span></span>, <span name="mat">mat: <span class="extype" name="akka.stream.ActorMaterializer">ActorMaterializer</span></span>, <span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.components.ComponentDirectives@&lt;init&gt;()(implicitdb:slick.jdbc.JdbcBackend.Database,implicitmat:akka.stream.ActorMaterializer,implicitec:scala.concurrent.ExecutionContext):org.genivi.sota.resolver.components.ComponentDirectives" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.components.ComponentDirectives@&lt;init&gt;()(implicitsystem:akka.actor.ActorSystem,implicitdb:slick.jdbc.JdbcBackend.Database,implicitmat:akka.stream.ActorMaterializer,implicitec:scala.concurrent.ExecutionContext):org.genivi.sota.resolver.components.ComponentDirectives" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -165,6 +165,23 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="org.genivi.sota.resolver.components.ComponentDirectives#addComponent" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="addComponent(ns:org.genivi.sota.data.Namespace.Namespace,part:org.genivi.sota.resolver.components.Component.PartNumber):akka.http.scaladsl.server.Route"></a>
+      <a id="addComponent(Namespace,PartNumber):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addComponent</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="part">part: <a href="Component$.html#PartNumber=eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" class="extmbr" name="org.genivi.sota.resolver.components.Component.PartNumber">PartNumber</a></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.components.ComponentDirectives@addComponent(ns:org.genivi.sota.data.Namespace.Namespace,part:org.genivi.sota.resolver.components.Component.PartNumber):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -205,6 +222,23 @@
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="org.genivi.sota.resolver.components.ComponentDirectives#deleteComponent" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="deleteComponent(ns:org.genivi.sota.data.Namespace.Namespace,part:org.genivi.sota.resolver.components.Component.PartNumber):akka.http.scaladsl.server.Route"></a>
+      <a id="deleteComponent(Namespace,PartNumber):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">deleteComponent</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="part">part: <a href="Component$.html#PartNumber=eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" class="extmbr" name="org.genivi.sota.resolver.components.Component.PartNumber">PartNumber</a></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.components.ComponentDirectives@deleteComponent(ns:org.genivi.sota.data.Namespace.Namespace,part:org.genivi.sota.resolver.components.Component.PartNumber):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
@@ -380,7 +414,24 @@
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">API route for filters.</p><div class="fullcomment"><div class="comment cmt"><p>API route for filters.</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>Route object containing routes for creating, editing, and listing components</p></dd></dl><dl class="attributes block"> <dt>Exceptions thrown</dt><dd><span class="cmt"><p><span class="extype" name="Errors.ComponentIsInstalledException"><code>Errors.ComponentIsInstalledException</code></span> on DELETE call, if component doesn't exist</p></span></dd></dl></div>
+      <p class="shortcomment cmt">API route for components.</p><div class="fullcomment"><div class="comment cmt"><p>API route for components.</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>Route object containing routes for creating, editing, and listing components</p></dd></dl><dl class="attributes block"> <dt>Exceptions thrown</dt><dd><span class="cmt"><p><span class="extype" name="Errors.ComponentIsInstalledException"><code>Errors.ComponentIsInstalledException</code></span> on DELETE call, if component doesn't exist</p></span></dd></dl></div>
+    </li><li name="org.genivi.sota.resolver.components.ComponentDirectives#searchComponent" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="searchComponent(ns:org.genivi.sota.data.Namespace.Namespace):akka.http.scaladsl.server.Route"></a>
+      <a id="searchComponent(Namespace):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">searchComponent</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.components.ComponentDirectives@searchComponent(ns:org.genivi.sota.data.Namespace.Namespace):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
       <a id="synchronized[T0](⇒T0):T0"></a>

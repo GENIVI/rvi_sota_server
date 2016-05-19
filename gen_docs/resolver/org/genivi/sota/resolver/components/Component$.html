@@ -110,7 +110,7 @@
     </span>
       
     </li><li name="org.genivi.sota.resolver.components.Component.PartNumber" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="PartNumber=eu.timepit.refined.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]"></a>
+      <a id="PartNumber=eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]"></a>
       <a id="PartNumber:PartNumber"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -118,27 +118,27 @@
         <span class="kind">type</span>
       </span>
       <span class="symbol">
-        <span class="name">PartNumber</span><span class="result"> = <span class="extype" name="eu.timepit.refined.Refined">Refined</span>[<span class="extype" name="scala.Predef.String">String</span>, <a href="Component$$ValidPartNumber.html" class="extype" name="org.genivi.sota.resolver.components.Component.ValidPartNumber">ValidPartNumber</a>]</span>
+        <span class="name">PartNumber</span><span class="result"> = <span class="extype" name="eu.timepit.refined.api.Refined">Refined</span>[<span class="extype" name="scala.Predef.String">String</span>, <a href="Component$$ValidPartNumber.html" class="extype" name="org.genivi.sota.resolver.components.Component.ValidPartNumber">ValidPartNumber</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.components.Component$@PartNumber=eu.timepit.refined.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.components.Component$@PartNumber=eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
-    </li><li name="org.genivi.sota.resolver.components.Component.ValidPartNumber" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="ValidPartNumberextendsAnyRef"></a>
+    </li><li name="org.genivi.sota.resolver.components.Component.ValidPartNumber" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ValidPartNumberextendsProductwithSerializable"></a>
       <a id="ValidPartNumber:ValidPartNumber"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">trait</span>
+        <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="Component$$ValidPartNumber.html"><span class="name">ValidPartNumber</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+        <a href="Component$$ValidPartNumber.html"><span class="name">ValidPartNumber</span></a><span class="params">()</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.components.Component$@ValidPartNumberextendsAnyRef" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.components.Component$@ValidPartNumberextendsProductwithSerializable" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -210,7 +210,7 @@
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">PartNumberOrdering</span><span class="result">: <span class="extype" name="scala.Ordering">Ordering</span>[<a href="#PartNumber=eu.timepit.refined.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" class="extmbr" name="org.genivi.sota.resolver.components.Component.PartNumber">PartNumber</a>]</span>
+        <span class="name">PartNumberOrdering</span><span class="result">: <span class="extype" name="scala.Ordering">Ordering</span>[<a href="#PartNumber=eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" class="extmbr" name="org.genivi.sota.resolver.components.Component.PartNumber">PartNumber</a>]</span>
       </span>
       </h4><span class="permalink">
       <a href="../../../../../index.html#org.genivi.sota.resolver.components.Component$@PartNumberOrdering:Ordering[org.genivi.sota.resolver.components.Component.PartNumber]" title="Permalink" target="_top">
@@ -452,18 +452,18 @@
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="org.genivi.sota.resolver.components.Component#validPartNumber" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="validPartNumber:eu.timepit.refined.Predicate[org.genivi.sota.resolver.components.Component.ValidPartNumber,String]"></a>
-      <a id="validPartNumber:Predicate[ValidPartNumber,String]"></a>
+      <a id="validPartNumber:eu.timepit.refined.api.Validate.Plain[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]"></a>
+      <a id="validPartNumber:Plain[String,ValidPartNumber]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">implicit </span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">validPartNumber</span><span class="result">: <span class="extype" name="eu.timepit.refined.Predicate">Predicate</span>[<a href="Component$$ValidPartNumber.html" class="extype" name="org.genivi.sota.resolver.components.Component.ValidPartNumber">ValidPartNumber</a>, <span class="extype" name="scala.Predef.String">String</span>]</span>
+        <span class="name">validPartNumber</span><span class="result">: <span class="extype" name="eu.timepit.refined.api.Validate.Plain">Plain</span>[<span class="extype" name="scala.Predef.String">String</span>, <a href="Component$$ValidPartNumber.html" class="extype" name="org.genivi.sota.resolver.components.Component.ValidPartNumber">ValidPartNumber</a>]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.components.Component$@validPartNumber:eu.timepit.refined.Predicate[org.genivi.sota.resolver.components.Component.ValidPartNumber,String]" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.components.Component$@validPartNumber:eu.timepit.refined.api.Validate.Plain[String,org.genivi.sota.resolver.components.Component.ValidPartNumber]" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>

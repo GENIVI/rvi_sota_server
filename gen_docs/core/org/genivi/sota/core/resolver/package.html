@@ -1,0 +1,244 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>resolver - org.genivi.sota.core.resolver</title>
+          <meta name="description" content="resolver - org.genivi.sota.core.resolver" />
+          <meta name="keywords" content="resolver org.genivi.sota.core.resolver" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../../../index.html';
+            var hash = 'org.genivi.sota.core.resolver.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../../../lib/package_big.png" />
+        <p id="owner"><a href="../../../../package.html" class="extype" name="org">org</a>.<a href="../../../package.html" class="extype" name="org.genivi">genivi</a>.<a href="../../package.html" class="extype" name="org.genivi.sota">sota</a>.<a href="../package.html" class="extype" name="org.genivi.sota.core">core</a></p>
+        <h1>resolver</h1><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.resolver.package" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">resolver</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="org.genivi.sota.core.resolver.Connectivity" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ConnectivityextendsAnyRef"></a>
+      <a id="Connectivity:Connectivity"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Connectivity.html"><span class="name">Connectivity</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.resolver.package@ConnectivityextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.core.resolver.ConnectivityClient" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ConnectivityClientextendsAnyRef"></a>
+      <a id="ConnectivityClient:ConnectivityClient"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ConnectivityClient.html"><span class="name">ConnectivityClient</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.resolver.package@ConnectivityClientextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Abstract interface for sending a message to the backing communication layer.</p>
+    </li><li name="org.genivi.sota.core.resolver.DefaultExternalResolverClient" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DefaultExternalResolverClientextendsExternalResolverClient"></a>
+      <a id="DefaultExternalResolverClient:DefaultExternalResolverClient"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DefaultExternalResolverClient.html"><span class="name">DefaultExternalResolverClient</span></a><span class="result"> extends <a href="ExternalResolverClient.html" class="extype" name="org.genivi.sota.core.resolver.ExternalResolverClient">ExternalResolverClient</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.resolver.package@DefaultExternalResolverClientextendsExternalResolverClient" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">An implementation of the External Resolver that talks via HTTP to the
+external resolver in this project
+</p>
+    </li><li name="org.genivi.sota.core.resolver.ExternalResolverClient" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ExternalResolverClientextendsAnyRef"></a>
+      <a id="ExternalResolverClient:ExternalResolverClient"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="ExternalResolverClient.html"><span class="name">ExternalResolverClient</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.resolver.package@ExternalResolverClientextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.core.resolver.ExternalResolverRequestFailed" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ExternalResolverRequestFailedextendsThrowablewithProductwithSerializable"></a>
+      <a id="ExternalResolverRequestFailed:ExternalResolverRequestFailed"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="ExternalResolverRequestFailed.html"><span class="name">ExternalResolverRequestFailed</span></a><span class="result"> extends <span class="extype" name="scala.Throwable">Throwable</span> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.resolver.package@ExternalResolverRequestFailedextendsThrowablewithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">A wrapper for an error that is thrown when trying to access the External
+Resolver</p>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="org.genivi.sota.core.resolver.DefaultConnectivity" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DefaultConnectivity"></a>
+      <a id="DefaultConnectivity:DefaultConnectivity"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="DefaultConnectivity$.html"><span class="name">DefaultConnectivity</span></a><span class="result"> extends <a href="Connectivity.html" class="extype" name="org.genivi.sota.core.resolver.Connectivity">Connectivity</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.resolver.package@DefaultConnectivity" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.core.resolver.DefaultConnectivityClient" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DefaultConnectivityClient"></a>
+      <a id="DefaultConnectivityClient:DefaultConnectivityClient"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="DefaultConnectivityClient$.html"><span class="name">DefaultConnectivityClient</span></a><span class="result"> extends <a href="ConnectivityClient.html" class="extype" name="org.genivi.sota.core.resolver.ConnectivityClient">ConnectivityClient</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.resolver.package@DefaultConnectivityClient" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.core.resolver.ExternalResolverRequestFailed" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ExternalResolverRequestFailed"></a>
+      <a id="ExternalResolverRequestFailed:ExternalResolverRequestFailed"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="ExternalResolverRequestFailed$.html"><span class="name">ExternalResolverRequestFailed</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.core.resolver.package@ExternalResolverRequestFailed" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Utility functions to create ExternalResolverRequestFailed errors
+</p>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

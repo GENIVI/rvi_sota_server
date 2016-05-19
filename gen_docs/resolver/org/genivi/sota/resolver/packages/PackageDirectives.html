@@ -49,8 +49,7 @@
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>API routes for packages.
-</p></div><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
@@ -90,7 +89,7 @@
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="org.genivi.sota.resolver.packages.PackageDirectives#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;()(implicitdb:slick.jdbc.JdbcBackend.Database,implicitmat:akka.stream.ActorMaterializer,implicitec:scala.concurrent.ExecutionContext):org.genivi.sota.resolver.packages.PackageDirectives"></a>
+      <a id="&lt;init&gt;()(implicitsystem:akka.actor.ActorSystem,implicitdb:slick.jdbc.JdbcBackend.Database,implicitmat:akka.stream.ActorMaterializer,implicitec:scala.concurrent.ExecutionContext):org.genivi.sota.resolver.packages.PackageDirectives"></a>
       <a id="&lt;init&gt;:PackageDirectives"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -98,10 +97,10 @@
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">PackageDirectives</span><span class="params">()</span><span class="params">(<span class="implicit">implicit </span><span name="db">db: <span class="extype" name="slick.jdbc.JdbcBackend.Database">slick.jdbc.JdbcBackend.Database</span></span>, <span name="mat">mat: <span class="extype" name="akka.stream.ActorMaterializer">ActorMaterializer</span></span>, <span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span>
+        <span class="name">PackageDirectives</span><span class="params">()</span><span class="params">(<span class="implicit">implicit </span><span name="system">system: <span class="extype" name="akka.actor.ActorSystem">ActorSystem</span></span>, <span name="db">db: <span class="extype" name="slick.jdbc.JdbcBackend.Database">slick.jdbc.JdbcBackend.Database</span></span>, <span name="mat">mat: <span class="extype" name="akka.stream.ActorMaterializer">ActorMaterializer</span></span>, <span name="ec">ec: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>)</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageDirectives@&lt;init&gt;()(implicitdb:slick.jdbc.JdbcBackend.Database,implicitmat:akka.stream.ActorMaterializer,implicitec:scala.concurrent.ExecutionContext):org.genivi.sota.resolver.packages.PackageDirectives" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageDirectives@&lt;init&gt;()(implicitsystem:akka.actor.ActorSystem,implicitdb:slick.jdbc.JdbcBackend.Database,implicitmat:akka.stream.ActorMaterializer,implicitec:scala.concurrent.ExecutionContext):org.genivi.sota.resolver.packages.PackageDirectives" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -166,6 +165,40 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="org.genivi.sota.resolver.packages.PackageDirectives#addPackage" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="addPackage(ns:org.genivi.sota.data.Namespace.Namespace,id:org.genivi.sota.data.PackageId):akka.http.scaladsl.server.Route"></a>
+      <a id="addPackage(Namespace,PackageId):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addPackage</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="id">id: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageDirectives@addPackage(ns:org.genivi.sota.data.Namespace.Namespace,id:org.genivi.sota.data.PackageId):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.packages.PackageDirectives#addPackageFilter" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="addPackageFilter(ns:org.genivi.sota.data.Namespace.Namespace,id:org.genivi.sota.data.PackageId,fname:eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.filters.Filter.ValidName]):akka.http.scaladsl.server.Route"></a>
+      <a id="addPackageFilter(Namespace,PackageId,Refined[String,ValidName]):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">addPackageFilter</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="id">id: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>, <span name="fname">fname: <span class="extype" name="eu.timepit.refined.api.Refined">Refined</span>[<span class="extype" name="scala.Predef.String">String</span>, <a href="../filters/Filter$$ValidName.html" class="extype" name="org.genivi.sota.resolver.filters.Filter.ValidName">ValidName</a>]</span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageDirectives@addPackageFilter(ns:org.genivi.sota.data.Namespace.Namespace,id:org.genivi.sota.data.PackageId,fname:eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.filters.Filter.ValidName]):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -206,6 +239,23 @@
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="org.genivi.sota.resolver.packages.PackageDirectives#deletePackageFilter" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="deletePackageFilter(ns:org.genivi.sota.data.Namespace.Namespace,id:org.genivi.sota.data.PackageId,fname:eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.filters.Filter.ValidName]):akka.http.scaladsl.server.Route"></a>
+      <a id="deletePackageFilter(Namespace,PackageId,Refined[String,ValidName]):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">deletePackageFilter</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="id">id: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>, <span name="fname">fname: <span class="extype" name="eu.timepit.refined.api.Refined">Refined</span>[<span class="extype" name="scala.Predef.String">String</span>, <a href="../filters/Filter$$ValidName.html" class="extype" name="org.genivi.sota.resolver.filters.Filter.ValidName">ValidName</a>]</span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageDirectives@deletePackageFilter(ns:org.genivi.sota.data.Namespace.Namespace,id:org.genivi.sota.data.PackageId,fname:eu.timepit.refined.api.Refined[String,org.genivi.sota.resolver.filters.Filter.ValidName]):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
@@ -280,6 +330,57 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="org.genivi.sota.resolver.packages.PackageDirectives#getFilters" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getFilters:akka.http.scaladsl.server.StandardRoute"></a>
+      <a id="getFilters:StandardRoute"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getFilters</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.StandardRoute">StandardRoute</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageDirectives@getFilters:akka.http.scaladsl.server.StandardRoute" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.packages.PackageDirectives#getPackage" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getPackage(ns:org.genivi.sota.data.Namespace.Namespace,id:org.genivi.sota.data.PackageId):akka.http.scaladsl.server.Route"></a>
+      <a id="getPackage(Namespace,PackageId):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getPackage</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="id">id: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageDirectives@getPackage(ns:org.genivi.sota.data.Namespace.Namespace,id:org.genivi.sota.data.PackageId):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.packages.PackageDirectives#getPackageFilters" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getPackageFilters(ns:org.genivi.sota.data.Namespace.Namespace,id:org.genivi.sota.data.PackageId):akka.http.scaladsl.server.Route"></a>
+      <a id="getPackageFilters(Namespace,PackageId):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getPackageFilters</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="id">id: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageDirectives@getPackageFilters(ns:org.genivi.sota.data.Namespace.Namespace,id:org.genivi.sota.data.PackageId):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
       <a id="hashCode():Int"></a>
@@ -365,6 +466,40 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="org.genivi.sota.resolver.packages.PackageDirectives#ok" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ok:akka.http.scaladsl.server.StandardRoute"></a>
+      <a id="ok:StandardRoute"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ok</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.StandardRoute">StandardRoute</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageDirectives@ok:akka.http.scaladsl.server.StandardRoute" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.resolver.packages.PackageDirectives#packageFilterApi" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="packageFilterApi(ns:org.genivi.sota.data.Namespace.Namespace,id:org.genivi.sota.data.PackageId):akka.http.scaladsl.server.Route"></a>
+      <a id="packageFilterApi(Namespace,PackageId):Route"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">packageFilterApi</span><span class="params">(<span name="ns">ns: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="id">id: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>)</span><span class="result">: <span class="extype" name="akka.http.scaladsl.server.Route">Route</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.PackageDirectives@packageFilterApi(ns:org.genivi.sota.data.Namespace.Namespace,id:org.genivi.sota.data.PackageId):akka.http.scaladsl.server.Route" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="org.genivi.sota.resolver.packages.PackageDirectives#route" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="route:akka.http.scaladsl.server.Route"></a>
       <a id="route:Route"></a>
@@ -381,7 +516,8 @@
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">API route for packages.</p><div class="fullcomment"><div class="comment cmt"><p>API route for packages.</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>Route object containing route for adding packages</p></dd></dl></div>
+      <p class="shortcomment cmt">API route for packages.</p><div class="fullcomment"><div class="comment cmt"><p>API route for packages.
+</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>Route object containing route for adding packages</p></dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
       <a id="synchronized[T0](⇒T0):T0"></a>

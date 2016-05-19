@@ -47,7 +47,7 @@
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">Package</span><span class="params">(<span name="id">id: <a href="Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">Package.Id</a></span>, <span name="description">description: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="vendor">vendor: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <span class="name">Package</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="id">id: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>, <span name="description">description: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="vendor">vendor: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
@@ -93,7 +93,7 @@ Packages have an id, a String description and a String vendor
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
               <ol><li name="org.genivi.sota.resolver.packages.Package#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(id:org.genivi.sota.resolver.packages.Package.Id,description:Option[String],vendor:Option[String]):org.genivi.sota.resolver.packages.Package"></a>
+      <a id="&lt;init&gt;(namespace:org.genivi.sota.data.Namespace.Namespace,id:org.genivi.sota.data.PackageId,description:Option[String],vendor:Option[String]):org.genivi.sota.resolver.packages.Package"></a>
       <a id="&lt;init&gt;:Package"></a>
       <h4 class="signature">
       <span class="modifier_kind">
@@ -101,10 +101,10 @@ Packages have an id, a String description and a String vendor
         <span class="kind">new</span>
       </span>
       <span class="symbol">
-        <span class="name">Package</span><span class="params">(<span name="id">id: <a href="Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">Package.Id</a></span>, <span name="description">description: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="vendor">vendor: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span>
+        <span class="name">Package</span><span class="params">(<span name="namespace">namespace: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>, <span name="id">id: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>, <span name="description">description: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="vendor">vendor: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package@&lt;init&gt;(id:org.genivi.sota.resolver.packages.Package.Id,description:Option[String],vendor:Option[String]):org.genivi.sota.resolver.packages.Package" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package@&lt;init&gt;(namespace:org.genivi.sota.data.Namespace.Namespace,id:org.genivi.sota.data.PackageId,description:Option[String],vendor:Option[String]):org.genivi.sota.resolver.packages.Package" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -284,18 +284,18 @@ Packages have an id, a String description and a String vendor
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="org.genivi.sota.resolver.packages.Package#id" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="id:org.genivi.sota.resolver.packages.Package.Id"></a>
-      <a id="id:Package.Id"></a>
+      <a id="id:org.genivi.sota.data.PackageId"></a>
+      <a id="id:PackageId"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">val</span>
       </span>
       <span class="symbol">
-        <span class="name">id</span><span class="result">: <a href="Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.resolver.packages.Package.Id">Package.Id</a></span>
+        <span class="name">id</span><span class="result">: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package@id:org.genivi.sota.resolver.packages.Package.Id" title="Permalink" target="_top">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package@id:org.genivi.sota.data.PackageId" title="Permalink" target="_top">
         <img src="../../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -317,6 +317,23 @@ Packages have an id, a String description and a String vendor
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="org.genivi.sota.resolver.packages.Package#namespace" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="namespace:org.genivi.sota.data.Namespace.Namespace"></a>
+      <a id="namespace:Namespace"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">namespace</span><span class="result">: <span class="extype" name="org.genivi.sota.data.Namespace.Namespace">Namespace</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../../index.html#org.genivi.sota.resolver.packages.Package@namespace:org.genivi.sota.data.Namespace.Namespace" title="Permalink" target="_top">
+        <img src="../../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>

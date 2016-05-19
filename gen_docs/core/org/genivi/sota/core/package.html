@@ -66,60 +66,40 @@
 
         <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li name="org.genivi.sota.core.DefaultExternalResolverClient" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="DefaultExternalResolverClientextendsExternalResolverClient"></a>
-      <a id="DefaultExternalResolverClient:DefaultExternalResolverClient"></a>
+              <ol><li name="org.genivi.sota.core.DigestCalculator" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DigestCalculatorextendsGraphStage[akka.stream.FlowShape[akka.util.ByteString,String]]"></a>
+      <a id="DigestCalculator:DigestCalculator"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="DefaultExternalResolverClient.html"><span class="name">DefaultExternalResolverClient</span></a><span class="result"> extends <a href="ExternalResolverClient.html" class="extype" name="org.genivi.sota.core.ExternalResolverClient">ExternalResolverClient</a></span>
+        <a href="DigestCalculator.html"><span class="name">DigestCalculator</span></a><span class="result"> extends <span class="extype" name="akka.stream.stage.GraphStage">GraphStage</span>[<span class="extype" name="akka.stream.FlowShape">FlowShape</span>[<span class="extype" name="akka.util.ByteString">ByteString</span>, <span class="extype" name="scala.Predef.String">String</span>]]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../index.html#org.genivi.sota.core.package@DefaultExternalResolverClientextendsExternalResolverClient" title="Permalink" target="_top">
-        <img src="../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      <p class="shortcomment cmt">An implementation of the External Resolver that talks via HTTP to the
-external resolver in this project
-</p>
-    </li><li name="org.genivi.sota.core.ExternalResolverClient" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
-      <a id="ExternalResolverClientextendsAnyRef"></a>
-      <a id="ExternalResolverClient:ExternalResolverClient"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">trait</span>
-      </span>
-      <span class="symbol">
-        <a href="ExternalResolverClient.html"><span class="name">ExternalResolverClient</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../index.html#org.genivi.sota.core.package@ExternalResolverClientextendsAnyRef" title="Permalink" target="_top">
+      <a href="../../../../index.html#org.genivi.sota.core.package@DigestCalculatorextendsGraphStage[akka.stream.FlowShape[akka.util.ByteString,String]]" title="Permalink" target="_top">
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
       
-    </li><li name="org.genivi.sota.core.ExternalResolverRequestFailed" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="ExternalResolverRequestFailedextendsThrowablewithProductwithSerializable"></a>
-      <a id="ExternalResolverRequestFailed:ExternalResolverRequestFailed"></a>
+    </li><li name="org.genivi.sota.core.HistoryResource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HistoryResourceextendsDirectives"></a>
+      <a id="HistoryResource:HistoryResource"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
-        <span class="kind">case class</span>
+        <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a href="ExternalResolverRequestFailed.html"><span class="name">ExternalResolverRequestFailed</span></a><span class="result"> extends <span class="extype" name="scala.Throwable">Throwable</span> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="HistoryResource.html"><span class="name">HistoryResource</span></a><span class="result"> extends <span class="extype" name="akka.http.scaladsl.server.Directives">Directives</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../index.html#org.genivi.sota.core.package@ExternalResolverRequestFailedextendsThrowablewithProductwithSerializable" title="Permalink" target="_top">
+      <a href="../../../../index.html#org.genivi.sota.core.package@HistoryResourceextendsDirectives" title="Permalink" target="_top">
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">A wrapper for an error that is thrown when trying to access the External
-Resolver</p>
+      
     </li><li name="org.genivi.sota.core.PackagesNotFound" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="PackagesNotFoundextendsThrowablewithNoStackTracewithProductwithSerializable"></a>
       <a id="PackagesNotFound:PackagesNotFound"></a>
@@ -129,7 +109,7 @@ Resolver</p>
         <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <a href="PackagesNotFound.html"><span class="name">PackagesNotFound</span></a><span class="params">(<span name="packageIds">packageIds: <a href="data/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">data.Package.Id</a>*</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="show">show: <span class="extype" name="cats.Show">Show</span>[<a href="data/Package$.html#IdextendsProductwithSerializable" class="extmbr" name="org.genivi.sota.core.data.Package.Id">data.Package.Id</a>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Throwable">Throwable</span> with <span class="extype" name="scala.util.control.NoStackTrace">NoStackTrace</span> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="PackagesNotFound.html"><span class="name">PackagesNotFound</span></a><span class="params">(<span name="packageIds">packageIds: <span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span>*</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="show">show: <span class="extype" name="cats.Show">Show</span>[<span class="extype" name="org.genivi.sota.data.PackageId">PackageId</span>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Throwable">Throwable</span> with <span class="extype" name="scala.util.control.NoStackTrace">NoStackTrace</span> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4><span class="permalink">
       <a href="../../../../index.html#org.genivi.sota.core.package@PackagesNotFoundextendsThrowablewithNoStackTracewithProductwithSerializable" title="Permalink" target="_top">
@@ -205,6 +185,23 @@ Resolver</p>
       </a>
     </span>
       
+    </li><li name="org.genivi.sota.core.VehicleUpdatesResource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="VehicleUpdatesResourceextendsDirectives"></a>
+      <a id="VehicleUpdatesResource:VehicleUpdatesResource"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="VehicleUpdatesResource.html"><span class="name">VehicleUpdatesResource</span></a><span class="result"> extends <span class="extype" name="akka.http.scaladsl.server.Directives">Directives</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#org.genivi.sota.core.package@VehicleUpdatesResourceextendsDirectives" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="org.genivi.sota.core.VehiclesResource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="VehiclesResourceextendsAnyRef"></a>
       <a id="VehiclesResource:VehiclesResource"></a>
@@ -263,6 +260,40 @@ Resolver</p>
       </a>
     </span>
       
+    </li><li name="org.genivi.sota.core.BuildInfo" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="BuildInfo"></a>
+      <a id="BuildInfo:BuildInfo"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="BuildInfo$.html"><span class="name">BuildInfo</span></a><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#org.genivi.sota.core.package@BuildInfo" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This object was generated by sbt-buildinfo.</p>
+    </li><li name="org.genivi.sota.core.DigestCalculator" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DigestCalculator"></a>
+      <a id="DigestCalculator:DigestCalculator"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="DigestCalculator$.html"><span class="name">DigestCalculator</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#org.genivi.sota.core.package@DigestCalculator" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="org.genivi.sota.core.ErrorCodes" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="ErrorCodes"></a>
       <a id="ErrorCodes:ErrorCodes"></a>
@@ -280,24 +311,40 @@ Resolver</p>
       </a>
     </span>
       
-    </li><li name="org.genivi.sota.core.ExternalResolverRequestFailed" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="ExternalResolverRequestFailed"></a>
-      <a id="ExternalResolverRequestFailed:ExternalResolverRequestFailed"></a>
+    </li><li name="org.genivi.sota.core.ErrorHandler" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ErrorHandler"></a>
+      <a id="ErrorHandler:ErrorHandler"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="ExternalResolverRequestFailed$.html"><span class="name">ExternalResolverRequestFailed</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="ErrorHandler$.html"><span class="name">ErrorHandler</span></a>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../index.html#org.genivi.sota.core.package@ExternalResolverRequestFailed" title="Permalink" target="_top">
+      <a href="../../../../index.html#org.genivi.sota.core.package@ErrorHandler" title="Permalink" target="_top">
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Utility functions to create ExternalResolverRequestFailed errors
-</p>
+      
+    </li><li name="org.genivi.sota.core.PackagesResource" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PackagesResource"></a>
+      <a id="PackagesResource:PackagesResource"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="PackagesResource$.html"><span class="name">PackagesResource</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#org.genivi.sota.core.package@PackagesResource" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="org.genivi.sota.core.UpdateService" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="UpdateService"></a>
       <a id="UpdateService:UpdateService"></a>
@@ -328,6 +375,40 @@ Resolver</p>
       </span>
       </h4><span class="permalink">
       <a href="../../../../index.html#org.genivi.sota.core.package@UploadConf" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.core.WebService" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="WebService"></a>
+      <a id="WebService:WebService"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="WebService$.html"><span class="name">WebService</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#org.genivi.sota.core.package@WebService" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.core.common" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="common"></a>
+      <a id="common:common"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="common/package.html"><span class="name">common</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#org.genivi.sota.core.package@common" title="Permalink" target="_top">
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
@@ -400,6 +481,23 @@ Resolver</p>
       </a>
     </span>
       
+    </li><li name="org.genivi.sota.core.resolver" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="resolver"></a>
+      <a id="resolver:resolver"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="resolver/package.html"><span class="name">resolver</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#org.genivi.sota.core.package@resolver" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
     </li><li name="org.genivi.sota.core.rvi" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="rvi"></a>
       <a id="rvi:rvi"></a>
@@ -413,6 +511,23 @@ Resolver</p>
       </span>
       </h4><span class="permalink">
       <a href="../../../../index.html#org.genivi.sota.core.package@rvi" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li><li name="org.genivi.sota.core.storage" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="storage"></a>
+      <a id="storage:storage"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="storage/package.html"><span class="name">storage</span></a>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#org.genivi.sota.core.package@storage" title="Permalink" target="_top">
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
