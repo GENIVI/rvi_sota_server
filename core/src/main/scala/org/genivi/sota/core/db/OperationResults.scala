@@ -75,8 +75,8 @@ object OperationResults {
     * @param vin The VIN for which all OperationResults should be returned
     * @return all OperationResults associated with the given VIN
     */
-  def byVin(ns: Namespace, vin: Vehicle.Vin)(implicit ec: ExecutionContext): DBIO[Seq[OperationResult]] =
-    all.filter(r => r.namespace === ns && r.vin === vin).result
+  def byVin(vin: Vehicle.Vin)(implicit ec: ExecutionContext): DBIO[Seq[OperationResult]] =
+    all.filter(_.vin === vin).result
 
   /**
    * Add a new package update. Package updated specify a specific package at a

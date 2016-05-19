@@ -89,10 +89,10 @@ object Vehicles {
   def searchByRegex(ns: Namespace, reg:String): Query[VehicleTable, Vehicle, Seq] =
     all(ns).filter(v => regex(v.vin, reg))
 
-  def updateLastSeen(vehicle: Vehicle, lastSeen: DateTime = DateTime.now)
+  def updateLastSeen(vin: Vehicle.Vin, lastSeen: DateTime = DateTime.now)
                     (implicit ec: ExecutionContext): DBIO[DateTime] = {
     vehicles
-      .filter(v => v.namespace === vehicle.namespace && v.vin === vehicle.vin)
+      .filter(_.vin === vin)
       .map(_.lastSeen)
       .update(Some(lastSeen))
       .map(_ => lastSeen)
