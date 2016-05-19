@@ -9,7 +9,8 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.packages.{Package, PackageFilter}
-import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
+import org.genivi.sota.resolver.test.generators.{FilterGenerators, PackageGenerators}
+import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 
 
 /**
@@ -152,7 +153,7 @@ class ResolveResourcePropSpec extends ResourcePropSpec {
   import io.circe.generic.auto._
   import org.genivi.sota.data.VehicleGenerators._
   import PackageGenerators._
-  import org.genivi.sota.resolver.test.FilterGenerators._
+  import FilterGenerators._
 
   ignore("Resolve should give back the same thing as if we filtered with the filters") {
 
