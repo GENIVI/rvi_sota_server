@@ -18,7 +18,6 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 import akka.http.scaladsl.unmarshalling._
 
-
 import scala.concurrent.Future
 
 class UpdateRequestResourceSpec extends FunSuite
@@ -27,7 +26,7 @@ class UpdateRequestResourceSpec extends FunSuite
   with UpdateResourcesDatabaseSpec
   with ScalaFutures
   with DatabaseSpec
-  with DefaultDBPatience {
+  with DefaultPatience {
 
   import CirceMarshallingSupport._
   import UpdateSpec._

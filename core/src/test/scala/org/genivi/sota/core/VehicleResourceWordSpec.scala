@@ -20,6 +20,7 @@ import org.genivi.sota.data.Vehicle
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.{Matchers, WordSpec}
+
 import scala.concurrent.Await
 import slick.driver.MySQLDriver.api._
 
@@ -28,14 +29,12 @@ import slick.driver.MySQLDriver.api._
  * WordSpec for VIN REST actions
  */
 class VinResourceWordSpec extends WordSpec
-    with Matchers
-    with ScalatestRouteTest
-    with BeforeAndAfterAll {
+  with Matchers
+  with ScalatestRouteTest
+  with DatabaseSpec
+  with BeforeAndAfterAll {
 
   import CirceMarshallingSupport._
-
-  val databaseName = "test-database"
-  val db = Database.forConfig(databaseName)
 
   val rviUri = Uri(system.settings.config.getString( "rvi.endpoint" ))
   val serverTransport = HttpTransport( rviUri )
@@ -47,7 +46,7 @@ class VinResourceWordSpec extends WordSpec
   val testVins = List("12345678901234500", "1234567WW0123AAAA", "123456789012345WW")
 
   override def beforeAll() : Unit = {
-    TestDatabase.resetDatabase( databaseName )
+    super.beforeAll()
     import scala.concurrent.duration._
     Await.ready(
       db.run( DBIO.seq( testVins.map( v => Vehicles.create(Vehicle(testNs, Refined.unsafeApply(v)))): _*) ), 2.seconds
@@ -105,7 +104,7 @@ class VinResourceWordSpec extends WordSpec
 
   override def afterAll() : Unit = {
     system.terminate()
-    db.close()
+    super.afterAll()
   }
 
 }

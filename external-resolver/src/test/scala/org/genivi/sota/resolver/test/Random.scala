@@ -13,10 +13,12 @@ import Session._
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.rest.ErrorRepresentation
+import org.scalatest.Tag
 
 import scala.annotation.tailrec
 import scala.concurrent.duration._
 
+object RandomTest extends Tag("RandomTest")
 
 /**
   *  Regarding test coverage: This test runs until each REST endpoint has been exercised at least once.
@@ -82,7 +84,7 @@ class Random extends ResourcePropSpec {
   // accumulates test-coverage across all session
   var accCoverage = SessionCoverage.emptyCoverageInfo
 
-  property("Sessions") {
+  property("Sessions", RandomTest) {
     do {
       forAll { sesh: Session =>
         accCoverage = accCoverage.merge(sesh.coverageInfo)
@@ -93,5 +95,4 @@ class Random extends ResourcePropSpec {
     info("Coverage:")
     accCoverage.prettyPrint(s.qryAggregates).foreach(info(_))
   }
-
 }

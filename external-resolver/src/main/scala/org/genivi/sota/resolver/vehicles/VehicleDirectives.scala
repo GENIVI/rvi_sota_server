@@ -28,7 +28,7 @@ import org.genivi.sota.rest.Validation._
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 import scala.concurrent.ExecutionContext
 import slick.dbio.{DBIOAction, DBIO}
-import slick.jdbc.JdbcBackend.Database
+import slick.driver.MySQLDriver.api._
 
 
 /**

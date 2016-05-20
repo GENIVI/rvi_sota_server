@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.core.db
 
-import org.genivi.sota.core.{DatabaseSpec, DefaultDBPatience, UpdateResourcesDatabaseSpec}
+import org.genivi.sota.core.{DatabaseSpec, DefaultPatience, UpdateResourcesDatabaseSpec}
 import org.joda.time.DateTime
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
@@ -16,7 +16,7 @@ class UpdateSpecsSpec extends FunSuite
   with UpdateResourcesDatabaseSpec
   with ScalaFutures
   with DatabaseSpec
-  with DefaultDBPatience
+  with DefaultPatience
    {
 
   import UpdateSpecs._

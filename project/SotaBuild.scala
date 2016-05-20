@@ -18,6 +18,8 @@ object SotaBuild extends Build {
 
   lazy val BrowserTests = config("bt") extend Test
 
+  lazy val RandomTests = config("rd") extend Test
+
   lazy val basicSettings = Seq(
     organization := "org.genivi",
     scalaVersion := "2.11.7",
@@ -28,7 +30,7 @@ object SotaBuild extends Build {
 
     testOptions in Test ++= Seq(
       Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
-      Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
+      Tests.Argument(TestFrameworks.ScalaTest, "-oDS")
     ),
 
     testFrameworks := Seq(sbt.TestFrameworks.ScalaTest),
@@ -73,16 +75,28 @@ object SotaBuild extends Build {
     .dependsOn(commonData)
     .settings(Publish.settings)
 
+  lazy val commonDbTest = Project(id = "sota-common-db-test", base = file("common-db-test"))
+    .settings(basicSettings ++ compilerSettings)
+    .settings(libraryDependencies ++= Dependencies.Slick :+ Dependencies.Flyway :+ Dependencies.ScalaTestLib)
+    .dependsOn(commonData, commonTest)
+    .settings(Publish.settings)
+
   lazy val externalResolver = Project(id = "sota-resolver", base = file("external-resolver"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
       libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.ParserCombinators :+ Dependencies.Flyway,
-      parallelExecution in Test := false,
+      testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RandomTest"),
+      testOptions in RandomTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RandomTest"),
+      parallelExecution in Test := true,
       dockerExposedPorts := Seq(8081),
       flywayUrl := sys.env.get("RESOLVER_DB_URL").orElse( sys.props.get("resolver.db.url") ).getOrElse("jdbc:mysql://localhost:3306/sota_resolver"),
       flywayUser := sys.env.get("RESOLVER_DB_USER").orElse( sys.props.get("resolver.db.user") ).getOrElse("sota"),
       flywayPassword := sys.env.get("RESOLVER_DB_PASSWORD").orElse( sys.props.get("resolver.db.password")).getOrElse("s0ta")
     ))
-    .dependsOn(common, commonData, commonTest % "test")
+    .settings(inConfig(RandomTests)(Defaults.testTasks): _*)
+    .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
+    .configs(RandomTests)
+    .configs(UnitTests)
+    .dependsOn(common, commonData, commonTest % "test", commonDbTest % "test")
     .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
     .enablePlugins(BuildInfoPlugin)
     .settings(Publish.settings)
@@ -92,7 +106,7 @@ object SotaBuild extends Build {
       libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.NscalaTime :+ Dependencies.Scalaz :+ Dependencies.Flyway :+ Dependencies.AmazonS3,
       testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RequiresRvi", "-l", "IntegrationTest"),
       testOptions in IntegrationTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RequiresRvi", "-n", "IntegrationTest"),
-      parallelExecution in Test := false,
+      parallelExecution in Test := true,
       dockerExposedPorts := Seq(8080),
       flywayUrl := sys.env.get("CORE_DB_URL").orElse( sys.props.get("core.db.url") ).getOrElse("jdbc:mysql://localhost:3306/sota_core"),
       flywayUser := sys.env.get("CORE_DB_USER").orElse( sys.props.get("core.db.user") ).getOrElse("sota"),
@@ -101,7 +115,7 @@ object SotaBuild extends Build {
     .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
     .settings(inConfig(IntegrationTests)(Defaults.testTasks): _*)
     .configs(IntegrationTests, UnitTests)
-    .dependsOn(common, commonData, commonTest % "test")
+    .dependsOn(common, commonData, commonTest % "test", commonDbTest % "test")
     .enablePlugins(Packaging.plugins: _*)
     .enablePlugins(BuildInfoPlugin)
     .settings(Publish.settings)
@@ -202,7 +216,9 @@ object Dependencies {
   lazy val Scalaz = "org.scalaz" %% "scalaz-core" % "7.1.3"
   lazy val Cats   = "org.spire-math" %% "cats" % "0.3.0"
 
-  lazy val ScalaTest = "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test"
+  lazy val ScalaTestLib = "org.scalatest" %% "scalatest" % "2.2.4"
+
+  lazy val ScalaTest = ScalaTestLib % "test"
 
   lazy val ScalaCheck = "org.scalacheck" %% "scalacheck" % "1.12.4" % "test"
 

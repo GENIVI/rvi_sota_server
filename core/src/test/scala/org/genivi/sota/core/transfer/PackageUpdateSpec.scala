@@ -11,14 +11,13 @@ import akka.stream.ActorMaterializer
 import akka.testkit.{TestKit, TestProbe}
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.refineV
-import org.genivi.sota.core.Generators
+import org.genivi.sota.core._
 import org.genivi.sota.core.Generators.updateRequestGen
 import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateSpec}
 import org.genivi.sota.core.db.{Packages, Vehicles}
 import org.genivi.sota.core.jsonrpc.HttpTransport
 import org.genivi.sota.core.resolver.DefaultExternalResolverClient
 import org.genivi.sota.core.rvi._
-import org.genivi.sota.core.{PackagesReader, RequiresRvi, TestDatabase, UpdateService}
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{Namespaces, PackageId, Vehicle}
 import org.joda.time.DateTime
@@ -27,6 +26,7 @@ import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
+
 import scala.concurrent.{Await, ExecutionContext, Future}
 import slick.jdbc.JdbcBackend.Database
 
@@ -161,15 +161,14 @@ object SotaClient {
  * Generic trait for SOTA Core tests. Includes dummy RVI service routes.
  */
 trait SotaCore {
+  self: DatabaseSpec =>
+
   import org.genivi.sota.core.rvi.{TransferProtocolActor, PackageTransferActor,
     UpdateController, JsonRpcRviClient, RviConnectivity}
 
   implicit val system = akka.actor.ActorSystem("PackageUpdateSpec")
   implicit val materilizer = akka.stream.ActorMaterializer()
   implicit val exec = system.dispatcher
-
-  val databaseName = "test-database"
-  implicit val db = Database.forConfig(databaseName)
 
   implicit val connectivity = new RviConnectivity
 
@@ -192,12 +191,13 @@ class PackageUpdateSpec extends PropSpec
   with Matchers
   with BeforeAndAfterAll
   with SotaCore
+  with DatabaseSpec
   with Namespaces {
 
   import DataGenerators._
 
   override def beforeAll() : Unit = {
-    TestDatabase.resetDatabase( databaseName )
+    super.beforeAll()
     import scala.concurrent.duration.DurationInt
     Await.ready( Future.sequence( packages.map( p => db.run( Packages.create(p) ) )), 50.seconds)
   }
@@ -205,6 +205,8 @@ class PackageUpdateSpec extends PropSpec
   def init(services: ServerServices,
            generatedData: Map[UpdateRequest, UpdateService.VinsToPackages]): Future[Set[UpdateSpec]] = {
     import slick.driver.MySQLDriver.api._
+
+    implicit val _db = db
 
     val notifier = new RviUpdateNotifier(services)
     val updateService = new UpdateService(notifier)(system, connectivity)
@@ -258,7 +260,6 @@ class PackageUpdateSpec extends PropSpec
   }
 
   override def afterAll(): Unit = {
-    db.close()
     TestKit.shutdownActorSystem(system)
   }
 
