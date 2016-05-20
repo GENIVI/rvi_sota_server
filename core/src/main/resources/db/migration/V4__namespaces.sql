@@ -56,4 +56,3 @@ ADD FOREIGN KEY fk_downloads_package (namespace, package_name, package_version) 
 ALTER TABLE InstallHistory
 ADD FOREIGN KEY install_history_vin_fk (namespace, vin) REFERENCES Vehicle(namespace, vin),
 ADD FOREIGN KEY install_history_package_id_fk (namespace, packageName, packageVersion) REFERENCES Package(namespace, name, version);
-
