@@ -10,9 +10,12 @@ import akka.http.scaladsl.model.Uri
 import cats.data.Xor
 import eu.timepit.refined.refineV
 import eu.timepit.refined.api.{Refined, Validate}
-import io.circe.{DecodingFailure, Json, Encoder, Decoder}
-import org.joda.time.{Interval, DateTime}
-import org.joda.time.format.ISODateTimeFormat
+import io.circe._
+import org.joda.time.{DateTime, Interval}
+import org.joda.time.format.{DateTimeFormatter, ISODateTimeFormat}
+
+import scala.annotation.tailrec
+import scala.util.{Failure, Success, Try}
 
 /**
   * Some datatypes we use don't have predefined JSON encoders and
@@ -31,14 +34,15 @@ trait CirceInstances {
         case Right(r) => r
       })
 
-  implicit def mapDecoder[K, V](implicit keyDecoder: Decoder[K], valueDecoder: Decoder[V]): Decoder[Map[K, V]] =
+  implicit def refinedMapDecoder[K <: Refined[_, _], V]
+  (implicit keyDecoder: Decoder[K], valueDecoder: Decoder[V]): Decoder[Map[K, V]] =
     Decoder[Seq[(K, V)]].map(_.toMap)
 
   implicit def refinedEncoder[T, P](implicit encoder: Encoder[T]): Encoder[Refined[T, P]] =
     encoder.contramap(_.get)
 
   implicit val uriEncoder : Encoder[Uri] = Encoder.instance { uri =>
-    Json.obj(("uri", Json.string(uri.toString())))
+    Json.obj(("uri", Json.fromString(uri.toString())))
   }
 
   implicit val uriDecoder : Decoder[Uri] = Decoder.instance { c =>
@@ -55,25 +59,37 @@ trait CirceInstances {
   implicit val uuidDecoder : Decoder[UUID] = Decoder[String].map(UUID.fromString)
 
   implicit val dateTimeEncoder : Encoder[DateTime] =
-    Encoder.instance[DateTime]( x =>  Json.string( ISODateTimeFormat.dateTime().print(x)) )
+    Encoder.instance[DateTime]( x =>  Json.fromString( ISODateTimeFormat.dateTime().print(x)) )
 
   implicit val dateTimeDecoder : Decoder[DateTime] = Decoder.instance { c =>
     c.focus.asString match {
       case None       => Xor.left(DecodingFailure("DataTime", c.history))
-      case Some(date) => try { Xor.right(ISODateTimeFormat.dateTimeNoMillis().parseDateTime(date)) }
-      catch {
-        case _: IllegalArgumentException => Xor.left(DecodingFailure("DateTime", c.history))
-      }
+      case Some(date) =>
+        val parsers = List(ISODateTimeFormat.dateTimeNoMillis(), ISODateTimeFormat.dateTime())
+        tryParsers(date, parsers, DecodingFailure("DateTime", c.history))
+    }
+  }
+
+  @tailrec
+  private def tryParsers(string: String, parsers: List[DateTimeFormatter],
+                         error: DecodingFailure): Xor[DecodingFailure, DateTime] = {
+    parsers match {
+      case parser :: otherParsers =>
+        try { Xor.right(parser.parseDateTime(string)) }
+        catch {
+          case t: IllegalArgumentException =>
+            tryParsers(string, otherParsers, error)
+        }
+      case Nil => Xor.left(error)
     }
   }
 
   implicit val intervalEncoder : Encoder[Interval] = Encoder[String].contramap(_.toString)
   implicit val intervalDecoder : Decoder[Interval] = Decoder[String].map(Interval.parse)
 
-  implicit def mapEncoder[K, V](implicit keyEncoder: Encoder[K], valueEncoder: Encoder[V]): Encoder[Map[K, V]] =
+  implicit def mapRefinedEncoder[K <: Refined[_, _], V]
+  (implicit keyEncoder: Encoder[K], valueEncoder: Encoder[V]): Encoder[Map[K, V]] =
     Encoder[Seq[(K, V)]].contramap((m: Map[K, V]) => m.toSeq)
-
-
 }
 
 object CirceInstances extends CirceInstances

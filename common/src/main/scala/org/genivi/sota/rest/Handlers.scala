@@ -7,9 +7,9 @@ package org.genivi.sota.rest
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server._
+import de.heikoseeberger.akkahttpcirce.CirceSupport._
 import io.circe.generic.auto._
-import org.genivi.sota.marshalling.{RefinementError, CirceMarshallingSupport}
-import CirceMarshallingSupport._
+import org.genivi.sota.marshalling.RefinementError
 
 /**
   * When validation, JSON deserialisation fail or a duplicate entry

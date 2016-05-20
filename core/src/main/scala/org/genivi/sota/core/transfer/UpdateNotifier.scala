@@ -5,15 +5,17 @@
 package org.genivi.sota.core.transfer
 
 import akka.event.LoggingAdapter
-import io.circe.Json
 import java.util.UUID
-import org.genivi.sota.core.data.{Vehicle, Package, UpdateSpec}
-import org.genivi.sota.core.rvi.{RviClient,ServerServices}
-import org.genivi.sota.datatype.PackageCommon
-import org.joda.time.DateTime
-import scala.concurrent.ExecutionContext
 
-import scala.concurrent.Future
+import org.genivi.sota.core.data.UpdateSpec
+import org.genivi.sota.core.data.{Package, UpdateSpec}
+import org.genivi.sota.core.resolver.Connectivity
+import org.genivi.sota.core.rvi.ServerServices
+import org.genivi.sota.data.Vehicle
+import org.joda.time.DateTime
+
+import scala.concurrent.{ExecutionContext, Future}
+
 
 case class PackageUpdate(update_id: UUID,
                          signature: String,
@@ -23,14 +25,14 @@ case class PackageUpdate(update_id: UUID,
 
 object PackageUpdate {
 
-  import io.circe.{Encoder, Decoder}
   import io.circe.generic.semiauto._
+  import io.circe.{Decoder, Encoder}
 
   implicit val encoder: Encoder[PackageUpdate] =
-    deriveFor[PackageUpdate].encoder
+    deriveEncoder[PackageUpdate]
 
   implicit val decoder: Decoder[PackageUpdate] =
-    deriveFor[PackageUpdate].decoder
+    deriveDecoder[PackageUpdate]
 
 }
 
@@ -38,39 +40,35 @@ case class UpdateNotification(update_available: PackageUpdate, services: ServerS
 
 object UpdateNotification {
 
-  import io.circe.{Encoder, Decoder}
   import io.circe.generic.semiauto._
+  import io.circe.{Decoder, Encoder}
 
   implicit val encoder: Encoder[UpdateNotification] =
-    deriveFor[UpdateNotification].encoder
+    deriveEncoder[UpdateNotification]
 
   implicit val decoder: Decoder[UpdateNotification] =
-    deriveFor[UpdateNotification].decoder
+    deriveDecoder[UpdateNotification]
 
   implicit val encoderServerServices: Encoder[ServerServices] =
-    deriveFor[ServerServices].encoder
+    deriveEncoder[ServerServices]
 
   implicit val decoderServerServices: Decoder[ServerServices] =
-    deriveFor[ServerServices].decoder
+    deriveDecoder[ServerServices]
 
 }
 
-/**
- * Send a notification to SOTA clients via RVI that there are packages that
- * can/should be updated.
- */
-object UpdateNotifier {
-
-  import io.circe.generic.auto._
+trait UpdateNotifier {
 
   /**
-   * Notify all the vehicles in an updated that an update is ready
+   * Notify all the vehicles that an update is ready
    * @param updateSpecs A set of updates
    */
-  def notify(updateSpecs: Seq[UpdateSpec], services: ServerServices)
-            (implicit rviClient: RviClient, ec: ExecutionContext, log: LoggingAdapter): Iterable[Future[Int]] = {
+  def notify(updateSpecs: Seq[UpdateSpec])
+            (implicit connectivity: Connectivity,
+             ec: ExecutionContext,
+             log: LoggingAdapter): Iterable[Future[Int]] = {
     log.debug(s"Sending update notifications: $updateSpecs" )
-    updateSpecs.map { spec => notifyVehicle(services)(spec.vin, spec) }
+    updateSpecs.map { spec => notifyVehicle(spec.vin, spec) }
   }
 
   /**
@@ -78,19 +76,15 @@ object UpdateNotifier {
    * @param vin The VIN of the vehicle to notify
    * @param updates The updates that apply to the vehicle
    */
-  def notifyVehicle(services: ServerServices)(vin: Vehicle.Vin, update: UpdateSpec)
-                   (implicit rviClient: RviClient, ec: ExecutionContext): Future[Int] = {
-    import com.github.nscala_time.time.Imports._
-    import io.circe.generic.auto._
+  def notifyVehicle(vin: Vehicle.Vin, update: UpdateSpec)
+                   (implicit connectivity: Connectivity, ec: ExecutionContext): Future[Int]
+}
 
-    def toPackageUpdate( spec: UpdateSpec ) = {
-      val r = spec.request
-      PackageUpdate(r.id, r.signature, r.description.getOrElse(""), r.requestConfirmation, spec.size)
-    }
+object DefaultUpdateNotifier extends UpdateNotifier {
 
-    val expirationDate: DateTime = update.request.periodOfValidity.getEnd
-    rviClient.sendMessage(s"genivi.org/vin/${vin.get}/sota/notify",
-                          UpdateNotification(toPackageUpdate(update), services), expirationDate)
+  override def notifyVehicle(vin: Vehicle.Vin, update: UpdateSpec)
+                            (implicit connectivity: Connectivity, ec: ExecutionContext): Future[Int] = {
+    // TODO: missing default implementation
+    Future.successful(0)
   }
-
 }

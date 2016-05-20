@@ -1,9 +1,11 @@
 package org.genivi.sota.core
 
 import akka.http.scaladsl.model.Uri
-import eu.timepit.refined.refineV
+import eu.timepit.refined.{refineV, refineMV}
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.core.data.Package
+import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.PackageId
 
 
 /*
@@ -11,19 +13,19 @@ import org.genivi.sota.core.data.Package
  */
 object PackagesReader {
 
-  def readVersion( maybeStr: Option[String] ) : Option[Package.Version] = {
-    maybeStr.map( str => refineV[Package.ValidVersion](str).fold(_ => Refined.unsafeApply("1.2.3"), identity ))
+  def readVersion( maybeStr: Option[String] ) : Option[PackageId.Version] = {
+    maybeStr.map( str => refineV[PackageId.ValidVersion](str).fold(_ => Refined.unsafeApply("1.2.3"), identity ))
   }
 
   private[this] def readPackage( src: Map[String, String] ) : Package = {
-    if( src.get( "Package").isEmpty ) println( src )
     val maybePackage = for {
       name        <- src.get( "Package" )
       version     <- readVersion( src.get( "Version" ) )
       size        <- src.get("Size").map( _.toLong )
       checkSum    <- src.get("SHA1")
-    } yield Package( Package.Id( Refined.unsafeApply(name), version), size = size, description = src.get( "Description" ),
-                     checkSum = checkSum, uri = Uri.Empty, vendor = src.get( "Maintainer" ), signature = Some("Signature") )
+    } yield Package(refineMV("default"), PackageId(Refined.unsafeApply(name), version),
+                    size = size, description = src.get("Description"),
+                    checkSum = checkSum, uri = Uri.Empty, vendor = src.get( "Maintainer" ), signature = Some("Signature") )
     maybePackage.get
   }
 

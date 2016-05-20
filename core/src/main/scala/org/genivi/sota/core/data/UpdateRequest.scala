@@ -4,12 +4,13 @@
  */
 package org.genivi.sota.core.data
 
-import java.util.UUID
-import cats.Foldable
-import org.joda.time.{Interval, DateTime}
-
 import io.circe._
-import io.circe.generic.auto._
+import java.util.UUID
+import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.{PackageId, Vehicle}
+import org.joda.time.{DateTime, Interval, Period}
+import org.genivi.sota.core.db.UpdateSpecs
+
 
 /**
  * Domain object for an update request.
@@ -28,16 +29,36 @@ import io.circe.generic.auto._
  * @param signature Signature for this updates Id
  * @param description A descriptive text of the available update.
  * @param requestConfirmation Flag to indicate if a user confirmation of the package is required.
+ * @param installPos
  */
 case class UpdateRequest(
   id: UUID,
-  packageId: Package.Id,
+  namespace: Namespace,
+  packageId: PackageId,
   creationTime: DateTime,
   periodOfValidity: Interval,
   priority: Int,
   signature: String,
   description: Option[String],
-  requestConfirmation: Boolean)
+  requestConfirmation: Boolean,
+  installPos: Int = 0)
+
+object UpdateRequest {
+
+  import eu.timepit.refined.auto._
+
+  def default(namespace: Namespace, packageId: PackageId): UpdateRequest = {
+    val updateRequestId = UUID.randomUUID()
+    val now = DateTime.now
+    val defaultPeriod = Period.days(1)
+    val defaultInterval = new Interval(now, now.plus(defaultPeriod))
+    val defaultPriority = 10
+
+    UpdateRequest(updateRequestId, namespace, packageId,
+      DateTime.now, defaultInterval, defaultPriority, "", Some(""),
+      requestConfirmation = false)
+  }
+}
 
 /**
  * The states that an update may be in.
@@ -54,13 +75,23 @@ object UpdateStatus extends Enumeration {
 import UpdateStatus._
 
 /**
- * A set of package updates to apply to a single VIN.
- * @param request The update campaign that these updates are a part of
- * @param vin The vehicle to which these updates should be applied
- * @param status The status of the update
- * @param dependencies The packages to be installed
- */
+  * A combination (campaign, VIN, packages) --- which remain constant over time ---
+  * along with the latest [[UpdateStatus]] (for that campaign on this VIN) --- which may change over time.
+  * <br>
+  * <ul>
+  *   <li>The set of packages may include dependencies;
+  *       no individual install order is given for them but for campaigns as a whole,
+  *       see [[UpdateRequest#installPos]].</li>
+  *   <li>The campaign (ie, [[UpdateRequest]]) that initiated this [[UpdateSpec]] is linked from here.</li>
+  * </ul>
+  *
+  * @param request The campaign that these updates are a part of
+  * @param vin The vehicle to which these updates should be applied
+  * @param status The status of the update
+  * @param dependencies The packages to be installed
+  */
 case class UpdateSpec(
+  namespace: Namespace,
   request: UpdateRequest,
   vin: Vehicle.Vin,
   status: UpdateStatus,
@@ -74,11 +105,11 @@ case class UpdateSpec(
 
 /**
  * Implicits to implement a JSON encoding/decoding for UpdateStatus
- * @see {@link http://circe.io/}
+ * @see [[http://circe.io/]]
  */
 object UpdateSpec {
   implicit val updateStatusEncoder : Encoder[UpdateStatus] = Encoder[String].contramap(_.toString)
-  implicit val updateStatusDecoder : Decoder[UpdateStatus] = Decoder[String].map(UpdateStatus.withName(_))
+  implicit val updateStatusDecoder : Decoder[UpdateStatus] = Decoder[String].map(UpdateStatus.withName)
 }
 
 /**

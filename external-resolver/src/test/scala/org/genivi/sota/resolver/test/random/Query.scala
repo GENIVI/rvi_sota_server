@@ -2,81 +2,179 @@ package org.genivi.sota.resolver.test.random
 
 import akka.http.scaladsl.model.StatusCodes
 import cats.state.{State, StateT}
-import org.genivi.sota.resolver.vehicles.Vehicle
-import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.resolve.ResolveFunctions
-import org.genivi.sota.resolver.filters.{FilterAST, And, True}, FilterAST._
-import org.genivi.sota.resolver.test.{VehicleRequestsHttp, PackageRequestsHttp, FilterRequestsHttp, ResolveRequestsHttp}
-import org.genivi.sota.resolver.test.{Result, Success, Failure,
-  SuccessVehicles, SuccessPackages, SuccessFilters, SuccessVehicleMap}
+import org.genivi.sota.resolver.filters.{And, FilterAST, True}
+import org.genivi.sota.resolver.packages.Package
+import org.genivi.sota.resolver.components.Component
+import org.genivi.sota.resolver.filters.Filter
+import FilterAST._
+import org.genivi.sota.resolver.test._
 import org.scalacheck.Gen
-import Misc.{lift, monGen, function0Instance}
+import Misc.{function0Instance, lift, monGen}
+import org.genivi.sota.data.Vehicle.Vin
+import org.genivi.sota.data.{PackageId, Vehicle}
 
+import scala.annotation.tailrec
+import scala.collection.immutable.Iterable
+import scala.concurrent.ExecutionContext
 
 sealed trait Query
 
 final case object ListVehicles                        extends Query
 final case class  ListPackagesOnVehicle(veh: Vehicle) extends Query
+final case class  ListVehiclesFor(cmp: Component)     extends Query
+final case class  ListPackagesFor(flt: Filter)        extends Query
 
 final case object ListFilters                         extends Query
+final case class  ListFiltersFor(pak: Package)        extends Query
 
-final case class  Resolve(id: Package.Id)             extends Query
+final case class  Resolve(id: PackageId)              extends Query
 
+final case object ListComponents                      extends Query
+final case class  ListComponentsFor(veh: Vehicle)     extends Query
 
 object Query extends
     VehicleRequestsHttp with
     PackageRequestsHttp with
     FilterRequestsHttp with
+    ComponentRequestsHttp with
+    PackageFilterRequestsHttp with
     ResolveRequestsHttp {
+
+  def semQueries(qrs: List[Query])
+                (implicit ec: ExecutionContext): State[RawStore, List[Semantics]] = {
+
+    @tailrec def go(qrs0: List[Query], s0: RawStore, acc: List[Semantics]): (RawStore, List[Semantics]) =
+      qrs0 match {
+        case Nil          => (s0, acc.reverse)
+        case (qr :: qrs1) =>
+          val (s1, r) = semQuery(qr).run(s0).run
+          go(qrs1, s1, r :: acc)
+      }
+
+    State.get.flatMap { s0 =>
+      val (s1, sems) = go(qrs, s0, List())
+      State.set(s1).flatMap(_ => State.pure(sems))
+    }
+
+  }
 
   def semQuery(q: Query): State[RawStore, Semantics] = q match {
 
     case ListVehicles               =>
-      State.get map (s => Semantics(listVehicles, StatusCodes.OK,
+      State.get map (s => Semantics(Some(q),
+        listVehicles, StatusCodes.OK,
         SuccessVehicles(s.vehicles.keySet)))
 
+    case ListVehiclesFor(cmp)           =>
+      State.get map (s => Semantics(Some(q),
+        listVehiclesHaving(cmp), StatusCodes.OK,
+        SuccessVehicles(s.vehiclesHaving(cmp))))
+
+    case ListComponents             =>
+      State.get map (s => Semantics(Some(q),
+        listComponents, StatusCodes.OK,
+        SuccessComponents(s.components)))
+
+    case ListComponentsFor(veh)     =>
+      State.get map (s => Semantics(Some(q),
+        listComponentsOnVehicle(veh), StatusCodes.OK,
+        SuccessPartNumbers(s.vehicles(veh)._2.map(_.partNumber))))
+
     case ListPackagesOnVehicle(veh) =>
-      State.get map (s => Semantics(listPackagesOnVehicle(veh), StatusCodes.OK,
-        SuccessPackages(s.vehicles(veh)._1.map(_.id))))
+      State.get map (s => Semantics(Some(q),
+        listPackagesOnVehicle(veh), StatusCodes.OK,
+        SuccessPackageIds(s.vehicles(veh)._1.map(_.id))))
+
+    case ListPackagesFor(flt) =>
+      State.get map (s => Semantics(Some(q),
+        listPackagesForFilter(flt), StatusCodes.OK,
+        SuccessPackages(s.packagesHaving(flt))))
 
     case ListFilters                =>
-      State.get map (s => Semantics(listFilters, StatusCodes.OK, SuccessFilters(s.filters)))
+      State.get map (s => Semantics(Some(q),
+        listFilters, StatusCodes.OK,
+        SuccessFilters(s.filters)))
 
-    case Resolve(pkgId)                =>
+    case ListFiltersFor(pak) =>
+      State.get map (s => Semantics(Some(q),
+        listFiltersForPackage(pak), StatusCodes.OK,
+        SuccessFilters(s.packages(pak))))
 
-      def filters(s: RawStore, id: Package.Id): Set[FilterAST] = {
-        val fs = s.packages.map{ case (pkg, fs) => (pkg.id, fs) }
-        fs(id).map(_.expression).map(parseValidFilter)
-      }
-
-      def expr(s: RawStore, id: Package.Id): FilterAST =
-        filters(s, id).toList.foldLeft[FilterAST](True)(And)
-
-      State.get map (s => Semantics(resolve2(pkgId), StatusCodes.OK, SuccessVehicleMap(
-        ResolveFunctions.makeFakeDependencyMap(pkgId,
-          s.vehicles.keys.toList.map(v =>
-              (v, (s.vehicles(v)._1.toSeq.map(_.id), s.vehicles(v)._2.toSeq.map(_.partNumber))))
-           .filter(query(expr(s, pkgId))).map(_._1)))))
+    case Resolve(pkgId)             =>
+      State.get map (s => Semantics(Some(q),
+        resolve2(pkgId), StatusCodes.OK,
+        SuccessVehicleMap(vehicleMap(s, pkgId))))
 
   }
 
-  implicit val genQuery: StateT[Gen, RawStore, Query] =
+  private def vehicleMap(s: RawStore, pkgId: PackageId): Map[Vin, List[PackageId]] = {
+
+    // An AST for each filter associated to the given package.
+    val filters: Set[FilterAST] =
+      for (
+        flt <- s.lookupFilters(pkgId).get
+      ) yield parseValidFilter(flt.expression)
+
+    // An AST AND-ing the filters associated to the given package.
+    val expr: FilterAST =
+      filters.toList.foldLeft[FilterAST](True)(And)
+
+    // Apply the resulting filter to select vehicles.
+    val vehs: Iterable[Vehicle] = for (
+      (veh, (paks, comps)) <- s.vehicles;
+      pakIds = paks.map(_.id).toSeq;
+      compIds = comps.map(_.partNumber).toSeq;
+      entry2 = (veh, (pakIds, compIds));
+      if query(expr)(entry2)
+    ) yield veh
+
+    ResolveFunctions.makeFakeDependencyMap(pkgId, vehs.toSeq)
+  }
+
+  // scalastyle:off magic.number
+  def genQuery: StateT[Gen, RawStore, Query] =
     for {
       s    <- StateT.stateTMonadState[Gen, RawStore].get
       vehs <- Store.numberOfVehicles
       pkgs <- Store.numberOfPackages
+      cmps <- Store.numberOfComponents
+      flts <- Store.numberOfFilters
+      vcomp <- Store.numberOfVehiclesWithSomeComponent
+      vpaks <- Store.numberOfVehiclesWithSomePackage
+      pfilt <- Store.numberOfPackagesWithSomeFilter
       qry  <- lift(Gen.frequency(
 
         (10, Gen.const(ListVehicles)),
+        (10, Gen.const(ListComponents)),
+        ( 5, Gen.const(ListFilters)),
 
-        (if (vehs > 0) 10 else 0,
-          Store.pickVehicle.runA(s).map(ListPackagesOnVehicle(_))),
+        (if (vehs > 0) 10 else 0, Gen.oneOf(
+          Store.pickVehicle.runA(s).map(ListPackagesOnVehicle(_)),
+          Store.pickVehicle.runA(s).map(ListComponentsFor(_))
+        )),
 
-        (5,  Gen.const(ListFilters)),
+        (if (vcomp > 0) 10 else 0,
+          Store.pickVehicleWithComponent.runA(s) map { case (veh, cmp) => ListVehiclesFor(cmp) }),
 
-        (if (pkgs > 0) 50 else 0,
+        (if (pfilt > 0) 10 else 0, Gen.oneOf(
+          Store.pickPackageWithFilter.runA(s) map { case (pkg, flt) => ListPackagesFor(flt) },
+          Store.pickPackageWithFilter.runA(s) map { case (pkg, flt) => ListFiltersFor(pkg)  }
+        )),
+
+        (if (pkgs > 0) 10 else 0,
           Store.pickPackage.runA(s).map(pkg => Resolve(pkg.id)))
       ))
     } yield qry
+  // scalastyle:on
+
+  def genQueries(n: Int)
+                (implicit ec: ExecutionContext): StateT[Gen, RawStore, List[Query]] = {
+    if (n < 1) throw new IllegalArgumentException
+    for {
+      q  <- genQuery
+      qs <- if (n == 1) genQuery.map(List(_)) else genQueries(n - 1)
+    } yield q :: qs
+  }
 
 }

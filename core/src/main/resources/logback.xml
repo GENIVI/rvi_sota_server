@@ -13,7 +13,6 @@
     <logger name="org.genivi.sota" level="debug" />
     <logger name="slick.backend.DatabaseComponent.action" level="info" />
 
-
     <root level="${rootLevel:-INFO}">
         <appender-ref ref="STDOUT" />
     </root>

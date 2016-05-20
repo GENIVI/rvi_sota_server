@@ -38,9 +38,10 @@ class HttpTransportSpec extends JsonRpcSpecBase {
 
   property("fails with error if status code indicates success but result is not a valid json") {
     forAll(ResultStatusGen, Gen.alphaStr) { (statusCode: StatusCode, entity) =>
-      val resFuture = transport.handleRequestResult(HttpResponse(statusCode, entity = HttpEntity( ContentTypes.`application/json`, entity )))
+      val resFuture = transport.handleRequestResult(
+        HttpResponse(statusCode, entity = HttpEntity( ContentTypes.`application/json`, entity )))
       whenReady(resFuture.failed){ res =>
-        res shouldBe a [DeserializationException]
+        res shouldBe a [ParsingFailure]
       }
     }
   }

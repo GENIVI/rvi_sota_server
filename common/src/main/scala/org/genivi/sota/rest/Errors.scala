@@ -16,14 +16,15 @@ import io.circe.{Encoder, Decoder}
 object ErrorCodes {
   val InvalidEntity = new ErrorCode("invalid_entity")
   val DuplicateEntry = new ErrorCode("duplicate_entry")
+  val FilterNotFound = new ErrorCode("filter_not_found")
 }
 
 case class ErrorRepresentation( code: ErrorCode, description: String )
 
 object ErrorRepresentation {
   import io.circe.generic.semiauto._
-  implicit val encoderInstance = deriveFor[ErrorRepresentation].encoder
-  implicit val decoderInstance = deriveFor[ErrorRepresentation].decoder
+  implicit val encoderInstance = deriveEncoder[ErrorRepresentation]
+  implicit val decoderInstance = deriveDecoder[ErrorRepresentation]
 
 }
 

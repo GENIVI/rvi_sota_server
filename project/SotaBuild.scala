@@ -1,14 +1,14 @@
-import com.typesafe.sbt.packager.docker.DockerPlugin
 import org.flywaydb.sbt.FlywayPlugin._
 import play.routes.compiler.InjectedRoutesGenerator
 import play.sbt.routes.RoutesKeys
-import play.sbt.{PlaySettings, PlayScala}
+import play.sbt.{PlayScala, PlaySettings}
 import sbt._
 import sbt.Keys._
-import sbtbuildinfo.{BuildInfoPlugin, BuildInfoKey}
+import sbtbuildinfo.{BuildInfoKey, BuildInfoPlugin}
 import sbtbuildinfo.BuildInfoKeys._
 import com.typesafe.sbt.packager.Keys.dockerExposedPorts
 import com.typesafe.sbt.web._
+
 
 object SotaBuild extends Build {
 
@@ -18,16 +18,19 @@ object SotaBuild extends Build {
 
   lazy val BrowserTests = config("bt") extend Test
 
+  lazy val RandomTests = config("rd") extend Test
+
   lazy val basicSettings = Seq(
     organization := "org.genivi",
     scalaVersion := "2.11.7",
+    publishArtifact in Test := false,
     resolvers += Resolver.sonatypeRepo("snapshots"),
 
     libraryDependencies ++= Dependencies.TestFrameworks,
 
     testOptions in Test ++= Seq(
       Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
-      Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
+      Tests.Argument(TestFrameworks.ScalaTest, "-oDS")
     ),
 
     testFrameworks := Seq(sbt.TestFrameworks.ScalaTest),
@@ -43,6 +46,7 @@ object SotaBuild extends Build {
     shellPrompt in ThisBuild := { state => Project.extract(state).currentRef.project + "> " }
   )
 
+
   lazy val compilerSettings = Seq(
     scalacOptions in Compile ++= Seq("-encoding", "UTF-8", "-target:jvm-1.6", "-deprecation", "-feature", "-unchecked", "-Xlog-reflective-calls", "-Xlint", "-language:higherKinds"),
     javacOptions in compile ++= Seq("-encoding", "UTF-8", "-source", "1.6", "-target", "1.6", "-Xlint:unchecked", "-Xlint:deprecation")
@@ -50,32 +54,59 @@ object SotaBuild extends Build {
 
   lazy val commonSettings = basicSettings ++ compilerSettings ++ Packaging.settings ++ Seq(
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
-    buildInfoPackage := organization.value + ".sota." + name.value
+    buildInfoPackage := organization.value + ".sota." + name.value.replaceAll("sota-", "")
   )
 
-  lazy val common = Project(id = "common", base = file("common"))
+  // the sub-projects
+  lazy val common = Project(id = "sota-common", base = file("common"))
     .settings(basicSettings ++ compilerSettings)
-    .settings( libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.NscalaTime :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
+    .settings( libraryDependencies ++= Dependencies.Rest :+ Dependencies.AkkaHttpCirceJson :+ Dependencies.NscalaTime :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
+    .dependsOn(commonData)
+    .settings(Publish.settings)
 
-  lazy val externalResolver = Project(id = "resolver", base = file("external-resolver"))
+  lazy val commonData = Project(id = "sota-common-data", base = file("common-data"))
+    .settings(basicSettings ++ compilerSettings)
+    .settings(libraryDependencies ++= Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.CommonsCodec :+ Dependencies.TypesafeConfig :+ Dependencies.NscalaTime)
+    .settings(Publish.settings)
+
+  lazy val commonTest = Project(id = "sota-common-test", base = file("common-test"))
+    .settings(basicSettings ++ compilerSettings)
+    .settings(libraryDependencies ++= Seq (Dependencies.Cats, Dependencies.Refined))
+    .dependsOn(commonData)
+    .settings(Publish.settings)
+
+  lazy val commonDbTest = Project(id = "sota-common-db-test", base = file("common-db-test"))
+    .settings(basicSettings ++ compilerSettings)
+    .settings(libraryDependencies ++= Dependencies.Slick :+ Dependencies.Flyway :+ Dependencies.ScalaTestLib)
+    .dependsOn(commonData, commonTest)
+    .settings(Publish.settings)
+
+  lazy val externalResolver = Project(id = "sota-resolver", base = file("external-resolver"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
       libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.ParserCombinators :+ Dependencies.Flyway,
-      parallelExecution in Test := false,
+      testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RandomTest"),
+      testOptions in RandomTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RandomTest"),
+      parallelExecution in Test := true,
       dockerExposedPorts := Seq(8081),
       flywayUrl := sys.env.get("RESOLVER_DB_URL").orElse( sys.props.get("resolver.db.url") ).getOrElse("jdbc:mysql://localhost:3306/sota_resolver"),
       flywayUser := sys.env.get("RESOLVER_DB_USER").orElse( sys.props.get("resolver.db.user") ).getOrElse("sota"),
       flywayPassword := sys.env.get("RESOLVER_DB_PASSWORD").orElse( sys.props.get("resolver.db.password")).getOrElse("s0ta")
     ))
-    .dependsOn(common)
+    .settings(inConfig(RandomTests)(Defaults.testTasks): _*)
+    .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
+    .configs(RandomTests)
+    .configs(UnitTests)
+    .dependsOn(common, commonData, commonTest % "test", commonDbTest % "test")
     .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
+    .enablePlugins(BuildInfoPlugin)
+    .settings(Publish.settings)
 
-
-  lazy val core = Project(id = "core", base = file("core"))
+  lazy val core = Project(id = "sota-core", base = file("core"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.NscalaTime :+ Dependencies.Scalaz :+ Dependencies.Flyway,
-      testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RequiresRvi"),
-      testOptions in IntegrationTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RequiresRvi"),
-      parallelExecution in Test := false,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.NscalaTime :+ Dependencies.Scalaz :+ Dependencies.Flyway :+ Dependencies.AmazonS3,
+      testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RequiresRvi", "-l", "IntegrationTest"),
+      testOptions in IntegrationTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RequiresRvi", "-n", "IntegrationTest"),
+      parallelExecution in Test := true,
       dockerExposedPorts := Seq(8080),
       flywayUrl := sys.env.get("CORE_DB_URL").orElse( sys.props.get("core.db.url") ).getOrElse("jdbc:mysql://localhost:3306/sota_core"),
       flywayUser := sys.env.get("CORE_DB_USER").orElse( sys.props.get("core.db.user") ).getOrElse("sota"),
@@ -84,11 +115,13 @@ object SotaBuild extends Build {
     .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
     .settings(inConfig(IntegrationTests)(Defaults.testTasks): _*)
     .configs(IntegrationTests, UnitTests)
-    .dependsOn(common)
+    .dependsOn(common, commonData, commonTest % "test", commonDbTest % "test")
     .enablePlugins(Packaging.plugins: _*)
+    .enablePlugins(BuildInfoPlugin)
+    .settings(Publish.settings)
 
   import play.sbt.Play.autoImport._
-  lazy val webServer = Project(id = "webserver", base = file("web-server"),
+  lazy val webServer = Project(id = "sota-webserver", base = file("web-server"),
     settings = commonSettings ++ PlaySettings.defaultScalaSettings ++ Seq(
       RoutesKeys.routesGenerator := InjectedRoutesGenerator,
       testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "APITests BrowserTests"),
@@ -119,37 +152,63 @@ object SotaBuild extends Build {
     .settings(inConfig(IntegrationTests)(Defaults.testTasks): _*)
     .settings(inConfig(BrowserTests)(Defaults.testTasks): _*)
     .configs(UnitTests, IntegrationTests, BrowserTests)
+    .settings(Publish.disable)
+
+  lazy val deviceRegistry = Project(id = "sota-device_registry", base = file("device-registry"))
+    .settings(commonSettings ++ Migrations.settings ++ Seq(
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Refined :+ Dependencies.Flyway :+ Dependencies.Generex,
+      parallelExecution in Test := false,
+      dockerExposedPorts := Seq(8083),
+      flywayUrl := sys.env.get("DEVICE_REGISTRY_DB_URL").orElse(sys.props.get("device-registry.db.url")).getOrElse("jdbc:mysql://localhost:3306/sota_device_registry"),
+      flywayUser := sys.env.get("DEVICE_REGISTRY_DB_USER").orElse(sys.props.get("device-registry.db.user")).getOrElse("sota"),
+      flywayPassword := sys.env.get("DEVICE_REGISTRY_DB_PASSWORD").orElse(sys.props.get("device-registry.db.password")).getOrElse("s0ta")
+    ))
+    .dependsOn(common, commonData, commonTest % "test")
+    .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
+    .settings(Publish.settings)
 
   lazy val sota = Project(id = "sota", base = file("."))
     .settings( basicSettings )
     .settings( Versioning.settings )
-    .settings( Release.settings )
-    .aggregate(common, core, externalResolver, webServer)
+    .settings(Release.settings(common, commonData, commonTest, core, externalResolver))
+    .aggregate(common, commonData, commonTest, core, externalResolver, webServer)
     .enablePlugins(Versioning.Plugin)
-
+    .settings(Publish.disable)
 }
 
 object Dependencies {
 
-  val AkkaHttpVersion = "1.0"
+  val AkkaVersion = "2.4.4"
 
-  val AkkaVersion = "2.4.0"
+  val CirceVersion = "0.4.0"
 
-  val CirceVersion = "0.2.0"
+  val AkkaHttpCirceVersion = "1.6.0"
 
+  val LogbackVersion = "1.1.3"
+
+  val AkkaHttp = "com.typesafe.akka" %% "akka-http-experimental" % AkkaVersion
+
+  val AkkaHttpTestKit = "com.typesafe.akka" %% "akka-http-testkit" % AkkaVersion % "test"
+
+  val AkkaTestKit = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % "test"
+
+  val AkkaHttpCirceJson = "de.heikoseeberger" %% "akka-http-circe" % AkkaHttpCirceVersion
+
+  val AkkaSlf4j = "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion
+
+  val Generex = "com.github.mifmif" % "generex" % "1.0.0" % "test"
+
+  val Logback = "ch.qos.logback" % "logback-classic" % LogbackVersion
 
   lazy val Akka = Seq(
-    "com.typesafe.akka" % "akka-http-core-experimental_2.11" % AkkaHttpVersion,
-    "com.typesafe.akka" % "akka-http-experimental_2.11" % AkkaHttpVersion,
-    "com.typesafe.akka" %% "akka-http-testkit-experimental" % AkkaHttpVersion,
-    "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion,
-    "ch.qos.logback" % "logback-classic" % "1.0.13"
+    AkkaHttp, AkkaHttpCirceJson, AkkaHttpTestKit, AkkaTestKit, AkkaSlf4j, Logback
   )
 
-  lazy val Circe = Seq(
-    "io.circe" %% "circe-core"    % CirceVersion,
+  val Circe = Seq(
+    "io.circe" %% "circe-core" % CirceVersion,
     "io.circe" %% "circe-generic" % CirceVersion,
-    "io.circe" %% "circe-parse"   % CirceVersion
+    "io.circe" %% "circe-parser" % CirceVersion,
+    "io.circe" %% "circe-java8" % CirceVersion
   )
 
   lazy val Refined = "eu.timepit" %% "refined" % "0.3.1"
@@ -157,13 +216,17 @@ object Dependencies {
   lazy val Scalaz = "org.scalaz" %% "scalaz-core" % "7.1.3"
   lazy val Cats   = "org.spire-math" %% "cats" % "0.3.0"
 
-  lazy val ScalaTest = "org.scalatest" % "scalatest_2.11" % "2.2.4"
+  lazy val ScalaTestLib = "org.scalatest" %% "scalatest" % "2.2.4"
 
-  lazy val ScalaCheck = "org.scalacheck" %% "scalacheck" % "1.12.4"
+  lazy val ScalaTest = ScalaTestLib % "test"
+
+  lazy val ScalaCheck = "org.scalacheck" %% "scalacheck" % "1.12.4" % "test"
 
   lazy val Flyway = "org.flywaydb" % "flyway-core" % "3.2.1"
 
   lazy val TestFrameworks = Seq( ScalaTest, ScalaCheck )
+
+  lazy val TypesafeConfig = "com.typesafe" % "config" % "1.3.0"
 
   lazy val Database = Seq (
     "com.typesafe.slick" %% "slick" % "3.0.2",
@@ -181,4 +244,5 @@ object Dependencies {
 
   lazy val Rest = Akka ++ Slick
 
+  lazy val AmazonS3 =  "com.amazonaws" % "aws-java-sdk-s3" % "1.10.69"
 }

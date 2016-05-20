@@ -28,27 +28,38 @@ object Release {
   val showNextVersion = settingKey[String]("the future version once releaseNextVersion has been applied to it")
   val showReleaseVersion = settingKey[String]("the version once releaseVersion has been applied to it")
 
-  lazy val settings = Seq(
-    showReleaseVersion <<= (version, releaseVersion)((v,f)=>f(v)),
-    showNextVersion <<= (version, releaseNextVersion)((v,f)=>f(v)),
+  def settings(toPublish: Project*) = {
+    val publishSteps = toPublish.map(p => ReleaseStep(releaseStepTask(publish in p)))
 
-    releaseVersion <<= (releaseVersionBump)( bumper=>{
-      ver => Version(ver)
-          .map(_.withoutQualifier)
-          .map(_.bump(bumper).string).getOrElse(versionFormatError)
-    }),
-
-    releaseProcess := Seq(
+    val prepareSteps: Seq[ReleaseStep] = Seq(
       checkSnapshotDependencies,
       releaseStepCommand(ExtraReleaseCommands.initialVcsChecksCommand),
       inquireVersions,
       setReleaseVersion,
-      tagRelease,
+      tagRelease)
+
+    // Disabled for now, this is done by team city directly
+    val dockerPublishSteps: Seq[ReleaseStep] = Seq(
       releaseStepCommand("core/docker:publish"),
       releaseStepCommand("resolver/docker:publish"),
-      releaseStepCommand("webserver/docker:publish"),
-      pushChanges
+      releaseStepCommand("webserver/docker:publish")
     )
-  )
 
+    val allSteps = prepareSteps ++ publishSteps :+ pushChanges
+
+    Seq(
+      showReleaseVersion <<= (version, releaseVersion)((v,f)=>f(v)),
+      showNextVersion <<= (version, releaseNextVersion)((v,f)=>f(v)),
+
+      releaseVersion <<= releaseVersionBump (bumper=>{
+        ver => Version(ver)
+          .map(_.withoutQualifier)
+          .map(_.bump(bumper).string).getOrElse(versionFormatError)
+      }),
+
+      releaseIgnoreUntrackedFiles := true,
+
+      releaseProcess := allSteps
+    )
+  }
 }

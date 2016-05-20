@@ -22,15 +22,16 @@ final case class Request( jsonrpc: String, method: String, params: Json, id: Opt
 
 object PredefinedErrors {
 
-  val ParseError = JsonRpcError(-32700, "Parse error")
+  val ParseError = JsonRpcError(-32700, "Parse error") // scalastyle:ignore magic.number
 
   object InvalidRequest {
-    def apply(data: Json) = JsonRpcError(-32600, "Invalid request", Some(data))
+    def apply(data: Json): JsonRpcError =
+      JsonRpcError(-32600, "Invalid request", Some(data)) // scalastyle:ignore magic.number
   }
 
-  val MethodNotFound = JsonRpcError(-32601, "Method not found")
+  val MethodNotFound = JsonRpcError(-32601, "Method not found") // scalastyle:ignore magic.number
 
-  val InvalidParams = JsonRpcError(-32602, "Invalid params")
+  val InvalidParams = JsonRpcError(-32602, "Invalid params") // scalastyle:ignore magic.number
 }
 
 private[this] case class ResultResponse(jsonrpc: String, result: Json, id: Option[Int])
@@ -41,7 +42,7 @@ private[this] object ResultResponse {
     ResultResponse("2.0", et(t), id)
 
   import io.circe.generic.semiauto._
-  implicit val encoderInstance = deriveFor[ResultResponse].encoder
+  implicit val encoderInstance = deriveEncoder[ResultResponse]
 }
 
 /**
@@ -77,6 +78,10 @@ trait JsonRpcDirectives {
 
     case MalformedRequestContentRejection(_, Some(DecodingFailure(msg, _))) =>
       complete(ErrorResponse( PredefinedErrors.InvalidRequest(msg.asJson), None ) )
+
+    case ml @ MalformedRequestContentRejection(msg, None) =>
+      complete(ErrorResponse( PredefinedErrors.InvalidRequest(msg.asJson), None ) )
+
   }.result()
 
   def service(methods: (String, MethodFn)*) : Route = service(methods.toMap)

@@ -5,7 +5,8 @@
 package org.genivi.sota.core.data
 
 import akka.http.scaladsl.model.Uri
-import org.genivi.sota.datatype.PackageCommon
+import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.PackageId
 
 /**
  * Domain object for a software package.
@@ -20,7 +21,8 @@ import org.genivi.sota.datatype.PackageCommon
  * @param signature A cryptographic signature for the package
  */
 case class Package(
-  id: Package.Id,
+  namespace: Namespace,
+  id: PackageId,
   uri: Uri,
   size: Long,
   checkSum: String,
@@ -28,5 +30,3 @@ case class Package(
   vendor: Option[String],
   signature: Option[String]
 )
-
-object Package extends PackageCommon

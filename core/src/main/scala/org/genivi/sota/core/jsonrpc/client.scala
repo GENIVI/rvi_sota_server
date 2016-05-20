@@ -4,14 +4,17 @@
  */
 package org.genivi.sota.core.jsonrpc
 
+import io.circe.Decoder
+
 import scala.language.dynamics
 import scala.util.control.NoStackTrace
 
 /**
  * Encoder/decoder for JSON-RPC requests and responses.
  */
+// scalastyle:off
 object client extends Dynamic {
-
+// scalastyle:on
   import cats.data.Xor
   import scala.concurrent.ExecutionContext
   import scala.concurrent.Future
@@ -19,6 +22,17 @@ object client extends Dynamic {
   type Method = String
 
   final case class Response[A](result: A, id: Int)
+
+  object Response {
+
+    implicit def decoderInstance[A](implicit da: Decoder[A]): Decoder[Response[A]] = Decoder.instance( c =>
+      for{
+        r  <- c.downField("result").as[A]
+        id <- c.downField("id").as[Int]
+      } yield Response(r, id)
+    )
+
+  }
 
   case class TransportException(msg: String) extends Throwable(msg) with NoStackTrace
 
@@ -30,7 +44,6 @@ object client extends Dynamic {
 
   import io.circe._
   import io.circe.syntax._
-  import io.circe.generic.auto._
 
   private[jsonrpc] def responseDecoder[A](implicit da: Decoder[A]): Decoder[ErrorResponse Xor Response[A]] =
     Decoder.instance { c =>
@@ -38,8 +51,8 @@ object client extends Dynamic {
       val rd = Decoder[Response[A]]
       for {
         version <- c.get[String]("jsonrpc")
-        _       <- if (version == "2.0") Xor.right(version)
-                   else Xor.Left(DecodingFailure(s"Illegal version: $version", c.history))
+        _       <- if (version == "2.0") { Xor.right(version) }
+                   else { Xor.Left(DecodingFailure(s"Illegal version: $version", c.history)) }
         res     <- (c.downField("error").success, c.downField("result").success) match {
           case (Some(_), None) => ed(c).map(Xor.left)
           case (None, Some(_)) => rd(c).map(Xor.right)
@@ -69,14 +82,15 @@ object client extends Dynamic {
     import shapeless._
     import record._
     import syntax.singleton._
+    import io.circe.generic.auto._
 
     def run[A](transport: Json => Future[Json])(implicit decoder: Decoder[A], exec: ExecutionContext): Future[A] = {
       val request = ('jsonrpc ->> "2.0") :: ('method ->> method) :: ('params ->> params) :: ('id ->> id) :: HNil
       for {
         json     <- transport(request.asJson)
         response <- extractResponse[A](json)
-        _        <- if( response.id != id ) Future.failed( IdMismatchException(id, response.id) )
-                    else Future.successful(response)
+        _        <- if( response.id != id ) { Future.failed( IdMismatchException(id, response.id) ) }
+                    else { Future.successful(response) }
       } yield response.result
     }
 

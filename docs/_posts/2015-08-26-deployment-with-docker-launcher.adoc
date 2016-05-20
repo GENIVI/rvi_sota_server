@@ -1,11 +1,13 @@
 ---
 layout: page
-title: "Deployment with Docker Launcher"
+title: "Deployment with Docker Launcher - Deprecated"
 category: doc
 date: 2015-08-26 14:09:53
 order: 2
 ---
 :icons: font
+
+WARNING: This deployment method has been deprecated and is no longer supported. The currently recommended method is to link:../doc/deployment-with-dockercompose.html[use docker-compose].
 
 Docker Launcher launches projects using Docker and Ansible. It is a prerequisite for deploying the SOTA server, and can be installed from https://github.com/advancedtelematic/docker-launcher[its GitHub repository.]
 

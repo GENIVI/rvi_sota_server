@@ -5,9 +5,10 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
-import eu.timepit.refined.refineMV
 import eu.timepit.refined.api.Refined
+import eu.timepit.refined.refineMV
 import io.circe.generic.auto._
+import org.genivi.sota.data.Namespaces
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
@@ -15,7 +16,7 @@ import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 /**
  * Specs for Component REST actions
  */
-class ComponentResourceWordSpec extends ResourceWordSpec {
+class ComponentResourceWordSpec extends ResourceWordSpec with Namespaces {
 
   val components = "components"
 
@@ -50,10 +51,10 @@ class ComponentResourceWordSpec extends ResourceWordSpec {
 
       Get(Resource.uri(components)) ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[Seq[Component]] shouldBe List(Component(bobby0, "nice"),
-                                                 Component(bobby1, "nice"),
-                                                 Component(jobby0, "nice"),
-                                                 Component(jobby1, "nice"))
+        responseAs[Seq[Component]] shouldBe List(Component(defaultNs, bobby0, "nice"),
+                                                 Component(defaultNs, bobby1, "nice"),
+                                                 Component(defaultNs, jobby0, "nice"),
+                                                 Component(defaultNs, jobby1, "nice"))
       }
     }
 
@@ -61,13 +62,13 @@ class ComponentResourceWordSpec extends ResourceWordSpec {
 
       Get(Resource.uri(components) + "?regex=^j.*$") ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[Seq[Component]] shouldBe List(Component(jobby0, "nice"),
-                                                 Component(jobby1, "nice"))
+        responseAs[Seq[Component]] shouldBe List(Component(defaultNs, jobby0, "nice"),
+                                                 Component(defaultNs, jobby1, "nice"))
       }
       Get(Resource.uri(components) + "?regex=^.*0$") ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[Seq[Component]] shouldBe List(Component(bobby0, "nice"),
-                                                 Component(jobby0, "nice"))
+        responseAs[Seq[Component]] shouldBe List(Component(defaultNs, bobby0, "nice"),
+                                                 Component(defaultNs, jobby0, "nice"))
       }
     }
 
@@ -84,11 +85,10 @@ class ComponentResourceWordSpec extends ResourceWordSpec {
       }
       Get(Resource.uri(components)) ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[Seq[Component]] shouldBe List(Component(bobby0, "nice"),
-                                                 Component(bobby1, "nice"),
-                                                 Component(jobby0, "nice"))
+        responseAs[Seq[Component]] shouldBe List(Component(defaultNs, bobby0, "nice"),
+                                                 Component(defaultNs, bobby1, "nice"),
+                                                 Component(defaultNs, jobby0, "nice"))
       }
     }
-
   }
 }

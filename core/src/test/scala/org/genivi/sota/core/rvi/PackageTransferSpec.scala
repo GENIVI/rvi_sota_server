@@ -16,14 +16,17 @@ import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
 import java.util.UUID
 import java.security.MessageDigest
+
 import org.apache.commons.codec.binary.Hex
 import org.genivi.sota.core.Generators
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.core.data.Vehicle, Vehicle._
+import org.genivi.sota.core.resolver.ConnectivityClient
+import org.genivi.sota.data.Vehicle
 import org.joda.time.DateTime
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
+
 import scala.concurrent.Future
 import scala.concurrent.Promise
 import scala.math.BigDecimal.RoundingMode
@@ -80,7 +83,7 @@ object ClientActor {
 /**
  * Dummy actor to simulate RVI Client in tests
  */
-class AccRviClient( clientActor: ActorRef ) extends RviClient {
+class AccRviClient( clientActor: ActorRef ) extends ConnectivityClient {
 
   def sendMessage[A](service: String, message: A, expirationDate: DateTime)
                  (implicit encoder: Encoder[A] ) : Future[Int] = {
@@ -114,6 +117,8 @@ class PackageTransferSpec extends PropSpec with Matchers with PropertyChecks wit
   implicit override val generatorDrivenConfig = PropertyCheckConfig(minSuccessful = 1)
 
   val services = ClientServices("", "", "", "", "")
+
+  import org.genivi.sota.data.VehicleGenerators.genVehicle
 
   ignore("all chunks transferred") {
     val testDataGen = for {

@@ -4,47 +4,51 @@
  */
 package org.genivi.sota.core
 
-import eu.timepit.refined.api.Refined
 import akka.http.scaladsl.model.Uri
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.nio.file.StandardOpenOption
+import eu.timepit.refined.api.Refined
+import java.nio.file.{Files, Paths, StandardOpenOption}
 import java.security.MessageDigest
 import java.util.UUID
 import org.apache.commons.codec.binary.Hex
-import org.genivi.sota.core.data.UpdateRequest
-import org.genivi.sota.core.data.{Vehicle, Package}, Vehicle._
+import org.genivi.sota.core.data._
+import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.{Namespaces, PackageId, Vehicle, VehicleGenerators}
 import org.scalacheck.{Arbitrary, Gen}
+
 
 /**
  * Generators for property-based testing of core objects
  */
 trait Generators {
 
-  val PackageVersionGen: Gen[Package.Version] =
-    Gen.listOfN(3, Gen.choose(0, 999)).map(_.mkString(".")).map(Refined.unsafeApply(_))
+  import Namespaces._
 
-  val PackageNameGen: Gen[Package.Name] =
-    Gen.identifier.map(Refined.unsafeApply(_))
+  val PackageVersionGen: Gen[PackageId.Version] =
+    Gen.listOfN(3, Gen.choose(0, 999)).map(_.mkString(".")).map(Refined.unsafeApply)
+
+  val PackageNameGen: Gen[PackageId.Name] =
+    Gen.identifier.map(s => if (s.length > 100) s.substring(0, 100) else s).map(Refined.unsafeApply)
 
   val PackageIdGen = for {
     name    <- PackageNameGen
     version <- PackageVersionGen
-  } yield Package.Id( name, version )
+  } yield PackageId( name, version )
 
   val PackageGen: Gen[Package] = for {
-    id <- PackageIdGen
-    size    <- Gen.choose(1000L, 999999999)
+    id      <- PackageIdGen
+    size    <- Gen.choose(1000L, 999999999L)
     cs      <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaChar)
     desc    <- Gen.option(Arbitrary.arbitrary[String])
     vendor  <- Gen.option(Gen.alphaStr)
-  } yield Package(id, Uri(path = Uri.Path / "tmp" / s"${id.name.get}-${id.version.get}.rpm"), size, cs.mkString, desc, vendor, None)
+  } yield Package(defaultNs, id, Uri(path = Uri.Path / "tmp" / s"${id.name.get}-${id.version.get}.rpm"),
+                  size, cs.mkString, desc, vendor, None)
 
   implicit val arbitrayPackage: Arbitrary[Package] = Arbitrary( PackageGen )
 
   import com.github.nscala_time.time.Imports._
 
-  def updateRequestGen(packageIdGen : Gen[Package.Id]) : Gen[UpdateRequest] = for {
+  def updateRequestGen(namespaceGen: Gen[Namespace], packageIdGen : Gen[PackageId]) : Gen[UpdateRequest] = for {
+    ns           <- namespaceGen
     packageId    <- packageIdGen
     startAfter   <- Gen.choose(10, 100).map( DateTime.now + _.days)
     finishBefore <- Gen.choose(10, 100).map(x => startAfter + x.days)
@@ -52,11 +56,11 @@ trait Generators {
     sig          <- Gen.alphaStr
     desc         <- Gen.option(Arbitrary.arbitrary[String])
     reqConfirm   <- Arbitrary.arbitrary[Boolean]
-  } yield UpdateRequest(UUID.randomUUID(), packageId, DateTime.now, startAfter to finishBefore,
+  } yield UpdateRequest(UUID.randomUUID(), ns, packageId, DateTime.now, startAfter to finishBefore,
                         prio, sig, desc, reqConfirm)
 
-  def vinDepGen(packages: Seq[Package]) : Gen[(Vehicle.Vin, Set[Package.Id])] = for {
-    vin               <- genVin
+  def vinDepGen(packages: Seq[Package]) : Gen[(Vehicle.Vin, Set[PackageId])] = for {
+    vin               <- VehicleGenerators.genVin
     m                 <- Gen.choose(1, 10)
     packages          <- Gen.pick(m, packages).map( _.map(_.id) )
   } yield vin -> packages.toSet
@@ -91,6 +95,18 @@ trait Generators {
     out.close()
 
     template.copy( uri = Uri( path.toUri().toString() ), checkSum = Hex.encodeHexString( digest.digest() ))
+  }
+
+  def genUpdateSpecFor(vehicle: Vehicle): Gen[(Package, UpdateSpec)] = for {
+    smallSize <- Gen.chooseNum(1024, 1024 * 10)
+    packageModel <- PackageGen.map(_.copy(size = smallSize.toLong))
+    packageWithUri = Generators.generatePackageData(packageModel)
+    updateRequest <- updateRequestGen(defaultNs, PackageIdGen).map(_.copy(packageId = packageWithUri.id))
+  } yield {
+    val updateSpec = UpdateSpec(defaultNs, updateRequest, vehicle.vin,
+      UpdateStatus.Pending, List(packageWithUri ).toSet)
+
+    (packageWithUri, updateSpec)
   }
 }
 

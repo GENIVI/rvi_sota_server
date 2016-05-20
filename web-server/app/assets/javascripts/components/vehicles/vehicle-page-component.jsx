@@ -5,6 +5,7 @@ define(function(require) {
       SyncPackages = require('../vehicles/sync-packages'),
       AddPackageManually = require('../packages/add-package-manually-component'),
       ListOfPackages = require('../packages/list-of-packages'),
+      ListOperationResultsForVin = require('../operation-results/list-operation-results-for-vin'),
       QueuedPackages = require('../packages/list-of-queued-packages-for-vin'),
       PackageHistory = require('../packages/package-update-history-for-vin'),
       AddComponent = require('../components/add-component-to-vin'),
@@ -39,6 +40,7 @@ define(function(require) {
             <h2>Installed Components</h2>
             <ComponentsOnVin Components={db.componentsOnVin} Vin={params.vin}/>
             <AddComponent Vin={params.vin}/>
+            <ListOperationResultsForVin OperationResultsForVin={db.operationResultsForVin} Vin={params.vin}/>
             <h2>Package Updates</h2>
             <QueuedPackages Packages={db.packageQueueForVin} Vin={params.vin}/>
             <PackageHistory Packages={db.packageHistoryForVin} Vin={params.vin}/>

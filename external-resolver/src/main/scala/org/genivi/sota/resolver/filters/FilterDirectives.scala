@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.resolver.filters
 
+import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
@@ -12,69 +13,88 @@ import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
-import org.genivi.sota.resolver.packages.PackageFilterRepository
+import org.genivi.sota.data.Namespace._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors
+import org.genivi.sota.resolver.common.NamespaceDirective._
+import org.genivi.sota.resolver.packages.PackageFilterRepository
 import org.genivi.sota.rest.Validation._
 import scala.concurrent.{ExecutionContext, Future}
-import slick.jdbc.JdbcBackend.Database
+import slick.driver.MySQLDriver.api._
 
 
 /**
  * API routes for filters.
  * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
  */
-class FilterDirectives(implicit db: Database, mat: ActorMaterializer, ec: ExecutionContext) {
+class FilterDirectives(implicit system: ActorSystem,
+                       db: Database,
+                       mat: ActorMaterializer,
+                       ec: ExecutionContext) {
 
-  /**
-   * API route for filters.
-   * @return      Route object containing routes for getting, creating, editing, and deleting filters
-   * @throws      Errors.MissingFilterException if the filter doesn't exist
-   */
-  def filterRoute: Route =
-
-    pathPrefix("filters") {
-      (get & pathEnd) {
-        parameter('regex.as[Refined[String, Regex]].?) { re =>
-          val query = re.fold(FilterRepository.list)(re => FilterRepository.searchByRegex(re))
-          complete(db.run(query))
-        }
-      } ~
-      (get & refined[Filter.ValidName](Slash ~ Segment) & path("package")) { filter =>
-        completeOrRecoverWith(db.run(PackageFilterRepository.listPackagesForFilter(filter))) {
-          Errors.onMissingFilter
-        }
-      } ~
-      (post & entity(as[Filter]) & pathEnd) { filter =>
-        complete(db.run(FilterRepository.add(filter)))
-      } ~
-      (put & refined[Filter.ValidName](Slash ~ Segment ~ PathEnd)
-           & entity(as[Filter.ExpressionWrapper])
-           & pathEnd)
-      { (fname, expr) =>
-        complete(db.run(FilterRepository.update(Filter(fname, expr.expression))))
-      } ~
-      (delete & refined[Filter.ValidName](Slash ~ Segment ~ PathEnd) & pathEnd)
-      { fname =>
-        complete(db.run(FilterRepository.deleteFilterAndPackageFilters(fname)))
-      }
-
+  def searchFilter(ns: Namespace): Route =
+    parameter('regex.as[String Refined Regex].?) { re =>
+      val query = re.fold(FilterRepository.list)(re => FilterRepository.searchByRegex(ns, re))
+      complete(db.run(query))
     }
+
+  def getPackages(ns: Namespace, fname: String Refined Filter.ValidName): Route =
+    completeOrRecoverWith(db.run(PackageFilterRepository.listPackagesForFilter(ns, fname))) {
+      Errors.onMissingFilter
+    }
+
+  def createFilter(ns: Namespace): Route =
+    entity(as[Filter]) { filter =>
+      // TODO: treat differing namespace names accordingly
+      complete(db.run(FilterRepository.add(filter.copy(namespace = ns))))
+    }
+
+  def updateFilter(ns: Namespace, fname: String Refined Filter.ValidName): Route =
+    entity(as[Filter.ExpressionWrapper]) { expr =>
+      complete(db.run(FilterRepository.update(Filter(ns, fname, expr.expression))))
+    }
+
+  def deleteFilter(ns: Namespace, fname: String Refined Filter.ValidName): StandardRoute =
+    complete(db.run(FilterRepository.deleteFilterAndPackageFilters(ns, fname)))
 
   /**
    * API route for validating filters.
    * @return      Route object containing routes for verifying that a filter is valid
    */
-  def validateRoute: Route = {
-    pathPrefix("validate") {
-      path("filter") ((post & entity(as[Filter])) (_ => complete("OK")))
+  def validateFilter: Route =
+    entity(as[Filter]) { filter =>
+      complete("OK")
     }
-  }
 
+  /**
+   * API route for filters.
+   * @return      Route object containing routes for getting, creating,
+   *              editing, deleting, and validating filters
+   * @throws      Errors.MissingFilterException if the filter doesn't exist
+   */
   def route: Route =
-    handleExceptions( ExceptionHandler( Errors.onMissingFilter orElse Errors.onMissingPackage ) ) {
-      filterRoute ~ validateRoute
+    handleExceptions(ExceptionHandler(Errors.onMissingFilter orElse Errors.onMissingPackage)) {
+      (pathPrefix("filters") & extractNamespace) { ns =>
+        (get & pathEnd) {
+          searchFilter(ns)
+        } ~
+        (get & refined[Filter.ValidName](Slash ~ Segment) & path("package")) { fname =>
+          getPackages(ns, fname)
+        } ~
+        (post & pathEnd) {
+          createFilter(ns)
+        } ~
+        (put & refined[Filter.ValidName](Slash ~ Segment) & pathEnd) { fname =>
+          updateFilter(ns, fname)
+        } ~
+        (delete & refined[Filter.ValidName](Slash ~ Segment) & pathEnd) { fname =>
+          deleteFilter(ns, fname)
+        }
+      } ~
+      (post & path("validate" / "filter")) {
+        validateFilter
+      }
     }
 
 }

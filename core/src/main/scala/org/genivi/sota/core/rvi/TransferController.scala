@@ -4,8 +4,9 @@
  */
 package org.genivi.sota.core.rvi
 
-import akka.actor.ReceiveTimeout
-import akka.actor.{Actor, ActorLogging, ActorRef, Props, Status}
+import java.io.File
+
+import akka.actor._
 import akka.util.ByteString
 import io.circe.Encoder
 import java.net.URI
@@ -14,21 +15,33 @@ import java.nio.channels.FileChannel
 import java.nio.file.{Paths, StandardOpenOption}
 import java.util.UUID
 import java.util.concurrent.TimeUnit
-import org.apache.commons.codec.binary.Base64
+
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db._
+import akka.actor._
+import akka.http.scaladsl.model.Uri
+import akka.stream.ActorMaterializer
+import org.apache.commons.codec.binary.Base64
+import org.genivi.sota.core.data.{Package, UpdateSpec, UpdateStatus}
+import org.genivi.sota.core.db.UpdateSpecs
+import org.genivi.sota.core.resolver.ConnectivityClient
+import org.genivi.sota.core.storage.S3PackageStore
+import org.genivi.sota.core.transfer.VehicleUpdates
+import org.genivi.sota.data.Vehicle
 import org.joda.time.DateTime
+
 import scala.collection.immutable.Queue
-import scala.concurrent.Future
-import scala.concurrent.duration.{FiniteDuration, Duration}
+import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.math.BigDecimal.RoundingMode
-import scala.util.control.NoStackTrace
 import slick.driver.MySQLDriver.api.Database
+
+import scala.util.Try
+
 
 /**
  * Actor to handle events received from the RVI node.
  *
- * @param transferActorProps the configuration class for creating actors to handle a single vehicle
+ * @param transferProtocolProps the configuration class for creating actors to handle a single vehicle
  * @see SotaServices
  */
 class UpdateController(transferProtocolProps: Props) extends Actor with ActorLogging {
@@ -88,7 +101,9 @@ object TransferProtocolActor {
   /**
    * Configuration class for creating the TransferProtocolActor actor.
    */
-  def props(db: Database, rviClient: RviClient, transferActorProps: (UUID, String, Package, ClientServices) => Props) =
+  def props(db: Database,
+            rviClient: ConnectivityClient,
+            transferActorProps: (UUID, String, Package, ClientServices) => Props): Props =
     Props( new TransferProtocolActor( db, rviClient, transferActorProps) )
 }
 
@@ -113,12 +128,12 @@ object UpdateEvents {
  * @param rviClient the client to the RVI node
  * @param transferActorProps the configuration class for creating the PackageTransferActor
  */
-class TransferProtocolActor(db: Database, rviClient: RviClient,
+class TransferProtocolActor(db: Database, rviClient: ConnectivityClient,
                             transferActorProps: (UUID, String, Package, ClientServices) => Props)
     extends Actor with ActorLogging {
-  import context.dispatcher
-  import cats.syntax.show._
   import cats.syntax.eq._
+  import cats.syntax.show._
+  import context.dispatcher
 
   val installTimeout : FiniteDuration = FiniteDuration(
     context.system.settings.config.getDuration("rvi.transfer.installTimeout", TimeUnit.MILLISECONDS),
@@ -136,6 +151,7 @@ class TransferProtocolActor(db: Database, rviClient: RviClient,
    * Terminate when all updates and dependencies are successfully transferred,
    * or when the transfer is aborted because the vehicle is not responding.
    */
+  // scalastyle:off cyclomatic.complexity
   def running(services: ClientServices, updates: Set[UpdateSpec], pending: Queue[(UpdateSpec, Package)],
               inProgress: Map[ActorRef, (UpdateSpec, Package)], done: Set[Package]) : Receive = {
     case akka.actor.Terminated(ref) =>
@@ -171,20 +187,11 @@ class TransferProtocolActor(db: Database, rviClient: RviClient,
     case r @ InstallReport(vin, update) =>
       context.system.eventStream.publish( UpdateEvents.InstallReportReceived(r) )
       log.debug(s"Install report received from $vin: ${update.update_id} installed with ${update.operation_results}")
-      updates.find(_.request.id == update.update_id).headOption match {
-        case Some(spec) => {
-          db.run(UpdateSpecs.setStatus(spec, UpdateStatus.Finished))
-          update.operation_results.foreach { r: OperationResult =>
-            db.run(OperationResults.persist(org.genivi.sota.core.data.OperationResult(
-              r.id, update.update_id, r.result_code, r.result_text)))
-          }
-          db.run(UpdateRequests.byId(update.update_id)).map { updateRequestO =>
-            db.run(InstallHistories.log(vin, update.update_id, updateRequestO.get.packageId, true))
-          }
-          rviClient.sendMessage(services.getpackages, io.circe.Json.Empty, ttl())
-          context.stop( self )
-        }
-        case None => log.error(s"Update ${update.update_id} for corresponding install report does not exist!")
+      //TODO: handle case where update is None
+      updates.find(_.request.id == update.update_id) match {
+        case Some(spec) =>
+          VehicleUpdates.reportInstall(vin, update)(dispatcher, db)
+          rviClient.sendMessage(services.getpackages, io.circe.Json.Null, ttl())
       }
 
     case ReceiveTimeout =>
@@ -193,9 +200,10 @@ class TransferProtocolActor(db: Database, rviClient: RviClient,
     case UploadAborted =>
       abortUpdate(services, updates)
   }
+  // scalastyle:on
 
-  def abortUpdate (services: ClientServices, updates: Set[UpdateSpec]) = {
-      rviClient.sendMessage(services.abort, io.circe.Json.Empty, ttl())
+  def abortUpdate (services: ClientServices, updates: Set[UpdateSpec]): Unit = {
+      rviClient.sendMessage(services.abort, io.circe.Json.Null, ttl())
       updates.foreach(x => db.run( UpdateSpecs.setStatus(x, UpdateStatus.Canceled) ))
       context.stop(self)
   }
@@ -246,7 +254,7 @@ object StartDownloadMessage {
   import io.circe.generic.semiauto._
 
   implicit val encoder: Encoder[StartDownloadMessage] =
-    deriveFor[StartDownloadMessage].encoder
+    deriveEncoder[StartDownloadMessage]
 
 }
 
@@ -259,7 +267,7 @@ object PackageChunk {
   import io.circe.generic.semiauto._
 
   implicit val encoder: Encoder[PackageChunk] =
-    deriveFor[PackageChunk].encoder
+    deriveEncoder[PackageChunk]
 
   implicit val byteStringEncoder : Encoder[ByteString] =
     Encoder[String].contramap[ByteString]( x => Base64.encodeBase64String(x.toArray) )
@@ -273,7 +281,7 @@ object Finish {
   import io.circe.generic.semiauto._
 
   implicit val encoder: Encoder[Finish] =
-    deriveFor[Finish].encoder
+    deriveEncoder[Finish]
 
 }
 
@@ -290,23 +298,27 @@ class PackageTransferActor(updateId: UUID,
                            signature: String,
                            pckg: Package,
                            services: ClientServices,
-                           rviClient: RviClient)
+                           rviClient: ConnectivityClient)
     extends Actor with ActorLogging {
 
-  import io.circe.generic.auto._
-  import context.dispatcher
   import cats.syntax.show._
+  import io.circe.generic.auto._
+  import akka.pattern.pipe
 
-  val chunkSize = context.system.settings.config.getBytes("rvi.transfer.chunkSize").intValue()
+  implicit val mat = ActorMaterializer()
+
+  import context.system
+  import context.dispatcher
+
+  val chunkSize = system.settings.config.getBytes("rvi.transfer.chunkSize").intValue()
   val ackTimeout : FiniteDuration = FiniteDuration(
-    context.system.settings.config.getDuration("rvi.transfer.ackTimeout", TimeUnit.MILLISECONDS),
+    system.settings.config.getDuration("rvi.transfer.ackTimeout", TimeUnit.MILLISECONDS),
     TimeUnit.MILLISECONDS
   )
 
-
   lazy val lastIndex = (BigDecimal(pckg.size) / BigDecimal(chunkSize) setScale(0, RoundingMode.CEILING)).toInt
 
-  val channel = FileChannel.open( Paths.get( new URI( pckg.uri.toString() ) ), StandardOpenOption.READ)
+  lazy val s3PackageStore = S3PackageStore(system.settings.config)
   val buffer = ByteBuffer.allocate( chunkSize )
 
   def ttl() : DateTime = {
@@ -314,7 +326,7 @@ class PackageTransferActor(updateId: UUID,
     DateTime.now + 5.minutes
   }
 
-  def sendChunk(index: Int) : Unit = {
+  def sendChunk(channel: FileChannel, index: Int) : Unit = {
     log.debug( s"Sending chunk $index" )
     channel.position( (index - 1) * chunkSize )
     buffer.clear()
@@ -336,14 +348,52 @@ class PackageTransferActor(updateId: UUID,
 
   val maxAttempts : Int = 5
 
+  private def openChannel(uri: URI): FileChannel = {
+    FileChannel.open(Paths.get(uri), StandardOpenOption.READ)
+  }
+
+  private def isLocalFile(uri: Uri): Boolean = {
+    Try(new File(new URI(uri.toString())).exists()).getOrElse(false)
+  }
+
+  /**
+    * Makes sure the package URI is local, so it can be read by this actor
+    * and transferred to the client
+   */
+  def downloadingRemotePackage(): Receive = {
+    if(isLocalFile(pckg.uri)) {
+      self ! pckg.uri
+    } else {
+      s3PackageStore
+        .retrieveFile(packageUri = pckg.uri)
+        .map(_.toURI).pipeTo(self)
+    }
+
+    {
+      case uri: URI =>
+        val channel = openChannel(uri)
+        sendChunk(channel, 1)
+        context.become(transferring(channel, 1, 1))
+
+      case Status.Failure(ex) =>
+        log.error(ex, "Could not download remote file")
+        context.parent ! UploadAborted
+        context.stop(self)
+
+      case msg =>
+        log.warning("Unexpected msg received {}", msg)
+    }
+  }
+
+  // scalastyle:off
   /**
    * Send the next chunk or resend last chunk if vehicle doesn't acknowledge with ChunksReceived.
    * Abort transfer if maxAttempts exceeded.
    */
-  def transferring( lastSentChunk: Int, attempt: Int ) : Receive = {
+  def transferring(channel: FileChannel, lastSentChunk: Int, attempt: Int) : Receive = {
     case ChunksReceived(_, _, indexes) =>
       log.debug(s"${pckg.id.show}. Chunk received by client: $indexes" )
-      val mayBeNext = indexes.sorted.sliding(2, 1).find {
+      val nextIndex = indexes.sorted.sliding(2, 1).find {
         case first :: second :: Nil => second - first > 1
         case first :: Nil => true
         case _ => false
@@ -351,13 +401,13 @@ class PackageTransferActor(updateId: UUID,
         case first :: _ :: Nil => first + 1
         case 1 :: Nil => 2
         case Nil => 1
-      }
-      val nextIndex = mayBeNext.getOrElse(indexes.max + 1)
+        case _ => indexes.max + 1
+      }.get
       log.debug(s"Next chunk index: $nextIndex")
       if( nextIndex > lastIndex ) finish()
       else {
-        sendChunk(nextIndex)
-        context.become( transferring(nextIndex, 1) )
+        sendChunk(channel, nextIndex)
+        context.become( transferring(channel, nextIndex, 1) )
       }
 
     case ReceiveTimeout if attempt == maxAttempts =>
@@ -366,22 +416,21 @@ class PackageTransferActor(updateId: UUID,
       context.stop( self )
 
     case ReceiveTimeout =>
-      sendChunk(lastSentChunk)
-      context.become( transferring(lastSentChunk, attempt + 1) )
+      sendChunk(channel, lastSentChunk)
+      context.become( transferring(channel, lastSentChunk, attempt + 1) )
   }
+  // scalastyle:on
 
   /**
    * Entry point to this actor starting with first chunk.
    */
-  override def receive = {
+  override def receive: Receive = {
     case ChunksReceived(_, _, Nil) =>
-      sendChunk(1)
-      context.become( transferring(1, 1) )
+      context.become(downloadingRemotePackage())
 
   }
 
   override def postStop() : Unit = {
-    channel.close()
   }
 
 }
@@ -391,7 +440,8 @@ object PackageTransferActor {
   /**
    * Configuration class for creating PackageTransferActor.
    */
-  def props(rviClient: RviClient)(updateId: UUID, signature: String, pckg: Package, services: ClientServices): Props =
+  def props(rviClient: ConnectivityClient)
+           (updateId: UUID, signature: String, pckg: Package, services: ClientServices): Props =
     Props(new PackageTransferActor(updateId, signature, pckg, services, rviClient))
 
 }

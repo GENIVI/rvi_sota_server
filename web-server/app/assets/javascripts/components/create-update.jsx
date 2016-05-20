@@ -51,6 +51,7 @@ define(function(require) {
           version: this.props.packageVersion
         },
         description: description,
+        namespace: "default", //TODO: replace with real namespace once support for them is added
         requestConfirmation: requestConfirmation,
         priority: Number(React.findDOMNode(this.refs.priority).value),
         creationTime: this.formatDateForJSON(startAfterDate, startAfterTime, startAfterTimeZone),
@@ -60,7 +61,7 @@ define(function(require) {
           + this.formatDateForJSON(endBeforeDate, endBeforeTime, endBeforeTimeZone),
         signature: signature
       }
-      SendRequest.doPost("/api/v1/updates", payload)
+      SendRequest.doPost("/api/v1/update_requests", payload)
         .done(_.bind(function() {
           this.transitionTo("/updates/" + updateId);
         }, this))

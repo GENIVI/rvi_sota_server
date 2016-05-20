@@ -9,26 +9,26 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import akka.testkit.{TestKit, TestProbe}
-import eu.timepit.refined.refineMV
 import eu.timepit.refined.api.Refined
-import org.genivi.sota.core.DefaultExternalResolverClient
-import org.genivi.sota.core.{PackagesReader, RequiresRvi, TestDatabase, UpdateService}
-import org.genivi.sota.core.Generators
+import eu.timepit.refined.refineV
+import org.genivi.sota.core._
 import org.genivi.sota.core.Generators.updateRequestGen
-import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateSpec, Vehicle}
-import org.genivi.sota.core.db.Packages
+import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateSpec}
+import org.genivi.sota.core.db.{Packages, Vehicles}
 import org.genivi.sota.core.jsonrpc.HttpTransport
-import org.genivi.sota.core.rvi.{JsonRpcRviClient, SotaServices}
-import org.genivi.sota.core.db.Vehicles
+import org.genivi.sota.core.resolver.DefaultExternalResolverClient
+import org.genivi.sota.core.rvi._
+import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.{Namespaces, PackageId, Vehicle}
 import org.joda.time.DateTime
 import org.scalacheck.Gen
-import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
 import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture, whenReady}
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
+import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
+
 import scala.concurrent.{Await, ExecutionContext, Future}
 import slick.jdbc.JdbcBackend.Database
-import org.genivi.sota.core.rvi.{RviClient, ServerServices}
 
 
 /**
@@ -38,17 +38,17 @@ object DataGenerators {
 
   val packages = scala.util.Random.shuffle( PackagesReader.read().take(10).map(Generators.generatePackageData ) )
 
-  def dependenciesGen(packageId: Package.Id, vin: Vehicle.Vin) : Gen[UpdateService.VinsToPackages] =
+  def dependenciesGen(packageId: PackageId, vin: Vehicle.Vin) : Gen[UpdateService.VinsToPackages] =
     for {
       n                <- Gen.choose(1, 3)
-      requiredPackages <- Gen.containerOfN[Set, Package.Id](n, Gen.oneOf(packages ).map( _.id ))
+      requiredPackages <- Gen.containerOfN[Set, PackageId](n, Gen.oneOf(packages ).map( _.id ))
     } yield Map( vin -> (requiredPackages + packageId) )
 
 
   def updateWithDependencies(vin: Vehicle.Vin) : Gen[(UpdateRequest, UpdateService.VinsToPackages)] =
     for {
       packageId    <- Gen.oneOf( packages.map( _.id) )
-      request      <- updateRequestGen( packageId )
+      request      <- updateRequestGen(Namespaces.defaultNs, packageId)
       dependencies <- dependenciesGen( packageId, vin )
     } yield (request, dependencies)
 
@@ -64,13 +64,13 @@ object DataGenerators {
  */
 object SotaClient {
   import akka.actor.{Actor, ActorLogging, Props}
-  import org.genivi.sota.core.rvi.{ClientServices, ServerServices, StartDownload,
-    StartDownloadMessage, RviParameters, RviClient, JsonRpcRviClient}
+  import org.genivi.sota.core.rvi.{ClientServices, JsonRpcRviClient, RviParameters, ServerServices, StartDownload, StartDownloadMessage}
   import io.circe._
   import io.circe.generic.auto._
+  import org.genivi.sota.core.resolver.ConnectivityClient
   import org.genivi.sota.marshalling.CirceInstances._
 
-  class ClientActor(rviClient: RviClient, clientServices: ClientServices) extends Actor with ActorLogging {
+  class ClientActor(rviClient: ConnectivityClient, clientServices: ClientServices) extends Actor with ActorLogging {
     def ttl() : DateTime = {
       import com.github.nscala_time.time.Implicits._
       DateTime.now + 5.minutes
@@ -81,7 +81,7 @@ object SotaClient {
 
     }
 
-    val vin = refineMV[Vehicle.ValidVin]("V1234567890123456")
+    val vin = refineV[Vehicle.ValidVin]("V1234567890123456").right.get
 
     override def receive = {
       case UpdateNotification(update, services ) =>
@@ -107,7 +107,7 @@ object SotaClient {
                 (implicit system: ActorSystem, mat: ActorMaterializer) : Future[Route] = {
     import system.dispatcher
 
-    val rviUri = Uri("http://127.0.0.1:8901")
+    val rviUri = Uri(system.settings.config.getString( "rvi.endpoint" ))
     implicit val clientTransport = HttpTransport( rviUri ).requestTransport
     val rviClient = new JsonRpcRviClient( clientTransport, system.dispatcher )
 
@@ -161,23 +161,21 @@ object SotaClient {
  * Generic trait for SOTA Core tests. Includes dummy RVI service routes.
  */
 trait SotaCore {
-  import org.genivi.sota.core.rvi.{TransferProtocolActor, PackageTransferActor, UpdateController, JsonRpcRviClient}
+  self: DatabaseSpec =>
+
+  import org.genivi.sota.core.rvi.{TransferProtocolActor, PackageTransferActor,
+    UpdateController, JsonRpcRviClient, RviConnectivity}
 
   implicit val system = akka.actor.ActorSystem("PackageUpdateSpec")
   implicit val materilizer = akka.stream.ActorMaterializer()
   implicit val exec = system.dispatcher
 
-  val databaseName = "test-database"
-  implicit val db = Database.forConfig(databaseName)
-
-  val rviUri = Uri(system.settings.config.getString( "rvi.endpoint" ))
-  implicit val serverTransport = HttpTransport( rviUri ).requestTransport
-
-  implicit val rviClient = new JsonRpcRviClient( serverTransport, system.dispatcher )
-
+  implicit val connectivity = new RviConnectivity
 
   def sotaRviServices() : Route = {
-    val transferProtocolProps = TransferProtocolActor.props(db, rviClient,  PackageTransferActor.props( rviClient ))
+    val transferProtocolProps =
+      TransferProtocolActor.props(db, connectivity.client,
+                                  PackageTransferActor.props(connectivity.client))
     val updateController = system.actorOf( UpdateController.props(transferProtocolProps ), "update-controller")
     val client = new DefaultExternalResolverClient( Uri.Empty, Uri.Empty, Uri.Empty, Uri.Empty )
     new SotaServices(updateController, client).route
@@ -188,22 +186,35 @@ trait SotaCore {
 /**
  * Property Spec for testing package updates
  */
-class PackageUpdateSpec extends PropSpec with PropertyChecks with Matchers with BeforeAndAfterAll with SotaCore {
+class PackageUpdateSpec extends PropSpec
+  with PropertyChecks
+  with Matchers
+  with BeforeAndAfterAll
+  with SotaCore
+  with DatabaseSpec
+  with Namespaces {
+
   import DataGenerators._
 
   override def beforeAll() : Unit = {
-    TestDatabase.resetDatabase( databaseName )
+    super.beforeAll()
     import scala.concurrent.duration.DurationInt
     Await.ready( Future.sequence( packages.map( p => db.run( Packages.create(p) ) )), 50.seconds)
   }
 
-  def init( services: ServerServices, generatedData: Map[UpdateRequest, UpdateService.VinsToPackages] ) : Future[Set[UpdateSpec]] = {
-    val updateService = new UpdateService( services )( akka.event.Logging(system, "sota.core.updateQueue"), rviClient )
+  def init(services: ServerServices,
+           generatedData: Map[UpdateRequest, UpdateService.VinsToPackages]): Future[Set[UpdateSpec]] = {
+    import slick.driver.MySQLDriver.api._
+
+    implicit val _db = db
+
+    val notifier = new RviUpdateNotifier(services)
+    val updateService = new UpdateService(notifier)(system, connectivity)
     val vins : Set[Vehicle.Vin] =
       generatedData.values.map( _.keySet ).fold(Set.empty[Vehicle.Vin])( _ union _)
-    import slick.driver.MySQLDriver.api._
+
     for {
-      _     <- db.run( DBIO.seq( vins.map( vin => Vehicles.create(Vehicle(vin))).toArray: _* ) )
+      _     <- db.run( DBIO.seq( vins.map( vin => Vehicles.create(Vehicle(defaultNs, vin))).toArray: _* ) )
       specs <- Future.sequence( generatedData.map {
                                  case (request, deps) =>
                                    updateService.queueUpdate(request, _ => FastFuture.successful(deps))
@@ -249,7 +260,6 @@ class PackageUpdateSpec extends PropSpec with PropertyChecks with Matchers with 
   }
 
   override def afterAll(): Unit = {
-    db.close()
     TestKit.shutdownActorSystem(system)
   }
 

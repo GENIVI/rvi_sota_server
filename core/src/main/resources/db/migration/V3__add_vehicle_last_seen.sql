@@ -1,0 +1,3 @@
+ALTER TABLE Vehicle
+ADD last_seen DATETIME NULL
+;

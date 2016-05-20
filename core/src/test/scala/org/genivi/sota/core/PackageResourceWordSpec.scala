@@ -11,46 +11,51 @@ import akka.http.scaladsl.server.MalformedQueryParamRejection
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.marshalling.CirceMarshallingSupport
-import org.genivi.sota.core.data.{ Package => DataPackage }
+import org.genivi.sota.core.data.{Package => DataPackage}
 import org.genivi.sota.core.db.Packages
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.ShouldMatchers
-import org.scalatest.{WordSpec, Matchers}
+import org.scalatest.{Matchers, WordSpec}
+
 import scala.concurrent.Await
 import slick.driver.MySQLDriver.api._
 import DataPackage._
+import org.genivi.sota.core.resolver.DefaultExternalResolverClient
+import org.genivi.sota.data.PackageId
 
 /**
  * WordSpec tests for Package REST actions
  */
 class PackageResourceWordSpec extends WordSpec
-    with Matchers
-    with ScalatestRouteTest
-    with ShouldMatchers
-    with BeforeAndAfterAll {
+  with Matchers
+  with ScalatestRouteTest
+  with ShouldMatchers
+  with DatabaseSpec
+  with BeforeAndAfterAll {
 
   import io.circe.generic.auto._
   import CirceMarshallingSupport._
 
-  val databaseName = "test-database"
+  lazy val config =system.settings.config
 
-  val config = system.settings.config
   val externalResolverClient = new DefaultExternalResolverClient(
     Uri(config.getString("resolver.baseUri")),
     Uri(config.getString("resolver.resolveUri")),
     Uri(config.getString("resolver.packagesUri")),
     Uri(config.getString("resolver.vehiclesUri"))
   )
-  val db = Database.forConfig(databaseName)
   lazy val service = new PackagesResource(externalResolverClient, db)
 
-  val testPackagesParams = List(("vim", "7.0.1"), ("vim", "7.1.1"), ("go", "1.4.0"), ("go", "1.5.0"), ("scala", "2.11.0"))
+  val testPackagesParams = List(
+    ("default", "vim", "7.0.1"), ("default", "vim", "7.1.1"),
+    ("default", "go", "1.4.0"), ("default", "go", "1.5.0"), ("default", "scala", "2.11.0"))
   val testPackages:List[DataPackage] = testPackagesParams.map { pkg =>
-    DataPackage(DataPackage.Id(Refined.unsafeApply(pkg._1), Refined.unsafeApply(pkg._2)), Uri("www.example.com"), 123, "123", None, None, None)
+    DataPackage(Refined.unsafeApply(pkg._1), PackageId(Refined.unsafeApply(pkg._2), Refined.unsafeApply(pkg._3)),
+                Uri("www.example.com"), 123, "123", None, None, None)
   }
 
-  override def beforeAll {
-    TestDatabase.resetDatabase( databaseName )
+  override def beforeAll() {
+    super.beforeAll()
     import scala.concurrent.duration._
     Await.ready( db.run( DBIO.seq( testPackages.map( pkg => Packages.create(pkg)): _*) ), 2.seconds )
   }
@@ -64,7 +69,9 @@ class PackageResourceWordSpec extends WordSpec
         assert(status === StatusCodes.OK)
         val packages = responseAs[Seq[DataPackage]]
         assert(packages.nonEmpty)
-        assert(packages.filter(pkg => pkg.id === DataPackage.Id(Refined.unsafeApply("scala"), Refined.unsafeApply("2.11.0"))).nonEmpty)
+        assert(packages.exists { pkg =>
+          pkg.id === PackageId(Refined.unsafeApply("scala"), Refined.unsafeApply("2.11.0"))
+        })
         assert(packages.length === 5)
       }
     }
@@ -72,7 +79,7 @@ class PackageResourceWordSpec extends WordSpec
       Get(PackagesUri + "/scala/2.11.0") ~> service.route ~> check {
         assert(status === StatusCodes.OK)
         val pkg = responseAs[DataPackage]
-        assert(pkg.id === DataPackage.Id(Refined.unsafeApply("scala"), Refined.unsafeApply("2.11.0")))
+        assert(pkg.id === PackageId(Refined.unsafeApply("scala"), Refined.unsafeApply("2.11.0")))
       }
     }
     "filter list of packages by regex '0'" in {
@@ -92,14 +99,14 @@ class PackageResourceWordSpec extends WordSpec
     "returns 400 for bad request" in {
       Get(PackagesUri + "?regex=)" ) ~> service.route ~> check {
         rejection shouldBe a [MalformedQueryParamRejection]
-        assert(rejection === MalformedQueryParamRejection("regex", "Regex predicate failed: Unmatched closing \')\'\n)", None))
+        assert(rejection === MalformedQueryParamRejection("regex", "Regex predicate failed: Unmatched closing \')\'\n)",
+          None))
       }
     }
   }
 
   override def afterAll() {
     system.terminate()
-    db.close()
+    super.beforeAll()
   }
-
 }

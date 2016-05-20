@@ -4,24 +4,68 @@
   */
 package org.genivi.sota.core
 
-import com.typesafe.config.ConfigFactory
-import org.flywaydb.core.Flyway
+import com.typesafe.config.{Config, ConfigFactory}
+import org.genivi.sota.core.common.NamespaceDirective
+import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateSpec}
+import org.genivi.sota.core.db.{Packages, UpdateRequests, UpdateSpecs, Vehicles}
+import org.genivi.sota.data.Namespace.Namespace
 
-/*
- * Helper object to configure test database for specs
- */
-object TestDatabase {
+import scala.concurrent.ExecutionContext
+import slick.driver.MySQLDriver.api._
+import org.genivi.sota.data.{Vehicle, VehicleGenerators}
 
-  def resetDatabase( databaseName: String ) = {
-    val dbConfig = ConfigFactory.load().getConfig(databaseName)
-    val url = dbConfig.getString("url")
-    val user = dbConfig.getConfig("properties").getString("user")
-    val password = dbConfig.getConfig("properties").getString("password")
+import scala.concurrent.Future
 
-    val flyway = new Flyway
-    flyway.setDataSource(url, user, password)
-    flyway.setLocations("classpath:db.migration")
-    flyway.clean()
-    flyway.migrate()
+
+object NamespaceSpec {
+  import eu.timepit.refined.auto._
+  import eu.timepit.refined.string._
+  import org.genivi.sota.data.Namespace._
+
+  lazy val defaultNamespace: Namespace = {
+    val config = ConfigFactory.load()
+    NamespaceDirective.configNamespace(config).getOrElse("default-test-ns")
+  }
+}
+
+
+trait UpdateResourcesDatabaseSpec {
+  self: DatabaseSpec =>
+
+  import Generators._
+
+  def createUpdateSpecFor(vehicle: Vehicle, transformFn: UpdateRequest => UpdateRequest = identity)
+                         (implicit ec: ExecutionContext): DBIO[(Package, UpdateSpec)] = {
+    val (packageModel, updateSpec) = genUpdateSpecFor(vehicle).sample.get
+
+    val dbIO = DBIO.seq(
+      Packages.create(packageModel),
+      UpdateRequests.persist(transformFn(updateSpec.request)),
+      UpdateSpecs.persist(updateSpec)
+    )
+
+    dbIO.map(_ => (packageModel, updateSpec))
+  }
+
+  def createUpdateSpecAction()(implicit ec: ExecutionContext): DBIO[(Package, Vehicle, UpdateSpec)] = {
+    val vehicle = VehicleGenerators.genVehicle.sample.get
+
+    for {
+      _ <- Vehicles.create(vehicle)
+      (packageModel, updateSpec) <- createUpdateSpecFor(vehicle)
+    } yield (packageModel, vehicle, updateSpec)
+  }
+
+  def createUpdateSpec()(implicit ec: ExecutionContext): Future[(Package, Vehicle, UpdateSpec)] = {
+    db.run(createUpdateSpecAction())
+  }
+}
+
+trait VehicleDatabaseSpec {
+  self: DatabaseSpec =>
+
+  def createVehicle()(implicit ec: ExecutionContext): Future[Vehicle] = {
+    val vehicle = VehicleGenerators.genVehicle.sample.get
+    db.run(Vehicles.create(vehicle))
   }
 }

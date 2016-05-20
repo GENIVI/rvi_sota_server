@@ -4,10 +4,14 @@
  */
 package org.genivi.sota.core.db
 
-import org.genivi.sota.core.data.Vehicle
+import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.Vehicle
+import org.genivi.sota.db.Operators.regex
+import org.joda.time.DateTime
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
-import org.genivi.sota.db.Operators.regex
+import slick.lifted.TableQuery
+
 
 /**
  * Database mapping definition for the Vehicles table.
@@ -17,6 +21,7 @@ import org.genivi.sota.db.Operators.regex
  */
 object Vehicles {
   import org.genivi.sota.refined.SlickRefined._
+  import org.genivi.sota.db.SlickExtensions._
 
   /**
    * Slick mapping definition for the Vehicle table
@@ -24,33 +29,39 @@ object Vehicles {
    */
   // scalastyle:off
   class VehicleTable(tag: Tag) extends Table[Vehicle](tag, "Vehicle") {
+    def namespace = column[Namespace]("namespace")
     def vin = column[Vehicle.Vin]("vin")
-    def * = (vin) <> (Vehicle.apply, Vehicle.unapply)
-    def pk = primaryKey("vin", vin)  // insertOrUpdate doesn't work if
-                                     // we use O.PrimaryKey in the vin
-                                     // column, see Slick issue #966.
+    def lastSeen = column[Option[DateTime]]("last_seen")
+
+    // insertOrUpdate buggy for composite-keys, see Slick issue #966.
+    def pk = primaryKey("vin", (namespace, vin))
+
+    def * = (namespace, vin, lastSeen) <> (Vehicle.tupled, Vehicle.unapply)
   }
   // scalastyle:on
 
   /**
-   * Internal helper definition to accesss the SQL table
+   * Internal helper definition to access the SQL table
    */
-  val vins = TableQuery[VehicleTable]
+  val vehicles = TableQuery[VehicleTable]
 
   /**
    * List all the VINs that are known to the system
    * @return A list of Vehicles
    */
-  def list(): DBIO[Seq[Vehicle]] = vins.result
+  def list(): DBIO[Seq[Vehicle]] = vehicles.result
+
+
+  def all(namespace: Namespace): Query[VehicleTable, Vehicle, Seq] = vehicles.filter(_.namespace === namespace)
 
   /**
    * Check if a VIN exists
-   * @param vin The VIN to search for
+   * @param vehicle The namespaced VIN to search for
    * @return Option.Some if the vehicle is present. Option.None if it is absent
    */
-  def exists(vin: Vehicle.Vin): DBIO[Option[Vehicle]] =
-    vins
-      .filter(_.vin === vin)
+  def exists(vehicle: Vehicle): DBIO[Option[Vehicle]] =
+    vehicles
+      .filter(v => v.namespace === vehicle.namespace && v.vin === vehicle.vin)
       .result
       .headOption
 
@@ -58,8 +69,8 @@ object Vehicles {
    * Add a new VIN to SOTA.
    * @param vehicle The VIN of the vehicle
    */
-  def create(vehicle: Vehicle)(implicit ec: ExecutionContext) : DBIO[Vehicle.Vin] =
-    vins.insertOrUpdate(vehicle).map( _ => vehicle.vin )
+  def create(vehicle: Vehicle)(implicit ec: ExecutionContext) : DBIO[Vehicle] =
+    vehicles.insertOrUpdate(vehicle).map(_ => vehicle)
 
   /**
    * Delete a VIN from SOTA.
@@ -67,12 +78,30 @@ object Vehicles {
    * objects that reference this vehicle first.
    * @param vehicle The VIN to remove
    */
-  def deleteById(vehicle : Vehicle) : DBIO[Int] = vins.filter( _.vin === vehicle.vin ).delete
+  def deleteById(vehicle : Vehicle) : DBIO[Int] =
+    vehicles.filter(v => v.namespace === vehicle.namespace && v.vin === vehicle.vin).delete
 
   /**
    * Find VINs that match a regular expression
    * @param reg A regular expression
    * @return A list of matching VINs
    */
-  def searchByRegex(reg:String) : DBIO[Seq[Vehicle]] = vins.filter(vins => regex(vins.vin, reg)).result
+  def searchByRegex(ns: Namespace, reg:String): Query[VehicleTable, Vehicle, Seq] =
+    all(ns).filter(v => regex(v.vin, reg))
+
+  def updateLastSeen(vin: Vehicle.Vin, lastSeen: DateTime = DateTime.now)
+                    (implicit ec: ExecutionContext): DBIO[DateTime] = {
+    vehicles
+      .filter(_.vin === vin)
+      .map(_.lastSeen)
+      .update(Some(lastSeen))
+      .map(_ => lastSeen)
+  }
+
+  def findBy(vehicle: Vehicle): DBIO[Vehicle] = {
+    vehicles
+      .filter(v => v.namespace === vehicle.namespace && v.vin === vehicle.vin)
+      .result
+      .head
+  }
 }

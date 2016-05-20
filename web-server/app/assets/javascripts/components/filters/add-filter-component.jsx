@@ -32,6 +32,9 @@ define(function(require) {
 		      <input type="text" className="form-control" name="name" ref="name" placeholder="Filter Name"/>
   		    </div>
             <div className="form-group">
+              <input type="hidden" value="default" className="form-control" ref="namespace" name="namespace"/>
+            </div>
+            <div className="form-group">
               <label htmlFor="expression">Filter Expression</label>
                 <textarea type="text" className="form-control" id="expression" ref="expression" name="expression" placeholder='vin_matches "678$"' />
 		    </div>

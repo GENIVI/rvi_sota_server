@@ -6,10 +6,13 @@ package org.genivi.sota.core.db
 
 import java.util.UUID
 
-import org.genivi.sota.core.data.{Package, UpdateRequest}
+import org.genivi.sota.core.data.UpdateRequest
+import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.PackageId
 import org.joda.time.DateTime
-import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
+
+import scala.concurrent.ExecutionContext
 
 /**
  * Database mapping definition for the UpdateRequests table.
@@ -24,14 +27,16 @@ object UpdateRequests {
   import SlickExtensions._
   import org.genivi.sota.refined.SlickRefined._
 
+  // scalastyle:off
   /**
    * Slick mapping definition for the UpdateRequests table
-   * @see {@link http://slick.typesafe.com/}
+   * @see [[http://slick.typesafe.com/]]
    */
   class UpdateRequestTable(tag: Tag) extends Table[UpdateRequest](tag, "UpdateRequest") {
-    def id = column[UUID]("update_request_id", O.PrimaryKey)
-    def packageName = column[Package.Name]("package_name")
-    def packageVersion = column[Package.Version]("package_version")
+    def id = column[UUID]("update_request_id")
+    def namespace = column[Namespace]("namespace")
+    def packageName = column[PackageId.Name]("package_name")
+    def packageVersion = column[PackageId.Version]("package_version")
     def creationTime = column[DateTime]("creation_time")
     def startAfter = column[DateTime]("start_after")
     def finishBefore = column[DateTime]("finish_before")
@@ -39,6 +44,7 @@ object UpdateRequests {
     def signature = column[String]("signature")
     def description = column[String]("description")
     def requestConfirmation = column[Boolean]("request_confirmation")
+    def installPos = column[Int]("install_pos")
 
     import com.github.nscala_time.time.Imports._
     import shapeless._
@@ -53,18 +59,20 @@ object UpdateRequests {
       }
     }
 
-    def * = (id, packageName, packageVersion, creationTime, startAfter, finishBefore,
-             priority, signature, description.?, requestConfirmation).shaped <>
-      (x => UpdateRequest(x._1, Package.Id(x._2, x._3), x._4, x._5 to x._6, x._7, x._8, x._9, x._10),
-      (x: UpdateRequest) => Some((x.id, x.packageId.name, x.packageId.version, x.creationTime,
+    // given `id` is already unique across namespaces, no need to include namespace. Also avoids Slick issue #966.
+    def pk = primaryKey("pk_UpdateRequest", (id))
+
+    def * = (id, namespace, packageName, packageVersion, creationTime, startAfter, finishBefore,
+             priority, signature, description.?, requestConfirmation, installPos).shaped <>
+      (x => UpdateRequest(x._1, x._2, PackageId(x._3, x._4), x._5, x._6 to x._7, x._8, x._9, x._10, x._11, x._12),
+      (x: UpdateRequest) => Some((x.id, x.namespace, x.packageId.name, x.packageId.version, x.creationTime,
                                   x.periodOfValidity.start, x.periodOfValidity.end, x.priority,
-                                  x.signature, x.description, x.requestConfirmation)))
-
-
+                                  x.signature, x.description, x.requestConfirmation, x.installPos)))
   }
+  // scalastyle:on
 
   /**
-   * Internal helper definition to accesss the SQL table
+   * Internal helper definition to access the SQL table
    */
   val all = TableQuery[UpdateRequestTable]
 
@@ -74,8 +82,11 @@ object UpdateRequests {
    */
   def list: DBIO[Seq[UpdateRequest]] = all.result
 
+  /**
+   * List all the update requests for a give update ID
+   */
   def byId(updateId: UUID) : DBIO[Option[UpdateRequest]] =
-    all.filter {_.id === updateId }.result.headOption
+    all.filter {_.id === updateId}.result.headOption
 
   /**
    * Add a new package update. Package updated specify a specific package at a
