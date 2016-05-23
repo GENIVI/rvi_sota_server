@@ -86,7 +86,7 @@ class UpdateService(notifier: UpdateNotifier)
     vinsToPackageIds.map {
       case (vin, requiredPackageIds) =>
         val packages : Set[Package] = requiredPackageIds.map( idsToPackages.get ).map( _.get )
-        UpdateSpec(request.namespace, request, vin, UpdateStatus.Pending, packages)
+        UpdateSpec(request, vin, UpdateStatus.Pending, packages)
     }.toSet
   }
 
@@ -121,7 +121,7 @@ class UpdateService(notifier: UpdateNotifier)
       p <- loadPackage(ns, packageId)
       updateRequest = newUpdateRequest.copy(signature = p.signature.getOrElse(newUpdateRequest.signature),
         description = p.description)
-      spec = UpdateSpec(ns, updateRequest, vin, UpdateStatus.Pending, Set.empty)
+      spec = UpdateSpec(updateRequest, vin, UpdateStatus.Pending, Set.empty)
       dbSpec <- persistRequest(updateRequest, ListSet(spec))
     } yield updateRequest
   }

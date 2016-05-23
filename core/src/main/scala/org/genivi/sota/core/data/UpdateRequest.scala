@@ -91,11 +91,12 @@ import UpdateStatus._
   * @param dependencies The packages to be installed
   */
 case class UpdateSpec(
-  namespace: Namespace,
   request: UpdateRequest,
   vin: Vehicle.Vin,
   status: UpdateStatus,
   dependencies: Set[Package] ) {
+
+  def namespace: Namespace = request.namespace
 
   /**
    * The combined size (in bytes) of all the software updates in this package
