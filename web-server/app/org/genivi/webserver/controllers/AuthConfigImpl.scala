@@ -6,7 +6,7 @@
 package org.genivi.webserver.controllers
 
 import jp.t2v.lab.play2.auth._
-import org.genivi.webserver.Authentication.{Account, Role}
+import org.genivi.webserver.Authentication.{Account, User, Role}
 import play.api.mvc.{RequestHeader, Result}
 import play.api.mvc.Results.{Redirect, Forbidden, Unauthorized}
 
@@ -39,7 +39,7 @@ trait AuthConfigImpl extends AuthConfig {
    * case object Administrator extends Role
    * case object NormalUser extends Role
    */
-  type Authority = Role.Role
+  type Authority = Role
 
   /**
    * A `ClassTag` is used to retrieve an id from the Cache API.
@@ -51,12 +51,6 @@ trait AuthConfigImpl extends AuthConfig {
    * The session timeout in seconds
    */
   val sessionTimeoutInSeconds: Int = 3600
-
-  /**
-   * A function that returns a `User` object from an `Id`.
-   * You can alter the procedure to suit your application.
-   */
-  def resolveUser(id: Id)(implicit ctx: ExecutionContext): Future[Option[User]]
 
   /**
    * Where to redirect the user after a successful login.
@@ -102,8 +96,9 @@ trait AuthConfigImpl extends AuthConfig {
    * You should alter this procedure to suit your application.
    */
   def authorize(user: User, authority: Authority)(implicit ctx: ExecutionContext): Future[Boolean] = Future.successful {
+    println("Authorizing")
     (user.role, authority) match {
-      case (Role.USER, Role.USER) => true
+      case (User, User) => true
       case _                        => false
     }
   }

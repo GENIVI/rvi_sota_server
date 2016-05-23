@@ -28,7 +28,7 @@ class LoginFunTest extends PlaySpec with OneServerPerSuite {
 
   "redirect logins to index page" in {
     val response = await(WS.url(s"http://localhost:$port/authenticate").post(Map(
-      "email" -> Seq("admin@genivi.org"),
+      "email" -> Seq("admin"),
       "password" -> Seq("genivirocks!"))))
     response.status mustBe OK
     response.body must include("SOTA")
