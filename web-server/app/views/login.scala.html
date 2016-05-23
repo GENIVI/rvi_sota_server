@@ -1,4 +1,4 @@
-@(form: Form[Option[org.genivi.webserver.Authentication.Account]])(implicit messages: Messages)
+@(form: Form[(String, String)])(implicit messages: Messages)
 <!DOCTYPE html>
 
 <html lang="en">
@@ -16,7 +16,7 @@
             }
             <div class="form-group">
                 <label for="email">Email address</label>
-                <input class="form-control" type="email" name="email" id="email" placeholder="email" value='@form("email").value'>
+                <input class="form-control" type="text" name="email" id="email" placeholder="user name" value='@form("email").value'>
             </div>
             <div class="form-group">
                 <label for="email">Password</label>
