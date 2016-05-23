@@ -222,7 +222,7 @@ object Dependencies {
 
   lazy val ScalaCheck = "org.scalacheck" %% "scalacheck" % "1.12.4" % "test"
 
-  lazy val Flyway = "org.flywaydb" % "flyway-core" % "3.2.1"
+  lazy val Flyway = "org.flywaydb" % "flyway-core" % "4.0.1"
 
   lazy val TestFrameworks = Seq( ScalaTest, ScalaCheck )
 
