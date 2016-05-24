@@ -27,9 +27,9 @@ This can be done with the following:
     CREATE DATABASE sota_resolver_test;
     CREATE DATABASE sota_core;
     CREATE DATABASE sota_core_test;
-    GRANT ALL PRIVILEGES ON \`sota\_core%\`.* TO 'sota'%';
-    GRANT ALL PRIVILEGES ON \`sota\_resolver%\`.* TO 'sota'%';
-    set global max_connections = 1000;
+    GRANT ALL PRIVILEGES ON \`sota\_core%\`.* TO 'sota_test'@'%';
+    GRANT ALL PRIVILEGES ON \`sota\_resolver%\`.* TO 'sota_test'@'%';
+    SET global max_connections = 1000;
     FLUSH PRIVILEGES;
     " > entrypoint.d/db_user.sql
     
