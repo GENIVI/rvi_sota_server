@@ -16,19 +16,17 @@ import scala.concurrent.Future
 class InMemoryDirectoryModule extends Module {
 
   def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
-    if(environment.mode == Mode.Dev || environment.mode == Mode.Test) {
-      val config = for {
-        c      <- configuration.getConfig("ldap.inmem")
-        baseDN <- c.getString("baseDN")
-        port   <- c.getInt("port")
-      } yield new InMemoryDirectory.Configuration(baseDN, port, c.getString("ldifResource"))
-      config.map(x => Seq(
-                   bind[InMemoryDirectory.Configuration].to(x).eagerly(),
-                   bind[InMemoryDirectory].toSelf.eagerly())
-      ).getOrElse(Seq.empty)
-    } else {
-      Seq.empty
-    }
+    val config = for {
+      c      <- configuration.getConfig("ldap.inmem")
+      baseDN <- c.getString("baseDN") if (c.getBoolean("enabled").getOrElse(
+                                          environment.mode == Mode.Dev || environment.mode == Mode.Test))
+      port   <- c.getInt("port")
+    } yield new InMemoryDirectory.Configuration(baseDN, port, c.getString("ldifResource"))
+
+    config.map(x => Seq(
+      bind[InMemoryDirectory.Configuration].to(x).eagerly(),
+      bind[InMemoryDirectory].toSelf.eagerly())
+    ).getOrElse(Seq.empty)
   }
 
 }
