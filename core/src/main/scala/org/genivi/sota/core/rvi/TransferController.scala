@@ -16,12 +16,13 @@ import java.nio.file.{Paths, StandardOpenOption}
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
-import org.genivi.sota.core.data.{Package, UpdateSpec, UpdateStatus}
+import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateSpec, UpdateStatus}
 import akka.actor._
 import akka.http.scaladsl.model.Uri
 import akka.stream.ActorMaterializer
 import org.apache.commons.codec.binary.Base64
 import org.genivi.sota.core.db.UpdateSpecs
+import org.genivi.sota.core.db.UpdateSpecs.MiniUpdateSpec
 import org.genivi.sota.core.resolver.ConnectivityClient
 import org.genivi.sota.core.storage.S3PackageStore
 import org.genivi.sota.core.transfer.VehicleUpdates
@@ -94,8 +95,6 @@ object UpdateController {
 
 object TransferProtocolActor {
 
-  private[TransferProtocolActor] case class Specs( values : Iterable[UpdateSpec])
-
   /**
    * Configuration for creating [[TransferProtocolActor]] actors.
    */
@@ -110,7 +109,7 @@ object UpdateEvents {
   /**
    * Message from [[TransferProtocolActor]] when all packages are transferred to vehicle.
    */
-  final case class PackagesTransferred( update: UpdateSpec )
+  final case class PackagesTransferred( update: MiniUpdateSpec )
 
   /**
    * Message from [[TransferProtocolActor]] when an installation report is received from the vehicle.
@@ -134,17 +133,10 @@ class TransferProtocolActor(db: Database,
   import cats.syntax.show._
   import context.dispatcher
 
-  type TransferQueueType = Queue[(UpdateSpec, Package)]
-
   val installTimeout : FiniteDuration = FiniteDuration(
     context.system.settings.config.getDuration("rvi.transfer.installTimeout", TimeUnit.MILLISECONDS),
     TimeUnit.MILLISECONDS
   )
-
-  def buildTransferQueue(specs: Iterable[UpdateSpec]) : TransferQueueType = (for {
-    spec <- specs
-    pkg <- spec.dependencies
-  } yield (spec, pkg)).to[Queue]
 
   // scalastyle:off cyclomatic.complexity
   // scalastyle:off method.length
@@ -157,58 +149,38 @@ class TransferProtocolActor(db: Database,
    * or when the transfer is aborted because the vehicle is not responding.
    */
   def running(services: ClientServices,
-              updates: Set[UpdateSpec],
-              pending: TransferQueueType,
-              inProgress: Map[ActorRef, (UpdateSpec, Package)],
+              updates: MiniUpdateSpec,
+              pending: Queue[Package],
+              inProgress: (ActorRef, Package),
               done: Set[Package]) : Receive = {
 
     case akka.actor.Terminated(ref) =>
       // TODO: Handle actors terminated on errors (e.g. file exception in PackageTransferActor)
-      val (oldUpdate, oldPkg) = inProgress.get(ref).get
-      log.debug(s"Package for update $oldUpdate uploaded.")
+      val (oldActor, oldPkg) = inProgress
+      assert(oldActor == ref) // TODO debug code
+      log.debug(s"Package for update $updates uploaded.")
 
-      val (newPending, newInProgress) =
-        if (pending.isEmpty) {
-          (Queue.empty, inProgress - ref)
-        } else {
-          val (update, pkg) = pending.head
-          val nextInProgress = startPackageUpload(services)(update, pkg)
-          (pending.tail, (inProgress - ref) + nextInProgress)
-        }
-
-      if (newInProgress.isEmpty) {
+      if (pending.isEmpty) {
         log.debug( s"All packages uploaded." )
         context.setReceiveTimeout(installTimeout)
-        updates.foreach { x =>
-          context.system.eventStream.publish( UpdateEvents.PackagesTransferred( x ) )
-        }
+        context.system.eventStream.publish( UpdateEvents.PackagesTransferred( updates ) )
       } else {
+        val nextInProgress = startPackageUpload(services)(updates, pending.head)
         val finishedPackageTransfers = done + oldPkg
-        val unfinishedUpdates =
-          for (
-            u <- updates;
-            depsPending = u.dependencies.diff(finishedPackageTransfers)
-            if depsPending.nonEmpty
-          ) yield u
-        context become running(services, unfinishedUpdates, newPending, newInProgress, finishedPackageTransfers)
+        context become running(services, updates, pending.tail, nextInProgress, finishedPackageTransfers)
       }
 
     case x @ ChunksReceived(_, updateId, _) =>
-      inProgress.find { case (_, (spec: UpdateSpec, _)) =>
-        spec.request.id == updateId
-      }.foreach { case (ref: ActorRef, _) =>
-        ref ! x
-      }
+      assert(updates.requestId == updateId) // TODO debug code
+      val (inprActor, inprPkg) = inProgress
+      inprActor ! x
 
     case r @ InstallReport(vin, update) =>
       context.system.eventStream.publish( UpdateEvents.InstallReportReceived(r) )
       log.debug(s"Install report received from $vin: ${update.update_id} installed with ${update.operation_results}")
-      //TODO: handle case where update is None
-      updates.find(_.request.id == update.update_id) match {
-        case Some(spec) =>
-          VehicleUpdates.reportInstall(vin, update)(dispatcher, db)
-          rviClient.sendMessage(services.getpackages, io.circe.Json.Null, ttl())
-      }
+      assert(updates.requestId == update.update_id) // TODO debug code
+      VehicleUpdates.reportInstall(vin, update)(dispatcher, db)
+      rviClient.sendMessage(services.getpackages, io.circe.Json.Null, ttl())
 
     case ReceiveTimeout =>
       abortUpdate(services, updates)
@@ -218,10 +190,10 @@ class TransferProtocolActor(db: Database,
   }
   // scalastyle:on
 
-  def abortUpdate (services: ClientServices, updates: Set[UpdateSpec]): Unit = {
-      rviClient.sendMessage(services.abort, io.circe.Json.Null, ttl())
-      updates.foreach(x => db.run( UpdateSpecs.setStatus(x, UpdateStatus.Canceled) ))
-      context.stop(self)
+  def abortUpdate (services: ClientServices, x: MiniUpdateSpec): Unit = {
+    rviClient.sendMessage(services.abort, io.circe.Json.Null, ttl())
+    db.run( UpdateSpecs.setStatus(x.vin, x.requestId, UpdateStatus.Canceled) )
+    context.stop(self)
   }
 
   def ttl() : DateTime = {
@@ -233,23 +205,26 @@ class TransferProtocolActor(db: Database,
     * Create a worker [[TransferProtocolActor]] to upload the given package to the vehicle.
     */
   def startPackageUpload(services: ClientServices)
-                        (update: UpdateSpec,
-                         pkg: Package): (ActorRef, (UpdateSpec, Package)) = {
-    val r = update.request
-    val ref = context.actorOf(transferActorProps(r.id, r.signature, pkg, services), r.id.toString)
+                        (update: MiniUpdateSpec,
+                         pkg: Package): (ActorRef, Package) = {
+    val ref = context.actorOf(
+      transferActorProps(update.requestId, update.requestSignature, pkg, services), update.requestId.toString
+    )
     context.watch(ref)
-    (ref, (update, pkg))
+    (ref, pkg)
   }
 
   /**
     * Second [[TransferProtocolActor]] behavior, about to upload [[UpdateSpec]]-s to the vehicle.
     */
   def loadSpecs(services: ClientServices) : Receive = {
-    case TransferProtocolActor.Specs(values) =>
-      val todo = buildTransferQueue(values)
-      val workers : Map[ActorRef, (UpdateSpec, Package)] =
-        todo.take(3).map { case (update, pkg) => startPackageUpload(services)(update, pkg) }.toMap
-      context become running( services, values.toSet, todo.drop(3), workers, Set.empty )
+    case Some((value: MiniUpdateSpec, todo: Queue[Package])) =>
+      val worker = startPackageUpload(services)(value, todo.head)
+      context become running( services, value, todo.tail, worker, Set.empty )
+
+    case None =>
+      // do nothing in case no packages to upload. TODO why get here in that case? Should have quit earlier.
+      ()
 
     case Status.Failure(t) =>
       log.error(t, "Unable to load update specifications.")
@@ -263,7 +238,7 @@ class TransferProtocolActor(db: Database,
     case StartDownload(vin, updateId, services) =>
       log.debug(s"$vin requested update $updateId")
       import akka.pattern.pipe
-      db.run(UpdateSpecs.load(vin, updateId)).map(TransferProtocolActor.Specs.apply) pipeTo self
+      db.run(UpdateSpecs.load(vin, updateId)) pipeTo self
       context become loadSpecs(services)
   }
 
@@ -284,7 +259,12 @@ object StartDownloadMessage {
 
 }
 
-case class ChunksReceived(vin: Vehicle.Vin, update_id: UUID, chunks: List[Int])
+/**
+  * The [[ConnectivityClient]] notifies which chunks it received for THE package being transferred.
+  *
+  * @param updReqID of the [[UpdateRequest]]
+  */
+case class ChunksReceived(vin: Vehicle.Vin, updReqID: UUID, chunks: List[Int])
 
 /**
   * Sent by [[PackageTransferActor]] to the [[ConnectivityClient]] (step 2 of 3) to transfer a chunk.

@@ -6,6 +6,7 @@ package org.genivi.sota.core.db
 
 import java.util.UUID
 
+import akka.http.scaladsl.model.Uri
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Uuid
 import org.genivi.sota.core.data._
@@ -16,6 +17,7 @@ import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.db.SlickExtensions
 import slick.driver.MySQLDriver.api._
 
+import scala.collection.immutable.Queue
 import scala.concurrent.ExecutionContext
 
 /**
@@ -78,6 +80,10 @@ object UpdateSpecs {
 
   val updateRequests = TableQuery[UpdateRequestTable]
 
+  case class MiniUpdateSpec(requestId: UUID,
+                            requestSignature: String,
+                            vin: Vehicle.Vin)
+
   /**
     * Add an update for a specific VIN.
     * This update will consist of one-or-more packages that need to be installed
@@ -117,36 +123,36 @@ object UpdateSpecs {
 
   // scalastyle:off cyclomatic.complexity
   /**
-    * Fetch from DB zero or more [[UpdateSpec]] for the given combination ([[UpdateRequest]], VIN)
-    * Note 1: All packages in each resulting [[UpdateSpec]] have in common their status.
-    * Note 2: Because of the above, more than one [[UpdateSpec]] may refer to the same VIN.
+    * Fetch from DB zero or one [[UpdateSpec]] for the given combination ([[UpdateRequest]], VIN)
     *
     * @param vin The VIN to install on
-    * @param updateId Update Id of the update to install
-    *
-    * TODO is DB inhaling of UpdateRequest and Packages necessary? Might be enough Seq of (pack-name, pack-version)
+    * @param updateId Id of the [[UpdateRequest]] to install
     */
   def load(vin: Vehicle.Vin, updateId: UUID)
-          (implicit ec: ExecutionContext) : DBIO[Iterable[UpdateSpec]] = {
+          (implicit ec: ExecutionContext) : DBIO[Option[(MiniUpdateSpec, Queue[Package])]] = {
     val q = for {
       r  <- updateRequests if (r.id === updateId)
       ns  = r.namespace
-      s  <- updateSpecs if (s.vin === vin &&
-                            s.namespace === ns &&
-                            s.requestId === updateId)
       rp <- requiredPackages if (rp.vin === vin &&
                                  rp.namespace === ns &&
                                  rp.requestId === updateId)
       p  <- Packages.packages if (p.namespace === ns &&
                                   p.name === rp.packageName &&
                                   p.version === rp.packageVersion)
-    } yield (r, vin, s.status, p)
+    } yield (r.signature, p)
 
-    val qres: DBIO[Seq[(UpdateRequest, Vin, UpdateStatus, Package)]] = q.result
+    val qres: DBIO[Seq[(String, Package)]] = q.result
 
-    qres.map( _.groupBy(x => (x._1, x._2, x._3) ).map {
-      case ((request, vin, status), xs) => UpdateSpec(request, vin, status, xs.map(_._4).toSet)
-    })
+    qres map { rows =>
+      if (rows.isEmpty) {
+        None
+      } else {
+        val requestSignature = rows.head._1
+        val paks = for (row <- rows; p = row._2) yield p
+        Some(Tuple2(MiniUpdateSpec(updateId, requestSignature, vin), paks.toSet.to[Queue]))
+      }
+    }
+
   }
   // scalastyle:on
 
