@@ -64,15 +64,13 @@ object Device {
     type DeviceType = Value
     val Other, Vehicle = Value
   }
-  implicit val showDeviceType = new Show[DeviceType.Value] {
-    def show(dt: DeviceType.Value) = dt.toString
-  }
 
-  implicit val showDevice: Show[Device] =
-    Show.show(d => d.deviceType match {
-      case DeviceType.Vehicle => s"Vehicle(${d.id}, ${d.deviceId}, ${d.lastSeen})"
-      case _ => s"Device(${d.id}, ${d.lastSeen})"
-    })
+  implicit val showDeviceType = Show.fromToString[DeviceType.Value]
+
+  implicit val showDevice: Show[Device] = Show.show[Device] {
+    case d if d.deviceType == DeviceType.Vehicle => s"Vehicle(${d.id}, ${d.deviceId}, ${d.lastSeen})"
+    case d => s"Device(${d.id}, ${d.lastSeen})"
+  }
 
   implicit val IdOrdering: Ordering[Id] = new Ordering[Id] {
     override def compare(id1: Id, id2: Id): Int = id1.underlying.get compare id2.underlying.get
