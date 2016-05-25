@@ -2,7 +2,7 @@ version: '2'
 services:
   
   mysql:
-    image: advancedtelematic/mariadb
+    image: advancedtelematic/mariadb:stable
     ports:
       - '3306:3306'
     expose:
