@@ -79,14 +79,12 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
     import org.genivi.sota.core.data.client.PendingUpdateRequest._
     import ResponseConversions._
 
-    logVehicleSeen(vin) {
-      val vehiclePackages =
-        VehicleUpdates
-          .findPendingPackageIdsFor(vin)
-          .map(_.toResponse)
+    val vehiclePackages =
+      VehicleUpdates
+        .findPendingPackageIdsFor(vin)
+        .map(_.toResponse)
 
-      complete(db.run(vehiclePackages))
-    }
+    complete(db.run(vehiclePackages))
   }
 
   /**
@@ -166,7 +164,8 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
       (put & path("order")) { setInstallOrder(vin) } ~
       (put & extractUuid & path("cancelupdate") ) { uuid => cancelUpdate(vin, uuid) } ~
       (post & extractNamespace & pathEnd) { ns => queueVehicleUpdate(ns, vin) } ~
-      (get & pathEnd) { pendingPackages(vin) } ~
+      (get & pathEnd) { logVehicleSeen(vin) { pendingPackages(vin) } } ~
+      (get & path("queued")) { pendingPackages(vin) } ~
       (get & extractUuid & path("download")) { uuid => downloadPackage(vin, uuid) } ~
       (get & path("operationresults")) { results(vin) } ~
       (post & extractUuid) { reportInstall } ~

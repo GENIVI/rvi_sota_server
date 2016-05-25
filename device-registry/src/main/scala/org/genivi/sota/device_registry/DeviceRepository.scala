@@ -26,13 +26,13 @@ object Devices {
 
   implicit val idColumnType =
     MappedColumnType.base[Id, String](
-      (id: Id) => id match { case Id(value) => value.get },
+      { case Id(value) => value.get },
       (s: String) => Id(refineV[ValidId](s).right.get)
     )
 
   implicit val deviceIdColumnType =
     MappedColumnType.base[DeviceId, String](
-      _ match { case DeviceId(value) => value.toString },
+      { case DeviceId(value) => value.toString },
       DeviceId(_)
     )
 

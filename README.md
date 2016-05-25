@@ -37,8 +37,7 @@ This can be done with the following:
       --name mariadb-sota \
       -p 3306:3306 \
       -v $(pwd)/entrypoint.d:/docker-entrypoint-initdb.d \
-      -e MYSQL_ROOT_PASSWORD=sota-test \
-      -e MYSQL_USER=sota_test \
+      -e MYSQL_ROOT_PASSWORD=sota-test \      -e MYSQL_USER=sota_test \
       -e MYSQL_PASSWORD=s0ta \
       mariadb:10.1 --character-set-server=utf8 --collation-server=utf8_unicode_ci
 
