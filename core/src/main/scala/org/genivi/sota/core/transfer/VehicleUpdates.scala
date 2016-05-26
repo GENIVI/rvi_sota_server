@@ -6,10 +6,12 @@ package org.genivi.sota.core.transfer
 
 
 import java.util.UUID
+
 import akka.actor.ActorSystem
 import java.util.concurrent.TimeUnit
 
 import akka.http.scaladsl.model.{HttpHeader, HttpResponse, StatusCodes}
+import io.circe.Json
 import io.circe.syntax._
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.core.common.NamespaceDirective
@@ -40,8 +42,9 @@ object VehicleUpdates {
     * Tell resolver to record the given packages as installed on a vehicle, overwriting any previous such list.
     */
   def update(vin: Vehicle.Vin, packageIds: List[PackageId], resolverClient: ExternalResolverClient): Future[Unit] = {
-    val ids = packageIds.asJson
-    resolverClient.setInstalledPackages(vin, ids)
+    // TODO: core should be able to send this instead!
+    val j = Json.obj("packages" -> packageIds.asJson, "firmware" -> Json.arr())
+    resolverClient.setInstalledPackages(vin, j)
   }
 
   def buildReportInstallResponse(vin: Vehicle.Vin, updateReport: UpdateReport)
@@ -59,7 +62,7 @@ object VehicleUpdates {
       s <- updateSpecs.filter(r => r.requestId === updateReport.update_id)
     } yield s.namespace
     //TODO: get default namespace for now, this should be replaced with a lookup to the updates table eventually
-    val namespace = NamespaceDirective.defaultNs(ActorSystem()).get
+    val namespace = NamespaceDirective.defaultNs.get
     val writeResultsIO = updateReport
       .operation_results
       .map(r => org.genivi.sota.core.data.OperationResult(r.id, updateReport.update_id, r.result_code, r.result_text,
