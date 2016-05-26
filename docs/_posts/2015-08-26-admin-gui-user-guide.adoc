@@ -11,7 +11,7 @@ This is the user manual for the SOTA Admin Web GUI. Development is currently at 
 
 == Signing in
 
-The default username is `admin@genivi.org`, and the default password is `genivirocks!`. The url of the server depends on where and how it was deployed; a local deployment using sbt will be at http://localhost:9000; a docker deployment will be on port 80.
+The default username is `admin`, and the default password is `genivirocks!`. The url of the server depends on where and how it was deployed; a local deployment using sbt will be at http://localhost:9000; a docker deployment will be on port 80.
 
 == Managing Vehicles
 
