@@ -138,7 +138,7 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
   }
 
   /**
-    * An ota client PUT the order in which the given [[UpdateRequest]]s are to be installed on a vehicle.
+    * The web app PUT the order in which the given [[UpdateRequest]]s are to be installed on a vehicle.
     */
   def setInstallOrder(vin: Vehicle.Vin): Route = {
     entity(as[Map[Int, UUID]]) { uuids =>

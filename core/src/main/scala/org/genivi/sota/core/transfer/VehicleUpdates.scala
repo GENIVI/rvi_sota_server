@@ -30,6 +30,8 @@ import scala.concurrent.duration._
 import org.genivi.sota.refined.SlickRefined._
 
 import scala.util.control.NoStackTrace
+import org.genivi.sota.core.db.OperationResults
+import org.genivi.sota.core.db.InstallHistories
 
 
 object VehicleUpdates {
@@ -56,11 +58,20 @@ object VehicleUpdates {
     }
   }
 
+  /**
+    * <ul>
+    *   <li>Persist in [[OperationResults.OperationResultTable]] each operation result
+    *       for a combination of ([[UpdateRequest]], VIN)</li>
+    *   <li>Persist the status of the [[UpdateSpec]] as Finished</li>
+    *   <li>Persist the outcome in [[InstallHistories.InstallHistoryTable]]</li>
+    * </ul>
+    */
   def reportInstall(vin: Vehicle.Vin, updateReport: UpdateReport)
                    (implicit ec: ExecutionContext, db: Database): Future[UpdateSpec] = {
-    val namespaceQuery = for {
-      s <- updateSpecs.filter(r => r.requestId === updateReport.update_id)
-    } yield s.namespace
+    val namespaceQuery =
+      updateSpecs
+        .filter(r => r.requestId === updateReport.update_id)
+        .map(_.namespace)
     //TODO: get default namespace for now, this should be replaced with a lookup to the updates table eventually
     val namespace = NamespaceDirective.defaultNs.get
     val writeResultsIO = updateReport
@@ -69,14 +80,15 @@ object VehicleUpdates {
         UUID.randomUUID().toString, updateReport.update_id, r.result_code, r.result_text, vin, namespace))
       .map(r => OperationResults.persist(r))
 
+    val wasSuccessful = updateReport.operation_results.forall(_.isSuccess)
     val dbIO = for {
       spec <- findUpdateSpecFor(vin, updateReport.update_id)
       _ <- DBIO.sequence(writeResultsIO)
       _ <- UpdateSpecs.setStatus(spec, UpdateStatus.Finished)
-      _ <- InstallHistories.log(spec.namespace, vin, spec.request.id, spec.request.packageId, success = true)
+      _ <- InstallHistories.log(spec.namespace, vin, spec.request.id, spec.request.packageId, success = wasSuccessful)
     } yield spec.copy(status = UpdateStatus.Finished)
 
-    db.run(dbIO)
+    db.run(dbIO.transactionally)
   }
 
   def findPendingPackageIdsFor(vin: Vehicle.Vin)
