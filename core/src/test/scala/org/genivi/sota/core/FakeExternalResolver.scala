@@ -19,7 +19,13 @@ class FakeExternalResolver()(implicit system: ActorSystem, mat: ActorMaterialize
   val logger = Logging.getLogger(system, this)
 
   override def setInstalledPackages(vin: Vehicle.Vin, json: Json): Future[Unit] = {
-    val ids = json.as[List[PackageId]].getOrElse(List.empty)
+    val ids = json
+      .cursor
+      .downField("packages")
+      .map(_.as[List[PackageId]].getOrElse(List.empty))
+      .toSeq
+      .flatten
+
     installedPackages.enqueue(ids:_*)
     Future.successful(())
   }
