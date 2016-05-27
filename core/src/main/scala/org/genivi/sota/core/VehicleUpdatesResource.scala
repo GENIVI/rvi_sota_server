@@ -14,6 +14,7 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Uuid
 import io.circe.generic.auto._
 import java.util.UUID
+import org.genivi.sota.common.IDeviceRegistry
 import org.genivi.sota.core.common.NamespaceDirective._
 import org.genivi.sota.core.data.client.PendingUpdateRequest
 import org.genivi.sota.core.data.client.ResponseConversions
@@ -26,7 +27,6 @@ import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, PackageDownloadProc
 import org.genivi.sota.data.Device
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
-import org.genivi.sota.device_registry.IDeviceRegistry
 import org.joda.time.DateTime
 import scala.language.implicitConversions
 import slick.driver.MySQLDriver.api.Database

@@ -17,6 +17,7 @@ import Device._
  * Device transfer object
  */
 final case class DeviceT(
+  deviceName: DeviceName,
   deviceId: Option[Device.DeviceId] = None,
   deviceType: Device.DeviceType = Device.DeviceType.Other
 )
@@ -24,6 +25,7 @@ final case class DeviceT(
 
 final case class Device(namespace: Namespace,
                         id: Id,
+                        deviceName: DeviceName,
                         deviceId: Option[DeviceId] = None,
                         deviceType: Device.DeviceType = DeviceType.Other,
                         lastSeen: Option[DateTime] = None)
@@ -39,6 +41,11 @@ object Device {
   final case class DeviceId(underlying: String) extends AnyVal
   implicit val showDeviceId = new Show[DeviceId] {
     def show(deviceId: DeviceId) = deviceId.underlying
+  }
+
+  final case class DeviceName(underlying: String) extends AnyVal
+  implicit val showDeviceName = new Show[DeviceName] {
+    def show(name: DeviceName) = name.underlying
   }
 
   type DeviceType = DeviceType.DeviceType
@@ -74,6 +81,10 @@ object Device {
 
   implicit val idEncoder: Encoder[Id] = Encoder[String].contramap(implicitly[Show[Id]].show(_))
   implicit val idDecoder: Decoder[Id] = refinedDecoder[String, ValidId].map(Id(_))
+
+  // TODO generalize
+  implicit val deviceNameEncoder: Encoder[DeviceName] = Encoder[String].contramap(implicitly[Show[DeviceName]].show(_))
+  implicit val deviceNameDecoder: Decoder[DeviceName] = Decoder[String].map(DeviceName(_))
 
   implicit val deviceIdEncoder: Encoder[DeviceId] = Encoder[String].contramap(implicitly[Show[DeviceId]].show(_))
   implicit val deviceIdDecoder: Decoder[DeviceId] = Decoder[String].map(DeviceId(_))

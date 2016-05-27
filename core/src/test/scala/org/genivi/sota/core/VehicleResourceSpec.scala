@@ -8,6 +8,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server._
+import akka.http.scaladsl.testkit.RouteTestTimeout
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.http.scaladsl.unmarshalling.Unmarshaller._
 import eu.timepit.refined.api.Refined
@@ -24,6 +25,7 @@ import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
+import scala.concurrent.duration._
 import slick.driver.MySQLDriver.api._
 
 
@@ -43,6 +45,9 @@ class VehicleResourceSpec extends PropSpec
   import Generators._
   import org.genivi.sota.data.VehicleGenerators._
   import org.genivi.sota.data.PackageIdGenerators._
+
+  implicit val routeTimeout: RouteTestTimeout =
+    RouteTestTimeout(10.second)
 
   val rviUri = Uri(system.settings.config.getString( "rvi.endpoint" ))
   val serverTransport = HttpTransport( rviUri )

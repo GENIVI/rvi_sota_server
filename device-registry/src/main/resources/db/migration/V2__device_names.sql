@@ -1,0 +1,2 @@
+ALTER TABLE Device
+ADD device_name VARCHAR(200) UNIQUE NOT NULL;

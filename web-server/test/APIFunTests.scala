@@ -65,8 +65,8 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   case class Package(namespace: String, id: PackageId, uri: Uri, size: Long, checkSum: String, description: String, vendor: String)
   case class PackageResolver(id: PackageId, description: String, vendor: String)
   case class Vehicle(namespace: String, vin: String)
-  case class DeviceT(deviceId: Option[String] = None, deviceType: String)
-  case class Device(namespace: String, deviceId: Option[String] = None, deviceType: String, lastSeen: Option[String])
+  case class DeviceT(deviceName: String, deviceId: Option[String] = None, deviceType: String)
+  case class Device(namespace: String, deviceName: String, deviceId: Option[String] = None, deviceType: String, lastSeen: Option[String])
   case class FilterJson(namespace: String, name: String, expression: String)
   case class FilterPackageJson(namespace: String, filterName : String, packageName : String, packageVersion : String)
   case class ComponentJson(namespace: String, partNumber : String, description : String)
@@ -115,7 +115,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   }
 
   def addVin(vin: String): Unit = {
-    val device = DeviceT(Some(vin), "Vehicle")
+    val device = DeviceT(vin, Some(vin), "Vehicle")
 
     // create in device registry
     val response = makeJsonRequest("devices", POST, device.asJson.noSpaces)

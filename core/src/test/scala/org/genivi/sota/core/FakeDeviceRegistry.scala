@@ -6,9 +6,9 @@ import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
+import org.genivi.sota.common.IDeviceRegistry
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{Device, DeviceT}
-import org.genivi.sota.device_registry.IDeviceRegistry
 import org.genivi.sota.device_registry.common.Errors._
 import org.joda.time.DateTime
 import java.util.UUID._
@@ -38,6 +38,7 @@ class FakeDeviceRegistry()(implicit system: ActorSystem, mat: ActorMaterializer)
     val id: Id = Id(Refined.unsafeApply(randomUUID.toString))
     devices = devices :+ Device(namespace = Refined.unsafeApply("default"),
                                 id = id,
+                                deviceName = d.deviceName,
                                 deviceId = d.deviceId,
                                 deviceType = d.deviceType)
     FastFuture.successful(id)
@@ -66,7 +67,7 @@ class FakeDeviceRegistry()(implicit system: ActorSystem, mat: ActorMaterializer)
     fetchDevice(id).map { _ =>
       devices = devices.map { d =>
         if (d.id == id)
-          d.copy(deviceId = device.deviceId, deviceType = device.deviceType)
+          d.copy(deviceName = device.deviceName, deviceId = device.deviceId, deviceType = device.deviceType)
         else d
       }
       FastFuture.successful(())
@@ -92,4 +93,3 @@ class FakeDeviceRegistry()(implicit system: ActorSystem, mat: ActorMaterializer)
     }
 
 }
-
