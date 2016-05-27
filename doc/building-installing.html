@@ -294,6 +294,18 @@ The version format of packages is configurable, defaulting to MAJOR.MINOR.PATCH,
 </tr>
 </table>
 </div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+The SOTA Web server connects to a LDAP server for login authentication, specified by the environment variables <code>LDAP_HOST</code> and <code>LDAP_PORT</code>. For testing, you can start an in-memory LDAP server by setting <code>LDAP_INMEMORY_ENABLE=true</code>. When running from the console the in-memory LDAP server is started by default, however the following paths need to be specified: <code>LDAP_KEY_STORE_PATH=web-server/conf/certs/client.jks LDAP_TRUST_STORE_PATH=web-server/conf/certs/exampletrust.jks ./sbt sota-webserver/run</code>.
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>Now open <a href="http://localhost:9000/">localhost:9000</a> in a browser.</p>
 </div>
