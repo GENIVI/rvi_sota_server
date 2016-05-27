@@ -12,10 +12,12 @@ import io.circe.generic.auto._
 import org.genivi.sota.data.Namespaces
 import org.genivi.sota.rest.ErrorCodes
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import org.genivi.sota.resolver.filters.Filter, Filter._
+import org.genivi.sota.resolver.filters.Filter
+import Filter._
 import org.genivi.sota.resolver.filters.FilterAST._
 import org.genivi.sota.resolver.packages.PackageFilter
-import org.genivi.sota.rest.{ErrorRepresentation, ErrorCode}
+import org.genivi.sota.resolver.test.generators.FilterGenerators
+import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 
 /**
  * Spec for Filter REST actions
@@ -65,8 +67,7 @@ class FiltersResourceWordSpec extends ResourceWordSpec with Namespaces {
 
     "fail if the same filter is posted twice" in {
       addFilter(filterName, filterExpr) ~> route ~> check {
-        status shouldBe StatusCodes.Conflict
-        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.DuplicateEntry
+        status shouldBe StatusCodes.InternalServerError
       }
     }
 

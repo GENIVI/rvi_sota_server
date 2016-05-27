@@ -16,8 +16,10 @@ import org.genivi.sota.resolver.components.Component
 import Vehicle._
 import akka.http.scaladsl.testkit.RouteTestTimeout
 import org.genivi.sota.resolver.common.InstalledSoftware
+import org.genivi.sota.resolver.test.generators.PackageGenerators
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 import org.scalacheck._
+
 import scala.concurrent.duration._
 
 

@@ -240,9 +240,9 @@ object Dependencies {
   lazy val TypesafeConfig = "com.typesafe" % "config" % "1.3.0"
 
   lazy val Database = Seq (
-    "com.typesafe.slick" %% "slick" % "3.0.2",
-    "com.zaxxer" % "HikariCP" % "2.3.8",
-    "org.mariadb.jdbc" % "mariadb-java-client" % "1.2.0"
+    "com.typesafe.slick" %% "slick" % "3.1.1",
+    "com.typesafe.slick" %% "slick-hikaricp" % "3.1.1",
+    "org.mariadb.jdbc" % "mariadb-java-client" % "1.4.4"
   )
 
   lazy val Play2Auth = Seq(
