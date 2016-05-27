@@ -7,7 +7,7 @@ package org.genivi.sota.core.common
 import akka.actor.ActorSystem
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.directives.BasicDirectives
-import com.typesafe.config.Config
+import com.typesafe.config.{Config, ConfigFactory}
 import eu.timepit.refined._
 import eu.timepit.refined.string._
 import org.genivi.sota.data.Namespace._
@@ -25,9 +25,7 @@ trait NamespaceDirective extends BasicDirectives {
     nsE.right.toOption
   }
 
-  def defaultNs(implicit system: ActorSystem): Option[Namespace] = {
-    configNamespace(system.settings.config)
-  }
+  lazy val defaultNs: Option[Namespace] = configNamespace(ConfigFactory.load())
 
   import eu.timepit.refined.auto._
 

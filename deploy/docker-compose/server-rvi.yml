@@ -72,6 +72,5 @@ services:
       CORE_API_URI: "http://core:8080"
       RESOLVER_API_URI: "http://resolver:8081"
       PLAY_CRYPTO_SECRET: "YM5B6o<ywKn4tTyA;tOZ<2xUEajF4DDi=O/PPm1Q^w2LqtKISd9oqYT6b>>C1gQa"
-
-
+      LDAP_INMEMORY_ENABLE: 'true'
 

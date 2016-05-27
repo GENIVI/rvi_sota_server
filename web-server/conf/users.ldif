@@ -1,0 +1,40 @@
+dn: dc=genivi,dc=org
+objectClass: top
+objectClass: domain
+dc: genivi
+
+dn: ou=users,dc=genivi,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: users
+
+dn: uid=baeldung,ou=users,dc=genivi,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Jim Beam
+sn: Beam
+uid: baeldung
+userPassword: password
+
+dn: uid=sota,ou=users,dc=genivi,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Sota User
+sn: Sota
+uid: sota
+userPassword: s0ta
+
+
+dn: uid=admin,ou=users,dc=genivi,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Sota Admin
+sn: Admin
+uid: admin
+userPassword: genivirocks!

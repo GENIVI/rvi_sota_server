@@ -97,6 +97,8 @@ TIP: The SOTA Core server looks for the RVI server node on localhost by default.
 
 TIP: The version format of packages is configurable, defaulting to MAJOR.MINOR.PATCH, where MAJOR, MINOR, and PATCH are unsigned integers. To change the format, specify a regular expression in the `PACKAGES_VERSION_FORMAT` environment variable.
 
+TIP: The SOTA Web server connects to a LDAP server for login authentication, specified by the environment variables `LDAP_HOST` and `LDAP_PORT`. For testing, you can start an in-memory LDAP server by setting `LDAP_INMEMORY_ENABLE=true`. When running from the console the in-memory LDAP server is started by default, however the following paths need to be specified: `LDAP_KEY_STORE_PATH=web-server/conf/certs/client.jks LDAP_TRUST_STORE_PATH=web-server/conf/certs/exampletrust.jks ./sbt sota-webserver/run`.
+
 Now open http://localhost:9000/[localhost:9000] in a browser.
 
 === Troubleshooting

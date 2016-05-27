@@ -127,6 +127,9 @@ object SotaBuild extends Build {
       testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "APITests BrowserTests"),
       testOptions in IntegrationTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "APITests"),
       testOptions in BrowserTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "BrowserTests"),
+      parallelExecution := false,
+      parallelExecution in IntegrationTests := false,
+      parallelExecution in BrowserTests := false,
       resolvers += "scalaz-bintray"  at "http://dl.bintray.com/scalaz/releases",
       dockerExposedPorts := Seq(9000),
       libraryDependencies ++= Seq (
@@ -138,13 +141,12 @@ object SotaBuild extends Build {
         "org.webjars.bower" % "flux" % "2.0.2",
         "org.webjars.bower" % "backbone" % "1.2.1",
         "org.webjars" % "bootstrap" % "3.3.4",
-        "jp.t2v" %% "play2-auth"        % "0.14.0",
-        "jp.t2v" %% "play2-auth-test"   % "0.14.0" % "test",
         "org.scala-lang.modules" %% "scala-pickling" % "0.10.1",
         "org.mindrot" % "jbcrypt" % "0.3m",
+        "com.unboundid" % "unboundid-ldapsdk" % "3.1.1",
         ws,
         play.sbt.Play.autoImport.cache
-      ) ++ Dependencies.Database
+      ) ++ Dependencies.Database ++ Dependencies.Play2Auth
     ))
     .dependsOn(common)
     .enablePlugins(PlayScala, SbtWeb)
@@ -185,6 +187,8 @@ object Dependencies {
   val AkkaHttpCirceVersion = "1.6.0"
 
   val LogbackVersion = "1.1.3"
+
+  val Play2AuthVersion = "0.14.2"
 
   val AkkaHttp = "com.typesafe.akka" %% "akka-http-experimental" % AkkaVersion
 
@@ -232,6 +236,11 @@ object Dependencies {
     "com.typesafe.slick" %% "slick" % "3.0.2",
     "com.zaxxer" % "HikariCP" % "2.3.8",
     "org.mariadb.jdbc" % "mariadb-java-client" % "1.2.0"
+  )
+
+  lazy val Play2Auth = Seq(
+    "jp.t2v" %% "play2-auth"        % Play2AuthVersion,
+    "jp.t2v" %% "play2-auth-test"   % Play2AuthVersion % "test"
   )
 
   lazy val Slick = Database ++ Seq(Flyway)

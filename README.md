@@ -27,9 +27,9 @@ This can be done with the following:
     CREATE DATABASE sota_resolver_test;
     CREATE DATABASE sota_core;
     CREATE DATABASE sota_core_test;
-    GRANT ALL PRIVILEGES ON \`sota\_core%\`.* TO 'sota'%';
-    GRANT ALL PRIVILEGES ON \`sota\_resolver%\`.* TO 'sota'%';
-    set global max_connections = 1000;
+    GRANT ALL PRIVILEGES ON \`sota\_core%\`.* TO 'sota_test'@'%';
+    GRANT ALL PRIVILEGES ON \`sota\_resolver%\`.* TO 'sota_test'@'%';
+    SET global max_connections = 1000;
     FLUSH PRIVILEGES;
     " > entrypoint.d/db_user.sql
     
@@ -37,8 +37,7 @@ This can be done with the following:
       --name mariadb-sota \
       -p 3306:3306 \
       -v $(pwd)/entrypoint.d:/docker-entrypoint-initdb.d \
-      -e MYSQL_ROOT_PASSWORD=sota-test \
-      -e MYSQL_USER=sota_test \
+      -e MYSQL_ROOT_PASSWORD=sota-test \      -e MYSQL_USER=sota_test \
       -e MYSQL_PASSWORD=s0ta \
       mariadb:10.1 --character-set-server=utf8 --collation-server=utf8_unicode_ci
 

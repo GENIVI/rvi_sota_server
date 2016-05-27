@@ -5,7 +5,7 @@ resolvers ++= Seq(
   "Flyway" at "https://flywaydb.org/repo"
 )
 
-addSbtPlugin("com.typesafe.play" %% "sbt-plugin" % "2.4.2")
+addSbtPlugin("com.typesafe.play" %% "sbt-plugin" % "2.4.6")
 
 addSbtPlugin("com.sksamuel.scapegoat" %% "sbt-scapegoat" % "1.0.0")
 

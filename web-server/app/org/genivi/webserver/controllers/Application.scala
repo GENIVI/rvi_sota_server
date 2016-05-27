@@ -8,7 +8,7 @@ package org.genivi.webserver.controllers
 import javax.inject.Inject
 
 import jp.t2v.lab.play2.auth.{AuthElement, LoginLogout}
-import org.genivi.webserver.Authentication.{AccountManager, Role}
+import org.genivi.webserver.Authentication.{Account, LdapAuth, User}
 import org.slf4j.LoggerFactory
 import play.api.Play.current
 import play.api._
@@ -26,7 +26,7 @@ import scala.concurrent.{ExecutionContext, Future}
  * The main application controller. Handles authentication and request proxying.
  *
  */
-class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val accountManager: AccountManager)
+class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, ldapAuthN: LdapAuth)
   extends Controller with LoginLogout with AuthConfigImpl with I18nSupport with AuthElement {
 
   val auditLogger = LoggerFactory.getLogger("audit")
@@ -84,9 +84,9 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
    * @param path Path of the request
    * @return
    */
-  def apiProxy(path: String) : Action[RawBuffer] = AsyncStack(parse.raw, AuthorityKey -> Role.USER) { implicit req =>
+  def apiProxy(path: String) : Action[RawBuffer] = AsyncStack(parse.raw, AuthorityKey -> User) { implicit req =>
     { // Mitigation for C04: Log transactions to and from SOTA Server
-      auditLogger.info(s"Request: $req from user ${loggedIn.name}")
+      auditLogger.info(s"Request: $req from user ${loggedIn.id}")
     }
     proxyTo(apiByPath(path), req)
   }
@@ -97,10 +97,10 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
    * @param path The path of the request
    * @return
    */
-  def apiProxyBroadcast(path: String) : Action[RawBuffer] = AsyncStack(parse.raw, AuthorityKey -> Role.USER) {
+  def apiProxyBroadcast(path: String) : Action[RawBuffer] = AsyncStack(parse.raw, AuthorityKey -> User) {
     implicit req =>
     { // Mitigation for C04: Log transactions to and from SOTA Server
-      auditLogger.info(s"Request: $req from user ${loggedIn.name}")
+      auditLogger.info(s"Request: $req from user ${loggedIn.id}")
     }
 
     // Must PUT "vehicles" on both core and resolver
@@ -116,24 +116,13 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
    *
    * @return OK response and index html
    */
-  def index : Action[AnyContent] = StackAction(AuthorityKey -> Role.USER) { implicit req =>
+  def index : Action[AnyContent] = StackAction(AuthorityKey -> User) { implicit req =>
     Ok(views.html.main())
   }
 
-  /**
-   * Find a user by id
-   *
-   * @param id The Id of the user
-   * @return Future option of user
-   */
-  def resolveUser(id: Id)(implicit ctx: ExecutionContext): Future[Option[User]] = {
-    Future.successful(accountManager.findById(id))
-  }
-
-  val loginForm = Form {
-    mapping("email" -> email, "password" -> nonEmptyText)(accountManager.authenticate)(_.map(u => (u.email, "")))
-      .verifying("Invalid email or password", result => result.isDefined)
-  }
+  val loginForm = Form (
+    tuple("email" -> nonEmptyText, "password" -> nonEmptyText)
+  )
 
   /**
    * Renders the login form
@@ -153,13 +142,28 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, val acc
   }
 
   /**
+    * A function that returns a `User` object from an `Id`.
+    * You can alter the procedure to suit your application.
+    */
+  def resolveUser(id: Id)(implicit ctx: ExecutionContext): Future[Option[User]] =
+    Future.successful( Some(Account(id, User)))
+
+  /**
    * Authenticates a user
    *
    */
   def authenticate : Action[AnyContent]  = Action.async { implicit request =>
     loginForm.bindFromRequest.fold(
       formWithErrors => Future.successful(BadRequest(views.html.login(formWithErrors))),
-      user => gotoLoginSucceeded(user.get.email)
+      user => {
+        ldapAuthN.authenticate(user._1, user._2)
+          .flatMap{acc => gotoLoginSucceeded(acc.id)}
+          .recoverWith {
+            case t =>
+              Logger.debug("Login failed.", t)
+              Future.successful(BadRequest(views.html.login(loginForm.fill(user._1 -> ""))))
+            }
+      }
     )
   }
 }
