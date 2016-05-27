@@ -8,6 +8,7 @@ import eu.timepit.refined._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import java.util.UUID
+import org.genivi.sota.data.{Device, DeviceT}
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.PackageId
 import org.genivi.sota.db.Operators.regex

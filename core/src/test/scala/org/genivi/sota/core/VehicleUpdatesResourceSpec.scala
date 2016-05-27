@@ -16,7 +16,7 @@ import org.genivi.sota.data.PackageIdGenerators._
 import org.scalacheck.Gen
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateStatus}
-import org.genivi.sota.core.db.{InstallHistories, Packages, Vehicles}
+import org.genivi.sota.core.db.{InstallHistories, Packages}
 import org.genivi.sota.core.transfer.VehicleUpdates
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.generic.auto._
@@ -36,10 +36,11 @@ class VehicleUpdatesResourceSpec extends FunSuite
   with VehicleDatabaseSpec {
 
   val fakeResolver = new FakeExternalResolver()
+  val fakeDeviceRegistry = new FakeDeviceRegistry()
 
   implicit val connectivity = new FakeConnectivity()
 
-  lazy val service = new VehicleUpdatesResource(db, fakeResolver)
+  lazy val service = new VehicleUpdatesResource(db, fakeResolver, fakeDeviceRegistry)
 
   val vehicle = genVehicle.sample.get
 
@@ -53,7 +54,7 @@ class VehicleUpdatesResourceSpec extends FunSuite
 
   test("install updates are forwarded to external resolver") {
     val fakeResolverClient = new FakeExternalResolver()
-    val vehiclesResource = new VehicleUpdatesResource(db, fakeResolverClient)
+    val vehiclesResource = new VehicleUpdatesResource(db, fakeResolverClient, fakeDeviceRegistry)
     val packageIds = Gen.listOf(genPackageId).sample.get
     val uri = vehicleUri.withPath(vehicleUri.path / "installed")
 
@@ -102,28 +103,29 @@ class VehicleUpdatesResourceSpec extends FunSuite
     }
   }
 
-  test("sets vehicle last seen when vehicle asks for updates") {
-    whenReady(createVehicle()) { vehicle =>
-      val uri = baseUri.withPath(baseUri.path / vehicle.vin.get)
-
-      val now = DateTime.now.minusSeconds(10)
-
-      Get(uri) ~> service.route ~> check {
-        status shouldBe StatusCodes.OK
-        responseAs[List[UUID]] should be(empty)
-
-        val vehicleF = db.run(Vehicles.list().map(_.find(_.vin == vehicle.vin)))
-
-        whenReady(vehicleF) {
-          case Some(v) =>
-            v.lastSeen shouldBe defined
-            v.lastSeen.get.isAfter(now) shouldBe true
-          case _ =>
-            fail("Vehicle should be in database")
-        }
-      }
-    }
-  }
+  // TODO: move test to integration tests, since it involves device registry
+  // test("sets vehicle last seen when vehicle asks for updates") {
+  //   whenReady(createVehicle()) { vehicle =>
+  //     val uri = baseUri.withPath(baseUri.path / vehicle.vin.get)
+  //
+  //     val now = DateTime.now.minusSeconds(10)
+  //
+  //     Get(uri) ~> service.route ~> check {
+  //       status shouldBe StatusCodes.OK
+  //       responseAs[List[UUID]] should be(empty)
+  //
+  //       val vehicleF = db.run(Vehicles.list().map(_.find(_.vin == vehicle.vin)))
+  //
+  //       whenReady(vehicleF) {
+  //         case Some(v) =>
+  //           v.lastSeen shouldBe defined
+  //           v.lastSeen.get.isAfter(now) shouldBe true
+  //         case _ =>
+  //           fail("Vehicle should be in database")
+  //       }
+  //     }
+  //   }
+  // }
 
   test("POST an update report updates an UpdateSpec status") {
     whenReady(createUpdateSpec()) { case (_, vehicle, updateSpec) =>
@@ -149,7 +151,9 @@ class VehicleUpdatesResourceSpec extends FunSuite
   }
 
   test("Returns 404 if package does not exist") {
-    val f = db.run(Vehicles.create(vehicle))
+    // TODO
+    val f = Future.successful(vehicle)
+    // val f = db.run(Vehicles.create(vehicle))
 
     whenReady(f) { vehicle =>
       val fakeUpdateRequestUuid = UUID.randomUUID()
@@ -166,7 +170,7 @@ class VehicleUpdatesResourceSpec extends FunSuite
   }
 
   test("GET to download a file returns 3xx if the package URL is an s3 URI") {
-    val service = new VehicleUpdatesResource(db, fakeResolver) {
+    val service = new VehicleUpdatesResource(db, fakeResolver, fakeDeviceRegistry) {
       override lazy val packageRetrievalOp: (Package) => Future[HttpResponse] = {
         _ => Future.successful {
           HttpResponse(StatusCodes.Found, Location("https://some-fake-place") :: Nil)

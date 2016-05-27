@@ -4,23 +4,24 @@
  */
 package org.genivi.sota.core
 
-
+import akka.actor.ActorSystem
 import akka.event.Logging
+import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.{Directive1, Directives}
 import akka.stream.ActorMaterializer
-import org.genivi.sota.core.transfer.UpdateNotifier
-import slick.driver.MySQLDriver.api.Database
+import eu.timepit.refined._
+import eu.timepit.refined.string.Uuid
+import eu.timepit.refined.string._
 import org.genivi.sota.core.common.NamespaceDirective
 import org.genivi.sota.core.resolver.{Connectivity, ExternalResolverClient}
+import org.genivi.sota.core.transfer.UpdateNotifier
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.Vehicle
-import eu.timepit.refined.string.Uuid
-import eu.timepit.refined._
-import eu.timepit.refined.string._
+import org.genivi.sota.device_registry.IDeviceRegistry
 import org.genivi.sota.rest.Validation.refined
-import akka.http.scaladsl.model.StatusCodes._
+import slick.driver.MySQLDriver.api.Database
+
 import Directives._
-import akka.actor.ActorSystem
 
 
 object WebService {
@@ -28,14 +29,17 @@ object WebService {
   val extractUuid = refined[Uuid](Slash ~ Segment)
 }
 
-class WebService(notifier: UpdateNotifier, resolver: ExternalResolverClient, db : Database)
+class WebService(notifier: UpdateNotifier,
+                 resolver: ExternalResolverClient,
+                 deviceRegistry: IDeviceRegistry,
+                 db: Database)
                 (implicit val system: ActorSystem, val mat: ActorMaterializer,
                  connectivity: Connectivity) extends Directives {
   implicit val log = Logging(system, "webservice")
 
   import ErrorHandler._
 
-  val vehicles = new VehiclesResource(db, connectivity.client, resolver)
+  val vehicles = new VehiclesResource(db, connectivity.client, resolver, deviceRegistry)
   val packages = new PackagesResource(resolver, db)
   val updateRequests = new UpdateRequestsResource(db, resolver, new UpdateService(notifier))
   val history = new HistoryResource(db)

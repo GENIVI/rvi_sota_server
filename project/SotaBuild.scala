@@ -66,7 +66,7 @@ object SotaBuild extends Build {
 
   lazy val commonData = Project(id = "sota-common-data", base = file("common-data"))
     .settings(basicSettings ++ compilerSettings)
-    .settings(libraryDependencies ++= Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.CommonsCodec :+ Dependencies.TypesafeConfig :+ Dependencies.NscalaTime)
+    .settings(libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.CommonsCodec :+ Dependencies.TypesafeConfig :+ Dependencies.NscalaTime)
     .settings(Publish.settings)
 
   lazy val commonTest = Project(id = "sota-common-test", base = file("common-test"))
@@ -115,7 +115,7 @@ object SotaBuild extends Build {
     .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
     .settings(inConfig(IntegrationTests)(Defaults.testTasks): _*)
     .configs(IntegrationTests, UnitTests)
-    .dependsOn(common, commonData, commonTest % "test", commonDbTest % "test")
+    .dependsOn(common, commonData, commonTest % "test", commonDbTest % "test", deviceRegistry)
     .enablePlugins(Packaging.plugins: _*)
     .enablePlugins(BuildInfoPlugin)
     .settings(Publish.settings)
@@ -159,21 +159,23 @@ object SotaBuild extends Build {
   lazy val deviceRegistry = Project(id = "sota-device_registry", base = file("device-registry"))
     .settings(commonSettings ++ Migrations.settings ++ Seq(
       libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Refined :+ Dependencies.Flyway :+ Dependencies.Generex,
-      parallelExecution in Test := false,
+      parallelExecution in Test := true,
       dockerExposedPorts := Seq(8083),
       flywayUrl := sys.env.get("DEVICE_REGISTRY_DB_URL").orElse(sys.props.get("device-registry.db.url")).getOrElse("jdbc:mysql://localhost:3306/sota_device_registry"),
       flywayUser := sys.env.get("DEVICE_REGISTRY_DB_USER").orElse(sys.props.get("device-registry.db.user")).getOrElse("sota"),
       flywayPassword := sys.env.get("DEVICE_REGISTRY_DB_PASSWORD").orElse(sys.props.get("device-registry.db.password")).getOrElse("s0ta")
     ))
-    .dependsOn(common, commonData, commonTest % "test")
+    .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
+    .configs(UnitTests)
+    .dependsOn(common, commonData, commonTest % "test", commonDbTest % "test")
     .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
     .settings(Publish.settings)
 
   lazy val sota = Project(id = "sota", base = file("."))
     .settings( basicSettings )
     .settings( Versioning.settings )
-    .settings(Release.settings(common, commonData, commonTest, core, externalResolver))
-    .aggregate(common, commonData, commonTest, core, externalResolver, webServer)
+    .settings(Release.settings(common, commonData, commonTest, core, externalResolver, deviceRegistry))
+    .aggregate(common, commonData, commonTest, core, externalResolver, webServer, deviceRegistry)
     .enablePlugins(Versioning.Plugin)
     .settings(Publish.disable)
 }

@@ -68,6 +68,8 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
 
 
   property("updates installed packages even if some of them does not exist") {
+    val vehicle = genVehicle.sample.get
+
     val stateGen : Gen[(Set[Package], Set[Package])] = for {
       beforeUpdate      <- Gen.nonEmptyContainerOf[Set, Package](genPackage)
       added             <- Gen.nonEmptyContainerOf[Set, Package](genPackage)
@@ -75,9 +77,10 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
       removed           <- Gen.someOf(beforeUpdate)
     } yield (beforeUpdate ++ added, beforeUpdate -- removed ++ added ++ nonExistentAdded)
 
-    forAll(genVehicle, stateGen) { (vehicle, state) =>
+    addVehicleOK(vehicle.vin)
+
+    forAll(stateGen, minSuccessful(10)) { state =>
       val (installedBefore, update) = state
-      addVehicleOK(vehicle.vin)
       installedBefore.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
       Put( Resource.uri(vehicles, vehicle.vin.get, "packages"),
           InstalledSoftware(update.map(_.id), Set())) ~> route ~> check {
@@ -87,15 +90,18 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
   }
 
   property("updates installed packages") {
+    val vehicle = genVehicle.sample.get
+
     val stateGen : Gen[(Set[Package], Set[Package])] = for {
       beforeUpdate <- Gen.nonEmptyContainerOf[Set, Package](genPackage)
       added        <- Gen.nonEmptyContainerOf[Set, Package](genPackage)
       removed      <- Gen.someOf(beforeUpdate)
     } yield (beforeUpdate ++ added, beforeUpdate -- removed ++ added)
 
-    forAll(genVehicle, stateGen) { (vehicle, state) =>
+    addVehicleOK(vehicle.vin)
+
+    forAll(stateGen, minSuccessful(10)) { state =>
       val (availablePackages, update) = state
-      addVehicleOK(vehicle.vin)
       availablePackages.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
       Put( Resource.uri(vehicles, vehicle.vin.get, "packages"),
           InstalledSoftware(update.map(_.id), Set())) ~> route ~> check {

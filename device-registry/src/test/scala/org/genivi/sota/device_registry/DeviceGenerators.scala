@@ -7,7 +7,7 @@ package org.genivi.sota.device_registry.test
 import eu.timepit.refined.api.Refined
 import org.scalacheck.{Arbitrary, Gen}
 import org.genivi.sota.data.Namespaces
-import org.genivi.sota.device_registry.{Device, DeviceT}
+import org.genivi.sota.data.{Device, DeviceT}
 import org.joda.time.DateTime
 
 
