@@ -31,7 +31,7 @@ object UpdateNotifierSpec {
     vin           <- vinGen
     m             <- Gen.choose(1, 10)
     packages      <- Gen.pick(m, packages).map( _.toSet )
-  } yield UpdateSpec(ns, updateRequest, vin, UpdateStatus.Pending, packages )
+  } yield UpdateSpec(updateRequest, vin, UpdateStatus.Pending, packages )
 
   def updateSpecsGen(namespaceGen: Gen[Namespace], vinGen : Gen[Vehicle.Vin] ) : Gen[Seq[UpdateSpec]] =
     Gen.containerOf[Seq, UpdateSpec](updateSpecGen(namespaceGen, vinGen))

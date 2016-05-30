@@ -9,7 +9,7 @@ import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Uuid
-import org.genivi.sota.core.data.{Package, UpdateStatus}
+import org.genivi.sota.core.data.{Package, UpdateSpec, UpdateStatus}
 import org.genivi.sota.core.db.{Packages, UpdateSpecs}
 import org.genivi.sota.core.db.UpdateSpecs._
 import org.genivi.sota.core.storage.PackageStorage.PackageRetrievalOp
@@ -29,7 +29,11 @@ class PackageDownloadProcess(db: Database, packageRetrieval: PackageRetrievalOp)
   import org.genivi.sota.core.data.UpdateRequest
 
   /**
-    * Retrieves from [[PackageStorage]] the binary file for the package denoted by the argument.
+    * <ul>
+    * <li>Retrieves from [[PackageStorage]] the binary file for the package denoted by the argument.</li>
+    * <li>Rewrites in the DB to [[UpdateStatus.InFlight]] the status of an [[UpdateSpec]],
+    * ie for a ([[UpdateRequest]], VIN) combination.</li>
+    * </ul>
     */
   def buildClientDownloadResponse(vin: Vehicle.Vin, updateRequestId: Refined[String, Uuid])
                                  (implicit ec: ExecutionContext): Future[HttpResponse] = {
@@ -37,7 +41,7 @@ class PackageDownloadProcess(db: Database, packageRetrieval: PackageRetrievalOp)
 
     db.run(availablePackageIO) flatMap {
       case Some(packageModel) =>
-        UpdateSpecs.setStatus(vin, updateRequestId, UpdateStatus.InFlight)
+        UpdateSpecs.setStatus(vin, java.util.UUID.fromString(updateRequestId.get), UpdateStatus.InFlight)
         packageRetrieval(packageModel)
       case None =>
         Future.successful(HttpResponse(StatusCodes.NotFound, entity = "Package not found"))

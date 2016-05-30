@@ -101,7 +101,7 @@ object VehicleUpdates {
       .flatMap {
         case Some(((ns: Namespace, uuid: UUID, updateVin: Vehicle.Vin, status: UpdateStatus.UpdateStatus),
                    updateRequest: UpdateRequest)) =>
-          val spec = UpdateSpec(ns, updateRequest, updateVin, status, Set.empty[Package])
+          val spec = UpdateSpec(updateRequest, updateVin, status, Set.empty[Package])
           DBIO.successful(spec)
         case None =>
           DBIO.failed(

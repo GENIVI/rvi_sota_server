@@ -117,39 +117,38 @@ object UpdateSpecs {
 
   // scalastyle:off cyclomatic.complexity
   /**
-    * Install a list of specific packages on a VIN
+    * Fetch from DB zero or more [[UpdateSpec]] for the given combination ([[UpdateRequest]], VIN)
+    * Note 1: All packages in each resulting [[UpdateSpec]] have in common their status.
+    * Note 2: Because of the above, more than one [[UpdateSpec]] may refer to the same VIN.
     *
     * @param vin The VIN to install on
     * @param updateId Update Id of the update to install
+    *
+    * TODO is DB inhaling of UpdateRequest and Packages necessary? Might be enough Seq of (pack-name, pack-version)
     */
   def load(vin: Vehicle.Vin, updateId: UUID)
           (implicit ec: ExecutionContext) : DBIO[Iterable[UpdateSpec]] = {
     val q = for {
       r  <- updateRequests if (r.id === updateId)
-      s  <- updateSpecs if (s.vin === vin && s.namespace === r.namespace && s.requestId === r.id)
-      rp <- requiredPackages if (rp.vin === vin && rp.namespace === r.namespace && rp.requestId === s.requestId)
-      p  <- Packages.packages if (p.namespace === r.namespace &&
+      ns  = r.namespace
+      s  <- updateSpecs if (s.vin === vin &&
+                            s.namespace === ns &&
+                            s.requestId === updateId)
+      rp <- requiredPackages if (rp.vin === vin &&
+                                 rp.namespace === ns &&
+                                 rp.requestId === updateId)
+      p  <- Packages.packages if (p.namespace === ns &&
                                   p.name === rp.packageName &&
                                   p.version === rp.packageVersion)
-    } yield (r, s.vin, s.status, p)
-    q.result.map( _.groupBy(x => (x._1, x._2, x._3) ).map {
-      case ((request, vin, status), xs) => UpdateSpec(request.namespace, request, vin, status, xs.map(_._4).toSet)
+    } yield (r, vin, s.status, p)
+
+    val qres: DBIO[Seq[(UpdateRequest, Vin, UpdateStatus, Package)]] = q.result
+
+    qres.map( _.groupBy(x => (x._1, x._2, x._3) ).map {
+      case ((request, vin, status), xs) => UpdateSpec(request, vin, status, xs.map(_._4).toSet)
     })
   }
   // scalastyle:on
-
-  /**
-    * Rewrite in the DB the status of an [[UpdateSpec]], ie for a (campaign, VIN) combination.
-    *
-    * @param spec The combination of VIN and update request to record the status of
-    * @param newStatus The latest status of the installation. One of Pending
-    *                  InFlight, Canceled, Failed or Finished.
-    */
-  def setStatus(spec: UpdateSpec, newStatus: UpdateStatus) : DBIO[Int] = {
-    queryBy(spec)
-      .map(_.status)
-      .update(newStatus)
-  }
 
   /**
     * Return a list of all the VINs that a specific version of a package will be
@@ -171,14 +170,21 @@ object UpdateSpecs {
   }
 
   /**
-    * Set status of a given update to 'In-Flight'
-    * @param vin the vin associated with the desired update
-    * @param uuid the uuid of the update whose status should be changed
+    * Rewrite in the DB the status of an [[UpdateSpec]], ie for a ([[UpdateRequest]], VIN) combination.
     */
-  def setStatus(vin: Vehicle.Vin, uuid: Refined[String, Uuid], newStatus: UpdateStatus): DBIO[Int] = {
-    (for {
-      r <- updateSpecs.filter(us => us.vin === vin && us.requestId === uuid)
-    } yield r.status).update(newStatus).transactionally
+  def setStatus(spec: UpdateSpec, newStatus: UpdateStatus) : DBIO[Int] = {
+    setStatus(spec.vin, spec.request.id, newStatus)
+  }
+
+  /**
+    * Rewrite in the DB the status of an [[UpdateSpec]], ie for a ([[UpdateRequest]], VIN) combination.
+    */
+  def setStatus(vin: Vehicle.Vin, updateRequestId: UUID, newStatus: UpdateStatus): DBIO[Int] = {
+    updateSpecs
+      .filter(row => row.vin === vin && row.requestId === updateRequestId)
+      .map(_.status)
+      .update(newStatus)
+      .transactionally
   }
 
   /**

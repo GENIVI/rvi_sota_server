@@ -103,7 +103,7 @@ trait Generators {
     packageWithUri = Generators.generatePackageData(packageModel)
     updateRequest <- updateRequestGen(defaultNs, PackageIdGen).map(_.copy(packageId = packageWithUri.id))
   } yield {
-    val updateSpec = UpdateSpec(defaultNs, updateRequest, vehicle.vin,
+    val updateSpec = UpdateSpec(updateRequest, vehicle.vin,
       UpdateStatus.Pending, List(packageWithUri ).toSet)
 
     (packageWithUri, updateSpec)
