@@ -175,6 +175,7 @@ object SotaBuild extends Build {
     .settings(commonSettings)
     .dependsOn(common, commonData)
     .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
+    .settings(Publish.settings)
 
   lazy val sota = Project(id = "sota", base = file("."))
     .settings( basicSettings )
