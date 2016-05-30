@@ -15,8 +15,6 @@ import akka.stream._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
-import org.genivi.sota.core.common.NamespaceDirective
-import org.genivi.sota.core.common.NamespaceDirective._
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db.{Packages, UpdateSpecs}
 import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
@@ -24,6 +22,7 @@ import org.genivi.sota.core.storage.PackageStorage
 import org.genivi.sota.core.storage.PackageStorage.PackageStorageOp
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.PackageId
+import org.genivi.sota.datatype.NamespaceDirective
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.rest.ErrorRepresentation
 import org.genivi.sota.rest.Validation._

@@ -5,7 +5,6 @@
 package org.genivi.sota.core
 
 import com.typesafe.config.{Config, ConfigFactory}
-import org.genivi.sota.core.common.NamespaceDirective
 import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateSpec}
 import org.genivi.sota.core.db.{Packages, UpdateRequests, UpdateSpecs, Vehicles}
 import org.genivi.sota.data.Namespace.Namespace
@@ -13,6 +12,7 @@ import org.genivi.sota.data.Namespace.Namespace
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.data.{Vehicle, VehicleGenerators}
+import org.genivi.sota.datatype.NamespaceDirective
 
 import scala.concurrent.Future
 

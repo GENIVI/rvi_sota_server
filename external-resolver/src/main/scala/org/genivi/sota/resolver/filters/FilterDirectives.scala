@@ -5,21 +5,20 @@
 package org.genivi.sota.resolver.filters
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
-import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.data.Namespace._
+import org.genivi.sota.datatype.NamespaceDirective
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors
-import org.genivi.sota.resolver.common.NamespaceDirective._
 import org.genivi.sota.resolver.packages.PackageFilterRepository
 import org.genivi.sota.rest.Validation._
+
 import scala.concurrent.{ExecutionContext, Future}
 import slick.driver.MySQLDriver.api._
 
@@ -28,7 +27,8 @@ import slick.driver.MySQLDriver.api._
  * API routes for filters.
  * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
  */
-class FilterDirectives(implicit system: ActorSystem,
+class FilterDirectives(namespaceExtractor: Directive1[Namespace] = NamespaceDirective.defaultNamespaceExtractor)
+                      (implicit system: ActorSystem,
                        db: Database,
                        mat: ActorMaterializer,
                        ec: ExecutionContext) {
@@ -75,7 +75,7 @@ class FilterDirectives(implicit system: ActorSystem,
    */
   def route: Route =
     handleExceptions(ExceptionHandler(Errors.onMissingFilter orElse Errors.onMissingPackage)) {
-      (pathPrefix("filters") & extractNamespace) { ns =>
+      (pathPrefix("filters") & namespaceExtractor) { ns =>
         (get & pathEnd) {
           searchFilter(ns)
         } ~

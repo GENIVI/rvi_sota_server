@@ -12,19 +12,20 @@ import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.PackageId
+import org.genivi.sota.datatype.NamespaceDirective
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors
-import org.genivi.sota.resolver.common.NamespaceDirective._
 import org.genivi.sota.resolver.common.RefinementDirectives._
 import org.genivi.sota.resolver.filters.Filter
-import org.genivi.sota.rest.Validation.refined
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
+
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
 
-class PackageDirectives(implicit system: ActorSystem,
+class PackageDirectives(namespaceExtractor: Directive1[Namespace] = NamespaceDirective.defaultNamespaceExtractor)
+                       (implicit system: ActorSystem,
                         db: Database, mat:
                         ActorMaterializer,
                         ec: ExecutionContext) {
@@ -95,8 +96,8 @@ class PackageDirectives(implicit system: ActorSystem,
       } ~
       (get & path("filter")) {
         getFilters
-      } ~
-      ((get | put | delete) & extractNamespace & refinedPackageId) { (ns, id) =>
+     } ~
+      ((get | put | delete) & namespaceExtractor & refinedPackageId) { (ns, id) =>
         (get & pathEnd) {
           getPackage(ns, id)
         } ~

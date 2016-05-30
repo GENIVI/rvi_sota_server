@@ -14,7 +14,6 @@ import eu.timepit.refined._
 import eu.timepit.refined.string._
 import io.circe.generic.auto._
 import io.circe.syntax._
-import org.genivi.sota.core.common.NamespaceDirective
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.{UpdateSpecs, Vehicles}
 import org.genivi.sota.core.resolver.{ConnectivityClient, ExternalResolverClient}
@@ -23,12 +22,14 @@ import org.genivi.sota.data.Vehicle
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.rest.ErrorRepresentation
 import org.genivi.sota.rest.Validation._
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.languageFeature.implicitConversions
 import scala.languageFeature.postfixOps
 import slick.driver.MySQLDriver.api.Database
 import org.genivi.sota.core.db.Vehicles.VehicleTable
 import org.genivi.sota.core.db.UpdateSpecs.{RequiredPackageTable, UpdateSpecTable}
+import org.genivi.sota.datatype.NamespaceDirective
 
 
 class VehiclesResource(db: Database, client: ConnectivityClient,

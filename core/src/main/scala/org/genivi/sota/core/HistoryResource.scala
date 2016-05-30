@@ -13,9 +13,9 @@ import slick.driver.MySQLDriver.api._
 import akka.http.scaladsl.marshalling.Marshaller._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import io.circe.generic.auto._
-import org.genivi.sota.core.common.NamespaceDirective
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.core.data.InstallHistory
+import org.genivi.sota.datatype.NamespaceDirective
 
 class HistoryResource(db: Database, namespaceExtractor: Directive1[Namespace] = NamespaceDirective.defaultNamespaceExtractor)
                      (implicit system: ActorSystem) extends Directives {

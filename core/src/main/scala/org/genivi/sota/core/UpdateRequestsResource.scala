@@ -13,13 +13,12 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string._
 import io.circe.generic.auto._
 import io.circe.syntax._
-import org.genivi.sota.core.common.NamespaceDirective
-import org.genivi.sota.core.common.NamespaceDirective._
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.data.client._
-import org.genivi.sota.core.db.{OperationResults, UpdateSpecs}
+import org.genivi.sota.core.db.UpdateSpecs
 import org.genivi.sota.core.resolver.ExternalResolverClient
 import org.genivi.sota.data.Namespace._
+import org.genivi.sota.datatype.NamespaceDirective
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.rest.Validation._
 import slick.driver.MySQLDriver.api.Database

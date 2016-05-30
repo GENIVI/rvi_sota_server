@@ -19,7 +19,6 @@ import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, PackageDownloadProc
 import org.genivi.sota.data.{PackageId, Vehicle}
 import slick.driver.MySQLDriver.api.Database
 import io.circe.generic.auto._
-import org.genivi.sota.core.common.NamespaceDirective
 import org.genivi.sota.core.db.{OperationResults, UpdateSpecs, Vehicles}
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.core.data.client.ResponseConversions
@@ -28,6 +27,7 @@ import org.genivi.sota.core.storage.PackageStorage
 import org.joda.time.DateTime
 import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec}
 import org.genivi.sota.core.data.client.PendingUpdateRequest
+import org.genivi.sota.datatype.NamespaceDirective
 
 import scala.language.implicitConversions
 

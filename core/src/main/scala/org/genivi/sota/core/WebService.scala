@@ -10,7 +10,6 @@ import akka.http.scaladsl.server.{Directive1, Directives}
 import akka.stream.ActorMaterializer
 import org.genivi.sota.core.transfer.UpdateNotifier
 import slick.driver.MySQLDriver.api.Database
-import org.genivi.sota.core.common.NamespaceDirective
 import org.genivi.sota.core.resolver.{Connectivity, ExternalResolverClient}
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.Vehicle
@@ -21,6 +20,7 @@ import org.genivi.sota.rest.Validation.refined
 import akka.http.scaladsl.model.StatusCodes._
 import Directives._
 import akka.actor.ActorSystem
+import org.genivi.sota.datatype.NamespaceDirective
 
 
 object WebService {
