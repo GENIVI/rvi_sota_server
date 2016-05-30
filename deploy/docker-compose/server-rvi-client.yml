@@ -65,7 +65,7 @@ services:
       - resolver
       - core
     ports:
-      - 80:9000
+      - 9000:9000
     expose:
       - 9000
     environment:
