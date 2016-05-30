@@ -23,9 +23,8 @@ object NamespaceDirective {
   }
 
   private lazy val defaultConfigNamespace: Namespace =
-    configNamespace(ConfigFactory.load()).getOrElse("default")
+    configNamespace(ConfigFactory.load()).getOrElse("default-config-ns")
 
-  // TODO: Start here, remove this method, see what breaks
   lazy val defaultNamespaceExtractor: Directive1[Namespace] =
     BasicDirectives.provide(defaultConfigNamespace)
 }

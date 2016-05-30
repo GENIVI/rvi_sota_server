@@ -23,7 +23,7 @@ import org.genivi.sota.datatype.NamespaceDirective
 /**
  * API routes for package resolution.
  */
-class ResolveDirectives(namespaceExtractor: Directive1[Namespace] = NamespaceDirective.defaultNamespaceExtractor)
+class ResolveDirectives(namespaceExtractor: Directive1[Namespace])
                        (implicit system: ActorSystem,
                         db: Database,
                         mat: ActorMaterializer,

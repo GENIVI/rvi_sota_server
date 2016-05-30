@@ -29,12 +29,10 @@ import scala.languageFeature.postfixOps
 import slick.driver.MySQLDriver.api.Database
 import org.genivi.sota.core.db.Vehicles.VehicleTable
 import org.genivi.sota.core.db.UpdateSpecs.{RequiredPackageTable, UpdateSpecTable}
-import org.genivi.sota.datatype.NamespaceDirective
-
 
 class VehiclesResource(db: Database, client: ConnectivityClient,
                        resolverClient: ExternalResolverClient,
-                       namespaceExtractor: Directive1[Namespace] = NamespaceDirective.defaultNamespaceExtractor)
+                       namespaceExtractor: Directive1[Namespace])
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
 
   import CirceMarshallingSupport._

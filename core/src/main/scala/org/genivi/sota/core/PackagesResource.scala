@@ -39,7 +39,7 @@ object PackagesResource {
 }
 
 class PackagesResource(resolver: ExternalResolverClient, db : Database,
-                       namespaceExtractor: Directive1[Namespace] = NamespaceDirective.defaultNamespaceExtractor)
+                       namespaceExtractor: Directive1[Namespace])
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
 
   import akka.stream.stage._

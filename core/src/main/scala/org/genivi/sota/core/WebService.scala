@@ -34,11 +34,12 @@ class WebService(notifier: UpdateNotifier, resolver: ExternalResolverClient, db 
   implicit val log = Logging(system, "webservice")
 
   import ErrorHandler._
+  import NamespaceDirective._
 
-  val vehicles = new VehiclesResource(db, connectivity.client, resolver)
-  val packages = new PackagesResource(resolver, db)
-  val updateRequests = new UpdateRequestsResource(db, resolver, new UpdateService(notifier))
-  val history = new HistoryResource(db)
+  val vehicles = new VehiclesResource(db, connectivity.client, resolver, defaultNamespaceExtractor)
+  val packages = new PackagesResource(resolver, db, defaultNamespaceExtractor)
+  val updateRequests = new UpdateRequestsResource(db, resolver, new UpdateService(notifier), defaultNamespaceExtractor)
+  val history = new HistoryResource(db, defaultNamespaceExtractor)
 
   val route = (handleErrors & pathPrefix("api" / "v1")) {
     vehicles.route ~ packages.route ~ updateRequests.route ~ history.route

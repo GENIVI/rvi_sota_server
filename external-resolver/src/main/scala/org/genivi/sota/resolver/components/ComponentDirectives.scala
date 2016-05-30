@@ -18,14 +18,12 @@ import org.genivi.sota.resolver.common.Errors
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 import Directives._
-import org.genivi.sota.datatype.NamespaceDirective
-
 
 /**
  * API routes for creating, deleting, and listing components.
  * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
  */
-class ComponentDirectives(namespaceExtractor: Directive1[Namespace] = NamespaceDirective.defaultNamespaceExtractor)
+class ComponentDirectives(namespaceExtractor: Directive1[Namespace])
                          (implicit system: ActorSystem,
                           db: Database,
                           mat: ActorMaterializer,

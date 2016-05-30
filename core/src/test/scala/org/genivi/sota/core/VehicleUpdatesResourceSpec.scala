@@ -22,6 +22,7 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.generic.auto._
 import org.genivi.sota.core.data.client.PendingUpdateRequest
 import org.genivi.sota.core.resolver.{Connectivity, ConnectivityClient, DefaultConnectivity}
+import org.genivi.sota.datatype.NamespaceDirective
 import org.joda.time.DateTime
 
 import scala.concurrent.Future
@@ -35,11 +36,13 @@ class VehicleUpdatesResourceSpec extends FunSuite
   with UpdateResourcesDatabaseSpec
   with VehicleDatabaseSpec {
 
+  import NamespaceDirective._
+
   val fakeResolver = new FakeExternalResolver()
 
   implicit val connectivity = new FakeConnectivity()
 
-  lazy val service = new VehicleUpdatesResource(db, fakeResolver)
+  lazy val service = new VehicleUpdatesResource(db, fakeResolver, defaultNamespaceExtractor)
 
   val vehicle = genVehicle.sample.get
 
@@ -53,7 +56,7 @@ class VehicleUpdatesResourceSpec extends FunSuite
 
   test("install updates are forwarded to external resolver") {
     val fakeResolverClient = new FakeExternalResolver()
-    val vehiclesResource = new VehicleUpdatesResource(db, fakeResolverClient)
+    val vehiclesResource = new VehicleUpdatesResource(db, fakeResolverClient, defaultNamespaceExtractor)
     val packageIds = Gen.listOf(genPackageId).sample.get
     val uri = vehicleUri.withPath(vehicleUri.path / "installed")
 
@@ -166,7 +169,7 @@ class VehicleUpdatesResourceSpec extends FunSuite
   }
 
   test("GET to download a file returns 3xx if the package URL is an s3 URI") {
-    val service = new VehicleUpdatesResource(db, fakeResolver) {
+    val service = new VehicleUpdatesResource(db, fakeResolver, defaultNamespaceExtractor) {
       override lazy val packageRetrievalOp: (Package) => Future[HttpResponse] = {
         _ => Future.successful {
           HttpResponse(StatusCodes.Found, Location("https://some-fake-place") :: Nil)

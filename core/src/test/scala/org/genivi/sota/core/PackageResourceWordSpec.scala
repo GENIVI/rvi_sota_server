@@ -22,6 +22,7 @@ import slick.driver.MySQLDriver.api._
 import DataPackage._
 import org.genivi.sota.core.resolver.DefaultExternalResolverClient
 import org.genivi.sota.data.PackageId
+import org.genivi.sota.datatype.NamespaceDirective
 
 /**
  * WordSpec tests for Package REST actions
@@ -35,6 +36,7 @@ class PackageResourceWordSpec extends WordSpec
 
   import io.circe.generic.auto._
   import CirceMarshallingSupport._
+  import NamespaceDirective._
 
   lazy val config =system.settings.config
 
@@ -44,7 +46,7 @@ class PackageResourceWordSpec extends WordSpec
     Uri(config.getString("resolver.packagesUri")),
     Uri(config.getString("resolver.vehiclesUri"))
   )
-  lazy val service = new PackagesResource(externalResolverClient, db)
+  lazy val service = new PackagesResource(externalResolverClient, db, defaultNamespaceExtractor)
 
   val testPackagesParams = List(
     ("default", "vim", "7.0.1"), ("default", "vim", "7.1.1"),

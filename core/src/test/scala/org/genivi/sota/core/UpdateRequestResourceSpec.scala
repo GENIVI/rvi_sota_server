@@ -17,6 +17,7 @@ import org.joda.time.{DateTime, Interval}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 import akka.http.scaladsl.unmarshalling._
+import org.genivi.sota.datatype.NamespaceDirective
 
 import scala.concurrent.Future
 
@@ -30,6 +31,7 @@ class UpdateRequestResourceSpec extends FunSuite
 
   import CirceMarshallingSupport._
   import UpdateSpec._
+  import NamespaceDirective._
 
   implicit val log = Logging(system, "UpdateRequestResourceSpec")
 
@@ -41,7 +43,7 @@ class UpdateRequestResourceSpec extends FunSuite
 
   implicit val connectivity = DefaultConnectivity
 
-  val serve = new UpdateRequestsResource(db, resolver, new UpdateService(DefaultUpdateNotifier))
+  val serve = new UpdateRequestsResource(db, resolver, new UpdateService(DefaultUpdateNotifier), defaultNamespaceExtractor)
 
   test("accepts new updates with a Client specific format") {
     val now = DateTime.now

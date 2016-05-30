@@ -17,7 +17,7 @@ import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.core.data.InstallHistory
 import org.genivi.sota.datatype.NamespaceDirective
 
-class HistoryResource(db: Database, namespaceExtractor: Directive1[Namespace] = NamespaceDirective.defaultNamespaceExtractor)
+class HistoryResource(db: Database, namespaceExtractor: Directive1[Namespace])
                      (implicit system: ActorSystem) extends Directives {
 
   import CirceMarshallingSupport._

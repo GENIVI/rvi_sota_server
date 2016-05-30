@@ -24,7 +24,7 @@ import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
 
-class PackageDirectives(namespaceExtractor: Directive1[Namespace] = NamespaceDirective.defaultNamespaceExtractor)
+class PackageDirectives(namespaceExtractor: Directive1[Namespace])
                        (implicit system: ActorSystem,
                         db: Database, mat:
                         ActorMaterializer,

@@ -24,7 +24,7 @@ import org.genivi.sota.rest.Validation._
 import slick.driver.MySQLDriver.api.Database
 
 class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, updateService: UpdateService,
-                             namespaceExtractor: Directive1[Namespace] = NamespaceDirective.defaultNamespaceExtractor)
+                             namespaceExtractor: Directive1[Namespace])
                             (implicit system: ActorSystem, mat: ActorMaterializer) {
 
   import CirceMarshallingSupport._

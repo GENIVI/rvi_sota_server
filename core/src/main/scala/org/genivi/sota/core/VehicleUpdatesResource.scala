@@ -27,12 +27,11 @@ import org.genivi.sota.core.storage.PackageStorage
 import org.joda.time.DateTime
 import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec}
 import org.genivi.sota.core.data.client.PendingUpdateRequest
-import org.genivi.sota.datatype.NamespaceDirective
 
 import scala.language.implicitConversions
 
 class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClient,
-                             namespaceExtractor: Directive1[Namespace] = NamespaceDirective.defaultNamespaceExtractor)
+                             namespaceExtractor: Directive1[Namespace])
                             (implicit system: ActorSystem, mat: ActorMaterializer,
                              connectivity: Connectivity = DefaultConnectivity) extends Directives {
 

@@ -25,16 +25,18 @@ import slick.driver.MySQLDriver.api._
  */
 class Routing
   (implicit db: Database, system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext)
-    extends Directives {
+ {
+   import Directives._
+   import org.genivi.sota.datatype.NamespaceDirective._
 
   val route: Route = pathPrefix("api" / "v1") {
     handleRejections(rejectionHandler) {
       handleExceptions(exceptionHandler) {
-        new VehicleDirectives().route ~
-        new PackageDirectives().route ~
-        new FilterDirectives().route ~
-        new ResolveDirectives().route ~
-        new ComponentDirectives().route
+        new VehicleDirectives(defaultNamespaceExtractor).route ~
+        new PackageDirectives(defaultNamespaceExtractor).route ~
+        new FilterDirectives(defaultNamespaceExtractor).route ~
+        new ResolveDirectives(defaultNamespaceExtractor).route ~
+        new ComponentDirectives(defaultNamespaceExtractor).route
       }
     }
   }

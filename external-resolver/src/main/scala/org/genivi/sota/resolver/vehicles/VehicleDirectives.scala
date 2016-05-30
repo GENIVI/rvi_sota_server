@@ -31,7 +31,7 @@ import slick.driver.MySQLDriver.api._
  *
  * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
  */
-class VehicleDirectives(namespaceExtractor: Directive1[Namespace] = NamespaceDirective.defaultNamespaceExtractor)
+class VehicleDirectives(namespaceExtractor: Directive1[Namespace])
                        (implicit system: ActorSystem,
                         db: Database,
                         mat: ActorMaterializer,
