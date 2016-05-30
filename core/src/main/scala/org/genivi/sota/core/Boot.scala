@@ -15,8 +15,10 @@ import org.genivi.sota.common.client.DeviceRegistryClient
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, DefaultExternalResolverClient}
 import org.genivi.sota.core.rvi._
+import org.genivi.sota.core.storage.S3PackageStore
 import org.genivi.sota.core.transfer._
 import org.genivi.sota.data.Namespace._
+import scala.util.{Failure, Success, Try}
 import org.genivi.sota.http.SotaDirectives._
 import scala.util.{Failure, Success, Try}
 
@@ -25,9 +27,11 @@ object Boot extends App with DatabaseConfig {
 
   import slick.driver.MySQLDriver.api.Database
   def startSotaServices(db: Database): Route = {
+
+    val s3PackageStoreOpt = S3PackageStore.loadCredentials(config).map { new S3PackageStore(_) }
     val transferProtocolProps =
       TransferProtocolActor.props(db, connectivity.client,
-                                  PackageTransferActor.props(connectivity.client))
+                                  PackageTransferActor.props(connectivity.client, s3PackageStoreOpt))
     val updateController = system.actorOf( UpdateController.props(transferProtocolProps ), "update-controller")
     new rvi.SotaServices(updateController, externalResolverClient).route
   }
