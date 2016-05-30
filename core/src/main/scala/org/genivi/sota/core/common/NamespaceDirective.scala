@@ -14,17 +14,18 @@ import org.genivi.sota.data.Namespace._
 import scala.util.Try
 
 object NamespaceDirective {
+  import eu.timepit.refined.auto._
+
   def configNamespace(config: Config): Option[Namespace] = {
     val namespaceString = Try(config.getString("core.defaultNs")).getOrElse("default")
     val nsE: Either[String, Namespace] = refineV(namespaceString)
     nsE.right.toOption
   }
 
-  lazy val defaultNs: Option[Namespace] = configNamespace(ConfigFactory.load())
-
-  import eu.timepit.refined.auto._
+  private lazy val defaultConfigNamespace: Namespace =
+    configNamespace(ConfigFactory.load()).getOrElse("default")
 
   // TODO: Start here, remove this method, see what breaks
-  lazy val defaultNamespace: Directive1[Namespace] =
-    BasicDirectives.provide(defaultNs.getOrElse("default"))
+  lazy val defaultNamespaceExtractor: Directive1[Namespace] =
+    BasicDirectives.provide(defaultConfigNamespace)
 }

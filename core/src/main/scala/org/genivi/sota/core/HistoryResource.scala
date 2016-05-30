@@ -5,7 +5,7 @@
 package org.genivi.sota.core
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.server.{Directives, Route}
+import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import org.genivi.sota.core.db.InstallHistories
 import org.genivi.sota.data.Namespace.Namespace
 import org.genivi.sota.data.Vehicle.Vin
@@ -13,12 +13,13 @@ import slick.driver.MySQLDriver.api._
 import akka.http.scaladsl.marshalling.Marshaller._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import io.circe.generic.auto._
+import org.genivi.sota.core.common.NamespaceDirective
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.core.data.InstallHistory
 
-class HistoryResource (db: Database)(implicit system: ActorSystem) extends Directives {
-  import org.genivi.sota.core.WebService._
-  import org.genivi.sota.core.common.NamespaceDirective._
+class HistoryResource(db: Database, namespaceExtractor: Directive1[Namespace] = NamespaceDirective.defaultNamespaceExtractor)
+                     (implicit system: ActorSystem) extends Directives {
+
   import CirceMarshallingSupport._
 
   /**
@@ -29,9 +30,7 @@ class HistoryResource (db: Database)(implicit system: ActorSystem) extends Direc
   }
 
   val route =
-    (pathPrefix("history") & parameter('vin.as[Vin])) { vin =>
-      extractNamespace(system) { ns =>
-        (get & pathEnd) { history(ns, vin) }
-      }
+    (pathPrefix("history") & parameter('vin.as[Vin]) & namespaceExtractor) { (vin, ns) =>
+      (get & pathEnd) { history(ns, vin) }
     }
 }

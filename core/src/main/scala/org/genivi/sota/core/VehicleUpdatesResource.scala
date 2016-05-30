@@ -19,8 +19,8 @@ import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, PackageDownloadProc
 import org.genivi.sota.data.{PackageId, Vehicle}
 import slick.driver.MySQLDriver.api.Database
 import io.circe.generic.auto._
-import org.genivi.sota.core.db.{OperationResults, Vehicles, UpdateSpecs}
-import org.genivi.sota.core.common.NamespaceDirective._
+import org.genivi.sota.core.common.NamespaceDirective
+import org.genivi.sota.core.db.{OperationResults, UpdateSpecs, Vehicles}
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.core.data.client.ResponseConversions
 import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, ExternalResolverClient}
@@ -31,7 +31,8 @@ import org.genivi.sota.core.data.client.PendingUpdateRequest
 
 import scala.language.implicitConversions
 
-class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClient)
+class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClient,
+                             namespaceExtractor: Directive1[Namespace] = NamespaceDirective.defaultNamespaceExtractor)
                             (implicit system: ActorSystem, mat: ActorMaterializer,
                              connectivity: Connectivity = DefaultConnectivity) extends Directives {
 
@@ -163,7 +164,7 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
       (put & path("installed")) { updateInstalledPackages(vin) } ~
       (put & path("order")) { setInstallOrder(vin) } ~
       (put & extractUuid & path("cancelupdate") ) { uuid => cancelUpdate(vin, uuid) } ~
-      (post & extractNamespace & pathEnd) { ns => queueVehicleUpdate(ns, vin) } ~
+      (post & namespaceExtractor & pathEnd) { ns => queueVehicleUpdate(ns, vin) } ~
       (get & pathEnd) { logVehicleSeen(vin) { pendingPackages(vin) } } ~
       (get & path("queued")) { pendingPackages(vin) } ~
       (get & extractUuid & path("download")) { uuid => downloadPackage(vin, uuid) } ~

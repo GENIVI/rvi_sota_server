@@ -8,23 +8,21 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.model.StatusCodes.NoContent
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.{Directives, Route}
+import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
 import eu.timepit.refined._
 import eu.timepit.refined.string._
 import io.circe.generic.auto._
 import io.circe.syntax._
-import org.genivi.sota.core.common.NamespaceDirective._
+import org.genivi.sota.core.common.NamespaceDirective
 import org.genivi.sota.core.data._
-import org.genivi.sota.core.db.{InstallHistories, OperationResults, UpdateSpecs, Vehicles}
+import org.genivi.sota.core.db.{UpdateSpecs, Vehicles}
 import org.genivi.sota.core.resolver.{ConnectivityClient, ExternalResolverClient}
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.Vehicle
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.rest.ErrorRepresentation
 import org.genivi.sota.rest.Validation._
-import org.joda.time.DateTime
-
 import scala.concurrent.{ExecutionContext, Future}
 import scala.languageFeature.implicitConversions
 import scala.languageFeature.postfixOps
@@ -33,7 +31,9 @@ import org.genivi.sota.core.db.Vehicles.VehicleTable
 import org.genivi.sota.core.db.UpdateSpecs.{RequiredPackageTable, UpdateSpecTable}
 
 
-class VehiclesResource(db: Database, client: ConnectivityClient, resolverClient: ExternalResolverClient)
+class VehiclesResource(db: Database, client: ConnectivityClient,
+                       resolverClient: ExternalResolverClient,
+                       namespaceExtractor: Directive1[Namespace] = NamespaceDirective.defaultNamespaceExtractor)
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
 
   import CirceMarshallingSupport._
@@ -102,7 +102,7 @@ class VehiclesResource(db: Database, client: ConnectivityClient, resolverClient:
   }
 
   val route =
-    (pathPrefix("vehicles") & extractNamespace) { ns =>
+    (pathPrefix("vehicles") & namespaceExtractor) { ns =>
       extractVin { vin =>
         pathEnd {
           get {
