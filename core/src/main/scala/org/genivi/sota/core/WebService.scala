@@ -12,12 +12,12 @@ import akka.stream.ActorMaterializer
 import eu.timepit.refined._
 import eu.timepit.refined.string.Uuid
 import eu.timepit.refined.string._
-import org.genivi.sota.common.IDeviceRegistry
 import org.genivi.sota.core.common.NamespaceDirective
 import org.genivi.sota.core.resolver.{Connectivity, ExternalResolverClient}
 import org.genivi.sota.core.transfer.UpdateNotifier
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.Vehicle
+import org.genivi.sota.device_registry.IDeviceRegistry
 import org.genivi.sota.rest.Validation.refined
 import slick.driver.MySQLDriver.api.Database
 

@@ -6,12 +6,12 @@ package org.genivi.sota.core
 
 import akka.http.scaladsl.util.FastFuture
 import com.typesafe.config.{Config, ConfigFactory}
-import org.genivi.sota.common.IDeviceRegistry
 import org.genivi.sota.core.common.NamespaceDirective
 import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateSpec}
 import org.genivi.sota.core.db.{Packages, UpdateRequests, UpdateSpecs}
 import org.genivi.sota.data.Namespace.Namespace
 import org.genivi.sota.data.{Device, DeviceT, Vehicle, VehicleGenerators}
+import org.genivi.sota.device_registry.IDeviceRegistry
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import slick.driver.MySQLDriver.api._
@@ -67,9 +67,7 @@ trait VehicleDatabaseSpec {
 
   def createVehicle(deviceRegistry: IDeviceRegistry)(implicit ec: ExecutionContext): Future[Vehicle] = {
     val vehicle = VehicleGenerators.genVehicle.sample.get
-    deviceRegistry.createDevice(DeviceT(DeviceName(vehicle.vin.get),
-                                        Some(DeviceId(vehicle.vin.get)),
-                                        DeviceType.Vehicle))
+    deviceRegistry.createDevice(DeviceT(Some(DeviceId(vehicle.vin.get)), DeviceType.Vehicle))
     FastFuture.successful(vehicle)
   }
 }

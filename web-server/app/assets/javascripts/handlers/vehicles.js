@@ -8,7 +8,6 @@ define(function(require) {
   var createVehicle = function(payload) {
     var url = '/api/v1/devices/';
     const device = {
-      deviceName: payload.vehicle.vin,
       deviceId: payload.vehicle.vin,
       deviceType: 'Vehicle'
     }
@@ -55,7 +54,7 @@ define(function(require) {
             sendRequest.doGet('/api/v1/vehicles?packageName=' + payload.name + '&packageVersion=' + payload.version)
               .success(function(vehicles) {
                 var list = _.map(vehicles, function(vehicle) {
-                  return {vin: vehicle.vin};
+                  return vehicle.vin;
                 });
                 db.vehiclesForPackage.reset(list);
               });
