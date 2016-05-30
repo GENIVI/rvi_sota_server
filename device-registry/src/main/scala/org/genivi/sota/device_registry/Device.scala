@@ -1,36 +1,51 @@
-/**
+/*
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.data
+package org.genivi.sota.device_registry
 
 import cats.Show
 import cats.data.Xor
 import eu.timepit.refined.api.{Refined, Validate}
 import eu.timepit.refined.string._
+import io.circe.{Decoder, Encoder}
 import org.genivi.sota.data.Namespace._
 import org.joda.time.DateTime
+import slick.driver.MySQLDriver.MappedJdbcType
+import slick.driver.MySQLDriver.api._
 
 import Device._
 
-/*
- * Device transfer object
- */
-final case class DeviceT(
-  deviceName: DeviceName,
-  deviceId: Option[Device.DeviceId] = None,
-  deviceType: Device.DeviceType = Device.DeviceType.Other
-)
 
+trait CirceEnum extends Enumeration {
+  implicit val encode: Encoder[Value] = Encoder[String].contramap(_.toString)
+  implicit val decode: Decoder[Value] = Decoder[String].map(this.withName)
+}
+
+trait SlickEnum extends Enumeration {
+  implicit val enumMapper = MappedJdbcType.base[Value, Int](_.id, this.apply)
+}
 
 final case class Device(namespace: Namespace,
-                        id: Id,
-                        deviceName: DeviceName,
-                        deviceId: Option[DeviceId] = None,
-                        deviceType: Device.DeviceType = DeviceType.Other,
-                        lastSeen: Option[DateTime] = None)
+                  id: Id,
+                  deviceId: Option[DeviceId] = None,
+                  deviceType: Device.DeviceType = DeviceType.Other,
+                  lastSeen: Option[DateTime] = None)
 
 object Device {
+
+  // circe marshalling
+
+  import io.circe._
+  import org.genivi.sota.marshalling.CirceMarshallingSupport._
+
+  implicit def idEncoder: Encoder[Id] = Encoder[String].contramap(implicitly[Show[Id]].show(_))
+  implicit val idDecoder: Decoder[Id] = refinedDecoder[String, ValidId].map(Id(_))
+
+  implicit def deviceIdEncoder: Encoder[DeviceId] = Encoder[String].contramap(implicitly[Show[DeviceId]].show(_))
+  implicit val deviceIdDecoder: Decoder[DeviceId] = Decoder[String].map(DeviceId(_))
+
+  //
 
   type ValidId = Uuid
   final case class Id(underlying: String Refined ValidId) extends AnyVal
@@ -41,11 +56,6 @@ object Device {
   final case class DeviceId(underlying: String) extends AnyVal
   implicit val showDeviceId = new Show[DeviceId] {
     def show(deviceId: DeviceId) = deviceId.underlying
-  }
-
-  final case class DeviceName(underlying: String) extends AnyVal
-  implicit val showDeviceName = new Show[DeviceName] {
-    def show(name: DeviceName) = name.underlying
   }
 
   type DeviceType = DeviceType.DeviceType
@@ -73,20 +83,5 @@ object Device {
   implicit def DeviceOrdering(implicit ord: Ordering[Id]): Ordering[Device] = new Ordering[Device] {
     override def compare(d1: Device, d2: Device): Int = ord.compare(d1.id, d2.id)
   }
-
-  // Circe encoding
-
-  import io.circe._
-  import org.genivi.sota.marshalling.CirceRefined._
-
-  implicit val idEncoder: Encoder[Id] = Encoder[String].contramap(implicitly[Show[Id]].show(_))
-  implicit val idDecoder: Decoder[Id] = refinedDecoder[String, ValidId].map(Id(_))
-
-  // TODO generalize
-  implicit val deviceNameEncoder: Encoder[DeviceName] = Encoder[String].contramap(implicitly[Show[DeviceName]].show(_))
-  implicit val deviceNameDecoder: Decoder[DeviceName] = Decoder[String].map(DeviceName(_))
-
-  implicit val deviceIdEncoder: Encoder[DeviceId] = Encoder[String].contramap(implicitly[Show[DeviceId]].show(_))
-  implicit val deviceIdDecoder: Decoder[DeviceId] = Decoder[String].map(DeviceId(_))
 
 }

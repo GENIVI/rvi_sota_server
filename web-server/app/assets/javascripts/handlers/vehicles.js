@@ -6,18 +6,10 @@ define(function(require) {
       sendRequest = require('../mixins/send-request');
 
   var createVehicle = function(payload) {
-    var url = '/api/v1/devices/';
-    const device = {
-      deviceName: payload.vehicle.vin,
-      deviceId: payload.vehicle.vin,
-      deviceType: 'Vehicle'
-    }
-    sendRequest.doPost(url, device)
+    var url = '/api/v1/vehicles/' + payload.vehicle.vin;
+    sendRequest.doPut(url, payload.vehicle)
       .success(function(vehicles) {
-        sendRequest.doPut('/api/v1/vehicles/' + device.deviceId)
-          .success(function(vehicles) {
-          SotaDispatcher.dispatch({actionType: 'search-vehicles-by-regex'});
-          });
+        SotaDispatcher.dispatch({actionType: 'search-vehicles-by-regex'});
       });
   }
 
@@ -25,20 +17,20 @@ define(function(require) {
       this.dispatchCallback = function(payload) {
         switch(payload.actionType) {
           case 'get-vehicles':
-            sendRequest.doGet('/api/v1/devices')
+            sendRequest.doGet('/api/v1/vehicles')
               .success(function(vehicles) {
                 db.vehicles.reset(vehicles);
               });
           break;
           case 'create-vehicle':
-            checkExists('/api/v1/devices?deviceId=' + payload.vehicle.vin, "Vehicle", function() {
+            checkExists('/api/v1/vehicles/' + payload.vehicle.vin, "Vehicle", function() {
               createVehicle(payload);
             });
           break;
           case 'search-vehicles-by-regex':
             var query = payload.regex ? '?regex=' + payload.regex : '';
 
-            sendRequest.doGet('/api/v1/devices' + query)
+            sendRequest.doGet('/api/v1/vehicles' + query)
               .success(function(vehicles) {
                 db.searchableVehicles.reset(vehicles);
               });
@@ -55,7 +47,7 @@ define(function(require) {
             sendRequest.doGet('/api/v1/vehicles?packageName=' + payload.name + '&packageVersion=' + payload.version)
               .success(function(vehicles) {
                 var list = _.map(vehicles, function(vehicle) {
-                  return {vin: vehicle.vin};
+                  return vehicle.vin;
                 });
                 db.vehiclesForPackage.reset(list);
               });

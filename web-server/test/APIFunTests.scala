@@ -65,8 +65,6 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   case class Package(namespace: String, id: PackageId, uri: Uri, size: Long, checkSum: String, description: String, vendor: String)
   case class PackageResolver(id: PackageId, description: String, vendor: String)
   case class Vehicle(namespace: String, vin: String)
-  case class DeviceT(deviceName: String, deviceId: Option[String] = None, deviceType: String)
-  case class Device(namespace: String, deviceName: String, deviceId: Option[String] = None, deviceType: String, lastSeen: Option[String])
   case class FilterJson(namespace: String, name: String, expression: String)
   case class FilterPackageJson(namespace: String, filterName : String, packageName : String, packageVersion : String)
   case class ComponentJson(namespace: String, partNumber : String, description : String)
@@ -115,15 +113,8 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   }
 
   def addVin(vin: String): Unit = {
-    val device = DeviceT(vin, Some(vin), "Vehicle")
-
-    // create in device registry
-    val response = makeJsonRequest("devices", POST, device.asJson.noSpaces)
-    response.status mustBe CREATED
-
-    // create in resolver
-    val resolverResponse = makeRequest("vehicles/" + vin, PUT)
-    resolverResponse.status mustBe NO_CONTENT
+    val response = makeRequest("vehicles/" + vin, PUT)
+    response.status mustBe NO_CONTENT
   }
 
   def addPackage(packageName: String, packageVersion: String): Unit = {
@@ -180,12 +171,12 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   }
 
   "test searching vins" taggedAs APITests in {
-    val response = makeRequest("devices?regex=" + testVin, GET)
+    val response = makeRequest("vehicles?regex=" + testVin, GET)
     response.status mustBe OK
-    val jsonResponse = decode[List[Device]](response.body)
+    val jsonResponse = decode[List[Vehicle]](response.body)
     jsonResponse.toOption match {
-      case Some(resp : List[Device]) => resp.length mustBe 1
-                                        resp.head.deviceId mustEqual Some(testVin)
+      case Some(resp : List[Vehicle]) => resp.length mustBe 1
+                                         resp.head.vin mustEqual testVin
       case None => fail("JSON parse error:" + jsonResponse.toString)
     }
   }
@@ -356,15 +347,18 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     }
   }
 
-
   "test creating install campaigns" taggedAs APITests in {
+    val cookie = getLoginCookie
     val pattern = "yyyy-MM-dd'T'HH:mm:ssZZ"
     val currentTimestamp = DateTimeFormat.forPattern(pattern).print(new DateTime())
     val tomorrowTimestamp = DateTimeFormat.forPattern(pattern).print(new DateTime().plusDays(1))
     val uuid = UUID.randomUUID().toString
     val data = UpdateRequest(testNamespace, uuid, PackageId(testPackageName, testPackageVersion), currentTimestamp,
       currentTimestamp + "/" + tomorrowTimestamp, 1, "sig", "desc", true)
-    val response = makeJsonRequest("update_requests", POST, data.asJson.noSpaces)
+    val response = await(WS.url("http://" + webserverHost + s":$webserverPort/api/v1/update_requests")
+      .withHeaders("Cookie" -> Cookies.encodeCookieHeader(cookie))
+      .withHeaders("Content-Type" -> "application/json")
+      .post(data.asJson.noSpaces))
     response.status mustBe OK
     val jsonResponse = decode[Set[UpdateSpec]](response.body)
     jsonResponse.toOption match {
@@ -388,13 +382,15 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     response.status mustBe OK
     import org.genivi.sota.marshalling.CirceInstances._
 
+    println(response.body)
+
     val jsonResponse = decode[Map[Vin, Seq[PackageId]]](response.body)(refinedMapDecoder)
     jsonResponse.toOption match {
       case Some(resp : Map[Vin, Seq[PackageId]]) => resp.toList.length mustBe 1
-                                                    resp.head._1.get mustBe testVin
-                                                    resp.head._2.length mustBe 1
-                                                    resp.head._2.head.name mustBe testPackageName
-                                                    resp.head._2.head.version mustBe testPackageVersion
+                                                       resp.head._1.get mustBe testVin
+                                                       resp.head._2.length mustBe 1
+                                                       resp.head._2.head.name mustBe testPackageName
+                                                       resp.head._2.head.version mustBe testPackageVersion
       case None => fail("JSON parse error:" + jsonResponse.toString)
     }
   }

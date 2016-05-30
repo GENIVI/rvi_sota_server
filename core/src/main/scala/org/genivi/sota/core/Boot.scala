@@ -11,7 +11,6 @@ import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
-import org.genivi.sota.common.client.DeviceRegistryClient
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, DefaultExternalResolverClient}
 import org.genivi.sota.core.rvi._
@@ -21,7 +20,7 @@ import org.genivi.sota.data.Namespace._
 import scala.util.{Failure, Success, Try}
 import org.genivi.sota.http.SotaDirectives._
 import scala.util.{Failure, Success, Try}
-
+import org.genivi.sota.http.SotaDirectives._
 
 object Boot extends App with DatabaseConfig {
 
@@ -66,12 +65,6 @@ object Boot extends App with DatabaseConfig {
     Uri(config.getString("resolver.vehiclesUri"))
   )
 
-  val deviceRegistryClient = new DeviceRegistryClient(
-    Uri(config.getString("device_registry.baseUri")),
-    Uri(config.getString("device_registry.devicesUri"))
-  )
-
-
   val host = config.getString("server.host")
   val port = config.getInt("server.port")
   val interactionProtocol = config.getString("core.interactionProtocol")
@@ -81,7 +74,7 @@ object Boot extends App with DatabaseConfig {
   import org.genivi.sota.core.rvi.ServerServices
 
   def routes(notifier: UpdateNotifier): Route = {
-    new WebService(notifier, externalResolverClient, deviceRegistryClient, db).route ~ startSotaServices(db)
+    new WebService(notifier, externalResolverClient, db).route ~ startSotaServices(db)
   }
 
   implicit val connectivity: Connectivity = interactionProtocol match {
@@ -97,7 +90,7 @@ object Boot extends App with DatabaseConfig {
     } yield sotaServices
     case _ =>
       val notifier = DefaultUpdateNotifier
-      val vehicleService = new VehicleUpdatesResource(db, externalResolverClient, deviceRegistryClient)
+      val vehicleService = new VehicleUpdatesResource(db, externalResolverClient)
       val allRoutes = Route.seal(routes(notifier) ~ vehicleService.route)
       val versionRoutes = (logResponseMetrics("sota-core") & versionHeaders(version))(allRoutes)
 
