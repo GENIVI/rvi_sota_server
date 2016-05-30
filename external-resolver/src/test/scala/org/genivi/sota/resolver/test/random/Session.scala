@@ -7,7 +7,6 @@ import Command._
 import Misc._
 import Query._
 import Store._
-import scala.language.existentials
 
 import scala.concurrent.ExecutionContext
 
