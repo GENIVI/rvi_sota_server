@@ -4,7 +4,6 @@
  */
 package org.genivi.sota.core.common
 
-import akka.actor.ActorSystem
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.directives.BasicDirectives
 import com.typesafe.config.{Config, ConfigFactory}
@@ -14,14 +13,10 @@ import org.genivi.sota.data.Namespace._
 
 import scala.util.Try
 
-
-trait NamespaceDirective extends BasicDirectives {
-
-  type NamespaceE = Either[String, Namespace]
-
+object NamespaceDirective {
   def configNamespace(config: Config): Option[Namespace] = {
     val namespaceString = Try(config.getString("core.defaultNs")).getOrElse("default")
-    val nsE: NamespaceE = refineV(namespaceString)
+    val nsE: Either[String, Namespace] = refineV(namespaceString)
     nsE.right.toOption
   }
 
@@ -29,9 +24,7 @@ trait NamespaceDirective extends BasicDirectives {
 
   import eu.timepit.refined.auto._
 
-  def extractNamespace(implicit system: ActorSystem): Directive1[Namespace] = extract { _ =>
-    defaultNs.getOrElse("")
-  }
+  // TODO: Start here, remove this method, see what breaks
+  lazy val defaultNamespace: Directive1[Namespace] =
+    BasicDirectives.provide(defaultNs.getOrElse("default"))
 }
-
-object NamespaceDirective extends NamespaceDirective
