@@ -5,7 +5,24 @@ category: doc
 date: 2016-05-18 11:23:27
 ---
 
-Docker is a great way to get SOTA running in a clean, reproducible way. sbt can build and publish local docker images to test with, and docker-compose combined with some ATS-provided images makes sure all of SOTA's dependencies are taken care of.
+Docker is a great way to get SOTA running in a clean, reproducible way. `sbt` can build and publish local docker images to test with, and docker-compose combined with some ATS-provided images makes sure all of SOTA's dependencies are taken care of.
+
+== docker-compose overview
+
+Deploying with docker-compose should be quite straightforward. Assuming docker is running on the deployment system, `docker-compose -p sota -f deploy/docker-compose/[filename].yml up` should get you a running SOTA system. This depends on the following images:
+
+* From SOTA
+** advancedtelematic/sota-core
+** advancedtelematic/sota-resolver
+** advancedtelematic/sota-webserver
+* External images provided by ATS
+** advancedtelematic/mariadb
+** advancedtelematic/rvi (optional)
+** advancedtelematic/sota-client-debug (optional, to simulate a SOTA client)
+
+When you run docker-compose, it will first search for those images locally, and if it does not find them, it will pull the ones ATS has published on Docker Hub. To ensure you're running the latest code, you can build the images locally with `sbt docker:publishLocal`. To check for updates on the published images, you can do a `docker-compose -f deploy/docker-compose/[filename].yml pull`, or simply `docker pull [image name]` to update an individual image.
+
+== Deployment options
 
 There are three docker-compose files included in the git repo, under `/deploy/docker-compose`:
 
@@ -13,7 +30,6 @@ There are three docker-compose files included in the git repo, under `/deploy/do
 * `server-rvi.yml` contains the server components plus the server-side RVI node, for communication with clients.
 * `server-rvi-client.yml` contains the server components, the server-side RVI node, plus a debug build of the SOTA client
 
-As long as you have docker-compose 1.6 or higher, you should be able to run these with `docker-compose -p sota -f [filename].yml`. They will pull docker images from ATS Docker Hub respositories by default; you'll generally want to replace the component you're working on with a local version. `sbt docker:publishLocal` will give you docker images for the three main components. You can then modify the YAML files to point to your local images instead.
+== Cloud deployment
 
 If you want to deploy to the cloud, docker-compose can also help you do that. The easiest way is to use https://docs.docker.com/machine/drivers/aws/[docker-machine's AWS driver] to create and deploy to a remote host.
-
