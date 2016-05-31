@@ -10,6 +10,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.marshalling.Marshaller._
+import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import org.genivi.sota.data.Namespace._
@@ -113,8 +114,16 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
       Decoder[Seq[(Vehicle.Vin, Set[PackageId])]].map(_.toMap)
 
       def request(packageId: PackageId): Future[HttpResponse] = {
+        val resolvePath = resolveUri
+          .withPath(resolveUri.path)
+          .withQuery(Query(
+            "namespace" -> namespace.get,
+            "package_name" -> packageId.name.get,
+            "package_version" -> packageId.version.get
+          ))
+
         Http().singleRequest(
-          HttpRequest(uri = resolveUri.withPath(resolveUri.path / packageId.name.get / packageId.version.get))
+          HttpRequest(uri = resolvePath)
         )
       }
 
@@ -165,12 +174,11 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
     import syntax.singleton._
     import io.circe.generic.auto._
 
-    // TODO: actually pass the namespace
-
     val payload =
       ('id ->> ('name ->> packageId.name.get :: 'version ->> packageId.version.get :: HNil)) ::
       ('description ->> description) ::
       ('vendor  ->> vendor) ::
+      ('namespace  ->> namespace.get) ::
       HNil
 
     val request : HttpRequest =

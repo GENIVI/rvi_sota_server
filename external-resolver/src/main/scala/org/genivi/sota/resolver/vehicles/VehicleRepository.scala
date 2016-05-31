@@ -44,9 +44,9 @@ object VehicleRepository {
   def list: DBIO[Seq[Vehicle]] =
     vehicles.result
 
-  def exists(namespace: Namespace, vin: Vehicle.Vin)(implicit ec: ExecutionContext): DBIO[Vehicle] =
+  def exists(vin: Vehicle.Vin)(implicit ec: ExecutionContext): DBIO[Vehicle] =
     vehicles
-      .filter(i => i.namespace === namespace && i.vin === vin)
+      .filter(_.vin === vin)
       .result
       .headOption
       .flatMap(_.
@@ -58,7 +58,7 @@ object VehicleRepository {
   def deleteVin(namespace: Namespace, vin: Vehicle.Vin)
                (implicit ec: ExecutionContext): DBIO[Unit] =
     for {
-      _ <- VehicleRepository.exists(namespace, vin)
+      _ <- VehicleRepository.exists(vin)
       _ <- deleteInstalledPackageByVin(namespace, vin)
       _ <- deleteInstalledComponentByVin(namespace, vin)
       _ <- delete(namespace, vin)
@@ -104,7 +104,7 @@ object VehicleRepository {
      last_modified: Long, vin: Vehicle.Vin)
     (implicit ec: ExecutionContext): DBIO[Unit] = {
     for {
-      _ <- exists(namespace, vin)
+      _ <- exists(vin)
       _ <- firmwareExists(namespace, module)
       _ <- installedFirmware.insertOrUpdate((Firmware(namespace, module, firmware_id, last_modified), vin))
     } yield()
@@ -114,7 +114,7 @@ object VehicleRepository {
     (namespace: Namespace, vin: Vehicle.Vin)
     (implicit ec: ExecutionContext): DBIO[Seq[Firmware]] = {
     for {
-      _ <- VehicleRepository.exists(namespace, vin)
+      _ <- VehicleRepository.exists(vin)
       ps <- installedFirmware.filter(i => i.namespace === namespace && i.vin === vin).result
     } yield ps.map(_._1)
   }
@@ -122,11 +122,10 @@ object VehicleRepository {
   //This method is only intended to be called when the client reports installed firmware.
   //It therefore clears all installed firmware for the given vin and replaces with the reported
   //state instead.
-  def updateInstalledFirmware
-    (ns: Namespace, vin: Vehicle.Vin, firmware: Set[Firmware])
+  def updateInstalledFirmware(vin: Vehicle.Vin, firmware: Set[Firmware])
     (implicit ec: ExecutionContext): DBIO[Unit] = {
       (for {
-        vehicle <- exists(ns, vin)
+        vehicle <- exists(vin)
         _       <- installedFirmware.filter(_.vin === vin).delete
         _       <- installedFirmware ++= firmware.map(fw =>
                     (Firmware(fw.namespace, fw.module, fw.firmwareId, fw.lastModified), vin))
@@ -160,7 +159,7 @@ object VehicleRepository {
     (namespace: Namespace, vin: Vehicle.Vin, pkgId: PackageId)
     (implicit ec: ExecutionContext): DBIO[Unit] =
     for {
-      _ <- exists(namespace, vin)
+      _ <- exists(vin)
       _ <- PackageRepository.exists(namespace, pkgId)
       _ <- installedPackages.insertOrUpdate((namespace, vin, pkgId))
     } yield ()
@@ -169,7 +168,7 @@ object VehicleRepository {
     (namespace: Namespace, vin: Vehicle.Vin, pkgId: PackageId)
     (implicit ec: ExecutionContext): DBIO[Unit] =
     for {
-      _ <- exists(namespace, vin)
+      _ <- exists(vin)
       _ <- PackageRepository.exists(namespace, pkgId)
       _ <- installedPackages.filter {ip =>
              ip.namespace      === namespace &&
@@ -179,29 +178,29 @@ object VehicleRepository {
            }.delete
     } yield ()
 
-  def updateInstalledPackages(namespace: Namespace, vin: Vehicle.Vin, packages: Set[PackageId] )
+  def updateInstalledPackages(vin: Vehicle.Vin, packages: Set[PackageId] )
                              (implicit ec: ExecutionContext): DBIO[Unit] = {
 
-    def filterAvailablePackages( ids: Set[PackageId] ) : DBIO[Set[PackageId]] =
+    def filterAvailablePackages(namespace: Namespace, ids: Set[PackageId] ) : DBIO[Set[PackageId]] =
       PackageRepository.load(namespace, ids).map(_.map(_.id))
 
-    def helper( vehicle: Vehicle, newPackages: Set[PackageId], deletedPackages: Set[PackageId] )
+    def helper(vehicle: Vehicle, newPackages: Set[PackageId], deletedPackages: Set[PackageId] )
                                (implicit ec: ExecutionContext) : DBIO[Unit] = DBIO.seq(
       installedPackages.filter( ip =>
-        ip.namespace === namespace &&
+        ip.namespace === vehicle.namespace &&
         ip.vin === vehicle.vin &&
         (ip.packageName.mappedTo[String] ++ ip.packageVersion.mappedTo[String])
           .inSet( deletedPackages.map( id => id.name.get + id.version.get ))
       ).delete,
-      installedPackages ++= newPackages.map((namespace, vehicle.vin, _))
+      installedPackages ++= newPackages.map((vehicle.namespace, vehicle.vin, _))
     ).transactionally
 
     for {
-      vehicle           <- VehicleRepository.exists(namespace, vin)
-      installedPackages <- VehicleRepository.installedOn(namespace, vin)
+      vehicle           <- VehicleRepository.exists(vin)
+      installedPackages <- VehicleRepository.installedOn(vehicle.namespace, vin)
       newPackages       =  packages -- installedPackages
       deletedPackages   =  installedPackages -- packages
-      newAvailablePackages <- filterAvailablePackages(newPackages)
+      newAvailablePackages <- filterAvailablePackages(vehicle.namespace, newPackages)
       _                 <- helper(vehicle, newAvailablePackages, deletedPackages)
     } yield ()
   }
@@ -233,7 +232,7 @@ object VehicleRepository {
     (namespace: Namespace, vin: Vehicle.Vin)
     (implicit ec: ExecutionContext): DBIO[Seq[PackageId]] =
     for {
-      _  <- VehicleRepository.exists(namespace, vin)
+      _  <- VehicleRepository.exists(vin)
       ps <- packagesOnVinMap(namespace)
               .map(_
                 .get(vin)
@@ -271,7 +270,7 @@ object VehicleRepository {
   def installComponent(namespace: Namespace, vin: Vehicle.Vin, part: Component.PartNumber)
                       (implicit ec: ExecutionContext): DBIO[Unit] =
     for {
-      _ <- VehicleRepository.exists(namespace, vin)
+      _ <- VehicleRepository.exists(vin)
       _ <- ComponentRepository.exists(namespace, part)
       _ <- installedComponents += ((namespace, vin, part))
     } yield ()
@@ -280,7 +279,7 @@ object VehicleRepository {
   (namespace: Namespace, vin: Vehicle.Vin, part: Component.PartNumber)
   (implicit ec: ExecutionContext): DBIO[Unit] =
     for {
-      _ <- exists(namespace, vin)
+      _ <- exists(vin)
       _ <- ComponentRepository.exists(namespace, part)
       _ <- installedComponents.filter { ic =>
         ic.namespace  === namespace &&
@@ -302,7 +301,7 @@ object VehicleRepository {
   def componentsOnVin(namespace: Namespace, vin: Vehicle.Vin)
                      (implicit ec: ExecutionContext): DBIO[Seq[Component.PartNumber]] =
     for {
-      _  <- exists(namespace, vin)
+      _  <- exists(vin)
       cs <- componentsOnVinMap(namespace)
               .map(_
                 .get(vin)

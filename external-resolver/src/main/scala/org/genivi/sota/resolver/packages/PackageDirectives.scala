@@ -44,9 +44,9 @@ class PackageDirectives(namespaceExtractor: Directive1[Namespace])
       Errors.onMissingPackage
     }
 
-  def addPackage(ns: Namespace, id: PackageId): Route =
+  def addPackage(id: PackageId): Route =
     entity(as[Package.Metadata]) { metadata =>
-      val pkg = Package(ns, id, metadata.description, metadata.vendor)
+      val pkg = Package(metadata.namespace, id, metadata.description, metadata.vendor)
       complete(db.run(PackageRepository.add(pkg).map(_ => pkg)))
     }
 
@@ -97,15 +97,14 @@ class PackageDirectives(namespaceExtractor: Directive1[Namespace])
       (get & path("filter")) {
         getFilters
      } ~
-      ((get | put | delete) & namespaceExtractor & refinedPackageId) { (ns, id) =>
-        (get & pathEnd) {
+      ((get | put | delete) & refinedPackageId) { id =>
+        (get & namespaceExtractor & pathEnd) { ns =>
           getPackage(ns, id)
         } ~
         (put & pathEnd) {
-          addPackage(ns, id)
+          addPackage(id)
         } ~
-        pathPrefix("filter") { packageFilterApi(ns, id) }
+        (namespaceExtractor & pathPrefix("filter")) { ns => packageFilterApi(ns, id) }
       }
     }
-
 }

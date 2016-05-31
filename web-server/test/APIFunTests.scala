@@ -378,11 +378,10 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   }
 
   "test list of vins affected by update" taggedAs APITests in {
-    val response = makeRequest("resolve/" + testPackageName + "/" + testPackageVersion, GET)
+    val response = makeRequest(s"resolve?namespace=$testNamespace&package_name=$testPackageName&package_version=$testPackageVersion", GET)
+
     response.status mustBe OK
     import org.genivi.sota.marshalling.CirceInstances._
-
-    println(response.body)
 
     val jsonResponse = decode[Map[Vin, Seq[PackageId]]](response.body)(refinedMapDecoder)
     jsonResponse.toOption match {

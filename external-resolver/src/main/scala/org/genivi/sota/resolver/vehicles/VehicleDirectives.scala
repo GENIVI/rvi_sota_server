@@ -61,7 +61,7 @@ class VehicleDirectives(namespaceExtractor: Directive1[Namespace])
     }
 
   def getVehicle(ns: Namespace, vin: Vehicle.Vin): Route =
-    completeOrRecoverWith(db.run(VehicleRepository.exists(ns, vin))) {
+    completeOrRecoverWith(db.run(VehicleRepository.exists(vin))) {
       Errors.onMissingVehicle
     }
 
@@ -91,8 +91,8 @@ class VehicleDirectives(namespaceExtractor: Directive1[Namespace])
   def updateInstalledSoftware(ns: Namespace, vin: Vehicle.Vin): Route =
     entity(as[InstalledSoftware]) { installedSoftware =>
       onSuccess(db.run(for {
-        _ <- VehicleRepository.updateInstalledPackages(ns, vin, installedSoftware.packages)
-        _ <- VehicleRepository.updateInstalledFirmware(ns, vin, installedSoftware.firmware)
+        _ <- VehicleRepository.updateInstalledPackages(vin, installedSoftware.packages)
+        _ <- VehicleRepository.updateInstalledFirmware(vin, installedSoftware.firmware)
       } yield ())) {
         complete(StatusCodes.NoContent)
       }

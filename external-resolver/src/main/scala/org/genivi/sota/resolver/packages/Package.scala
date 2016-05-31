@@ -39,8 +39,9 @@ case class PackageFilter(
 object Package {
 
   case class Metadata(
-    description: Option[String],
-    vendor     : Option[String]
-  )
+                       namespace: Namespace,
+                       description: Option[String],
+                       vendor     : Option[String]
+                     )
 
 }

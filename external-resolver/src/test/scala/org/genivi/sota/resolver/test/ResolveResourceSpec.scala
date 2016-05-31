@@ -104,7 +104,7 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
 
     "fail if a non-existing package name is given" in {
 
-      resolve("resolvePkg2", "0.0.1") ~> route ~> check {
+      resolve(defaultNs, "resolvePkg2", "0.0.1") ~> route ~> check {
         status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
       }
@@ -112,7 +112,7 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
 
     "fail if a non-existing package version is given" in {
 
-      resolve(pkgName, "0.0.2") ~> route ~> check {
+      resolve(defaultNs, pkgName, "0.0.2") ~> route ~> check {
         status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
       }
@@ -122,7 +122,7 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
 
       deletePackageFilter(pkgName, "0.0.1", "falseFilter") ~> route ~> check {
         status shouldBe StatusCodes.OK
-        resolve(pkgName, "0.0.1") ~> route ~> check {
+        resolve(defaultNs, pkgName, "0.0.1") ~> route ~> check {
           status shouldBe StatusCodes.OK
 
           responseAs[io.circe.Json].noSpaces shouldBe
@@ -182,7 +182,7 @@ class ResolveResourcePropSpec extends ResourcePropSpec {
             status === StatusCodes.OK
             val allVehicles = responseAs[Seq[Vehicle]]
 
-            resolve(p.id.name.get, p.id.version.get) ~> route ~> check {
+            resolve(defaultNs, p.id.name.get, p.id.version.get) ~> route ~> check {
               status === StatusCodes.OK
               val result = responseAs[Map[Vehicle.Vin, Seq[PackageId]]]
               classify(result.toList.length > 0, "more than zero", "zero") {
