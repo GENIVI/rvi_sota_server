@@ -23,8 +23,7 @@ trait Namespaces {
     Gen.identifier.map(Refined.unsafeApply)
   }
 
-
-  val defaultNs: Namespace = refineMV("default")
+  val defaultNs: Namespace = Refined.unsafeApply("default")
 }
 
 object Namespaces extends Namespaces
