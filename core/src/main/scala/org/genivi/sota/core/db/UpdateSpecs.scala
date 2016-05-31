@@ -197,9 +197,11 @@ object UpdateSpecs {
     * Abort a pending update specified by uuid and vin. Updates with statuses other than 'Pending' will not be aborted
     */
   def cancelUpdate(vin: Vehicle.Vin, uuid: Refined[String, Uuid]): DBIO[Int] = {
-    (for {
-      u <- updateSpecs.filter(us => us.vin === vin && us.requestId === uuid && us.status === UpdateStatus.Pending)
-    } yield u.status).update(UpdateStatus.Canceled).transactionally
+    updateSpecs
+      .filter(us => us.vin === vin && us.requestId === uuid && us.status === UpdateStatus.Pending)
+      .map(_.status)
+      .update(UpdateStatus.Canceled)
+      .transactionally
   }
 
   /**
