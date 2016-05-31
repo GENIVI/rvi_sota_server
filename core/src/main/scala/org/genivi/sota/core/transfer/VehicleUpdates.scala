@@ -65,8 +65,8 @@ object VehicleUpdates {
     val namespace = NamespaceDirective.defaultNs.get
     val writeResultsIO = updateReport
       .operation_results
-      .map(r => org.genivi.sota.core.data.OperationResult(r.id, updateReport.update_id, r.result_code, r.result_text,
-                                                          vin, namespace))
+      .map(r => org.genivi.sota.core.data.OperationResult(
+        UUID.randomUUID().toString, updateReport.update_id, r.result_code, r.result_text, vin, namespace))
       .map(r => OperationResults.persist(r))
 
     val dbIO = for {
