@@ -14,6 +14,7 @@ import org.genivi.sota.data.Vehicle
 
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
+import org.joda.time.DateTime
 
 /**
  * Database mapping definition for the OperationResults table.
@@ -37,15 +38,16 @@ object OperationResults {
     def resultText  = column[String]("result_text")
     def vin         = column[Vehicle.Vin]("vin")
     def namespace   = column[Namespace]("namespace")
+    def receivedAt  = column[DateTime]("received_at")
 
     import shapeless._
 
     // given `id` is already unique across namespaces, no need to include namespace. Also avoids Slick issue #966.
     def pk = primaryKey("pk_OperationResultTable", (id))
 
-    def * = (id, updateId, resultCode, resultText, vin, namespace).shaped <>
-      (x => OperationResult(x._1, x._2, x._3, x._4, x._5, x._6),
-      (x: OperationResult) => Some((x.id, x.updateId, x.resultCode, x.resultText, x.vin, x.namespace)))
+    def * = (id, updateId, resultCode, resultText, vin, namespace, receivedAt).shaped <>
+      (x => OperationResult(x._1, x._2, x._3, x._4, x._5, x._6, x._7),
+      (x: OperationResult) => Some((x.id, x.updateId, x.resultCode, x.resultText, x.vin, x.namespace, x.receivedAt)))
   }
   // scalastyle:on
 
