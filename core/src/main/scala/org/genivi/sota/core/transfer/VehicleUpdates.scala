@@ -94,8 +94,7 @@ object VehicleUpdates {
       .sortBy(r => (r._1.installPos.asc, r._2.creationTime.asc))
       .map { case (sp, ur) => (sp.installPos, ur) }
       .result
-      .map { _.map { case (idx, ur) => ur.copy(installPos = idx) }
-      }
+      .map { _.map { case (idx, ur) => ur.copy(installPos = idx) } }
   }
 
   def findUpdateSpecFor(vin: Vehicle.Vin, updateRequestId: UUID)
@@ -109,7 +108,7 @@ object VehicleUpdates {
       .flatMap {
         case Some((
           (ns, uuid, updateVin, status, installPos),
-          updateRequest: UpdateRequest
+          updateRequest
           )) =>
           val spec = UpdateSpec(updateRequest, updateVin, status, Set.empty[Package])
           DBIO.successful(spec)
