@@ -5,7 +5,7 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
-import eu.timepit.refined.{refineMV, refineV}
+import eu.timepit.refined.refineV
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.data.{Namespaces, PackageId, Vehicle}
@@ -174,7 +174,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec with Namespaces {
     }
 
     "delete a VIN" in {
-      val vin = refineV[Vehicle.ValidVin]("12345678901234V1N").right.get: Vehicle.Vin
+      val vin: Vehicle.Vin = refineV[Vehicle.ValidVin]("12345678901234V1N").right.get
       addVehicleOK(vin)
       Delete(Resource.uri(vehicles, vin.get)) ~> route ~> check {
         status shouldBe StatusCodes.OK
@@ -194,8 +194,8 @@ class VehiclesResourceWordSpec extends ResourceWordSpec with Namespaces {
     }
 
     "delete a VIN and its installComponents" in {
-      val vin  = refineV[Vehicle.ValidVin]("1234567890THERV1N").right.get: Vehicle.Vin
-      val comp = refineMV("ashtray")          : Component.PartNumber
+      val vin: Vehicle.Vin  = refineV[Vehicle.ValidVin]("1234567890THERV1N").right.get
+      val comp: Component.PartNumber = refineV[Component.ValidPartNumber]("ashtray").right.get
       addVehicleOK(vin)
       addComponentOK(comp, "good to have")
       installComponentOK(vin, comp)

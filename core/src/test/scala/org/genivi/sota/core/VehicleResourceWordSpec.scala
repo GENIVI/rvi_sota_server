@@ -9,7 +9,6 @@ import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import eu.timepit.refined.api.Refined
-import eu.timepit.refined.refineMV
 import io.circe.generic.auto._
 import org.genivi.sota.core.common.NamespaceDirective
 import org.genivi.sota.core.db.Vehicles
