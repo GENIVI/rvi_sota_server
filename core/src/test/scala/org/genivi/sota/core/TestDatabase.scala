@@ -34,13 +34,14 @@ trait UpdateResourcesDatabaseSpec {
 
   import Generators._
 
-  def createUpdateSpecFor(vehicle: Vehicle, transformFn: UpdateRequest => UpdateRequest = identity)
+  def createUpdateSpecFor(vehicle: Vehicle, installPos: Int = 0)
                          (implicit ec: ExecutionContext): DBIO[(Package, UpdateSpec)] = {
-    val (packageModel, updateSpec) = genUpdateSpecFor(vehicle).sample.get
+    val (packageModel, updateSpec0) = genUpdateSpecFor(vehicle).sample.get
+    val updateSpec = updateSpec0.copy(installPos = installPos)
 
     val dbIO = DBIO.seq(
       Packages.create(packageModel),
-      UpdateRequests.persist(transformFn(updateSpec.request)),
+      UpdateRequests.persist(updateSpec.request),
       UpdateSpecs.persist(updateSpec)
     )
 

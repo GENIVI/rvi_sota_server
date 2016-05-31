@@ -81,11 +81,20 @@ class UpdateService(notifier: UpdateNotifier)
     }
   }
 
-  def mkUploadSpecs(request: UpdateRequest, vinsToPackageIds: VinsToPackages,
+  /**
+    * For each of the given (VIN, dependencies) prepare an [[UpdateSpec]]
+    * that points to the given [[UpdateRequest]] and has [[UpdateStatus]] "Pending".
+    * No install order need be specified because a single [[UpdateSpec]] is prepared per VIN.
+    *
+    * @param vinsToPackageIds several VIN-s and the dependencies for each of them
+    * @param idsToPackages for [[Package]] lookups by [[PackageId]]
+    */
+  def mkUpdateSpecs(request: UpdateRequest,
+                    vinsToPackageIds: VinsToPackages,
                     idsToPackages: Map[PackageId, Package]): Set[UpdateSpec] = {
     vinsToPackageIds.map {
       case (vin, requiredPackageIds) =>
-        val packages : Set[Package] = requiredPackageIds.map( idsToPackages.get ).map( _.get )
+        val packages : Set[Package] = requiredPackageIds map idsToPackages
         UpdateSpec(request, vin, UpdateStatus.Pending, packages)
     }.toSet
   }
@@ -103,7 +112,7 @@ class UpdateService(notifier: UpdateNotifier)
       pckg           <- loadPackage(request.namespace, request.packageId)
       vinsToDeps     <- resolver(pckg)
       packages       <- mapIdsToPackages(request.namespace, vinsToDeps)
-      updateSpecs    = mkUploadSpecs(request, vinsToDeps, packages)
+      updateSpecs    = mkUpdateSpecs(request, vinsToDeps, packages)
       _              <- persistRequest(request, updateSpecs)
       _              <- Future.successful(notifier.notify(updateSpecs.toSeq))
     } yield updateSpecs

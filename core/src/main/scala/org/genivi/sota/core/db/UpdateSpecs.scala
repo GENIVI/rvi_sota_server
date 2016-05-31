@@ -36,22 +36,25 @@ object UpdateSpecs {
 
   implicit val UpdateStatusColumn = MappedColumnType.base[UpdateStatus, String](_.value.toString, UpdateStatus.withName)
 
+  type UpdateSpecTableRowType = (Namespace, UUID, Vehicle.Vin, UpdateStatus, Int)
+
   // scalastyle:off
   /**
    * Each row corresponds to an [[UpdateSpec]] instance except that `dependencies` are kept in [[RequiredPackageTable]]
    */
   class UpdateSpecTable(tag: Tag)
-      extends Table[(Namespace, UUID, Vehicle.Vin, UpdateStatus)](tag, "UpdateSpec") {
+      extends Table[UpdateSpecTableRowType](tag, "UpdateSpec") {
     def namespace = column[Namespace]("namespace")
     def requestId = column[UUID]("update_request_id")
     def vin = column[Vehicle.Vin]("vin")
     def status = column[UpdateStatus]("status")
+    def installPos = column[Int]("install_pos")
 
     // insertOrUpdate buggy for composite-keys, see Slick issue #966.
     // given `id` is already unique across namespaces, no need to include namespace.
     def pk = primaryKey("pk_update_specs", (requestId, vin))
 
-    def * = (namespace, requestId, vin, status)
+    def * = (namespace, requestId, vin, status, installPos)
   }
   // scalastyle:on
 
@@ -92,7 +95,8 @@ object UpdateSpecs {
     * @param updateSpec The list of packages that should be installed
     */
   def persist(updateSpec: UpdateSpec) : DBIO[Unit] = {
-    val specProjection = (updateSpec.namespace, updateSpec.request.id, updateSpec.vin,  updateSpec.status)
+    val specProjection = (
+      updateSpec.namespace, updateSpec.request.id, updateSpec.vin,  updateSpec.status, updateSpec.installPos)
 
     def dependencyProjection(p: Package) =
       // TODO: we're taking the namespace of the update spec, not necessarily the namespace of the package!
@@ -107,7 +111,7 @@ object UpdateSpecs {
   /**
     * Reusable sub-query, PK lookup in [[UpdateSpecTable]] table.
     */
-  private def queryBy(arg: UpdateSpec): Query[UpdateSpecTable, (Namespace, UUID, Vin, UpdateStatus), Seq] = {
+  private def queryBy(arg: UpdateSpec): Query[UpdateSpecTable, UpdateSpecTableRowType, Seq] = {
     updateSpecs
       .filter(row => row.namespace === arg.namespace && row.vin === arg.vin && row.requestId === arg.request.id)
   }
@@ -117,7 +121,7 @@ object UpdateSpecs {
     * Note: A tuple is returned instead of an [[UpdateSpec]] instance because
     * the later would require joining [[RequiredPackageTable]] to populate the `dependencies` of that instance.
     */
-  def findBy(arg: UpdateSpec): DBIO[(Namespace, UUID, Vin, UpdateStatus)] = {
+  def findBy(arg: UpdateSpec): DBIO[UpdateSpecTableRowType] = {
     queryBy(arg).result.head
   }
 
@@ -208,7 +212,7 @@ object UpdateSpecs {
     * The [[UpdateSpec]]-s (excluding dependencies but including status) for the given [[UpdateRequest]].
     * Each element in the result corresponds to a different VIN.
     */
-  def listUpdatesById(updateRequestId: Refined[String, Uuid]): DBIO[Seq[(Namespace, UUID, Vehicle.Vin, UpdateStatus)]] =
+  def listUpdatesById(updateRequestId: Refined[String, Uuid]): DBIO[Seq[UpdateSpecTableRowType]] =
     updateSpecs.filter(s => s.requestId === UUID.fromString(updateRequestId.get)).result
 
   /**

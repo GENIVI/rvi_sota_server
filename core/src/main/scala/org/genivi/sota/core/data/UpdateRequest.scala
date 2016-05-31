@@ -29,7 +29,7 @@ import org.genivi.sota.core.db.UpdateSpecs
  * @param signature Signature for this updates Id
  * @param description A descriptive text of the available update.
  * @param requestConfirmation Flag to indicate if a user confirmation of the package is required.
- * @param installPos
+ * @param installPos Derived from the corresponding field in [[UpdateSpec]]
  */
 case class UpdateRequest(
   id: UUID,
@@ -89,12 +89,15 @@ import UpdateStatus._
   * @param vin The vehicle to which these updates should be applied
   * @param status The status of the update
   * @param dependencies The packages to be installed
+  * @param installPos Position in the installation queue, zero-based
   */
 case class UpdateSpec(
   request: UpdateRequest,
   vin: Vehicle.Vin,
   status: UpdateStatus,
-  dependencies: Set[Package] ) {
+  dependencies: Set[Package],
+  installPos: Int = 0 /* zero-based */
+) {
 
   def namespace: Namespace = request.namespace
 
