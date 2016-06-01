@@ -8,13 +8,22 @@ import akka.http.scaladsl.server.Directives
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import io.circe.syntax._
 
-class HealthResource(db: Database)(implicit val ec: ExecutionContext) {
+class HealthResource(db: Database, versionRepr: Map[String, Any] = Map.empty)
+                    (implicit val ec: ExecutionContext) {
   import Directives._
 
-  val route = path("health") {
-    val query = sql"SELECT 1 FROM dual ".as[Int]
-    val f = db.run(query).map(_ => "OK")
-    complete(f)
-  }
+  val route =
+    (get & pathPrefix("health")) {
+      pathEnd {
+        val query = sql"SELECT 1 FROM dual ".as[Int]
+        val f = db.run(query).map(_ => Map("status" -> "OK"))
+        complete(f)
+      } ~
+      path("version") {
+        complete(versionRepr.mapValues(_.toString).asJson)
+      }
+    }
 }

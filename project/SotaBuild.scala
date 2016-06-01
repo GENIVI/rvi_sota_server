@@ -4,7 +4,7 @@ import play.sbt.routes.RoutesKeys
 import play.sbt.{PlayScala, PlaySettings}
 import sbt._
 import sbt.Keys._
-import sbtbuildinfo.{BuildInfoKey, BuildInfoPlugin}
+import sbtbuildinfo._
 import sbtbuildinfo.BuildInfoKeys._
 import com.typesafe.sbt.packager.Keys.dockerExposedPorts
 import com.typesafe.sbt.web._
@@ -54,7 +54,8 @@ object SotaBuild extends Build {
 
   lazy val commonSettings = basicSettings ++ compilerSettings ++ Packaging.settings ++ Seq(
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
-    buildInfoPackage := organization.value + ".sota." + name.value.replaceAll("sota-", "")
+    buildInfoPackage := organization.value + ".sota." + name.value.replaceAll("sota-", ""),
+    buildInfoOptions ++= Seq(BuildInfoOption.ToJson, BuildInfoOption.ToMap)
   )
 
   // the sub-projects
@@ -149,7 +150,7 @@ object SotaBuild extends Build {
       ) ++ Dependencies.Database ++ Dependencies.Play2Auth
     ))
     .dependsOn(common)
-    .enablePlugins(PlayScala, SbtWeb)
+    .enablePlugins(PlayScala, SbtWeb, BuildInfoPlugin)
     .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
     .settings(inConfig(IntegrationTests)(Defaults.testTasks): _*)
     .settings(inConfig(BrowserTests)(Defaults.testTasks): _*)

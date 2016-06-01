@@ -17,8 +17,11 @@ import org.genivi.sota.core.rvi._
 import org.genivi.sota.core.storage.S3PackageStore
 import org.genivi.sota.core.transfer._
 import org.genivi.sota.data.Namespace._
+import org.genivi.sota.http.HealthResource
+
 import scala.util.{Failure, Success, Try}
 import org.genivi.sota.http.SotaDirectives._
+
 import scala.util.{Failure, Success, Try}
 import org.genivi.sota.http.SotaDirectives._
 
@@ -74,7 +77,9 @@ object Boot extends App with DatabaseConfig {
   import org.genivi.sota.core.rvi.ServerServices
 
   def routes(notifier: UpdateNotifier): Route = {
-    new WebService(notifier, externalResolverClient, db).route ~ startSotaServices(db)
+    new HealthResource(db, org.genivi.sota.core.BuildInfo.toMap).route ~
+    new WebService(notifier, externalResolverClient, db).route ~
+      startSotaServices(db)
   }
 
   implicit val connectivity: Connectivity = interactionProtocol match {
