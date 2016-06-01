@@ -88,9 +88,36 @@ object VehicleUpdates {
       _    <- DBIO.sequence(writeResultsIO(spec.namespace))
       _    <- UpdateSpecs.setStatus(spec, UpdateStatus.Finished)
       _    <- writeHistoryIO(spec)
+      _    <- cancelInstallationQueueIO(vin, spec, updateReport.isFail, updateReport.update_id)
     } yield spec.copy(status = UpdateStatus.Finished)
 
     db.run(dbIO.transactionally)
+  }
+
+  /**
+    * <ul>
+    *   <li>
+    *     For a failed UpdateReport, mark as cancelled the rest of the installation queue.
+    *     <ul>
+    *       <li>"The rest of the installation queue" defined as those (InFlight and Pending) UpdateSpec-s
+    *       with (strictly) greater installPos than the given one, for the VIN in question.</li>
+    *       <li>Note: those UpdateSpec-s correspond to different UpdateRequests than the current one.</li>
+    *     </ul>
+    *   </li>
+    *   <li>For a successful UpdateReport, do nothing.</li>
+    * </ul>
+    */
+  def cancelInstallationQueueIO(vin: Vehicle.Vin,
+                                spec: UpdateSpec,
+                                isFail: Boolean,
+                                updateRequestId: UUID): DBIO[Int] = {
+    updateSpecs
+      .filter(_.vin === vin && isFail)
+      .filter(_.requestId =!= updateRequestId)
+      .filter(_.status.inSet(List(UpdateStatus.InFlight, UpdateStatus.Pending)))
+      .filter(_.installPos > spec.installPos)
+      .map(_.status)
+      .update(UpdateStatus.Canceled)
   }
 
   def findPendingPackageIdsFor(vin: Vehicle.Vin)
