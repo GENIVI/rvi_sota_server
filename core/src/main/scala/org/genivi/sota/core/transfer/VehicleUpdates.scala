@@ -64,22 +64,26 @@ object VehicleUpdates {
     */
   def reportInstall(vin: Vehicle.Vin, updateReport: UpdateReport)
                    (implicit ec: ExecutionContext, db: Database): Future[UpdateSpec] = {
-    val writeResultsIO = (ns: Namespace) => {
-      updateReport
-        .operation_results
-        .map(r => org.genivi.sota.core.data.OperationResult(
-          UUID.randomUUID().toString,
-          updateReport.update_id, r.result_code, r.result_text, vin, ns, DateTime.now()))
-        .map(r => OperationResults.persist(r))
-    }
 
-    val wasSuccessful = updateReport.operation_results.forall(_.isSuccess)
+    val writeResultsIO = (ns: Namespace) => for {
+      rviOpResult <- updateReport.operation_results
+      dbOpResult   = org.genivi.sota.core.data.OperationResult(
+        UUID.randomUUID().toString,
+        updateReport.update_id,
+        rviOpResult.result_code,
+        rviOpResult.result_text,
+        vin,
+        ns,
+        DateTime.now())
+    } yield OperationResults.persist(dbOpResult)
 
     val dbIO = for {
       spec <- findUpdateSpecFor(vin, updateReport.update_id)
       _ <- DBIO.sequence(writeResultsIO(spec.namespace))
       _ <- UpdateSpecs.setStatus(spec, UpdateStatus.Finished)
-      _ <- InstallHistories.log(spec.namespace, vin, spec.request.id, spec.request.packageId, success = wasSuccessful)
+      _ <- InstallHistories.log(spec.namespace, vin,
+        spec.request.id, spec.request.packageId,
+        success = updateReport.isSuccess)
     } yield spec.copy(status = UpdateStatus.Finished)
 
     db.run(dbIO.transactionally)
