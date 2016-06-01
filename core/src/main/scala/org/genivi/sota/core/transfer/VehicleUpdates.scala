@@ -54,10 +54,10 @@ object VehicleUpdates {
   }
 
   /**
-    * <ul>
+    * -ul>
     *   <li>Persist in [[OperationResults.OperationResultTable]] each operation result
     *       for a combination of ([[UpdateRequest]], VIN)</li>
-    *   <li>Persist the status of the [[UpdateSpec]] as Finished</li>
+    *   <li>Persist the status of the [[UpdateSpec]] (Finished for update report success, Failed otherwise)</li>
     *   <li>Persist the outcome in [[InstallHistories.InstallHistoryTable]]</li>
     * </ul>
     */
@@ -83,13 +83,14 @@ object VehicleUpdates {
     }
 
     // look up the UpdateSpec to rewrite its status and to use it as FK in InstallHistory
+    val newStatus = if (updateReport.isSuccess) UpdateStatus.Finished else UpdateStatus.Failed
     val dbIO = for {
       spec <- findUpdateSpecFor(vin, updateReport.update_id)
       _    <- DBIO.sequence(writeResultsIO(spec.namespace))
-      _    <- UpdateSpecs.setStatus(spec, UpdateStatus.Finished)
+      _    <- UpdateSpecs.setStatus(spec, newStatus)
       _    <- writeHistoryIO(spec)
       _    <- cancelInstallationQueueIO(vin, spec, updateReport.isFail, updateReport.update_id)
-    } yield spec.copy(status = UpdateStatus.Finished)
+    } yield spec.copy(status = newStatus)
 
     db.run(dbIO.transactionally)
   }
@@ -100,7 +101,7 @@ object VehicleUpdates {
     *     For a failed UpdateReport, mark as cancelled the rest of the installation queue.
     *     <ul>
     *       <li>"The rest of the installation queue" defined as those (InFlight and Pending) UpdateSpec-s
-    *       with (strictly) greater installPos than the given one, for the VIN in question.</li>
+    *       coming after the given one, for the VIN in question.</li>
     *       <li>Note: those UpdateSpec-s correspond to different UpdateRequests than the current one.</li>
     *     </ul>
     *   </li>

@@ -7,7 +7,7 @@ import org.genivi.sota.core.rvi.UpdateReport
 import org.genivi.sota.core.rvi.OperationResult
 import org.genivi.sota.data.VehicleGenerators
 import org.genivi.sota.core._
-import org.genivi.sota.core.data.UpdateStatus
+import org.genivi.sota.core.data.{UpdateSpec, UpdateStatus}
 import org.scalacheck.Gen
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
@@ -139,4 +139,61 @@ class VehicleUpdatesSpec extends FunSuite
       t.getMessage should include("need to be specified")
     }
   }
+
+  test("rest of installation queue should be canceled upon one package failing to install") {
+
+    def mkUpdateReport(updateSpec: UpdateSpec, isSuccess: Boolean): UpdateReport = {
+      val result_code = if (isSuccess) 0 else 3
+      val result = OperationResult("opid", result_code, "some result")
+      UpdateReport(updateSpec.request.id, List(result))
+    }
+
+    // insert update spec A install pos 0
+    // insert update spec B install pos 1
+    // insert update spec C install pos 2
+    val dbIO = for {
+      (_, vehicle, updateSpec0) <- createUpdateSpecAction()
+      (_, updateSpec1) <- createUpdateSpecFor(vehicle, installPos = 1)
+      (_, updateSpec2) <- createUpdateSpecFor(vehicle, installPos = 2)
+      result <- findPendingPackageIdsFor(vehicle.vin)
+    } yield (result, updateSpec0, updateSpec1, updateSpec2)
+
+    whenReady(db.run(dbIO)) { case (result, updateSpec0, updateSpec1, updateSpec2)  =>
+      result shouldNot be(empty)
+      result should have(size(3))
+
+      // a different update request for each update spec
+      val updateSpecs = List(updateSpec0, updateSpec1, updateSpec2)
+      val reqIdsMatch = result.zip(updateSpecs).forall { case (ur, us) => ur.id == us.request.id }
+      reqIdsMatch shouldBe true
+
+      // all three update specs for the same VIN
+      updateSpecs.map(_.vin).toSet.size shouldBe 1
+
+      // fail install for update spec B only
+      val vin = updateSpec0.vin
+      val f2 = for {
+        _    <- reportInstall(vin, mkUpdateReport(updateSpec0, isSuccess = true))
+        _    <- reportInstall(vin, mkUpdateReport(updateSpec1, isSuccess = false))
+        usRow0 <- db.run(UpdateSpecs.findBy(updateSpec0))
+        usRow1 <- db.run(UpdateSpecs.findBy(updateSpec1))
+        usRow2 <- db.run(UpdateSpecs.findBy(updateSpec2))
+      } yield (usRow0, usRow1, usRow2)
+
+      whenReady(f2) { case (usRow0, usRow1, usRow2) =>
+        // check update spec 0 status finished
+        // check update spec 1 status failed
+        // check update spec 2 status canceled
+        val (_, _, vin0, status0, installPos0) = usRow0
+        val (_, _, vin1, status1, installPos1) = usRow1
+        val (_, _, vin2, status2, installPos2) = usRow2
+
+        status0 shouldBe UpdateStatus.Finished
+        status1 shouldBe UpdateStatus.Failed
+        status2 shouldBe UpdateStatus.Canceled
+      }
+
+    }
+  }
+
 }
