@@ -13,7 +13,7 @@ import io.circe.syntax._
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.core.data._
-import org.genivi.sota.core.db.{InstallHistories, OperationResults, UpdateSpecs}
+import org.genivi.sota.core.db.UpdateSpecs
 import org.genivi.sota.db.SlickExtensions
 import slick.dbio.DBIO
 import slick.driver.MySQLDriver.api._
@@ -23,7 +23,6 @@ import org.genivi.sota.core.rvi.UpdateReport
 
 import scala.concurrent.{ExecutionContext, Future}
 import org.genivi.sota.refined.SlickRefined._
-import org.joda.time.DateTime
 
 import scala.util.control.NoStackTrace
 import org.genivi.sota.core.db.OperationResults
@@ -65,23 +64,30 @@ object VehicleUpdates {
   def reportInstall(vin: Vehicle.Vin, updateReport: UpdateReport)
                    (implicit ec: ExecutionContext, db: Database): Future[UpdateSpec] = {
 
+    // add a row (with fresh UUID) to OperationResult table for each result of this report
     val writeResultsIO = (ns: Namespace) => for {
       rviOpResult <- updateReport.operation_results
-      dbOpResult   = org.genivi.sota.core.data.OperationResult.from(
+      dbOpResult   = OperationResult.from(
         rviOpResult,
         updateReport.update_id,
         vin,
         ns)
     } yield OperationResults.persist(dbOpResult)
 
+    // add a row (with auto-inc PK) to InstallHistory table
+    def writeHistoryIO(spec: UpdateSpec): DBIO[Int] = {
+      InstallHistories.log(
+        spec.namespace, vin,
+        spec.request.id, spec.request.packageId,
+        success = updateReport.isSuccess)
+    }
+
+    // look up the UpdateSpec to rewrite its status and to use it as FK in InstallHistory
     val dbIO = for {
       spec <- findUpdateSpecFor(vin, updateReport.update_id)
-      _ <- DBIO.sequence(writeResultsIO(spec.namespace))
-      _ <- UpdateSpecs.setStatus(spec, UpdateStatus.Finished)
-      _ <- InstallHistories.log(
-             spec.namespace, vin,
-             spec.request.id, spec.request.packageId,
-             success = updateReport.isSuccess)
+      _    <- DBIO.sequence(writeResultsIO(spec.namespace))
+      _    <- UpdateSpecs.setStatus(spec, UpdateStatus.Finished)
+      _    <- writeHistoryIO(spec)
     } yield spec.copy(status = UpdateStatus.Finished)
 
     db.run(dbIO.transactionally)
