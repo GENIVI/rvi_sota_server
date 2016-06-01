@@ -28,6 +28,7 @@ import org.genivi.sota.core.rvi.UpdateReport
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 import org.genivi.sota.refined.SlickRefined._
+import org.joda.time.DateTime
 
 import scala.util.control.NoStackTrace
 import org.genivi.sota.core.db.OperationResults
@@ -77,7 +78,8 @@ object VehicleUpdates {
     val writeResultsIO = updateReport
       .operation_results
       .map(r => org.genivi.sota.core.data.OperationResult(
-        UUID.randomUUID().toString, updateReport.update_id, r.result_code, r.result_text, vin, namespace))
+        UUID.randomUUID().toString,
+        updateReport.update_id, r.result_code, r.result_text, vin, namespace, DateTime.now()))
       .map(r => OperationResults.persist(r))
 
     val wasSuccessful = updateReport.operation_results.forall(_.isSuccess)

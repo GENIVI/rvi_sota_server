@@ -24,7 +24,8 @@ case class OperationResult(
   resultCode: Int,
   resultText: String,
   vin       : Vehicle.Vin,
-  namespace : Namespace
+  namespace : Namespace,
+  receivedAt: DateTime
 )
 
 /**
