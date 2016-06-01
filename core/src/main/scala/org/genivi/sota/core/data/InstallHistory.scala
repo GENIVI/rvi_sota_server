@@ -27,6 +27,23 @@ case class OperationResult(
   namespace : Namespace,
   receivedAt: DateTime
 )
+object OperationResult {
+  def from(rviOpResult: org.genivi.sota.core.rvi.OperationResult,
+           updateRequestId: UUID,
+           vin       : Vehicle.Vin,
+           namespace : Namespace
+          ): OperationResult = {
+    OperationResult(
+      UUID.randomUUID().toString,
+      updateRequestId,
+      rviOpResult.result_code,
+      rviOpResult.result_text,
+      vin       : Vehicle.Vin,
+      namespace : Namespace,
+      DateTime.now
+    )
+  }
+}
 
 /**
  * Domain object for the install history of a VIN

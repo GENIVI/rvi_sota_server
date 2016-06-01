@@ -67,23 +67,21 @@ object VehicleUpdates {
 
     val writeResultsIO = (ns: Namespace) => for {
       rviOpResult <- updateReport.operation_results
-      dbOpResult   = org.genivi.sota.core.data.OperationResult(
-        UUID.randomUUID().toString,
+      dbOpResult   = org.genivi.sota.core.data.OperationResult.from(
+        rviOpResult,
         updateReport.update_id,
-        rviOpResult.result_code,
-        rviOpResult.result_text,
         vin,
-        ns,
-        DateTime.now())
+        ns)
     } yield OperationResults.persist(dbOpResult)
 
     val dbIO = for {
       spec <- findUpdateSpecFor(vin, updateReport.update_id)
       _ <- DBIO.sequence(writeResultsIO(spec.namespace))
       _ <- UpdateSpecs.setStatus(spec, UpdateStatus.Finished)
-      _ <- InstallHistories.log(spec.namespace, vin,
-        spec.request.id, spec.request.packageId,
-        success = updateReport.isSuccess)
+      _ <- InstallHistories.log(
+             spec.namespace, vin,
+             spec.request.id, spec.request.packageId,
+             success = updateReport.isSuccess)
     } yield spec.copy(status = UpdateStatus.Finished)
 
     db.run(dbIO.transactionally)
