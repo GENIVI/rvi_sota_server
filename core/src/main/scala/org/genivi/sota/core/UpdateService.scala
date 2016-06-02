@@ -10,14 +10,14 @@ import akka.http.scaladsl.util.FastFuture
 import cats.Show
 import eu.timepit.refined._
 import eu.timepit.refined.string._
+import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.resolver.Connectivity
 import org.genivi.sota.core.transfer.UpdateNotifier
+import org.genivi.sota.data.{Device, PackageId, Vehicle}
 import org.genivi.sota.data.Namespace._
-import org.genivi.sota.data.{PackageId, Vehicle}
 import java.time.Instant
-
 import scala.collection.immutable.ListSet
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
@@ -42,14 +42,14 @@ object UploadConf {
 
 }
 
-class UpdateService(notifier: UpdateNotifier)
-                   (implicit val system: ActorSystem, val connectivity: Connectivity) {
+class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
+                   (implicit val system: ActorSystem, val connectivity: Connectivity, val ec: ExecutionContext) {
 
   import UpdateService._
 
   implicit private val log = Logging(system, "updateservice")
 
-  def checkVins( dependencies: VinsToPackageIds ) : Future[Boolean] = FastFuture.successful( true )
+  def checkDevices( dependencies: VinsToPackageIds ) : Future[Boolean] = FastFuture.successful( true )
 
   /**
     * Fetch from DB the [[Package]]s corresponding to the given [[PackageId]]s,
@@ -93,13 +93,18 @@ class UpdateService(notifier: UpdateNotifier)
     * @param vinsToPackageIds several VIN-s and the dependencies for each of them
     * @param idsToPackages lookup a [[Package]] by its [[PackageId]]
     */
-  def mkUpdateSpecs(request: UpdateRequest,
+  def mkUpdateSpecs(ns: Namespace,
+                    request: UpdateRequest,
                     vinsToPackageIds: VinsToPackageIds,
-                    idsToPackages: Map[PackageId, Package]): Set[UpdateSpec] = {
-    vinsToPackageIds.map {
+                    idsToPackages: Map[PackageId, Package]): Future[Set[UpdateSpec]] = {
+    // TODO quite inefficient; bulk request to device registry?
+    val updateSpecs = vinsToPackageIds.map {
       case (vin, requiredPackageIds) =>
-        UpdateSpec(request, vin, UpdateStatus.Pending, requiredPackageIds map idsToPackages, 0, Instant.now)
+        deviceRegistry.fetchDeviceByDeviceId(ns, Device.DeviceId(vin.get)).map { d =>
+          UpdateSpec(request, d.id, UpdateStatus.Pending, requiredPackageIds map idsToPackages, 0, Instant.now)
+        }
     }.toSet
+    Future.sequence(updateSpecs) // TODO partial error instead of failing completely?
   }
 
   def persistRequest(request: UpdateRequest, updateSpecs: Set[UpdateSpec])
@@ -119,7 +124,7 @@ class UpdateService(notifier: UpdateNotifier)
     *   <li>Persist in DB all of the above</li>
     * </ul>
     */
-  def queueUpdate(request: UpdateRequest, resolver : DependencyResolver )
+  def queueUpdate(request: UpdateRequest, resolver: DependencyResolver )
                  (implicit db: Database, ec: ExecutionContext): Future[Set[UpdateSpec]] = {
     val ns = request.namespace
     for {
@@ -128,7 +133,7 @@ class UpdateService(notifier: UpdateNotifier)
       requirements    = allRequiredPackages(vinsToDeps)
       packages       <- fetchPackages(ns, requirements)
       idsToPackages   = packages.map( x => x.id -> x ).toMap
-      updateSpecs     = mkUpdateSpecs(request, vinsToDeps, idsToPackages)
+      updateSpecs    <- mkUpdateSpecs(ns, request, vinsToDeps, idsToPackages)
       _              <- persistRequest(request, updateSpecs)
       _              <- Future.successful(notifier.notify(updateSpecs.toSeq))
     } yield updateSpecs
@@ -146,7 +151,7 @@ class UpdateService(notifier: UpdateNotifier)
     * For the given [[PackageId]] and vehicle, persist a fresh [[UpdateRequest]] and a fresh [[UpdateSpec]].
     * Resolver is not contacted.
     */
-  def queueVehicleUpdate(ns: Namespace, vin: Vehicle.Vin, packageId: PackageId)
+  def queueDeviceUpdate(ns: Namespace, device: Device.Id, packageId: PackageId)
                         (implicit db: Database, ec: ExecutionContext): Future[UpdateRequest] = {
     val newUpdateRequest = UpdateRequest.default(ns, packageId)
 
@@ -154,7 +159,7 @@ class UpdateService(notifier: UpdateNotifier)
       p <- loadPackage(ns, packageId)
       updateRequest = newUpdateRequest.copy(signature = p.signature.getOrElse(newUpdateRequest.signature),
         description = p.description)
-      spec = UpdateSpec.default(updateRequest, vin)
+      spec = UpdateSpec.default(updateRequest, device)
       dbSpec <- persistRequest(updateRequest, ListSet(spec))
     } yield updateRequest
   }

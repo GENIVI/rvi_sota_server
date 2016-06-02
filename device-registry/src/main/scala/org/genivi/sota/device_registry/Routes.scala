@@ -12,23 +12,14 @@ import eu.timepit.refined._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
+import org.genivi.sota.data.{Device, DeviceT}
 import org.genivi.sota.data.Namespace._
-import org.genivi.sota.device_registry.common.Errors
-import org.genivi.sota.device_registry.common.NamespaceDirective._
+import org.genivi.sota.device_registry.common.DeviceRegistryErrors
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.rest.Validation._
 import scala.concurrent.ExecutionContext
-import slick.jdbc.JdbcBackend.Database
-
-
-/*
- * Device transfer object
- */
-final case class DeviceT(
-  deviceId: Option[Device.DeviceId] = None,
-  deviceType: Device.DeviceType = Device.DeviceType.Other
-)
+import slick.driver.MySQLDriver.api._
 
 
 /**
@@ -36,86 +27,75 @@ final case class DeviceT(
  *
  * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
  */
-class Routes(implicit system: ActorSystem,
+class Routes(namespaceExtractor: Directive1[Namespace])
+            (implicit system: ActorSystem,
              db: Database,
              mat: ActorMaterializer,
              ec: ExecutionContext) {
 
   import Device._
   import Directives._
-  import Errors._
+  import DeviceRegistryErrors._
   import StatusCodes._
 
   val extractId: Directive1[Id] = refined[ValidId](Slash ~ Segment).map(Id(_))
   val extractDeviceId: Directive1[DeviceId] = parameter('deviceId.as[String]).map(DeviceId(_))
 
-
   def searchDevice(ns: Namespace): Route =
     parameters(('regex.as[String Refined Regex].?,
-                'deviceId.as[String].?)) { (re: Option[String Refined Regex],
-                                            deviceId: Option[String]) =>
-      (re, deviceId) match {
-        case (Some(re), None)           => complete(db.run(Devices.search(ns, re)))
-        case (None, Some(deviceId))     =>
-          completeOrRecoverWith(db.run(Devices.findByDeviceId(ns, DeviceId(deviceId)))) {
-            onMissingDevice
-          }
-        case (Some(re), Some(deviceId)) =>
-          complete((BadRequest, "Both 'regex' and 'deviceId' parameters cannot be used together!"))
-        case (None, None)               =>
-          complete((BadRequest, "Either 'regex' or 'deviceId' parameter is missing!"))
-      }
+                'deviceName.as[String].?,
+                'deviceId.as[String].?)) { // TODO: Use refined
+      case (Some(re), None, None) =>
+        complete(db.run(Devices.search(ns, re)))
+      case (None, Some(name), None) =>
+        complete(db.run(Devices.findByDeviceName(ns, DeviceName(name))))
+      case (None, None, Some(id)) =>
+        complete(db.run(Devices.findByDeviceId(ns, DeviceId(id))))
+      case (None, None, None) => complete(db.run(Devices.list(ns)))
+      case _ =>
+        complete((BadRequest, "'regex', 'deviceName' and 'deviceId' parameters cannot be used together!"))
     }
 
-  def createDevice(ns: Namespace, device: DeviceT): Route =
-    complete(Created -> db.run(Devices.create(ns, device)))
+  def createDevice(ns: Namespace, device: DeviceT): Route = {
+    val f = db.run(Devices.create(ns, device)).map(id => Created -> id)
+    complete(f)
+  }
 
   def fetchDevice(ns: Namespace, id: Id): Route =
-    completeOrRecoverWith(db.run(Devices.exists(ns, id))) {
-      onMissingDevice
-    }
+    complete(db.run(Devices.exists(ns, id)))
 
   def updateDevice(ns: Namespace, id: Id, device: DeviceT): Route =
-    completeOrRecoverWith(db.run(Devices.update(ns, id, device))) {
-      onMissingDevice.orElse(
-        onConflictingDeviceId)
-    }
+    complete(db.run(Devices.update(ns, id, device)))
 
   def deleteDevice(ns: Namespace, id: Id): Route =
-    completeOrRecoverWith(db.run(Devices.delete(ns, id))) {
-      onMissingDevice
-    }
+    complete(db.run(Devices.delete(ns, id)))
 
-  def pingDevice(ns: Namespace, id: Id): Route =
-    completeOrRecoverWith(db.run(Devices.updateLastSeen(ns, id))) {
-      onMissingDevice
-    }
-
+  def updateLastSeen(ns: Namespace, id: Id): Route =
+    complete(db.run(Devices.updateLastSeen(ns, id)))
 
   def api: Route =
-    (pathPrefix("devices") & extractNamespace) { (ns: Namespace) =>
-      (get & pathEnd) {
-        searchDevice(ns)
-      } ~
-      (post & entity(as[DeviceT]) & pathEnd) { (device: DeviceT) =>
-        createDevice(ns, device)
-      } ~
-      extractId { (id: Id) =>
-        (get & pathEnd) {
-          fetchDevice(ns, id)
-        } ~
-        (put & entity(as[DeviceT]) & pathEnd) { (device: DeviceT) =>
-          updateDevice(ns, id, device)
-        } ~
-        (delete & pathEnd) {
-          deleteDevice(ns, id)
-        } ~
-        (post & path("ping")) {
-          pingDevice(ns, id)
+    pathPrefix("devices") {
+      namespaceExtractor { ns =>
+        (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
+        extractId { id =>
+          (get & pathEnd) {
+            fetchDevice(ns, id)
+          } ~
+            (put & entity(as[DeviceT]) & pathEnd) { device =>
+              updateDevice(ns, id, device)
+            } ~
+            (delete & pathEnd) {
+              deleteDevice(ns, id)
+            } ~
+            (post & path("ping")) {
+              updateLastSeen(ns, id)
+            }
         }
+      } ~
+      (get & pathEnd & parameter('namespace.as[Namespace])) { ns =>
+        searchDevice(ns)
       }
     }
-
 
   /**
    * Base API route for devices.
@@ -123,8 +103,6 @@ class Routes(implicit system: ActorSystem,
    * @return      Route object containing routes for creating, deleting, and listing devices
    * @throws      MissingDevice if device doesn't exist
    */
-  def route: Route = {
-    api
-  }
+  def route: Route = api
 
 }

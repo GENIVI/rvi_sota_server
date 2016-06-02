@@ -4,18 +4,18 @@
   */
 package org.genivi.sota.core
 
+import akka.http.scaladsl.util.FastFuture
 import com.typesafe.config.{Config, ConfigFactory}
+import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateSpec}
-import org.genivi.sota.core.db.{Packages, UpdateRequests, UpdateSpecs, Vehicles}
-import org.genivi.sota.data.Namespace.Namespace
-
-import scala.concurrent.ExecutionContext
-import slick.driver.MySQLDriver.api._
-import org.genivi.sota.data.{Vehicle, VehicleGenerators}
+import org.genivi.sota.core.db.{Packages, UpdateRequests, UpdateSpecs}
+import org.genivi.sota.data.Device
+import org.genivi.sota.data.{Device, DeviceT}
 import org.genivi.sota.datatype.NamespaceDirective
-
+import org.genivi.sota.data.DeviceGenerators
+import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-
+import slick.driver.MySQLDriver.api._
 
 object NamespaceSpec {
   import eu.timepit.refined.auto._
@@ -33,10 +33,11 @@ trait UpdateResourcesDatabaseSpec {
   self: DatabaseSpec =>
 
   import Generators._
+  import DeviceGenerators._
 
-  def createUpdateSpecFor(vehicle: Vehicle, installPos: Int = 0, withMillis: Long = -1)
+  def createUpdateSpecFor(device: Device.Id, installPos: Int = 0, withMillis: Long = -1)
                          (implicit ec: ExecutionContext): DBIO[(Package, UpdateSpec)] = {
-    val (packageModel, updateSpec0) = genUpdateSpecFor(vehicle, withMillis).sample.get
+    val (packageModel, updateSpec0) = genUpdateSpecFor(device, withMillis).sample.get
     val updateSpec = updateSpec0.copy(installPos = installPos)
 
     val dbIO = DBIO.seq(
@@ -48,25 +49,16 @@ trait UpdateResourcesDatabaseSpec {
     dbIO.map(_ => (packageModel, updateSpec))
   }
 
-  def createUpdateSpecAction()(implicit ec: ExecutionContext): DBIO[(Package, Vehicle, UpdateSpec)] = {
-    val vehicle = VehicleGenerators.genVehicle.sample.get
+  def createUpdateSpecAction()(implicit ec: ExecutionContext): DBIO[(Package, Device, UpdateSpec)] = {
+    val device = genDevice.sample.get
 
     for {
-      _ <- Vehicles.create(vehicle)
-      (packageModel, updateSpec) <- createUpdateSpecFor(vehicle)
-    } yield (packageModel, vehicle, updateSpec)
+      (packageModel, updateSpec) <- createUpdateSpecFor(device.id)
+    } yield (packageModel, device, updateSpec)
   }
 
-  def createUpdateSpec()(implicit ec: ExecutionContext): Future[(Package, Vehicle, UpdateSpec)] = {
+  def createUpdateSpec()(implicit ec: ExecutionContext): Future[(Package, Device, UpdateSpec)] = {
     db.run(createUpdateSpecAction())
   }
-}
 
-trait VehicleDatabaseSpec {
-  self: DatabaseSpec =>
-
-  def createVehicle()(implicit ec: ExecutionContext): Future[Vehicle] = {
-    val vehicle = VehicleGenerators.genVehicle.sample.get
-    db.run(Vehicles.create(vehicle))
-  }
 }

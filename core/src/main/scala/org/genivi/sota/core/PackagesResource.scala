@@ -110,10 +110,10 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
   }
 
   /**
-    * An ota client GET the VIN-s waiting for the given [[Package]] to be installed.
+    * An ota client GET the device-s waiting for the given [[Package]] to be installed.
     */
-  def queuedVins(ns: Namespace, pid: PackageId): Route = {
-    complete(db.run(UpdateSpecs.getVinsQueuedForPackage(ns, pid.name, pid.version)))
+  def queuedDevices(ns: Namespace, pid: PackageId): Route = {
+    complete(db.run(UpdateSpecs.getDevicesQueuedForPackage(ns, pid.name, pid.version)))
   }
 
   val route =
@@ -130,8 +130,8 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
             updatePackage(ns, pid)
           }
         } ~
-        path("queued_vins") {
-          queuedVins(ns, pid)
+        path("queued_devices") {
+          queuedDevices(ns, pid)
         }
       }
     }

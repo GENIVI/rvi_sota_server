@@ -179,7 +179,6 @@ object VehicleRepository {
 
   def updateInstalledPackages(vin: Vehicle.Vin, packages: Set[PackageId] )
                              (implicit ec: ExecutionContext): DBIO[Unit] = {
-
     def filterAvailablePackages(namespace: Namespace, ids: Set[PackageId] ) : DBIO[Set[PackageId]] =
       PackageRepository.load(namespace, ids).map(_.map(_.id))
 
@@ -298,10 +297,10 @@ object VehicleRepository {
     def toRegex[T](r: Refined[String, T]): Refined[String, Regex] =
       Refined.unsafeApply(r.get)
 
-    val vins  = re.fold[FilterAST](True)(VinMatches(_))
-    val pkgs  = (pkgName, pkgVersion) match
-    { case (Some(re1), Some(re2)) => HasPackage(toRegex(re1), toRegex(re2))
-      case _                      => True
+    val vins = re.fold[FilterAST](True)(VinMatches(_))
+    val pkgs = (pkgName, pkgVersion) match {
+      case (Some(re1), Some(re2)) => HasPackage(toRegex(re1), toRegex(re2))
+      case _ => True
     }
 
     val comps = part.fold[FilterAST](True)(r => HasComponent(toRegex(r)))

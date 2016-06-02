@@ -52,6 +52,9 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   //val webserverPort = 80 //this isn't likely to change so hardcode it instead of using an env var
   val webserverPort = port
 
+  var testId    : Option[String] = None
+  var testIdAlt : Option[String] = None
+
   object Method extends Enumeration {
     type Method = Value
     val GET, PUT, DELETE, POST = Value
@@ -66,13 +69,15 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   case class Package(namespace: String, id: PackageId, uri: Uri, size: Long, checkSum: String, description: String, vendor: String)
   case class PackageResolver(id: PackageId, description: String, vendor: String)
   case class Vehicle(namespace: String, vin: String)
+  case class DeviceT(deviceName: String, deviceId: Option[String] = None, deviceType: String)
+  case class Device(namespace: String, deviceName: String, deviceId: Option[String] = None, deviceType: String, lastSeen: Option[String])
   case class FilterJson(namespace: String, name: String, expression: String)
   case class FilterPackageJson(namespace: String, filterName : String, packageName : String, packageVersion : String)
   case class ComponentJson(namespace: String, partNumber : String, description : String)
   case class UpdateRequest(namespace: String, id: String, packageId: PackageId, creationTime: String, periodOfValidity: String,
                            priority: Int, signature: String, description: String, requestConfirmation: Boolean)
   import UpdateStatus._
-  case class UpdateSpec(request: UpdateRequest, vin: String, status: UpdateStatus, dependencies: Set[Package])
+  case class UpdateSpec(request: UpdateRequest, device: String, status: UpdateStatus, dependencies: Set[Package])
   object UpdateSpec {
     import io.circe.generic.semiauto._
     //circe fails to generate a decoder for UpdateStatus automatically, so we define one manually
@@ -113,9 +118,21 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     }
   }
 
-  def addVin(vin: String): Unit = {
-    val response = makeRequest("vehicles/" + vin, PUT)
-    response.status mustBe NO_CONTENT
+  def addVin(vin: String): String = {
+    val device = DeviceT(vin, Some(vin), "Vehicle")
+
+    // create in resolver
+    val resolverResponse = makeRequest("vehicles/" + vin, PUT)
+    resolverResponse.status mustBe NO_CONTENT
+
+    // create in device registry
+    val response = makeJsonRequest("devices", POST, device.asJson.noSpaces)
+    response.status mustBe CREATED
+    val r = decode[String](response.body)
+    r.toOption match {
+      case Some(id: String) => id
+      case None => fail("JSON parse error:" + r.toString)
+    }
   }
 
   def addPackage(packageName: String, packageVersion: String): Unit = {
@@ -166,18 +183,18 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   }
 
   "test adding vins" taggedAs APITests in {
-    addVin(testVin)
+    testId = Some(addVin(testVin))
     //add second vin to aid in testing filtering later on
-    addVin(testVinAlt)
+    testIdAlt = Some(addVin(testVinAlt))
   }
 
   "test searching vins" taggedAs APITests in {
-    val response = makeRequest("vehicles?regex=" + testVin, GET)
+    val response = makeRequest(s"devices?namespace=$testNamespace&regex=" + testVin, GET)
     response.status mustBe OK
-    val jsonResponse = decode[List[Vehicle]](response.body)
+    val jsonResponse = decode[List[Device]](response.body)
     jsonResponse.toOption match {
-      case Some(resp : List[Vehicle]) => resp.length mustBe 1
-                                         resp.head.vin mustEqual testVin
+      case Some(resp : List[Device]) => resp.length mustBe 1
+                                        resp.head.deviceId mustEqual Some(testVin)
       case None => fail("JSON parse error:" + jsonResponse.toString)
     }
   }
@@ -348,12 +365,14 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     }
   }
 
+
   "test creating install campaigns" taggedAs APITests in {
     val cookie = getLoginCookie
     val currentTimestamp = Instant.now().toString
     val tomorrowTimestamp = Instant.now().plus(1, ChronoUnit.DAYS).toString
     val uuid = UUID.randomUUID().toString
-    val data = UpdateRequest(testNamespace, uuid, PackageId(testPackageName, testPackageVersion), currentTimestamp,
+    val updateId = UUID.randomUUID().toString
+    val data = UpdateRequest(testNamespace, updateId, PackageId(testPackageName, testPackageVersion), currentTimestamp,
       currentTimestamp + "/" + tomorrowTimestamp, 1, "sig", "desc", true)
     val response = await(WS.url("http://" + webserverHost + s":$webserverPort/api/v1/update_requests")
       .withHeaders("Cookie" -> Cookies.encodeCookieHeader(cookie))
@@ -371,10 +390,10 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     val jsonResponse = decode[Map[Vin, Seq[PackageId]]](response.body)(refinedMapDecoder)
     jsonResponse.toOption match {
       case Some(resp : Map[Vin, Seq[PackageId]]) => resp.toList.length mustBe 1
-                                                       resp.head._1.get mustBe testVin
-                                                       resp.head._2.length mustBe 1
-                                                       resp.head._2.head.name mustBe testPackageName
-                                                       resp.head._2.head.version mustBe testPackageVersion
+                                                    resp.head._1.get mustBe testVin
+                                                    resp.head._2.length mustBe 1
+                                                    resp.head._2.head.name mustBe testPackageName
+                                                    resp.head._2.head.version mustBe testPackageVersion
       case None => fail("JSON parse error:" + jsonResponse.toString)
     }
   }

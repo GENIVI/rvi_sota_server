@@ -4,11 +4,11 @@ import akka.http.scaladsl.model.Multipart.FormData.BodyPart
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.PathMatchers
+import akka.http.scaladsl.testkit.RouteTestTimeout
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.http.scaladsl.unmarshalling._
 import io.circe.generic.auto._
 import java.io.File
-
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
 import org.genivi.sota.data.Namespace._
@@ -20,8 +20,8 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Matchers, PropSpec}
-
 import scala.concurrent.Future
+import scala.concurrent.duration._
 import slick.jdbc.JdbcBackend.Database
 
 
@@ -37,6 +37,8 @@ class PackageUploadSpec extends PropSpec
   with ScalaFutures {
 
   import NamespaceDirective._
+
+  implicit val routeTimeout: RouteTestTimeout = RouteTestTimeout(10.second)
 
   val PackagesPath = Path / "packages"
 

@@ -11,9 +11,11 @@ import cats.data.Xor
 import eu.timepit.refined.refineV
 import eu.timepit.refined.api.{Refined, Validate}
 import io.circe._
-import org.genivi.sota.data.{Interval, PackageId}
+import org.genivi.sota.data.{Device, Interval, PackageId}
 import java.time.Instant
 import java.time.format.{DateTimeFormatter, DateTimeParseException}
+
+import cats.Show
 import io.circe.generic.semiauto._
 import io.circe.{Decoder, Encoder}
 
@@ -99,6 +101,22 @@ trait CirceInstances {
 
   implicit val packageIdEncoder : Encoder[PackageId] = deriveEncoder[PackageId]
   implicit val packageIdDecoder : Decoder[PackageId] = deriveDecoder[PackageId]
+
+  // Circe encoding
+
+  import io.circe._
+
+  // TODO generalize to refined and showable value class decoder/encoder
+  implicit val idEncoder: Encoder[Device.Id] = Encoder[String].contramap(implicitly[Show[Device.Id]].show(_))
+  implicit val idDecoder: Decoder[Device.Id] = refinedDecoder[String, Device.ValidId].map(Device.Id(_))
+
+  implicit val deviceNameEncoder: Encoder[Device.DeviceName] =
+    Encoder[String].contramap(implicitly[Show[Device.DeviceName]].show(_))
+  implicit val deviceNameDecoder: Decoder[Device.DeviceName] = Decoder[String].map(Device.DeviceName(_))
+
+  implicit val deviceIdEncoder: Encoder[Device.DeviceId] =
+    Encoder[String].contramap(implicitly[Show[Device.DeviceId]].show(_))
+  implicit val deviceIdDecoder: Decoder[Device.DeviceId] = Decoder[String].map(Device.DeviceId(_))
 }
 
 object CirceInstances extends CirceInstances

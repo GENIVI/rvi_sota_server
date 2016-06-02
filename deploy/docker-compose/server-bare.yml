@@ -1,6 +1,6 @@
 version: '2'
 services:
-  
+
   mysql:
     image: advancedtelematic/mariadb:stable
     ports:
@@ -13,7 +13,7 @@ services:
       MYSQL_PASSWORD: "s0ta"
       MYSQL_DATABASES: "sota_resolver sota_resolver_test sota_resolver% sota_core sota_core_test sota_core% sota_device_registry"
     command: ["--character-set-server=utf8", "--collation-server=utf8_unicode_ci", "--max-connections=1000"]
-    
+
   resolver:
     image: advancedtelematic/sota-resolver
     ports:
@@ -37,12 +37,13 @@ services:
     depends_on:
       - mysql
       - resolver
+      - device-registry
     environment:
       HOST: 0.0.0.0
       CORE_DB_URL: "jdbc:mariadb://mysql:3306/sota_core"
       CORE_DB_MIGRATE: 'true'
       RESOLVER_API_URI: "http://resolver:8081"
-      DEVICE_REGISTRY_API_URI: "http://device_registry:8083"
+      DEVICE_REGISTRY_API_URI: "http://device-registry:8083"
       CORE_INTERACTION_PROTOCOL: 'none'
       DB_ALIVE_URL: "mysql:3306"
 
@@ -51,6 +52,7 @@ services:
     depends_on:
       - resolver
       - core
+      - device-registry
     ports:
       - 9000:9000
     expose:
@@ -58,5 +60,18 @@ services:
     environment:
       CORE_API_URI: "http://core:8080"
       RESOLVER_API_URI: "http://resolver:8081"
+      DEVICE_REGISTRY_API_URI: "http://device-registry:8083"
       PLAY_CRYPTO_SECRET: "YM5B6o<ywKn4tTyA;tOZ<2xUEajF4DDi=O/PPm1Q^w2LqtKISd9oqYT6b>>C1gQa"
       LDAP_INMEMORY_ENABLE: 'true'
+
+  device-registry:
+    image: advancedtelematic/sota-device_registry
+    ports:
+     - 8083:8083
+    expose:
+     - 8083
+    links:
+     - mysql
+    environment:
+     HOST: 0.0.0.0
+     DEVICE_REGISTRY_DB_URL: "jdbc:mariadb://mysql:3306/sota_device_registry"

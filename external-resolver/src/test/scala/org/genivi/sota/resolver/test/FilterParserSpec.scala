@@ -88,11 +88,11 @@ class FilterQuerySpec extends ResourceWordSpec with Namespaces {
   import org.genivi.sota.resolver.packages.Package
   import org.genivi.sota.resolver.components.Component
 
-  val vin1 = Vehicle(defaultNs, Refined.unsafeApply("APABEPA1234567890"))
-  val vin2 = Vehicle(defaultNs, Refined.unsafeApply("APACEPA1234567890"))
-  val vin3 = Vehicle(defaultNs, Refined.unsafeApply("APADEPA1234567890"))
-  val vin4 = Vehicle(defaultNs, Refined.unsafeApply("BEPAEPA1234567890"))
-  val vin5 = Vehicle(defaultNs, Refined.unsafeApply("DEPAEPA1234567890"))
+  val vin1: Vehicle.Vin = Refined.unsafeApply("APABEPA1234567890")
+  val vin2: Vehicle.Vin = Refined.unsafeApply("APACEPA1234567890")
+  val vin3: Vehicle.Vin = Refined.unsafeApply("APADEPA1234567890")
+  val vin4: Vehicle.Vin = Refined.unsafeApply("BEPAEPA1234567890")
+  val vin5: Vehicle.Vin = Refined.unsafeApply("DEPAEPA1234567890")
 
   val pkg1 = PackageId(Refined.unsafeApply("pkg1"), Refined.unsafeApply("1.0.0"))
   val pkg2 = PackageId(Refined.unsafeApply("pkg2"), Refined.unsafeApply("1.0.0"))
@@ -104,7 +104,7 @@ class FilterQuerySpec extends ResourceWordSpec with Namespaces {
   val part3: Refined[String, Component.ValidPartNumber] = Refined.unsafeApply("part3")
   val part4: Refined[String, Component.ValidPartNumber] = Refined.unsafeApply("part4")
 
-  val vins: Seq[(Vehicle, (Seq[PackageId], Seq[Component.PartNumber]))] =
+  val vins: Seq[(Vehicle.Vin, (Seq[PackageId], Seq[Component.PartNumber]))] =
     List( (vin1, (List(pkg1), List(part1)))
         , (vin2, (List(pkg2), List(part2)))
         , (vin3, (List(pkg3), List(part3)))
@@ -112,7 +112,7 @@ class FilterQuerySpec extends ResourceWordSpec with Namespaces {
         , (vin5, (List(),     List()))
         )
 
-  def run(f: FilterAST): Seq[Vehicle] =
+  def run(f: FilterAST): Seq[Vehicle.Vin] =
     vins.filter(query(f)).map(_._1)
 
 

@@ -70,12 +70,12 @@ object SotaBuild extends Build {
 
   lazy val commonData = Project(id = "sota-common-data", base = file("common-data"))
     .settings(basicSettings ++ compilerSettings)
-    .settings(libraryDependencies ++= Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.CommonsCodec :+ Dependencies.TypesafeConfig)
+    .settings(libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.CommonsCodec :+ Dependencies.TypesafeConfig)
     .settings(Publish.settings)
 
   lazy val commonTest = Project(id = "sota-common-test", base = file("common-test"))
     .settings(basicSettings ++ compilerSettings)
-    .settings(libraryDependencies ++= Seq (Dependencies.Cats, Dependencies.Refined))
+    .settings(libraryDependencies ++= Seq (Dependencies.Cats, Dependencies.Refined, Dependencies.Generex))
     .dependsOn(commonData)
     .settings(Publish.settings)
 
@@ -125,7 +125,7 @@ object SotaBuild extends Build {
     .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
     .settings(inConfig(IntegrationTests)(Defaults.testTasks): _*)
     .configs(IntegrationTests, UnitTests)
-    .dependsOn(common, commonData, commonTest % "test", commonDbTest % "test")
+    .dependsOn(common, commonData, commonTest % "test", commonDbTest % "test", commonClient)
     .enablePlugins(Packaging.plugins: _*)
     .enablePlugins(BuildInfoPlugin)
     .settings(Publish.settings)
@@ -158,7 +158,7 @@ object SotaBuild extends Build {
         play.sbt.Play.autoImport.cache
       ) ++ Dependencies.Database ++ Dependencies.Play2Auth
     ))
-    .dependsOn(common)
+    .dependsOn(common, commonData)
     .enablePlugins(PlayScala, SbtWeb, BuildInfoPlugin)
     .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
     .settings(inConfig(IntegrationTests)(Defaults.testTasks): _*)
@@ -168,22 +168,29 @@ object SotaBuild extends Build {
 
   lazy val deviceRegistry = Project(id = "sota-device_registry", base = file("device-registry"))
     .settings(commonSettings ++ Migrations.settings ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Refined :+ Dependencies.Flyway :+ Dependencies.Generex,
-      parallelExecution in Test := false,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Refined :+ Dependencies.Flyway,
+      parallelExecution in Test := true,
       dockerExposedPorts := Seq(8083),
       flywayUrl := sys.env.get("DEVICE_REGISTRY_DB_URL").orElse(sys.props.get("device-registry.db.url")).getOrElse("jdbc:mysql://localhost:3306/sota_device_registry"),
       flywayUser := sys.env.get("DEVICE_REGISTRY_DB_USER").orElse(sys.props.get("device-registry.db.user")).getOrElse("sota"),
       flywayPassword := sys.env.get("DEVICE_REGISTRY_DB_PASSWORD").orElse(sys.props.get("device-registry.db.password")).getOrElse("s0ta")
     ))
-    .dependsOn(common, commonData, commonTest % "test")
+    .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
+    .configs(UnitTests)
+    .dependsOn(common, commonData, commonTest % "test", commonDbTest % "test")
     .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
+    .settings(Publish.settings)
+
+  lazy val commonClient = Project(id = "sota-common-client", base = file("common-client"))
+    .settings(basicSettings ++ compilerSettings)
+    .dependsOn(common, commonData)
     .settings(Publish.settings)
 
   lazy val sota = Project(id = "sota", base = file("."))
     .settings( basicSettings )
     .settings( Versioning.settings )
-    .settings(Release.settings(common, commonData, commonTest, core, externalResolver))
-    .aggregate(common, commonData, commonTest, core, externalResolver, webServer)
+    .settings(Release.settings(common, commonData, commonTest, core, externalResolver, deviceRegistry, commonClient))
+    .aggregate(common, commonData, commonTest, core, externalResolver, webServer, deviceRegistry, commonClient)
     .enablePlugins(Versioning.Plugin)
     .settings(Publish.disable)
 }
@@ -214,7 +221,7 @@ object Dependencies {
 
   val AkkaSlf4j = "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion
 
-  val Generex = "com.github.mifmif" % "generex" % "1.0.0" % "test"
+  val Generex = "com.github.mifmif" % "generex" % "1.0.0"
 
   val Logback = "ch.qos.logback" % "logback-classic" % LogbackVersion
 

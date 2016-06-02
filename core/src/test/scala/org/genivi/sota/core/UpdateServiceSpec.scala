@@ -1,22 +1,20 @@
 package org.genivi.sota.core
 
-import java.util.UUID
-
 import akka.http.scaladsl.util.FastFuture
+import akka.stream.ActorMaterializer
 import akka.testkit.TestKit
 import eu.timepit.refined.api.Refined
+import java.util.UUID
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.core.db.{Packages, UpdateSpecs, Vehicles}
+import org.genivi.sota.core.db.{Packages, UpdateSpecs}
 import org.genivi.sota.core.resolver.DefaultConnectivity
-import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, VehicleUpdates}
+import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, DeviceUpdates}
+import org.genivi.sota.data.{Device, DeviceT, Namespaces, PackageId, Vehicle, VehicleGenerators}
 import org.genivi.sota.data.Namespace._
-import org.genivi.sota.data.Namespaces
-import org.genivi.sota.data.{PackageId, Vehicle, VehicleGenerators}
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
-
 import scala.concurrent.{Await, Future}
 import scala.util.Random
 
@@ -31,12 +29,15 @@ class UpdateServiceSpec extends PropSpec
   with BeforeAndAfterAll
   with Namespaces {
 
+  import org.genivi.sota.data.DeviceGenerators._
+
   val packages = PackagesReader.read().take(1000)
 
   implicit val _db = db
 
-  implicit val system = akka.actor.ActorSystem("UpdateServiseSpec")
+  implicit val system = akka.actor.ActorSystem("UpdateServiceSpec")
   import system.dispatcher
+  implicit val mat = ActorMaterializer()
 
   override def beforeAll() : Unit = {
     super.beforeAll()
@@ -48,8 +49,9 @@ class UpdateServiceSpec extends PropSpec
 
   implicit val updateQueueLog = akka.event.Logging(system, "sota.core.updateQueue")
   implicit val connectivity = DefaultConnectivity
+  val deviceRegistry = new FakeDeviceRegistry
 
-  val service = new UpdateService(DefaultUpdateNotifier)
+  val service = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
 
   import org.genivi.sota.core.data.UpdateRequest
   import org.scalatest.concurrent.ScalaFutures.{whenReady, PatienceConfig}
@@ -92,17 +94,18 @@ class UpdateServiceSpec extends PropSpec
     }
   }
 
-  def createVehicles(ns: Namespace, vins: Set[Vehicle.Vin]) : Future[Unit] = {
-    import slick.driver.MySQLDriver.api._
-    db.run(DBIO.seq(vins.map(vin => Vehicles.create(Vehicle(ns, vin))).toArray: _*))
+  def createVehicles(vins: Set[Vehicle.Vin]) : Future[Unit] = {
+    Future.sequence(vins.map { vin =>
+      deviceRegistry.createDevice(DeviceT(genDeviceName.sample.get, Some(Device.DeviceId(vin.get))))
+    }.toSeq).map(_ => ())
   }
 
-  property("upload spec per vin") {
+  property("upload spec per device") {
     import scala.concurrent.duration.DurationInt
     forAll( updateRequestGen(defaultNs, AvailablePackageIdGen), dependenciesGen(packages) ) { (request, deps) =>
       val req = UpdateRequest(UUID.randomUUID(), request.namespace, request.packageId, request.creationTime,
         request.periodOfValidity, request.priority, request.signature, request.description, request.requestConfirmation)
-      whenReady(createVehicles(req.namespace, deps.keySet)
+      whenReady(createVehicles(deps.keySet)
         .flatMap(_ => service.queueUpdate(req, _ => Future.successful(deps)))) { specs =>
         Await.result(db.run(UpdateSpecs.listUpdatesById(Refined.unsafeApply(req.id.toString))), 1.second)
         specs.size shouldBe deps.size
@@ -110,19 +113,18 @@ class UpdateServiceSpec extends PropSpec
     }
   }
 
-  property("queue an update for a single vehicle creates an update request") {
-    val newVehicle = VehicleGenerators.genVehicle.sample.get
+  property("queue an update for a single device creates an update request") {
+    val newDevice = genDevice.sample.get
     val newPackage = PackageGen.sample.get
 
     val dbSetup = for {
-      vehicle <- Vehicles.create(newVehicle)
       packageM <- Packages.create(newPackage)
-    } yield (vehicle, packageM)
+    } yield (newDevice, packageM)
 
     val f = for {
-      (vehicle, packageM) <- db.run(dbSetup)
-      updateRequest <- service.queueVehicleUpdate(vehicle.namespace, vehicle.vin, packageM.id)
-      queuedPackages <- db.run(VehicleUpdates.findPendingPackageIdsFor(vehicle.vin))
+      (device, packageM) <- db.run(dbSetup)
+      updateRequest <- service.queueDeviceUpdate(device.namespace, device.id, packageM.id)
+      queuedPackages <- db.run(DeviceUpdates.findPendingPackageIdsFor(device.id))
     } yield (updateRequest, queuedPackages)
 
     whenReady(f) { case (updateRequest, queuedPackages) =>

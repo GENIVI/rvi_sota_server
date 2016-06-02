@@ -25,10 +25,10 @@ import org.genivi.sota.core.db.UpdateSpecs
 import org.genivi.sota.core.db.UpdateSpecs.MiniUpdateSpec
 import org.genivi.sota.core.resolver.ConnectivityClient
 import org.genivi.sota.core.storage.S3PackageStore
-import org.genivi.sota.core.transfer.VehicleUpdates
-import org.genivi.sota.data.Vehicle
 import java.time.Instant
 import java.time.Duration
+import org.genivi.sota.core.transfer.DeviceUpdates
+import org.genivi.sota.data.Device
 
 import scala.collection.immutable.Queue
 import scala.concurrent.duration.FiniteDuration
@@ -52,27 +52,27 @@ class UpdateController(transferProtocolProps: Props) extends Actor with ActorLog
    * Forward [[ChunksReceived]] and [[InstallReport]] messages to that actor until it finishes the download.
    * Remove the actor from the map when it is terminated.
    *
-   * @param currentDownloads the map of VIN to the actor handling that vehicle
+   * @param currentDownloads the map of device to the actor handling that vehicle
    */
-  def running( currentDownloads: Map[Vehicle.Vin, ActorRef] ) : Receive = {
-    case x @ StartDownload(vin, updateId, clientServices) =>
-      currentDownloads.get(vin) match {
+  def running( currentDownloads: Map[Device.Id, ActorRef] ) : Receive = {
+    case x @ StartDownload(device, updateId, clientServices) =>
+      currentDownloads.get(device) match {
         case None =>
-          log.debug(s"New transfer to vehicle $vin for update $updateId, count ${currentDownloads.size}")
+          log.debug(s"New transfer to vehicle $device for update $updateId, count ${currentDownloads.size}")
           val actor = context.actorOf( transferProtocolProps )
           context.watch(actor)
-          context.become( running( currentDownloads.updated( vin, actor ) ) )
+          context.become( running( currentDownloads.updated( device, actor ) ) )
           actor ! x
         case Some(x) =>
           log.warning(
-            s"There is an active transfer for vehicle $vin. Request to transfer update $updateId will be ignored." )
+            s"There is an active transfer for vehicle $device. Request to transfer update $updateId will be ignored." )
       }
-    case x @ ChunksReceived(vin, _, _) =>
-      currentDownloads.get(vin).foreach( _ ! x)
+    case x @ ChunksReceived(device, _, _) =>
+      currentDownloads.get(device).foreach( _ ! x)
 
     case x: InstallReport =>
-      log.debug(s"Install report from vehicle ${x.vin}")
-      currentDownloads.get(x.vin).foreach( _ ! x )
+      log.debug(s"Install report from vehicle ${x.device}")
+      currentDownloads.get(x.device).foreach( _ ! x )
 
     case akka.actor.Terminated(x) =>
       log.debug(s"Transfer actor terminated, count ${currentDownloads.size}")
@@ -177,11 +177,11 @@ class TransferProtocolActor(db: Database,
       val (inprActor, inprPkg) = inProgress
       inprActor ! x
 
-    case r @ InstallReport(vin, update) =>
+    case r @ InstallReport(device, update) =>
       context.system.eventStream.publish( UpdateEvents.InstallReportReceived(r) )
-      log.debug(s"Install report received from $vin: ${update.update_id} installed with ${update.operation_results}")
+      log.debug(s"Install report received from $device: ${update.update_id} installed with ${update.operation_results}")
       assert(updates.requestId == update.update_id) // TODO debug code
-      VehicleUpdates.reportInstall(vin, update)(dispatcher, db)
+      DeviceUpdates.reportInstall(device, update)(dispatcher, db)
       rviClient.sendMessage(services.getpackages, io.circe.Json.Null, ttl())
 
     case ReceiveTimeout =>
@@ -194,7 +194,7 @@ class TransferProtocolActor(db: Database,
 
   def abortUpdate (services: ClientServices, x: MiniUpdateSpec): Unit = {
     rviClient.sendMessage(services.abort, io.circe.Json.Null, ttl())
-    db.run( UpdateSpecs.setStatus(x.vin, x.requestId, UpdateStatus.Canceled) )
+    db.run( UpdateSpecs.setStatus(x.device, x.requestId, UpdateStatus.Canceled) )
     context.stop(self)
   }
 
@@ -239,10 +239,10 @@ class TransferProtocolActor(db: Database,
    * Initial [[TransferProtocolActor]] behavior, waiting for the vehicle to [[StartDownload]].
    */
   override def receive : Receive = {
-    case StartDownload(vin, updateId, services) =>
-      log.debug(s"$vin requested update $updateId")
+    case StartDownload(device, updateId, services) =>
+      log.debug(s"$device requested update $updateId")
       import akka.pattern.pipe
-      db.run(UpdateSpecs.load(vin, updateId)) pipeTo self
+      db.run(UpdateSpecs.load(device, updateId)) pipeTo self
       context become loadSpecs(services)
   }
 
@@ -268,7 +268,7 @@ object StartDownloadMessage {
   *
   * @param updReqID of the [[UpdateRequest]]
   */
-case class ChunksReceived(vin: Vehicle.Vin, updReqID: UUID, chunks: List[Int])
+case class ChunksReceived(device: Device.Id, updReqID: UUID, chunks: List[Int])
 
 /**
   * Sent by [[PackageTransferActor]] to the [[ConnectivityClient]] (step 2 of 3) to transfer a chunk.

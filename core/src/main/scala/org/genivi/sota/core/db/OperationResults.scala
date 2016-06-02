@@ -10,7 +10,7 @@ import java.util.UUID
 
 import org.genivi.sota.core.data.OperationResult
 import org.genivi.sota.data.Namespace._
-import org.genivi.sota.data.Vehicle
+import org.genivi.sota.data.Device
 
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
@@ -36,7 +36,7 @@ object OperationResults {
     def updateId    = column[UUID]("update_request_id")
     def resultCode  = column[Int]("result_code")
     def resultText  = column[String]("result_text")
-    def vin         = column[Vehicle.Vin]("vin")
+    def device      = column[Device.Id]("device_uuid")
     def namespace   = column[Namespace]("namespace")
     def receivedAt  = column[Instant]("received_at")
 
@@ -45,9 +45,9 @@ object OperationResults {
     // given `id` is already unique across namespaces, no need to include namespace. Also avoids Slick issue #966.
     def pk = primaryKey("pk_OperationResultTable", (id))
 
-    def * = (id, updateId, resultCode, resultText, vin, namespace, receivedAt).shaped <>
+    def * = (id, updateId, resultCode, resultText, device, namespace, receivedAt).shaped <>
       (x => OperationResult(x._1, x._2, x._3, x._4, x._5, x._6, x._7),
-      (x: OperationResult) => Some((x.id, x.updateId, x.resultCode, x.resultText, x.vin, x.namespace, x.receivedAt)))
+      (x: OperationResult) => Some((x.id, x.updateId, x.resultCode, x.resultText, x.device, x.namespace, x.receivedAt)))
   }
   // scalastyle:on
 
@@ -72,21 +72,23 @@ object OperationResults {
 
   /**
     * Get all OperationResults associated with the given VIN
-    * @param vin The VIN for which all OperationResults should be returned
+    * @param device The device for which all OperationResults should be returned
     * @return all OperationResults associated with the given VIN
+    * @param
+    * @return all OperationResults associated with the given device
     */
-  def byVin(vin: Vehicle.Vin)(implicit ec: ExecutionContext): DBIO[Seq[OperationResult]] =
-    all.filter(_.vin === vin).result
+  def byDevice(device: Device.Id)(implicit ec: ExecutionContext): DBIO[Seq[OperationResult]] =
+    all.filter(_.device === device).result
 
   /**
     * Get all OperationResults associated with the given VIN and UpdateID
-    * @param vin The VIN for which all OperationResults should be returned
+    * @param device The device for which all OperationResults should be returned
     * @param id the uuid of the Update that OperationResults should be returned
     * @return all OperationResults associated with the given VIN
     */
-  def byVinAndId(vin: Vehicle.Vin, id: Refined[String, Uuid])
-    (implicit ec: ExecutionContext): DBIO[Seq[OperationResult]] =
-      all.filter(r => r.vin === vin && r.updateId === UUID.fromString(id.get)).result
+  def byDeviceIdAndId(device: Device.Id, id: Refined[String, Uuid])
+                     (implicit ec: ExecutionContext): DBIO[Seq[OperationResult]] =
+      all.filter(r => r.device === device && r.updateId === UUID.fromString(id.get)).result
 
   /**
    * Add a new package update. Package updated specify a specific package at a

@@ -6,3 +6,7 @@ RESOLVER_DB_USER=sota
 RESOLVER_DB_PASS=s0ta
 RESOLVER_DB_URL=jdbc:mariadb://localhost:3306/sota_resolver
 RESOLVER_DB_MIGRATE=true
+DEVICE_REGISTRY_DB_URL=jdbc:mariadb://localhost:3306/sota_device_registry
+DEVICE_REGISTRY_DB_USER=sota
+DEVICE_REGISTRY_DB_PASS=s0ta
+DEVICE_REGISTRY_DB_MIGRATE=true

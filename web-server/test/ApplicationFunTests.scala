@@ -62,7 +62,6 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
         }
       }
       coreDb.createStatement().executeQuery("delete from UpdateRequest where package_name = '" + testPackageName + "'")
-      coreDb.createStatement().executeQuery("delete from Vehicle where vin = '" + testVinName + "'")
       coreDb.createStatement().executeQuery("delete from Package where name = '" + testPackageName + "'")
     } catch {
       //Teamcity handles clearing the database for us. Thus, ignoring this exception is generally

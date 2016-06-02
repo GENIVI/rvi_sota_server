@@ -22,7 +22,7 @@ import org.genivi.sota.resolver.filters.FilterAST
 import scala.concurrent.{ExecutionContext, Future}
 
 case class VinPackages(vehicle: Vehicle, packageIds: Seq[PackageId], parts: Seq[PartNumber]) {
-  def tupled = (vehicle, (packageIds, parts))
+  def tupled = (vehicle.vin, (packageIds, parts))
 
   def +(other: VinPackages): VinPackages =
     copy(packageIds = this.packageIds ++ other.packageIds, parts = this.parts ++ other.parts)
@@ -41,7 +41,7 @@ object DbDepResolver {
     for {
       filtersForPkg <- db.run(PackageFilterRepository.listFiltersForPackage(namespace, pkgId))
       vf <- vehiclesForFilter(namespace, db, filterByPackageFilters(filtersForPkg))
-    } yield ResolveFunctions.makeFakeDependencyMap(pkgId, vf)
+    } yield ResolveFunctions.makeFakeDependencyMap(pkgId, vf.map(_.vin))
   }
 
   def vehiclesForFilter(namespace: Namespace, db: Database, filter: FilterAST)

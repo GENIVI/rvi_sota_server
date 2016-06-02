@@ -10,12 +10,14 @@ import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
+import eu.timepit.refined.api.Refined
 import io.circe.Json
 import java.util.UUID
 
+import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.resolver.{Connectivity, ExternalResolverClient}
-import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.core.data.UpdateRequest
+import org.genivi.sota.data.{PackageId, Device}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -34,7 +36,7 @@ final case class ClientServices( start: String, abort: String, chunk: String, fi
 /**
  * RVI message from client to initiate a package download.
  */
-final case class StartDownload(vin: Vehicle.Vin, update_id: UUID, services: ClientServices)
+final case class StartDownload(device: Device.Id, update_id: UUID, services: ClientServices)
 
 /**
  * RVI parameters of generic type for a specified service name.
@@ -57,20 +59,20 @@ final case class UpdateReport(update_id: UUID, operation_results: List[Operation
 /**
  * RVI message from client to report installation of a downloaded package.
  */
-final case class InstallReport(vin: Vehicle.Vin, update_report: UpdateReport)
+final case class InstallReport(device: Device.Id, update_report: UpdateReport)
 
 /**
  * RVI message from client to report all installed packages.
  */
-final case class InstalledPackages(vin: Vehicle.Vin, installed_software: Json )
+final case class InstalledPackages(device: Device.Id, installed_software: Json )
 
 /**
- * HTTP endpoints for receiving messages from the RVI node.
+ * HTTP endpoints for receideviceg messages from the RVI node.
  *
  * @param updateController the actor to forward messages for processing
  * @param resolverClient the resolver to update when a vehicle sends its installed packages
  */
-class SotaServices(updateController: ActorRef, resolverClient: ExternalResolverClient)
+class SotaServices(updateController: ActorRef, resolverClient: ExternalResolverClient, deviceRegistry: DeviceRegistry)
                   (implicit system: ActorSystem, mat: ActorMaterializer) {
   import Directives._
   import org.genivi.sota.core.jsonrpc.JsonRpcDirectives._
@@ -105,7 +107,12 @@ class SotaServices(updateController: ActorRef, resolverClient: ExternalResolverC
 
   def updatePackagesInResolver( message: InstalledPackages ) : Future[Unit] = {
     log.debug( s"InstalledPackages from rvi: $message" )
-    resolverClient.setInstalledPackages(message.vin, message.installed_software)
+    deviceRegistry.fetchDevice(message.device).map { d => d.deviceId match {
+      case Some(deviceId) =>
+        // TODO: validation
+        resolverClient.setInstalledPackages(Refined.unsafeApply(deviceId.underlying), message.installed_software)
+      case None => FastFuture.successful(())
+    }}
   }
 
 }

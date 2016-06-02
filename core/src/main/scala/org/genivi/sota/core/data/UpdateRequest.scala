@@ -6,18 +6,17 @@ package org.genivi.sota.core.data
 
 import io.circe._
 import java.util.UUID
-
-import org.genivi.sota.data.Namespace._
-import org.genivi.sota.data.{Interval, PackageId, Vehicle}
+import org.genivi.sota.data.Interval
 import java.time.Instant
 import java.time.Duration
+import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.{PackageId, Device}
 import org.genivi.sota.core.db.InstallHistories.InstallHistoryTable
-
 
 /**
  * Domain object for an update request.
  * An update request refers to the intent to update a package on a number of
- * VINs. It describes a single package, with a period of validity and priority
+ * devices. It describes a single package, with a period of validity and priority
  * for the update.
  * @param id A generated unique ID for this update request
  * @param packageId The name and version of the package
@@ -77,8 +76,8 @@ object UpdateStatus extends Enumeration {
 import UpdateStatus._
 
 /**
-  * A combination (campaign, VIN, packages) --- which remain constant over time ---
-  * along with the latest [[UpdateStatus]] (for that campaign on this VIN) --- which may change over time.
+  * A combination (campaign, device, packages) --- which remain constant over time ---
+  * along with the latest [[UpdateStatus]] (for that campaign on this device) --- which may change over time.
   * <br>
   * An UpdateSpec never gets deleted, just its [[status]] is rewritten.
   * Upon reaching Finished a row is added to [[InstallHistoryTable]] to record that fact
@@ -89,14 +88,14 @@ import UpdateStatus._
   * </ul>
   *
   * @param request The campaign that these updates are a part of
-  * @param vin The vehicle to which these updates should be applied
+  * @param device The vehicle to which these updates should be applied
   * @param status The status of the update
   * @param dependencies The packages to be installed
   * @param installPos Position in the installation queue, zero-based
   */
 case class UpdateSpec(
   request: UpdateRequest,
-  vin: Vehicle.Vin,
+  device: Device.Id,
   status: UpdateStatus,
   dependencies: Set[Package],
   installPos: Int,
@@ -119,10 +118,8 @@ object UpdateSpec {
   implicit val updateStatusEncoder : Encoder[UpdateStatus] = Encoder[String].contramap(_.toString)
   implicit val updateStatusDecoder : Decoder[UpdateStatus] = Decoder[String].map(UpdateStatus.withName)
 
-  def default(request: UpdateRequest, vin: Vehicle.Vin): UpdateSpec = {
-    UpdateSpec(
-      request, vin, UpdateStatus.Pending, Set.empty, 0, Instant.now
-    )
+  def default(request: UpdateRequest, device: Device.Id): UpdateSpec = {
+    UpdateSpec(request, device, UpdateStatus.Pending, Set.empty, 0, Instant.now)
   }
 }
 

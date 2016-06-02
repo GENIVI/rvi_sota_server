@@ -7,26 +7,30 @@ package org.genivi.sota.device_registry
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.{Directives, Route}
+import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
-import org.genivi.sota.rest.Handlers.{rejectionHandler, exceptionHandler}
+import org.genivi.sota.data.Namespace.Namespace
+import org.genivi.sota.datatype.NamespaceDirective
+import org.genivi.sota.device_registry.common.DeviceRegistryErrors
+import org.genivi.sota.rest.Handlers.{exceptionHandler, rejectionHandler}
+
 import scala.concurrent.ExecutionContext
 import scala.util.Try
-import slick.jdbc.JdbcBackend.Database
+import slick.driver.MySQLDriver.api._
 
 
 /**
  * Base API routing class.
  * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
  */
-class Routing
+class Routing(namespaceExtractor: Directive1[Namespace])
   (implicit db: Database, system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext)
     extends Directives {
 
   val route: Route = pathPrefix("api" / "v1") {
     handleRejections(rejectionHandler) {
-      handleExceptions(exceptionHandler) {
-        new Routes().route
+      handleExceptions(exceptionHandler orElse DeviceRegistryErrors.errorHandler) {
+        new Routes(namespaceExtractor).route
       }
     }
   }
@@ -55,12 +59,12 @@ object Boot extends App {
     flyway.migrate()
   }
 
-  val route         = new Routing
+  val route         = new Routing(NamespaceDirective.defaultNamespaceExtractor)
   val host          = system.settings.config.getString("server.host")
   val port          = system.settings.config.getInt("server.port")
   val bindingFuture = Http().bindAndHandle(route.route, host, port)
 
-  log.info(s"Server online at http://${host}:${port}/")
+  log.info(s"Server online at http://$host:$port/")
 
   sys.addShutdownHook {
     Try(db.close())

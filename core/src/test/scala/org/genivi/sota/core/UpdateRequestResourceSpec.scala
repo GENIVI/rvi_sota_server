@@ -39,6 +39,7 @@ class UpdateRequestResourceSpec extends FunSuite
   implicit val log = Logging(system, "UpdateRequestResourceSpec")
 
   val resolver = new FakeExternalResolver()
+  val deviceRegistry = new FakeDeviceRegistry()
 
   implicit val rviClient = new ConnectivityClient {
     override def sendMessage[A](service: String, message: A, expirationDate: Instant)(implicit encoder: Encoder[A]): Future[Int] = ???
@@ -46,7 +47,8 @@ class UpdateRequestResourceSpec extends FunSuite
 
   implicit val connectivity = DefaultConnectivity
 
-  val serve = new UpdateRequestsResource(db, resolver, new UpdateService(DefaultUpdateNotifier), defaultNamespaceExtractor)
+  val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
+  val serve = new UpdateRequestsResource(db, resolver, updateService, defaultNamespaceExtractor)
 
   test("accepts new updates with a Client specific format") {
     val now = Instant.now

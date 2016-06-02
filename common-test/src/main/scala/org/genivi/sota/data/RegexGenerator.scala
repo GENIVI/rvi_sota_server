@@ -2,7 +2,7 @@
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.device_registry.test
+package org.genivi.sota.data
 
 import com.mifmif.common.regex.Generex
 import eu.timepit.refined.api.Refined

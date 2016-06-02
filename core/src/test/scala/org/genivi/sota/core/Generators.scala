@@ -13,10 +13,12 @@ import java.util.UUID
 import org.apache.commons.codec.binary.Hex
 import org.genivi.sota.core.data._
 import org.genivi.sota.data.Namespace._
-import org.genivi.sota.data.{Namespace => _, _}
+import org.genivi.sota.data._
 import org.scalacheck.{Arbitrary, Gen}
 import java.time.Instant
 import java.time.Duration
+
+import org.genivi.sota.data.Interval
 
 /**
  * Generators for property-based testing of core objects
@@ -24,6 +26,7 @@ import java.time.Duration
 trait Generators {
 
   import Namespaces._
+  import org.genivi.sota.data.DeviceGenerators._
 
   val PackageVersionGen: Gen[PackageId.Version] =
     Gen.listOfN(3, Gen.choose(0, 999)).map(_.mkString(".")).map(Refined.unsafeApply)
@@ -40,7 +43,7 @@ trait Generators {
     id      <- PackageIdGen
     size    <- Gen.choose(1000L, 999999999L)
     cs      <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaChar)
-    desc    <- Gen.option(Arbitrary.arbitrary[String])
+    desc    <- Gen.option(Gen.alphaStr)
     vendor  <- Gen.option(Gen.alphaStr)
   } yield Package(defaultNs, id, Uri(path = Uri.Path / "tmp" / s"${id.name.get}-${id.version.get}.rpm"),
                   size, cs.mkString, desc, vendor, None)
@@ -54,7 +57,7 @@ trait Generators {
     finishBefore <- Gen.choose(10, 100).map( x => startAfter.plus(Duration.ofDays(x)) )
     prio         <- Gen.choose(1, 10)
     sig          <- Gen.alphaStr
-    desc         <- Gen.option(Arbitrary.arbitrary[String])
+    desc         <- Gen.option(Gen.alphaStr)
     reqConfirm   <- Arbitrary.arbitrary[Boolean]
   } yield UpdateRequest(UUID.randomUUID(), ns, packageId, Instant.now, Interval(startAfter, finishBefore),
                         prio, sig, desc, reqConfirm)
@@ -97,7 +100,7 @@ trait Generators {
     template.copy( uri = Uri( path.toUri().toString() ), checkSum = Hex.encodeHexString( digest.digest() ))
   }
 
-  def genUpdateSpecFor(vehicle: Vehicle, withMillis: Long = -1): Gen[(Package, UpdateSpec)] = for {
+  def genUpdateSpecFor(device: Device.Id, withMillis: Long = -1): Gen[(Package, UpdateSpec)] = for {
     smallSize <- Gen.chooseNum(1024, 1024 * 10)
     packageModel <- PackageGen.map(_.copy(size = smallSize.toLong))
     packageWithUri = Generators.generatePackageData(packageModel)
@@ -106,7 +109,7 @@ trait Generators {
     val dt =
       if (withMillis >= 0) { Instant.ofEpochMilli(withMillis) }
       else { Instant.now }
-    val updateSpec = UpdateSpec(updateRequest, vehicle.vin,
+    val updateSpec = UpdateSpec(updateRequest, device,
       UpdateStatus.Pending, List(packageWithUri ).toSet, 0, dt)
 
     (packageWithUri, updateSpec)

@@ -26,7 +26,7 @@ define(function(require) {
       var vehicles = _.map(this.props.Vehicles.deref(), function(vehicle) {
         return (
           <li className='list-group-item' key={vehicle}>
-            <Router.Link to='vehicle' params={{vin: vehicle}}>
+            <Router.Link to='vehicle' params={{vin: vehicle.vin}}>
             {vehicle}
             </Router.Link>
           </li>

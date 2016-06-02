@@ -354,8 +354,8 @@ trait ResolveRequests extends
     resolve(defaultNs, pname, pversion) ~> route ~> check {
       status shouldBe StatusCodes.OK
       responseAs[Map[Vehicle.Vin, List[PackageId]]] shouldBe
-        ResolveFunctions.makeFakeDependencyMap(PackageId(Refined.unsafeApply(pname), Refined.unsafeApply(pversion)),
-          vins.map(Vehicle(defaultNs, _)))
+        ResolveFunctions.makeFakeDependencyMap(PackageId(Refined.unsafeApply(pname),
+          Refined.unsafeApply(pversion)), vins)
     }
   }
 

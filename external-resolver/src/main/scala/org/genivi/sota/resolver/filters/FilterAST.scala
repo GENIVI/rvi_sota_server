@@ -90,9 +90,9 @@ object FilterAST extends StandardTokenParsers with PackratParsers with ImplicitC
     }
 
   // scalastyle:off cyclomatic.complexity
-  def query(f: FilterAST): Function1[(Vehicle, (Seq[PackageId], Seq[Component.PartNumber])), Boolean] =
-  { case a@((v: Vehicle, (ps: Seq[PackageId], cs: Seq[Component.PartNumber]))) => f match {
-      case VinMatches(re)       => re.get.r.findAllIn(v.vin.get).nonEmpty
+  def query(f: FilterAST): Function1[(Vehicle.Vin, (Seq[PackageId], Seq[Component.PartNumber])), Boolean] =
+  { case a@((v: Vehicle.Vin, (ps: Seq[PackageId], cs: Seq[Component.PartNumber]))) => f match {
+      case VinMatches(re)       => re.get.r.findAllIn(v.get).nonEmpty
       case HasPackage(re1, re2) => ps.exists(p => re1.get.r.findAllIn(p.name   .get).nonEmpty &&
                                                   re2.get.r.findAllIn(p.version.get).nonEmpty)
       case HasComponent(re)     => cs.exists(part => re.get.r.findAllIn(part.get).nonEmpty)

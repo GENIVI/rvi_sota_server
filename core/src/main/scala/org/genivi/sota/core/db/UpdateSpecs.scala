@@ -11,7 +11,7 @@ import eu.timepit.refined.string.Uuid
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.UpdateRequests.UpdateRequestTable
 import org.genivi.sota.data.Namespace._
-import org.genivi.sota.data.{PackageId, Vehicle}
+import org.genivi.sota.data.{Device, PackageId, Vehicle}
 import org.genivi.sota.db.SlickExtensions
 import java.time.Instant
 
@@ -24,7 +24,7 @@ import scala.concurrent.ExecutionContext
 /**
   * Database mapping definitions for the UpdateSpecs and RequiredPackages tables.
   * <ul>
-  *   <li>A row in UpdateSpec records the status of a package install for a specific VIN.</li>
+  *   <li>A row in UpdateSpec records the status of a package install for a specific device.</li>
   *   <li>For each such row, one or more rows in RequiredPackage indicate the individual packages
   *       (including dependencies) that need to be installed.</li>
   * </ul>
@@ -37,7 +37,7 @@ object UpdateSpecs {
 
   implicit val UpdateStatusColumn = MappedColumnType.base[UpdateStatus, String](_.value.toString, UpdateStatus.withName)
 
-  type UpdateSpecTableRowType = (Namespace, UUID, Vehicle.Vin, UpdateStatus, Int, Instant)
+  type UpdateSpecTableRowType = (Namespace, UUID, Device.Id, UpdateStatus, Int, Instant)
 
   // scalastyle:off
   /**
@@ -45,9 +45,10 @@ object UpdateSpecs {
    */
   class UpdateSpecTable(tag: Tag)
       extends Table[UpdateSpecTableRowType](tag, "UpdateSpec") {
+
     def namespace = column[Namespace]("namespace")
     def requestId = column[UUID]("update_request_id")
-    def vin = column[Vehicle.Vin]("vin")
+    def device = column[Device.Id]("device_uuid")
     def status = column[UpdateStatus]("status")
     def installPos = column[Int]("install_pos")
     def creationTime = column[Instant]("creation_time")
@@ -55,9 +56,9 @@ object UpdateSpecs {
 
     // insertOrUpdate buggy for composite-keys, see Slick issue #966.
     // given `id` is already unique across namespaces, no need to include namespace.
-    def pk = primaryKey("pk_update_specs", (requestId, vin))
+    def pk = primaryKey("pk_update_specs", (requestId, device))
 
-    def * = (namespace, requestId, vin, status, installPos, creationTime)
+    def * = (namespace, requestId, device, status, installPos, creationTime)
   }
   // scalastyle:on
 
@@ -66,17 +67,17 @@ object UpdateSpecs {
    * Child table of [[UpdateSpecTable]]. For each row in that table there's one or more rows in this table.
    */
   class RequiredPackageTable(tag: Tag)
-      extends Table[(Namespace, UUID, Vehicle.Vin, PackageId.Name, PackageId.Version)](tag, "RequiredPackage") {
+      extends Table[(Namespace, UUID, Device.Id, PackageId.Name, PackageId.Version)](tag, "RequiredPackage") {
     def namespace = column[Namespace]("namespace")
     def requestId = column[UUID]("update_request_id")
-    def vin = column[Vehicle.Vin]("vin")
+    def device = column[Device.Id]("device_uuid")
     def packageName = column[PackageId.Name]("package_name")
     def packageVersion = column[PackageId.Version]("package_version")
 
     // insertOrUpdate buggy for composite-keys, see Slick issue #966.
-    def pk = primaryKey("pk_downloads", (namespace, requestId, vin, packageName, packageVersion))
+    def pk = primaryKey("pk_downloads", (namespace, requestId, device, packageName, packageVersion))
 
-    def * = (namespace, requestId, vin, packageName, packageVersion)
+    def * = (namespace, requestId, device, packageName, packageVersion)
   }
   // scalastyle:on
 
@@ -88,24 +89,24 @@ object UpdateSpecs {
 
   case class MiniUpdateSpec(requestId: UUID,
                             requestSignature: String,
-                            vin: Vehicle.Vin,
+                            device: Device.Id,
                             deps: Queue[Package])
 
   /**
-    * Add an update for a specific VIN.
+    * Add an update for a specific device.
     * This update will consist of one-or-more packages that need to be installed
-    * on a single VIN
+    * on a single device
     *
     * @param updateSpec The list of packages that should be installed
     */
   def persist(updateSpec: UpdateSpec) : DBIO[Unit] = {
     val specProjection = (
-      updateSpec.namespace, updateSpec.request.id, updateSpec.vin,
+      updateSpec.namespace, updateSpec.request.id, updateSpec.device,
       updateSpec.status, updateSpec.installPos, updateSpec.creationTime)
 
     def dependencyProjection(p: Package) =
       // TODO: we're taking the namespace of the update spec, not necessarily the namespace of the package!
-      (updateSpec.namespace, updateSpec.request.id, updateSpec.vin, p.id.name, p.id.version)
+      (updateSpec.namespace, updateSpec.request.id, updateSpec.device, p.id.name, p.id.version)
 
     DBIO.seq(
       updateSpecs += specProjection,
@@ -117,10 +118,10 @@ object UpdateSpecs {
     * Reusable sub-query, PK lookup in [[UpdateSpecTable]] table.
     */
   private def queryBy(namespace: Namespace,
-                      vin: Vehicle.Vin,
+                      deviceId: Device.Id,
                       requestId: UUID): Query[UpdateSpecTable, UpdateSpecTableRowType, Seq] = {
     updateSpecs
-      .filter(row => row.namespace === namespace && row.vin === vin && row.requestId === requestId)
+      .filter(row => row.namespace === namespace && row.device === deviceId && row.requestId === requestId)
   }
 
   /**
@@ -129,7 +130,7 @@ object UpdateSpecs {
     * the later would require joining [[RequiredPackageTable]] to populate the `dependencies` of that instance.
     */
   def findBy(arg: UpdateSpec): DBIO[UpdateSpecTableRowType] = {
-    queryBy(arg.namespace, arg.vin, arg.request.id).result.head
+    queryBy(arg.namespace, arg.device, arg.request.id).result.head
   }
 
   /**
@@ -137,26 +138,27 @@ object UpdateSpecs {
     * Note: A tuple is returned instead of an [[UpdateSpec]] instance because
     * the later would require joining [[RequiredPackageTable]] to populate the `dependencies` of that instance.
     */
-  def findBy(namespace: Namespace, vin: Vehicle.Vin, requestId: Refined[String, Uuid]): DBIO[UpdateSpecTableRowType] = {
-    queryBy(namespace, vin, UUID.fromString(requestId.get)).result.head
+  def findBy(namespace: Namespace, device: Device.Id,
+             requestId: Refined[String, Uuid]): DBIO[UpdateSpecTableRowType] = {
+    queryBy(namespace, device, UUID.fromString(requestId.get)).result.head
   }
 
   case class UpdateSpecPackages(miniUpdateSpec: MiniUpdateSpec, packages: Queue[Package])
 
   // scalastyle:off cyclomatic.complexity
   /**
-    * Fetch from DB zero or one [[UpdateSpec]] for the given combination ([[UpdateRequest]], VIN)
+    * Fetch from DB zero or one [[UpdateSpec]] for the given combination ([[UpdateRequest]], device)
     *
-    * @param vin The VIN to install on
+    * @param deviceId The device to install on
     * @param updateId Id of the [[UpdateRequest]] to install
     */
-  def load(vin: Vehicle.Vin, updateId: UUID)
+  def load(device: Device.Id, updateId: UUID)
           (implicit ec: ExecutionContext) : DBIO[Option[MiniUpdateSpec]] = {
     val q = for {
       r  <- updateRequests if (r.id === updateId)
       ns  = r.namespace
-      us <- updateSpecs if(us.vin === vin && us.requestId == r.id && us.namespace == r.namespace)
-      rp <- requiredPackages if (rp.vin === vin &&
+      us <- updateSpecs if(us.device === device && us.requestId == r.id && us.namespace == r.namespace)
+      rp <- requiredPackages if (rp.device === device &&
                                  rp.namespace === ns &&
                                  rp.requestId === updateId)
       p  <- Packages.packages if (p.namespace === ns &&
@@ -167,44 +169,44 @@ object UpdateSpecs {
     q.result map { rows =>
       rows.headOption.map(_._1).map { sig =>
         val paks = rows.map(_._2).to[Queue]
-        MiniUpdateSpec(updateId, sig, vin, paks)
+        MiniUpdateSpec(updateId, sig, device, paks)
       }
     }
   }
   // scalastyle:on
 
   /**
-    * Return a list of all the VINs that a specific version of a package will be
-    * installed on.  Note that VINs where the package has started installation,
+    * Return a list of all the devices that a specific version of a package will be
+    * installed on.  Note that devices where the package has started installation,
     * or has either been installed or where the install failed are not included.
     *
     * @param pkgName The package name to search for
     * @param pkgVer The version of the package to search for
-    * @return A list of VINs that the package will be installed on
+    * @return A list of devices that the package will be installed on
     */
-  def getVinsQueuedForPackage(ns: Namespace, pkgName: PackageId.Name, pkgVer: PackageId.Version) :
-    DBIO[Seq[Vehicle.Vin]] = {
+  def getDevicesQueuedForPackage(ns: Namespace, pkgName: PackageId.Name, pkgVer: PackageId.Version) :
+    DBIO[Seq[Device.Id]] = {
     val specs = updateSpecs.filter(r => r.namespace === ns && r.status === UpdateStatus.Pending)
     val q = for {
       s <- specs
       u <- updateRequests if (s.requestId === u.id) && (u.packageName === pkgName) && (u.packageVersion === pkgVer)
-    } yield s.vin
+    } yield s.device
     q.result
   }
 
   /**
-    * Rewrite in the DB the status of an [[UpdateSpec]], ie for a ([[UpdateRequest]], VIN) combination.
+    * Rewrite in the DB the status of an [[UpdateSpec]], ie for a ([[UpdateRequest]], device) combination.
     */
   def setStatus(spec: UpdateSpec, newStatus: UpdateStatus) : DBIO[Int] = {
-    setStatus(spec.vin, spec.request.id, newStatus)
+    setStatus(spec.device, spec.request.id, newStatus)
   }
 
   /**
-    * Rewrite in the DB the status of an [[UpdateSpec]], ie for a ([[UpdateRequest]], VIN) combination.
+    * Rewrite in the DB the status of an [[UpdateSpec]], ie for a ([[UpdateRequest]], device) combination.
     */
-  def setStatus(vin: Vehicle.Vin, updateRequestId: UUID, newStatus: UpdateStatus): DBIO[Int] = {
+  def setStatus(device: Device.Id, updateRequestId: UUID, newStatus: UpdateStatus): DBIO[Int] = {
     updateSpecs
-      .filter(row => row.vin === vin && row.requestId === updateRequestId)
+      .filter(row => row.device === device && row.requestId === updateRequestId)
       .map(_.status)
       .update(newStatus)
       .transactionally
@@ -216,15 +218,14 @@ object UpdateSpecs {
     *
     * @param uuid of the [[UpdateRequest]] being cancelled for the given VIN
     */
-  def cancelUpdate(ns: Namespace, vin: Vehicle.Vin, uuid: Refined[String, Uuid])
-                  (implicit executor: ExecutionContext): DBIO[Unit] = {
-    queryBy(ns, vin, UUID.fromString(uuid.get))
-      .filter(_.status === UpdateStatus.Pending)
+  def cancelUpdate(device: Device.Id, uuid: Refined[String, Uuid])(implicit ec: ExecutionContext): DBIO[Int] = {
+    updateSpecs
+      .filter(us => us.device === device && us.requestId === uuid && us.status === UpdateStatus.Pending)
       .map(_.status)
       .update(UpdateStatus.Canceled)
       .flatMap { rowsAffected =>
         if (rowsAffected == 1) {
-          DBIO.successful(())
+          DBIO.successful(rowsAffected)
         } else {
           DBIO.failed(Errors.MissingUpdateSpec)
         }
@@ -233,26 +234,26 @@ object UpdateSpecs {
 
   /**
     * The [[UpdateSpec]]-s (excluding dependencies but including status) for the given [[UpdateRequest]].
-    * Each element in the result corresponds to a different VIN.
+    * Each element in the result corresponds to a different device.
     */
   def listUpdatesById(updateRequestId: Refined[String, Uuid]): DBIO[Seq[UpdateSpecTableRowType]] =
     updateSpecs.filter(s => s.requestId === UUID.fromString(updateRequestId.get)).result
 
   /**
-    * Delete all the updates for a specific VIN
-    * This is part of the process for deleting a VIN from the system
+    * Delete all the updates for a specific device
+    * This is part of the process for deleting a device from the system
     *
-    * @param vehicle The vehicle to get the VIN to delete from
+    * @param device The device to get the device to delete from
     */
-  def deleteUpdateSpecByVin(ns: Namespace, vehicle: Vehicle) : DBIO[Int] =
-    updateSpecs.filter(s => s.namespace === ns && s.vin === vehicle.vin).delete
+  def deleteUpdateSpecByDevice(ns: Namespace, device: Device.Id) : DBIO[Int] =
+    updateSpecs.filter(s => s.namespace === ns && s.device === device).delete
 
   /**
-    * Delete all the required packages that are needed for a VIN.
-    * This is part of the process for deleting a VIN from the system
+    * Delete all the required packages that are needed for a device.
+    * This is part of the process for deleting a device from the system
     *
-    * @param vehicle The vehicle to get the VIN to delete from
+    * @param device The device to get the device to delete from
     */
-  def deleteRequiredPackageByVin(ns: Namespace, vehicle : Vehicle) : DBIO[Int] =
-    requiredPackages.filter(rp => rp.namespace === ns && rp.vin === vehicle.vin).delete
+  def deleteRequiredPackageByDevice(ns: Namespace, device: Device.Id) : DBIO[Int] =
+    requiredPackages.filter(rp => rp.namespace === ns && rp.device === device).delete
 }

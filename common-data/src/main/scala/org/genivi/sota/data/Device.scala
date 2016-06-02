@@ -1,51 +1,36 @@
-/*
+/**
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.device_registry
+package org.genivi.sota.data
 
 import cats.Show
-import cats.data.Xor
-import eu.timepit.refined.api.{Refined, Validate}
+import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string._
-import io.circe.{Decoder, Encoder}
-import org.genivi.sota.data.Namespace._
 import java.time.Instant
-import slick.driver.MySQLDriver.MappedJdbcType
+import org.genivi.sota.data.Namespace._
 import slick.driver.MySQLDriver.api._
 
 import Device._
 
+/*
+ * Device transfer object
+ */
+final case class DeviceT(
+  deviceName: DeviceName,
+  deviceId: Option[Device.DeviceId] = None,
+  deviceType: Device.DeviceType = Device.DeviceType.Other
+)
 
-trait CirceEnum extends Enumeration {
-  implicit val encode: Encoder[Value] = Encoder[String].contramap(_.toString)
-  implicit val decode: Decoder[Value] = Decoder[String].map(this.withName)
-}
-
-trait SlickEnum extends Enumeration {
-  implicit val enumMapper = MappedJdbcType.base[Value, Int](_.id, this.apply)
-}
 
 final case class Device(namespace: Namespace,
                   id: Id,
+                  deviceName: DeviceName,
                   deviceId: Option[DeviceId] = None,
                   deviceType: Device.DeviceType = DeviceType.Other,
                   lastSeen: Option[Instant] = None)
 
 object Device {
-
-  // circe marshalling
-
-  import io.circe._
-  import org.genivi.sota.marshalling.CirceMarshallingSupport._
-
-  implicit def idEncoder: Encoder[Id] = Encoder[String].contramap(implicitly[Show[Id]].show(_))
-  implicit val idDecoder: Decoder[Id] = refinedDecoder[String, ValidId].map(Id(_))
-
-  implicit def deviceIdEncoder: Encoder[DeviceId] = Encoder[String].contramap(implicitly[Show[DeviceId]].show(_))
-  implicit val deviceIdDecoder: Decoder[DeviceId] = Decoder[String].map(DeviceId(_))
-
-  //
 
   type ValidId = Uuid
   final case class Id(underlying: String Refined ValidId) extends AnyVal
@@ -58,6 +43,11 @@ object Device {
     def show(deviceId: DeviceId) = deviceId.underlying
   }
 
+  final case class DeviceName(underlying: String) extends AnyVal
+  implicit val showDeviceName = new Show[DeviceName] {
+    def show(name: DeviceName) = name.underlying
+  }
+
   type DeviceType = DeviceType.DeviceType
 
   final object DeviceType extends CirceEnum with SlickEnum {
@@ -68,8 +58,9 @@ object Device {
   implicit val showDeviceType = Show.fromToString[DeviceType.Value]
 
   implicit val showDevice: Show[Device] = Show.show[Device] {
-    case d if d.deviceType == DeviceType.Vehicle => s"Vehicle(${d.id}, ${d.deviceId}, ${d.lastSeen})"
-    case d => s"Device(${d.id}, ${d.lastSeen})"
+    case d if d.deviceType == DeviceType.Vehicle =>
+      s"Vehicle: id=${d.id.underlying.get}, VIN=${d.deviceId}, lastSeen=${d.lastSeen}"
+    case d => s"Device: id=${d.id.underlying.get}, lastSeen=${d.lastSeen}"
   }
 
   implicit val IdOrdering: Ordering[Id] = new Ordering[Id] {
@@ -83,5 +74,10 @@ object Device {
   implicit def DeviceOrdering(implicit ord: Ordering[Id]): Ordering[Device] = new Ordering[Device] {
     override def compare(d1: Device, d2: Device): Int = ord.compare(d1.id, d2.id)
   }
+
+  // Slick mapping
+
+  implicit val idColumnType =
+    MappedColumnType.base[Id, String](showId.show(_), (s: String) => Id(Refined.unsafeApply(s)))
 
 }

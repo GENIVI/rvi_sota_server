@@ -5,31 +5,35 @@
 package org.genivi.sota.core
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.server.{Directive1, Directives, Route}
-import org.genivi.sota.core.db.InstallHistories
-import org.genivi.sota.data.Namespace.Namespace
-import org.genivi.sota.data.Vehicle.Vin
-import slick.driver.MySQLDriver.api._
 import akka.http.scaladsl.marshalling.Marshaller._
-import org.genivi.sota.marshalling.CirceMarshallingSupport
+import akka.http.scaladsl.server.{Directive1, Directives, Route}
+import eu.timepit.refined.api.Refined
+import eu.timepit.refined.string.Uuid
 import io.circe.generic.auto._
-import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.core.data.InstallHistory
+import org.genivi.sota.core.db.InstallHistories
+import org.genivi.sota.data.Device
+import org.genivi.sota.data.Namespace.Namespace
+import org.genivi.sota.marshalling.CirceMarshallingSupport
+import org.genivi.sota.marshalling.RefinedMarshallingSupport._
+import slick.driver.MySQLDriver.api._
+
 
 class HistoryResource(db: Database, namespaceExtractor: Directive1[Namespace])
                      (implicit system: ActorSystem) extends Directives {
 
+  import Device.{Id, ValidId}
   import CirceMarshallingSupport._
 
   /**
     * An ota client GET all install attempts, a Seq of [[InstallHistory]], for the given VIN
     */
-  def history(ns: Namespace, vin: Vin): Route = {
-    complete(db.run(InstallHistories.list(ns, vin)))
+  def history(ns: Namespace, device: Id): Route = {
+    complete(db.run(InstallHistories.list(ns, device)))
   }
 
   val route =
-    (pathPrefix("history") & parameter('vin.as[Vin]) & namespaceExtractor) { (vin, ns) =>
-      (get & pathEnd) { history(ns, vin) }
+    (pathPrefix("history") & parameter('uuid.as[String Refined ValidId]) & namespaceExtractor) { (uuid, ns) =>
+      (get & pathEnd) { history(ns, Id(uuid)) }
     }
 }

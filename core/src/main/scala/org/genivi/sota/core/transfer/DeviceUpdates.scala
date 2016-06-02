@@ -4,36 +4,38 @@
  */
 package org.genivi.sota.core.transfer
 
-
-import java.util.UUID
-
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
+import akka.http.scaladsl.util.FastFuture
+import cats.Show
+import eu.timepit.refined.api.Refined
 import io.circe.Json
 import io.circe.syntax._
 import org.genivi.sota.core.data.UpdateStatus.UpdateStatus
 import org.genivi.sota.data.Namespace._
-import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.{Packages, UpdateSpecs}
-import org.genivi.sota.db.SlickExtensions
-import slick.dbio.DBIO
-import slick.driver.MySQLDriver.api._
+import java.util.UUID
+import org.genivi.sota.common.DeviceRegistry
+import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.UpdateSpecs._
+import org.genivi.sota.core.db.{InstallHistories, OperationResults, UpdateSpecs}
 import org.genivi.sota.core.resolver.ExternalResolverClient
 import org.genivi.sota.core.rvi.UpdateReport
-
-import scala.concurrent.{ExecutionContext, Future}
+import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.{Device, PackageId}
+import org.genivi.sota.db.SlickExtensions
 import org.genivi.sota.refined.SlickRefined._
-
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
 import org.genivi.sota.core.db.OperationResults
 import org.genivi.sota.core.db.InstallHistories
-import java.time.Instant
-import org.genivi.sota.data.PackageId.{Name, Version}
-import org.genivi.sota.data.Vehicle.Vin
+import slick.dbio.DBIO
+import slick.driver.MySQLDriver.api._
+import cats.syntax.show._
 
-object VehicleUpdates {
+object DeviceUpdates {
   import SlickExtensions._
+  import org.genivi.sota.refined.SlickRefined._
   import org.genivi.sota.marshalling.CirceInstances._
 
   case class UpdateSpecNotFound(msg: String) extends Exception(msg) with NoStackTrace
@@ -42,15 +44,24 @@ object VehicleUpdates {
   /**
     * Tell resolver to record the given packages as installed on a vehicle, overwriting any previous such list.
     */
-  def update(vin: Vehicle.Vin, packageIds: List[PackageId], resolverClient: ExternalResolverClient): Future[Unit] = {
+  def update(device: Device.Id,
+             packageIds: List[PackageId],
+             resolverClient: ExternalResolverClient,
+             deviceRegistry: DeviceRegistry)
+            (implicit ec: ExecutionContext): Future[Unit] = {
     // TODO: core should be able to send this instead!
     val j = Json.obj("packages" -> packageIds.asJson, "firmware" -> Json.arr())
-    resolverClient.setInstalledPackages(vin, j)
+    deviceRegistry.fetchDevice(device).map { d => d.deviceId match {
+      case Some(deviceId) =>
+        // TODO: validation
+        resolverClient.setInstalledPackages(Refined.unsafeApply(deviceId.underlying), j)
+      case None => FastFuture.successful(())
+    }}
   }
 
-  def buildReportInstallResponse(vin: Vehicle.Vin, updateReport: UpdateReport)
+  def buildReportInstallResponse(device: Device.Id, updateReport: UpdateReport)
                                 (implicit ec: ExecutionContext, db: Database): Future[HttpResponse] = {
-    reportInstall(vin, updateReport) map { _ =>
+    reportInstall(device, updateReport) map { _ =>
       HttpResponse(StatusCodes.NoContent)
     } recover { case t: UpdateSpecNotFound =>
       HttpResponse(StatusCodes.NotFound, entity = t.getMessage)
@@ -61,12 +72,12 @@ object VehicleUpdates {
     * An [[UpdateReport]] describes what happened in the client for an [[UpdateRequest]]
     * <ul>
     *   <li>Persist in [[OperationResults.OperationResultTable]] each operation result
-    *       for a combination of ([[UpdateRequest]], VIN)</li>
+    *       for a combination of ([[UpdateRequest]], device)</li>
     *   <li>Persist the status of the [[UpdateSpec]] (Finished for update report success, Failed otherwise)</li>
     *   <li>Persist the outcome of the [[UpdateSpec]] as a whole in [[InstallHistories.InstallHistoryTable]]</li>
     * </ul>
     */
-  def reportInstall(vin: Vehicle.Vin, updateReport: UpdateReport)
+  def reportInstall(device: Device.Id, updateReport: UpdateReport)
                    (implicit ec: ExecutionContext, db: Database): Future[UpdateSpec] = {
 
     // add a row (with fresh UUID) to OperationResult table for each result of this report
@@ -75,18 +86,18 @@ object VehicleUpdates {
       dbOpResult   = OperationResult.from(
         rviOpResult,
         updateReport.update_id,
-        vin,
+        device,
         ns)
     } yield OperationResults.persist(dbOpResult)
 
     // look up the UpdateSpec to rewrite its status and to use it as FK in InstallHistory
     val newStatus = if (updateReport.isSuccess) UpdateStatus.Finished else UpdateStatus.Failed
     val dbIO = for {
-      spec <- findUpdateSpecFor(vin, updateReport.update_id)
+      spec <- findUpdateSpecFor(device, updateReport.update_id)
       _    <- DBIO.sequence(writeResultsIO(spec.namespace))
       _    <- UpdateSpecs.setStatus(spec, newStatus)
       _    <- InstallHistories.log(spec, updateReport.isSuccess)
-      _    <- cancelInstallationQueueIO(vin, spec, updateReport.isFail, updateReport.update_id)
+      _    <- cancelInstallationQueueIO(device, spec, updateReport.isFail, updateReport.update_id)
     } yield spec.copy(status = newStatus)
 
     db.run(dbIO.transactionally)
@@ -105,12 +116,12 @@ object VehicleUpdates {
     *   <li>For a successful UpdateReport, do nothing.</li>
     * </ul>
     */
-  def cancelInstallationQueueIO(vin: Vehicle.Vin,
+  def cancelInstallationQueueIO(device: Device.Id,
                                 spec: UpdateSpec,
                                 isFail: Boolean,
                                 updateRequestId: UUID): DBIO[Int] = {
     updateSpecs
-      .filter(_.vin === vin && isFail)
+      .filter(_.device === device && isFail)
       .filter(_.requestId =!= updateRequestId)
       .filter(_.status.inSet(List(UpdateStatus.InFlight, UpdateStatus.Pending)))
       .filter(us =>
@@ -128,10 +139,10 @@ object VehicleUpdates {
     *   <li>and for which [[UpdateSpec]]-s exist with Pending or InFlight [[UpdateStatus]]</li>
     * </ul>
     */
-  def findPendingPackageIdsFor(vin: Vehicle.Vin)
+  def findPendingPackageIdsFor(device: Device.Id)
                               (implicit db: Database, ec: ExecutionContext) : DBIO[Seq[UpdateRequest]] = {
     updateSpecs
-      .filter(_.vin === vin)
+      .filter(_.device === device)
       .filter(_.status.inSet(List(UpdateStatus.InFlight, UpdateStatus.Pending)))
       .join(updateRequests).on(_.requestId === _.id)
       .sortBy { case (sp, _) => (sp.installPos.asc, sp.creationTime.asc) }
@@ -146,12 +157,11 @@ object VehicleUpdates {
     * <br>
     * Note: for pending ones see [[findPendingPackageIdsFor()]]
     */
-  def findUpdateSpecFor(vin: Vehicle.Vin, updateRequestId: UUID)
-                       (implicit ec: ExecutionContext, db: Database): DBIO[UpdateSpec] = {
-
+  def findUpdateSpecFor(device: Device.Id, updateRequestId: UUID)
+                       (implicit ec: ExecutionContext, db: Database, s: Show[Device.Id]): DBIO[UpdateSpec] = {
     val updateSpecsIO =
       updateSpecs
-      .filter(_.vin === vin)
+      .filter(_.device === device)
       .filter(_.requestId === updateRequestId)
       .join(updateRequests).on(_.requestId === _.id)
       .joinLeft(requiredPackages).on(_._1.requestId === _.requestId)
@@ -159,8 +169,8 @@ object VehicleUpdates {
 
     val specsWithDepsIO = updateSpecsIO flatMap { specsWithDeps =>
       val dBIOActions = specsWithDeps map { case ((updateSpec, updateReq), requiredPO) =>
-        val (_, _, vin, status, installPos, creationTime) = updateSpec
-        (UpdateSpec(updateReq, vin, status, Set.empty, installPos, creationTime), requiredPO)
+        val (_, _, deviceId, status, installPos, creationTime) = updateSpec
+        (UpdateSpec(updateReq, deviceId, status, Set.empty, installPos, creationTime), requiredPO)
       } map { case (spec, requiredPO) =>
         val depsIO = requiredPO map { case (namespace, _, _, packageName, packageVersion) =>
           Packages.byId(namespace, PackageId(packageName, packageVersion))
@@ -179,7 +189,7 @@ object VehicleUpdates {
       case Some(us) => DBIO.successful(us)
       case None =>
         DBIO.failed(
-          UpdateSpecNotFound(s"Could not find an update request with id $updateRequestId for vin ${vin.get}")
+          UpdateSpecNotFound(s"Could not find an update request with id $updateRequestId for device ${device.show}")
         )
     }
   }
@@ -190,13 +200,13 @@ object VehicleUpdates {
     *
     * @return All UpdateRequest UUIDs (for the vehicle in question) for which a pending UpdateSpec exists
     */
-  private def findSpecsForSorting(vin: Vehicle.Vin, numUpdateRequests: Int)
+  private def findSpecsForSorting(device: Device.Id, numUpdateRequests: Int)
                                  (implicit ec: ExecutionContext): DBIO[Seq[UUID]] = {
 
     // all UpdateRequest UUIDs (for the vehicle in question) for which a pending UpdateSpec exists
     val q = updateRequests
       .join(updateSpecs).on(_.id === _.requestId)
-      .filter(_._2.vin === vin)
+      .filter(_._2.device === device)
       .filter(_._2.status === UpdateStatus.Pending)
       .map(_._1.id)
 
@@ -215,9 +225,9 @@ object VehicleUpdates {
   /**
     * Arguments denote a list of [[UpdateRequest]] to be installed on a vehicle in the order given.
     */
-  def buildSetInstallOrderResponse(vin: Vehicle.Vin, order: List[UUID])
+  def buildSetInstallOrderResponse(device: Device.Id, order: List[UUID])
                                   (implicit db: Database, ec: ExecutionContext): Future[HttpResponse] = {
-    db.run(persistInstallOrder(vin, order))
+    db.run(persistInstallOrder(device, order))
       .map(_ => HttpResponse(StatusCodes.NoContent))
       .recover {
         case SetOrderFailed(msg) =>
@@ -228,11 +238,11 @@ object VehicleUpdates {
   /**
     * Arguments denote a list of [[UpdateRequest]] to be installed on a vehicle in the order given.
     */
-  def persistInstallOrder(vin: Vehicle.Vin, order: List[UUID])
+  def persistInstallOrder(device: Device.Id, order: List[UUID])
                          (implicit ec: ExecutionContext): DBIO[Seq[(UUID, Int)]] = {
     val prios = order.zipWithIndex.toMap
 
-    findSpecsForSorting(vin, order.size)
+    findSpecsForSorting(device, order.size)
       .flatMap { existingUpdReqs =>
         DBIO.sequence {
           existingUpdReqs.map { ur =>
