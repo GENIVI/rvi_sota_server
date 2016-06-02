@@ -11,6 +11,7 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
+import org.genivi.sota.data.Namespace.Namespace
 import org.genivi.sota.data.{Namespaces, PackageId, Vehicle}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.InstalledSoftware
@@ -130,21 +131,19 @@ trait PackageRequestsHttp {
 
   def addPackage(pkg: Package)
                 (implicit ec: ExecutionContext): HttpRequest =
-    addPackage(pkg.id.name.get, pkg.id.version.get, pkg.description, pkg.vendor)
+    addPackage(pkg.namespace, pkg.id.name.get, pkg.id.version.get, pkg.description, pkg.vendor)
 
-  def addPackage(name: String, version: String, desc: Option[String], vendor: Option[String])
+  def addPackage(namespace: Namespace, name: String, version: String, desc: Option[String], vendor: Option[String])
                 (implicit ec: ExecutionContext): HttpRequest =
-    Put(Resource.uri("packages", name, version), Package.Metadata(desc, vendor))
-
+    Put(Resource.uri("packages", name, version), Package.Metadata(namespace, desc, vendor))
 }
 
 trait PackageRequests extends
-  PackageRequestsHttp with
-  Matchers { self: ScalatestRouteTest =>
+  PackageRequestsHttp with Namespaces with Matchers { self: ScalatestRouteTest =>
 
-  def addPackageOK(name: String, version: String, desc: Option[String], vendor: Option[String])
+    def addPackageOK(name: String, version: String, desc: Option[String], vendor: Option[String])
                   (implicit route: Route): Unit =
-    addPackage(name, version, desc, vendor) ~> route ~> check {
+    addPackage(defaultNs, name, version, desc, vendor) ~> route ~> check {
       status shouldBe StatusCodes.OK
     }
 }
@@ -334,12 +333,15 @@ trait PackageFilterRequests extends
  */
 trait ResolveRequestsHttp {
 
-  def resolve2(id: PackageId): HttpRequest =
-    resolve(id.name.get, id.version.get)
+  def resolve2(namespace: Namespace, id: PackageId): HttpRequest =
+    resolve(namespace, id.name.get, id.version.get)
 
-  def resolve(pname: String, pversion: String): HttpRequest =
-    Get(Resource.uri("resolve", pname, pversion))
-
+  def resolve(pnamespace: Namespace, pname: String, pversion: String): HttpRequest =
+    Get(Resource.uri("resolve").withQuery(Query(
+      "namespace" -> pnamespace.get,
+      "package_name" -> pname,
+      "package_version" -> pversion
+    )))
 }
 
 trait ResolveRequests extends
@@ -349,7 +351,7 @@ trait ResolveRequests extends
 
   def resolveOK(pname: String, pversion: String, vins: Seq[Vehicle.Vin])(implicit route: Route): Unit = {
 
-    resolve(pname, pversion) ~> route ~> check {
+    resolve(defaultNs, pname, pversion) ~> route ~> check {
       status shouldBe StatusCodes.OK
       responseAs[Map[Vehicle.Vin, List[PackageId]]] shouldBe
         ResolveFunctions.makeFakeDependencyMap(PackageId(Refined.unsafeApply(pname), Refined.unsafeApply(pversion)),

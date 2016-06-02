@@ -5,8 +5,6 @@
 package org.genivi.sota.resolver.components
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.model.StatusCodes.NoContent
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
@@ -15,19 +13,18 @@ import io.circe.generic.auto._
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
-import org.genivi.sota.resolver.common.NamespaceDirective._
 import org.genivi.sota.resolver.common.RefinementDirectives.refinedPartNumber
 import org.genivi.sota.resolver.common.Errors
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 import Directives._
 
-
 /**
  * API routes for creating, deleting, and listing components.
  * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
  */
-class ComponentDirectives(implicit system: ActorSystem,
+class ComponentDirectives(namespaceExtractor: Directive1[Namespace])
+                         (implicit system: ActorSystem,
                           db: Database,
                           mat: ActorMaterializer,
                           ec: ExecutionContext) {
@@ -56,7 +53,7 @@ class ComponentDirectives(implicit system: ActorSystem,
    * @throws      Errors.ComponentIsInstalledException on DELETE call, if component doesn't exist
    */
   def route: Route =
-    (pathPrefix("components") & extractNamespace) { ns =>
+    (pathPrefix("components") & namespaceExtractor) { ns =>
       (get & pathEnd) {
         searchComponent(ns)
       } ~

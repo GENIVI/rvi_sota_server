@@ -12,19 +12,20 @@ import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.PackageId
+import org.genivi.sota.datatype.NamespaceDirective
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors
-import org.genivi.sota.resolver.common.NamespaceDirective._
 import org.genivi.sota.resolver.common.RefinementDirectives._
 import org.genivi.sota.resolver.filters.Filter
-import org.genivi.sota.rest.Validation.refined
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
+
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
 
-class PackageDirectives(implicit system: ActorSystem,
+class PackageDirectives(namespaceExtractor: Directive1[Namespace])
+                       (implicit system: ActorSystem,
                         db: Database, mat:
                         ActorMaterializer,
                         ec: ExecutionContext) {
@@ -43,9 +44,9 @@ class PackageDirectives(implicit system: ActorSystem,
       Errors.onMissingPackage
     }
 
-  def addPackage(ns: Namespace, id: PackageId): Route =
+  def addPackage(id: PackageId): Route =
     entity(as[Package.Metadata]) { metadata =>
-      val pkg = Package(ns, id, metadata.description, metadata.vendor)
+      val pkg = Package(metadata.namespace, id, metadata.description, metadata.vendor)
       complete(db.run(PackageRepository.add(pkg).map(_ => pkg)))
     }
 
@@ -95,16 +96,15 @@ class PackageDirectives(implicit system: ActorSystem,
       } ~
       (get & path("filter")) {
         getFilters
-      } ~
-      ((get | put | delete) & extractNamespace & refinedPackageId) { (ns, id) =>
-        (get & pathEnd) {
+     } ~
+      ((get | put | delete) & refinedPackageId) { id =>
+        (get & namespaceExtractor & pathEnd) { ns =>
           getPackage(ns, id)
         } ~
         (put & pathEnd) {
-          addPackage(ns, id)
+          addPackage(id)
         } ~
-        pathPrefix("filter") { packageFilterApi(ns, id) }
+        (namespaceExtractor & pathPrefix("filter")) { ns => packageFilterApi(ns, id) }
       }
     }
-
 }

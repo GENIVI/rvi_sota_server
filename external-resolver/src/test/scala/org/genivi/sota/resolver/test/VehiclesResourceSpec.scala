@@ -59,7 +59,7 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
   implicit val noShrink: Shrink[List[Package]] = Shrink.shrinkAny
 
   property("fail to set installed packages if vin does not exist") {
-    forAll(genVehicle, Gen.nonEmptyListOf(genPackage)) { (vehicle, packages) =>
+    forAll(genVehicle, Gen.nonEmptyListOf(genPackage), minSuccessful(1)) { (vehicle, packages) =>
       Put( Resource.uri(vehicles, vehicle.vin.get, "packages"),
           InstalledSoftware(packages.map(_.id).toSet, Set())) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
@@ -77,7 +77,7 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
       removed           <- Gen.someOf(beforeUpdate)
     } yield (beforeUpdate ++ added, beforeUpdate -- removed ++ added ++ nonExistentAdded)
 
-    forAll(genVehicle, stateGen) { (vehicle, state) =>
+    forAll(genVehicle, stateGen, minSuccessful(3)) { (vehicle, state) =>
       val (installedBefore, update) = state
       addVehicleOK(vehicle.vin)
       installedBefore.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
@@ -95,7 +95,7 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
       removed      <- Gen.someOf(beforeUpdate)
     } yield (beforeUpdate ++ added, beforeUpdate -- removed ++ added)
 
-    forAll(genVehicle, stateGen) { (vehicle, state) =>
+    forAll(genVehicle, stateGen, minSuccessful(3)) { (vehicle, state) =>
       val (availablePackages, update) = state
       addVehicleOK(vehicle.vin)
       availablePackages.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )

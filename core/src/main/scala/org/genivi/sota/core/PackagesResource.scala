@@ -15,7 +15,6 @@ import akka.stream._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
-import org.genivi.sota.core.common.NamespaceDirective._
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db.{Packages, UpdateSpecs}
 import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
@@ -23,6 +22,7 @@ import org.genivi.sota.core.storage.PackageStorage
 import org.genivi.sota.core.storage.PackageStorage.PackageStorageOp
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.PackageId
+import org.genivi.sota.datatype.NamespaceDirective
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.rest.ErrorRepresentation
 import org.genivi.sota.rest.Validation._
@@ -38,7 +38,8 @@ object PackagesResource {
       refined[PackageId.ValidVersion](Slash ~ Segment)).as(PackageId.apply _)
 }
 
-class PackagesResource(resolver: ExternalResolverClient, db : Database)
+class PackagesResource(resolver: ExternalResolverClient, db : Database,
+                       namespaceExtractor: Directive1[Namespace])
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
 
   import akka.stream.stage._
@@ -117,10 +118,10 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database)
 
   val route =
     pathPrefix("packages") {
-      (get & extractNamespace & pathEnd) { ns =>
+      (get & namespaceExtractor & pathEnd) { ns =>
         searchPackage(ns)
       } ~
-      (extractNamespace & extractPackageId) { (ns, pid) =>
+      (namespaceExtractor & extractPackageId) { (ns, pid) =>
         pathEnd {
           get {
             fetch(ns, pid)

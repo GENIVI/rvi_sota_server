@@ -7,17 +7,13 @@ package org.genivi.sota.core.transfer
 
 import java.util.UUID
 
-import akka.actor.ActorSystem
-import java.util.concurrent.TimeUnit
-
-import akka.http.scaladsl.model.{HttpHeader, HttpResponse, StatusCodes}
+import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import io.circe.Json
 import io.circe.syntax._
 import org.genivi.sota.data.Namespace._
-import org.genivi.sota.core.common.NamespaceDirective
 import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.core.data._
-import org.genivi.sota.core.db.{InstallHistories, OperationResults, UpdateRequests, UpdateSpecs}
+import org.genivi.sota.core.db.{InstallHistories, OperationResults, UpdateSpecs}
 import org.genivi.sota.db.SlickExtensions
 import slick.dbio.DBIO
 import slick.driver.MySQLDriver.api._
@@ -25,8 +21,7 @@ import org.genivi.sota.core.db.UpdateSpecs._
 import org.genivi.sota.core.resolver.ExternalResolverClient
 import org.genivi.sota.core.rvi.UpdateReport
 
-import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
 import org.genivi.sota.refined.SlickRefined._
 import org.joda.time.DateTime
 
@@ -69,23 +64,20 @@ object VehicleUpdates {
     */
   def reportInstall(vin: Vehicle.Vin, updateReport: UpdateReport)
                    (implicit ec: ExecutionContext, db: Database): Future[UpdateSpec] = {
-    val namespaceQuery =
-      updateSpecs
-        .filter(r => r.requestId === updateReport.update_id)
-        .map(_.namespace)
-    //TODO: get default namespace for now, this should be replaced with a lookup to the updates table eventually
-    val namespace = NamespaceDirective.defaultNs.get
-    val writeResultsIO = updateReport
-      .operation_results
-      .map(r => org.genivi.sota.core.data.OperationResult(
-        UUID.randomUUID().toString,
-        updateReport.update_id, r.result_code, r.result_text, vin, namespace, DateTime.now()))
-      .map(r => OperationResults.persist(r))
+    val writeResultsIO = (ns: Namespace) => {
+      updateReport
+        .operation_results
+        .map(r => org.genivi.sota.core.data.OperationResult(
+          UUID.randomUUID().toString,
+          updateReport.update_id, r.result_code, r.result_text, vin, ns, DateTime.now()))
+        .map(r => OperationResults.persist(r))
+    }
 
     val wasSuccessful = updateReport.operation_results.forall(_.isSuccess)
+
     val dbIO = for {
       spec <- findUpdateSpecFor(vin, updateReport.update_id)
-      _ <- DBIO.sequence(writeResultsIO)
+      _ <- DBIO.sequence(writeResultsIO(spec.namespace))
       _ <- UpdateSpecs.setStatus(spec, UpdateStatus.Finished)
       _ <- InstallHistories.log(spec.namespace, vin, spec.request.id, spec.request.packageId, success = wasSuccessful)
     } yield spec.copy(status = UpdateStatus.Finished)

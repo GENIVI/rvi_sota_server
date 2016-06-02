@@ -18,6 +18,7 @@ import org.genivi.sota.core.jsonrpc.HttpTransport
 import org.genivi.sota.core.rvi._
 import org.genivi.sota.data.Namespaces
 import org.genivi.sota.data.Vehicle
+import org.genivi.sota.datatype.NamespaceDirective
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.scalacheck.Gen
 import org.scalatest._
@@ -43,6 +44,7 @@ class VehicleResourceSpec extends PropSpec
   import Generators._
   import org.genivi.sota.data.VehicleGenerators._
   import org.genivi.sota.data.PackageIdGenerators._
+  import NamespaceDirective._
 
   val rviUri = Uri(system.settings.config.getString( "rvi.endpoint" ))
   val serverTransport = HttpTransport( rviUri )
@@ -50,7 +52,7 @@ class VehicleResourceSpec extends PropSpec
 
   val fakeResolver = new FakeExternalResolver()
 
-  lazy val service = new VehiclesResource(db, rviClient, fakeResolver)
+  lazy val service = new VehiclesResource(db, rviClient, fakeResolver, defaultNamespaceExtractor)
 
   val BasePath = Path("/vehicles")
 

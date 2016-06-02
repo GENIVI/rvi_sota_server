@@ -10,6 +10,7 @@ import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.rest.Validation._
 import Directives._
+import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 
 /**
   * Helpers for extracting refined values from the URL.
@@ -27,4 +28,9 @@ object RefinementDirectives {
 
   val refinedPartNumber: Directive1[Component.PartNumber] =
     refined[Component.ValidPartNumber](Slash ~ Segment)
+
+  val refinedPackageIdParams: Directive1[PackageId] = {
+    parameters(('package_name.as[PackageId.Name], 'package_version.as[PackageId.Version]))
+      .tmap { case (name, version) => PackageId(name, version) }
+  }
 }

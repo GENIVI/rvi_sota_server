@@ -18,7 +18,7 @@ import org.genivi.sota.core.storage.S3PackageStore
 import org.genivi.sota.core.transfer._
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.http.HealthResource
-
+import org.genivi.sota.datatype.NamespaceDirective
 import scala.util.{Failure, Success, Try}
 import org.genivi.sota.http.SotaDirectives._
 
@@ -75,6 +75,7 @@ object Boot extends App with DatabaseConfig {
 
   import Directives._
   import org.genivi.sota.core.rvi.ServerServices
+  import NamespaceDirective._
 
   def routes(notifier: UpdateNotifier): Route = {
     new HealthResource(db, org.genivi.sota.core.BuildInfo.toMap).route ~
@@ -95,7 +96,7 @@ object Boot extends App with DatabaseConfig {
     } yield sotaServices
     case _ =>
       val notifier = DefaultUpdateNotifier
-      val vehicleService = new VehicleUpdatesResource(db, externalResolverClient)
+      val vehicleService = new VehicleUpdatesResource(db, externalResolverClient, defaultNamespaceExtractor)
       val allRoutes = Route.seal(routes(notifier) ~ vehicleService.route)
       val versionRoutes = (logResponseMetrics("sota-core") & versionHeaders(version))(allRoutes)
 
