@@ -38,14 +38,13 @@ object Release {
       setReleaseVersion,
       tagRelease)
 
-    // Disabled for now, this is done by team city directly
     val dockerPublishSteps: Seq[ReleaseStep] = Seq(
       releaseStepCommand("core/docker:publish"),
       releaseStepCommand("resolver/docker:publish"),
       releaseStepCommand("webserver/docker:publish")
     )
 
-    val allSteps = prepareSteps ++ publishSteps :+ pushChanges
+    val allSteps = prepareSteps ++ publishSteps ++ (pushChanges +: dockerPublishSteps)
 
     Seq(
       showReleaseVersion <<= (version, releaseVersion)((v,f)=>f(v)),
