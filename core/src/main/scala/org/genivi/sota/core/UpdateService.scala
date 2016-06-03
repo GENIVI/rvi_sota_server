@@ -94,7 +94,7 @@ class UpdateService(notifier: UpdateNotifier)
                     idsToPackages: Map[PackageId, Package]): Set[UpdateSpec] = {
     vinsToPackageIds.map {
       case (vin, requiredPackageIds) =>
-        UpdateSpec(request, vin, UpdateStatus.Pending, requiredPackageIds map idsToPackages)
+        UpdateSpec(request, vin, UpdateStatus.Pending, requiredPackageIds map idsToPackages, 0)
     }.toSet
   }
 
@@ -136,7 +136,7 @@ class UpdateService(notifier: UpdateNotifier)
   }
 
   /**
-    * For the given [[PackageId]] and vehicle, persist an [[UpdateRequest]] and an [[UpdateSpec]].
+    * For the given [[PackageId]] and vehicle, persist a fresh [[UpdateRequest]] and a fresh [[UpdateSpec]].
     * Resolver is not contacted.
     */
   def queueVehicleUpdate(ns: Namespace, vin: Vehicle.Vin, packageId: PackageId)
@@ -147,7 +147,7 @@ class UpdateService(notifier: UpdateNotifier)
       p <- loadPackage(ns, packageId)
       updateRequest = newUpdateRequest.copy(signature = p.signature.getOrElse(newUpdateRequest.signature),
         description = p.description)
-      spec = UpdateSpec(updateRequest, vin, UpdateStatus.Pending, Set.empty)
+      spec = UpdateSpec.default(updateRequest, vin)
       dbSpec <- persistRequest(updateRequest, ListSet(spec))
     } yield updateRequest
   }

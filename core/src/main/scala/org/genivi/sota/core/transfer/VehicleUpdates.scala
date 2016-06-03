@@ -146,7 +146,7 @@ object VehicleUpdates {
           (ns, uuid, updateVin, status, installPos),
           updateRequest
           )) =>
-          val spec = UpdateSpec(updateRequest, updateVin, status, Set.empty[Package])
+          val spec = UpdateSpec(updateRequest, updateVin, status, Set.empty[Package], installPos)
           DBIO.successful(spec)
         case None =>
           DBIO.failed(

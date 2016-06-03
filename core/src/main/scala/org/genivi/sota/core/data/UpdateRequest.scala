@@ -97,7 +97,7 @@ case class UpdateSpec(
   vin: Vehicle.Vin,
   status: UpdateStatus,
   dependencies: Set[Package],
-  installPos: Int = 0 /* zero-based */
+  installPos: Int
 ) {
 
   def namespace: Namespace = request.namespace
@@ -115,6 +115,12 @@ case class UpdateSpec(
 object UpdateSpec {
   implicit val updateStatusEncoder : Encoder[UpdateStatus] = Encoder[String].contramap(_.toString)
   implicit val updateStatusDecoder : Decoder[UpdateStatus] = Decoder[String].map(UpdateStatus.withName)
+
+  def default(request: UpdateRequest, vin: Vehicle.Vin): UpdateSpec = {
+    UpdateSpec(
+      request, vin, UpdateStatus.Pending, Set.empty, 0
+    )
+  }
 }
 
 /**
