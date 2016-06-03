@@ -65,7 +65,7 @@ trait Generators {
     packages          <- Gen.pick(m, packages).map( _.map(_.id) )
   } yield vin -> packages.toSet
 
-  def dependenciesGen(packages: Seq[Package] ) : Gen[UpdateService.VinsToPackages] = for {
+  def dependenciesGen(packages: Seq[Package] ) : Gen[UpdateService.VinsToPackageIds] = for {
     n <- Gen.choose(1, 10)
     r <- Gen.listOfN(n, vinDepGen(packages))
   } yield r.toMap

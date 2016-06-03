@@ -48,7 +48,7 @@ class UpdateService(notifier: UpdateNotifier)
 
   implicit private val log = Logging(system, "updateservice")
 
-  def checkVins( dependencies: VinsToPackages ) : Future[Boolean] = FastFuture.successful( true )
+  def checkVins( dependencies: VinsToPackageIds ) : Future[Boolean] = FastFuture.successful( true )
 
   /**
     * Fetch from DB the [[Package]]s corresponding to the given [[PackageId]]s,
@@ -87,12 +87,11 @@ class UpdateService(notifier: UpdateNotifier)
     * No install order need be specified because a single [[UpdateSpec]] is prepared per VIN.
     *
     * @param vinsToPackageIds several VIN-s and the dependencies for each of them
-    * @param packages [[Package]] fetched from DB
+    * @param idsToPackages lookup a [[Package]] by its [[PackageId]]
     */
   def mkUpdateSpecs(request: UpdateRequest,
-                    vinsToPackageIds: VinsToPackages,
-                    packages: Seq[Package]): Set[UpdateSpec] = {
-    val idsToPackages = packages.map( x => x.id -> x ).toMap
+                    vinsToPackageIds: VinsToPackageIds,
+                    idsToPackages: Map[PackageId, Package]): Set[UpdateSpec] = {
     vinsToPackageIds.map {
       case (vin, requiredPackageIds) =>
         UpdateSpec(request, vin, UpdateStatus.Pending, requiredPackageIds map idsToPackages)
@@ -106,14 +105,23 @@ class UpdateService(notifier: UpdateNotifier)
     )
   }
 
+  /**
+    * <ul>
+    *   <li>For the [[Package]] of the given [[UpdateRequest]] find the vehicles where it needs to be installed,</li>
+    *   <li>For each such VIN create an [[UpdateSpec]]</li>
+    *   <li>Persist in DB all of the above</li>
+    * </ul>
+    */
   def queueUpdate(request: UpdateRequest, resolver : DependencyResolver )
                  (implicit db: Database, ec: ExecutionContext): Future[Set[UpdateSpec]] = {
+    val ns = request.namespace
     for {
-      pckg           <- loadPackage(request.namespace, request.packageId)
+      pckg           <- loadPackage(ns, request.packageId)
       vinsToDeps     <- resolver(pckg)
-      requirements    = gatherRequirements(vinsToDeps)
-      packages       <- fetchPackages(request.namespace, requirements)
-      updateSpecs     = mkUpdateSpecs(request, vinsToDeps, packages)
+      requirements    = gatherAllRequirements(vinsToDeps)
+      packages       <- fetchPackages(ns, requirements)
+      idsToPackages   = packages.map( x => x.id -> x ).toMap
+      updateSpecs     = mkUpdateSpecs(request, vinsToDeps, idsToPackages)
       _              <- persistRequest(request, updateSpecs)
       _              <- Future.successful(notifier.notify(updateSpecs.toSeq))
     } yield updateSpecs
@@ -122,7 +130,7 @@ class UpdateService(notifier: UpdateNotifier)
   /**
     * Gather all [[PackageId]]s (dependencies) across all given VINs.
     */
-  def gatherRequirements(vinsToDeps: Map[Vehicle.Vin, Set[PackageId]]): Set[PackageId] = {
+  def gatherAllRequirements(vinsToDeps: Map[Vehicle.Vin, Set[PackageId]]): Set[PackageId] = {
     log.debug(s"Dependencies from resolver: $vinsToDeps")
     vinsToDeps.foldLeft(Set.empty[PackageId])((acc, vinDeps) => acc.union(vinDeps._2) )
   }
@@ -149,6 +157,6 @@ class UpdateService(notifier: UpdateNotifier)
 }
 
 object UpdateService {
-  type VinsToPackages = Map[Vehicle.Vin, Set[PackageId]]
-  type DependencyResolver = Package => Future[VinsToPackages]
+  type VinsToPackageIds = Map[Vehicle.Vin, Set[PackageId]]
+  type DependencyResolver = Package => Future[VinsToPackageIds]
 }
