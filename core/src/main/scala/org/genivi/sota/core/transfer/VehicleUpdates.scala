@@ -117,7 +117,10 @@ object VehicleUpdates {
       .filter(_.vin === vin && isFail)
       .filter(_.requestId =!= updateRequestId)
       .filter(_.status.inSet(List(UpdateStatus.InFlight, UpdateStatus.Pending)))
-      .filter(_.installPos > spec.installPos)
+      .filter(us =>
+        (us.installPos > spec.installPos) ||
+        (us.installPos === spec.installPos && us.creationTime > spec.creationTime)
+      )
       .map(_.status)
       .update(UpdateStatus.Canceled)
   }

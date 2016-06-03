@@ -140,13 +140,13 @@ class VehicleUpdatesSpec extends FunSuite
     }
   }
 
-  test("rest of installation queue should be canceled upon one package failing to install") {
+  private def mkUpdateReport(updateSpec: UpdateSpec, isSuccess: Boolean): UpdateReport = {
+    val result_code = if (isSuccess) 0 else 3
+    val result = OperationResult("opid", result_code, "some result")
+    UpdateReport(updateSpec.request.id, List(result))
+  }
 
-    def mkUpdateReport(updateSpec: UpdateSpec, isSuccess: Boolean): UpdateReport = {
-      val result_code = if (isSuccess) 0 else 3
-      val result = OperationResult("opid", result_code, "some result")
-      UpdateReport(updateSpec.request.id, List(result))
-    }
+  test("rest of installation queue (consecutive installPos) should be canceled upon one package failing to install") {
 
     // insert update spec A install pos 0
     // insert update spec B install pos 1
@@ -169,6 +169,48 @@ class VehicleUpdatesSpec extends FunSuite
 
       // all three update specs for the same VIN
       updateSpecs.map(_.vin).toSet.size shouldBe 1
+
+      // fail install for update spec B only
+      val vin = updateSpec0.vin
+      val f2 = for {
+        _    <- reportInstall(vin, mkUpdateReport(updateSpec0, isSuccess = true))
+        _    <- reportInstall(vin, mkUpdateReport(updateSpec1, isSuccess = false))
+        usRow0 <- db.run(UpdateSpecs.findBy(updateSpec0))
+        usRow1 <- db.run(UpdateSpecs.findBy(updateSpec1))
+        usRow2 <- db.run(UpdateSpecs.findBy(updateSpec2))
+      } yield (usRow0, usRow1, usRow2)
+
+      whenReady(f2) { case (usRow0, usRow1, usRow2) =>
+        // check update spec 0 status finished
+        // check update spec 1 status failed
+        // check update spec 2 status canceled
+        val (_, _, vin0, status0, installPos0, _) = usRow0
+        val (_, _, vin1, status1, installPos1, _) = usRow1
+        val (_, _, vin2, status2, installPos2, _) = usRow2
+
+        status0 shouldBe UpdateStatus.Finished
+        status1 shouldBe UpdateStatus.Failed
+        status2 shouldBe UpdateStatus.Canceled
+      }
+
+    }
+  }
+
+  test("rest of installation queue (all installPos at 0) should be canceled upon one package failing to install") {
+
+    // insert update spec A install pos 0 (ie, installation order to be disambiguated by creationTime)
+    // insert update spec B install pos 0
+    // insert update spec C install pos 0
+    val dbIO = for {
+      (_, vehicle, updateSpec0) <- createUpdateSpecAction();
+      instant1 = updateSpec0.creationTime.getMillis + 1000; // if created in quick succession duplicates creationTime
+      (_, updateSpec1) <- createUpdateSpecFor(vehicle, installPos = 0, withMillis = instant1)
+      instant2 = updateSpec1.creationTime.getMillis + 1000; // if created in quick succession duplicates creationTime
+      (_, updateSpec2) <- createUpdateSpecFor(vehicle, installPos = 0, withMillis = instant2)
+      result <- findPendingPackageIdsFor(vehicle.vin)
+    } yield (result, updateSpec0, updateSpec1, updateSpec2)
+
+    whenReady(db.run(dbIO)) { case (result, updateSpec0, updateSpec1, updateSpec2)  =>
 
       // fail install for update spec B only
       val vin = updateSpec0.vin
