@@ -184,9 +184,9 @@ class VehicleUpdatesSpec extends FunSuite
         // check update spec 0 status finished
         // check update spec 1 status failed
         // check update spec 2 status canceled
-        val (_, _, vin0, status0, installPos0) = usRow0
-        val (_, _, vin1, status1, installPos1) = usRow1
-        val (_, _, vin2, status2, installPos2) = usRow2
+        val (_, _, vin0, status0, installPos0, _) = usRow0
+        val (_, _, vin1, status1, installPos1, _) = usRow1
+        val (_, _, vin2, status2, installPos2, _) = usRow2
 
         status0 shouldBe UpdateStatus.Finished
         status1 shouldBe UpdateStatus.Failed

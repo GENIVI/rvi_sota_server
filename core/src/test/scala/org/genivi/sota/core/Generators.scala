@@ -104,7 +104,7 @@ trait Generators {
     updateRequest <- updateRequestGen(defaultNs, PackageIdGen).map(_.copy(packageId = packageWithUri.id))
   } yield {
     val updateSpec = UpdateSpec(updateRequest, vehicle.vin,
-      UpdateStatus.Pending, List(packageWithUri ).toSet)
+      UpdateStatus.Pending, List(packageWithUri ).toSet, 0, org.joda.time.DateTime.now)
 
     (packageWithUri, updateSpec)
   }
