@@ -97,7 +97,8 @@ case class UpdateSpec(
   vin: Vehicle.Vin,
   status: UpdateStatus,
   dependencies: Set[Package],
-  installPos: Int
+  installPos: Int,
+  creationTime: DateTime
 ) {
 
   def namespace: Namespace = request.namespace
@@ -118,7 +119,7 @@ object UpdateSpec {
 
   def default(request: UpdateRequest, vin: Vehicle.Vin): UpdateSpec = {
     UpdateSpec(
-      request, vin, UpdateStatus.Pending, Set.empty, 0
+      request, vin, UpdateStatus.Pending, Set.empty, 0, DateTime.now
     )
   }
 }

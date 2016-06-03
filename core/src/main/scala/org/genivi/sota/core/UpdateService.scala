@@ -17,6 +17,8 @@ import org.genivi.sota.core.rvi.ServerServices
 import org.genivi.sota.core.transfer.UpdateNotifier
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
+import org.joda.time.DateTime
+
 import scala.collection.immutable.ListSet
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
@@ -84,7 +86,10 @@ class UpdateService(notifier: UpdateNotifier)
   /**
     * For each of the given (VIN, dependencies) prepare an [[UpdateSpec]]
     * that points to the given [[UpdateRequest]] and has [[UpdateStatus]] "Pending".
-    * No install order need be specified because a single [[UpdateSpec]] is prepared per VIN.
+    * <p>
+    * No install order is specified for the single [[UpdateSpec]] that is prepared per VIN.
+    * However, a timestamp is included in each [[UpdateSpec]] to break ties
+    * with any other (already persisted) [[UpdateSpec]]s that might be pending.
     *
     * @param vinsToPackageIds several VIN-s and the dependencies for each of them
     * @param idsToPackages lookup a [[Package]] by its [[PackageId]]
@@ -94,7 +99,7 @@ class UpdateService(notifier: UpdateNotifier)
                     idsToPackages: Map[PackageId, Package]): Set[UpdateSpec] = {
     vinsToPackageIds.map {
       case (vin, requiredPackageIds) =>
-        UpdateSpec(request, vin, UpdateStatus.Pending, requiredPackageIds map idsToPackages, 0)
+        UpdateSpec(request, vin, UpdateStatus.Pending, requiredPackageIds map idsToPackages, 0, DateTime.now)
     }.toSet
   }
 

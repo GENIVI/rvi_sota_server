@@ -15,6 +15,7 @@ import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.Vehicle.Vin
 import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.db.SlickExtensions
+import org.joda.time.DateTime
 import slick.driver.MySQLDriver.api._
 
 import scala.collection.immutable.Queue
@@ -36,7 +37,7 @@ object UpdateSpecs {
 
   implicit val UpdateStatusColumn = MappedColumnType.base[UpdateStatus, String](_.value.toString, UpdateStatus.withName)
 
-  type UpdateSpecTableRowType = (Namespace, UUID, Vehicle.Vin, UpdateStatus, Int)
+  type UpdateSpecTableRowType = (Namespace, UUID, Vehicle.Vin, UpdateStatus, Int, DateTime)
 
   // scalastyle:off
   /**
@@ -49,12 +50,14 @@ object UpdateSpecs {
     def vin = column[Vehicle.Vin]("vin")
     def status = column[UpdateStatus]("status")
     def installPos = column[Int]("install_pos")
+    def creationTime = column[DateTime]("creation_time")
+
 
     // insertOrUpdate buggy for composite-keys, see Slick issue #966.
     // given `id` is already unique across namespaces, no need to include namespace.
     def pk = primaryKey("pk_update_specs", (requestId, vin))
 
-    def * = (namespace, requestId, vin, status, installPos)
+    def * = (namespace, requestId, vin, status, installPos, creationTime)
   }
   // scalastyle:on
 
@@ -96,7 +99,8 @@ object UpdateSpecs {
     */
   def persist(updateSpec: UpdateSpec) : DBIO[Unit] = {
     val specProjection = (
-      updateSpec.namespace, updateSpec.request.id, updateSpec.vin,  updateSpec.status, updateSpec.installPos)
+      updateSpec.namespace, updateSpec.request.id, updateSpec.vin,
+      updateSpec.status, updateSpec.installPos, updateSpec.creationTime)
 
     def dependencyProjection(p: Package) =
       // TODO: we're taking the namespace of the update spec, not necessarily the namespace of the package!
