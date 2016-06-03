@@ -50,8 +50,12 @@ class UpdateService(notifier: UpdateNotifier)
 
   def checkVins( dependencies: VinsToPackages ) : Future[Boolean] = FastFuture.successful( true )
 
-  def mapIdsToPackages(ns: Namespace, vinsToDeps: VinsToPackages )
-                      (implicit db: Database, ec: ExecutionContext): Future[Seq[Package]] = {
+  /**
+    * Fetch from DB the [[Package]]s corresponding to the given [[PackageId]]s,
+    * failing in case not all could be fetched.
+    */
+  def fetchPackages(ns: Namespace, requirements: Set[PackageId] )
+                   (implicit db: Database, ec: ExecutionContext): Future[Seq[Package]] = {
 
     def missingPackages( required: Set[PackageId], found: Seq[Package] ) : Set[PackageId] = {
       val result = required -- found.map( _.id )
@@ -59,9 +63,6 @@ class UpdateService(notifier: UpdateNotifier)
       result
     }
 
-    log.debug(s"Dependencies from resolver: $vinsToDeps")
-    val requirements : Set[PackageId]  =
-      vinsToDeps.foldLeft(Set.empty[PackageId])((acc, vinDeps) => acc.union(vinDeps._2) )
     for {
       foundPackages <- db.run(Packages.byIds(ns, requirements))
       mapping       <- if( requirements.size == foundPackages.size ) {
@@ -110,11 +111,20 @@ class UpdateService(notifier: UpdateNotifier)
     for {
       pckg           <- loadPackage(request.namespace, request.packageId)
       vinsToDeps     <- resolver(pckg)
-      packages       <- mapIdsToPackages(request.namespace, vinsToDeps)
-      updateSpecs    = mkUpdateSpecs(request, vinsToDeps, packages)
+      requirements    = gatherRequirements(vinsToDeps)
+      packages       <- fetchPackages(request.namespace, requirements)
+      updateSpecs     = mkUpdateSpecs(request, vinsToDeps, packages)
       _              <- persistRequest(request, updateSpecs)
       _              <- Future.successful(notifier.notify(updateSpecs.toSeq))
     } yield updateSpecs
+  }
+
+  /**
+    * Gather all [[PackageId]]s (dependencies) across all given VINs.
+    */
+  def gatherRequirements(vinsToDeps: Map[Vehicle.Vin, Set[PackageId]]): Set[PackageId] = {
+    log.debug(s"Dependencies from resolver: $vinsToDeps")
+    vinsToDeps.foldLeft(Set.empty[PackageId])((acc, vinDeps) => acc.union(vinDeps._2) )
   }
 
   /**
