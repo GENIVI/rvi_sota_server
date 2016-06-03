@@ -51,8 +51,7 @@ class UpdateService(notifier: UpdateNotifier)
   def checkVins( dependencies: VinsToPackages ) : Future[Boolean] = FastFuture.successful( true )
 
   def mapIdsToPackages(ns: Namespace, vinsToDeps: VinsToPackages )
-                      (implicit db: Database, ec: ExecutionContext): Future[Map[PackageId, Package]] = {
-    def mapPackagesToIds( packages: Seq[Package] ) : Map[PackageId, Package] = packages.map( x => x.id -> x).toMap
+                      (implicit db: Database, ec: ExecutionContext): Future[Seq[Package]] = {
 
     def missingPackages( required: Set[PackageId], found: Seq[Package] ) : Set[PackageId] = {
       val result = required -- found.map( _.id )
@@ -66,7 +65,7 @@ class UpdateService(notifier: UpdateNotifier)
     for {
       foundPackages <- db.run(Packages.byIds(ns, requirements))
       mapping       <- if( requirements.size == foundPackages.size ) {
-                         FastFuture.successful( mapPackagesToIds( foundPackages ) )
+                         FastFuture.successful( foundPackages )
                        } else {
                          FastFuture.failed( PackagesNotFound( missingPackages(requirements, foundPackages).toArray: _*))
                        }
@@ -87,15 +86,15 @@ class UpdateService(notifier: UpdateNotifier)
     * No install order need be specified because a single [[UpdateSpec]] is prepared per VIN.
     *
     * @param vinsToPackageIds several VIN-s and the dependencies for each of them
-    * @param idsToPackages for [[Package]] lookups by [[PackageId]]
+    * @param packages [[Package]] fetched from DB
     */
   def mkUpdateSpecs(request: UpdateRequest,
                     vinsToPackageIds: VinsToPackages,
-                    idsToPackages: Map[PackageId, Package]): Set[UpdateSpec] = {
+                    packages: Seq[Package]): Set[UpdateSpec] = {
+    val idsToPackages = packages.map( x => x.id -> x ).toMap
     vinsToPackageIds.map {
       case (vin, requiredPackageIds) =>
-        val packages : Set[Package] = requiredPackageIds map idsToPackages
-        UpdateSpec(request, vin, UpdateStatus.Pending, packages)
+        UpdateSpec(request, vin, UpdateStatus.Pending, requiredPackageIds map idsToPackages)
     }.toSet
   }
 
