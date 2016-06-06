@@ -70,19 +70,19 @@ class VehicleUpdatesSpec extends FunSuite
 
   test("when multiple packages are pending sorted by installPos") {
     val dbIO = for {
-      (_, vehicle, updateRequest0) <- createUpdateSpecAction()
-      (_, updateRequest1) <- createUpdateSpecFor(vehicle, _.copy(installPos = 2))
+      (_, vehicle, updateSpec0) <- createUpdateSpecAction()
+      (_, updateSpec1) <- createUpdateSpecFor(vehicle, installPos = 2)
       result <- findPendingPackageIdsFor(vehicle.vin)
-    } yield (result, updateRequest0, updateRequest1)
+    } yield (result, updateSpec0, updateSpec1)
 
-    whenReady(db.run(dbIO)) { case (result, updateRequest0, updateRequest1)  =>
+    whenReady(db.run(dbIO)) { case (result, updateSpec0, updateSpec1)  =>
       result shouldNot be(empty)
       result should have(size(2))
 
       result match {
         case Seq(first, second) =>
-          first.id shouldBe updateRequest0.request.id
-          second.id shouldBe updateRequest1.request.id
+          first.id shouldBe updateSpec0.request.id
+          second.id shouldBe updateSpec1.request.id
         case _ =>
           fail("returned package list does not have expected elements")
       }

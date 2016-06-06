@@ -44,7 +44,6 @@ object UpdateRequests {
     def signature = column[String]("signature")
     def description = column[String]("description")
     def requestConfirmation = column[Boolean]("request_confirmation")
-    def installPos = column[Int]("install_pos")
 
     import com.github.nscala_time.time.Imports._
     import shapeless._
@@ -63,11 +62,11 @@ object UpdateRequests {
     def pk = primaryKey("pk_UpdateRequest", (id))
 
     def * = (id, namespace, packageName, packageVersion, creationTime, startAfter, finishBefore,
-             priority, signature, description.?, requestConfirmation, installPos).shaped <>
-      (x => UpdateRequest(x._1, x._2, PackageId(x._3, x._4), x._5, x._6 to x._7, x._8, x._9, x._10, x._11, x._12),
+             priority, signature, description.?, requestConfirmation).shaped <>
+      (x => UpdateRequest(x._1, x._2, PackageId(x._3, x._4), x._5, x._6 to x._7, x._8, x._9, x._10, x._11),
       (x: UpdateRequest) => Some((x.id, x.namespace, x.packageId.name, x.packageId.version, x.creationTime,
                                   x.periodOfValidity.start, x.periodOfValidity.end, x.priority,
-                                  x.signature, x.description, x.requestConfirmation, x.installPos)))
+                                  x.signature, x.description, x.requestConfirmation)))
   }
   // scalastyle:on
 

@@ -91,9 +91,11 @@ object VehicleUpdates {
       .filter(_.vin === vin)
       .filter(_.status.inSet(List(UpdateStatus.InFlight, UpdateStatus.Pending)))
       .join(updateRequests).on(_.requestId === _.id)
-      .sortBy(r => (r._2.installPos.asc, r._2.creationTime.asc))
-      .map(_._2)
+      .sortBy(r => (r._1.installPos.asc, r._2.creationTime.asc))
+      .map { case (sp, ur) => (sp.installPos, ur) }
       .result
+      .map { _.map { case (idx, ur) => ur.copy(installPos = idx) }
+      }
   }
 
   def findUpdateSpecFor(vin: Vehicle.Vin, updateRequestId: UUID)
@@ -105,8 +107,10 @@ object VehicleUpdates {
       .result
       .headOption
       .flatMap {
-        case Some(((ns: Namespace, uuid: UUID, updateVin: Vehicle.Vin, status: UpdateStatus.UpdateStatus),
-                   updateRequest: UpdateRequest)) =>
+        case Some((
+          (ns, uuid, updateVin, status, installPos),
+          updateRequest: UpdateRequest
+          )) =>
           val spec = UpdateSpec(updateRequest, updateVin, status, Set.empty[Package])
           DBIO.successful(spec)
         case None =>
@@ -165,11 +169,11 @@ object VehicleUpdates {
     val prios = order.zipWithIndex.toMap
 
     findSpecsForSorting(vin, order.size)
-      .flatMap { existingUr =>
+      .flatMap { existingUpdReqs =>
         DBIO.sequence {
-          existingUr.map { ur =>
-            updateRequests
-              .filter(_.id === ur)
+          existingUpdReqs.map { ur =>
+            updateSpecs
+              .filter(_.requestId === ur)
               .map(_.installPos)
               .update(prios(ur))
               .map(_ => (ur, prios(ur)))
