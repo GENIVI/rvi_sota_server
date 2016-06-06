@@ -8,14 +8,16 @@ import org.genivi.sota.core.PackagesReader
 import org.genivi.sota.core.RequiresRvi
 import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec, UpdateStatus}
 import org.genivi.sota.core.jsonrpc.HttpTransport
-import org.genivi.sota.core.rvi.{SotaServices, RviConnectivity, RviUpdateNotifier}
+import org.genivi.sota.core.rvi.{RviConnectivity, RviUpdateNotifier, SotaServices}
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.Namespaces
 import org.genivi.sota.data.Vehicle
+import org.joda.time.DateTime
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, PropSpec}
+
 import scala.concurrent.Future
 import slick.jdbc.JdbcBackend.Database
 
@@ -31,7 +33,7 @@ object UpdateNotifierSpec {
     vin           <- vinGen
     m             <- Gen.choose(1, 10)
     packages      <- Gen.pick(m, packages).map( _.toSet )
-  } yield UpdateSpec(updateRequest, vin, UpdateStatus.Pending, packages )
+  } yield UpdateSpec(updateRequest, vin, UpdateStatus.Pending, packages, 0, DateTime.now)
 
   def updateSpecsGen(namespaceGen: Gen[Namespace], vinGen : Gen[Vehicle.Vin] ) : Gen[Seq[UpdateSpec]] =
     Gen.containerOf[Seq, UpdateSpec](updateSpecGen(namespaceGen, vinGen))

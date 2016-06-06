@@ -13,7 +13,7 @@ import io.circe.syntax._
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.core.data._
-import org.genivi.sota.core.db.{InstallHistories, OperationResults, UpdateSpecs}
+import org.genivi.sota.core.db.UpdateSpecs
 import org.genivi.sota.db.SlickExtensions
 import slick.dbio.DBIO
 import slick.driver.MySQLDriver.api._
@@ -23,11 +23,11 @@ import org.genivi.sota.core.rvi.UpdateReport
 
 import scala.concurrent.{ExecutionContext, Future}
 import org.genivi.sota.refined.SlickRefined._
-import org.joda.time.DateTime
 
 import scala.util.control.NoStackTrace
 import org.genivi.sota.core.db.OperationResults
 import org.genivi.sota.core.db.InstallHistories
+import org.joda.time.DateTime
 
 
 object VehicleUpdates {
@@ -55,34 +55,74 @@ object VehicleUpdates {
   }
 
   /**
-    * <ul>
+    * -ul>
     *   <li>Persist in [[OperationResults.OperationResultTable]] each operation result
     *       for a combination of ([[UpdateRequest]], VIN)</li>
-    *   <li>Persist the status of the [[UpdateSpec]] as Finished</li>
+    *   <li>Persist the status of the [[UpdateSpec]] (Finished for update report success, Failed otherwise)</li>
     *   <li>Persist the outcome in [[InstallHistories.InstallHistoryTable]]</li>
     * </ul>
     */
   def reportInstall(vin: Vehicle.Vin, updateReport: UpdateReport)
                    (implicit ec: ExecutionContext, db: Database): Future[UpdateSpec] = {
-    val writeResultsIO = (ns: Namespace) => {
-      updateReport
-        .operation_results
-        .map(r => org.genivi.sota.core.data.OperationResult(
-          UUID.randomUUID().toString,
-          updateReport.update_id, r.result_code, r.result_text, vin, ns, DateTime.now()))
-        .map(r => OperationResults.persist(r))
+
+    // add a row (with fresh UUID) to OperationResult table for each result of this report
+    val writeResultsIO = (ns: Namespace) => for {
+      rviOpResult <- updateReport.operation_results
+      dbOpResult   = OperationResult.from(
+        rviOpResult,
+        updateReport.update_id,
+        vin,
+        ns)
+    } yield OperationResults.persist(dbOpResult)
+
+    // add a row (with auto-inc PK) to InstallHistory table
+    def writeHistoryIO(spec: UpdateSpec): DBIO[Int] = {
+      InstallHistories.log(
+        spec.namespace, vin,
+        spec.request.id, spec.request.packageId,
+        success = updateReport.isSuccess)
     }
 
-    val wasSuccessful = updateReport.operation_results.forall(_.isSuccess)
-
+    // look up the UpdateSpec to rewrite its status and to use it as FK in InstallHistory
+    val newStatus = if (updateReport.isSuccess) UpdateStatus.Finished else UpdateStatus.Failed
     val dbIO = for {
       spec <- findUpdateSpecFor(vin, updateReport.update_id)
-      _ <- DBIO.sequence(writeResultsIO(spec.namespace))
-      _ <- UpdateSpecs.setStatus(spec, UpdateStatus.Finished)
-      _ <- InstallHistories.log(spec.namespace, vin, spec.request.id, spec.request.packageId, success = wasSuccessful)
-    } yield spec.copy(status = UpdateStatus.Finished)
+      _    <- DBIO.sequence(writeResultsIO(spec.namespace))
+      _    <- UpdateSpecs.setStatus(spec, newStatus)
+      _    <- writeHistoryIO(spec)
+      _    <- cancelInstallationQueueIO(vin, spec, updateReport.isFail, updateReport.update_id)
+    } yield spec.copy(status = newStatus)
 
     db.run(dbIO.transactionally)
+  }
+
+  /**
+    * <ul>
+    *   <li>
+    *     For a failed UpdateReport, mark as cancelled the rest of the installation queue.
+    *     <ul>
+    *       <li>"The rest of the installation queue" defined as those (InFlight and Pending) UpdateSpec-s
+    *       coming after the given one, for the VIN in question.</li>
+    *       <li>Note: those UpdateSpec-s correspond to different UpdateRequests than the current one.</li>
+    *     </ul>
+    *   </li>
+    *   <li>For a successful UpdateReport, do nothing.</li>
+    * </ul>
+    */
+  def cancelInstallationQueueIO(vin: Vehicle.Vin,
+                                spec: UpdateSpec,
+                                isFail: Boolean,
+                                updateRequestId: UUID): DBIO[Int] = {
+    updateSpecs
+      .filter(_.vin === vin && isFail)
+      .filter(_.requestId =!= updateRequestId)
+      .filter(_.status.inSet(List(UpdateStatus.InFlight, UpdateStatus.Pending)))
+      .filter(us =>
+        (us.installPos > spec.installPos) ||
+        (us.installPos === spec.installPos && us.creationTime > spec.creationTime)
+      )
+      .map(_.status)
+      .update(UpdateStatus.Canceled)
   }
 
   def findPendingPackageIdsFor(vin: Vehicle.Vin)
@@ -94,10 +134,12 @@ object VehicleUpdates {
       .sortBy(r => (r._1.installPos.asc, r._2.creationTime.asc))
       .map { case (sp, ur) => (sp.installPos, ur) }
       .result
-      .map { _.map { case (idx, ur) => ur.copy(installPos = idx) }
-      }
+      .map { _.map { case (idx, ur) => ur.copy(installPos = idx) } }
   }
 
+  /**
+    * TODO FIXME the returned [[UpdateSpec]] doesn't include real dependencies: just an empty set.
+    */
   def findUpdateSpecFor(vin: Vehicle.Vin, updateRequestId: UUID)
                        (implicit ec: ExecutionContext, db: Database): DBIO[UpdateSpec] = {
     updateSpecs
@@ -108,10 +150,10 @@ object VehicleUpdates {
       .headOption
       .flatMap {
         case Some((
-          (ns, uuid, updateVin, status, installPos),
-          updateRequest: UpdateRequest
+          (ns, uuid, updateVin, status, installPos, creationTime),
+          updateRequest
           )) =>
-          val spec = UpdateSpec(updateRequest, updateVin, status, Set.empty[Package])
+          val spec = UpdateSpec(updateRequest, updateVin, status, Set.empty[Package], installPos, creationTime)
           DBIO.successful(spec)
         case None =>
           DBIO.failed(

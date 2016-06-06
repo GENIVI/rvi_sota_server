@@ -38,21 +38,21 @@ object DataGenerators {
 
   val packages = scala.util.Random.shuffle( PackagesReader.read().take(10).map(Generators.generatePackageData ) )
 
-  def dependenciesGen(packageId: PackageId, vin: Vehicle.Vin) : Gen[UpdateService.VinsToPackages] =
+  def dependenciesGen(packageId: PackageId, vin: Vehicle.Vin) : Gen[UpdateService.VinsToPackageIds] =
     for {
       n                <- Gen.choose(1, 3)
       requiredPackages <- Gen.containerOfN[Set, PackageId](n, Gen.oneOf(packages ).map( _.id ))
     } yield Map( vin -> (requiredPackages + packageId) )
 
 
-  def updateWithDependencies(vin: Vehicle.Vin) : Gen[(UpdateRequest, UpdateService.VinsToPackages)] =
+  def updateWithDependencies(vin: Vehicle.Vin) : Gen[(UpdateRequest, UpdateService.VinsToPackageIds)] =
     for {
       packageId    <- Gen.oneOf( packages.map( _.id) )
       request      <- updateRequestGen(Namespaces.defaultNs, packageId)
       dependencies <- dependenciesGen( packageId, vin )
     } yield (request, dependencies)
 
-  def requestsGen(vin: Vehicle.Vin): Gen[Map[UpdateRequest, UpdateService.VinsToPackages]] = for {
+  def requestsGen(vin: Vehicle.Vin): Gen[Map[UpdateRequest, UpdateService.VinsToPackageIds]] = for {
     n        <- Gen.choose(1, 4)
     requests <- Gen.listOfN(1, updateWithDependencies(vin)).map( _.toMap )
   } yield requests
@@ -203,7 +203,7 @@ class PackageUpdateSpec extends PropSpec
   }
 
   def init(services: ServerServices,
-           generatedData: Map[UpdateRequest, UpdateService.VinsToPackages]): Future[Set[UpdateSpec]] = {
+           generatedData: Map[UpdateRequest, UpdateService.VinsToPackageIds]): Future[Set[UpdateSpec]] = {
     import slick.driver.MySQLDriver.api._
 
     implicit val _db = db
@@ -226,7 +226,7 @@ class PackageUpdateSpec extends PropSpec
   implicit val patience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
   implicit override val generatorDrivenConfig = PropertyCheckConfig(minSuccessful = 1)
   import org.scalacheck.Shrink
-  implicit val noShrink: Shrink[Map[UpdateRequest, UpdateService.VinsToPackages]] = Shrink.shrinkAny
+  implicit val noShrink: Shrink[Map[UpdateRequest, UpdateService.VinsToPackageIds]] = Shrink.shrinkAny
 
   import org.genivi.sota.core.rvi.UpdateEvents
   import scala.concurrent.duration.DurationInt

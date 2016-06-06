@@ -9,7 +9,7 @@ import java.util.UUID
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
 import org.joda.time.{DateTime, Interval, Period}
-import org.genivi.sota.core.db.UpdateSpecs
+import org.genivi.sota.core.db.InstallHistories.InstallHistoryTable
 
 
 /**
@@ -78,11 +78,12 @@ import UpdateStatus._
   * A combination (campaign, VIN, packages) --- which remain constant over time ---
   * along with the latest [[UpdateStatus]] (for that campaign on this VIN) --- which may change over time.
   * <br>
+  * An UpdateSpec never gets deleted, just its [[status]] is rewritten.
+  * Upon reaching Finished a row is added to [[InstallHistoryTable]] to record that fact
+  * <br>
   * <ul>
-  *   <li>The set of packages may include dependencies;
-  *       no individual install order is given for them but for campaigns as a whole,
-  *       see [[UpdateRequest#installPos]].</li>
   *   <li>The campaign (ie, [[UpdateRequest]]) that initiated this [[UpdateSpec]] is linked from here.</li>
+  *   <li>Among pending [[UpdateSpec]] targeting a VIN an installation order is tracked by [[installPos]]</li>
   * </ul>
   *
   * @param request The campaign that these updates are a part of
@@ -96,7 +97,8 @@ case class UpdateSpec(
   vin: Vehicle.Vin,
   status: UpdateStatus,
   dependencies: Set[Package],
-  installPos: Int = 0 /* zero-based */
+  installPos: Int,
+  creationTime: DateTime
 ) {
 
   def namespace: Namespace = request.namespace
@@ -114,6 +116,12 @@ case class UpdateSpec(
 object UpdateSpec {
   implicit val updateStatusEncoder : Encoder[UpdateStatus] = Encoder[String].contramap(_.toString)
   implicit val updateStatusDecoder : Decoder[UpdateStatus] = Decoder[String].map(UpdateStatus.withName)
+
+  def default(request: UpdateRequest, vin: Vehicle.Vin): UpdateSpec = {
+    UpdateSpec(
+      request, vin, UpdateStatus.Pending, Set.empty, 0, DateTime.now
+    )
+  }
 }
 
 /**

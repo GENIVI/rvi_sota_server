@@ -65,7 +65,7 @@ trait Generators {
     packages          <- Gen.pick(m, packages).map( _.map(_.id) )
   } yield vin -> packages.toSet
 
-  def dependenciesGen(packages: Seq[Package] ) : Gen[UpdateService.VinsToPackages] = for {
+  def dependenciesGen(packages: Seq[Package] ) : Gen[UpdateService.VinsToPackageIds] = for {
     n <- Gen.choose(1, 10)
     r <- Gen.listOfN(n, vinDepGen(packages))
   } yield r.toMap
@@ -97,14 +97,17 @@ trait Generators {
     template.copy( uri = Uri( path.toUri().toString() ), checkSum = Hex.encodeHexString( digest.digest() ))
   }
 
-  def genUpdateSpecFor(vehicle: Vehicle): Gen[(Package, UpdateSpec)] = for {
+  def genUpdateSpecFor(vehicle: Vehicle, withMillis: Long = -1): Gen[(Package, UpdateSpec)] = for {
     smallSize <- Gen.chooseNum(1024, 1024 * 10)
     packageModel <- PackageGen.map(_.copy(size = smallSize.toLong))
     packageWithUri = Generators.generatePackageData(packageModel)
     updateRequest <- updateRequestGen(defaultNs, PackageIdGen).map(_.copy(packageId = packageWithUri.id))
   } yield {
+    val dt =
+      if (withMillis >= 0) { new org.joda.time.DateTime(withMillis) }
+      else { org.joda.time.DateTime.now }
     val updateSpec = UpdateSpec(updateRequest, vehicle.vin,
-      UpdateStatus.Pending, List(packageWithUri ).toSet)
+      UpdateStatus.Pending, List(packageWithUri ).toSet, 0, dt)
 
     (packageWithUri, updateSpec)
   }

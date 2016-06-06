@@ -27,6 +27,7 @@ import org.genivi.sota.core.storage.PackageStorage
 import org.joda.time.DateTime
 import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec}
 import org.genivi.sota.core.data.client.PendingUpdateRequest
+import org.genivi.sota.core.data.UpdateStatus
 
 import scala.language.implicitConversions
 
@@ -148,6 +149,9 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
     }
   }
 
+  /**
+    * The web app PUT the status of the given ([[UpdateSpec]], VIN) to [[UpdateStatus.Canceled]]
+    */
   def cancelUpdate(vin: Vehicle.Vin, uuid: Refined[String, Uuid]): Route = {
     val response = db.run(UpdateSpecs.cancelUpdate(vin, uuid)).map {
       i: Int => i match {

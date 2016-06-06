@@ -42,9 +42,13 @@ final case class RviParameters[T](parameters: List[T], service_name: String )
 
 final case class OperationResult(id: String, result_code: Int, result_text: String) {
   def isSuccess: Boolean = (result_code == 0) || (result_code == 1)
+  def isFail: Boolean = !isSuccess
 }
 
-final case class UpdateReport(update_id: UUID, operation_results: List[OperationResult])
+final case class UpdateReport(update_id: UUID, operation_results: List[OperationResult]) {
+  def isSuccess: Boolean = !(operation_results.exists(_.isFail))
+  def isFail: Boolean = !isSuccess
+}
 
 /**
  * RVI message from client to report installation of a downloaded package.

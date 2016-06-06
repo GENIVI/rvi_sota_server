@@ -87,10 +87,7 @@ object Packages {
     packages.filter(p => p.namespace === ns && p.name === id.name && p.version === id.version).result.headOption
 
   /**
-    * Return information about a list of packages. The complete package
-    * information for every item in ids is returned
-    * @param ids A set of package names/values to look up
-    * @return A list of package definitions
+    * Fetch from DB the [[Package]]s corresponding to the given [[PackageId]]s.
     */
   def byIds(ns: Namespace, ids : Set[PackageId] )
            (implicit ec: ExecutionContext): DBIO[Seq[Package]] = {

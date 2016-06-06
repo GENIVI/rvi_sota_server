@@ -34,9 +34,9 @@ trait UpdateResourcesDatabaseSpec {
 
   import Generators._
 
-  def createUpdateSpecFor(vehicle: Vehicle, installPos: Int = 0)
+  def createUpdateSpecFor(vehicle: Vehicle, installPos: Int = 0, withMillis: Long = -1)
                          (implicit ec: ExecutionContext): DBIO[(Package, UpdateSpec)] = {
-    val (packageModel, updateSpec0) = genUpdateSpecFor(vehicle).sample.get
+    val (packageModel, updateSpec0) = genUpdateSpecFor(vehicle, withMillis).sample.get
     val updateSpec = updateSpec0.copy(installPos = installPos)
 
     val dbIO = DBIO.seq(
