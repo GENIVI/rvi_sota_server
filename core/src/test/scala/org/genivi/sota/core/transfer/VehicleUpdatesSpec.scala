@@ -203,9 +203,9 @@ class VehicleUpdatesSpec extends FunSuite
     // insert update spec C install pos 0
     val dbIO = for {
       (_, vehicle, updateSpec0) <- createUpdateSpecAction();
-      instant1 = updateSpec0.creationTime.getMillis + 1000; // if created in quick succession duplicates creationTime
+      instant1 = updateSpec0.creationTime.getMillis + 1; // if created in quick succession duplicates creationTime
       (_, updateSpec1) <- createUpdateSpecFor(vehicle, installPos = 0, withMillis = instant1)
-      instant2 = updateSpec1.creationTime.getMillis + 1000; // if created in quick succession duplicates creationTime
+      instant2 = updateSpec1.creationTime.getMillis + 1; // if created in quick succession duplicates creationTime
       (_, updateSpec2) <- createUpdateSpecFor(vehicle, installPos = 0, withMillis = instant2)
       result <- findPendingPackageIdsFor(vehicle.vin)
     } yield (result, updateSpec0, updateSpec1, updateSpec2)
