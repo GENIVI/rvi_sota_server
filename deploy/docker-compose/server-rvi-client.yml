@@ -64,18 +64,6 @@ services:
       PLAY_CRYPTO_SECRET: "YM5B6o<ywKn4tTyA;tOZ<2xUEajF4DDi=O/PPm1Q^w2LqtKISd9oqYT6b>>C1gQa"
       LDAP_INMEMORY_ENABLE: 'true'
 
-  device_registry:
-    image: advancedtelematic/sota-device_registry
-    ports:
-      - 8083:8083
-    expose:
-      - 8083
-    depends_on:
-      - mysql
-    environment:
-      HOST: 0.0.0.0
-      DEVICE_REGISTRY_DB_URL: "jdbc:mariadb://mysql:3306/sota_device_registry"
-
   rvi_server:
     image: advancedtelematic/rvi
     ports:
