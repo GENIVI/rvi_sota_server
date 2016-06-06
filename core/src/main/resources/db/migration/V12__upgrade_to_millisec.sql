@@ -1,0 +1,21 @@
+ALTER TABLE UpdateRequest
+MODIFY COLUMN creation_time DATETIME(3) NOT NULL,
+MODIFY COLUMN start_after   DATETIME(3) NOT NULL,
+MODIFY COLUMN finish_before DATETIME(3) NOT NULL
+;
+
+ALTER TABLE InstallHistory
+MODIFY COLUMN completionTime DATETIME(3)
+;
+
+ALTER TABLE Vehicle
+MODIFY COLUMN last_seen DATETIME(3) NULL
+;
+
+ALTER TABLE OperationResult
+MODIFY COLUMN received_at DATETIME(3) NOT NULL
+;
+
+ALTER TABLE UpdateSpec
+MODIFY COLUMN creation_time DATETIME(3) NOT NULL
+;
