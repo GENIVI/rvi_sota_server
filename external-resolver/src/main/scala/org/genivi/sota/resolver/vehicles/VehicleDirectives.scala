@@ -160,22 +160,26 @@ class VehicleDirectives(namespaceExtractor: Directive1[Namespace])
     }
 
   def vehicleApi: Route =
-    (pathPrefix("vehicles") & namespaceExtractor) { ns =>
-      (get & pathEnd) {
-        searchVehicles(ns)
-      } ~
-      extractVin { vin =>
+    pathPrefix("vehicles") {
+      namespaceExtractor { ns =>
         (get & pathEnd) {
-          getVehicle(ns, vin)
+          searchVehicles(ns)
         } ~
-        (put & pathEnd) {
-          addVehicle(ns, vin)
+          extractVin { vin =>
+            (get & pathEnd) {
+              getVehicle(ns, vin)
+          } ~
+            (put & pathEnd) {
+              addVehicle(ns, vin)
+            } ~
+            (delete & pathEnd) {
+              deleteVehicle(ns, vin)
+            }
         } ~
-        (delete & pathEnd) {
-          deleteVehicle(ns, vin)
-        } ~
-        packageApi(vin) ~
-        componentApi(vin)
+        extractVin { vin =>
+          packageApi(vin) ~
+          componentApi(vin)
+        }
       }
     }
 
