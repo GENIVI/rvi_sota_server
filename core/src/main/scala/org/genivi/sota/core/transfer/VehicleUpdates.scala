@@ -124,10 +124,10 @@ object VehicleUpdates {
       .filter(_.vin === vin)
       .filter(_.status.inSet(List(UpdateStatus.InFlight, UpdateStatus.Pending)))
       .join(updateRequests).on(_.requestId === _.id)
-      .sortBy(r => (r._1.installPos.asc, r._2.creationTime.asc))
-      .map { case (sp, ur) => (sp.installPos, ur) }
+      .sortBy { case (sp, _) => (sp.installPos.asc, sp.creationTime.asc) }
+      .map    { case (_, ur) => ur }
       .result
-      .map { _.map { case (idx, ur) => ur.copy(installPos = idx) } }
+      .map { _.zipWithIndex.map { case (ur, idx) => ur.copy(installPos = idx) } }
   }
 
   /**
