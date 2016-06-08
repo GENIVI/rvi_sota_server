@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.core.resolver
 
-import com.github.nscala_time.time.Imports.DateTime
+import org.joda.time.DateTime
 import io.circe.{Encoder, Json}
 
 import scala.concurrent.Future

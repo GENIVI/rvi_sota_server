@@ -4,9 +4,9 @@
  */
 package org.genivi.sota.core.rvi
 
-import com.github.nscala_time.time.Imports.DateTime
 import io.circe._
 import org.genivi.sota.core.resolver.ConnectivityClient
+import org.joda.time.DateTime
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future

@@ -24,7 +24,6 @@ class RviUpdateNotifier(services: ServerServices) extends UpdateNotifier {
 
   override def notifyVehicle(vin: Vehicle.Vin, update: UpdateSpec)
                             (implicit connectivity: Connectivity, ec: ExecutionContext): Future[Int] = {
-    import com.github.nscala_time.time.Imports._
     import io.circe.generic.auto._
 
     def toPackageUpdate( spec: UpdateSpec ) = {
