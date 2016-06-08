@@ -88,7 +88,7 @@ class VehicleDirectives(namespaceExtractor: Directive1[Namespace])
       Errors.onMissingVehicle orElse Errors.onMissingPackage
     }
 
-  def updateInstalledSoftware(ns: Namespace, vin: Vehicle.Vin): Route =
+  def updateInstalledSoftware(vin: Vehicle.Vin): Route =
     entity(as[InstalledSoftware]) { installedSoftware =>
       onSuccess(db.run(for {
         _ <- VehicleRepository.updateInstalledPackages(vin, installedSoftware.packages)
@@ -120,8 +120,8 @@ class VehicleDirectives(namespaceExtractor: Directive1[Namespace])
         }
       }
     } ~
-    (path("packages") & put & handleExceptions(installedPackagesHandler) & namespaceExtractor) { ns =>
-      updateInstalledSoftware(ns, vin)
+    (path("packages") & put & handleExceptions(installedPackagesHandler)) {
+      updateInstalledSoftware(vin)
     }
   }
 
