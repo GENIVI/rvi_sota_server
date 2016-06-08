@@ -10,10 +10,11 @@ import java.util.UUID
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import io.circe.Json
 import io.circe.syntax._
+import org.genivi.sota.core.data.UpdateStatus.UpdateStatus
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.core.data._
-import org.genivi.sota.core.db.UpdateSpecs
+import org.genivi.sota.core.db.{Packages, UpdateSpecs}
 import org.genivi.sota.db.SlickExtensions
 import slick.dbio.DBIO
 import slick.driver.MySQLDriver.api._
@@ -28,6 +29,8 @@ import scala.util.control.NoStackTrace
 import org.genivi.sota.core.db.OperationResults
 import org.genivi.sota.core.db.InstallHistories
 import java.time.Instant
+import org.genivi.sota.data.PackageId.{Name, Version}
+import org.genivi.sota.data.Vehicle.Vin
 
 
 object VehicleUpdates {
@@ -118,6 +121,13 @@ object VehicleUpdates {
       .update(UpdateStatus.Canceled)
   }
 
+  /**
+    * Find the [[UpdateRequest]]-s for:
+    * <ul>
+    *   <li>the given VIN</li>
+    *   <li>and for which [[UpdateSpec]]-s exist with Pending or InFlight [[UpdateStatus]]</li>
+    * </ul>
+    */
   def findPendingPackageIdsFor(vin: Vehicle.Vin)
                               (implicit db: Database, ec: ExecutionContext) : DBIO[Seq[UpdateRequest]] = {
     updateSpecs
@@ -131,23 +141,47 @@ object VehicleUpdates {
   }
 
   /**
-    * TODO FIXME the returned [[UpdateSpec]] doesn't include real dependencies: just an empty set.
+    * Find the [[UpdateSpec]]-s (including dependencies) whatever their [[UpdateStatus]]
+    * for the given ([[UpdateRequest]], VIN) combination.
+    * <br>
+    * Note: for pending ones see [[findPendingPackageIdsFor()]]
     */
   def findUpdateSpecFor(vin: Vehicle.Vin, updateRequestId: UUID)
                        (implicit ec: ExecutionContext, db: Database): DBIO[UpdateSpec] = {
-    updateSpecs
+
+    val opt: DBIO[Option[((Namespace, UUID, Vin, UpdateStatus, Int, Instant), UpdateRequest)]] =
+      updateSpecs
       .filter(_.vin === vin)
       .filter(_.requestId === updateRequestId)
       .join(updateRequests).on(_.requestId === _.id)
       .result
       .headOption
-      .flatMap {
+
+    opt.flatMap {
         case Some((
           (ns, uuid, updateVin, status, installPos, creationTime),
           updateRequest
           )) =>
-          val spec = UpdateSpec(updateRequest, updateVin, status, Set.empty[Package], installPos, creationTime)
-          DBIO.successful(spec)
+
+          val reqPaks0: DBIO[Seq[(Namespace, UUID, Vin, Name, Version)]] =
+            requiredPackages
+            .filter(_.namespace === ns)
+            .filter(_.requestId === updateRequestId)
+            .filter(_.vin === vin)
+            .result
+
+          val reqPaks: DBIO[Seq[PackageId]] = reqPaks0 map { rows =>
+            rows map { case (_, _, _, pakName, pakVersion) =>
+              PackageId(pakName, pakVersion) }
+          }
+
+          val paksDB: DBIO[Seq[Package]] = for (
+            pakIds <- reqPaks;
+            paks   <- Packages.byIds(ns, pakIds.toSet)
+          ) yield paks
+
+          paksDB map { rows => UpdateSpec(updateRequest, updateVin, status, rows.toSet, installPos, creationTime) }
+
         case None =>
           DBIO.failed(
             UpdateSpecNotFound(s"Could not find an update request with id $updateRequestId for vin ${vin.get}")
