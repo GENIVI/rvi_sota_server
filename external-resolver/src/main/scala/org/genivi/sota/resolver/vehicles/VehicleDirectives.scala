@@ -175,11 +175,11 @@ class VehicleDirectives(namespaceExtractor: Directive1[Namespace])
             (delete & pathEnd) {
               deleteVehicle(ns, vin)
             }
-        } ~
-        extractVin { vin =>
-          packageApi(vin) ~
-          componentApi(vin)
         }
+      } ~
+      extractVin { vin =>
+        packageApi(vin) ~
+        componentApi(vin)
       }
     }
 
