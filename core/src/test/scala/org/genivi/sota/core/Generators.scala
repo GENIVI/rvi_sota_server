@@ -15,7 +15,7 @@ import org.genivi.sota.core.data._
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{Namespace => _, _}
 import org.scalacheck.{Arbitrary, Gen}
-import org.joda.time.{DateTime, Period}
+import org.joda.time.{DateTime, Duration}
 
 /**
  * Generators for property-based testing of core objects
@@ -49,8 +49,8 @@ trait Generators {
   def updateRequestGen(namespaceGen: Gen[Namespace], packageIdGen : Gen[PackageId]) : Gen[UpdateRequest] = for {
     ns           <- namespaceGen
     packageId    <- packageIdGen
-    startAfter   <- Gen.choose(10, 100).map( d => DateTime.now.plus(Period.days(d)) )
-    finishBefore <- Gen.choose(10, 100).map( x => startAfter.plus(Period.days(x)) )
+    startAfter   <- Gen.choose(10, 100).map( d => DateTime.now.plus(Duration.standardDays(d)) )
+    finishBefore <- Gen.choose(10, 100).map( x => startAfter.plus(Duration.standardDays(x)) )
     prio         <- Gen.choose(1, 10)
     sig          <- Gen.alphaStr
     desc         <- Gen.option(Arbitrary.arbitrary[String])

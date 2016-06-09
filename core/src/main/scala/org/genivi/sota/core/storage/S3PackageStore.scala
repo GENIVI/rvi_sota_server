@@ -20,7 +20,7 @@ import com.typesafe.config.Config
 import org.genivi.sota.core.DigestCalculator.DigestResult
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.data.PackageId
-import org.joda.time.{DateTime, Period}
+import org.joda.time.{DateTime, Duration}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.Future
@@ -31,7 +31,7 @@ class S3PackageStore(credentials: S3Credentials)
   import PackageStorage._
   import system.dispatcher
 
-  val PUBLIC_URL_EXPIRE_TIME = Period.days(1)
+  val PUBLIC_URL_EXPIRE_TIME = Duration.standardDays(1)
 
   val bucketId = credentials.bucketId
 

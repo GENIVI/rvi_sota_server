@@ -9,7 +9,7 @@ import java.util.UUID
 
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{Interval, PackageId, Vehicle}
-import org.joda.time.{DateTime, Period}
+import org.joda.time.{DateTime, Duration}
 import org.genivi.sota.core.db.InstallHistories.InstallHistoryTable
 
 
@@ -51,7 +51,7 @@ object UpdateRequest {
   def default(namespace: Namespace, packageId: PackageId): UpdateRequest = {
     val updateRequestId = UUID.randomUUID()
     val now = DateTime.now
-    val defaultPeriod = Period.days(1)
+    val defaultPeriod = Duration.standardDays(1)
     val defaultInterval = Interval(now, now.plus(defaultPeriod))
     val defaultPriority = 10
 

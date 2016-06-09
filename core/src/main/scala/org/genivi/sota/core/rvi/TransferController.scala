@@ -27,10 +27,10 @@ import org.genivi.sota.core.resolver.ConnectivityClient
 import org.genivi.sota.core.storage.S3PackageStore
 import org.genivi.sota.core.transfer.VehicleUpdates
 import org.genivi.sota.data.Vehicle
-import org.joda.time.{DateTime, Period}
+import org.joda.time.{DateTime, Duration}
 
 import scala.collection.immutable.Queue
-import scala.concurrent.duration.{Duration, FiniteDuration}
+import scala.concurrent.duration.FiniteDuration
 import scala.math.BigDecimal.RoundingMode
 import slick.driver.MySQLDriver.api.Database
 
@@ -197,7 +197,7 @@ class TransferProtocolActor(db: Database,
   }
 
   def ttl() : DateTime = {
-    DateTime.now.plus(Period.minutes(5))
+    DateTime.now.plus(Duration.standardMinutes(5))
   }
 
   /**
@@ -338,7 +338,7 @@ class PackageTransferActor(updateId: UUID,
   val buffer = ByteBuffer.allocate( chunkSize )
 
   def ttl() : DateTime = {
-    DateTime.now.plus(Period.minutes(5))
+    DateTime.now.plus(Duration.standardMinutes(5))
   }
 
   def sendChunk(channel: FileChannel, index: Int) : Unit = {
@@ -426,7 +426,7 @@ class PackageTransferActor(updateId: UUID,
       }
 
     case ReceiveTimeout if attempt == maxAttempts =>
-      context.setReceiveTimeout(Duration.Undefined)
+      context.setReceiveTimeout(scala.concurrent.duration.Duration.Undefined)
       context.parent ! UploadAborted
       context.stop( self )
 
