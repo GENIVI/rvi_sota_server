@@ -6,7 +6,7 @@ package org.genivi.sota.core.data
 
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
-import org.joda.time.DateTime
+import java.time.Instant
 import java.util.UUID
 
 /**
@@ -25,7 +25,7 @@ case class OperationResult(
   resultText: String,
   vin       : Vehicle.Vin,
   namespace : Namespace,
-  receivedAt: DateTime
+  receivedAt: Instant
 )
 object OperationResult {
   def from(rviOpResult: org.genivi.sota.core.rvi.OperationResult,
@@ -40,7 +40,7 @@ object OperationResult {
       rviOpResult.result_text,
       vin       : Vehicle.Vin,
       namespace : Namespace,
-      DateTime.now
+      Instant.now
     )
   }
 }
@@ -62,5 +62,5 @@ case class InstallHistory(
   updateId      : UUID,
   packageId     : PackageId,
   success       : Boolean,
-  completionTime: DateTime
+  completionTime: Instant
 )

@@ -13,7 +13,7 @@ import org.genivi.sota.core.db.UpdateRequests.UpdateRequestTable
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.db.SlickExtensions
-import org.joda.time.DateTime
+import java.time.Instant
 import slick.driver.MySQLDriver.api._
 
 import scala.collection.immutable.Queue
@@ -35,7 +35,7 @@ object UpdateSpecs {
 
   implicit val UpdateStatusColumn = MappedColumnType.base[UpdateStatus, String](_.value.toString, UpdateStatus.withName)
 
-  type UpdateSpecTableRowType = (Namespace, UUID, Vehicle.Vin, UpdateStatus, Int, DateTime)
+  type UpdateSpecTableRowType = (Namespace, UUID, Vehicle.Vin, UpdateStatus, Int, Instant)
 
   // scalastyle:off
   /**
@@ -48,7 +48,7 @@ object UpdateSpecs {
     def vin = column[Vehicle.Vin]("vin")
     def status = column[UpdateStatus]("status")
     def installPos = column[Int]("install_pos")
-    def creationTime = column[DateTime]("creation_time")
+    def creationTime = column[Instant]("creation_time")
 
 
     // insertOrUpdate buggy for composite-keys, see Slick issue #966.

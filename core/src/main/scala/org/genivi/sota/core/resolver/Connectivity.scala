@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.core.resolver
 
-import org.joda.time.DateTime
+import java.time.Instant
 import io.circe.{Encoder, Json}
 
 import scala.concurrent.Future
@@ -26,12 +26,12 @@ object DefaultConnectivity extends Connectivity {
  * Abstract interface for sending a message to the backing communication layer.
  */
 trait ConnectivityClient {
-  def sendMessage[A](service: String, message: A, expirationDate: DateTime)
+  def sendMessage[A](service: String, message: A, expirationDate: Instant)
                     (implicit encoder: Encoder[A] ) : Future[Int]
 }
 
 object DefaultConnectivityClient extends ConnectivityClient {
-  override def sendMessage[A](service: String, message: A, expirationDate: DateTime)
+  override def sendMessage[A](service: String, message: A, expirationDate: Instant)
                              (implicit encoder: Encoder[A]): Future[Int] = {
     // TODO: to be implemented
     Future.successful(0)

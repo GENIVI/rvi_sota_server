@@ -9,7 +9,7 @@ import org.genivi.sota.core.data.UpdateSpec
 import org.genivi.sota.core.resolver.Connectivity
 import org.genivi.sota.core.transfer._
 import org.genivi.sota.data.Vehicle
-import org.joda.time.DateTime
+import java.time.Instant
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -31,7 +31,7 @@ class RviUpdateNotifier(services: ServerServices) extends UpdateNotifier {
       PackageUpdate(r.id, r.signature, r.description.getOrElse(""), r.requestConfirmation, spec.size)
     }
 
-    val expirationDate: DateTime = update.request.periodOfValidity.end
+    val expirationDate: Instant = update.request.periodOfValidity.end
     connectivity.client.sendMessage(s"genivi.org/vin/${vin.get}/sota/notify",
                                     UpdateNotification(toPackageUpdate(update), services), expirationDate)
   }

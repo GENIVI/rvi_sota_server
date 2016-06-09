@@ -9,8 +9,9 @@ import java.util.UUID
 
 import com.ning.http.client.AsyncHttpClient
 import com.ning.http.client.multipart.FilePart
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+
 import org.scalatest.Tag
 import org.scalatestplus.play._
 import play.api.Play
@@ -350,8 +351,8 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   "test creating install campaigns" taggedAs APITests in {
     val cookie = getLoginCookie
     val pattern = "yyyy-MM-dd'T'HH:mm:ssZZ"
-    val currentTimestamp = DateTimeFormat.forPattern(pattern).print(new DateTime())
-    val tomorrowTimestamp = DateTimeFormat.forPattern(pattern).print(new DateTime().plusDays(1))
+    val currentTimestamp = Instant.now().toString
+    val tomorrowTimestamp = Instant.now().plus(1, ChronoUnit.DAYS).toString
     val uuid = UUID.randomUUID().toString
     val data = UpdateRequest(testNamespace, uuid, PackageId(testPackageName, testPackageVersion), currentTimestamp,
       currentTimestamp + "/" + tomorrowTimestamp, 1, "sig", "desc", true)

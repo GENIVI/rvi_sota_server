@@ -27,7 +27,8 @@ import org.genivi.sota.core.resolver.ConnectivityClient
 import org.genivi.sota.core.storage.S3PackageStore
 import org.genivi.sota.core.transfer.VehicleUpdates
 import org.genivi.sota.data.Vehicle
-import org.joda.time.{DateTime, Duration}
+import java.time.Instant
+import java.time.Duration
 
 import scala.collection.immutable.Queue
 import scala.concurrent.duration.FiniteDuration
@@ -196,8 +197,8 @@ class TransferProtocolActor(db: Database,
     context.stop(self)
   }
 
-  def ttl() : DateTime = {
-    DateTime.now.plus(Duration.standardMinutes(5))
+  def ttl() : Instant = {
+    Instant.now.plus(Duration.ofMinutes(5))
   }
 
   /**
@@ -337,8 +338,8 @@ class PackageTransferActor(updateId: UUID,
   lazy val s3PackageStore = s3PackageStoreOpt.getOrElse(S3PackageStore(system.settings.config))
   val buffer = ByteBuffer.allocate( chunkSize )
 
-  def ttl() : DateTime = {
-    DateTime.now.plus(Duration.standardMinutes(5))
+  def ttl() : Instant = {
+    Instant.now.plus(Duration.ofMinutes(5))
   }
 
   def sendChunk(channel: FileChannel, index: Int) : Unit = {

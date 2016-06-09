@@ -20,7 +20,7 @@ import org.genivi.sota.core.resolver.DefaultExternalResolverClient
 import org.genivi.sota.core.rvi._
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{Namespaces, PackageId, Vehicle}
-import org.joda.time.{DateTime, Duration}
+import java.time.{Instant, Duration}
 import org.scalacheck.Gen
 import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture, whenReady}
 import org.scalatest.prop.PropertyChecks
@@ -71,8 +71,8 @@ object SotaClient {
   import org.genivi.sota.marshalling.CirceInstances._
 
   class ClientActor(rviClient: ConnectivityClient, clientServices: ClientServices) extends Actor with ActorLogging {
-    def ttl() : DateTime = {
-      DateTime.now.plus(Duration.standardMinutes(5))
+    def ttl() : Instant = {
+      Instant.now.plus(Duration.ofMinutes(5))
     }
 
     def downloading( services: ServerServices ) : Receive = {

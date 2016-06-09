@@ -2,7 +2,7 @@ package org.genivi.sota.core
 
 import org.genivi.sota.core.data.{UpdateStatus, VehicleStatus, VehicleSearch}
 import org.genivi.sota.data.VehicleGenerators
-import org.joda.time.DateTime
+import java.time.Instant
 import org.scalatest.{FunSuite, ShouldMatchers}
 
 class VehicleUpdateStatusSpec extends FunSuite
@@ -10,7 +10,7 @@ class VehicleUpdateStatusSpec extends FunSuite
 
   import VehicleStatus._
 
-  val vehicle = VehicleGenerators.genVehicle.sample.get.copy(lastSeen = Some(DateTime.now))
+  val vehicle = VehicleGenerators.genVehicle.sample.get.copy(lastSeen = Some(Instant.now))
 
   test("Error if at least one package is in Failed State") {
     val packages = List(UpdateStatus.Failed, UpdateStatus.Finished)

@@ -9,11 +9,11 @@ import java.util.UUID
 import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.data.Namespace.Namespace
 import org.genivi.sota.data.PackageId
-import org.joda.time.DateTime
+import java.time.Instant
 import scala.language.implicitConversions
 import org.genivi.sota.data.Interval
 
-case class PendingUpdateRequest(requestId: UUID, packageId: PackageId, installPos: Int, createdAt: DateTime)
+case class PendingUpdateRequest(requestId: UUID, packageId: PackageId, installPos: Int, createdAt: Instant)
 
 object PendingUpdateRequest {
   implicit def toResponseEncoder: ResponseEncoder[PendingUpdateRequest, UpdateRequest] =
@@ -24,7 +24,7 @@ object PendingUpdateRequest {
 
 case class ClientUpdateRequest(id: UUID,
                          packageId: PackageId,
-                         creationTime: DateTime = DateTime.now,
+                         creationTime: Instant = Instant.now,
                          periodOfValidity: Interval,
                          priority: Int,
                          signature: String,

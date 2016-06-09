@@ -12,11 +12,8 @@ import eu.timepit.refined.refineV
 import eu.timepit.refined.api.{Refined, Validate}
 import io.circe._
 import org.genivi.sota.data.Interval
-import org.joda.time.DateTime
-import org.joda.time.format.{DateTimeFormatter, ISODateTimeFormat}
-
-import scala.annotation.tailrec
-import scala.util.{Failure, Success, Try}
+import java.time.Instant
+import java.time.format.{DateTimeFormatter, DateTimeParseException}
 
 /**
   * Some datatypes we use don't have predefined JSON encoders and
@@ -59,29 +56,35 @@ trait CirceInstances {
   implicit val uuidEncoder : Encoder[UUID] = Encoder[String].contramap(_.toString)
   implicit val uuidDecoder : Decoder[UUID] = Decoder[String].map(UUID.fromString)
 
-  implicit val dateTimeEncoder : Encoder[DateTime] =
-    Encoder.instance[DateTime]( x =>  Json.fromString( ISODateTimeFormat.dateTime().print(x)) )
+  implicit val dateTimeEncoder : Encoder[Instant] =
+    Encoder.instance[Instant]( x =>  Json.fromString( x.toString) )
 
-  implicit val dateTimeDecoder : Decoder[DateTime] = Decoder.instance { c =>
+  implicit val dateTimeDecoder : Decoder[Instant] = Decoder.instance { c =>
     c.focus.asString match {
       case None       => Xor.left(DecodingFailure("DataTime", c.history))
       case Some(date) =>
-        val parsers = List(ISODateTimeFormat.dateTimeNoMillis(), ISODateTimeFormat.dateTime())
-        tryParsers(date, parsers, DecodingFailure("DateTime", c.history))
+        tryParser(date, DecodingFailure("DateTime", c.history))
     }
   }
 
-  @tailrec
-  private def tryParsers(string: String, parsers: List[DateTimeFormatter],
-                         error: DecodingFailure): Xor[DecodingFailure, DateTime] = {
-    parsers match {
-      case parser :: otherParsers =>
-        try { Xor.right(parser.parseDateTime(string)) }
-        catch {
-          case t: IllegalArgumentException =>
-            tryParsers(string, otherParsers, error)
-        }
-      case Nil => Xor.left(error)
+  /**
+    * It can parse:
+    * 2016-06-10T09:47:33.465789+0000
+    * 2016-06-10T09:47:33.465789+01:01
+    *
+    * But not:
+    * 2016-06-10T09:47:33.465789+00
+    * 2011-12-03T10:15:30+01:00[Europe/Paris]
+    */
+  private def tryParser(input: String, error: DecodingFailure): Xor[DecodingFailure, Instant] = {
+    try {
+      val fmt = DateTimeFormatter.ISO_OFFSET_DATE_TIME
+      val nst = Instant.from(fmt.parse(input))
+      Xor.right(nst)
+    }
+    catch {
+      case t: DateTimeParseException =>
+        Xor.left(error)
     }
   }
 

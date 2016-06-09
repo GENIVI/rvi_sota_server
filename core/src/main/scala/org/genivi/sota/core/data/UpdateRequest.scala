@@ -9,7 +9,8 @@ import java.util.UUID
 
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{Interval, PackageId, Vehicle}
-import org.joda.time.{DateTime, Duration}
+import java.time.Instant
+import java.time.Duration
 import org.genivi.sota.core.db.InstallHistories.InstallHistoryTable
 
 
@@ -36,7 +37,7 @@ case class UpdateRequest(
   id: UUID,
   namespace: Namespace,
   packageId: PackageId,
-  creationTime: DateTime,
+  creationTime: Instant,
   periodOfValidity: Interval,
   priority: Int,
   signature: String,
@@ -50,13 +51,13 @@ object UpdateRequest {
 
   def default(namespace: Namespace, packageId: PackageId): UpdateRequest = {
     val updateRequestId = UUID.randomUUID()
-    val now = DateTime.now
-    val defaultPeriod = Duration.standardDays(1)
+    val now = Instant.now
+    val defaultPeriod = Duration.ofDays(1)
     val defaultInterval = Interval(now, now.plus(defaultPeriod))
     val defaultPriority = 10
 
     UpdateRequest(updateRequestId, namespace, packageId,
-      DateTime.now, defaultInterval, defaultPriority, "", Some(""),
+      Instant.now, defaultInterval, defaultPriority, "", Some(""),
       requestConfirmation = false)
   }
 }
@@ -99,7 +100,7 @@ case class UpdateSpec(
   status: UpdateStatus,
   dependencies: Set[Package],
   installPos: Int,
-  creationTime: DateTime
+  creationTime: Instant
 ) {
 
   def namespace: Namespace = request.namespace
@@ -120,7 +121,7 @@ object UpdateSpec {
 
   def default(request: UpdateRequest, vin: Vehicle.Vin): UpdateSpec = {
     UpdateSpec(
-      request, vin, UpdateStatus.Pending, Set.empty, 0, DateTime.now
+      request, vin, UpdateStatus.Pending, Set.empty, 0, Instant.now
     )
   }
 }

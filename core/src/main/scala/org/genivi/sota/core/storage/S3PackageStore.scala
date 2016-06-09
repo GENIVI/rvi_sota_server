@@ -20,7 +20,7 @@ import com.typesafe.config.Config
 import org.genivi.sota.core.DigestCalculator.DigestResult
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.data.PackageId
-import org.joda.time.{DateTime, Duration}
+import java.time.{Instant, Duration}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.Future
@@ -31,7 +31,7 @@ class S3PackageStore(credentials: S3Credentials)
   import PackageStorage._
   import system.dispatcher
 
-  val PUBLIC_URL_EXPIRE_TIME = Duration.standardDays(1)
+  val PUBLIC_URL_EXPIRE_TIME = Duration.ofDays(1)
 
   val bucketId = credentials.bucketId
 
@@ -51,7 +51,7 @@ class S3PackageStore(credentials: S3Credentials)
   }
 
   protected def signedUri(packageId: PackageId, uri: Uri): Future[Uri] = {
-    val expire = DateTime.now.plus(PUBLIC_URL_EXPIRE_TIME).toDate
+    val expire = java.util.Date.from(Instant.now.plus(PUBLIC_URL_EXPIRE_TIME))
     val filename = Try(uri.path.reverse.head.toString).getOrElse("/404")
     val f = Future { s3client.generatePresignedUrl(bucketId, filename, expire)}
     f map (uri => Uri(uri.toURI.toString))

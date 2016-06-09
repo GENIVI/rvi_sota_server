@@ -27,7 +27,7 @@ import org.genivi.sota.refined.SlickRefined._
 import scala.util.control.NoStackTrace
 import org.genivi.sota.core.db.OperationResults
 import org.genivi.sota.core.db.InstallHistories
-import org.joda.time.DateTime
+import java.time.Instant
 
 
 object VehicleUpdates {

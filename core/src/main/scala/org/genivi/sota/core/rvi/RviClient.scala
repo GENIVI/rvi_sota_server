@@ -6,7 +6,7 @@ package org.genivi.sota.core.rvi
 
 import io.circe._
 import org.genivi.sota.core.resolver.ConnectivityClient
-import org.joda.time.DateTime
+import java.time.Instant
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -31,12 +31,12 @@ class JsonRpcRviClient(transport: Json => Future[Json], ec: ExecutionContext) ex
    * @param expirationDate the expiration in absolute time
    * @return a future of the transaction ID
    */
-  override def sendMessage[A](service: String, message: A, expirationDate: DateTime)
+  override def sendMessage[A](service: String, message: A, expirationDate: Instant)
     (implicit encoder: Encoder[A]) : Future[Int] = {
     implicit val exec = ec
     client.message.request(
         ('service_name ->> service) ::
-        ('timeout ->> expirationDate.getMillis() / 1000) ::
+        ('timeout ->> expirationDate.toEpochMilli / 1000) ::
         ('parameters ->> Seq(message)) :: HNil,
         Random.nextInt() )
       .run[Record.`'transaction_id -> Int`.T](transport)

@@ -8,7 +8,7 @@ import java.sql.Timestamp
 import java.util.UUID
 
 import akka.http.scaladsl.model.Uri
-import org.joda.time.DateTime
+import java.time.Instant
 
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Uuid
@@ -33,9 +33,9 @@ object SlickExtensions {
     * Define how to store a Joda Date time in the SQL database.
     */
   implicit val jodaDateTimeMapping = {
-    MappedColumnType.base[DateTime, Timestamp](
-      dt => new Timestamp(dt.getMillis),
-      ts => new DateTime(ts))
+    MappedColumnType.base[Instant, Timestamp](
+      dt => new Timestamp(dt.toEpochMilli),
+      ts => ts.toInstant)
   }
 
   final class MappedExtensionMethods(val n: Node) extends AnyVal {

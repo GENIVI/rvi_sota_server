@@ -14,7 +14,7 @@ import org.genivi.sota.data.Vehicle
 
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
-import org.joda.time.DateTime
+import java.time.Instant
 
 /**
  * Database mapping definition for the OperationResults table.
@@ -38,7 +38,7 @@ object OperationResults {
     def resultText  = column[String]("result_text")
     def vin         = column[Vehicle.Vin]("vin")
     def namespace   = column[Namespace]("namespace")
-    def receivedAt  = column[DateTime]("received_at")
+    def receivedAt  = column[Instant]("received_at")
 
     import shapeless._
 

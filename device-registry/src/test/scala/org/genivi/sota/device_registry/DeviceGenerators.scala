@@ -8,7 +8,7 @@ import eu.timepit.refined.api.Refined
 import org.scalacheck.{Arbitrary, Gen}
 import org.genivi.sota.data.Namespaces
 import org.genivi.sota.device_registry.{Device, DeviceT}
-import org.joda.time.DateTime
+import java.time.Instant
 
 
 object DeviceGenerators {
@@ -28,9 +28,9 @@ object DeviceGenerators {
     t <- Gen.oneOf(DeviceType.values.toSeq)
   } yield t
 
-  val genLastSeen: Gen[DateTime] = for {
+  val genLastSeen: Gen[Instant] = for {
     millis <- Gen.chooseNum[Long](0, 10000000000000L)
-  } yield (new DateTime(millis))
+  } yield (new Instant(millis))
 
   def genDeviceWith(deviceIdGen: Gen[DeviceId]): Gen[Device] = for {
     id <- genId
@@ -51,7 +51,7 @@ object DeviceGenerators {
   implicit lazy val arbId: Arbitrary[Id] = Arbitrary(genId)
   implicit lazy val arbDeviceId: Arbitrary[DeviceId] = Arbitrary(genDeviceId)
   implicit lazy val arbDeviceType: Arbitrary[DeviceType] = Arbitrary(genDeviceType)
-  implicit lazy val arbLastSeen: Arbitrary[DateTime] = Arbitrary(genLastSeen)
+  implicit lazy val arbLastSeen: Arbitrary[Instant] = Arbitrary(genLastSeen)
   implicit lazy val arbDevice: Arbitrary[Device] = Arbitrary(genDevice)
   implicit lazy val arbDeviceT: Arbitrary[DeviceT] = Arbitrary(genDeviceT)
 

@@ -10,7 +10,7 @@ import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{Interval, PackageId}
 import slick.driver.MySQLDriver.api._
-import org.joda.time.DateTime
+import java.time.Instant
 
 import scala.concurrent.ExecutionContext
 
@@ -37,9 +37,9 @@ object UpdateRequests {
     def namespace = column[Namespace]("namespace")
     def packageName = column[PackageId.Name]("package_name")
     def packageVersion = column[PackageId.Version]("package_version")
-    def creationTime = column[DateTime]("creation_time")
-    def startAfter = column[DateTime]("start_after")
-    def finishBefore = column[DateTime]("finish_before")
+    def creationTime = column[Instant]("creation_time")
+    def startAfter = column[Instant]("start_after")
+    def finishBefore = column[Instant]("finish_before")
     def priority = column[Int]("priority")
     def signature = column[String]("signature")
     def description = column[String]("description")
@@ -48,7 +48,7 @@ object UpdateRequests {
     import shapeless._
 
     implicit val IntervalGen : Generic[Interval] = new Generic[Interval] {
-      type Repr = DateTime :: DateTime :: HNil
+      type Repr = Instant :: Instant :: HNil
 
       override def to(x : Interval) : Repr = x.start :: x.end :: HNil
 

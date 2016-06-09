@@ -12,7 +12,7 @@ import org.genivi.sota.core.db.{UpdateSpecs, Vehicles}
 import org.genivi.sota.core.db.Vehicles.VehicleTable
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.Vehicle
-import org.joda.time.DateTime
+import java.time.Instant
 import org.genivi.sota.refined.SlickRefined._
 import io.circe.syntax._
 import io.circe.generic.auto._
@@ -29,7 +29,7 @@ object VehicleStatus extends Enumeration {
   implicit val decoder : Decoder[VehicleStatus] = Decoder[String].map(VehicleStatus.withName)
 }
 
-case class VehicleUpdateStatus(vin: Vehicle.Vin, status: VehicleStatus, lastSeen: Option[DateTime])
+case class VehicleUpdateStatus(vin: Vehicle.Vin, status: VehicleStatus, lastSeen: Option[Instant])
 
 object VehicleSearch {
   import UpdateSpecs._
@@ -52,7 +52,7 @@ object VehicleSearch {
     }
   }
 
-  def currentVehicleStatus(lastSeen: Option[DateTime], updateStatuses: Seq[UpdateStatus]): VehicleStatus = {
+  def currentVehicleStatus(lastSeen: Option[Instant], updateStatuses: Seq[UpdateStatus]): VehicleStatus = {
     if(lastSeen.isEmpty) {
       VehicleStatus.NotSeen
     } else {
