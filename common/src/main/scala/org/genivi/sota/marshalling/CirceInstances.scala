@@ -11,7 +11,8 @@ import cats.data.Xor
 import eu.timepit.refined.refineV
 import eu.timepit.refined.api.{Refined, Validate}
 import io.circe._
-import org.joda.time.{DateTime, Interval}
+import org.genivi.sota.data.Interval
+import org.joda.time.DateTime
 import org.joda.time.format.{DateTimeFormatter, ISODateTimeFormat}
 
 import scala.annotation.tailrec

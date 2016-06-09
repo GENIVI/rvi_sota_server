@@ -13,9 +13,9 @@ import java.util.UUID
 import org.apache.commons.codec.binary.Hex
 import org.genivi.sota.core.data._
 import org.genivi.sota.data.Namespace._
-import org.genivi.sota.data.{Namespaces, PackageId, Vehicle, VehicleGenerators}
+import org.genivi.sota.data.{Namespace => _, _}
 import org.scalacheck.{Arbitrary, Gen}
-import org.joda.time.{DateTime, Interval, Period}
+import org.joda.time.{DateTime, Period}
 
 /**
  * Generators for property-based testing of core objects
@@ -55,7 +55,7 @@ trait Generators {
     sig          <- Gen.alphaStr
     desc         <- Gen.option(Arbitrary.arbitrary[String])
     reqConfirm   <- Arbitrary.arbitrary[Boolean]
-  } yield UpdateRequest(UUID.randomUUID(), ns, packageId, DateTime.now, new Interval(startAfter, finishBefore),
+  } yield UpdateRequest(UUID.randomUUID(), ns, packageId, DateTime.now, Interval(startAfter, finishBefore),
                         prio, sig, desc, reqConfirm)
 
   def vinDepGen(packages: Seq[Package]) : Gen[(Vehicle.Vin, Set[PackageId])] = for {

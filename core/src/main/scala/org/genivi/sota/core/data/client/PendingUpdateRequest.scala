@@ -9,8 +9,9 @@ import java.util.UUID
 import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.data.Namespace.Namespace
 import org.genivi.sota.data.PackageId
-import org.joda.time.{DateTime, Interval}
+import org.joda.time.DateTime
 import scala.language.implicitConversions
+import org.genivi.sota.data.Interval
 
 case class PendingUpdateRequest(requestId: UUID, packageId: PackageId, installPos: Int, createdAt: DateTime)
 

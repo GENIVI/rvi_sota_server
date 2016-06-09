@@ -13,10 +13,11 @@ import org.genivi.sota.core.data.UpdateSpec
 import org.genivi.sota.core.data.client.ClientUpdateRequest
 import org.genivi.sota.core.transfer.DefaultUpdateNotifier
 import org.genivi.sota.marshalling.CirceMarshallingSupport
-import org.joda.time.{DateTime, Interval}
+import org.joda.time.DateTime
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 import akka.http.scaladsl.unmarshalling._
+import org.genivi.sota.data.Interval
 import org.genivi.sota.datatype.NamespaceDirective
 
 import scala.concurrent.Future
@@ -54,7 +55,7 @@ class UpdateRequestResourceSpec extends FunSuite
         UUID.randomUUID(),
         packageModel.id,
         now,
-        new Interval(now, now.plusDays(1)),
+        Interval(now, now.plusDays(1)),
         10,
         "none",
         None,
