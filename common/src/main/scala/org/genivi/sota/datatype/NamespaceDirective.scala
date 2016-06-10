@@ -14,7 +14,7 @@ import org.genivi.sota.data.Namespace._
 import scala.util.Try
 
 object NamespaceDirective {
-  import eu.timepit.refined.auto._
+  import eu.timepit.refined.refineV
 
   def configNamespace(config: Config): Option[Namespace] = {
     val namespaceString = Try(config.getString("core.defaultNs")).getOrElse("default")
@@ -22,8 +22,12 @@ object NamespaceDirective {
     nsE.right.toOption
   }
 
-  private lazy val defaultConfigNamespace: Namespace =
-    configNamespace(ConfigFactory.load()).getOrElse("default-config-ns")
+  private lazy val defaultConfigNamespace: Namespace = {
+    configNamespace(ConfigFactory.load()) getOrElse {
+      val nsE: Either[String, Namespace] = refineV("default-config-ns")
+      nsE.right.toOption.get
+    }
+  }
 
   lazy val defaultNamespaceExtractor: Directive1[Namespace] =
     BasicDirectives.provide(defaultConfigNamespace)
