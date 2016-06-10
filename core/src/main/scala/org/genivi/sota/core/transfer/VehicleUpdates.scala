@@ -149,44 +149,39 @@ object VehicleUpdates {
   def findUpdateSpecFor(vin: Vehicle.Vin, updateRequestId: UUID)
                        (implicit ec: ExecutionContext, db: Database): DBIO[UpdateSpec] = {
 
-    val opt: DBIO[Option[((Namespace, UUID, Vin, UpdateStatus, Int, Instant), UpdateRequest)]] =
+    val updateSpecsIO =
       updateSpecs
       .filter(_.vin === vin)
       .filter(_.requestId === updateRequestId)
       .join(updateRequests).on(_.requestId === _.id)
+      .joinLeft(requiredPackages).on(_._1.requestId === _.requestId)
       .result
-      .headOption
 
-    opt.flatMap {
-        case Some((
-          (ns, uuid, updateVin, status, installPos, creationTime),
-          updateRequest
-          )) =>
+    val specsWithDepsIO = updateSpecsIO flatMap { specsWithDeps =>
+      val dBIOActions = specsWithDeps map { case ((updateSpec, updateReq), requiredPO) =>
+        val (_, _, vin, status, installPos, creationTime) = updateSpec
+        (UpdateSpec(updateReq, vin, status, Set.empty, installPos, creationTime), requiredPO)
+      } map { case (spec, requiredPO) =>
+        val depsIO = requiredPO map { case (namespace, _, _, packageName, packageVersion) =>
+          Packages.byId(namespace, PackageId(packageName, packageVersion))
+        } getOrElse DBIO.successful(None)
 
-          val reqPaks0: DBIO[Seq[(Namespace, UUID, Vin, Name, Version)]] =
-            requiredPackages
-            .filter(_.namespace === ns)
-            .filter(_.requestId === updateRequestId)
-            .filter(_.vin === vin)
-            .result
-
-          val reqPaks: DBIO[Seq[PackageId]] = reqPaks0 map { rows =>
-            rows map { case (_, _, _, pakName, pakVersion) =>
-              PackageId(pakName, pakVersion) }
-          }
-
-          val paksDB: DBIO[Seq[Package]] = for (
-            pakIds <- reqPaks;
-            paks   <- Packages.byIds(ns, pakIds.toSet)
-          ) yield paks
-
-          paksDB map { rows => UpdateSpec(updateRequest, updateVin, status, rows.toSet, installPos, creationTime) }
-
-        case None =>
-          DBIO.failed(
-            UpdateSpecNotFound(s"Could not find an update request with id $updateRequestId for vin ${vin.get}")
-          )
+        depsIO map { p => spec.copy(dependencies = p.toSet) }
       }
+
+      DBIO.sequence(dBIOActions) map { specs =>
+        val deps = specs.flatMap(_.dependencies).toSet
+        specs.headOption.map(_.copy(dependencies = deps))
+      }
+    }
+
+    specsWithDepsIO flatMap {
+      case Some(us) => DBIO.successful(us)
+      case None =>
+        DBIO.failed(
+          UpdateSpecNotFound(s"Could not find an update request with id $updateRequestId for vin ${vin.get}")
+        )
+    }
   }
 
   /**
