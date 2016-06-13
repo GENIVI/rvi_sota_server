@@ -7,7 +7,7 @@ package org.genivi.sota.core.db
 import org.genivi.sota.core.data.InstallHistory
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
-import org.joda.time.DateTime
+import java.time.Instant
 import slick.driver.MySQLDriver.api._
 
 
@@ -36,7 +36,7 @@ object InstallHistories {
     def packageName    = column[PackageId.Name]   ("packageName")
     def packageVersion = column[PackageId.Version]("packageVersion")
     def success        = column[Boolean]          ("success")
-    def completionTime = column[DateTime]         ("completionTime")
+    def completionTime = column[Instant]         ("completionTime")
 
     // given `id` is already unique across namespaces, no need to include namespace. Also avoids Slick issue #966.
     def pk = primaryKey("pk_InstallHistoryTable", (id))
@@ -73,7 +73,7 @@ object InstallHistories {
    */
   def log(ns: Namespace, vin: Vehicle.Vin, updateId: java.util.UUID,
           packageId: PackageId, success: Boolean): DBIO[Int] = {
-    installHistories += InstallHistory(None, ns, vin, updateId, packageId, success, DateTime.now)
+    installHistories += InstallHistory(None, ns, vin, updateId, packageId, success, Instant.now)
   }
 
 }

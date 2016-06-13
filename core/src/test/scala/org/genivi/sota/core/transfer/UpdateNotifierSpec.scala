@@ -12,7 +12,7 @@ import org.genivi.sota.core.rvi.{RviConnectivity, RviUpdateNotifier, SotaService
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.Namespaces
 import org.genivi.sota.data.Vehicle
-import org.joda.time.DateTime
+import java.time.Instant
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
@@ -33,7 +33,7 @@ object UpdateNotifierSpec {
     vin           <- vinGen
     m             <- Gen.choose(1, 10)
     packages      <- Gen.pick(m, packages).map( _.toSet )
-  } yield UpdateSpec(updateRequest, vin, UpdateStatus.Pending, packages, 0, DateTime.now)
+  } yield UpdateSpec(updateRequest, vin, UpdateStatus.Pending, packages, 0, Instant.now)
 
   def updateSpecsGen(namespaceGen: Gen[Namespace], vinGen : Gen[Vehicle.Vin] ) : Gen[Seq[UpdateSpec]] =
     Gen.containerOf[Seq, UpdateSpec](updateSpecGen(namespaceGen, vinGen))

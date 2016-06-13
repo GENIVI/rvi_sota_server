@@ -10,7 +10,7 @@ import eu.timepit.refined.api.{Refined, Validate}
 import eu.timepit.refined.string._
 import io.circe.{Decoder, Encoder}
 import org.genivi.sota.data.Namespace._
-import org.joda.time.DateTime
+import java.time.Instant
 import slick.driver.MySQLDriver.MappedJdbcType
 import slick.driver.MySQLDriver.api._
 
@@ -30,7 +30,7 @@ final case class Device(namespace: Namespace,
                   id: Id,
                   deviceId: Option[DeviceId] = None,
                   deviceType: Device.DeviceType = DeviceType.Other,
-                  lastSeen: Option[DateTime] = None)
+                  lastSeen: Option[Instant] = None)
 
 object Device {
 

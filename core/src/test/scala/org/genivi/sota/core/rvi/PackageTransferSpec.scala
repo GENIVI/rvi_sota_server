@@ -22,7 +22,7 @@ import org.genivi.sota.core.Generators
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.resolver.ConnectivityClient
 import org.genivi.sota.data.Vehicle
-import org.joda.time.DateTime
+import java.time.Instant
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
@@ -85,7 +85,7 @@ object ClientActor {
  */
 class AccRviClient( clientActor: ActorRef ) extends ConnectivityClient {
 
-  def sendMessage[A](service: String, message: A, expirationDate: DateTime)
+  def sendMessage[A](service: String, message: A, expirationDate: Instant)
                  (implicit encoder: Encoder[A] ) : Future[Int] = {
     clientActor ! message
     FastFuture.successful( 1 )

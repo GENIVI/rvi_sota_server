@@ -23,7 +23,7 @@ import io.circe.generic.auto._
 import org.genivi.sota.core.data.client.PendingUpdateRequest
 import org.genivi.sota.core.resolver.{Connectivity, ConnectivityClient, DefaultConnectivity}
 import org.genivi.sota.datatype.NamespaceDirective
-import org.joda.time.DateTime
+import java.time.Instant
 
 import scala.concurrent.Future
 
@@ -109,7 +109,7 @@ class VehicleUpdatesResourceSpec extends FunSuite
     whenReady(createVehicle()) { vehicle =>
       val uri = baseUri.withPath(baseUri.path / vehicle.vin.get)
 
-      val now = DateTime.now.minusSeconds(10)
+      val now = Instant.now.minusSeconds(10)
 
       Get(uri) ~> service.route ~> check {
         status shouldBe StatusCodes.OK
@@ -196,7 +196,7 @@ class VehicleUpdatesResourceSpec extends FunSuite
     val f = createUpdateSpec()
 
     whenReady(f) { case (packageModel, vehicle, updateSpec) =>
-      val now = DateTime.now
+      val now = Instant.now
       val url = baseUri.withPath(baseUri.path / vehicle.vin.get)
 
       Post(url, packageModel.id) ~> service.route ~> check {
@@ -267,7 +267,7 @@ class FakeConnectivity extends Connectivity {
   }
 
   override implicit val client = new ConnectivityClient {
-    override def sendMessage[A](service: String, message: A, expirationDate: DateTime)
+    override def sendMessage[A](service: String, message: A, expirationDate: Instant)
                                (implicit encoder: Encoder[A]): Future[Int] = {
       val v = (service, encoder(message))
       sentMessages += v

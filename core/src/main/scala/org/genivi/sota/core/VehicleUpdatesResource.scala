@@ -24,7 +24,9 @@ import org.genivi.sota.data.Namespace._
 import org.genivi.sota.core.data.client.ResponseConversions
 import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, ExternalResolverClient}
 import org.genivi.sota.core.storage.PackageStorage
-import org.joda.time.DateTime
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+
 import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec}
 import org.genivi.sota.core.data.client.PendingUpdateRequest
 import org.genivi.sota.core.data.UpdateStatus
@@ -130,7 +132,7 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
   }
 
   def sync(vin: Vehicle.Vin): Route = {
-    val ttl = DateTime.now.plusMinutes(5)
+    val ttl = Instant.now.plus(5, ChronoUnit.MINUTES)
     // TODO: Config RVI destination path (or ClientServices.getpackages)
     // TODO: pass namespace
     connectivity.client.sendMessage(s"genivi.org/vin/${vin.get}/sota/getpackages", io.circe.Json.Null, ttl)

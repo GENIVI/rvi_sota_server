@@ -17,7 +17,7 @@ import org.genivi.sota.core.rvi.ServerServices
 import org.genivi.sota.core.transfer.UpdateNotifier
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
-import org.joda.time.DateTime
+import java.time.Instant
 
 import scala.collection.immutable.ListSet
 import scala.concurrent.{ExecutionContext, Future}
@@ -99,7 +99,7 @@ class UpdateService(notifier: UpdateNotifier)
                     idsToPackages: Map[PackageId, Package]): Set[UpdateSpec] = {
     vinsToPackageIds.map {
       case (vin, requiredPackageIds) =>
-        UpdateSpec(request, vin, UpdateStatus.Pending, requiredPackageIds map idsToPackages, 0, DateTime.now)
+        UpdateSpec(request, vin, UpdateStatus.Pending, requiredPackageIds map idsToPackages, 0, Instant.now)
     }.toSet
   }
 

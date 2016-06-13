@@ -13,10 +13,13 @@ import org.genivi.sota.core.data.UpdateSpec
 import org.genivi.sota.core.data.client.ClientUpdateRequest
 import org.genivi.sota.core.transfer.DefaultUpdateNotifier
 import org.genivi.sota.marshalling.CirceMarshallingSupport
-import org.joda.time.{DateTime, Interval}
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 import akka.http.scaladsl.unmarshalling._
+import org.genivi.sota.data.Interval
 import org.genivi.sota.datatype.NamespaceDirective
 
 import scala.concurrent.Future
@@ -38,7 +41,7 @@ class UpdateRequestResourceSpec extends FunSuite
   val resolver = new FakeExternalResolver()
 
   implicit val rviClient = new ConnectivityClient {
-    override def sendMessage[A](service: String, message: A, expirationDate: DateTime)(implicit encoder: Encoder[A]): Future[Int] = ???
+    override def sendMessage[A](service: String, message: A, expirationDate: Instant)(implicit encoder: Encoder[A]): Future[Int] = ???
   }
 
   implicit val connectivity = DefaultConnectivity
@@ -46,7 +49,7 @@ class UpdateRequestResourceSpec extends FunSuite
   val serve = new UpdateRequestsResource(db, resolver, new UpdateService(DefaultUpdateNotifier), defaultNamespaceExtractor)
 
   test("accepts new updates with a Client specific format") {
-    val now = DateTime.now
+    val now = Instant.now
     val f = createUpdateSpec()
 
     whenReady(f) { case (packageModel, _, _) =>
@@ -54,7 +57,7 @@ class UpdateRequestResourceSpec extends FunSuite
         UUID.randomUUID(),
         packageModel.id,
         now,
-        new Interval(now, now.plusDays(1)),
+        Interval(now, now.plus(1, ChronoUnit.DAYS)),
         10,
         "none",
         None,

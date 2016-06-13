@@ -18,7 +18,6 @@ import org.genivi.sota.device_registry.common.NamespaceDirective._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.rest.Validation._
-import org.joda.time._
 import scala.concurrent.ExecutionContext
 import slick.jdbc.JdbcBackend.Database
 

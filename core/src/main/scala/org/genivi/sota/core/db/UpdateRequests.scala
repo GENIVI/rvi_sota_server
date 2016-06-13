@@ -8,10 +8,9 @@ import java.util.UUID
 
 import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.data.Namespace._
-import org.genivi.sota.data.PackageId
+import org.genivi.sota.data.{Interval, PackageId}
 import slick.driver.MySQLDriver.api._
-import org.joda.time.DateTime
-import org.joda.time.Interval
+import java.time.Instant
 
 import scala.concurrent.ExecutionContext
 
@@ -38,9 +37,9 @@ object UpdateRequests {
     def namespace = column[Namespace]("namespace")
     def packageName = column[PackageId.Name]("package_name")
     def packageVersion = column[PackageId.Version]("package_version")
-    def creationTime = column[DateTime]("creation_time")
-    def startAfter = column[DateTime]("start_after")
-    def finishBefore = column[DateTime]("finish_before")
+    def creationTime = column[Instant]("creation_time")
+    def startAfter = column[Instant]("start_after")
+    def finishBefore = column[Instant]("finish_before")
     def priority = column[Int]("priority")
     def signature = column[String]("signature")
     def description = column[String]("description")
@@ -49,12 +48,12 @@ object UpdateRequests {
     import shapeless._
 
     implicit val IntervalGen : Generic[Interval] = new Generic[Interval] {
-      type Repr = DateTime :: DateTime :: HNil
+      type Repr = Instant :: Instant :: HNil
 
-      override def to(x : Interval) : Repr = x.getStart :: x.getEnd :: HNil
+      override def to(x : Interval) : Repr = x.start :: x.end :: HNil
 
       override def from( repr : Repr) : Interval = repr match {
-        case start :: end :: HNil => new Interval(start, end)
+        case start :: end :: HNil => Interval(start, end)
       }
     }
 
@@ -63,9 +62,9 @@ object UpdateRequests {
 
     def * = (id, namespace, packageName, packageVersion, creationTime, startAfter, finishBefore,
              priority, signature, description.?, requestConfirmation).shaped <>
-      (x => UpdateRequest(x._1, x._2, PackageId(x._3, x._4), x._5, new Interval(x._6, x._7), x._8, x._9, x._10, x._11),
+      (x => UpdateRequest(x._1, x._2, PackageId(x._3, x._4), x._5, Interval(x._6, x._7), x._8, x._9, x._10, x._11),
       (x: UpdateRequest) => Some((x.id, x.namespace, x.packageId.name, x.packageId.version, x.creationTime,
-                                  x.periodOfValidity.getStart, x.periodOfValidity.getEnd, x.priority,
+                                  x.periodOfValidity.start, x.periodOfValidity.end, x.priority,
                                   x.signature, x.description, x.requestConfirmation)))
   }
   // scalastyle:on

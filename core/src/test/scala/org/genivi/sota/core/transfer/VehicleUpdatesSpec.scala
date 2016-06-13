@@ -14,7 +14,6 @@ import org.scalatest.concurrent.ScalaFutures
 import org.genivi.sota.db.SlickExtensions
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import org.joda.time.DateTime
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
@@ -203,9 +202,9 @@ class VehicleUpdatesSpec extends FunSuite
     // insert update spec C install pos 0
     val dbIO = for {
       (_, vehicle, updateSpec0) <- createUpdateSpecAction();
-      instant1 = updateSpec0.creationTime.getMillis + 1; // if created in quick succession duplicates creationTime
+      instant1 = updateSpec0.creationTime.toEpochMilli + 1; // if created in quick succession duplicates creationTime
       (_, updateSpec1) <- createUpdateSpecFor(vehicle, installPos = 0, withMillis = instant1)
-      instant2 = updateSpec1.creationTime.getMillis + 1; // if created in quick succession duplicates creationTime
+      instant2 = updateSpec1.creationTime.toEpochMilli + 1; // if created in quick succession duplicates creationTime
       (_, updateSpec2) <- createUpdateSpecFor(vehicle, installPos = 0, withMillis = instant2)
       result <- findPendingPackageIdsFor(vehicle.vin)
     } yield (result, updateSpec0, updateSpec1, updateSpec2)
