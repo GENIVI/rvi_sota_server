@@ -1,0 +1,8 @@
+CORE_DB_URL=jdbc:mariadb://localhost:3306/sota_core
+CORE_DB_USER=sota
+CORE_DB_PASS=s0ta
+CORE_DB_MIGRATE=true
+RESOLVER_DB_USER=sota
+RESOLVER_DB_PASS=s0ta
+RESOLVER_DB_URL=jdbc:mariadb://localhost:3306/sota_resolver
+RESOLVER_DB_MIGRATE=true
