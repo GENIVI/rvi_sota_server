@@ -38,7 +38,7 @@ class UpdateRequestResourceSpec extends FunSuite
   val resolver = new FakeExternalResolver()
 
   implicit val rviClient = new ConnectivityClient {
-    override def sendMessage[A](service: String, message: A, expirationDate: _root_.com.github.nscala_time.time.Imports.DateTime)(implicit encoder: Encoder[A]): Future[Int] = ???
+    override def sendMessage[A](service: String, message: A, expirationDate: DateTime)(implicit encoder: Encoder[A]): Future[Int] = ???
   }
 
   implicit val connectivity = DefaultConnectivity

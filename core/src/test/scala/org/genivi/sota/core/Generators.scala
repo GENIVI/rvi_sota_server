@@ -9,12 +9,13 @@ import eu.timepit.refined.api.Refined
 import java.nio.file.{Files, Paths, StandardOpenOption}
 import java.security.MessageDigest
 import java.util.UUID
+
 import org.apache.commons.codec.binary.Hex
 import org.genivi.sota.core.data._
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{Namespaces, PackageId, Vehicle, VehicleGenerators}
 import org.scalacheck.{Arbitrary, Gen}
-
+import org.joda.time.{DateTime, Interval, Period}
 
 /**
  * Generators for property-based testing of core objects
@@ -45,18 +46,16 @@ trait Generators {
 
   implicit val arbitrayPackage: Arbitrary[Package] = Arbitrary( PackageGen )
 
-  import com.github.nscala_time.time.Imports._
-
   def updateRequestGen(namespaceGen: Gen[Namespace], packageIdGen : Gen[PackageId]) : Gen[UpdateRequest] = for {
     ns           <- namespaceGen
     packageId    <- packageIdGen
-    startAfter   <- Gen.choose(10, 100).map( DateTime.now + _.days)
-    finishBefore <- Gen.choose(10, 100).map(x => startAfter + x.days)
+    startAfter   <- Gen.choose(10, 100).map( d => DateTime.now.plus(Period.days(d)) )
+    finishBefore <- Gen.choose(10, 100).map( x => startAfter.plus(Period.days(x)) )
     prio         <- Gen.choose(1, 10)
     sig          <- Gen.alphaStr
     desc         <- Gen.option(Arbitrary.arbitrary[String])
     reqConfirm   <- Arbitrary.arbitrary[Boolean]
-  } yield UpdateRequest(UUID.randomUUID(), ns, packageId, DateTime.now, startAfter to finishBefore,
+  } yield UpdateRequest(UUID.randomUUID(), ns, packageId, DateTime.now, new Interval(startAfter, finishBefore),
                         prio, sig, desc, reqConfirm)
 
   def vinDepGen(packages: Seq[Package]) : Gen[(Vehicle.Vin, Set[PackageId])] = for {
