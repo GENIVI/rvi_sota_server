@@ -1,0 +1,458 @@
+swagger: '2.0'
+info:
+  version: ''
+  title: SOTA Core
+  description: 'https://github.com/advancedtelematic/rvi_sota_server'
+  license:
+    name: Mozilla Public License
+    url: 'https://github.com/advancedtelematic/rvi_sota_server/blob/master/LICENSE'
+host: 'localhost:8080'
+basePath: /api/v1
+securityDefinitions: {}
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /vehicles:
+    get:
+      description: 'Get a list of all the vehicles in the Core database.'
+      responses:
+        200:
+          description: A array of VINs
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Vehicle'
+  /vehicles/{vin}:
+    get:
+      description: 'Return a single vehicle object'
+      parameters:
+      - name: vin
+        in: path
+        description: A VIN that exists in the system.
+        required: true
+        type: string
+      responses: 
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Vehicle'
+    put:
+      description: 'Add a vehicle to the database'
+      parameters:
+      - name: vin
+        in: path
+        description: A VIN to be added to the system.
+        required: true
+        type: string
+      responses: 
+        204:
+          description: Success
+    delete:
+      description: Delete a vehicle from the database and remove all its associations.
+      parameters:
+      - name: vin
+        in: path
+        description: A VIN to be deleted from the system.
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+        404:
+          description: Not found
+  /packages:
+    get:
+      description: 'Get a list of all the software packages and versions in the Core database.'
+      responses:
+        200:
+          description: A array of packages
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Package'
+  /packages/{name}/{version}:
+    put:
+      description: Add a binary package to the system
+      parameters:
+      - name: name
+        in: path
+        description: The package name.
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: The package version.
+        required: true
+        type: string
+      - name: description
+        in: query
+        description: A short description of of the package.
+        required: true
+        type: string
+      - name: vendor
+        in: query
+        description: The package vendor.
+        required: true
+        type: string
+      - name: signature
+        in: query
+        description: A cryptographic signature signing the binary.
+        required: true
+        type: string
+      - name: file
+        in: formData
+        description: The binary package.
+        required: true
+        type: file
+      responses:
+        204:
+          description: OK
+    get:
+      description: Return the Package object for a specific package.
+      parameters:
+      - name: name
+        in: path
+        description: The package name.
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: The package version.
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Package'
+  /packages/{name}/{version}/queued_vins:
+    get:
+      description: Return a list of VINs that have the package queued for install.
+      parameters:
+      - name: name
+        in: path
+        description: The package name.
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: The package version.
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items: 
+              type: string
+  /update_requests:
+    get:
+      description: 'List all update campaigns'
+      responses:
+        200:
+          description: A list of update campaign objects.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Update'
+  /history:
+    get:
+      description: Get the package install history of a vehicle.
+      parameters:
+      - name: vin
+        in: query
+        description: An existing VIN.
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              todo:
+                type: string
+  /vehicle_updates/{vin}:
+    post:
+      description: Create an update sending a package to vehicle
+      parameters:
+      - name: vin
+        in: path
+        description: The VIN to install the package on
+        required: true
+        type: string
+      - name: packageId
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/packageId'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Update'
+    get:
+      description: |
+        Get a list of the updates queued for a vin, and update the last seen time for that vin. This is called by the
+        client. To get a list of updates queued for a vin without updating the last seen time, use /vehicle_updates/{vin}/queued
+      parameters:
+      - name: vin
+        in: path
+        description: The VIN to list
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/pendingPackage'
+  /vehicle_updates/{vin}/queued:
+    get:
+      description: Get a list of the updates queued for a vin. 
+      parameters:
+      - name: vin
+        in: path
+        description: The VIN to list
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/pendingPackage'
+  /vehicle_updates/{vin}/operationresults:
+    get:
+      description: todo
+      parameters:
+      - name: vin
+        in: path
+        description: The VIN to list
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+  /vehicle_updates/{vin}/{updateId}/download:
+    get:
+      description: Download a package binary. This is called by the in-vehicle client.
+      parameters:
+      - name: vin
+        in: path
+        description: The VIN of the vehicle making this call
+        required: true
+        type: string
+      - name: updateId
+        in: path
+        description: The UUID of an update
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: file
+  /vehicle_updates/{vin}/sync:
+    post:
+      description: todo
+      parameters:
+      - name: vin
+        in: path
+        description: The VIN of the vehicle making this call
+        required: true
+        type: string
+      responses:
+        204:
+          description: No Content
+  /vehicle_updates/{vin}/{updateId}/cancelupdate:
+    put:
+      description: Cancel a currently pending update
+      parameters:
+      - name: vin
+        in: path
+        required: true
+        type: string
+      - name: updateId
+        in: path
+        description: The UUID of a currently pending update
+        required: true
+        type: string
+      responses:
+        204:
+          description: No Content
+  /vehicle_updates/{vin}/{updateId}:
+    post:
+      description: Report on the status of an install. This is used by the client to send the status and/or log files after an install completes.
+      parameters:
+      - name: vin
+        in: path
+        required: true
+        type: string
+      - name: updateId
+        in: path
+        description: The UUID of a currently pending update
+        required: true
+        type: string
+      - name: installReport
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/installReport'
+      responses:
+        415:
+          description: Unsupported Media Type todo
+  /vehicle_updates/{vin}/installed:
+    put:
+      description: | 
+        Update the list of installed packages on a vehicle. Note that this does not do any communication
+        with the client or install any packages; it simply updates the database with the information that 
+        the package is installed.
+      parameters:
+      - name: vin
+        in: path
+        required: true
+        type: string
+      - name: packageList
+        in: body
+        description: An array of packageId objects
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/packageId'
+      responses:
+        204:
+          description: No Content
+  /vehicle_updates/{vin}/order:
+    put:
+      description: | 
+        Set the install order for a vehicle's queued packages. 
+      parameters:
+      - name: vin
+        in: path
+        required: true
+        type: string
+      - name: orderMapping
+        in: body
+        description: |
+          An object with mappings between install position and updateId for all queued packages. Note that for a valid response,
+          all updateIds currently pending must be listed and assigned a unique installPos.
+        required: true
+        schema:
+          $ref: '#/definitions/orderMapping'
+      responses:
+        204:
+          description: No Content
+
+definitions:
+  namespace:
+    type: string
+    description: The namespace scope of the request. Default value is 'default'
+  VIN:
+    type: string
+    description: A 17-digit VIN. May contain only capital letters and digits. Cannot contain the letters I, O, or Q.
+  Vehicle:
+    type: object
+    properties:
+      namespace:
+        $ref: '#/definitions/namespace'
+      VIN:
+        $ref: '#/definitions/VIN'
+      lastseen:
+        type: string
+        format: dateTime
+        description: The last time a VIN was seen by the SOTA server.
+  Package:
+    type: object
+    properties:
+      namespace:
+        $ref: '#/definitions/namespace'
+      id:
+        $ref: '#/definitions/packageId'
+      uri:
+        type: object
+        properties:
+          uri:
+            type: string
+            description: A URI the package file is available at.
+      size:
+        type: integer
+        description: The package file size, in bytes.
+      checkSum:
+        type: string
+        description: The MD5 checksum of the binary package.
+      description:
+        type: string
+        description: A short description of of the package.
+      vendor:
+        type: string
+        description: The package vendor.
+      signature:
+        type: string
+        description: A cryptographic signature signing the binary.
+  packageId:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The package name.
+      version:
+        type: string
+        description: The package version, in major.minor.patch notation by default.
+  Update:
+    type: object
+    properties:
+      id: 
+        type: string
+        description: The UUID of the update
+      namespace:
+        $ref: '#/definitions/namespace'
+      packageId: 
+        $ref: '#/definitions/packageId'
+      creationTime: 
+        type: string
+        format: dateTime
+        description: The date and time the campaign was created  
+      periodOfValidity: 
+        type: string
+        format: dateTime/dateTime
+        description: The start and end of the update campaign
+      priority: 
+        type: integer
+        description: The priority of the campaign
+      signature:
+        type: string
+        description: A cryptographic signature signing the update campaign.
+      description:
+        type: string
+        description: A description of the update campaign.
+      requestConfirmation:
+        type: boolean
+        description: True if client should wait for user confirmation before installing.
+      installPos:
+        type: integer
+        description: The order in which the package should be installed. 0 is first, incrementing thereafter.
+  pendingPackage:
+    type: object
+    properties:
+      requestId:
+        type: string
+      packageId:
+        $ref: '#/definitions/packageId'
+      installPos:
+        type: integer
+      createdAt: 
+        type: string
+        format: dateTime
+  installReport:
+    type: object
+  orderMapping:
+    type: object
