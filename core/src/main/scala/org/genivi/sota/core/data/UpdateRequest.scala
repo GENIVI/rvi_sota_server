@@ -63,7 +63,7 @@ object UpdateRequest {
 }
 
 /**
- * The states that an update may be in.
+ * The states that an [[UpdateSpec]] may be in.
  * Updates start in Pending state, then go to InFlight, then either Failed or
  * Finished. At any point before the Failed or Finished state it may transfer
  * to the Canceled state when a user cancels the operation
