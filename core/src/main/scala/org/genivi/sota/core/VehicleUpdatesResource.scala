@@ -166,16 +166,16 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
 
   val route = {
     (pathPrefix("api" / "v1" / "vehicle_updates") & extractVin) { vin =>
+      (get & pathEnd) { logVehicleSeen(vin) { pendingPackages(vin) } } ~
+      (get & path("queued")) { pendingPackages(vin) } ~
+      (get & path("operationresults")) { results(vin) } ~
+      (get & extractUuid & path("download")) { uuid => downloadPackage(vin, uuid) } ~
       (put & path("installed")) { updateInstalledPackages(vin) } ~
       (put & path("order")) { setInstallOrder(vin) } ~
       (put & extractUuid & path("cancelupdate") ) { uuid => cancelUpdate(vin, uuid) } ~
+      (post & path("sync")) { sync(vin) } ~
       (post & namespaceExtractor & pathEnd) { ns => queueVehicleUpdate(ns, vin) } ~
-      (get & pathEnd) { logVehicleSeen(vin) { pendingPackages(vin) } } ~
-      (get & path("queued")) { pendingPackages(vin) } ~
-      (get & extractUuid & path("download")) { uuid => downloadPackage(vin, uuid) } ~
-      (get & path("operationresults")) { results(vin) } ~
-      (post & extractUuid) { reportInstall } ~
-      (post & path("sync")) { sync(vin) }
+      (post & extractUuid) { reportInstall }
     }
   }
 }
