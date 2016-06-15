@@ -166,16 +166,22 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
 
   val route = {
     (pathPrefix("api" / "v1" / "vehicle_updates") & extractVin) { vin =>
-      (get & pathEnd) { logVehicleSeen(vin) { pendingPackages(vin) } } ~
-      (get & path("queued")) { pendingPackages(vin) } ~
-      (get & path("operationresults")) { results(vin) } ~
-      (get & extractUuid & path("download")) { uuid => downloadPackage(vin, uuid) } ~
-      (put & path("installed")) { updateInstalledPackages(vin) } ~
-      (put & path("order")) { setInstallOrder(vin) } ~
-      (put & extractUuid & path("cancelupdate") ) { uuid => cancelUpdate(vin, uuid) } ~
-      (post & path("sync")) { sync(vin) } ~
-      (post & namespaceExtractor & pathEnd) { ns => queueVehicleUpdate(ns, vin) } ~
-      (post & extractUuid) { reportInstall }
+      get {
+        pathEnd { logVehicleSeen(vin) { pendingPackages(vin) } } ~
+        path("queued") { pendingPackages(vin) } ~
+        path("operationresults") { results(vin) } ~
+        (extractUuid & path("download")) { uuid => downloadPackage(vin, uuid) }
+      } ~
+      put {
+        path("installed") { updateInstalledPackages(vin) } ~
+        path("order") { setInstallOrder(vin) } ~
+        (extractUuid & path("cancelupdate") ) { uuid => cancelUpdate(vin, uuid) }
+      } ~
+      post {
+        path("sync") { sync(vin) } ~
+        (namespaceExtractor & pathEnd) { ns => queueVehicleUpdate(ns, vin) } ~
+        (extractUuid & pathEnd) { reportInstall }
+      }
     }
   }
 }
