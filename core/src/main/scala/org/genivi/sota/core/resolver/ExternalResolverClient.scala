@@ -7,10 +7,12 @@ package org.genivi.sota.core.resolver
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.model.Uri.Query
+import akka.http.scaladsl.model.headers.{HttpEncoding, HttpEncodings}
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import org.genivi.sota.data.Namespace._
@@ -59,7 +61,8 @@ trait ExternalResolverClient {
 /**
  * A wrapper for an error that is thrown when trying to access the External
  * Resolver
- * @param msg A message from the component that caught the exception
+  *
+  * @param msg A message from the component that caught the exception
  * @param cause The underlying error that caused the request to fail
  */
 case class ExternalResolverRequestFailed private ( msg: String, cause: Throwable ) extends Throwable( msg, cause )
@@ -71,7 +74,8 @@ object ExternalResolverRequestFailed {
 
   /**
    * The request failed, but not as the result of an exception
-   * @param message A message from the application
+    *
+    * @param message A message from the application
    * @return An ExternalResolverRequestFailed throwable (which should be thrown)
    */
   def apply( message: String ) : ExternalResolverRequestFailed =
@@ -79,7 +83,8 @@ object ExternalResolverRequestFailed {
 
   /**
    * The external resolver returned an unexpected HTTP status code
-   * @param statusCode The HTTP status code that was received
+    *
+    * @param statusCode The HTTP status code that was received
    * @return An ExternalResolverRequestFailed throwable (which should be thrown)
    */
   def apply( statusCode: StatusCode ) : ExternalResolverRequestFailed =
@@ -87,7 +92,8 @@ object ExternalResolverRequestFailed {
 
   /**
    * The request failed because an exception was raised
-   * @param cause The underlying exception
+    *
+    * @param cause The underlying exception
    * @return An ExternalResolverRequestFailed throwable (which should be thrown)
    */
   def apply( cause: Throwable ) : ExternalResolverRequestFailed =
@@ -106,6 +112,7 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
   import io.circe._
   import system.dispatcher
   import io.circe.generic.auto._
+  import akka.http.scaladsl.model.headers._
 
   private[this] val log = Logging( system, "org.genivi.sota.externalResolverClient" )
 
@@ -113,20 +120,26 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
     implicit val responseDecoder : Decoder[Map[Vehicle.Vin, Set[PackageId]]] =
       Decoder[Seq[(Vehicle.Vin, Set[PackageId])]].map(_.toMap)
 
-      def request(packageId: PackageId): Future[HttpResponse] = {
-        val resolvePath = resolveUri
-          .withPath(resolveUri.path)
-          .withQuery(Query(
-            "namespace" -> namespace.get,
-            "package_name" -> packageId.name.get,
-            "package_version" -> packageId.version.get
-          ))
+    val resolvePath = resolveUri
+      .withPath(resolveUri.path)
+      .withQuery(Query(
+        "namespace" -> namespace.get,
+        "package_name" -> packageId.name.get,
+        "package_version" -> packageId.version.get
+      ))
 
-        Http().singleRequest(HttpRequest(uri = resolvePath))
-      }
+    val httpRequest = HttpRequest(uri = resolvePath)
+      .addHeader(`Accept-Encoding`(HttpEncodings.gzip))
 
-    request(packageId) flatMap { response =>
-      Unmarshal(response.entity).to[Map[Vehicle.Vin, Set[PackageId]]].map { parsed =>
+    val requestF = Http().singleRequest(httpRequest)
+
+    requestF flatMap { response =>
+      val e = if(response.encoding == HttpEncodings.gzip)
+        response.entity.transformDataBytes(Gzip.decoderFlow)
+      else
+        response.entity
+
+      Unmarshal(e).to[Map[Vehicle.Vin, Set[PackageId]]].map { parsed =>
         parsed.map { case (k, v) => Vehicle(namespace, k) -> v }
       }
     } recoverWith { case t =>
