@@ -122,16 +122,17 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
             "package_version" -> packageId.version.get
           ))
 
-        Http().singleRequest(
-          HttpRequest(uri = resolvePath)
-        )
+        Http().singleRequest(HttpRequest(uri = resolvePath))
       }
 
-    request(packageId).flatMap { response =>
+    request(packageId) flatMap { response =>
       Unmarshal(response.entity).to[Map[Vehicle.Vin, Set[PackageId]]].map { parsed =>
         parsed.map { case (k, v) => Vehicle(namespace, k) -> v }
       }
-    }.recover { case _ => Map.empty[Vehicle, Set[PackageId]] }
+    } recoverWith { case t =>
+      log.error(t, "Request to resolver failed")
+      Future.failed(t)
+    }
   }
 
   def handlePutResponse( futureResponse: Future[HttpResponse] ) : Future[Unit] =

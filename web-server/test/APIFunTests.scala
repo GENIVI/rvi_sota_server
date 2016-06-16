@@ -350,7 +350,6 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
 
   "test creating install campaigns" taggedAs APITests in {
     val cookie = getLoginCookie
-    val pattern = "yyyy-MM-dd'T'HH:mm:ssZZ"
     val currentTimestamp = Instant.now().toString
     val tomorrowTimestamp = Instant.now().plus(1, ChronoUnit.DAYS).toString
     val uuid = UUID.randomUUID().toString
@@ -360,22 +359,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
       .withHeaders("Cookie" -> Cookies.encodeCookieHeader(cookie))
       .withHeaders("Content-Type" -> "application/json")
       .post(data.asJson.noSpaces))
-    response.status mustBe OK
-    val jsonResponse = decode[Set[UpdateSpec]](response.body)
-    jsonResponse.toOption match {
-      case Some(resp : Set[UpdateSpec]) => resp.size mustBe 1
-                                           resp.head.vin mustBe testVin
-                                           //TODO: we should check the creationTime, but currently the server adds
-                                           //milliseconds for some reason, which breaks equality testing
-                                           resp.head.request.packageId mustEqual data.packageId
-                                           resp.head.request.priority mustEqual data.priority
-                                           resp.head.request.id mustEqual data.id
-                                           resp.head.status mustBe UpdateStatus.Pending
-                                           resp.head.dependencies.size mustBe 1
-                                           resp.head.dependencies.head.id.name mustBe testPackageName
-                                           resp.head.dependencies.head.id.version mustBe testPackageVersion
-      case None => fail("JSON parse error:" + jsonResponse.toString)
-    }
+    response.status mustBe CREATED
   }
 
   "test list of vins affected by update" taggedAs APITests in {
