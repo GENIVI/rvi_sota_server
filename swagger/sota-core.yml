@@ -128,7 +128,7 @@ paths:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/Vehicle'
+            $ref: '#/definitions/Package'
   /packages/{name}/{version}/queued_vins:
     get:
       description: Return a list of VINs that have the package queued for install.
@@ -250,12 +250,11 @@ paths:
         description: The VIN of the vehicle making this call
         required: true
         type: string
-      - updateId:
+      - name: updateId
         in: path
         description: The UUID of an update
         required: true
         type: string
-        format: UUID
       responses:
         200:
           description: OK
@@ -286,7 +285,6 @@ paths:
         description: The UUID of a currently pending update
         required: true
         type: string
-        format: UUID
       responses:
         204:
           description: No Content
@@ -303,11 +301,11 @@ paths:
         description: The UUID of a currently pending update
         required: true
         type: string
-        format: UUID
       - name: installReport
         in: body
         required: true
-        type: object
+        schema:
+          $ref: '#/definitions/installReport'
       responses:
         415:
           description: Unsupported Media Type todo
@@ -348,7 +346,8 @@ paths:
           An object with mappings between install position and updateId for all queued packages. Note that for a valid response,
           all updateIds currently pending must be listed and assigned a unique installPos.
         required: true
-        type: object
+        schema:
+          $ref: '#/definitions/orderMapping'
       responses:
         204:
           description: No Content
@@ -413,7 +412,6 @@ definitions:
     properties:
       id: 
         type: string
-        format: UUID
         description: The UUID of the update
       namespace:
         $ref: '#/definitions/namespace'
@@ -447,7 +445,6 @@ definitions:
     properties:
       requestId:
         type: string
-        format: UUID
       packageId:
         $ref: '#/definitions/packageId'
       installPos:
@@ -455,7 +452,7 @@ definitions:
       createdAt: 
         type: string
         format: dateTime
-
-
-
-
+  installReport:
+    type: object
+  orderMapping:
+    type: object

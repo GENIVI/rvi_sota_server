@@ -189,7 +189,7 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/Vehicle"
+              "$ref": "#/definitions/Package"
             }
           }
         }

@@ -1,0 +1,596 @@
+swagger: '2.0'
+info:
+  version: ''
+  title: SOTA resolver
+  description: 'https://github.com/advancedtelematic/rvi_sota_server'
+  license:
+    name: Mozilla Public License
+    url: 'https://github.com/advancedtelematic/rvi_sota_server/blob/master/LICENSE'
+host: 'localhost:8081'
+basePath: /api/v1
+securityDefinitions: {}
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+
+# DONE:
+#   * /components
+#   * /filters
+# TODO:
+      # PUT /vehicles/:vin/packages
+      # GET /vehicles/firmware/:vin
+
+
+
+paths:
+  /vehicles:
+    get:
+      description: 'Get a list of all the vehicles in the Core database.'
+      responses:
+        200:
+          description: An array of Vehicle objects
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Vehicle'
+  /vehicles/{vin}:
+    get:
+      description: 'Return a single vehicle object'
+      parameters:
+      - name: vin
+        in: path
+        description: A VIN that exists in the system.
+        required: true
+        type: string
+      responses: 
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Vehicle'
+    put:
+      description: 'Add a vehicle to the database'
+      parameters:
+      - name: vin
+        in: path
+        description: A VIN to be added to the system.
+        required: true
+        type: string
+      responses: 
+        204:
+          description: Success
+    delete:
+      description: Delete a vehicle from the database and remove all its associations.
+      parameters:
+      - name: vin
+        in: path
+        description: A VIN to be deleted from the system.
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+        404:
+          description: Not found
+  /vehicles/{vin}/package:
+    get:
+      description: Return a list of packages installed on the vehicle.
+      parameters:
+      - name: vin
+        in: path
+        description: The target VIN.
+        required: true
+        type: string
+      responses:
+        200:
+          description: An array of packageId objects
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/packageId'
+  /vehicles/{vin}/package/{name}/{version}:
+    put:
+      description: |
+        Mark a package as installed on a vehicle. Note that this does not install the package; it only updates 
+        resolver's database of installed packages.
+      parameters:
+      - name: vin
+        in: path
+        description: The target VIN.
+        required: true
+        type: string
+      - name: name
+        in: path
+        description: The package name.
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: The package version.
+        required: true
+        type: string
+      responses:
+        200:
+          description: Returns an empty JSON object.
+    delete:
+      description: |
+        Remove a package that is marked as installed on a vehicle. Note that this does not uninstall the package; 
+        it only updates resolver's database of installed packages.
+      parameters:
+      - name: vin
+        in: path
+        description: The target VIN.
+        required: true
+        type: string
+      - name: name
+        in: path
+        description: The package name.
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: The package version.
+        required: true
+        type: string
+      responses:
+        200:
+          description: Returns an empty JSON object.
+  /vehicles/{vin}/packages:
+    put:
+      description: |
+        Mark a list of packages and firmwares as installed on a vehicle. Note that this does not install anything. 
+        It only updates resolver's database of installed packages. This endpoint is for ingesting the list of 
+        installed packages sent from the in-vehicle client.
+      parameters:
+      - name: vin
+        in: path
+        description: The target VIN.
+        required: true
+        type: string
+      - name: PackagesList
+        in: body
+        description: A complete list of the packages and firmwares on the vehicle.
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/PackagesList'
+      responses:
+        200:
+          description: todo--this endpoint doesn't work right now
+  /vehicles/{vin}/component:
+    get:
+      description: Return a list of components installed in the vehicle.
+      parameters:
+      - name: vin
+        in: path
+        description: The target VIN.
+        required: true
+        type: string
+      responses:
+        200:
+          description: An array of component objects
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Component'
+  /vehicles/{vin}/component/{partNumber}:
+    put:
+      description: Declare that a component is installed in the vehicle
+      parameters:
+      - name: vin
+        in: path
+        description: The target VIN.
+        required: true
+        type: string
+      - name: partNumber
+        in: path
+        description: A component part number known to the system.
+        required: true
+        type: string
+      responses:
+        200:
+          description: An empty JSON object.
+    delete:
+      description: Remove a vehicle to component association
+      parameters:
+      - name: vin
+        in: path
+        description: The target VIN.
+        required: true
+        type: string
+      - name: partNumber
+        in: path
+        description: A component part number known to the system and installed on the target vin.
+        required: true
+        type: string
+      responses:
+        200:
+          description: An empty JSON object.
+  /components:
+    get:
+      description: 'Get a list of all the components in the database.'
+      responses:
+        200:
+          description: A array of Component objects
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Component'
+  /components/{partNumber}:
+    put:
+      description: Add a component to the system
+      consumes:
+        - application/json
+      parameters:
+      - name: partNumber
+        in: path
+        description: A part number uniquely identifying the component.
+        required: true
+        type: string
+      - name: Component
+        in: body
+        description: A Component object to add.
+        required: true
+        schema:
+          $ref: '#/definitions/Component'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Component'
+    delete:
+      description: Delete a component from the system
+      parameters:
+      - name: partNumber
+        in: path
+        description: An existing part number
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+  /filters:
+    get:
+      description: 'Get a list of all the filters in the database.'
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Filter'
+    post:
+      description: Add a new filter
+      parameters:
+      - name: Filter
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Filter'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Filter'
+  /filters/{filterName}:
+    put:
+      description: Modify an existing filter
+      parameters:
+      - name: filterName
+        in: path
+        type: string
+        required: true
+      - name: Filter
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Filter'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/Filter'      
+    delete:
+      description: Delete a filter
+      parameters:
+      - name: filterName
+        in: path
+        type: string
+        required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+  /filters/{filterName}/packages:
+    get:
+      description: Get a list of all the packages associated with a filter.
+      parameters:
+      - name: filterName
+        in: path
+        type: string
+        required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/resolverPackage'
+  /validate/filter:
+    post:
+      description: Check if a filter's syntax is valid.
+      parameters:
+      - name: Filter
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/Filter'
+      responses:
+        200:
+          description: OK
+        400:
+          description: Bad Request
+  /resolve:
+    get:
+      description: Resolve a package into a list of vehicles it should be installed on.
+      parameters:
+      - name: namespace
+        in: query
+        required: true
+        type: string
+      - name: package_name
+        in: query
+        required: true
+        type: string
+      - name: package_version
+        in: query
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK # the actual return schema isn't a valid schema according to the OpenAPI spec, so I'm just leaving it blank.
+  /packages:
+    get:
+      description: 'Get a list of all the software packages and versions in the Core database.'
+      responses:
+        200:
+          description: A array of packages
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/resolverPackage'
+  /packages/{name}/{version}:
+    put:
+      description: Add a binary package to the system
+      parameters:
+      - name: name
+        in: path
+        description: The package name.
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: The package version.
+        required: true
+        type: string
+      - name: resolverPackage
+        in: body
+        description: A package object to add to resolver's package database.
+        required: true
+        schema:
+          $ref: '#/definitions/resolverPackage'
+      responses:
+        204:
+          description: OK
+    get:
+      description: Return the Package object for a specific package.
+      parameters:
+      - name: name
+        in: path
+        description: The package name.
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: The package version.
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/resolverPackage'
+  /packages/filter:
+    get:
+      description: Get a list of all package -> filter associations
+      responses:
+        200:
+          description: A array of PackageFilter objects
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PackageFilter'
+  /packages/{name}/{version}/filter:
+    get:
+      description: Get a list of all filters associated with a package.
+      parameters:
+      - name: name
+        in: path
+        description: The package name.
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: The package version.
+        required: true
+        type: string
+      responses:
+        200:
+          description: An array of Filter objects.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Filter'
+  /packages/{name}/{version}/filter/{filter}:
+    put:
+      description: Associate a filter with a package.
+      parameters:
+      - name: name
+        in: path
+        description: The package name.
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: The package version.
+        required: true
+        type: string
+      - name: filter
+        in: path
+        description: The filter to associate with the package.
+        required: true
+        type: string
+      responses:
+        200:
+          description: A PackageFilter object of the created association.
+          schema:
+            $ref: '#/definitions/PackageFilter'
+    delete:
+      description: De-associate a filter with a package.
+      parameters:
+      - name: name
+        in: path
+        description: The package name.
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: The package version.
+        required: true
+        type: string
+      - name: filter
+        in: path
+        description: The filter to de-associate with the package.
+        required: true
+        type: string
+      responses:
+        200:
+          description: ''
+  /firmware/{vin}:
+    get:
+      description: Get a list of firmware installed on the vehicle.
+      parameters:
+      - name: vin
+        in: path
+        description: The target VIN.
+        required: true
+        type: string
+      responses:
+        200:
+          description: A set of firmware objects.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Firmware'
+
+
+definitions:
+  namespace:
+    type: string
+    description: The namespace scope of the request. Default value is 'default'
+  VIN:
+    type: string
+    description: A 17-digit VIN. May contain only capital letters and digits. Cannot contain the letters I, O, or Q.
+  Vehicle:
+    type: object
+    properties:
+      namespace:
+        $ref: '#/definitions/namespace'
+      VIN:
+        $ref: '#/definitions/VIN'
+      lastseen:
+        type: string
+        format: dateTime
+        description: The last time a VIN was seen by the SOTA server.
+  resolverPackage:
+    type: object
+    properties:
+      namespace:
+        $ref: '#/definitions/namespace'
+      id:
+        $ref: '#/definitions/packageId'
+      description:
+        type: string
+        description: A short description of of the package.
+      vendor:
+        type: string
+        description: The package vendor.
+  packageId:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The package name.
+      version:
+        type: string
+        description: The package version, in major.minor.patch notation by default.
+  Component:
+    type: object
+    properties:
+      namespace:
+        $ref: '#/definitions/namespace'
+      partNumber:
+        type: string
+        description: A part number uniquely identifying the component.
+      description:
+        type: string
+        description: A short description of what the part is.
+    example:
+      namespace: default
+      partNumber: myDVDPlayer
+      description: A generic DVD Player.
+  Filter:
+    type: object
+    properties:
+      namespace:
+        $ref: '#/definitions/namespace'
+      name:
+        type: string
+        description: The filter's name.
+      expression:
+        type: string
+        description: The filter expression. See http://advancedtelematic.github.io/rvi_sota_server/doc/admin-gui-user-guide.html#filter-syntax for expression syntax.
+  PackageFilter:
+    type: object
+    description: An association between a package and a filter.
+    properties:
+      namespace:
+        $ref: '#/definitions/namespace'
+      packageName:
+        type: string
+      packageVersion:
+        type: string
+      filterName:
+        type: string
+  PackagesList:
+    type: object
+    properties:
+      todo: 
+        type: string
+  Firmware:
+    type: object
+    properties:
+      namespace: 
+        type: string
+      module: 
+        type: string
+      firmwareId: 
+        type: string
+      lastModified:
+        type: string
+        format: dateTime
+
