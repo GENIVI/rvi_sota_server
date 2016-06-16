@@ -11,9 +11,11 @@ import cats.data.Xor
 import eu.timepit.refined.refineV
 import eu.timepit.refined.api.{Refined, Validate}
 import io.circe._
-import org.genivi.sota.data.Interval
+import org.genivi.sota.data.{Interval, PackageId}
 import java.time.Instant
 import java.time.format.{DateTimeFormatter, DateTimeParseException}
+import io.circe.generic.semiauto._
+import io.circe.{Decoder, Encoder}
 
 /**
   * Some datatypes we use don't have predefined JSON encoders and
@@ -28,7 +30,7 @@ trait CirceInstances {
     decoder.map(t =>
       refineV[P](t) match {
         case Left(e)  =>
-          throw new DeserializationException(RefinementError(t, e))
+          throw DeserializationException(RefinementError(t, e))
         case Right(r) => r
       })
 
@@ -94,6 +96,9 @@ trait CirceInstances {
   implicit def mapRefinedEncoder[K <: Refined[_, _], V]
   (implicit keyEncoder: Encoder[K], valueEncoder: Encoder[V]): Encoder[Map[K, V]] =
     Encoder[Seq[(K, V)]].contramap((m: Map[K, V]) => m.toSeq)
+
+  implicit val packageIdEncoder : Encoder[PackageId] = deriveEncoder[PackageId]
+  implicit val packageIdDecoder : Decoder[PackageId] = deriveDecoder[PackageId]
 }
 
 object CirceInstances extends CirceInstances

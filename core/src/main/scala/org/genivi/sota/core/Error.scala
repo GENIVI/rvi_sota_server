@@ -34,7 +34,7 @@ object ErrorHandler {
       case e: Throwable =>
         extractUri { uri =>
           log.error(s"Request to $uri errored: $e")
-          val entity = obj("error" -> Json.fromString(e.getMessage))
+          val entity = obj("error" -> Json.fromString(Option(e.getMessage).getOrElse("")))
           complete(HttpResponse(InternalServerError, entity = entity.toString()))
         }
     }

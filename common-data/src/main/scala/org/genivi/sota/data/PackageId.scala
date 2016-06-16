@@ -25,12 +25,6 @@ object PackageId {
 
   import eu.timepit.refined.api.Refined
 
-  import io.circe.generic.semiauto._
-  import io.circe.{Decoder, Encoder}
-  import org.genivi.sota.marshalling.CirceRefined._
-  implicit val encoder : Encoder[PackageId] = deriveEncoder[PackageId]
-  implicit val decoder : Decoder[PackageId] = deriveDecoder[PackageId]
-
   /**
     * A valid package id consists of two refined strings, the first
     * being the name of the package and the second being the
