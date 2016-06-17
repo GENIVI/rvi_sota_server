@@ -1,1 +1,0 @@
-../_posts/2015-08-26-deployment-with-docker-launcher.adoc
