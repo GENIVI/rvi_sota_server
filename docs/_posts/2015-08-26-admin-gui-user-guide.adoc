@@ -1,13 +1,13 @@
 ---
 layout: page
-title: "Admin GUI User Guide"
+title: "Admin GUI Guide"
 category: doc
 date: 2015-08-26 10:40:49
 order: 3
 ---
 :icons: font
 
-This is the user manual for the SOTA Admin Web GUI. Development is currently at an early stage, but this document will be updated as features are added.
+This is the user manual for the SOTA Admin Web GUI. This is a simple web front-end to the http://advancedtelematic.github.io/rvi_sota_server/dev/api.html[Core and Resolver APIs]. The APIs should be considered the canonical interface.
 
 == Signing in
 
