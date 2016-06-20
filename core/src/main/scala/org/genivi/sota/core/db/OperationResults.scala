@@ -68,8 +68,8 @@ object OperationResults {
    * @param id the uuid of the Update that operation results should be fetched for
    * @return all OperationResults associated with the given id
    */
-  def byId(ns: Namespace, id: Refined[String, Uuid])(implicit ec: ExecutionContext): DBIO[Seq[OperationResult]] =
-    all.filter(r => r.namespace === ns && r.updateId === UUID.fromString(id.get)).result
+  def byId(id: Refined[String, Uuid])(implicit ec: ExecutionContext): DBIO[Seq[OperationResult]] =
+    all.filter(r => r.updateId === UUID.fromString(id.get)).result
 
   /**
     * Get all OperationResults associated with the given VIN
