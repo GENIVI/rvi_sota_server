@@ -149,7 +149,7 @@ class DeviceUpdatesSpec extends FunSuite
     UpdateReport(updateSpec.request.id, List(result))
   }
 
-  test("rest of installation queue (consecutive installPos) should be canceled upon one package failing to install") {
+  test("rest of installation queue (consecutive installPos) remains Pending upon one package failing to install") {
 
     // insert update spec A install pos 0
     // insert update spec B install pos 1
@@ -193,13 +193,14 @@ class DeviceUpdatesSpec extends FunSuite
 
         status0 shouldBe UpdateStatus.Finished
         status1 shouldBe UpdateStatus.Failed
-        status2 shouldBe UpdateStatus.Canceled
+        status2 shouldBe UpdateStatus.Pending
       }
 
     }
   }
 
-  test("rest of installation queue (all installPos at 0) should be canceled upon one package failing to install") {
+  test("rest of installation queue (all installPos at 0) remains Pending upon one package failing to install") {
+
     // insert update spec A install pos 0 (ie, installation order to be disambiguated by creationTime)
     // insert update spec B install pos 0
     // insert update spec C install pos 0
@@ -235,7 +236,7 @@ class DeviceUpdatesSpec extends FunSuite
 
         status0 shouldBe UpdateStatus.Finished
         status1 shouldBe UpdateStatus.Failed
-        status2 shouldBe UpdateStatus.Canceled
+        status2 shouldBe UpdateStatus.Pending
       }
 
     }

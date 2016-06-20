@@ -8,20 +8,23 @@ import akka.http.scaladsl.unmarshalling.Unmarshaller._
 import io.circe.generic.auto._
 import io.circe.{Encoder, Json}
 import java.util.UUID
+
 import org.genivi.sota.core.data.client.PendingUpdateRequest
 import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateStatus}
-import org.genivi.sota.core.db.{InstallHistories, Packages}
+import org.genivi.sota.core.db.{BlockedInstalls, InstallHistories, Packages}
 import org.genivi.sota.core.resolver.{Connectivity, ConnectivityClient, DefaultConnectivity}
 import org.genivi.sota.core.rvi.{InstallReport, OperationResult, UpdateReport}
 import org.genivi.sota.core.transfer.DeviceUpdates
 import org.genivi.sota.data.{Device, DeviceGenerators, PackageIdGenerators, VehicleGenerators}
 import org.genivi.sota.datatype.NamespaceDirective
 import java.time.Instant
+
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalacheck.Gen
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{FunSuite, Inspectors, ShouldMatchers}
+
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
@@ -268,6 +271,39 @@ class DeviceUpdatesResourceSpec extends FunSuite
         status shouldBe StatusCodes.OK
         val parsedResponse = responseAs[List[OperationResult]]
         parsedResponse should be(empty)
+      }
+    }
+  }
+
+  test("after blocking installation queue, no packages are returned even if some are pending for installation") {
+    // insert update spec
+    whenReady(createUpdateSpec()) { case (packageModel, device, updateSpec) =>
+      // block the installation queue of the device
+      whenReady(db.run(BlockedInstalls.updateBlockedInstallQueue(device.id, isBlocked = true))) { case _ =>
+
+        // check zero packages are returned for install
+        val url = baseUri.withPath(baseUri.path / device.id.underlying.get / "queued")
+        Get(url) ~> service.route ~> check {
+          status shouldBe StatusCodes.OK
+          val parsedResponse = responseAs[List[PendingUpdateRequest]]
+          parsedResponse should be(empty)
+        }
+
+        // unblock the installation queue
+        val urlUnblock = baseUri.withPath(baseUri.path / device.id.underlying.get / "unblock")
+        Put(urlUnblock) ~> service.route ~> check {
+          status shouldBe StatusCodes.NoContent
+        }
+
+        // check the pending package is returned for install
+        Get(url) ~> service.route ~> check {
+          status shouldBe StatusCodes.OK
+          val parsedResponse = responseAs[List[PendingUpdateRequest]]
+          parsedResponse.size shouldBe 1
+          val pendingReq = parsedResponse.head
+          (updateSpec.request.packageId) shouldBe (pendingReq.packageId)
+        }
+
       }
     }
   }

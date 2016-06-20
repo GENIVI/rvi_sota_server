@@ -12,16 +12,19 @@ import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Uuid
+import slick.dbio.DBIO
 import io.circe.generic.auto._
 import java.util.UUID
+
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.data.client.ResponseConversions
-import org.genivi.sota.core.db.{OperationResults, UpdateSpecs}
+import org.genivi.sota.core.db.{BlockedInstalls, OperationResults, UpdateSpecs}
 import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, ExternalResolverClient}
 import org.genivi.sota.core.rvi.InstallReport
 import org.genivi.sota.core.storage.PackageStorage
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+
 import org.genivi.sota.core.transfer.DeviceUpdates
 import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec}
 import org.genivi.sota.core.data.client.PendingUpdateRequest
@@ -82,6 +85,9 @@ class DeviceUpdatesResource(db: Database,
     * in the form a Seq of [[PendingUpdateRequest]]
     * whose order was specified via [[setInstallOrder]].
     * To actually download each binary file, [[downloadPackage]] is used.
+    * <br>
+    * Special case: For a vehicle whose installation queue is blocked,
+    * no packages are returned.
     *
     * @see [[data.UpdateStatus]] (two of interest: InFlight and Pending)
     */
@@ -89,12 +95,19 @@ class DeviceUpdatesResource(db: Database,
     import org.genivi.sota.core.data.client.PendingUpdateRequest._
     import ResponseConversions._
 
-    val vehiclePackages =
-      DeviceUpdates
-        .findPendingPackageIdsFor(device)
-        .map(_.toResponse)
+    val pendingIO =
+      for {
+        isBlkd  <- BlockedInstalls.isBlockedInstall(device)
+        pending <- if (isBlkd) {
+                     DBIO.successful(Seq.empty)
+                   } else {
+                     DeviceUpdates
+                       .findPendingPackageIdsFor(device)
+                       .map(_.toResponse)
+                   }
+      } yield pending
 
-    complete(db.run(vehiclePackages))
+    complete(db.run(pendingIO))
   }
 
   /**
@@ -167,10 +180,21 @@ class DeviceUpdatesResource(db: Database,
   }
 
   /**
+    * The web app PUT to unblock the installation queue of a vehicle.
+    */
+  def unblockInstall(deviceId: Device.Id): Route = {
+    val resp =
+      db.run(BlockedInstalls.updateBlockedInstallQueue(deviceId, isBlocked = false))
+        .map(_ => NoContent)
+
+    complete(resp)
+  }
+
+  /**
     * The web app PUT the status of the given ([[UpdateSpec]], VIN) to [[UpdateStatus.Canceled]]
     */
-  def cancelUpdate(device: Device.Id, updateId: Refined[String, Uuid]): Route = {
-    val response = db.run(UpdateSpecs.cancelUpdate(device, updateId)).map {
+  def cancelUpdate(deviceId: Device.Id, updateId: Refined[String, Uuid]): Route = {
+    val response = db.run(UpdateSpecs.cancelUpdate(deviceId, updateId)).map {
       i: Int => i match {
           case 0 => HttpResponse(StatusCodes.BadRequest)
           case _ => HttpResponse(StatusCodes.NoContent)
@@ -191,9 +215,8 @@ class DeviceUpdatesResource(db: Database,
       put {
         path("installed") { updateInstalledPackages(device) } ~
         path("order") { setInstallOrder(device) } ~
-        (extractUuid & path("cancelupdate") ) { uuid =>
-          namespaceExtractor { ns => cancelUpdate(device, uuid) }
-        }
+        (extractUuid & path("cancelupdate") ) { uuid => cancelUpdate(device, uuid) } ~
+        path("unblock") { unblockInstall(device) }
       } ~
       post {
         path("sync") { sync(device) } ~

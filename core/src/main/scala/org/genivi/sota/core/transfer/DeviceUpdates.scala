@@ -11,24 +11,24 @@ import eu.timepit.refined.api.Refined
 import io.circe.Json
 import io.circe.syntax._
 import org.genivi.sota.core.data.UpdateStatus.UpdateStatus
-import org.genivi.sota.data.Namespace._
-import org.genivi.sota.core.data._
-import org.genivi.sota.core.db.{Packages, UpdateSpecs}
 import java.util.UUID
+
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.data._
+import org.genivi.sota.core.db.Packages
+import org.genivi.sota.core.db.OperationResults
+import org.genivi.sota.core.db.InstallHistories
+import org.genivi.sota.core.db.UpdateSpecs
 import org.genivi.sota.core.db.UpdateSpecs._
-import org.genivi.sota.core.db.{InstallHistories, OperationResults, UpdateSpecs}
+import org.genivi.sota.core.db.BlockedInstalls
 import org.genivi.sota.core.resolver.ExternalResolverClient
 import org.genivi.sota.core.rvi.UpdateReport
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{Device, PackageId}
 import org.genivi.sota.db.SlickExtensions
-import org.genivi.sota.refined.SlickRefined._
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
-import org.genivi.sota.core.db.OperationResults
-import org.genivi.sota.core.db.InstallHistories
 import slick.dbio.DBIO
 import slick.driver.MySQLDriver.api._
 import cats.syntax.show._
@@ -97,39 +97,14 @@ object DeviceUpdates {
       _    <- DBIO.sequence(writeResultsIO(spec.namespace))
       _    <- UpdateSpecs.setStatus(spec, newStatus)
       _    <- InstallHistories.log(spec, updateReport.isSuccess)
-      _    <- cancelInstallationQueueIO(device, spec, updateReport.isFail, updateReport.update_id)
+      _    <- if (updateReport.isFail) {
+                BlockedInstalls.updateBlockedInstallQueue(device, isBlocked = true)
+              } else {
+                DBIO.successful(true)
+              }
     } yield spec.copy(status = newStatus)
 
     db.run(dbIO.transactionally)
-  }
-
-  /**
-    * <ul>
-    *   <li>
-    *     For a failed UpdateReport, mark as cancelled the rest of the installation queue.
-    *     <ul>
-    *       <li>"The rest of the installation queue" defined as those (InFlight and Pending) UpdateSpec-s
-    *       coming after the given one, for the VIN in question.</li>
-    *       <li>Note: those UpdateSpec-s correspond to different UpdateRequests than the current one.</li>
-    *     </ul>
-    *   </li>
-    *   <li>For a successful UpdateReport, do nothing.</li>
-    * </ul>
-    */
-  def cancelInstallationQueueIO(device: Device.Id,
-                                spec: UpdateSpec,
-                                isFail: Boolean,
-                                updateRequestId: UUID): DBIO[Int] = {
-    updateSpecs
-      .filter(_.device === device && isFail)
-      .filter(_.requestId =!= updateRequestId)
-      .filter(_.status.inSet(List(UpdateStatus.InFlight, UpdateStatus.Pending)))
-      .filter(us =>
-        (us.installPos > spec.installPos) ||
-        (us.installPos === spec.installPos && us.creationTime > spec.creationTime)
-      )
-      .map(_.status)
-      .update(UpdateStatus.Canceled)
   }
 
   /**
