@@ -256,6 +256,30 @@ class VehicleUpdatesResourceSpec extends FunSuite
     }
   }
 
+  test("GET update results for a vehicle returns a list of OperationResults") {
+    whenReady(createUpdateSpec()) { case (_, vehicle, updateSpec) =>
+      val uri = vehicleUri.withPath(vehicleUri.path / "results")
+
+      Get(uri) ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+        val parsedResponse = responseAs[List[OperationResult]]
+        parsedResponse should be(empty)
+      }
+    }
+  }
+
+  test("GET update results for an update request returns a list of OperationResults") {
+    whenReady(createUpdateSpec()) { case (_, vehicle, updateSpec) =>
+      val uri = vehicleUri.withPath(vehicleUri.path / updateSpec.request.id.toString / "results")
+
+      Get(uri) ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+        val parsedResponse = responseAs[List[OperationResult]]
+        parsedResponse should be(empty)
+      }
+    }
+  }
+
 }
 
 class FakeConnectivity extends Connectivity {

@@ -229,18 +229,6 @@ paths:
             type: array
             items:
               $ref: '#/definitions/pendingPackage'
-  /vehicle_updates/{vin}/operationresults:
-    get:
-      description: todo
-      parameters:
-      - name: vin
-        in: path
-        description: The VIN to list
-        required: true
-        type: string
-      responses:
-        200:
-          description: OK
   /vehicle_updates/{vin}/{updateId}/download:
     get:
       description: Download a package binary. This is called by the in-vehicle client.
@@ -351,6 +339,43 @@ paths:
       responses:
         204:
           description: No Content
+  /vehicle_updates/{vin}/results:
+    get:
+      description: Get a list of results for all updates for a given vin.
+      parameters:
+      - name: vin
+        in: path
+        description: The VIN to list
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/operationResult'
+  /vehicle_updates/{vin}/{updateId}/results:
+    get:
+      description: Get a list of results for a given update.
+      parameters:
+      - name: vin
+        in: path
+        description: The VIN to list
+        required: true
+        type: string
+      - name: updateId
+        in: path
+        description: The UUID of a currently pending update
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/operationResult'
 
 definitions:
   namespace:
@@ -454,5 +479,17 @@ definitions:
         format: dateTime
   installReport:
     type: object
+  operationResult:
+    type: object
+    properties:
+      updateId:
+        type: string
+      resultCode:
+        type: integer
+      resultText:
+        type: string
+      receivedAt:
+        type: string
+        format: dateTime
   orderMapping:
     type: object
