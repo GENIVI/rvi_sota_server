@@ -61,8 +61,8 @@ trait ExternalResolverClient {
 /**
  * A wrapper for an error that is thrown when trying to access the External
  * Resolver
-  *
-  * @param msg A message from the component that caught the exception
+ *
+ * @param msg A message from the component that caught the exception
  * @param cause The underlying error that caused the request to fail
  */
 case class ExternalResolverRequestFailed private ( msg: String, cause: Throwable ) extends Throwable( msg, cause )
@@ -74,8 +74,8 @@ object ExternalResolverRequestFailed {
 
   /**
    * The request failed, but not as the result of an exception
-    *
-    * @param message A message from the application
+   *
+   * @param message A message from the application
    * @return An ExternalResolverRequestFailed throwable (which should be thrown)
    */
   def apply( message: String ) : ExternalResolverRequestFailed =
@@ -83,8 +83,8 @@ object ExternalResolverRequestFailed {
 
   /**
    * The external resolver returned an unexpected HTTP status code
-    *
-    * @param statusCode The HTTP status code that was received
+   *
+   * @param statusCode The HTTP status code that was received
    * @return An ExternalResolverRequestFailed throwable (which should be thrown)
    */
   def apply( statusCode: StatusCode ) : ExternalResolverRequestFailed =
@@ -92,8 +92,8 @@ object ExternalResolverRequestFailed {
 
   /**
    * The request failed because an exception was raised
-    *
-    * @param cause The underlying exception
+   *
+   * @param cause The underlying exception
    * @return An ExternalResolverRequestFailed throwable (which should be thrown)
    */
   def apply( cause: Throwable ) : ExternalResolverRequestFailed =

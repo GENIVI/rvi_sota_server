@@ -22,7 +22,7 @@ import scala.collection.immutable.ListSet
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
 import slick.dbio.DBIO
-import slick.driver.MySQLDriver.api.Database
+import slick.driver.MySQLDriver.api._
 
 
 case class PackagesNotFound(packageIds: (PackageId)*)
@@ -104,9 +104,12 @@ class UpdateService(notifier: UpdateNotifier)
 
   def persistRequest(request: UpdateRequest, updateSpecs: Set[UpdateSpec])
                     (implicit db: Database, ec: ExecutionContext) : Future[Unit] = {
-    db.run(
-      DBIO.seq(UpdateRequests.persist(request) +: updateSpecs.map( UpdateSpecs.persist ).toArray: _*)).map( _ => ()
-    )
+    val updateReqIO = UpdateRequests.persist(request)
+    val updateSpecsIO = DBIO.sequence(updateSpecs.map(UpdateSpecs.persist).toSeq)
+
+    val dbIO = updateReqIO.andThen(updateSpecsIO).map(_ => ())
+
+    db.run(dbIO.withPinnedSession.transactionally)
   }
 
   /**
@@ -122,7 +125,7 @@ class UpdateService(notifier: UpdateNotifier)
     for {
       pckg           <- loadPackage(ns, request.packageId)
       vinsToDeps     <- resolver(pckg)
-      requirements    = gatherAllRequirements(vinsToDeps)
+      requirements    = allRequiredPackages(vinsToDeps)
       packages       <- fetchPackages(ns, requirements)
       idsToPackages   = packages.map( x => x.id -> x ).toMap
       updateSpecs     = mkUpdateSpecs(request, vinsToDeps, idsToPackages)
@@ -134,9 +137,9 @@ class UpdateService(notifier: UpdateNotifier)
   /**
     * Gather all [[PackageId]]s (dependencies) across all given VINs.
     */
-  def gatherAllRequirements(vinsToDeps: Map[Vehicle.Vin, Set[PackageId]]): Set[PackageId] = {
+  def allRequiredPackages(vinsToDeps: Map[Vehicle.Vin, Set[PackageId]]): Set[PackageId] = {
     log.debug(s"Dependencies from resolver: $vinsToDeps")
-    vinsToDeps.foldLeft(Set.empty[PackageId])((acc, vinDeps) => acc.union(vinDeps._2) )
+    vinsToDeps.values.flatten.toSet
   }
 
   /**
