@@ -10,10 +10,11 @@ import java.util.UUID
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import io.circe.Json
 import io.circe.syntax._
+import org.genivi.sota.core.data.UpdateStatus.UpdateStatus
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.core.data._
-import org.genivi.sota.core.db.UpdateSpecs
+import org.genivi.sota.core.db.{Packages, UpdateSpecs}
 import org.genivi.sota.db.SlickExtensions
 import slick.dbio.DBIO
 import slick.driver.MySQLDriver.api._
@@ -28,6 +29,8 @@ import scala.util.control.NoStackTrace
 import org.genivi.sota.core.db.OperationResults
 import org.genivi.sota.core.db.InstallHistories
 import java.time.Instant
+import org.genivi.sota.data.PackageId.{Name, Version}
+import org.genivi.sota.data.Vehicle.Vin
 
 
 object VehicleUpdates {
@@ -118,41 +121,67 @@ object VehicleUpdates {
       .update(UpdateStatus.Canceled)
   }
 
+  /**
+    * Find the [[UpdateRequest]]-s for:
+    * <ul>
+    *   <li>the given VIN</li>
+    *   <li>and for which [[UpdateSpec]]-s exist with Pending or InFlight [[UpdateStatus]]</li>
+    * </ul>
+    */
   def findPendingPackageIdsFor(vin: Vehicle.Vin)
                               (implicit db: Database, ec: ExecutionContext) : DBIO[Seq[UpdateRequest]] = {
     updateSpecs
       .filter(_.vin === vin)
       .filter(_.status.inSet(List(UpdateStatus.InFlight, UpdateStatus.Pending)))
       .join(updateRequests).on(_.requestId === _.id)
-      .sortBy(r => (r._1.installPos.asc, r._2.creationTime.asc))
-      .map { case (sp, ur) => (sp.installPos, ur) }
+      .sortBy { case (sp, _) => (sp.installPos.asc, sp.creationTime.asc) }
+      .map    { case (_, ur) => ur }
       .result
-      .map { _.map { case (idx, ur) => ur.copy(installPos = idx) } }
+      .map { _.zipWithIndex.map { case (ur, idx) => ur.copy(installPos = idx) } }
   }
 
   /**
-    * TODO FIXME the returned [[UpdateSpec]] doesn't include real dependencies: just an empty set.
+    * Find the [[UpdateSpec]]-s (including dependencies) whatever their [[UpdateStatus]]
+    * for the given ([[UpdateRequest]], VIN) combination.
+    * <br>
+    * Note: for pending ones see [[findPendingPackageIdsFor()]]
     */
   def findUpdateSpecFor(vin: Vehicle.Vin, updateRequestId: UUID)
                        (implicit ec: ExecutionContext, db: Database): DBIO[UpdateSpec] = {
-    updateSpecs
+
+    val updateSpecsIO =
+      updateSpecs
       .filter(_.vin === vin)
       .filter(_.requestId === updateRequestId)
       .join(updateRequests).on(_.requestId === _.id)
+      .joinLeft(requiredPackages).on(_._1.requestId === _.requestId)
       .result
-      .headOption
-      .flatMap {
-        case Some((
-          (ns, uuid, updateVin, status, installPos, creationTime),
-          updateRequest
-          )) =>
-          val spec = UpdateSpec(updateRequest, updateVin, status, Set.empty[Package], installPos, creationTime)
-          DBIO.successful(spec)
-        case None =>
-          DBIO.failed(
-            UpdateSpecNotFound(s"Could not find an update request with id $updateRequestId for vin ${vin.get}")
-          )
+
+    val specsWithDepsIO = updateSpecsIO flatMap { specsWithDeps =>
+      val dBIOActions = specsWithDeps map { case ((updateSpec, updateReq), requiredPO) =>
+        val (_, _, vin, status, installPos, creationTime) = updateSpec
+        (UpdateSpec(updateReq, vin, status, Set.empty, installPos, creationTime), requiredPO)
+      } map { case (spec, requiredPO) =>
+        val depsIO = requiredPO map { case (namespace, _, _, packageName, packageVersion) =>
+          Packages.byId(namespace, PackageId(packageName, packageVersion))
+        } getOrElse DBIO.successful(None)
+
+        depsIO map { p => spec.copy(dependencies = p.toSet) }
       }
+
+      DBIO.sequence(dBIOActions) map { specs =>
+        val deps = specs.flatMap(_.dependencies).toSet
+        specs.headOption.map(_.copy(dependencies = deps))
+      }
+    }
+
+    specsWithDepsIO flatMap {
+      case Some(us) => DBIO.successful(us)
+      case None =>
+        DBIO.failed(
+          UpdateSpecNotFound(s"Could not find an update request with id $updateRequestId for vin ${vin.get}")
+        )
+    }
   }
 
   /**
