@@ -14,6 +14,8 @@ import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.db.SlickExtensions
 import java.time.Instant
+
+import org.genivi.sota.core.Errors
 import slick.driver.MySQLDriver.api._
 
 import scala.collection.immutable.Queue
@@ -113,9 +115,11 @@ object UpdateSpecs {
   /**
     * Reusable sub-query, PK lookup in [[UpdateSpecTable]] table.
     */
-  private def queryBy(arg: UpdateSpec): Query[UpdateSpecTable, UpdateSpecTableRowType, Seq] = {
+  private def queryBy(namespace: Namespace,
+                      vin: Vehicle.Vin,
+                      requestId: UUID): Query[UpdateSpecTable, UpdateSpecTableRowType, Seq] = {
     updateSpecs
-      .filter(row => row.namespace === arg.namespace && row.vin === arg.vin && row.requestId === arg.request.id)
+      .filter(row => row.namespace === namespace && row.vin === vin && row.requestId === requestId)
   }
 
   /**
@@ -124,7 +128,16 @@ object UpdateSpecs {
     * the later would require joining [[RequiredPackageTable]] to populate the `dependencies` of that instance.
     */
   def findBy(arg: UpdateSpec): DBIO[UpdateSpecTableRowType] = {
-    queryBy(arg).result.head
+    queryBy(arg.namespace, arg.vin, arg.request.id).result.head
+  }
+
+  /**
+    * Lookup by PK in [[UpdateSpecTable]] table.
+    * Note: A tuple is returned instead of an [[UpdateSpec]] instance because
+    * the later would require joining [[RequiredPackageTable]] to populate the `dependencies` of that instance.
+    */
+  def findBy(namespace: Namespace, vin: Vehicle.Vin, requestId: Refined[String, Uuid]): DBIO[UpdateSpecTableRowType] = {
+    queryBy(namespace, vin, UUID.fromString(requestId.get)).result.head
   }
 
   // scalastyle:off cyclomatic.complexity
@@ -200,14 +213,24 @@ object UpdateSpecs {
   }
 
   /**
-    * Abort a pending update specified by uuid and vin. Updates with statuses other than 'Pending' will not be aborted
+    * Abort a pending [[UpdateSpec]] specified as ([[UpdateRequest]], VIN).
+    * Only an update with status 'Pending' is aborted.
+    *
+    * @param uuid of the [[UpdateRequest]] being cancelled for the given VIN
     */
-  def cancelUpdate(vin: Vehicle.Vin, uuid: Refined[String, Uuid]): DBIO[Int] = {
-    updateSpecs
-      .filter(us => us.vin === vin && us.requestId === uuid && us.status === UpdateStatus.Pending)
+  def cancelUpdate(ns: Namespace, vin: Vehicle.Vin, uuid: Refined[String, Uuid])
+                  (implicit executor: ExecutionContext): DBIO[Unit] = {
+    queryBy(ns, vin, UUID.fromString(uuid.get))
+      .filter(_.status === UpdateStatus.Pending)
       .map(_.status)
       .update(UpdateStatus.Canceled)
-      .transactionally
+      .flatMap { rowsAffected =>
+        if (rowsAffected == 1) {
+          DBIO.successful(())
+        } else {
+          DBIO.failed(Errors.MissingUpdateSpec)
+        }
+      }
   }
 
   /**

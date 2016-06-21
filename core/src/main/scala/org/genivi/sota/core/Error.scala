@@ -12,10 +12,16 @@ import akka.http.scaladsl.model.StatusCodes.InternalServerError
 import io.circe.Json
 import org.genivi.sota.rest.ErrorCode
 
+import scala.util.control.NoStackTrace
+
 object ErrorCodes {
   val ExternalResolverError = ErrorCode( "external_resolver_error" )
 
   val MissingVehicle = new ErrorCode("missing_vehicle")
+}
+
+object Errors {
+  case object MissingUpdateSpec extends Throwable with NoStackTrace
 }
 
 object ErrorHandler {

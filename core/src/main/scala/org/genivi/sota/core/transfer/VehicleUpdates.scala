@@ -55,11 +55,12 @@ object VehicleUpdates {
   }
 
   /**
-    * -ul>
+    * An [[UpdateReport]] describes what happened in the client for an [[UpdateRequest]]
+    * <ul>
     *   <li>Persist in [[OperationResults.OperationResultTable]] each operation result
     *       for a combination of ([[UpdateRequest]], VIN)</li>
     *   <li>Persist the status of the [[UpdateSpec]] (Finished for update report success, Failed otherwise)</li>
-    *   <li>Persist the outcome in [[InstallHistories.InstallHistoryTable]]</li>
+    *   <li>Persist the outcome of the [[UpdateSpec]] as a whole in [[InstallHistories.InstallHistoryTable]]</li>
     * </ul>
     */
   def reportInstall(vin: Vehicle.Vin, updateReport: UpdateReport)
@@ -75,21 +76,13 @@ object VehicleUpdates {
         ns)
     } yield OperationResults.persist(dbOpResult)
 
-    // add a row (with auto-inc PK) to InstallHistory table
-    def writeHistoryIO(spec: UpdateSpec): DBIO[Int] = {
-      InstallHistories.log(
-        spec.namespace, vin,
-        spec.request.id, spec.request.packageId,
-        success = updateReport.isSuccess)
-    }
-
     // look up the UpdateSpec to rewrite its status and to use it as FK in InstallHistory
     val newStatus = if (updateReport.isSuccess) UpdateStatus.Finished else UpdateStatus.Failed
     val dbIO = for {
       spec <- findUpdateSpecFor(vin, updateReport.update_id)
       _    <- DBIO.sequence(writeResultsIO(spec.namespace))
       _    <- UpdateSpecs.setStatus(spec, newStatus)
-      _    <- writeHistoryIO(spec)
+      _    <- InstallHistories.log(spec, updateReport.isSuccess)
       _    <- cancelInstallationQueueIO(vin, spec, updateReport.isFail, updateReport.update_id)
     } yield spec.copy(status = newStatus)
 

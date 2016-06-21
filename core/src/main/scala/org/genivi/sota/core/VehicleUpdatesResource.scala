@@ -161,13 +161,13 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
   /**
     * The web app PUT the status of the given ([[UpdateSpec]], VIN) to [[UpdateStatus.Canceled]]
     */
-  def cancelUpdate(vin: Vehicle.Vin, uuid: Refined[String, Uuid]): Route = {
-    val response = db.run(UpdateSpecs.cancelUpdate(vin, uuid)).map {
-      i: Int => i match {
-          case 0 => HttpResponse(StatusCodes.BadRequest)
-          case _ => HttpResponse(StatusCodes.NoContent)
-        }
-    }
+  def cancelUpdate(ns: Namespace, vin: Vehicle.Vin, uuid: Refined[String, Uuid]): Route = {
+    val response =
+      db.run(UpdateSpecs.cancelUpdate(ns, vin, uuid))
+          .map(_ => StatusCodes.NoContent)
+          .recover { case _ => StatusCodes.BadRequest }
+          .map(HttpResponse(_))
+
     complete(response)
   }
 
@@ -183,7 +183,9 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
       put {
         path("installed") { updateInstalledPackages(vin) } ~
         path("order") { setInstallOrder(vin) } ~
-        (extractUuid & path("cancelupdate") ) { uuid => cancelUpdate(vin, uuid) }
+        (extractUuid & path("cancelupdate") ) { uuid =>
+          namespaceExtractor { ns => cancelUpdate(ns, vin, uuid) }
+        }
       } ~
       post {
         path("sync") { sync(vin) } ~
