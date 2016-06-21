@@ -52,13 +52,15 @@ object VehicleSearch {
     }
   }
 
-  def currentVehicleStatus(lastSeen: Option[Instant], updateStatuses: Seq[UpdateStatus]): VehicleStatus = {
+  def currentVehicleStatus(lastSeen: Option[Instant], updateStatuses: Seq[(Instant, UpdateStatus)]): VehicleStatus = {
     if(lastSeen.isEmpty) {
       VehicleStatus.NotSeen
     } else {
-      if(updateStatuses.contains(UpdateStatus.Failed)) {
+      val statuses = updateStatuses.sortBy(_._1).reverse.map(_._2)
+
+      if(statuses.headOption.contains(UpdateStatus.Failed)) {
         Error
-      } else if(!updateStatuses.forall(_ == UpdateStatus.Finished)) {
+      } else if(!statuses.forall(s => (s == UpdateStatus.Finished) || (s == UpdateStatus.Failed))) {
         Outdated
       } else {
         UpToDate
@@ -72,7 +74,7 @@ object VehicleSearch {
 
   private def withStatus(vehicleQuery: Query[VehicleTable, Vehicle, Seq])
                         (implicit db: Database, ec: ExecutionContext): DBIO[Seq[VehicleUpdateStatus]] = {
-    val updateSpecsByVin = updateSpecs.map(us => (us.vin, us.status))
+    val updateSpecsByVin = updateSpecs.map(us => (us.vin, (us.creationTime, us.status)))
 
     val updateStatusByVin = vehicleQuery
       .joinLeft(updateSpecsByVin).on(_.vin === _._1)

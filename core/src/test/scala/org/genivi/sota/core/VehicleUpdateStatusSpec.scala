@@ -12,20 +12,22 @@ class VehicleUpdateStatusSpec extends FunSuite
 
   val vehicle = VehicleGenerators.genVehicle.sample.get.copy(lastSeen = Some(Instant.now))
 
-  test("Error if at least one package is in Failed State") {
-    val packages = List(UpdateStatus.Failed, UpdateStatus.Finished)
+  val now = Instant.now()
+
+  test("Error if the last package is in Failed State") {
+    val packages = List(now -> UpdateStatus.Failed, now.minusSeconds(60) -> UpdateStatus.Finished)
     val result = VehicleSearch.currentVehicleStatus(vehicle.lastSeen, packages)
     result shouldBe Error
   }
 
   test("out of date if any package is not finished") {
-    val packages = List(UpdateStatus.Pending, UpdateStatus.InFlight)
+    val packages = List(now -> UpdateStatus.Pending, now -> UpdateStatus.InFlight)
     val result = VehicleSearch.currentVehicleStatus(vehicle.lastSeen, packages)
     result shouldBe Outdated
   }
 
-  test("up to date if all packages are Finished") {
-    val packages = List(UpdateStatus.Finished, UpdateStatus.Finished)
+  test("up to date if all packages are Finished or Error") {
+    val packages = List(now -> UpdateStatus.Finished, now.minusSeconds(50) -> UpdateStatus.Failed)
     val result = VehicleSearch.currentVehicleStatus(vehicle.lastSeen, packages)
     result shouldBe UpToDate
   }
