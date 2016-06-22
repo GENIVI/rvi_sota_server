@@ -62,7 +62,7 @@ object VehicleSearch {
 
       if(statuses.headOption.contains(UpdateStatus.Failed)) {
         Error
-      } else if(!statuses.exists(s => List(Canceled, Finished, Failed).contains(s))) {
+      } else if(!statuses.forall(s => List(Canceled, Finished, Failed).contains(s))) {
         Outdated
       } else {
         UpToDate
