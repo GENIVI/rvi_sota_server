@@ -26,6 +26,12 @@ class VehicleUpdateStatusSpec extends FunSuite
     result shouldBe Outdated
   }
 
+  test("up to date even if some packages are cancelled") {
+    val packages = List(now -> UpdateStatus.Finished, now.minusSeconds(50) -> UpdateStatus.Canceled)
+    val result = VehicleSearch.currentVehicleStatus(vehicle.lastSeen, packages)
+    result shouldBe UpToDate
+  }
+
   test("up to date if all packages are Finished or Error") {
     val packages = List(now -> UpdateStatus.Finished, now.minusSeconds(50) -> UpdateStatus.Failed)
     val result = VehicleSearch.currentVehicleStatus(vehicle.lastSeen, packages)
