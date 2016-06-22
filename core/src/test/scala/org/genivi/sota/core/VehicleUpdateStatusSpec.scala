@@ -20,6 +20,11 @@ class VehicleUpdateStatusSpec extends FunSuite
     result shouldBe Error
   }
 
+  test("up to date if there are no specs and vehicle was seen") {
+    val result = VehicleSearch.currentVehicleStatus(vehicle.lastSeen, List.empty)
+    result shouldBe UpToDate
+  }
+
   test("out of date if any package is not finished") {
     val packages = List(now -> UpdateStatus.Pending, now -> UpdateStatus.InFlight)
     val result = VehicleSearch.currentVehicleStatus(vehicle.lastSeen, packages)
