@@ -36,7 +36,8 @@ define(function(require) {
               });
           break;
           case 'fetch-affected-vins':
-            var affectedVinsUrl = '/api/v1/resolve/' + payload.name + "/" + payload.version;
+            var affectedVinsUrl = '/api/v1/resolve?namespace=default' +
+            '&package_name=' + payload.name + '&package_version=' + payload.version;
 
             sendRequest.doGet(affectedVinsUrl)
               .success(function(vehicles) {
