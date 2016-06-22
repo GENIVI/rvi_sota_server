@@ -53,14 +53,16 @@ object VehicleSearch {
   }
 
   def currentVehicleStatus(lastSeen: Option[Instant], updateStatuses: Seq[(Instant, UpdateStatus)]): VehicleStatus = {
+    import UpdateStatus._
+
     if(lastSeen.isEmpty) {
-      VehicleStatus.NotSeen
+      NotSeen
     } else {
       val statuses = updateStatuses.sortBy(_._1).reverse.map(_._2)
 
       if(statuses.headOption.contains(UpdateStatus.Failed)) {
         Error
-      } else if(!statuses.forall(s => (s == UpdateStatus.Finished) || (s == UpdateStatus.Failed))) {
+      } else if(!statuses.exists(s => List(Canceled, Finished, Failed).contains(s))) {
         Outdated
       } else {
         UpToDate
