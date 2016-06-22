@@ -67,10 +67,9 @@ class UpdateRequestResourceSpec extends FunSuite
       val uri = Uri.Empty.withPath(Path(s"/update_requests"))
 
       Post(uri, req) ~> serve.route ~> check {
-        status shouldBe StatusCodes.OK
-
-        val spec = responseAs[List[UpdateSpec]]
-        spec should be(empty)
+        status shouldBe StatusCodes.Created
+        val req = responseAs[ClientUpdateRequest]
+        req.packageId shouldBe packageModel.id
       }
     }
   }

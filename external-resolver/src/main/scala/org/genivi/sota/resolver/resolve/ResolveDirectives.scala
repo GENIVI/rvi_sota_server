@@ -13,7 +13,7 @@ import org.genivi.sota.data.Namespace._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.common.RefinementDirectives._
-import org.genivi.sota.resolver.vehicles.VehicleRepository
+import org.genivi.sota.resolver.vehicles.DbDepResolver
 
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
@@ -31,7 +31,7 @@ class ResolveDirectives(namespaceExtractor: Directive1[Namespace])
                         ec: ExecutionContext) {
 
   def resolvePackage(ns: Namespace, id: PackageId): Route =
-    completeOrRecoverWith(db.run(VehicleRepository.resolve(ns, id))) {
+    completeOrRecoverWith(DbDepResolver.resolve(db, ns, id)) {
       Errors.onMissingPackage
     }
 
@@ -41,7 +41,10 @@ class ResolveDirectives(namespaceExtractor: Directive1[Namespace])
    * @throws Errors.MissingPackageException if the package doesn't exist
    */
   def route: Route =
-    (get & pathPrefix("resolve") & parameter('namespace.as[Namespace]) & refinedPackageIdParams) { (ns, id) =>
+    (get &
+      encodeResponse &
+      pathPrefix("resolve") &
+      parameter('namespace.as[Namespace]) & refinedPackageIdParams) { (ns, id) =>
       resolvePackage(ns, id)
     }
 }

@@ -57,7 +57,7 @@ class VehicleDirectives(namespaceExtractor: Directive1[Namespace])
                 'packageName.as[PackageId.Name].?,
                 'packageVersion.as[PackageId.Version].?,
                 'component.as[Component.PartNumber].?)) { case (re, pn, pv, cp) =>
-      complete(db.run(VehicleRepository.search(ns, re, pn, pv, cp)))
+      complete(VehicleRepository.search(db, ns, re, pn, pv, cp))
     }
 
   def getVehicle(ns: Namespace, vin: Vehicle.Vin): Route =
@@ -74,7 +74,7 @@ class VehicleDirectives(namespaceExtractor: Directive1[Namespace])
     }
 
   def getPackages(ns: Namespace, vin: Vehicle.Vin): Route =
-    completeOrRecoverWith(db.run(VehicleRepository.packagesOnVin(ns, vin))) {
+    completeOrRecoverWith(db.run(VehicleRepository.installedOn(ns, vin))) {
       Errors.onMissingVehicle
     }
 

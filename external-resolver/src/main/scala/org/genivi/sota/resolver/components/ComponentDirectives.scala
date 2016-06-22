@@ -43,7 +43,7 @@ class ComponentDirectives(namespaceExtractor: Directive1[Namespace])
 
 
   def deleteComponent(ns: Namespace, part: Component.PartNumber): Route =
-    completeOrRecoverWith(db.run(ComponentRepository.removeComponent(ns, part))) {
+    completeOrRecoverWith(ComponentRepository.removeComponent(ns, part)) {
       Errors.onComponentInstalled
     }
 

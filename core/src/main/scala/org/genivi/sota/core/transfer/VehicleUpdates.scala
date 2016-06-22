@@ -32,9 +32,9 @@ import java.time.Instant
 import org.genivi.sota.data.PackageId.{Name, Version}
 import org.genivi.sota.data.Vehicle.Vin
 
-
 object VehicleUpdates {
   import SlickExtensions._
+  import org.genivi.sota.marshalling.CirceInstances._
 
   case class UpdateSpecNotFound(msg: String) extends Exception(msg) with NoStackTrace
   case class SetOrderFailed(msg: String) extends Exception(msg) with NoStackTrace

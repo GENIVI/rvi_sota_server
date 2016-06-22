@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.resolver.vehicles
 
+import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import org.genivi.sota.data.Namespace._
@@ -13,13 +14,11 @@ import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.components.{Component, ComponentRepository}
 import org.genivi.sota.resolver.data.Firmware
-import org.genivi.sota.resolver.filters.FilterAST.{parseValidFilter, query}
-import org.genivi.sota.resolver.filters.{And, FilterAST, HasComponent, HasPackage, True, VinMatches}
-import org.genivi.sota.resolver.packages.{Package, PackageFilterRepository, PackageRepository}
-import org.genivi.sota.resolver.resolve.ResolveFunctions
+import org.genivi.sota.resolver.filters._
+import org.genivi.sota.resolver.packages.PackageRepository
 import slick.driver.MySQLDriver.api._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 
 object VehicleRepository {
@@ -207,7 +206,12 @@ object VehicleRepository {
 
   def installedOn(namespace: Namespace, vin: Vehicle.Vin)
                  (implicit ec: ExecutionContext) : DBIO[Set[PackageId]] =
-    installedPackages.filter(i => i.namespace === namespace && i.vin === vin).result.map(_.map( _._3).toSet)
+    for {
+      _ <- exists(vin)
+      installed <- installedPackages
+        .filter(i => i.namespace === namespace && i.vin === vin)
+        .result.map(_.map(_._3).toSet)
+    } yield installed
 
   def listInstalledPackages: DBIO[Seq[(Namespace, Vehicle.Vin, PackageId)]] =
     installedPackages.result
@@ -215,30 +219,6 @@ object VehicleRepository {
 
   def deleteInstalledPackageByVin(namespace: Namespace, vin: Vehicle.Vin): DBIO[Int] =
     installedPackages.filter(i => i.namespace === namespace && i.vin === vin).delete
-
-  def packagesOnVinMap
-    (namespace: Namespace)
-    (implicit ec: ExecutionContext)
-      : DBIO[Map[Vehicle.Vin, Seq[PackageId]]] =
-    listInstalledPackages
-      .map(_
-        .filter(_._1 == namespace)
-        .sortBy(_._2)
-        .groupBy(_._2)
-        .mapValues(_.map(_._3)))
-    // TODO: namespaces?
-
-  def packagesOnVin
-    (namespace: Namespace, vin: Vehicle.Vin)
-    (implicit ec: ExecutionContext): DBIO[Seq[PackageId]] =
-    for {
-      _  <- VehicleRepository.exists(vin)
-      ps <- packagesOnVinMap(namespace)
-              .map(_
-                .get(vin)
-                .toList
-                .flatten)
-    } yield ps
 
   /*
    * Installed components.
@@ -288,80 +268,46 @@ object VehicleRepository {
       }.delete
     } yield ()
 
-  def componentsOnVinMap
-    (namespace: Namespace)
-    (implicit ec: ExecutionContext): DBIO[Map[Vehicle.Vin, Seq[Component.PartNumber]]] =
-    VehicleRepository.listInstalledComponents
-      .map(_
-        .filter(_._1 == namespace)
-        .sortBy(_._2)
-        .groupBy(_._2)
-        .mapValues(_.map(_._3)))
-
   def componentsOnVin(namespace: Namespace, vin: Vehicle.Vin)
-                     (implicit ec: ExecutionContext): DBIO[Seq[Component.PartNumber]] =
-    for {
-      _  <- exists(vin)
-      cs <- componentsOnVinMap(namespace)
-              .map(_
-                .get(vin)
-                .toList
-                .flatten)
-    } yield cs
+                     (implicit ec: ExecutionContext): DBIO[Seq[Component.PartNumber]] = {
+    val vinComponentsQ =
+      installedComponents
+        .filter(_.namespace === namespace)
+        .filter(_.vin === vin)
+        .map(_.partNumber)
+        .result
 
-  def vinsWithPackagesAndComponents
-    (namespace: Namespace)
-    (implicit ec: ExecutionContext)
-      : DBIO[Seq[(Vehicle, (Seq[PackageId], Seq[Component.PartNumber]))]] =
     for {
-      vs   <- VehicleRepository.list
-      ps   : Seq[Seq[PackageId]]
-           <- DBIO.sequence(vs.map(v => VehicleRepository.packagesOnVin(namespace, v.vin)))
-      cs   : Seq[Seq[Component.PartNumber]]
-           <- DBIO.sequence(vs.map(v => VehicleRepository.componentsOnVin(namespace, v.vin)))
-      vpcs : Seq[(Vehicle, (Seq[PackageId], Seq[Component.PartNumber]))]
-           =  vs.zip(ps.zip(cs))
-    } yield vpcs
-    // TODO: namespaces?
+      _ <- exists(vin)
+      cs <- vinComponentsQ
+    } yield cs
+  }
 
   /*
    * Searching
    */
 
-  def search(namespace : Namespace,
+  def search(db: Database,
+             namespace : Namespace,
              re        : Option[Refined[String, Regex]],
              pkgName   : Option[PackageId.Name],
              pkgVersion: Option[PackageId.Version],
              part      : Option[Component.PartNumber])
-            (implicit ec: ExecutionContext): DBIO[Seq[Vehicle]] = {
+            (implicit ec: ExecutionContext, mat: ActorMaterializer): Future[Seq[Vehicle]] = {
 
     def toRegex[T](r: Refined[String, T]): Refined[String, Regex] =
       Refined.unsafeApply(r.get)
 
     val vins  = re.fold[FilterAST](True)(VinMatches(_))
     val pkgs  = (pkgName, pkgVersion) match
-      { case (Some(re1), Some(re2)) => HasPackage(toRegex(re1), toRegex(re2))
-        case _                      => True
-      }
+    { case (Some(re1), Some(re2)) => HasPackage(toRegex(re1), toRegex(re2))
+      case _                      => True
+    }
+
     val comps = part.fold[FilterAST](True)(r => HasComponent(toRegex(r)))
 
-    for {
-      vpcs <- vinsWithPackagesAndComponents(namespace)
-    } yield vpcs.filter(query(And(vins, And(pkgs, comps)))).map(_._1)
+    val filter = And(vins, And(pkgs, comps))
 
+    DbDepResolver.vehiclesForFilter(namespace, db, filter)
   }
-
-  /*
-   * Resolving package dependencies.
-   */
-
-  def resolve(namespace: Namespace, pkgId: PackageId)
-             (implicit ec: ExecutionContext): DBIO[Map[Vehicle.Vin, Seq[PackageId]]] =
-    for {
-      _    <- PackageRepository.exists(namespace, pkgId)
-      fs   <- PackageFilterRepository.listFiltersForPackage(namespace, pkgId)
-      vpcs <- vinsWithPackagesAndComponents(namespace)
-    } yield ResolveFunctions.makeFakeDependencyMap(pkgId,
-              vpcs.filter(query(fs.map(_.expression).map(parseValidFilter).foldLeft[FilterAST](True)(And)))
-                  .map(_._1))
 }

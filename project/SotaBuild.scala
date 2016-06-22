@@ -87,7 +87,7 @@ object SotaBuild extends Build {
 
   lazy val externalResolver = Project(id = "sota-resolver", base = file("external-resolver"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.ParserCombinators :+ Dependencies.Flyway,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.AkkaStream :+ Dependencies.AkkaStreamTestKit :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.ParserCombinators :+ Dependencies.Flyway,
       testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RandomTest"),
       testOptions in RandomTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RandomTest"),
       parallelExecution in Test := true,
@@ -201,6 +201,10 @@ object Dependencies {
   val Play2AuthVersion = "0.14.2"
 
   val AkkaHttp = "com.typesafe.akka" %% "akka-http-experimental" % AkkaVersion
+
+  val AkkaStream = "com.typesafe.akka" %% "akka-stream" % AkkaVersion
+
+  val AkkaStreamTestKit = "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % "test"
 
   val AkkaHttpTestKit = "com.typesafe.akka" %% "akka-http-testkit" % AkkaVersion % "test"
 

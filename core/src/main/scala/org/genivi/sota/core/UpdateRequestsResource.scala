@@ -6,6 +6,7 @@ package org.genivi.sota.core
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshaller._
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
 import eu.timepit.refined._
@@ -68,7 +69,7 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
           pkg => resolver.resolve(ns, pkg.id).map {
             m => m.map { case (v, p) => (v.vin, p) }
           }
-        )
+        ) map (_ => (StatusCodes.Created, req))
       )
     }
   }
