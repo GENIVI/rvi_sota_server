@@ -122,8 +122,8 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
   /**
     * A web client fetches the results of a given [[UpdateRequest]].
     */
-  def resultsForUpdate(uuid: Refined[String, Uuid]): Route = {
-    complete(db.run(OperationResults.byId(uuid)))
+  def resultsForUpdate(vin: Vehicle.Vin, uuid: Refined[String, Uuid]): Route = {
+    complete(db.run(OperationResults.byVinAndId(vin, uuid)))
   }
 
   /**
@@ -177,7 +177,7 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
         pathEnd { logVehicleSeen(vin) { pendingPackages(vin) } } ~
         path("queued") { pendingPackages(vin) } ~
         path("results") { resultsForVehicle(vin) } ~
-        (extractUuid & path("results")) { uuid => resultsForUpdate(uuid) } ~
+        (extractUuid & path("results")) { uuid => resultsForUpdate(vin, uuid) } ~
         (extractUuid & path("download")) { uuid => downloadPackage(vin, uuid) }
       } ~
       put {

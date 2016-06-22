@@ -63,8 +63,7 @@ object OperationResults {
   def list: DBIO[Seq[OperationResult]] = all.result
 
   /**
-   * List all the update results for a give update ID
-   * @param ns The namespace of the user making the query
+   * List all the update results for a given update ID
    * @param id the uuid of the Update that operation results should be fetched for
    * @return all OperationResults associated with the given id
    */
@@ -73,12 +72,21 @@ object OperationResults {
 
   /**
     * Get all OperationResults associated with the given VIN
-    * @param ns The namespace of the user making the query
     * @param vin The VIN for which all OperationResults should be returned
     * @return all OperationResults associated with the given VIN
     */
   def byVin(vin: Vehicle.Vin)(implicit ec: ExecutionContext): DBIO[Seq[OperationResult]] =
     all.filter(_.vin === vin).result
+
+  /**
+    * Get all OperationResults associated with the given VIN and UpdateID
+    * @param vin The VIN for which all OperationResults should be returned
+    * @param id the uuid of the Update that OperationResults should be returned
+    * @return all OperationResults associated with the given VIN
+    */
+  def byVinAndId(vin: Vehicle.Vin, id: Refined[String, Uuid])
+    (implicit ec: ExecutionContext): DBIO[Seq[OperationResult]] =
+      all.filter(r => r.vin === vin && r.updateId === UUID.fromString(id.get)).result
 
   /**
    * Add a new package update. Package updated specify a specific package at a
