@@ -35,6 +35,7 @@ import scala.concurrent.duration.FiniteDuration
 import scala.math.BigDecimal.RoundingMode
 import slick.driver.MySQLDriver.api.Database
 
+import scala.collection.LinearSeq
 import scala.util.Try
 
 
@@ -218,9 +219,12 @@ class TransferProtocolActor(db: Database,
     * Second [[TransferProtocolActor]] behavior, about to upload [[UpdateSpec]]-s to the vehicle.
     */
   def loadSpecs(services: ClientServices) : Receive = {
-    case Some((value: MiniUpdateSpec, todo: Queue[Package])) =>
-      val worker = startPackageUpload(services)(value, todo.head)
-      context become running( services, value, todo.tail, worker, Set.empty )
+    case Some(spec: MiniUpdateSpec) if spec.deps.nonEmpty =>
+      val worker = startPackageUpload(services)(spec, spec.deps.head)
+      context become running(services, spec, spec.deps.tail, worker, Set.empty)
+
+    case Some(spec: MiniUpdateSpec) if spec.deps.isEmpty =>
+      ()
 
     case None =>
       // do nothing in case no packages to upload. TODO why get here in that case? Should have quit earlier.
