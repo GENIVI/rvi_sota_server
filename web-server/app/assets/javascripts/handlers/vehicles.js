@@ -84,7 +84,7 @@ define(function(require) {
             sendRequest.doPost('/api/v1/vehicle_updates/' + payload.vin + '/sync');
           break;
           case 'get-operation-results-for-vin':
-            sendRequest.doGet('api/v1/vehicles/' + payload.vin + '/results')
+            sendRequest.doGet('api/v1/vehicle_updates/' + payload.vin + '/results')
               .success(function(operationResults) {
                 db.operationResultsForVin.reset(operationResults);
               });
