@@ -88,7 +88,8 @@ object UpdateSpecs {
 
   case class MiniUpdateSpec(requestId: UUID,
                             requestSignature: String,
-                            vin: Vehicle.Vin)
+                            vin: Vehicle.Vin,
+                            deps: Queue[Package])
 
   /**
     * Add an update for a specific VIN.
@@ -140,6 +141,8 @@ object UpdateSpecs {
     queryBy(namespace, vin, UUID.fromString(requestId.get)).result.head
   }
 
+  case class UpdateSpecPackages(miniUpdateSpec: MiniUpdateSpec, packages: Queue[Package])
+
   // scalastyle:off cyclomatic.complexity
   /**
     * Fetch from DB zero or one [[UpdateSpec]] for the given combination ([[UpdateRequest]], VIN)
@@ -148,10 +151,11 @@ object UpdateSpecs {
     * @param updateId Id of the [[UpdateRequest]] to install
     */
   def load(vin: Vehicle.Vin, updateId: UUID)
-          (implicit ec: ExecutionContext) : DBIO[Option[(MiniUpdateSpec, Queue[Package])]] = {
+          (implicit ec: ExecutionContext) : DBIO[Option[MiniUpdateSpec]] = {
     val q = for {
       r  <- updateRequests if (r.id === updateId)
       ns  = r.namespace
+      us <- updateSpecs if(us.vin === vin && us.requestId == r.id && us.namespace == r.namespace)
       rp <- requiredPackages if (rp.vin === vin &&
                                  rp.namespace === ns &&
                                  rp.requestId === updateId)
@@ -160,18 +164,12 @@ object UpdateSpecs {
                                   p.version === rp.packageVersion)
     } yield (r.signature, p)
 
-    val qres: DBIO[Seq[(String, Package)]] = q.result
-
-    qres map { rows =>
-      if (rows.isEmpty) {
-        None
-      } else {
-        val requestSignature = rows.head._1
-        val paks = for (row <- rows; p = row._2) yield p
-        Some(Tuple2(MiniUpdateSpec(updateId, requestSignature, vin), paks.toSet.to[Queue]))
+    q.result map { rows =>
+      rows.headOption.map(_._1).map { sig =>
+        val paks = rows.map(_._2).to[Queue]
+        MiniUpdateSpec(updateId, sig, vin, paks)
       }
     }
-
   }
   // scalastyle:on
 
