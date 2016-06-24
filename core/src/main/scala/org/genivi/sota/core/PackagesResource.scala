@@ -110,7 +110,7 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
   }
 
   /**
-    * An ota client GET the device-s waiting for the given [[Package]] to be installed.
+    * An ota client GET the devices waiting for the given [[Package]] to be installed.
     */
   def queuedDevices(ns: Namespace, pid: PackageId): Route = {
     complete(db.run(UpdateSpecs.getDevicesQueuedForPackage(ns, pid.name, pid.version)))

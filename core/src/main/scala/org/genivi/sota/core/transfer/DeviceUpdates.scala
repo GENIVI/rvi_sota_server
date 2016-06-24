@@ -110,7 +110,7 @@ object DeviceUpdates {
   /**
     * Find the [[UpdateRequest]]-s for:
     * <ul>
-    *   <li>the given VIN</li>
+    *   <li>the given device</li>
     *   <li>and for which [[UpdateSpec]]-s exist with Pending or InFlight [[UpdateStatus]]</li>
     * </ul>
     */
@@ -128,7 +128,7 @@ object DeviceUpdates {
 
   /**
     * Find the [[UpdateSpec]]-s (including dependencies) whatever their [[UpdateStatus]]
-    * for the given ([[UpdateRequest]], VIN) combination.
+    * for the given (device, [[UpdateRequest]]) combination.
     * <br>
     * Note: for pending ones see [[findPendingPackageIdsFor()]]
     */

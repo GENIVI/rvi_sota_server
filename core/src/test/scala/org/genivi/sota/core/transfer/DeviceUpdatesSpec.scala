@@ -170,7 +170,7 @@ class DeviceUpdatesSpec extends FunSuite
       val reqIdsMatch = result.zip(updateSpecs).forall { case (ur, us) => ur.id == us.request.id }
       reqIdsMatch shouldBe true
 
-      // all three update specs for the same VIN
+      // all three update specs for the same device
       updateSpecs.map(_.device).toSet.size shouldBe 1
 
       // fail install for update spec B only

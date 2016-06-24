@@ -27,8 +27,8 @@ object InstallHistories {
   import org.genivi.sota.refined.SlickRefined._
 
   /**
-    * A log of update installs attempted on a VIN.
-    * Each logged row includes the [[UpdateRequest]] identity, VIN, time of attempt
+    * A log of update installs attempted on a device.
+    * Each logged row includes the [[UpdateRequest]] identity, device id, time of attempt
     * and whether the install was successful.
     */
   // scalastyle:off
@@ -73,7 +73,7 @@ object InstallHistories {
    * to persist the outcome of an [[UpdateSpec]] install attempt
    * as reported by the SOTA client via RVI.
    *
-   * @param vin The VIN that the install attempt ran on
+   * @param device The device that the install attempt ran on
    * @param updateId The Id of the [[UpdateRequest]] that was attempted to be installed
    * @param success Whether the install was successful
    */
@@ -87,7 +87,7 @@ object InstallHistories {
     * to persist the outcome of an [[UpdateSpec]] install attempt
     * as reported by the SOTA client via RVI.
     *
-    * @param spec The ([[UpdateRequest]], VIN) combination whose install was attempted
+    * @param spec The ([[UpdateRequest]], device) combination whose install was attempted
     * @param success Whether the install was successful
     */
   def log(spec: UpdateSpec, success: Boolean): DBIO[Int] = {

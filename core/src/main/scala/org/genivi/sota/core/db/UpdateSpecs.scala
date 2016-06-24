@@ -213,10 +213,10 @@ object UpdateSpecs {
   }
 
   /**
-    * Abort a pending [[UpdateSpec]] specified as ([[UpdateRequest]], VIN).
+    * Abort a pending [[UpdateSpec]] specified as (device, [[UpdateRequest]]) combination.
     * Only an update with status 'Pending' is aborted.
     *
-    * @param uuid of the [[UpdateRequest]] being cancelled for the given VIN
+    * @param uuid of the [[UpdateRequest]] being cancelled for the given device
     */
   def cancelUpdate(device: Device.Id, uuid: Refined[String, Uuid])(implicit ec: ExecutionContext): DBIO[Int] = {
     updateSpecs

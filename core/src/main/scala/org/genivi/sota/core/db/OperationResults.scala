@@ -9,6 +9,7 @@ import eu.timepit.refined.string.Uuid
 import java.util.UUID
 
 import org.genivi.sota.core.data.OperationResult
+import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.Device
 
@@ -57,34 +58,24 @@ object OperationResults {
   val all = TableQuery[OperationResultTable]
 
   /**
-   * List all the update results that have been ever created
-   * @return A list of operation results
+   * All [[OperationResult]]-s that have been ever created
    */
   def list: DBIO[Seq[OperationResult]] = all.result
 
   /**
-   * List all the update results for a given update ID
-   * @param id the uuid of the Update that operation results should be fetched for
-   * @return all OperationResults associated with the given id
+   * All [[OperationResult]]-s for the given [[UpdateRequest]]
    */
   def byId(id: Refined[String, Uuid])(implicit ec: ExecutionContext): DBIO[Seq[OperationResult]] =
     all.filter(r => r.updateId === UUID.fromString(id.get)).result
 
   /**
-    * Get all OperationResults associated with the given VIN
-    * @param device The device for which all OperationResults should be returned
-    * @return all OperationResults associated with the given VIN
-    * @param
-    * @return all OperationResults associated with the given device
+    * All [[OperationResult]]-s for the given device.
     */
   def byDevice(device: Device.Id)(implicit ec: ExecutionContext): DBIO[Seq[OperationResult]] =
     all.filter(_.device === device).result
 
   /**
-    * Get all OperationResults associated with the given VIN and UpdateID
-    * @param device The device for which all OperationResults should be returned
-    * @param id the uuid of the Update that OperationResults should be returned
-    * @return all OperationResults associated with the given VIN
+    * All [[OperationResult]]-s for the given (device, [[UpdateRequest]]) combination
     */
   def byDeviceIdAndId(device: Device.Id, id: Refined[String, Uuid])
                      (implicit ec: ExecutionContext): DBIO[Seq[OperationResult]] =

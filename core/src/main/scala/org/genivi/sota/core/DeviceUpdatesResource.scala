@@ -68,7 +68,7 @@ class DeviceUpdatesResource(db: Database,
   }
 
   /**
-    * An ota client PUT a list of packages to record they're installed on a vehicle, overwriting any previous such list.
+    * An ota client PUT a list of packages to record they're installed on a device, overwriting any previous such list.
     */
   def updateInstalledPackages(id: Device.Id): Route = {
     entity(as[List[PackageId]]) { ids =>
@@ -81,12 +81,12 @@ class DeviceUpdatesResource(db: Database,
   }
 
   /**
-    * An ota client GET which packages await installation for the given vehicle,
+    * An ota client GET which packages await installation for the given device,
     * in the form a Seq of [[PendingUpdateRequest]]
     * whose order was specified via [[setInstallOrder]].
     * To actually download each binary file, [[downloadPackage]] is used.
     * <br>
-    * Special case: For a vehicle whose installation queue is blocked,
+    * Special case: For a device whose installation queue is blocked,
     * no packages are returned.
     *
     * @see [[data.UpdateStatus]] (two of interest: InFlight and Pending)
@@ -133,21 +133,21 @@ class DeviceUpdatesResource(db: Database,
   }
 
   /**
-    * A web client fetches the results of updates to a given [[Device]].
+    * A web app fetches the results of updates to a given [[Device]].
     */
   def results(device: Device.Id): Route = {
     complete(db.run(OperationResults.byDevice(device)))
   }
 
   /**
-    * A web client fetches the results of a given [[UpdateRequest]].
+    * A web app fetches the results of a given (device, [[UpdateRequest]]) combination.
     */
   def resultsForUpdate(device: Device.Id, uuid: Refined[String, Uuid]): Route = {
     complete(db.run(OperationResults.byDeviceIdAndId(device, uuid)))
   }
 
   /**
-    * An ota client POST a [[PackageId]] to schedule installation on a vehicle.
+    * An ota client POST a [[PackageId]] to schedule installation on a device.
     * Internally an [[UpdateRequest]] and an [[UpdateSpec]] are persisted for that [[PackageId]].
     * Resolver is not contacted.
     */
@@ -169,7 +169,7 @@ class DeviceUpdatesResource(db: Database,
   }
 
   /**
-    * The web app PUT the order in which the given [[UpdateRequest]]s are to be installed on a vehicle.
+    * The web app PUT the order in which the given [[UpdateRequest]]s are to be installed on the given device.
     */
   def setInstallOrder(device: Device.Id): Route = {
     entity(as[Map[Int, UUID]]) { updateIds =>
@@ -180,7 +180,7 @@ class DeviceUpdatesResource(db: Database,
   }
 
   /**
-    * The web app PUT to unblock the installation queue of a vehicle.
+    * The web app PUT to unblock the installation queue of the given device.
     */
   def unblockInstall(deviceId: Device.Id): Route = {
     val resp =
@@ -191,7 +191,7 @@ class DeviceUpdatesResource(db: Database,
   }
 
   /**
-    * The web app PUT the status of the given ([[UpdateSpec]], VIN) to [[UpdateStatus.Canceled]]
+    * The web app PUT the status of the given ([[UpdateSpec]], device) to [[UpdateStatus.Canceled]]
     */
   def cancelUpdate(deviceId: Device.Id, updateId: Refined[String, Uuid]): Route = {
     val response = db.run(UpdateSpecs.cancelUpdate(deviceId, updateId)).map {

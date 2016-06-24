@@ -26,7 +26,7 @@ class HistoryResource(db: Database, namespaceExtractor: Directive1[Namespace])
   import CirceMarshallingSupport._
 
   /**
-    * An ota client GET all install attempts, a Seq of [[InstallHistory]], for the given VIN
+    * A web app GET all install attempts, a Seq of [[InstallHistory]], for the given device
     */
   def history(ns: Namespace, device: Id): Route = {
     complete(db.run(InstallHistories.list(ns, device)))

@@ -84,7 +84,7 @@ import UpdateStatus._
   * <br>
   * <ul>
   *   <li>The campaign (ie, [[UpdateRequest]]) that initiated this [[UpdateSpec]] is linked from here.</li>
-  *   <li>Among pending [[UpdateSpec]] targeting a VIN an installation order is tracked by [[installPos]]</li>
+  *   <li>Among pending [[UpdateSpec]] targeting a device an installation order is tracked by [[installPos]]</li>
   * </ul>
   *
   * @param request The campaign that these updates are a part of
