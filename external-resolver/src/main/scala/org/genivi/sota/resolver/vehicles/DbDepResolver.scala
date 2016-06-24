@@ -33,9 +33,9 @@ object DbDepResolver {
 
   type VinComponentRow = (Vehicle, Option[PackageId.Name], Option[PackageId.Version], Option[Component.PartNumber])
 
-  /*
- * Resolving package dependencies.
- */
+ /*
+  * Resolving package dependencies.
+  */
   def resolve(db: Database, namespace: Namespace, pkgId: PackageId)
              (implicit ec: ExecutionContext, mat: ActorMaterializer): Future[Map[Vehicle.Vin, Seq[PackageId]]] = {
     for {

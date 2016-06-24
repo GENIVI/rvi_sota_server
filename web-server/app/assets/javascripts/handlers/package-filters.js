@@ -18,7 +18,7 @@ define(function(require) {
         });
     },
     addPackageFilter: function(payload) {
-      sendRequest.doPut('/api/v1/packages/', payload.packageFilter.packageName +
+      sendRequest.doPut('/api/v1/packages/' + payload.packageFilter.packageName +
         '/' + payload.packageFilter.packageVersion +
         '/filter/' + payload.packageFilter.filterName)
         .success(_.bind(this.refreshPackageFilters, this, payload));
