@@ -14,7 +14,7 @@ import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.PackageId
 import org.genivi.sota.db.Operators.regex
 import org.genivi.sota.db.SlickExtensions._
-import org.genivi.sota.device_registry.common.DeviceRegistryErrors
+import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.refined.SlickRefined._
 import java.time.Instant
 import scala.concurrent.ExecutionContext
@@ -80,7 +80,7 @@ object Devices {
       .result
       .flatMap { count =>
         if(count > 0)
-          DBIO.failed(DeviceRegistryErrors.ConflictingDevice)
+          DBIO.failed(Errors.ConflictingDevice)
         else
           DBIO.successful(())
       }
@@ -93,7 +93,7 @@ object Devices {
       .result
       .headOption
       .flatMap(_.
-        fold[DBIO[Device]](DBIO.failed(DeviceRegistryErrors.MissingDevice))(DBIO.successful))
+        fold[DBIO[Device]](DBIO.failed(Errors.MissingDevice))(DBIO.successful))
 
   def findByDeviceName(ns: Namespace, deviceName: DeviceName)
                       (implicit ec: ExecutionContext): DBIO[Device] =
@@ -102,7 +102,7 @@ object Devices {
       .result
       .headOption
       .flatMap(_.
-        fold[DBIO[Device]](DBIO.failed(DeviceRegistryErrors.MissingDevice))(DBIO.successful))
+        fold[DBIO[Device]](DBIO.failed(Errors.MissingDevice))(DBIO.successful))
 
   def findByDeviceId(ns: Namespace, deviceId: DeviceId)
                     (implicit ec: ExecutionContext): DBIO[Device] =
@@ -111,7 +111,7 @@ object Devices {
       .result
       .headOption
       .flatMap(_.
-        fold[DBIO[Device]](DBIO.failed(DeviceRegistryErrors.MissingDevice))(DBIO.successful))
+        fold[DBIO[Device]](DBIO.failed(Errors.MissingDevice))(DBIO.successful))
 
   def search(ns: Namespace, re: String Refined Regex): DBIO[Seq[Device]] =
     devices
@@ -124,7 +124,7 @@ object Devices {
       case Some(deviceId) => for {
         _ <- exists(ns, id)
         _ <- findByDeviceId(ns, deviceId).asTry.flatMap { // negate result of action:
-          case Success(_) => DBIO.failed(DeviceRegistryErrors.ConflictingDevice)
+          case Success(_) => DBIO.failed(Errors.ConflictingDevice)
           case Failure(_) => DBIO.successful(())
         }
         _ <- devices.insertOrUpdate(Device(ns, id, device.deviceName, device.deviceId, device.deviceType))

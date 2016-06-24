@@ -14,7 +14,7 @@ import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.data.{Device, DeviceT}
 import org.genivi.sota.data.Namespace._
-import org.genivi.sota.device_registry.common.DeviceRegistryErrors
+import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.rest.Validation._
@@ -35,7 +35,6 @@ class Routes(namespaceExtractor: Directive1[Namespace])
 
   import Device._
   import Directives._
-  import DeviceRegistryErrors._
   import StatusCodes._
 
   val extractId: Directive1[Id] = refined[ValidId](Slash ~ Segment).map(Id(_))
@@ -74,26 +73,28 @@ class Routes(namespaceExtractor: Directive1[Namespace])
     complete(db.run(Devices.updateLastSeen(ns, id)))
 
   def api: Route =
-    pathPrefix("devices") {
-      namespaceExtractor { ns =>
-        (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
-        extractId { id =>
-          (get & pathEnd) {
-            fetchDevice(ns, id)
-          } ~
-            (put & entity(as[DeviceT]) & pathEnd) { device =>
-              updateDevice(ns, id, device)
+    handleExceptions(ExceptionHandler(Errors.onMissingDevice orElse Errors.onConflictingDevice)) {
+      pathPrefix("devices") {
+        namespaceExtractor { ns =>
+          (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
+          extractId { id =>
+            (get & pathEnd) {
+              fetchDevice(ns, id)
             } ~
-            (delete & pathEnd) {
-              deleteDevice(ns, id)
-            } ~
-            (post & path("ping")) {
-              updateLastSeen(ns, id)
-            }
+              (put & entity(as[DeviceT]) & pathEnd) { device =>
+                updateDevice(ns, id, device)
+              } ~
+              (delete & pathEnd) {
+                deleteDevice(ns, id)
+              } ~
+              (post & path("ping")) {
+                updateLastSeen(ns, id)
+              }
+          }
+        } ~
+        (get & pathEnd & parameter('namespace.as[Namespace])) { ns =>
+          searchDevice(ns)
         }
-      } ~
-      (get & pathEnd & parameter('namespace.as[Namespace])) { ns =>
-        searchDevice(ns)
       }
     }
 

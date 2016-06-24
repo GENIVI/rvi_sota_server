@@ -11,7 +11,7 @@ import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
 import org.genivi.sota.data.Namespace.Namespace
 import org.genivi.sota.datatype.NamespaceDirective
-import org.genivi.sota.device_registry.common.DeviceRegistryErrors
+import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.rest.Handlers.{exceptionHandler, rejectionHandler}
 
 import scala.concurrent.ExecutionContext
@@ -29,7 +29,7 @@ class Routing(namespaceExtractor: Directive1[Namespace])
 
   val route: Route = pathPrefix("api" / "v1") {
     handleRejections(rejectionHandler) {
-      handleExceptions(exceptionHandler orElse DeviceRegistryErrors.errorHandler) {
+      handleExceptions(exceptionHandler) {
         new Routes(namespaceExtractor).route
       }
     }
