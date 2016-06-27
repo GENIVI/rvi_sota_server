@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.resolver.vehicles
 
+import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import org.genivi.sota.data.Namespace._
@@ -13,13 +14,11 @@ import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.components.{Component, ComponentRepository}
 import org.genivi.sota.resolver.data.Firmware
-import org.genivi.sota.resolver.filters.FilterAST.{parseValidFilter, query}
-import org.genivi.sota.resolver.filters.{And, FilterAST, HasComponent, HasPackage, True, VinMatches}
-import org.genivi.sota.resolver.packages.{Package, PackageFilterRepository, PackageRepository}
-import org.genivi.sota.resolver.resolve.ResolveFunctions
+import org.genivi.sota.resolver.filters._
+import org.genivi.sota.resolver.packages.PackageRepository
 import slick.driver.MySQLDriver.api._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 
 object VehicleRepository {
@@ -44,9 +43,9 @@ object VehicleRepository {
   def list: DBIO[Seq[Vehicle]] =
     vehicles.result
 
-  def exists(namespace: Namespace, vin: Vehicle.Vin)(implicit ec: ExecutionContext): DBIO[Vehicle] =
+  def exists(vin: Vehicle.Vin)(implicit ec: ExecutionContext): DBIO[Vehicle] =
     vehicles
-      .filter(i => i.namespace === namespace && i.vin === vin)
+      .filter(_.vin === vin)
       .result
       .headOption
       .flatMap(_.
@@ -58,7 +57,7 @@ object VehicleRepository {
   def deleteVin(namespace: Namespace, vin: Vehicle.Vin)
                (implicit ec: ExecutionContext): DBIO[Unit] =
     for {
-      _ <- VehicleRepository.exists(namespace, vin)
+      _ <- VehicleRepository.exists(vin)
       _ <- deleteInstalledPackageByVin(namespace, vin)
       _ <- deleteInstalledComponentByVin(namespace, vin)
       _ <- delete(namespace, vin)
@@ -104,7 +103,7 @@ object VehicleRepository {
      last_modified: Long, vin: Vehicle.Vin)
     (implicit ec: ExecutionContext): DBIO[Unit] = {
     for {
-      _ <- exists(namespace, vin)
+      _ <- exists(vin)
       _ <- firmwareExists(namespace, module)
       _ <- installedFirmware.insertOrUpdate((Firmware(namespace, module, firmware_id, last_modified), vin))
     } yield()
@@ -114,7 +113,7 @@ object VehicleRepository {
     (namespace: Namespace, vin: Vehicle.Vin)
     (implicit ec: ExecutionContext): DBIO[Seq[Firmware]] = {
     for {
-      _ <- VehicleRepository.exists(namespace, vin)
+      _ <- VehicleRepository.exists(vin)
       ps <- installedFirmware.filter(i => i.namespace === namespace && i.vin === vin).result
     } yield ps.map(_._1)
   }
@@ -122,11 +121,10 @@ object VehicleRepository {
   //This method is only intended to be called when the client reports installed firmware.
   //It therefore clears all installed firmware for the given vin and replaces with the reported
   //state instead.
-  def updateInstalledFirmware
-    (ns: Namespace, vin: Vehicle.Vin, firmware: Set[Firmware])
+  def updateInstalledFirmware(vin: Vehicle.Vin, firmware: Set[Firmware])
     (implicit ec: ExecutionContext): DBIO[Unit] = {
       (for {
-        vehicle <- exists(ns, vin)
+        vehicle <- exists(vin)
         _       <- installedFirmware.filter(_.vin === vin).delete
         _       <- installedFirmware ++= firmware.map(fw =>
                     (Firmware(fw.namespace, fw.module, fw.firmwareId, fw.lastModified), vin))
@@ -160,7 +158,7 @@ object VehicleRepository {
     (namespace: Namespace, vin: Vehicle.Vin, pkgId: PackageId)
     (implicit ec: ExecutionContext): DBIO[Unit] =
     for {
-      _ <- exists(namespace, vin)
+      _ <- exists(vin)
       _ <- PackageRepository.exists(namespace, pkgId)
       _ <- installedPackages.insertOrUpdate((namespace, vin, pkgId))
     } yield ()
@@ -169,7 +167,7 @@ object VehicleRepository {
     (namespace: Namespace, vin: Vehicle.Vin, pkgId: PackageId)
     (implicit ec: ExecutionContext): DBIO[Unit] =
     for {
-      _ <- exists(namespace, vin)
+      _ <- exists(vin)
       _ <- PackageRepository.exists(namespace, pkgId)
       _ <- installedPackages.filter {ip =>
              ip.namespace      === namespace &&
@@ -179,36 +177,41 @@ object VehicleRepository {
            }.delete
     } yield ()
 
-  def updateInstalledPackages(namespace: Namespace, vin: Vehicle.Vin, packages: Set[PackageId] )
+  def updateInstalledPackages(vin: Vehicle.Vin, packages: Set[PackageId] )
                              (implicit ec: ExecutionContext): DBIO[Unit] = {
 
-    def filterAvailablePackages( ids: Set[PackageId] ) : DBIO[Set[PackageId]] =
+    def filterAvailablePackages(namespace: Namespace, ids: Set[PackageId] ) : DBIO[Set[PackageId]] =
       PackageRepository.load(namespace, ids).map(_.map(_.id))
 
-    def helper( vehicle: Vehicle, newPackages: Set[PackageId], deletedPackages: Set[PackageId] )
+    def helper(vehicle: Vehicle, newPackages: Set[PackageId], deletedPackages: Set[PackageId] )
                                (implicit ec: ExecutionContext) : DBIO[Unit] = DBIO.seq(
       installedPackages.filter( ip =>
-        ip.namespace === namespace &&
+        ip.namespace === vehicle.namespace &&
         ip.vin === vehicle.vin &&
         (ip.packageName.mappedTo[String] ++ ip.packageVersion.mappedTo[String])
           .inSet( deletedPackages.map( id => id.name.get + id.version.get ))
       ).delete,
-      installedPackages ++= newPackages.map((namespace, vehicle.vin, _))
+      installedPackages ++= newPackages.map((vehicle.namespace, vehicle.vin, _))
     ).transactionally
 
     for {
-      vehicle           <- VehicleRepository.exists(namespace, vin)
-      installedPackages <- VehicleRepository.installedOn(namespace, vin)
+      vehicle           <- VehicleRepository.exists(vin)
+      installedPackages <- VehicleRepository.installedOn(vehicle.namespace, vin)
       newPackages       =  packages -- installedPackages
       deletedPackages   =  installedPackages -- packages
-      newAvailablePackages <- filterAvailablePackages(newPackages)
+      newAvailablePackages <- filterAvailablePackages(vehicle.namespace, newPackages)
       _                 <- helper(vehicle, newAvailablePackages, deletedPackages)
     } yield ()
   }
 
   def installedOn(namespace: Namespace, vin: Vehicle.Vin)
                  (implicit ec: ExecutionContext) : DBIO[Set[PackageId]] =
-    installedPackages.filter(i => i.namespace === namespace && i.vin === vin).result.map(_.map( _._3).toSet)
+    for {
+      _ <- exists(vin)
+      installed <- installedPackages
+        .filter(i => i.namespace === namespace && i.vin === vin)
+        .result.map(_.map(_._3).toSet)
+    } yield installed
 
   def listInstalledPackages: DBIO[Seq[(Namespace, Vehicle.Vin, PackageId)]] =
     installedPackages.result
@@ -216,30 +219,6 @@ object VehicleRepository {
 
   def deleteInstalledPackageByVin(namespace: Namespace, vin: Vehicle.Vin): DBIO[Int] =
     installedPackages.filter(i => i.namespace === namespace && i.vin === vin).delete
-
-  def packagesOnVinMap
-    (namespace: Namespace)
-    (implicit ec: ExecutionContext)
-      : DBIO[Map[Vehicle.Vin, Seq[PackageId]]] =
-    listInstalledPackages
-      .map(_
-        .filter(_._1 == namespace)
-        .sortBy(_._2)
-        .groupBy(_._2)
-        .mapValues(_.map(_._3)))
-    // TODO: namespaces?
-
-  def packagesOnVin
-    (namespace: Namespace, vin: Vehicle.Vin)
-    (implicit ec: ExecutionContext): DBIO[Seq[PackageId]] =
-    for {
-      _  <- VehicleRepository.exists(namespace, vin)
-      ps <- packagesOnVinMap(namespace)
-              .map(_
-                .get(vin)
-                .toList
-                .flatten)
-    } yield ps
 
   /*
    * Installed components.
@@ -271,7 +250,7 @@ object VehicleRepository {
   def installComponent(namespace: Namespace, vin: Vehicle.Vin, part: Component.PartNumber)
                       (implicit ec: ExecutionContext): DBIO[Unit] =
     for {
-      _ <- VehicleRepository.exists(namespace, vin)
+      _ <- VehicleRepository.exists(vin)
       _ <- ComponentRepository.exists(namespace, part)
       _ <- installedComponents += ((namespace, vin, part))
     } yield ()
@@ -280,7 +259,7 @@ object VehicleRepository {
   (namespace: Namespace, vin: Vehicle.Vin, part: Component.PartNumber)
   (implicit ec: ExecutionContext): DBIO[Unit] =
     for {
-      _ <- exists(namespace, vin)
+      _ <- exists(vin)
       _ <- ComponentRepository.exists(namespace, part)
       _ <- installedComponents.filter { ic =>
         ic.namespace  === namespace &&
@@ -289,80 +268,46 @@ object VehicleRepository {
       }.delete
     } yield ()
 
-  def componentsOnVinMap
-    (namespace: Namespace)
-    (implicit ec: ExecutionContext): DBIO[Map[Vehicle.Vin, Seq[Component.PartNumber]]] =
-    VehicleRepository.listInstalledComponents
-      .map(_
-        .filter(_._1 == namespace)
-        .sortBy(_._2)
-        .groupBy(_._2)
-        .mapValues(_.map(_._3)))
-
   def componentsOnVin(namespace: Namespace, vin: Vehicle.Vin)
-                     (implicit ec: ExecutionContext): DBIO[Seq[Component.PartNumber]] =
-    for {
-      _  <- exists(namespace, vin)
-      cs <- componentsOnVinMap(namespace)
-              .map(_
-                .get(vin)
-                .toList
-                .flatten)
-    } yield cs
+                     (implicit ec: ExecutionContext): DBIO[Seq[Component.PartNumber]] = {
+    val vinComponentsQ =
+      installedComponents
+        .filter(_.namespace === namespace)
+        .filter(_.vin === vin)
+        .map(_.partNumber)
+        .result
 
-  def vinsWithPackagesAndComponents
-    (namespace: Namespace)
-    (implicit ec: ExecutionContext)
-      : DBIO[Seq[(Vehicle, (Seq[PackageId], Seq[Component.PartNumber]))]] =
     for {
-      vs   <- VehicleRepository.list
-      ps   : Seq[Seq[PackageId]]
-           <- DBIO.sequence(vs.map(v => VehicleRepository.packagesOnVin(namespace, v.vin)))
-      cs   : Seq[Seq[Component.PartNumber]]
-           <- DBIO.sequence(vs.map(v => VehicleRepository.componentsOnVin(namespace, v.vin)))
-      vpcs : Seq[(Vehicle, (Seq[PackageId], Seq[Component.PartNumber]))]
-           =  vs.zip(ps.zip(cs))
-    } yield vpcs
-    // TODO: namespaces?
+      _ <- exists(vin)
+      cs <- vinComponentsQ
+    } yield cs
+  }
 
   /*
    * Searching
    */
 
-  def search(namespace : Namespace,
+  def search(db: Database,
+             namespace : Namespace,
              re        : Option[Refined[String, Regex]],
              pkgName   : Option[PackageId.Name],
              pkgVersion: Option[PackageId.Version],
              part      : Option[Component.PartNumber])
-            (implicit ec: ExecutionContext): DBIO[Seq[Vehicle]] = {
+            (implicit ec: ExecutionContext, mat: ActorMaterializer): Future[Seq[Vehicle]] = {
 
     def toRegex[T](r: Refined[String, T]): Refined[String, Regex] =
       Refined.unsafeApply(r.get)
 
     val vins  = re.fold[FilterAST](True)(VinMatches(_))
     val pkgs  = (pkgName, pkgVersion) match
-      { case (Some(re1), Some(re2)) => HasPackage(toRegex(re1), toRegex(re2))
-        case _                      => True
-      }
+    { case (Some(re1), Some(re2)) => HasPackage(toRegex(re1), toRegex(re2))
+      case _                      => True
+    }
+
     val comps = part.fold[FilterAST](True)(r => HasComponent(toRegex(r)))
 
-    for {
-      vpcs <- vinsWithPackagesAndComponents(namespace)
-    } yield vpcs.filter(query(And(vins, And(pkgs, comps)))).map(_._1)
+    val filter = And(vins, And(pkgs, comps))
 
+    DbDepResolver.vehiclesForFilter(namespace, db, filter)
   }
-
-  /*
-   * Resolving package dependencies.
-   */
-
-  def resolve(namespace: Namespace, pkgId: PackageId)
-             (implicit ec: ExecutionContext): DBIO[Map[Vehicle.Vin, Seq[PackageId]]] =
-    for {
-      _    <- PackageRepository.exists(namespace, pkgId)
-      fs   <- PackageFilterRepository.listFiltersForPackage(namespace, pkgId)
-      vpcs <- vinsWithPackagesAndComponents(namespace)
-    } yield ResolveFunctions.makeFakeDependencyMap(pkgId,
-              vpcs.filter(query(fs.map(_.expression).map(parseValidFilter).foldLeft[FilterAST](True)(And)))
-                  .map(_._1))
 }

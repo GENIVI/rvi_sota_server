@@ -8,26 +8,21 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.StatusCodes.NoContent
 import akka.http.scaladsl.server._
-import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
+import org.genivi.sota.datatype.NamespaceDirective
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
-import org.genivi.sota.resolver.data.Firmware
 import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.resolver.common.Errors
-import org.genivi.sota.resolver.common.NamespaceDirective._
 import org.genivi.sota.resolver.common.RefinementDirectives.{refinedPackageId, refinedPartNumber}
-import org.genivi.sota.resolver.components.{Component, ComponentRepository}
-import org.genivi.sota.resolver.packages.Package
+import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.rest.Validation._
-import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 import scala.concurrent.ExecutionContext
-import slick.dbio.{DBIOAction, DBIO}
 import slick.driver.MySQLDriver.api._
 
 
@@ -36,7 +31,8 @@ import slick.driver.MySQLDriver.api._
  *
  * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
  */
-class VehicleDirectives(implicit system: ActorSystem,
+class VehicleDirectives(namespaceExtractor: Directive1[Namespace])
+                       (implicit system: ActorSystem,
                         db: Database,
                         mat: ActorMaterializer,
                         ec: ExecutionContext) {
@@ -61,11 +57,11 @@ class VehicleDirectives(implicit system: ActorSystem,
                 'packageName.as[PackageId.Name].?,
                 'packageVersion.as[PackageId.Version].?,
                 'component.as[Component.PartNumber].?)) { case (re, pn, pv, cp) =>
-      complete(db.run(VehicleRepository.search(ns, re, pn, pv, cp)))
+      complete(VehicleRepository.search(db, ns, re, pn, pv, cp))
     }
 
   def getVehicle(ns: Namespace, vin: Vehicle.Vin): Route =
-    completeOrRecoverWith(db.run(VehicleRepository.exists(ns, vin))) {
+    completeOrRecoverWith(db.run(VehicleRepository.exists(vin))) {
       Errors.onMissingVehicle
     }
 
@@ -78,7 +74,7 @@ class VehicleDirectives(implicit system: ActorSystem,
     }
 
   def getPackages(ns: Namespace, vin: Vehicle.Vin): Route =
-    completeOrRecoverWith(db.run(VehicleRepository.packagesOnVin(ns, vin))) {
+    completeOrRecoverWith(db.run(VehicleRepository.installedOn(ns, vin))) {
       Errors.onMissingVehicle
     }
 
@@ -92,11 +88,11 @@ class VehicleDirectives(implicit system: ActorSystem,
       Errors.onMissingVehicle orElse Errors.onMissingPackage
     }
 
-  def updateInstalledSoftware(ns: Namespace, vin: Vehicle.Vin): Route =
+  def updateInstalledSoftware(vin: Vehicle.Vin): Route =
     entity(as[InstalledSoftware]) { installedSoftware =>
       onSuccess(db.run(for {
-        _ <- VehicleRepository.updateInstalledPackages(ns, vin, installedSoftware.packages)
-        _ <- VehicleRepository.updateInstalledFirmware(ns, vin, installedSoftware.firmware)
+        _ <- VehicleRepository.updateInstalledPackages(vin, installedSoftware.packages)
+        _ <- VehicleRepository.updateInstalledFirmware(vin, installedSoftware.firmware)
       } yield ())) {
         complete(StatusCodes.NoContent)
       }
@@ -111,7 +107,7 @@ class VehicleDirectives(implicit system: ActorSystem,
    * @throws      Errors.MissingVehicle if vehicle doesn't exist
    */
   def packageApi(vin: Vehicle.Vin): Route = {
-    (pathPrefix("package") & extractNamespace) { ns =>
+    (pathPrefix("package") & namespaceExtractor) { ns =>
       (get & pathEnd) {
         getPackages(ns, vin)
       } ~
@@ -124,8 +120,8 @@ class VehicleDirectives(implicit system: ActorSystem,
         }
       }
     } ~
-    (path("packages") & put & handleExceptions(installedPackagesHandler) & extractNamespace ) { ns =>
-      updateInstalledSoftware(ns, vin)
+    (path("packages") & put & handleExceptions(installedPackagesHandler)) {
+      updateInstalledSoftware(vin)
     }
   }
 
@@ -149,7 +145,7 @@ class VehicleDirectives(implicit system: ActorSystem,
    * @throws      Errors.MissingVehicle if vehicle doesn't exist
    */
   def componentApi(vin: Vehicle.Vin): Route =
-    (pathPrefix("component") & extractNamespace) { ns =>
+    (pathPrefix("component") & namespaceExtractor) { ns =>
       (get & pathEnd) {
         getComponents(ns, vin)
       } ~
@@ -164,22 +160,18 @@ class VehicleDirectives(implicit system: ActorSystem,
     }
 
   def vehicleApi: Route =
-    (pathPrefix("vehicles") & extractNamespace) { ns =>
-      (get & pathEnd) {
-        searchVehicles(ns)
-      } ~
+    pathPrefix("vehicles") {
       extractVin { vin =>
-        (get & pathEnd) {
-          getVehicle(ns, vin)
-        } ~
-        (put & pathEnd) {
-          addVehicle(ns, vin)
-        } ~
-        (delete & pathEnd) {
-          deleteVehicle(ns, vin)
-        } ~
         packageApi(vin) ~
-        componentApi(vin)
+        componentApi(vin) ~
+          namespaceExtractor { ns =>
+            (get & pathEnd)    { getVehicle(ns, vin) } ~
+            (put & pathEnd)    { addVehicle(ns, vin) } ~
+            (delete & pathEnd) { deleteVehicle(ns, vin) }
+          }
+      } ~
+      namespaceExtractor { ns =>
+        (get & pathEnd) { searchVehicles(ns) }
       }
     }
 
@@ -196,7 +188,7 @@ class VehicleDirectives(implicit system: ActorSystem,
    */
   def route: Route = {
     vehicleApi ~
-    (pathPrefix("firmware") & get & extractNamespace & extractVin) { (ns, vin) =>
+    (pathPrefix("firmware") & get & namespaceExtractor & extractVin) { (ns, vin) =>
         getFirmware(ns, vin)
     }
   }

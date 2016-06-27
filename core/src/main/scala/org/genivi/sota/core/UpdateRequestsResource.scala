@@ -6,6 +6,7 @@ package org.genivi.sota.core
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshaller._
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
 import eu.timepit.refined._
@@ -13,17 +14,18 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string._
 import io.circe.generic.auto._
 import io.circe.syntax._
-import org.genivi.sota.core.common.NamespaceDirective._
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.data.client._
-import org.genivi.sota.core.db.{OperationResults, UpdateSpecs}
+import org.genivi.sota.core.db.UpdateSpecs
 import org.genivi.sota.core.resolver.ExternalResolverClient
 import org.genivi.sota.data.Namespace._
+import org.genivi.sota.datatype.NamespaceDirective
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.rest.Validation._
 import slick.driver.MySQLDriver.api.Database
 
-class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, updateService: UpdateService)
+class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, updateService: UpdateService,
+                             namespaceExtractor: Directive1[Namespace])
                             (implicit system: ActorSystem, mat: ActorMaterializer) {
 
   import CirceMarshallingSupport._
@@ -67,7 +69,7 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
           pkg => resolver.resolve(ns, pkg.id).map {
             m => m.map { case (v, p) => (v.vin, p) }
           }
-        )
+        ) map (_ => (StatusCodes.Created, req))
       )
     }
   }
@@ -80,7 +82,7 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
       get {
         fetchUpdates
       } ~
-      (post & extractNamespace) { ns =>
+      (post & namespaceExtractor) { ns =>
         createUpdate(ns)
       }
     }

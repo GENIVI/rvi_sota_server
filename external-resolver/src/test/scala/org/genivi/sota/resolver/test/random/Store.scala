@@ -176,11 +176,33 @@ case class RawStore(
     ) yield (veh, comps)
   }
 
+  /**
+    * Each pair indicates a Component that can be installed on a Vehicle.
+    */
+  def vehicleComponentPairsToInstall: Seq[(Vehicle, Component)] = {
+    for (
+      (veh, (packs, installedComps)) <- vehicles.toSeq;
+      cmp <- components
+      if !installedComps.contains(cmp)
+    ) yield (veh, cmp)
+  }
+
   def packagesWithSomeFilter: Map[Package, Set[Filter]] = {
     for (
       (p, fs) <- packages
       if fs.nonEmpty
     ) yield (p, fs)
+  }
+
+  /**
+    * Each pair indicates a Filter that can be installed on a Package.
+    */
+  def packageFilterPairsToInstall: Seq[(Package, Filter)] = {
+    for (
+      (p, installedFilters) <- packages.toSeq;
+      f <- filters
+      if !installedFilters.contains(f)
+    ) yield (p, f)
   }
 
   def vehiclesHaving(cmpn: Component): Set[Vehicle] = toSet {
@@ -336,6 +358,14 @@ object Store {
       (veh, pick(comps))
     }
 
+  def pickVehicleComponentPairToInstall: StateT[Gen, RawStore, (Vehicle, Component)] =
+    for {
+      s     <- StateT.stateTMonadState[Gen, RawStore].get
+      pairs  = s.vehicleComponentPairsToInstall
+    } yield {
+      pick(pairs)
+    }
+
   def pickVehicleWithPackage: StateT[Gen, RawStore, (Vehicle, Package)] =
     for {
       s    <- StateT.stateTMonadState[Gen, RawStore].get
@@ -352,6 +382,14 @@ object Store {
     } yield {
       val (veh, fs) = pick(pfs)
       (veh, pick(fs))
+    }
+
+  def pickPackageFilterPairToInstall: StateT[Gen, RawStore, (Package, Filter)] =
+    for {
+      s     <- StateT.stateTMonadState[Gen, RawStore].get
+      pairs  = s.packageFilterPairsToInstall
+    } yield {
+      pick(pairs)
     }
 
   def numberOfVehicles: StateT[Gen, RawStore, Int] =
@@ -389,5 +427,13 @@ object Store {
   def numberOfPackagesWithSomeFilter: StateT[Gen, RawStore, Int] =
     StateT.stateTMonadState[Gen, RawStore].get map
       (_.packagesWithSomeFilter.size)
+
+  def numberOfVehicleComponentPairsToInstall: StateT[Gen, RawStore, Int] =
+    StateT.stateTMonadState[Gen, RawStore].get map
+      (_.vehicleComponentPairsToInstall.size)
+
+  def numberOfPackageFilterPairsToInstall: StateT[Gen, RawStore, Int] =
+    StateT.stateTMonadState[Gen, RawStore].get map
+      (_.packageFilterPairsToInstall.size)
 }
 // scalastyle:on

@@ -14,6 +14,7 @@ import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
 import Misc._
 import eu.timepit.refined.api.Refined
+import org.genivi.sota.resolver.test.generators._
 
 
 // scalastyle:off number.of.types
@@ -237,8 +238,7 @@ trait CommandUtils extends
 
   def genCommandInstallComponent(s: RawStore): Gen[InstallComponent] =
     for {
-      veh <- Store.pickVehicle.runA(s)
-      cmp <- Store.pickComponent.runA(s)
+      (veh, cmp) <- Store.pickVehicleComponentPairToInstall.runA(s)
     } yield InstallComponent(veh, cmp)
 
   def genCommandUninstallComponent(s: RawStore): Gen[UninstallComponent] =
@@ -248,8 +248,7 @@ trait CommandUtils extends
 
   def genCommandAddFilterToPackage(s: RawStore): Gen[AddFilterToPackage] =
     for {
-      pkg  <- Store.pickPackage.runA(s)
-      filt <- Store.pickFilter.runA(s)
+      (pkg, filt) <- Store.pickPackageFilterPairToInstall.runA(s)
     } yield AddFilterToPackage(pkg, filt)
 
   def genCommandRemoveFilterForPackage(s: RawStore): Gen[RemoveFilterForPackage] =
@@ -527,6 +526,8 @@ object Command extends CommandUtils with InvalidCommandUtils {
       vcomp <- Store.numberOfVehiclesWithSomeComponent
       vpaks <- Store.numberOfVehiclesWithSomePackage
       pfilt <- Store.numberOfPackagesWithSomeFilter
+      vcnst <- Store.numberOfVehicleComponentPairsToInstall
+      pfnst <- Store.numberOfPackageFilterPairsToInstall
       cmd0  <- lift(Gen.frequency(
 
         // If there are few vehicles, packages or filters in the world,
@@ -544,8 +545,8 @@ object Command extends CommandUtils with InvalidCommandUtils {
         // packages on the vehicles with high probability.
         (if (vehs > 0 && pkgs > 0) 100 else 0, genCommandInstallPackage(s)),
 
-        // If there are vehicles and components
-        (if (vehs > 0 && comps > 0) 100 else 0, genCommandInstallComponent(s)),
+        // If there are components that can be installed on vehicles
+        (if (vcnst > 0) 100 else 0, genCommandInstallComponent(s)),
 
         (if (vpaks > 0) 10 else 0, genCommandUninstallPackage(s)),
 
@@ -556,7 +557,7 @@ object Command extends CommandUtils with InvalidCommandUtils {
         (if (comps > 0) 50 else 0, genCommandEditComponent(s)),
 
         // If there are packages and filters, install some filter to some package.
-        (if (pkgs > 0 && filts > 0) 50 else 0, genCommandAddFilterToPackage(s)),
+        (if (pfnst > 0) 50 else 0, genCommandAddFilterToPackage(s)),
 
         (if (pfilt > 0) 50 else 0, genCommandRemoveFilterForPackage(s)),
 

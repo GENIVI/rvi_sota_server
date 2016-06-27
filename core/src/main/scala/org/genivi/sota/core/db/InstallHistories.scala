@@ -7,25 +7,23 @@ package org.genivi.sota.core.db
 import org.genivi.sota.core.data.InstallHistory
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
-import org.joda.time.DateTime
+import org.genivi.sota.core.data.UpdateRequest
+import org.genivi.sota.core.data.UpdateSpec
+import java.time.Instant
+
 import slick.driver.MySQLDriver.api._
 
 
-/**
- * Database mapping definition for the InstallHistory table.
- * This provides a history of update installs that have been attempted on a
- * VIN. It records the identity of the update, thi VIN, the time of the attempt
- * and whether the install was successful
- */
 object InstallHistories {
 
   import org.genivi.sota.db.SlickExtensions._
   import org.genivi.sota.refined.SlickRefined._
 
   /**
-   * Slick mapping definition for the InstallHistory table
-   * @see [[http://slick.typesafe.com/]]
-   */
+    * A log of update installs attempted on a VIN.
+    * Each logged row includes the [[UpdateRequest]] identity, VIN, time of attempt
+    * and whether the install was successful.
+    */
   // scalastyle:off
   class InstallHistoryTable(tag: Tag) extends Table[InstallHistory](tag, "InstallHistory") {
 
@@ -36,7 +34,7 @@ object InstallHistories {
     def packageName    = column[PackageId.Name]   ("packageName")
     def packageVersion = column[PackageId.Version]("packageVersion")
     def success        = column[Boolean]          ("success")
-    def completionTime = column[DateTime]         ("completionTime")
+    def completionTime = column[Instant]          ("completionTime")
 
     // given `id` is already unique across namespaces, no need to include namespace. Also avoids Slick issue #966.
     def pk = primaryKey("pk_InstallHistoryTable", (id))
@@ -54,8 +52,7 @@ object InstallHistories {
   private val installHistories = TableQuery[InstallHistoryTable]
 
   /**
-   * List the install attempts that have been made on a specific VIN
-   * This information is fetched from the InstallHistory SQL table.
+   * List the install attempts on a specific VIN, fetched from [[InstallHistoryTable]].
    *
    * @param vin The VIN to fetch data for
    * @return A list of the install history for that VIN
@@ -64,16 +61,32 @@ object InstallHistories {
     installHistories.filter(i => i.namespace === ns && i.vin === vin).result
 
   /**
-   * Record the outcome of a install attempt on a specific VIN. The result of
-   * the install is returned from the SOTA client via RVI.
+   * Add a row (with auto-inc PK) to [[InstallHistoryTable]]
+   * to persist the outcome of an [[UpdateSpec]] install attempt
+   * as reported by the SOTA client via RVI.
    *
    * @param vin The VIN that the install attempt ran on
-   * @param updateId The Id of the update that was attempted to be installed
+   * @param updateId The Id of the [[UpdateRequest]] that was attempted to be installed
    * @param success Whether the install was successful
    */
   def log(ns: Namespace, vin: Vehicle.Vin, updateId: java.util.UUID,
           packageId: PackageId, success: Boolean): DBIO[Int] = {
-    installHistories += InstallHistory(None, ns, vin, updateId, packageId, success, DateTime.now)
+    installHistories += InstallHistory(None, ns, vin, updateId, packageId, success, Instant.now)
+  }
+
+  /**
+    * Add a row (with auto-inc PK) to [[InstallHistoryTable]]
+    * to persist the outcome of an [[UpdateSpec]] install attempt
+    * as reported by the SOTA client via RVI.
+    *
+    * @param spec The ([[UpdateRequest]], VIN) combination whose install was attempted
+    * @param success Whether the install was successful
+    */
+  def log(spec: UpdateSpec, success: Boolean): DBIO[Int] = {
+    log(
+      spec.namespace, spec.vin,
+      spec.request.id, spec.request.packageId,
+      success)
   }
 
 }

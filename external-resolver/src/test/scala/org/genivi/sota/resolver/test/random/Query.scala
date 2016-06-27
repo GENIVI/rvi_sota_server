@@ -103,7 +103,7 @@ object Query extends
 
     case Resolve(pkgId)             =>
       State.get map (s => Semantics(Some(q),
-        resolve2(pkgId), StatusCodes.OK,
+        resolve2(defaultNs, pkgId), StatusCodes.OK,
         SuccessVehicleMap(vehicleMap(s, pkgId))))
 
   }

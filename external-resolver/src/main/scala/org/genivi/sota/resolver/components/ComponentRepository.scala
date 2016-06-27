@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.resolver.components
 
+import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import org.genivi.sota.data.Namespace._
@@ -11,7 +12,8 @@ import org.genivi.sota.db.Operators._
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.vehicles.VehicleRepository
-import scala.concurrent.ExecutionContext
+
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
 import slick.driver.MySQLDriver.api._
 
@@ -40,13 +42,16 @@ object ComponentRepository {
     components.insertOrUpdate(comp)
 
   def removeComponent(namespace: Namespace, part: Component.PartNumber)
-                     (implicit ec: ExecutionContext): DBIO[Int] =
-    for {
-      // TODO: namespace
-      vs <- VehicleRepository.search(namespace, None, None, None, Some(part))
-      r  <- if (vs.nonEmpty) { DBIO.failed(Errors.ComponentIsInstalledException) }
-            else { components.filter(i => i.namespace === namespace && i.partNumber === part).delete }
-    } yield r
+                     (implicit db: Database, ec: ExecutionContext, mat: ActorMaterializer): Future[Int] =
+    // TODO: namespace
+    VehicleRepository.search(db, namespace, None, None, None, Some(part)) flatMap { vs =>
+      if (vs.nonEmpty) {
+        Future.failed(Errors.ComponentIsInstalledException)
+      } else {
+        val dbIO = components.filter (i => i.namespace === namespace && i.partNumber === part).delete
+        db.run(dbIO)
+      }
+    }
 
   def exists(namespace: Namespace,
              part: Component.PartNumber)

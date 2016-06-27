@@ -4,9 +4,12 @@ import play.sbt.routes.RoutesKeys
 import play.sbt.{PlayScala, PlaySettings}
 import sbt._
 import sbt.Keys._
-import sbtbuildinfo.{BuildInfoKey, BuildInfoPlugin}
+import sbtbuildinfo._
 import sbtbuildinfo.BuildInfoKeys._
-import com.typesafe.sbt.packager.Keys.dockerExposedPorts
+import com.typesafe.sbt.packager.docker.DockerPlugin
+import DockerPlugin.autoImport.Docker
+import com.typesafe.sbt.packager.Keys._
+import com.typesafe.sbt.packager.docker._
 import com.typesafe.sbt.web._
 
 
@@ -48,25 +51,26 @@ object SotaBuild extends Build {
 
 
   lazy val compilerSettings = Seq(
-    scalacOptions in Compile ++= Seq("-encoding", "UTF-8", "-target:jvm-1.6", "-deprecation", "-feature", "-unchecked", "-Xlog-reflective-calls", "-Xlint", "-language:higherKinds"),
+    scalacOptions in Compile ++= Seq("-encoding", "UTF-8", "-target:jvm-1.8", "-deprecation", "-feature", "-unchecked", "-Xlog-reflective-calls", "-Xlint", "-language:higherKinds"),
     javacOptions in compile ++= Seq("-encoding", "UTF-8", "-source", "1.6", "-target", "1.6", "-Xlint:unchecked", "-Xlint:deprecation")
   )
 
   lazy val commonSettings = basicSettings ++ compilerSettings ++ Packaging.settings ++ Seq(
     buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
-    buildInfoPackage := organization.value + ".sota." + name.value.replaceAll("sota-", "")
+    buildInfoPackage := organization.value + ".sota." + name.value.replaceAll("sota-", ""),
+    buildInfoOptions ++= Seq(BuildInfoOption.ToJson, BuildInfoOption.ToMap)
   )
 
   // the sub-projects
   lazy val common = Project(id = "sota-common", base = file("common"))
     .settings(basicSettings ++ compilerSettings)
-    .settings( libraryDependencies ++= Dependencies.Rest :+ Dependencies.AkkaHttpCirceJson :+ Dependencies.NscalaTime :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
+    .settings( libraryDependencies ++= Dependencies.Rest :+ Dependencies.AkkaHttpCirceJson :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
     .dependsOn(commonData)
     .settings(Publish.settings)
 
   lazy val commonData = Project(id = "sota-common-data", base = file("common-data"))
     .settings(basicSettings ++ compilerSettings)
-    .settings(libraryDependencies ++= Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.CommonsCodec :+ Dependencies.TypesafeConfig :+ Dependencies.NscalaTime)
+    .settings(libraryDependencies ++= Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.CommonsCodec :+ Dependencies.TypesafeConfig)
     .settings(Publish.settings)
 
   lazy val commonTest = Project(id = "sota-common-test", base = file("common-test"))
@@ -83,7 +87,7 @@ object SotaBuild extends Build {
 
   lazy val externalResolver = Project(id = "sota-resolver", base = file("external-resolver"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.ParserCombinators :+ Dependencies.Flyway,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.AkkaStream :+ Dependencies.AkkaStreamTestKit :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.ParserCombinators :+ Dependencies.Flyway,
       testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RandomTest"),
       testOptions in RandomTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RandomTest"),
       parallelExecution in Test := true,
@@ -92,6 +96,9 @@ object SotaBuild extends Build {
       flywayUser := sys.env.get("RESOLVER_DB_USER").orElse( sys.props.get("resolver.db.user") ).getOrElse("sota"),
       flywayPassword := sys.env.get("RESOLVER_DB_PASSWORD").orElse( sys.props.get("resolver.db.password")).getOrElse("s0ta")
     ))
+    .settings(mappings in Docker += (file("deploy/wait-for-it.sh") -> "/opt/docker/wait-for-it.sh"))
+    .settings(mappings in Docker += (file("deploy/entrypoint-resolver.sh") -> "/opt/docker/entrypoint.sh"))
+    .settings(dockerEntrypoint := Seq("./entrypoint.sh"))
     .settings(inConfig(RandomTests)(Defaults.testTasks): _*)
     .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
     .configs(RandomTests)
@@ -103,7 +110,7 @@ object SotaBuild extends Build {
 
   lazy val core = Project(id = "sota-core", base = file("core"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.NscalaTime :+ Dependencies.Scalaz :+ Dependencies.Flyway :+ Dependencies.AmazonS3,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Scalaz :+ Dependencies.Flyway :+ Dependencies.AmazonS3,
       testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RequiresRvi", "-l", "IntegrationTest"),
       testOptions in IntegrationTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RequiresRvi", "-n", "IntegrationTest"),
       parallelExecution in Test := true,
@@ -112,6 +119,9 @@ object SotaBuild extends Build {
       flywayUser := sys.env.get("CORE_DB_USER").orElse( sys.props.get("core.db.user") ).getOrElse("sota"),
       flywayPassword := sys.env.get("CORE_DB_PASSWORD").orElse( sys.props.get("core.db.password")).getOrElse("s0ta")
     ))
+    .settings(mappings in Docker += (file("deploy/wait-for-it.sh") -> "/opt/docker/wait-for-it.sh"))
+    .settings(mappings in Docker += (file("deploy/entrypoint-core.sh") -> "/opt/docker/entrypoint.sh"))
+    .settings(dockerEntrypoint := Seq("./entrypoint.sh"))
     .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
     .settings(inConfig(IntegrationTests)(Defaults.testTasks): _*)
     .configs(IntegrationTests, UnitTests)
@@ -149,7 +159,7 @@ object SotaBuild extends Build {
       ) ++ Dependencies.Database ++ Dependencies.Play2Auth
     ))
     .dependsOn(common)
-    .enablePlugins(PlayScala, SbtWeb)
+    .enablePlugins(PlayScala, SbtWeb, BuildInfoPlugin)
     .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
     .settings(inConfig(IntegrationTests)(Defaults.testTasks): _*)
     .settings(inConfig(BrowserTests)(Defaults.testTasks): _*)
@@ -192,6 +202,10 @@ object Dependencies {
 
   val AkkaHttp = "com.typesafe.akka" %% "akka-http-experimental" % AkkaVersion
 
+  val AkkaStream = "com.typesafe.akka" %% "akka-stream" % AkkaVersion
+
+  val AkkaStreamTestKit = "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % "test"
+
   val AkkaHttpTestKit = "com.typesafe.akka" %% "akka-http-testkit" % AkkaVersion % "test"
 
   val AkkaTestKit = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % "test"
@@ -233,9 +247,9 @@ object Dependencies {
   lazy val TypesafeConfig = "com.typesafe" % "config" % "1.3.0"
 
   lazy val Database = Seq (
-    "com.typesafe.slick" %% "slick" % "3.0.2",
-    "com.zaxxer" % "HikariCP" % "2.3.8",
-    "org.mariadb.jdbc" % "mariadb-java-client" % "1.2.0"
+    "com.typesafe.slick" %% "slick" % "3.1.1",
+    "com.typesafe.slick" %% "slick-hikaricp" % "3.1.1",
+    "org.mariadb.jdbc" % "mariadb-java-client" % "1.4.4"
   )
 
   lazy val Play2Auth = Seq(
@@ -244,8 +258,6 @@ object Dependencies {
   )
 
   lazy val Slick = Database ++ Seq(Flyway)
-
-  lazy val NscalaTime = "com.github.nscala-time" %% "nscala-time" % "2.0.0"
 
   lazy val ParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
 

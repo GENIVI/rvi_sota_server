@@ -9,12 +9,14 @@ import eu.timepit.refined.api.Refined
 import java.nio.file.{Files, Paths, StandardOpenOption}
 import java.security.MessageDigest
 import java.util.UUID
+
 import org.apache.commons.codec.binary.Hex
 import org.genivi.sota.core.data._
 import org.genivi.sota.data.Namespace._
-import org.genivi.sota.data.{Namespaces, PackageId, Vehicle, VehicleGenerators}
+import org.genivi.sota.data.{Namespace => _, _}
 import org.scalacheck.{Arbitrary, Gen}
-
+import java.time.Instant
+import java.time.Duration
 
 /**
  * Generators for property-based testing of core objects
@@ -45,18 +47,16 @@ trait Generators {
 
   implicit val arbitrayPackage: Arbitrary[Package] = Arbitrary( PackageGen )
 
-  import com.github.nscala_time.time.Imports._
-
   def updateRequestGen(namespaceGen: Gen[Namespace], packageIdGen : Gen[PackageId]) : Gen[UpdateRequest] = for {
     ns           <- namespaceGen
     packageId    <- packageIdGen
-    startAfter   <- Gen.choose(10, 100).map( DateTime.now + _.days)
-    finishBefore <- Gen.choose(10, 100).map(x => startAfter + x.days)
+    startAfter   <- Gen.choose(10, 100).map( d => Instant.now.plus(Duration.ofDays(d)) )
+    finishBefore <- Gen.choose(10, 100).map( x => startAfter.plus(Duration.ofDays(x)) )
     prio         <- Gen.choose(1, 10)
     sig          <- Gen.alphaStr
     desc         <- Gen.option(Arbitrary.arbitrary[String])
     reqConfirm   <- Arbitrary.arbitrary[Boolean]
-  } yield UpdateRequest(UUID.randomUUID(), ns, packageId, DateTime.now, startAfter to finishBefore,
+  } yield UpdateRequest(UUID.randomUUID(), ns, packageId, Instant.now, Interval(startAfter, finishBefore),
                         prio, sig, desc, reqConfirm)
 
   def vinDepGen(packages: Seq[Package]) : Gen[(Vehicle.Vin, Set[PackageId])] = for {
@@ -65,7 +65,7 @@ trait Generators {
     packages          <- Gen.pick(m, packages).map( _.map(_.id) )
   } yield vin -> packages.toSet
 
-  def dependenciesGen(packages: Seq[Package] ) : Gen[UpdateService.VinsToPackages] = for {
+  def dependenciesGen(packages: Seq[Package] ) : Gen[UpdateService.VinsToPackageIds] = for {
     n <- Gen.choose(1, 10)
     r <- Gen.listOfN(n, vinDepGen(packages))
   } yield r.toMap
@@ -97,14 +97,17 @@ trait Generators {
     template.copy( uri = Uri( path.toUri().toString() ), checkSum = Hex.encodeHexString( digest.digest() ))
   }
 
-  def genUpdateSpecFor(vehicle: Vehicle): Gen[(Package, UpdateSpec)] = for {
+  def genUpdateSpecFor(vehicle: Vehicle, withMillis: Long = -1): Gen[(Package, UpdateSpec)] = for {
     smallSize <- Gen.chooseNum(1024, 1024 * 10)
     packageModel <- PackageGen.map(_.copy(size = smallSize.toLong))
     packageWithUri = Generators.generatePackageData(packageModel)
     updateRequest <- updateRequestGen(defaultNs, PackageIdGen).map(_.copy(packageId = packageWithUri.id))
   } yield {
-    val updateSpec = UpdateSpec(defaultNs, updateRequest, vehicle.vin,
-      UpdateStatus.Pending, List(packageWithUri ).toSet)
+    val dt =
+      if (withMillis >= 0) { Instant.ofEpochMilli(withMillis) }
+      else { Instant.now }
+    val updateSpec = UpdateSpec(updateRequest, vehicle.vin,
+      UpdateStatus.Pending, List(packageWithUri ).toSet, 0, dt)
 
     (packageWithUri, updateSpec)
   }

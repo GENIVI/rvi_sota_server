@@ -6,12 +6,11 @@ package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
 import eu.timepit.refined.api.Refined
-import eu.timepit.refined.refineMV
+import eu.timepit.refined.refineV
 import io.circe.generic.auto._
 import org.genivi.sota.data.Namespaces
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.components.Component
-import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 
 /**
  * Specs for Component REST actions
@@ -20,10 +19,10 @@ class ComponentResourceWordSpec extends ResourceWordSpec with Namespaces {
 
   val components = "components"
 
-  val jobby0: Component.PartNumber = refineMV("jobby0")
-  val jobby1: Component.PartNumber = refineMV("jobby1")
-  val bobby0: Component.PartNumber = refineMV("bobby0")
-  val bobby1: Component.PartNumber = refineMV("bobby1")
+  val jobby0: Component.PartNumber = refineV[Component.ValidPartNumber]("jobby0").right.get
+  val jobby1: Component.PartNumber = refineV[Component.ValidPartNumber]("jobby1").right.get
+  val bobby0: Component.PartNumber = refineV[Component.ValidPartNumber]("bobby0").right.get
+  val bobby1: Component.PartNumber = refineV[Component.ValidPartNumber]("bobby1").right.get
 
   "Component resource" should {
 

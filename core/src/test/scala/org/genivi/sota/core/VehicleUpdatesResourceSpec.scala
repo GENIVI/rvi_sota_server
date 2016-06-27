@@ -22,7 +22,8 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.generic.auto._
 import org.genivi.sota.core.data.client.PendingUpdateRequest
 import org.genivi.sota.core.resolver.{Connectivity, ConnectivityClient, DefaultConnectivity}
-import org.joda.time.DateTime
+import org.genivi.sota.datatype.NamespaceDirective
+import java.time.Instant
 
 import scala.concurrent.Future
 
@@ -35,11 +36,13 @@ class VehicleUpdatesResourceSpec extends FunSuite
   with UpdateResourcesDatabaseSpec
   with VehicleDatabaseSpec {
 
+  import NamespaceDirective._
+
   val fakeResolver = new FakeExternalResolver()
 
   implicit val connectivity = new FakeConnectivity()
 
-  lazy val service = new VehicleUpdatesResource(db, fakeResolver)
+  lazy val service = new VehicleUpdatesResource(db, fakeResolver, defaultNamespaceExtractor)
 
   val vehicle = genVehicle.sample.get
 
@@ -53,7 +56,7 @@ class VehicleUpdatesResourceSpec extends FunSuite
 
   test("install updates are forwarded to external resolver") {
     val fakeResolverClient = new FakeExternalResolver()
-    val vehiclesResource = new VehicleUpdatesResource(db, fakeResolverClient)
+    val vehiclesResource = new VehicleUpdatesResource(db, fakeResolverClient, defaultNamespaceExtractor)
     val packageIds = Gen.listOf(genPackageId).sample.get
     val uri = vehicleUri.withPath(vehicleUri.path / "installed")
 
@@ -106,7 +109,7 @@ class VehicleUpdatesResourceSpec extends FunSuite
     whenReady(createVehicle()) { vehicle =>
       val uri = baseUri.withPath(baseUri.path / vehicle.vin.get)
 
-      val now = DateTime.now.minusSeconds(10)
+      val now = Instant.now.minusSeconds(10)
 
       Get(uri) ~> service.route ~> check {
         status shouldBe StatusCodes.OK
@@ -166,7 +169,7 @@ class VehicleUpdatesResourceSpec extends FunSuite
   }
 
   test("GET to download a file returns 3xx if the package URL is an s3 URI") {
-    val service = new VehicleUpdatesResource(db, fakeResolver) {
+    val service = new VehicleUpdatesResource(db, fakeResolver, defaultNamespaceExtractor) {
       override lazy val packageRetrievalOp: (Package) => Future[HttpResponse] = {
         _ => Future.successful {
           HttpResponse(StatusCodes.Found, Location("https://some-fake-place") :: Nil)
@@ -193,7 +196,7 @@ class VehicleUpdatesResourceSpec extends FunSuite
     val f = createUpdateSpec()
 
     whenReady(f) { case (packageModel, vehicle, updateSpec) =>
-      val now = DateTime.now
+      val now = Instant.now
       val url = baseUri.withPath(baseUri.path / vehicle.vin.get)
 
       Post(url, packageModel.id) ~> service.route ~> check {
@@ -253,6 +256,30 @@ class VehicleUpdatesResourceSpec extends FunSuite
     }
   }
 
+  test("GET update results for a vehicle returns a list of OperationResults") {
+    whenReady(createUpdateSpec()) { case (_, vehicle, updateSpec) =>
+      val uri = vehicleUri.withPath(vehicleUri.path / "results")
+
+      Get(uri) ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+        val parsedResponse = responseAs[List[OperationResult]]
+        parsedResponse should be(empty)
+      }
+    }
+  }
+
+  test("GET update results for an update request returns a list of OperationResults") {
+    whenReady(createUpdateSpec()) { case (_, vehicle, updateSpec) =>
+      val uri = vehicleUri.withPath(vehicleUri.path / updateSpec.request.id.toString / "results")
+
+      Get(uri) ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+        val parsedResponse = responseAs[List[OperationResult]]
+        parsedResponse should be(empty)
+      }
+    }
+  }
+
 }
 
 class FakeConnectivity extends Connectivity {
@@ -264,7 +291,7 @@ class FakeConnectivity extends Connectivity {
   }
 
   override implicit val client = new ConnectivityClient {
-    override def sendMessage[A](service: String, message: A, expirationDate: DateTime)
+    override def sendMessage[A](service: String, message: A, expirationDate: Instant)
                                (implicit encoder: Encoder[A]): Future[Int] = {
       val v = (service, encoder(message))
       sentMessages += v

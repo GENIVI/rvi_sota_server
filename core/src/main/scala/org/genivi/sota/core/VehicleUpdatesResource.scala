@@ -19,19 +19,22 @@ import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, PackageDownloadProc
 import org.genivi.sota.data.{PackageId, Vehicle}
 import slick.driver.MySQLDriver.api.Database
 import io.circe.generic.auto._
-import org.genivi.sota.core.db.{OperationResults, Vehicles, UpdateSpecs}
-import org.genivi.sota.core.common.NamespaceDirective._
+import org.genivi.sota.core.db.{OperationResults, UpdateSpecs, Vehicles}
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.core.data.client.ResponseConversions
 import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, ExternalResolverClient}
 import org.genivi.sota.core.storage.PackageStorage
-import org.joda.time.DateTime
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+
 import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec}
 import org.genivi.sota.core.data.client.PendingUpdateRequest
+import org.genivi.sota.core.data.UpdateStatus
 
 import scala.language.implicitConversions
 
-class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClient)
+class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClient,
+                             namespaceExtractor: Directive1[Namespace])
                             (implicit system: ActorSystem, mat: ActorMaterializer,
                              connectivity: Connectivity = DefaultConnectivity) extends Directives {
 
@@ -112,8 +115,15 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
   /**
     * A web client fetches the results of updates to a given [[Vehicle]].
     */
-  def results(vin: Vehicle.Vin): Route = {
+  def resultsForVehicle(vin: Vehicle.Vin): Route = {
     complete(db.run(OperationResults.byVin(vin)))
+  }
+
+  /**
+    * A web client fetches the results of a given [[UpdateRequest]].
+    */
+  def resultsForUpdate(vin: Vehicle.Vin, uuid: Refined[String, Uuid]): Route = {
+    complete(db.run(OperationResults.byVinAndId(vin, uuid)))
   }
 
   /**
@@ -129,7 +139,7 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
   }
 
   def sync(vin: Vehicle.Vin): Route = {
-    val ttl = DateTime.now.plusMinutes(5)
+    val ttl = Instant.now.plus(5, ChronoUnit.MINUTES)
     // TODO: Config RVI destination path (or ClientServices.getpackages)
     // TODO: pass namespace
     connectivity.client.sendMessage(s"genivi.org/vin/${vin.get}/sota/getpackages", io.circe.Json.Null, ttl)
@@ -138,7 +148,7 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
   }
 
   /**
-    * An ota client PUT the order in which the given [[UpdateRequest]]s are to be installed on a vehicle.
+    * The web app PUT the order in which the given [[UpdateRequest]]s are to be installed on a vehicle.
     */
   def setInstallOrder(vin: Vehicle.Vin): Route = {
     entity(as[Map[Int, UUID]]) { uuids =>
@@ -148,28 +158,40 @@ class VehicleUpdatesResource(db : Database, resolverClient: ExternalResolverClie
     }
   }
 
-  def cancelUpdate(vin: Vehicle.Vin, uuid: Refined[String, Uuid]): Route = {
-    val response = db.run(UpdateSpecs.cancelUpdate(vin, uuid)).map {
-      i: Int => i match {
-          case 0 => HttpResponse(StatusCodes.BadRequest)
-          case _ => HttpResponse(StatusCodes.NoContent)
-        }
-    }
+  /**
+    * The web app PUT the status of the given ([[UpdateSpec]], VIN) to [[UpdateStatus.Canceled]]
+    */
+  def cancelUpdate(ns: Namespace, vin: Vehicle.Vin, uuid: Refined[String, Uuid]): Route = {
+    val response =
+      db.run(UpdateSpecs.cancelUpdate(ns, vin, uuid))
+          .map(_ => StatusCodes.NoContent)
+          .recover { case _ => StatusCodes.BadRequest }
+          .map(HttpResponse(_))
+
     complete(response)
   }
 
   val route = {
     (pathPrefix("api" / "v1" / "vehicle_updates") & extractVin) { vin =>
-      (put & path("installed")) { updateInstalledPackages(vin) } ~
-      (put & path("order")) { setInstallOrder(vin) } ~
-      (put & extractUuid & path("cancelupdate") ) { uuid => cancelUpdate(vin, uuid) } ~
-      (post & extractNamespace & pathEnd) { ns => queueVehicleUpdate(ns, vin) } ~
-      (get & pathEnd) { logVehicleSeen(vin) { pendingPackages(vin) } } ~
-      (get & path("queued")) { pendingPackages(vin) } ~
-      (get & extractUuid & path("download")) { uuid => downloadPackage(vin, uuid) } ~
-      (get & path("operationresults")) { results(vin) } ~
-      (post & extractUuid) { reportInstall } ~
-      (post & path("sync")) { sync(vin) }
+      get {
+        pathEnd { logVehicleSeen(vin) { pendingPackages(vin) } } ~
+        path("queued") { pendingPackages(vin) } ~
+        path("results") { resultsForVehicle(vin) } ~
+        (extractUuid & path("results")) { uuid => resultsForUpdate(vin, uuid) } ~
+        (extractUuid & path("download")) { uuid => downloadPackage(vin, uuid) }
+      } ~
+      put {
+        path("installed") { updateInstalledPackages(vin) } ~
+        path("order") { setInstallOrder(vin) } ~
+        (extractUuid & path("cancelupdate") ) { uuid =>
+          namespaceExtractor { ns => cancelUpdate(ns, vin, uuid) }
+        }
+      } ~
+      post {
+        path("sync") { sync(vin) } ~
+        (namespaceExtractor & pathEnd) { ns => queueVehicleUpdate(ns, vin) } ~
+        (extractUuid & pathEnd) { reportInstall }
+      }
     }
   }
 }

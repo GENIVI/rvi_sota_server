@@ -5,7 +5,6 @@
 package org.genivi.sota.core.db
 
 import org.genivi.sota.core.{DatabaseSpec, DefaultPatience, UpdateResourcesDatabaseSpec}
-import org.joda.time.DateTime
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 

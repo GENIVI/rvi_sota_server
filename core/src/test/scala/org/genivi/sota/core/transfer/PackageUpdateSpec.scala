@@ -20,7 +20,7 @@ import org.genivi.sota.core.resolver.DefaultExternalResolverClient
 import org.genivi.sota.core.rvi._
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{Namespaces, PackageId, Vehicle}
-import org.joda.time.DateTime
+import java.time.{Instant, Duration}
 import org.scalacheck.Gen
 import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture, whenReady}
 import org.scalatest.prop.PropertyChecks
@@ -38,21 +38,21 @@ object DataGenerators {
 
   val packages = scala.util.Random.shuffle( PackagesReader.read().take(10).map(Generators.generatePackageData ) )
 
-  def dependenciesGen(packageId: PackageId, vin: Vehicle.Vin) : Gen[UpdateService.VinsToPackages] =
+  def dependenciesGen(packageId: PackageId, vin: Vehicle.Vin) : Gen[UpdateService.VinsToPackageIds] =
     for {
       n                <- Gen.choose(1, 3)
       requiredPackages <- Gen.containerOfN[Set, PackageId](n, Gen.oneOf(packages ).map( _.id ))
     } yield Map( vin -> (requiredPackages + packageId) )
 
 
-  def updateWithDependencies(vin: Vehicle.Vin) : Gen[(UpdateRequest, UpdateService.VinsToPackages)] =
+  def updateWithDependencies(vin: Vehicle.Vin) : Gen[(UpdateRequest, UpdateService.VinsToPackageIds)] =
     for {
       packageId    <- Gen.oneOf( packages.map( _.id) )
       request      <- updateRequestGen(Namespaces.defaultNs, packageId)
       dependencies <- dependenciesGen( packageId, vin )
     } yield (request, dependencies)
 
-  def requestsGen(vin: Vehicle.Vin): Gen[Map[UpdateRequest, UpdateService.VinsToPackages]] = for {
+  def requestsGen(vin: Vehicle.Vin): Gen[Map[UpdateRequest, UpdateService.VinsToPackageIds]] = for {
     n        <- Gen.choose(1, 4)
     requests <- Gen.listOfN(1, updateWithDependencies(vin)).map( _.toMap )
   } yield requests
@@ -71,9 +71,8 @@ object SotaClient {
   import org.genivi.sota.marshalling.CirceInstances._
 
   class ClientActor(rviClient: ConnectivityClient, clientServices: ClientServices) extends Actor with ActorLogging {
-    def ttl() : DateTime = {
-      import com.github.nscala_time.time.Implicits._
-      DateTime.now + 5.minutes
+    def ttl() : Instant = {
+      Instant.now.plus(Duration.ofMinutes(5))
     }
 
     def downloading( services: ServerServices ) : Receive = {
@@ -113,7 +112,6 @@ object SotaClient {
 
     import io.circe.generic.auto._
     import org.genivi.sota.marshalling.CirceInstances._
-    import com.github.nscala_time.time.Imports._
 
     // TODO: Handle start,chunk,finish messages
     def route(actorRef : ActorRef) = pathPrefix("sota" / "client") {
@@ -203,7 +201,7 @@ class PackageUpdateSpec extends PropSpec
   }
 
   def init(services: ServerServices,
-           generatedData: Map[UpdateRequest, UpdateService.VinsToPackages]): Future[Set[UpdateSpec]] = {
+           generatedData: Map[UpdateRequest, UpdateService.VinsToPackageIds]): Future[Set[UpdateSpec]] = {
     import slick.driver.MySQLDriver.api._
 
     implicit val _db = db
@@ -226,7 +224,7 @@ class PackageUpdateSpec extends PropSpec
   implicit val patience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
   implicit override val generatorDrivenConfig = PropertyCheckConfig(minSuccessful = 1)
   import org.scalacheck.Shrink
-  implicit val noShrink: Shrink[Map[UpdateRequest, UpdateService.VinsToPackages]] = Shrink.shrinkAny
+  implicit val noShrink: Shrink[Map[UpdateRequest, UpdateService.VinsToPackageIds]] = Shrink.shrinkAny
 
   import org.genivi.sota.core.rvi.UpdateEvents
   import scala.concurrent.duration.DurationInt

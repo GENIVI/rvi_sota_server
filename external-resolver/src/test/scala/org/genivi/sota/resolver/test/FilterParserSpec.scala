@@ -10,6 +10,7 @@ import org.scalacheck._
 import org.scalatest.FlatSpec
 import org.genivi.sota.resolver.filters._
 import org.genivi.sota.resolver.filters.FilterAST._
+import org.genivi.sota.resolver.test.generators.FilterGenerators
 
 /**
  * Specs for the filter parser

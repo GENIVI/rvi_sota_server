@@ -35,10 +35,8 @@ define(function(require) {
 
       var startAfterDate = React.findDOMNode(this.refs.startAfterDate).value;
       var startAfterTime = React.findDOMNode(this.refs.startAfterTime).value;
-      var startAfterTimeZone = React.findDOMNode(this.refs.startAfterTimeZone).value;
       var endBeforeDate = React.findDOMNode(this.refs.endBeforeDate).value;
       var endBeforeTime = React.findDOMNode(this.refs.endBeforeTime).value;
-      var endBeforeTimeZone = React.findDOMNode(this.refs.endBeforeTimeZone).value;
       var updateId = React.findDOMNode(this.refs.updateId).value;
       var signature = React.findDOMNode(this.refs.signature).value;
       var description = React.findDOMNode(this.refs.description).value;
@@ -54,11 +52,11 @@ define(function(require) {
         namespace: "default", //TODO: replace with real namespace once support for them is added
         requestConfirmation: requestConfirmation,
         priority: Number(React.findDOMNode(this.refs.priority).value),
-        creationTime: this.formatDateForJSON(startAfterDate, startAfterTime, startAfterTimeZone),
+        creationTime: new Date(startAfterDate + "T" + startAfterTime).toISOString(),
         periodOfValidity:
-          this.formatDateForJSON(startAfterDate, startAfterTime, startAfterTimeZone)
+          new Date(startAfterDate + "T" + startAfterTime).toISOString()
           + '/'
-          + this.formatDateForJSON(endBeforeDate, endBeforeTime, endBeforeTimeZone),
+          + new Date(endBeforeDate + "T" + endBeforeTime).toISOString(),
         signature: signature
       }
       SendRequest.doPost("/api/v1/update_requests", payload)
@@ -68,10 +66,6 @@ define(function(require) {
         .fail(_.bind(function(xhr) {
           this.trigger("error", this, xhr);
         }, this));
-    },
-    formatDateForJSON: function(date, time, timeZone) {
-      //TODO: Get seconds working with ReactJS
-      return date + "T" + time + ":00" + timeZone;
     },
     formatDateForInput: function(date) {
       var dd = date.getDate();
@@ -134,7 +128,7 @@ define(function(require) {
             <div className="row">
               <div className="col-xs-4">
                 <div className="form-group">
-                  <label htmlFor="startAfterDate">Start After Date</label>
+                  <label htmlFor="startAfterDate">Start After Date(UTC)</label>
                   <input type="date" className="form-control" name="startAfterDate" ref="startAfterDate" placeholder="Please specify a date" required/>
                 </div>
               </div>
@@ -144,18 +138,12 @@ define(function(require) {
                   <input type="time" className="form-control" name="startAfterTime" ref="startAfterTime" placeholder="Please specify a time" required/>
                 </div>
               </div>
-              <div className="col-xs-4">
-                <div className="form-group">
-                  <label htmlFor="startAfterTimeZone">Start After Time Zone</label>
-                  <input type="text" className="form-control" name="startAfterTimeZone" ref="startAfterTimeZone" defaultValue="+00:00" pattern="[+-](2[0-3]|[01][0-9]):[0-5][0-9]" required/>
-                </div>
-              </div>
             </div>
 
             <div className="row">
               <div className="col-xs-4">
                 <div className="form-group">
-                  <label htmlFor="endBeforeDate">End Before Date</label>
+                  <label htmlFor="endBeforeDate">End Before Date(UTC)</label>
                   <input type="date" className="form-control" name="endBeforeDate" ref="endBeforeDate" placeholder="Please specify a date" required/>
                 </div>
               </div>
@@ -163,12 +151,6 @@ define(function(require) {
                 <div className="form-group">
                   <label htmlFor="endBeforeTime">End Before Time</label>
                   <input type="time" className="form-control" name="endBeforeTime" ref="endBeforeTime" placeholder="Please specify a time" required/>
-                </div>
-              </div>
-              <div className="col-xs-4">
-                <div className="form-group">
-                  <label htmlFor="endBeforeTimeZone">End Before Time Zone</label>
-                  <input type="text" className="form-control" name="endBeforeTimeZone" ref="endBeforeTimeZone" defaultValue="+00:00" pattern="[+-](2[0-3]|[01][0-9]):[0-5][0-9]" required/>
                 </div>
               </div>
               <div className="col-xs-4">

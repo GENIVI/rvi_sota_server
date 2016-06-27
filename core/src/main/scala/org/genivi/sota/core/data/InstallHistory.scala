@@ -6,7 +6,7 @@ package org.genivi.sota.core.data
 
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
-import org.joda.time.DateTime
+import java.time.Instant
 import java.util.UUID
 
 /**
@@ -24,8 +24,26 @@ case class OperationResult(
   resultCode: Int,
   resultText: String,
   vin       : Vehicle.Vin,
-  namespace : Namespace
+  namespace : Namespace,
+  receivedAt: Instant
 )
+object OperationResult {
+  def from(rviOpResult: org.genivi.sota.core.rvi.OperationResult,
+           updateRequestId: UUID,
+           vin       : Vehicle.Vin,
+           namespace : Namespace
+          ): OperationResult = {
+    OperationResult(
+      UUID.randomUUID().toString,
+      updateRequestId,
+      rviOpResult.result_code,
+      rviOpResult.result_text,
+      vin       : Vehicle.Vin,
+      namespace : Namespace,
+      Instant.now
+    )
+  }
+}
 
 /**
  * Domain object for the install history of a VIN
@@ -44,5 +62,5 @@ case class InstallHistory(
   updateId      : UUID,
   packageId     : PackageId,
   success       : Boolean,
-  completionTime: DateTime
+  completionTime: Instant
 )

@@ -16,25 +16,26 @@ import java.nio.file.{Paths, StandardOpenOption}
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
-import org.genivi.sota.core.data._
-import org.genivi.sota.core.db._
+import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateSpec, UpdateStatus}
 import akka.actor._
 import akka.http.scaladsl.model.Uri
 import akka.stream.ActorMaterializer
 import org.apache.commons.codec.binary.Base64
-import org.genivi.sota.core.data.{Package, UpdateSpec, UpdateStatus}
 import org.genivi.sota.core.db.UpdateSpecs
+import org.genivi.sota.core.db.UpdateSpecs.MiniUpdateSpec
 import org.genivi.sota.core.resolver.ConnectivityClient
 import org.genivi.sota.core.storage.S3PackageStore
 import org.genivi.sota.core.transfer.VehicleUpdates
 import org.genivi.sota.data.Vehicle
-import org.joda.time.DateTime
+import java.time.Instant
+import java.time.Duration
 
 import scala.collection.immutable.Queue
-import scala.concurrent.duration.{Duration, FiniteDuration}
+import scala.concurrent.duration.FiniteDuration
 import scala.math.BigDecimal.RoundingMode
 import slick.driver.MySQLDriver.api.Database
 
+import scala.collection.LinearSeq
 import scala.util.Try
 
 
@@ -48,7 +49,7 @@ class UpdateController(transferProtocolProps: Props) extends Actor with ActorLog
 
   /**
    * Create actors to handle new downloads to a single vehicle.
-   * Forward messages to that actor until it finishes the download.
+   * Forward [[ChunksReceived]] and [[InstallReport]] messages to that actor until it finishes the download.
    * Remove the actor from the map when it is terminated.
    *
    * @param currentDownloads the map of VIN to the actor handling that vehicle
@@ -88,7 +89,7 @@ class UpdateController(transferProtocolProps: Props) extends Actor with ActorLog
 object UpdateController {
 
   /**
-   * Configuration class for creating the UpdateController actor.
+   * Configuration for creating [[UpdateController]] actors.
    */
   def props( transferProtocolProps: Props ) : Props = Props( new UpdateController(transferProtocolProps) )
 
@@ -96,10 +97,8 @@ object UpdateController {
 
 object TransferProtocolActor {
 
-  private[TransferProtocolActor] case class Specs( values : Iterable[UpdateSpec])
-
   /**
-   * Configuration class for creating the TransferProtocolActor actor.
+   * Configuration for creating [[TransferProtocolActor]] actors.
    */
   def props(db: Database,
             rviClient: ConnectivityClient,
@@ -110,12 +109,12 @@ object TransferProtocolActor {
 object UpdateEvents {
 
   /**
-   * Message from TransferProtocolActor when all packages are transferred to vehicle.
+   * Message from [[TransferProtocolActor]] when all packages are transferred to vehicle.
    */
-  final case class PackagesTransferred( update: UpdateSpec )
+  final case class PackagesTransferred( update: MiniUpdateSpec )
 
   /**
-   * Message from TransferProtocolActor when an installation report is received from the vehicle.
+   * Message from [[TransferProtocolActor]] when an installation report is received from the vehicle.
    */
   final case class InstallReportReceived( report: InstallReport )
 
@@ -128,7 +127,8 @@ object UpdateEvents {
  * @param rviClient the client to the RVI node
  * @param transferActorProps the configuration class for creating the PackageTransferActor
  */
-class TransferProtocolActor(db: Database, rviClient: ConnectivityClient,
+class TransferProtocolActor(db: Database,
+                            rviClient: ConnectivityClient,
                             transferActorProps: (UUID, String, Package, ClientServices) => Props)
     extends Actor with ActorLogging {
   import cats.syntax.eq._
@@ -140,59 +140,49 @@ class TransferProtocolActor(db: Database, rviClient: ConnectivityClient,
     TimeUnit.MILLISECONDS
   )
 
-  def buildTransferQueue(specs: Iterable[UpdateSpec]) : Queue[(UpdateSpec, Package)] = (for {
-    spec <- specs
-    pkg <- spec.dependencies
-  } yield (spec, pkg)).to[Queue]
-
+  // scalastyle:off cyclomatic.complexity
+  // scalastyle:off method.length
   /**
+   * Third and last [[TransferProtocolActor]] behavior.
+   *
    * Create actors to handle each transfer to the vehicle.
    * Forward ChunksReceived messages from the vehicle to the transfer actors.
    * Terminate when all updates and dependencies are successfully transferred,
    * or when the transfer is aborted because the vehicle is not responding.
    */
-  // scalastyle:off cyclomatic.complexity
-  def running(services: ClientServices, updates: Set[UpdateSpec], pending: Queue[(UpdateSpec, Package)],
-              inProgress: Map[ActorRef, (UpdateSpec, Package)], done: Set[Package]) : Receive = {
+  def running(services: ClientServices,
+              updates: MiniUpdateSpec,
+              pending: Queue[Package],
+              inProgress: (ActorRef, Package),
+              done: Set[Package]) : Receive = {
+
     case akka.actor.Terminated(ref) =>
       // TODO: Handle actors terminated on errors (e.g. file exception in PackageTransferActor)
-      val (oldUpdate, oldPkg) = inProgress.get(ref).get
-      log.debug(s"Package for update $oldUpdate uploaded.")
-      val newInProgress = pending.headOption.map { case (update, pkg) =>
-        startPackageUpload(services)(update, pkg) }
-        .fold(inProgress - ref)(inProgress - ref + _)
+      val (oldActor, oldPkg) = inProgress
+      assert(oldActor == ref) // TODO debug code
+      log.debug(s"Package for update $updates uploaded.")
 
-      if (newInProgress.isEmpty) {
+      if (pending.isEmpty) {
         log.debug( s"All packages uploaded." )
         context.setReceiveTimeout(installTimeout)
-        updates.foreach { x =>
-          context.system.eventStream.publish( UpdateEvents.PackagesTransferred( x ) )
-        }
+        context.system.eventStream.publish( UpdateEvents.PackagesTransferred( updates ) )
       } else {
+        val nextInProgress = startPackageUpload(services)(updates, pending.head)
         val finishedPackageTransfers = done + oldPkg
-        val (finishedUpdates, unfinishedUpdates) =
-          updates.span(_.dependencies.diff(finishedPackageTransfers).isEmpty)
-        context.become(
-          running(services, unfinishedUpdates, if (pending.isEmpty) pending else pending.tail,
-                  newInProgress, finishedPackageTransfers))
+        context become running(services, updates, pending.tail, nextInProgress, finishedPackageTransfers)
       }
 
     case x @ ChunksReceived(_, updateId, _) =>
-      inProgress.find { case (_, (spec: UpdateSpec, _)) =>
-        spec.request.id == updateId
-      }.foreach { case (ref: ActorRef, _) =>
-        ref ! x
-      }
+      assert(updates.requestId == updateId) // TODO debug code
+      val (inprActor, inprPkg) = inProgress
+      inprActor ! x
 
     case r @ InstallReport(vin, update) =>
       context.system.eventStream.publish( UpdateEvents.InstallReportReceived(r) )
       log.debug(s"Install report received from $vin: ${update.update_id} installed with ${update.operation_results}")
-      //TODO: handle case where update is None
-      updates.find(_.request.id == update.update_id) match {
-        case Some(spec) =>
-          VehicleUpdates.reportInstall(vin, update)(dispatcher, db)
-          rviClient.sendMessage(services.getpackages, io.circe.Json.Null, ttl())
-      }
+      assert(updates.requestId == update.update_id) // TODO debug code
+      VehicleUpdates.reportInstall(vin, update)(dispatcher, db)
+      rviClient.sendMessage(services.getpackages, io.circe.Json.Null, ttl())
 
     case ReceiveTimeout =>
       abortUpdate(services, updates)
@@ -202,32 +192,43 @@ class TransferProtocolActor(db: Database, rviClient: ConnectivityClient,
   }
   // scalastyle:on
 
-  def abortUpdate (services: ClientServices, updates: Set[UpdateSpec]): Unit = {
-      rviClient.sendMessage(services.abort, io.circe.Json.Null, ttl())
-      updates.foreach(x => db.run( UpdateSpecs.setStatus(x, UpdateStatus.Canceled) ))
-      context.stop(self)
+  def abortUpdate (services: ClientServices, x: MiniUpdateSpec): Unit = {
+    rviClient.sendMessage(services.abort, io.circe.Json.Null, ttl())
+    db.run( UpdateSpecs.setStatus(x.vin, x.requestId, UpdateStatus.Canceled) )
+    context.stop(self)
   }
 
-  def ttl() : DateTime = {
-    import com.github.nscala_time.time.Implicits._
-    DateTime.now + 5.minutes
+  def ttl() : Instant = {
+    Instant.now.plus(Duration.ofMinutes(5))
   }
 
+  /**
+    * Create a worker [[TransferProtocolActor]] to upload the given package to the vehicle.
+    */
   def startPackageUpload(services: ClientServices)
-                        (update: UpdateSpec,
-                         pkg: Package): (ActorRef, (UpdateSpec, Package)) = {
-    val r = update.request
-    val ref = context.actorOf(transferActorProps(r.id, r.signature, pkg, services), r.id.toString)
+                        (update: MiniUpdateSpec,
+                         pkg: Package): (ActorRef, Package) = {
+    val ref = context.actorOf(
+      transferActorProps(update.requestId, update.requestSignature, pkg, services), update.requestId.toString
+    )
     context.watch(ref)
-    (ref, (update, pkg))
+    (ref, pkg)
   }
 
+  /**
+    * Second [[TransferProtocolActor]] behavior, about to upload [[UpdateSpec]]-s to the vehicle.
+    */
   def loadSpecs(services: ClientServices) : Receive = {
-    case TransferProtocolActor.Specs(values) =>
-      val todo = buildTransferQueue(values)
-      val workers : Map[ActorRef, (UpdateSpec, Package)] =
-        todo.take(3).map { case (update, pkg) => startPackageUpload(services)(update, pkg) }.toMap
-      context become running( services, values.toSet, todo.drop(3), workers, Set.empty )
+    case Some(spec: MiniUpdateSpec) if spec.deps.nonEmpty =>
+      val worker = startPackageUpload(services)(spec, spec.deps.head)
+      context become running(services, spec, spec.deps.tail, worker, Set.empty)
+
+    case Some(spec: MiniUpdateSpec) if spec.deps.isEmpty =>
+      ()
+
+    case None =>
+      // do nothing in case no packages to upload. TODO why get here in that case? Should have quit earlier.
+      ()
 
     case Status.Failure(t) =>
       log.error(t, "Unable to load update specifications.")
@@ -235,18 +236,22 @@ class TransferProtocolActor(db: Database, rviClient: ConnectivityClient,
   }
 
   /**
-   * Entry point to this actor when the vehicle initiates a download.
+   * Initial [[TransferProtocolActor]] behavior, waiting for the vehicle to [[StartDownload]].
    */
   override def receive : Receive = {
     case StartDownload(vin, updateId, services) =>
       log.debug(s"$vin requested update $updateId")
       import akka.pattern.pipe
-      db.run(UpdateSpecs.load(vin, updateId)).map(TransferProtocolActor.Specs.apply) pipeTo self
+      db.run(UpdateSpecs.load(vin, updateId)) pipeTo self
       context become loadSpecs(services)
   }
 
 }
 
+/**
+  * Sent by [[PackageTransferActor]] to the [[ConnectivityClient]] (step 1 of 3)
+  * to indicate chunks are ready to be downloaded.
+  */
 case class StartDownloadMessage(update_id: UUID, checksum: String, chunkscount: Int)
 
 object StartDownloadMessage {
@@ -258,8 +263,17 @@ object StartDownloadMessage {
 
 }
 
-case class ChunksReceived(vin: Vehicle.Vin, update_id: UUID, chunks: List[Int])
+/**
+  * The [[ConnectivityClient]] notifies which chunks it received for THE package being transferred.
+  *
+  * @param updReqID of the [[UpdateRequest]]
+  */
+case class ChunksReceived(vin: Vehicle.Vin, updReqID: UUID, chunks: List[Int])
 
+/**
+  * Sent by [[PackageTransferActor]] to the [[ConnectivityClient]] (step 2 of 3) to transfer a chunk.
+  * @param index is 1-based
+  */
 case class PackageChunk(update_id: UUID, bytes: ByteString, index: Int)
 
 object PackageChunk {
@@ -274,6 +288,11 @@ object PackageChunk {
 
 }
 
+/**
+  * Sent by [[PackageTransferActor]] to the [[ConnectivityClient]] (step 3 of 3) to indicate all chunks sent.
+  *
+  * @param signature Signature of the [[UpdateRequest]]. Not the [[Package.signature]].
+  */
 case class Finish(update_id: UUID, signature: String)
 
 object Finish {
@@ -288,9 +307,10 @@ object Finish {
 case object UploadAborted
 
 /**
- * Actor to handle transferring chunks to a vehicle.
+ * Actor to handle transferring chunks of a single [[Package]] to a vehicle.
  *
  * @param updateId Unique Id of the update.
+ * @param signature Signature of the [[UpdateRequest]]. Not the [[Package.signature]].
  * @param pckg the package to transfer
  * @param services the service paths available on the vehicle
  */
@@ -298,7 +318,8 @@ class PackageTransferActor(updateId: UUID,
                            signature: String,
                            pckg: Package,
                            services: ClientServices,
-                           rviClient: ConnectivityClient)
+                           rviClient: ConnectivityClient,
+                           s3PackageStoreOpt: Option[S3PackageStore])
     extends Actor with ActorLogging {
 
   import cats.syntax.show._
@@ -318,12 +339,11 @@ class PackageTransferActor(updateId: UUID,
 
   lazy val lastIndex = (BigDecimal(pckg.size) / BigDecimal(chunkSize) setScale(0, RoundingMode.CEILING)).toInt
 
-  lazy val s3PackageStore = S3PackageStore(system.settings.config)
+  lazy val s3PackageStore = s3PackageStoreOpt.getOrElse(S3PackageStore(system.settings.config))
   val buffer = ByteBuffer.allocate( chunkSize )
 
-  def ttl() : DateTime = {
-    import com.github.nscala_time.time.Implicits._
-    DateTime.now + 5.minutes
+  def ttl() : Instant = {
+    Instant.now.plus(Duration.ofMinutes(5))
   }
 
   def sendChunk(channel: FileChannel, index: Int) : Unit = {
@@ -387,7 +407,7 @@ class PackageTransferActor(updateId: UUID,
 
   // scalastyle:off
   /**
-   * Send the next chunk or resend last chunk if vehicle doesn't acknowledge with ChunksReceived.
+   * Send the next chunk or resend last chunk if vehicle doesn't acknowledge with [[ChunksReceived]].
    * Abort transfer if maxAttempts exceeded.
    */
   def transferring(channel: FileChannel, lastSentChunk: Int, attempt: Int) : Receive = {
@@ -411,7 +431,7 @@ class PackageTransferActor(updateId: UUID,
       }
 
     case ReceiveTimeout if attempt == maxAttempts =>
-      context.setReceiveTimeout(Duration.Undefined)
+      context.setReceiveTimeout(scala.concurrent.duration.Duration.Undefined)
       context.parent ! UploadAborted
       context.stop( self )
 
@@ -438,10 +458,13 @@ class PackageTransferActor(updateId: UUID,
 object PackageTransferActor {
 
   /**
-   * Configuration class for creating PackageTransferActor.
+   * Configuration for creating [[PackageTransferActor]].
+   *
+   * @param signature Signature of the [[UpdateRequest]]. Not the [[Package.signature]].
    */
-  def props(rviClient: ConnectivityClient)
+  def props(rviClient: ConnectivityClient,
+            s3PackageStoreOpt: Option[S3PackageStore] = None)
            (updateId: UUID, signature: String, pckg: Package, services: ClientServices): Props =
-    Props(new PackageTransferActor(updateId, signature, pckg, services, rviClient))
+    Props(new PackageTransferActor(updateId, signature, pckg, services, rviClient, s3PackageStoreOpt))
 
 }

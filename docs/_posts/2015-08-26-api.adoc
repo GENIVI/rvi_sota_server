@@ -1,19 +1,21 @@
 ---
 layout: page
-title: "Web server API"
+title: "API"
 category: dev
 date: 2015-08-26 10:30:27
 order: 1
 ---
-:toc: macro
-:icons: font
-:resolver:
-:core:
 
-The web server has an API that forwards all the relevant calls to either the core or resolver API (or both), depending on what's appropriate. All API calls to the web server need a session authorization cookie as well.
+SOTA consists of two independent modules: SOTA Core and SOTA Resolver. Core has all of the functions for creating update campaigns and managing packages and package binaries. Resolver maintains a database storing vehicles, packages (but not package binaries), hardware components, filters, packages, and the associations between those things.
 
-The content-type of all requests is `application/json` unless otherwise specified.
+The complete API spec for Core and Resolver is available in https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md[OpenAPI 2.0] format. You can view the spec files yourself in JSON or YAML formats, or view it on the web in SwaggerUI.
 
-toc::[right]
+==== Core
+http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-core.html#!/default[SwaggerUI]
+http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-core.yml[YAML]
+http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-core.json[JSON]
 
-include::../_includes/api/api.ad[]
+==== Resolver
+http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-resolver.html#!/default[SwaggerUI]
+http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-resolver.yml[YAML]
+http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-resolver.json[JSON]

@@ -13,9 +13,12 @@ import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
+import org.genivi.sota.datatype.NamespaceDirective
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.rest.ErrorRepresentation
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.PropertyChecks
+import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Matchers, PropSpec}
 
 import scala.concurrent.Future
@@ -27,9 +30,17 @@ import slick.jdbc.JdbcBackend.Database
  */
 class PackageUploadSpec extends PropSpec
   with DatabaseSpec
-  with PropertyChecks with Matchers with Generators with ScalatestRouteTest {
+  with PropertyChecks
+  with Matchers
+  with Generators
+  with ScalatestRouteTest
+  with ScalaFutures {
+
+  import NamespaceDirective._
 
   val PackagesPath = Path / "packages"
+
+  implicit val patience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
 
   class Service(resolverResult: Future[Unit] ) {
     val resolver = new ExternalResolverClient {
@@ -40,7 +51,7 @@ class PackageUploadSpec extends PropSpec
       override def setInstalledPackages( vin: Vehicle.Vin, json: io.circe.Json) : Future[Unit] = ???
     }
 
-    val resource = new PackagesResource(resolver, db)
+    val resource = new PackagesResource(resolver, db, defaultNamespaceExtractor)
   }
 
   def toBodyPart(name : String)(x: String) = BodyPart.Strict(name, HttpEntity( x ) )

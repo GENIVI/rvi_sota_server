@@ -11,4 +11,4 @@ import scala.util.control.NoStackTrace
   * RefinedMarshallingSupport.scala.
   */
 
-case class RefinementError[T]( o: T, msg: String) extends NoStackTrace
+case class RefinementError[T]( o: T, msg: String) extends Exception(msg) with NoStackTrace

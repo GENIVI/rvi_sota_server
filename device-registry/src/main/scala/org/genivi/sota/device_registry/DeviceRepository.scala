@@ -14,7 +14,7 @@ import org.genivi.sota.db.Operators.regex
 import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.refined.SlickRefined._
-import org.joda.time.DateTime
+import java.time.Instant
 import scala.concurrent.ExecutionContext
 import scala.util.{Success, Failure}
 import slick.driver.MySQLDriver.api._
@@ -42,7 +42,7 @@ object Devices {
     def id = column[Id]("uuid")
     def deviceId = column[Option[DeviceId]]("device_id")
     def deviceType = column[DeviceType]("device_type")
-    def lastSeen = column[Option[DateTime]]("last_seen")
+    def lastSeen = column[Option[Instant]]("last_seen")
 
     def * = (namespace, id, deviceId, deviceType, lastSeen).shaped <> ((Device.apply _).tupled, Device.unapply)
 
@@ -103,7 +103,7 @@ object Devices {
   def updateLastSeen(ns: Namespace, id: Id)
                     (implicit ec: ExecutionContext): DBIO[Unit] = for {
     device <- exists(ns, id)
-    newDevice = device.copy(lastSeen = Some(DateTime.now()))
+    newDevice = device.copy(lastSeen = Some(Instant.now()))
     _ <- devices.insertOrUpdate(newDevice)
   } yield ()
 

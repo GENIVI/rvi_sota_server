@@ -9,8 +9,9 @@ import java.util.UUID
 
 import com.ning.http.client.AsyncHttpClient
 import com.ning.http.client.multipart.FilePart
-import org.joda.time.DateTime
-import org.joda.time.format.DateTimeFormat
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+
 import org.scalatest.Tag
 import org.scalatestplus.play._
 import play.api.Play
@@ -349,9 +350,8 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
 
   "test creating install campaigns" taggedAs APITests in {
     val cookie = getLoginCookie
-    val pattern = "yyyy-MM-dd'T'HH:mm:ssZZ"
-    val currentTimestamp = DateTimeFormat.forPattern(pattern).print(new DateTime())
-    val tomorrowTimestamp = DateTimeFormat.forPattern(pattern).print(new DateTime().plusDays(1))
+    val currentTimestamp = Instant.now().toString
+    val tomorrowTimestamp = Instant.now().plus(1, ChronoUnit.DAYS).toString
     val uuid = UUID.randomUUID().toString
     val data = UpdateRequest(testNamespace, uuid, PackageId(testPackageName, testPackageVersion), currentTimestamp,
       currentTimestamp + "/" + tomorrowTimestamp, 1, "sig", "desc", true)
@@ -359,30 +359,14 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
       .withHeaders("Cookie" -> Cookies.encodeCookieHeader(cookie))
       .withHeaders("Content-Type" -> "application/json")
       .post(data.asJson.noSpaces))
-    response.status mustBe OK
-    val jsonResponse = decode[Set[UpdateSpec]](response.body)
-    jsonResponse.toOption match {
-      case Some(resp : Set[UpdateSpec]) => resp.size mustBe 1
-                                           resp.head.vin mustBe testVin
-                                           //TODO: we should check the creationTime, but currently the server adds
-                                           //milliseconds for some reason, which breaks equality testing
-                                           resp.head.request.packageId mustEqual data.packageId
-                                           resp.head.request.priority mustEqual data.priority
-                                           resp.head.request.id mustEqual data.id
-                                           resp.head.status mustBe UpdateStatus.Pending
-                                           resp.head.dependencies.size mustBe 1
-                                           resp.head.dependencies.head.id.name mustBe testPackageName
-                                           resp.head.dependencies.head.id.version mustBe testPackageVersion
-      case None => fail("JSON parse error:" + jsonResponse.toString)
-    }
+    response.status mustBe CREATED
   }
 
   "test list of vins affected by update" taggedAs APITests in {
-    val response = makeRequest("resolve/" + testPackageName + "/" + testPackageVersion, GET)
+    val response = makeRequest(s"resolve?namespace=$testNamespace&package_name=$testPackageName&package_version=$testPackageVersion", GET)
+
     response.status mustBe OK
     import org.genivi.sota.marshalling.CirceInstances._
-
-    println(response.body)
 
     val jsonResponse = decode[Map[Vin, Seq[PackageId]]](response.body)(refinedMapDecoder)
     jsonResponse.toOption match {

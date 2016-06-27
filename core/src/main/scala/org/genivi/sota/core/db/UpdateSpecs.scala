@@ -11,11 +11,14 @@ import eu.timepit.refined.string.Uuid
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.UpdateRequests.UpdateRequestTable
 import org.genivi.sota.data.Namespace._
-import org.genivi.sota.data.Vehicle.Vin
 import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.db.SlickExtensions
+import java.time.Instant
+
+import org.genivi.sota.core.Errors
 import slick.driver.MySQLDriver.api._
 
+import scala.collection.immutable.Queue
 import scala.concurrent.ExecutionContext
 
 /**
@@ -34,22 +37,27 @@ object UpdateSpecs {
 
   implicit val UpdateStatusColumn = MappedColumnType.base[UpdateStatus, String](_.value.toString, UpdateStatus.withName)
 
+  type UpdateSpecTableRowType = (Namespace, UUID, Vehicle.Vin, UpdateStatus, Int, Instant)
+
   // scalastyle:off
   /**
    * Each row corresponds to an [[UpdateSpec]] instance except that `dependencies` are kept in [[RequiredPackageTable]]
    */
   class UpdateSpecTable(tag: Tag)
-      extends Table[(Namespace, UUID, Vehicle.Vin, UpdateStatus)](tag, "UpdateSpec") {
+      extends Table[UpdateSpecTableRowType](tag, "UpdateSpec") {
     def namespace = column[Namespace]("namespace")
     def requestId = column[UUID]("update_request_id")
     def vin = column[Vehicle.Vin]("vin")
     def status = column[UpdateStatus]("status")
+    def installPos = column[Int]("install_pos")
+    def creationTime = column[Instant]("creation_time")
+
 
     // insertOrUpdate buggy for composite-keys, see Slick issue #966.
     // given `id` is already unique across namespaces, no need to include namespace.
     def pk = primaryKey("pk_update_specs", (requestId, vin))
 
-    def * = (namespace, requestId, vin, status)
+    def * = (namespace, requestId, vin, status, installPos, creationTime)
   }
   // scalastyle:on
 
@@ -78,6 +86,11 @@ object UpdateSpecs {
 
   val updateRequests = TableQuery[UpdateRequestTable]
 
+  case class MiniUpdateSpec(requestId: UUID,
+                            requestSignature: String,
+                            vin: Vehicle.Vin,
+                            deps: Queue[Package])
+
   /**
     * Add an update for a specific VIN.
     * This update will consist of one-or-more packages that need to be installed
@@ -86,7 +99,9 @@ object UpdateSpecs {
     * @param updateSpec The list of packages that should be installed
     */
   def persist(updateSpec: UpdateSpec) : DBIO[Unit] = {
-    val specProjection = (updateSpec.namespace, updateSpec.request.id, updateSpec.vin,  updateSpec.status)
+    val specProjection = (
+      updateSpec.namespace, updateSpec.request.id, updateSpec.vin,
+      updateSpec.status, updateSpec.installPos, updateSpec.creationTime)
 
     def dependencyProjection(p: Package) =
       // TODO: we're taking the namespace of the update spec, not necessarily the namespace of the package!
@@ -101,9 +116,11 @@ object UpdateSpecs {
   /**
     * Reusable sub-query, PK lookup in [[UpdateSpecTable]] table.
     */
-  private def queryBy(arg: UpdateSpec): Query[UpdateSpecTable, (Namespace, UUID, Vin, UpdateStatus), Seq] = {
+  private def queryBy(namespace: Namespace,
+                      vin: Vehicle.Vin,
+                      requestId: UUID): Query[UpdateSpecTable, UpdateSpecTableRowType, Seq] = {
     updateSpecs
-      .filter(row => row.namespace === arg.namespace && row.vin === arg.vin && row.requestId === arg.request.id)
+      .filter(row => row.namespace === namespace && row.vin === vin && row.requestId === requestId)
   }
 
   /**
@@ -111,45 +128,50 @@ object UpdateSpecs {
     * Note: A tuple is returned instead of an [[UpdateSpec]] instance because
     * the later would require joining [[RequiredPackageTable]] to populate the `dependencies` of that instance.
     */
-  def findBy(arg: UpdateSpec): DBIO[(Namespace, UUID, Vin, UpdateStatus)] = {
-    queryBy(arg).result.head
+  def findBy(arg: UpdateSpec): DBIO[UpdateSpecTableRowType] = {
+    queryBy(arg.namespace, arg.vin, arg.request.id).result.head
   }
+
+  /**
+    * Lookup by PK in [[UpdateSpecTable]] table.
+    * Note: A tuple is returned instead of an [[UpdateSpec]] instance because
+    * the later would require joining [[RequiredPackageTable]] to populate the `dependencies` of that instance.
+    */
+  def findBy(namespace: Namespace, vin: Vehicle.Vin, requestId: Refined[String, Uuid]): DBIO[UpdateSpecTableRowType] = {
+    queryBy(namespace, vin, UUID.fromString(requestId.get)).result.head
+  }
+
+  case class UpdateSpecPackages(miniUpdateSpec: MiniUpdateSpec, packages: Queue[Package])
 
   // scalastyle:off cyclomatic.complexity
   /**
-    * Install a list of specific packages on a VIN
+    * Fetch from DB zero or one [[UpdateSpec]] for the given combination ([[UpdateRequest]], VIN)
     *
     * @param vin The VIN to install on
-    * @param updateId Update Id of the update to install
+    * @param updateId Id of the [[UpdateRequest]] to install
     */
   def load(vin: Vehicle.Vin, updateId: UUID)
-          (implicit ec: ExecutionContext) : DBIO[Iterable[UpdateSpec]] = {
+          (implicit ec: ExecutionContext) : DBIO[Option[MiniUpdateSpec]] = {
     val q = for {
       r  <- updateRequests if (r.id === updateId)
-      s  <- updateSpecs if (s.vin === vin && s.namespace === r.namespace && s.requestId === r.id)
-      rp <- requiredPackages if (rp.vin === vin && rp.namespace === r.namespace && rp.requestId === s.requestId)
-      p  <- Packages.packages if (p.namespace === r.namespace &&
+      ns  = r.namespace
+      us <- updateSpecs if(us.vin === vin && us.requestId == r.id && us.namespace == r.namespace)
+      rp <- requiredPackages if (rp.vin === vin &&
+                                 rp.namespace === ns &&
+                                 rp.requestId === updateId)
+      p  <- Packages.packages if (p.namespace === ns &&
                                   p.name === rp.packageName &&
                                   p.version === rp.packageVersion)
-    } yield (r, s.vin, s.status, p)
-    q.result.map( _.groupBy(x => (x._1, x._2, x._3) ).map {
-      case ((request, vin, status), xs) => UpdateSpec(request.namespace, request, vin, status, xs.map(_._4).toSet)
-    })
+    } yield (r.signature, p)
+
+    q.result map { rows =>
+      rows.headOption.map(_._1).map { sig =>
+        val paks = rows.map(_._2).to[Queue]
+        MiniUpdateSpec(updateId, sig, vin, paks)
+      }
+    }
   }
   // scalastyle:on
-
-  /**
-    * Rewrite in the DB the status of an [[UpdateSpec]], ie for a (campaign, VIN) combination.
-    *
-    * @param spec The combination of VIN and update request to record the status of
-    * @param newStatus The latest status of the installation. One of Pending
-    *                  InFlight, Canceled, Failed or Finished.
-    */
-  def setStatus(spec: UpdateSpec, newStatus: UpdateStatus) : DBIO[Int] = {
-    queryBy(spec)
-      .map(_.status)
-      .update(newStatus)
-  }
 
   /**
     * Return a list of all the VINs that a specific version of a package will be
@@ -171,30 +193,49 @@ object UpdateSpecs {
   }
 
   /**
-    * Set status of a given update to 'In-Flight'
-    * @param vin the vin associated with the desired update
-    * @param uuid the uuid of the update whose status should be changed
+    * Rewrite in the DB the status of an [[UpdateSpec]], ie for a ([[UpdateRequest]], VIN) combination.
     */
-  def setStatus(vin: Vehicle.Vin, uuid: Refined[String, Uuid], newStatus: UpdateStatus): DBIO[Int] = {
-    (for {
-      r <- updateSpecs.filter(us => us.vin === vin && us.requestId === uuid)
-    } yield r.status).update(newStatus).transactionally
+  def setStatus(spec: UpdateSpec, newStatus: UpdateStatus) : DBIO[Int] = {
+    setStatus(spec.vin, spec.request.id, newStatus)
   }
 
   /**
-    * Abort a pending update specified by uuid and vin. Updates with statuses other than 'Pending' will not be aborted
+    * Rewrite in the DB the status of an [[UpdateSpec]], ie for a ([[UpdateRequest]], VIN) combination.
     */
-  def cancelUpdate(vin: Vehicle.Vin, uuid: Refined[String, Uuid]): DBIO[Int] = {
-    (for {
-      u <- updateSpecs.filter(us => us.vin === vin && us.requestId === uuid && us.status === UpdateStatus.Pending)
-    } yield u.status).update(UpdateStatus.Canceled).transactionally
+  def setStatus(vin: Vehicle.Vin, updateRequestId: UUID, newStatus: UpdateStatus): DBIO[Int] = {
+    updateSpecs
+      .filter(row => row.vin === vin && row.requestId === updateRequestId)
+      .map(_.status)
+      .update(newStatus)
+      .transactionally
+  }
+
+  /**
+    * Abort a pending [[UpdateSpec]] specified as ([[UpdateRequest]], VIN).
+    * Only an update with status 'Pending' is aborted.
+    *
+    * @param uuid of the [[UpdateRequest]] being cancelled for the given VIN
+    */
+  def cancelUpdate(ns: Namespace, vin: Vehicle.Vin, uuid: Refined[String, Uuid])
+                  (implicit executor: ExecutionContext): DBIO[Unit] = {
+    queryBy(ns, vin, UUID.fromString(uuid.get))
+      .filter(_.status === UpdateStatus.Pending)
+      .map(_.status)
+      .update(UpdateStatus.Canceled)
+      .flatMap { rowsAffected =>
+        if (rowsAffected == 1) {
+          DBIO.successful(())
+        } else {
+          DBIO.failed(Errors.MissingUpdateSpec)
+        }
+      }
   }
 
   /**
     * The [[UpdateSpec]]-s (excluding dependencies but including status) for the given [[UpdateRequest]].
     * Each element in the result corresponds to a different VIN.
     */
-  def listUpdatesById(updateRequestId: Refined[String, Uuid]): DBIO[Seq[(Namespace, UUID, Vehicle.Vin, UpdateStatus)]] =
+  def listUpdatesById(updateRequestId: Refined[String, Uuid]): DBIO[Seq[UpdateSpecTableRowType]] =
     updateSpecs.filter(s => s.requestId === UUID.fromString(updateRequestId.get)).result
 
   /**

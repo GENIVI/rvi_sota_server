@@ -7,7 +7,7 @@ package org.genivi.sota.core.db
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.Vehicle
 import org.genivi.sota.db.Operators.regex
-import org.joda.time.DateTime
+import java.time.Instant
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 import slick.lifted.TableQuery
@@ -31,7 +31,7 @@ object Vehicles {
   class VehicleTable(tag: Tag) extends Table[Vehicle](tag, "Vehicle") {
     def namespace = column[Namespace]("namespace")
     def vin = column[Vehicle.Vin]("vin")
-    def lastSeen = column[Option[DateTime]]("last_seen")
+    def lastSeen = column[Option[Instant]]("last_seen")
 
     // insertOrUpdate buggy for composite-keys, see Slick issue #966.
     def pk = primaryKey("vin", (namespace, vin))
@@ -89,8 +89,8 @@ object Vehicles {
   def searchByRegex(ns: Namespace, reg:String): Query[VehicleTable, Vehicle, Seq] =
     all(ns).filter(v => regex(v.vin, reg))
 
-  def updateLastSeen(vin: Vehicle.Vin, lastSeen: DateTime = DateTime.now)
-                    (implicit ec: ExecutionContext): DBIO[DateTime] = {
+  def updateLastSeen(vin: Vehicle.Vin, lastSeen: Instant = Instant.now)
+                    (implicit ec: ExecutionContext): DBIO[Instant] = {
     vehicles
       .filter(_.vin === vin)
       .map(_.lastSeen)

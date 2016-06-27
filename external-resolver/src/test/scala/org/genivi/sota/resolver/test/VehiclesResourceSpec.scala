@@ -5,7 +5,7 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
-import eu.timepit.refined.{refineMV, refineV}
+import eu.timepit.refined.refineV
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.data.{Namespaces, PackageId, Vehicle}
@@ -16,8 +16,10 @@ import org.genivi.sota.resolver.components.Component
 import Vehicle._
 import akka.http.scaladsl.testkit.RouteTestTimeout
 import org.genivi.sota.resolver.common.InstalledSoftware
+import org.genivi.sota.resolver.test.generators.PackageGenerators
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 import org.scalacheck._
+
 import scala.concurrent.duration._
 
 
@@ -57,7 +59,7 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
   implicit val noShrink: Shrink[List[Package]] = Shrink.shrinkAny
 
   property("fail to set installed packages if vin does not exist") {
-    forAll(genVehicle, Gen.nonEmptyListOf(genPackage)) { (vehicle, packages) =>
+    forAll(genVehicle, Gen.nonEmptyListOf(genPackage), minSuccessful(1)) { (vehicle, packages) =>
       Put( Resource.uri(vehicles, vehicle.vin.get, "packages"),
           InstalledSoftware(packages.map(_.id).toSet, Set())) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
@@ -75,7 +77,7 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
       removed           <- Gen.someOf(beforeUpdate)
     } yield (beforeUpdate ++ added, beforeUpdate -- removed ++ added ++ nonExistentAdded)
 
-    forAll(genVehicle, stateGen) { (vehicle, state) =>
+    forAll(genVehicle, stateGen, minSuccessful(3)) { (vehicle, state) =>
       val (installedBefore, update) = state
       addVehicleOK(vehicle.vin)
       installedBefore.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
@@ -93,7 +95,7 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
       removed      <- Gen.someOf(beforeUpdate)
     } yield (beforeUpdate ++ added, beforeUpdate -- removed ++ added)
 
-    forAll(genVehicle, stateGen) { (vehicle, state) =>
+    forAll(genVehicle, stateGen, minSuccessful(3)) { (vehicle, state) =>
       val (availablePackages, update) = state
       addVehicleOK(vehicle.vin)
       availablePackages.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
@@ -172,7 +174,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec with Namespaces {
     }
 
     "delete a VIN" in {
-      val vin = refineV[Vehicle.ValidVin]("12345678901234V1N").right.get: Vehicle.Vin
+      val vin: Vehicle.Vin = refineV[Vehicle.ValidVin]("12345678901234V1N").right.get
       addVehicleOK(vin)
       Delete(Resource.uri(vehicles, vin.get)) ~> route ~> check {
         status shouldBe StatusCodes.OK
@@ -192,8 +194,8 @@ class VehiclesResourceWordSpec extends ResourceWordSpec with Namespaces {
     }
 
     "delete a VIN and its installComponents" in {
-      val vin  = refineV[Vehicle.ValidVin]("1234567890THERV1N").right.get: Vehicle.Vin
-      val comp = refineMV("ashtray")          : Component.PartNumber
+      val vin: Vehicle.Vin  = refineV[Vehicle.ValidVin]("1234567890THERV1N").right.get
+      val comp: Component.PartNumber = refineV[Component.ValidPartNumber]("ashtray").right.get
       addVehicleOK(vin)
       addComponentOK(comp, "good to have")
       installComponentOK(vin, comp)

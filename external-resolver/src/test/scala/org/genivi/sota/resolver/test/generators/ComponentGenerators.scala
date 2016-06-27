@@ -1,4 +1,4 @@
-package org.genivi.sota.resolver.test
+package org.genivi.sota.resolver.test.generators
 
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.refineV

@@ -15,6 +15,7 @@ import java.util.UUID
 
 import org.genivi.sota.core.resolver.{Connectivity, ExternalResolverClient}
 import org.genivi.sota.data.{PackageId, Vehicle}
+import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -40,9 +41,18 @@ final case class StartDownload(vin: Vehicle.Vin, update_id: UUID, services: Clie
  */
 final case class RviParameters[T](parameters: List[T], service_name: String )
 
-final case class OperationResult(id: String, result_code: Int, result_text: String)
+final case class OperationResult(id: String, result_code: Int, result_text: String) {
+  def isSuccess: Boolean = (result_code == 0) || (result_code == 1)
+  def isFail: Boolean = !isSuccess
+}
 
-final case class UpdateReport(update_id: UUID, operation_results: List[OperationResult])
+/**
+  * @param update_id id of the [[UpdateRequest]] this report describes
+  */
+final case class UpdateReport(update_id: UUID, operation_results: List[OperationResult]) {
+  def isSuccess: Boolean = !(operation_results.exists(_.isFail))
+  def isFail: Boolean = !isSuccess
+}
 
 /**
  * RVI message from client to report installation of a downloaded package.

@@ -36,7 +36,8 @@ define(function(require) {
               });
           break;
           case 'fetch-affected-vins':
-            var affectedVinsUrl = '/api/v1/resolve/' + payload.name + "/" + payload.version;
+            var affectedVinsUrl = '/api/v1/resolve?namespace=default' +
+            '&package_name=' + payload.name + '&package_version=' + payload.version;
 
             sendRequest.doGet(affectedVinsUrl)
               .success(function(vehicles) {
@@ -83,7 +84,7 @@ define(function(require) {
             sendRequest.doPost('/api/v1/vehicle_updates/' + payload.vin + '/sync');
           break;
           case 'get-operation-results-for-vin':
-            sendRequest.doGet('api/v1/vehicles/' + payload.vin + '/operationresults')
+            sendRequest.doGet('api/v1/vehicle_updates/' + payload.vin + '/results')
               .success(function(operationResults) {
                 db.operationResultsForVin.reset(operationResults);
               });

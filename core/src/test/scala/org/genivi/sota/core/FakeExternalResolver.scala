@@ -14,6 +14,8 @@ import scala.concurrent.Future
 class FakeExternalResolver()(implicit system: ActorSystem, mat: ActorMaterializer)
   extends DefaultExternalResolverClient(Uri.Empty, Uri.Empty, Uri.Empty, Uri.Empty)
 {
+  import org.genivi.sota.marshalling.CirceInstances._
+
   val installedPackages = scala.collection.mutable.Queue.empty[PackageId]
 
   val logger = Logging.getLogger(system, this)

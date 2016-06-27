@@ -14,8 +14,14 @@ import akka.stream.ActorMaterializer
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, DefaultExternalResolverClient}
 import org.genivi.sota.core.rvi._
+import org.genivi.sota.core.storage.S3PackageStore
 import org.genivi.sota.core.transfer._
 import org.genivi.sota.data.Namespace._
+import org.genivi.sota.http.HealthResource
+import org.genivi.sota.datatype.NamespaceDirective
+import scala.util.{Failure, Success, Try}
+import org.genivi.sota.http.SotaDirectives._
+
 import scala.util.{Failure, Success, Try}
 import org.genivi.sota.http.SotaDirectives._
 
@@ -23,9 +29,11 @@ object Boot extends App with DatabaseConfig {
 
   import slick.driver.MySQLDriver.api.Database
   def startSotaServices(db: Database): Route = {
+
+    val s3PackageStoreOpt = S3PackageStore.loadCredentials(config).map { new S3PackageStore(_) }
     val transferProtocolProps =
       TransferProtocolActor.props(db, connectivity.client,
-                                  PackageTransferActor.props(connectivity.client))
+                                  PackageTransferActor.props(connectivity.client, s3PackageStoreOpt))
     val updateController = system.actorOf( UpdateController.props(transferProtocolProps ), "update-controller")
     new rvi.SotaServices(updateController, externalResolverClient).route
   }
@@ -67,9 +75,12 @@ object Boot extends App with DatabaseConfig {
 
   import Directives._
   import org.genivi.sota.core.rvi.ServerServices
+  import NamespaceDirective._
 
   def routes(notifier: UpdateNotifier): Route = {
-    new WebService(notifier, externalResolverClient, db).route ~ startSotaServices(db)
+    new HealthResource(db, org.genivi.sota.core.BuildInfo.toMap).route ~
+    new WebService(notifier, externalResolverClient, db).route ~
+      startSotaServices(db)
   }
 
   implicit val connectivity: Connectivity = interactionProtocol match {
@@ -85,7 +96,7 @@ object Boot extends App with DatabaseConfig {
     } yield sotaServices
     case _ =>
       val notifier = DefaultUpdateNotifier
-      val vehicleService = new VehicleUpdatesResource(db, externalResolverClient)
+      val vehicleService = new VehicleUpdatesResource(db, externalResolverClient, defaultNamespaceExtractor)
       val allRoutes = Route.seal(routes(notifier) ~ vehicleService.route)
       val versionRoutes = (logResponseMetrics("sota-core") & versionHeaders(version))(allRoutes)
 

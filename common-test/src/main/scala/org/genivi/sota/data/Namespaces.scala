@@ -5,7 +5,6 @@
 package org.genivi.sota.data
 
 import eu.timepit.refined.api.Refined
-import eu.timepit.refined.refineMV
 import org.genivi.sota.data.Namespace._
 import org.scalacheck.Gen
 
@@ -23,8 +22,7 @@ trait Namespaces {
     Gen.identifier.map(Refined.unsafeApply)
   }
 
-
-  val defaultNs: Namespace = refineMV("default")
+  val defaultNs: Namespace = Refined.unsafeApply("default")
 }
 
 object Namespaces extends Namespaces

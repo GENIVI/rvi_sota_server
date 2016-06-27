@@ -11,7 +11,9 @@ import io.circe.generic.auto._
 import org.genivi.sota.data.Namespaces
 import org.genivi.sota.device_registry.{Device, DeviceT}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import org.joda.time.DateTime
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+
 import org.scalacheck._
 
 
@@ -37,8 +39,8 @@ class DeviceResourceSpec extends ResourcePropSpec {
     }
   }
 
-  def isRecent(time: Option[DateTime]): Boolean = time match {
-    case Some(time) => time.isAfter(DateTime.now.minusMinutes(3))
+  def isRecent(time: Option[Instant]): Boolean = time match {
+    case Some(time) => time.isAfter(Instant.now.minus(3, ChronoUnit.MINUTES))
     case None => false
   }
 

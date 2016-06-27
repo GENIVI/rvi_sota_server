@@ -1,7 +1,7 @@
 package org.genivi.sota.core
 
 import akka.http.scaladsl.model.Uri
-import eu.timepit.refined.{refineV, refineMV}
+import eu.timepit.refined.refineV
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.data.Namespace._
@@ -23,18 +23,19 @@ object PackagesReader {
       version     <- readVersion( src.get( "Version" ) )
       size        <- src.get("Size").map( _.toLong )
       checkSum    <- src.get("SHA1")
-    } yield Package(refineMV("default"), PackageId(Refined.unsafeApply(name), version),
+    } yield Package(refineV[eu.timepit.refined.string.Uri]("default").right.get,
+                    PackageId(Refined.unsafeApply(name), version),
                     size = size, description = src.get("Description"),
                     checkSum = checkSum, uri = Uri.Empty, vendor = src.get( "Maintainer" ), signature = Some("Signature") )
     maybePackage.get
   }
 
-  def read() = {
+  def read(): List[Package] = {
     val src = scala.io.Source.fromInputStream( this.getClass().getResourceAsStream("/Packages") )
     src.getLines().foldLeft( List(Map.empty[String, String]) ){ (acc, str) =>
-      if( str.startsWith(" ") ) acc
+      if( str.startsWith(" ") ) { acc }
       else {
-        if( str.isEmpty ) Map.empty[String, String] :: acc
+        if( str.isEmpty ) { Map.empty[String, String] :: acc }
         else {
           val keyValue = str.split(": ").toList
           acc.head.updated(keyValue.head, keyValue.tail.mkString(": ")) :: acc.tail

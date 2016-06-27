@@ -2,9 +2,8 @@
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.core.common
+package org.genivi.sota.datatype
 
-import akka.actor.ActorSystem
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.directives.BasicDirectives
 import com.typesafe.config.{Config, ConfigFactory}
@@ -14,24 +13,22 @@ import org.genivi.sota.data.Namespace._
 
 import scala.util.Try
 
-
-trait NamespaceDirective extends BasicDirectives {
-
-  type NamespaceE = Either[String, Namespace]
+object NamespaceDirective {
+  import eu.timepit.refined.refineV
 
   def configNamespace(config: Config): Option[Namespace] = {
     val namespaceString = Try(config.getString("core.defaultNs")).getOrElse("default")
-    val nsE: NamespaceE = refineV(namespaceString)
+    val nsE: Either[String, Namespace] = refineV(namespaceString)
     nsE.right.toOption
   }
 
-  lazy val defaultNs: Option[Namespace] = configNamespace(ConfigFactory.load())
-
-  import eu.timepit.refined.auto._
-
-  def extractNamespace(implicit system: ActorSystem): Directive1[Namespace] = extract { _ =>
-    defaultNs.getOrElse("")
+  private lazy val defaultConfigNamespace: Namespace = {
+    configNamespace(ConfigFactory.load()) getOrElse {
+      val nsE: Either[String, Namespace] = refineV("default-config-ns")
+      nsE.right.toOption.get
+    }
   }
-}
 
-object NamespaceDirective extends NamespaceDirective
+  lazy val defaultNamespaceExtractor: Directive1[Namespace] =
+    BasicDirectives.provide(defaultConfigNamespace)
+}
