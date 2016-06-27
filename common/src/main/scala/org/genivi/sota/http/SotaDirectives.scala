@@ -34,16 +34,20 @@ object SotaDirectives {
     metrics.toList.map { case (m, v) => s"$m=$v"}.mkString(" ")
   }
 
-  def logResponseMetrics(service: String,
+  lazy val envServiceName = sys.env.get("SERVICE_NAME")
+
+  def logResponseMetrics(defaultServiceName: String,
                          extraMetrics: MetricsBuilder = (_, _) => Map.empty,
                          level: LogLevel = Logging.InfoLevel): Directive0 = {
+    val serviceName = envServiceName.getOrElse(defaultServiceName)
+
     extractRequestContext flatMap { ctx =>
       val startAt = System.currentTimeMillis()
       mapResponse { resp =>
         val responseTime = System.currentTimeMillis() - startAt
         val allMetrics =
           defaultMetrics(ctx.request, resp, responseTime) ++
-            extraMetrics(ctx.request, resp) ++ Map("service_name" -> service)
+            extraMetrics(ctx.request, resp) ++ Map("service_name" -> serviceName)
 
         ctx.log.log(level, formatResponseLog(allMetrics))
 
