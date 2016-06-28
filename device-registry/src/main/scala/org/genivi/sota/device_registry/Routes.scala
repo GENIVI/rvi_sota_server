@@ -18,6 +18,7 @@ import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.rest.Validation._
+
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
@@ -60,8 +61,8 @@ class Routes(namespaceExtractor: Directive1[Namespace])
     complete(f)
   }
 
-  def fetchDevice(ns: Namespace, id: Id): Route =
-    complete(db.run(Devices.exists(ns, id)))
+  def fetchDevice(id: Id): Route =
+    complete(db.run(Devices.findById(id)))
 
   def updateDevice(ns: Namespace, id: Id, device: DeviceT): Route =
     complete(db.run(Devices.update(ns, id, device)))
@@ -69,8 +70,8 @@ class Routes(namespaceExtractor: Directive1[Namespace])
   def deleteDevice(ns: Namespace, id: Id): Route =
     complete(db.run(Devices.delete(ns, id)))
 
-  def updateLastSeen(ns: Namespace, id: Id): Route =
-    complete(db.run(Devices.updateLastSeen(ns, id)))
+  def updateLastSeen(id: Id): Route =
+    complete(db.run(Devices.updateLastSeen(id)))
 
   def api: Route =
     handleExceptions(ExceptionHandler(Errors.onMissingDevice orElse Errors.onConflictingDevice)) {
@@ -78,19 +79,19 @@ class Routes(namespaceExtractor: Directive1[Namespace])
         namespaceExtractor { ns =>
           (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
           extractId { id =>
-            (get & pathEnd) {
-              fetchDevice(ns, id)
-            } ~
               (put & entity(as[DeviceT]) & pathEnd) { device =>
                 updateDevice(ns, id, device)
               } ~
               (delete & pathEnd) {
                 deleteDevice(ns, id)
-              } ~
-              (post & path("ping")) {
-                updateLastSeen(ns, id)
               }
           }
+        } ~
+        (extractId & post & path("ping")) { id =>
+          updateLastSeen(id)
+        } ~
+        (extractId & get & pathEnd) { id =>
+          fetchDevice(id)
         } ~
         (get & pathEnd & parameter('namespace.as[Namespace])) { ns =>
           searchDevice(ns)
@@ -102,7 +103,7 @@ class Routes(namespaceExtractor: Directive1[Namespace])
    * Base API route for devices.
    *
    * @return      Route object containing routes for creating, deleting, and listing devices
-   * @throws      MissingDevice if device doesn't exist
+   * @throws      Errors.MissingDevice if device doesn't exist
    */
   def route: Route = api
 

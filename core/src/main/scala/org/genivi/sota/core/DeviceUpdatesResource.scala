@@ -7,7 +7,7 @@ package org.genivi.sota.core
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
+import akka.http.scaladsl.model.{ContentTypes, HttpHeader, HttpResponse, StatusCodes}
 import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
@@ -20,11 +20,12 @@ import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.data.client.ResponseConversions
 import org.genivi.sota.core.db.{BlockedInstalls, OperationResults, UpdateSpecs}
 import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, ExternalResolverClient}
-import org.genivi.sota.core.rvi.InstallReport
+import org.genivi.sota.core.rvi.{InstallReport, VinInstallReport}
 import org.genivi.sota.core.storage.PackageStorage
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
+import akka.http.scaladsl.model.headers.`Content-Type`
 import org.genivi.sota.core.transfer.DeviceUpdates
 import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec}
 import org.genivi.sota.core.data.client.PendingUpdateRequest
@@ -36,6 +37,7 @@ import org.genivi.sota.data.Namespace.Namespace
 import scala.language.implicitConversions
 import slick.driver.MySQLDriver.api.Database
 import cats.Show
+import org.apache.http.HttpHeaders
 
 class DeviceUpdatesResource(db: Database,
                             resolverClient: ExternalResolverClient,
@@ -74,7 +76,7 @@ class DeviceUpdatesResource(db: Database,
     entity(as[List[PackageId]]) { ids =>
       val f = DeviceUpdates
         .update(id, ids, resolverClient, deviceRegistry)
-        .map(_ => NoContent)
+        .map(_ => OK)
 
       complete(f)
     }
@@ -128,6 +130,12 @@ class DeviceUpdatesResource(db: Database,
       val responseF =
         DeviceUpdates
           .buildReportInstallResponse(report.device, report.update_report)
+      complete(responseF)
+    } ~
+    entity(as[VinInstallReport]) { report =>
+      val responseF =
+        DeviceUpdates
+          .buildReportInstallResponse(report.vin, report.update_report)
       complete(responseF)
     }
   }

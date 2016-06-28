@@ -16,6 +16,7 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import cats.Show
+import cats.syntax.show._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
@@ -105,9 +106,11 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri)
     }}
 
   override def updateLastSeen(id: Id, seenAt: Instant = Instant.now)
-                             (implicit ec: ExecutionContext): Future[Unit] =
-    Http().singleRequest(HttpRequest(method = POST,
-                                     uri = baseUri.withPath(devicesUri.path / implicitly[Show[Id]].show(id) / "ping")))
+                             (implicit ec: ExecutionContext): Future[Unit] = {
+
+    val request = HttpRequest(method = POST, uri = baseUri.withPath(devicesUri.path / id.show / "ping"))
+
+    Http().singleRequest(request)
       .flatMap { response: HttpResponse =>
         response.status match {
           case OK => FastFuture.successful(())
@@ -115,5 +118,6 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri)
           case err => FastFuture.failed(new Exception(err.toString))
         }
       }
+  }
 
 }

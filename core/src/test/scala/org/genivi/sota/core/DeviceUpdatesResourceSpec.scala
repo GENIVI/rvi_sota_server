@@ -64,7 +64,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
     val uri = Uri.Empty.withPath(deviceUri.path / "installed")
 
     Put(uri, packageIds) ~> service.route ~> check {
-      status shouldBe StatusCodes.NoContent
+      status shouldBe StatusCodes.OK
 
       packageIds.foreach { p =>
         fakeResolver.installedPackages.toList should contain(p)

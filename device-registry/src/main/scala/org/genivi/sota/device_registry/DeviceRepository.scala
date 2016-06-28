@@ -135,9 +135,17 @@ object Devices {
       } yield ()
     }
 
-  def updateLastSeen(ns: Namespace, id: Id)
+  def findById(id: Device.Id)(implicit ec: ExecutionContext): DBIO[Device] = {
+    devices
+      .filter(_.id === id)
+      .result
+      .headOption
+      .flatMap(_.fold[DBIO[Device]](DBIO.failed(Errors.MissingDevice))(DBIO.successful))
+  }
+
+  def updateLastSeen(id: Id)
                     (implicit ec: ExecutionContext): DBIO[Unit] = for {
-    device <- exists(ns, id)
+    device <- findById(id)
     newDevice = device.copy(lastSeen = Some(Instant.now()))
     _ <- devices.insertOrUpdate(newDevice)
   } yield ()

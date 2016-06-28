@@ -61,6 +61,9 @@ final case class UpdateReport(update_id: UUID, operation_results: List[Operation
  */
 final case class InstallReport(device: Device.Id, update_report: UpdateReport)
 
+// TODO: Remove this once clients send `device` instead
+final case class VinInstallReport(vin: Device.Id, update_report: UpdateReport)
+
 /**
  * RVI message from client to report all installed packages.
  */
