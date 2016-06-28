@@ -100,7 +100,7 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
     // TODO quite inefficient; bulk request to device registry?
     val updateSpecs = vinsToPackageIds.map {
       case (vin, requiredPackageIds) =>
-        deviceRegistry.fetchDeviceByDeviceId(ns, Device.DeviceId(vin.get)).map { d =>
+        deviceRegistry.fetchByDeviceId(ns, Device.DeviceId(vin.get)).map { d =>
           UpdateSpec(request, d.id, UpdateStatus.Pending, requiredPackageIds map idsToPackages, 0, Instant.now)
         }
     }.toSet

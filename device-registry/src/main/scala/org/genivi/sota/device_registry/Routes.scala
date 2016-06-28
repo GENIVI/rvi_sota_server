@@ -43,17 +43,14 @@ class Routes(namespaceExtractor: Directive1[Namespace])
 
   def searchDevice(ns: Namespace): Route =
     parameters(('regex.as[String Refined Regex].?,
-                'deviceName.as[String].?,
                 'deviceId.as[String].?)) { // TODO: Use refined
-      case (Some(re), None, None) =>
+      case (Some(re), None) =>
         complete(db.run(Devices.search(ns, re)))
-      case (None, Some(name), None) =>
-        complete(db.run(Devices.findByDeviceName(ns, DeviceName(name))))
-      case (None, None, Some(id)) =>
+      case (None, Some(id)) =>
         complete(db.run(Devices.findByDeviceId(ns, DeviceId(id))))
-      case (None, None, None) => complete(db.run(Devices.list(ns)))
+      case (None, None) => complete(db.run(Devices.list(ns)))
       case _ =>
-        complete((BadRequest, "'regex', 'deviceName' and 'deviceId' parameters cannot be used together!"))
+        complete((BadRequest, "'regex' and 'deviceId' parameters cannot be used together!"))
     }
 
   def createDevice(ns: Namespace, device: DeviceT): Route = {

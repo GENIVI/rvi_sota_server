@@ -63,27 +63,25 @@ object Devices {
     val id: Id = Id(refineV[ValidId](UUID.randomUUID.toString).right.get)
 
     val dbIO = for {
-      _ <- notExists(ns, id, device.deviceName, device.deviceId)
+      _ <- exists(ns, id).asTry.flatMap {
+        case Success(_) => DBIO.failed(Errors.ConflictingDevice)
+        case Failure(_) => DBIO.successful(())
+      }
+      _ <- notConflicts(ns, device.deviceName, device.deviceId)
       _ <- devices += Device(ns, id, device.deviceName, device.deviceId, device.deviceType)
     } yield id
 
     dbIO.transactionally
   }
 
-  def notExists(ns: Namespace, id: Id, deviceName: DeviceName, deviceId: Option[DeviceId])
-               (implicit ec: ExecutionContext): DBIO[Unit] = {
+  def notConflicts(ns: Namespace, deviceName: DeviceName, deviceId: Option[DeviceId])
+                  (implicit ec: ExecutionContext): DBIO[Unit] = {
     devices
       .filter(_.namespace === ns)
-      .filter(d => d.id === id || d.deviceName === deviceName || d.deviceId === deviceId)
-      .map(_.id)
-      .size
+      .filter(d => d.deviceName === deviceName || d.deviceId === deviceId)
+      .exists
       .result
-      .flatMap { count =>
-        if(count > 0)
-          DBIO.failed(Errors.ConflictingDevice)
-        else
-          DBIO.successful(())
-      }
+      .flatMap(if (_) DBIO.failed(Errors.ConflictingDevice) else DBIO.successful(()))
   }
 
   def exists(ns: Namespace, id: Id)
@@ -95,23 +93,11 @@ object Devices {
       .flatMap(_.
         fold[DBIO[Device]](DBIO.failed(Errors.MissingDevice))(DBIO.successful))
 
-  def findByDeviceName(ns: Namespace, deviceName: DeviceName)
-                      (implicit ec: ExecutionContext): DBIO[Device] =
-    devices
-      .filter(d => d.namespace === ns && d.deviceName === deviceName)
-      .result
-      .headOption
-      .flatMap(_.
-        fold[DBIO[Device]](DBIO.failed(Errors.MissingDevice))(DBIO.successful))
-
   def findByDeviceId(ns: Namespace, deviceId: DeviceId)
-                    (implicit ec: ExecutionContext): DBIO[Device] =
+                    (implicit ec: ExecutionContext): DBIO[Seq[Device]] =
     devices
       .filter(d => d.namespace === ns && d.deviceId === deviceId)
       .result
-      .headOption
-      .flatMap(_.
-        fold[DBIO[Device]](DBIO.failed(Errors.MissingDevice))(DBIO.successful))
 
   def search(ns: Namespace, re: String Refined Regex): DBIO[Seq[Device]] =
     devices
@@ -119,21 +105,16 @@ object Devices {
       .result
 
   def update(ns: Namespace, id: Id, device: DeviceT)
-            (implicit ec: ExecutionContext): DBIO[Unit] =
-    device.deviceId match {
-      case Some(deviceId) => for {
-        _ <- exists(ns, id)
-        _ <- findByDeviceId(ns, deviceId).asTry.flatMap { // negate result of action:
-          case Success(_) => DBIO.failed(Errors.ConflictingDevice)
-          case Failure(_) => DBIO.successful(())
-        }
-        _ <- devices.insertOrUpdate(Device(ns, id, device.deviceName, device.deviceId, device.deviceType))
-      } yield ()
-      case None => for {
-        _ <- exists(ns, id)
-        _ <- devices.insertOrUpdate(Device(ns, id, device.deviceName, device.deviceId, device.deviceType))
-      } yield ()
-    }
+            (implicit ec: ExecutionContext): DBIO[Unit] = {
+
+    val dbIO = for {
+      _ <- exists(ns, id)
+      _ <- notConflicts(ns, device.deviceName, device.deviceId)
+      _ <- devices.update(Device(ns, id, device.deviceName, device.deviceId, device.deviceType))
+    } yield ()
+
+    dbIO.transactionally
+  }
 
   def findById(id: Device.Id)(implicit ec: ExecutionContext): DBIO[Device] = {
     devices
