@@ -70,6 +70,8 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
 
 
   property("updates installed packages even if some of them does not exist") {
+    val vehicle = genVehicle.sample.get
+
     val stateGen : Gen[(Set[Package], Set[Package])] = for {
       beforeUpdate      <- Gen.nonEmptyContainerOf[Set, Package](genPackage)
       added             <- Gen.nonEmptyContainerOf[Set, Package](genPackage)
@@ -78,8 +80,8 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
     } yield (beforeUpdate ++ added, beforeUpdate -- removed ++ added ++ nonExistentAdded)
 
     forAll(genVehicle, stateGen, minSuccessful(3)) { (vehicle, state) =>
-      val (installedBefore, update) = state
       addVehicleOK(vehicle.vin)
+      val (installedBefore, update) = state
       installedBefore.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
       Put( Resource.uri(vehicles, vehicle.vin.get, "packages"),
           InstalledSoftware(update.map(_.id), Set())) ~> route ~> check {
@@ -89,6 +91,8 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
   }
 
   property("updates installed packages") {
+    val vehicle = genVehicle.sample.get
+
     val stateGen : Gen[(Set[Package], Set[Package])] = for {
       beforeUpdate <- Gen.nonEmptyContainerOf[Set, Package](genPackage)
       added        <- Gen.nonEmptyContainerOf[Set, Package](genPackage)
@@ -96,8 +100,8 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
     } yield (beforeUpdate ++ added, beforeUpdate -- removed ++ added)
 
     forAll(genVehicle, stateGen, minSuccessful(3)) { (vehicle, state) =>
-      val (availablePackages, update) = state
       addVehicleOK(vehicle.vin)
+      val (availablePackages, update) = state
       availablePackages.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
       Put( Resource.uri(vehicles, vehicle.vin.get, "packages"),
           InstalledSoftware(update.map(_.id), Set())) ~> route ~> check {

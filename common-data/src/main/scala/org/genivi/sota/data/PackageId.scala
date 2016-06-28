@@ -52,7 +52,7 @@ object PackageId {
 
     Validate.fromPredicate(
       _.matches(packageFormat),
-      s => s"Invalid version format ($s)",
+      s => s"Invalid version format ($s) valid is: $packageFormat",
       ValidVersion()
     )
   }

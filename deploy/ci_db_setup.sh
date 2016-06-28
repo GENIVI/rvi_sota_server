@@ -12,8 +12,11 @@ CREATE DATABASE sota_resolver;
 CREATE DATABASE sota_resolver_test;
 CREATE DATABASE sota_core;
 CREATE DATABASE sota_core_test;
+CREATE DATABASE sota_device_registry;
+CREATE DATABASE sota_device_registry_test;
 GRANT ALL PRIVILEGES ON \`sota\_core%\`.* TO '$CORE_DB_USER'@'%';
 GRANT ALL PRIVILEGES ON \`sota\_resolver%\`.* TO '$CORE_DB_USER'@'%';
+GRANT ALL PRIVILEGES ON \`sota\_device\_registry%\`.* TO '$CORE_DB_USER'@'%';
 FLUSH PRIVILEGES;
 " > entrypoint.d/db_user.sql
 

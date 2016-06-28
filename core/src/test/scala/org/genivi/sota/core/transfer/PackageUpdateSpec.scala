@@ -11,22 +11,21 @@ import akka.stream.ActorMaterializer
 import akka.testkit.{TestKit, TestProbe}
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.refineV
-import org.genivi.sota.core._
 import org.genivi.sota.core.Generators.updateRequestGen
+import org.genivi.sota.core._
 import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateSpec}
-import org.genivi.sota.core.db.{Packages, Vehicles}
+import org.genivi.sota.core.db.{Packages}
 import org.genivi.sota.core.jsonrpc.HttpTransport
 import org.genivi.sota.core.resolver.DefaultExternalResolverClient
 import org.genivi.sota.core.rvi._
+import org.genivi.sota.data.{Device, Namespaces, PackageId, Vehicle, VehicleGenerators}
 import org.genivi.sota.data.Namespace._
-import org.genivi.sota.data.{Namespaces, PackageId, Vehicle}
 import java.time.{Instant, Duration}
 import org.scalacheck.Gen
 import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture, whenReady}
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
-
 import scala.concurrent.{Await, ExecutionContext, Future}
 import slick.jdbc.JdbcBackend.Database
 
@@ -69,6 +68,7 @@ object SotaClient {
   import io.circe.generic.auto._
   import org.genivi.sota.core.resolver.ConnectivityClient
   import org.genivi.sota.marshalling.CirceInstances._
+  import org.genivi.sota.data.DeviceGenerators._
 
   class ClientActor(rviClient: ConnectivityClient, clientServices: ClientServices) extends Actor with ActorLogging {
     def ttl() : Instant = {
@@ -76,18 +76,17 @@ object SotaClient {
     }
 
     def downloading( services: ServerServices ) : Receive = {
-      case StartDownloadMessage(id, checkSum, size) =>
-
+      case StartDownloadMessage(id, checkSum, size) => ()
     }
 
-    val vin = refineV[Vehicle.ValidVin]("V1234567890123456").right.get
+    val device = genId.sample.get
 
     override def receive = {
       case UpdateNotification(update, services ) =>
         log.debug( "Update notification received." )
         rviClient.sendMessage(
           services.start,
-          StartDownload(vin, update.update_id, clientServices),
+          StartDownload(device, update.update_id, clientServices),
           ttl())
       case m => log.debug(s"Not supported yet: $m")
     }
@@ -169,6 +168,7 @@ trait SotaCore {
   implicit val exec = system.dispatcher
 
   implicit val connectivity = new RviConnectivity
+  val deviceRegistry = new FakeDeviceRegistry()
 
   def sotaRviServices() : Route = {
     val transferProtocolProps =
@@ -176,7 +176,7 @@ trait SotaCore {
                                   PackageTransferActor.props(connectivity.client))
     val updateController = system.actorOf( UpdateController.props(transferProtocolProps ), "update-controller")
     val client = new DefaultExternalResolverClient( Uri.Empty, Uri.Empty, Uri.Empty, Uri.Empty )
-    new SotaServices(updateController, client).route
+    new SotaServices(updateController, client, deviceRegistry).route
   }
 
 }
@@ -193,6 +193,7 @@ class PackageUpdateSpec extends PropSpec
   with Namespaces {
 
   import DataGenerators._
+  import org.genivi.sota.data.DeviceGenerators._
 
   override def beforeAll() : Unit = {
     super.beforeAll()
@@ -207,12 +208,12 @@ class PackageUpdateSpec extends PropSpec
     implicit val _db = db
 
     val notifier = new RviUpdateNotifier(services)
-    val updateService = new UpdateService(notifier)(system, connectivity)
-    val vins : Set[Vehicle.Vin] =
+    val deviceRegistry = new FakeDeviceRegistry()
+    val updateService = new UpdateService(notifier, deviceRegistry)(system, connectivity, exec)
+    val devices: Set[Vehicle.Vin] =
       generatedData.values.map( _.keySet ).fold(Set.empty[Vehicle.Vin])( _ union _)
 
     for {
-      _     <- db.run( DBIO.seq( vins.map( vin => Vehicles.create(Vehicle(defaultNs, vin))).toArray: _* ) )
       specs <- Future.sequence( generatedData.map {
                                  case (request, deps) =>
                                    updateService.queueUpdate(request, _ => FastFuture.successful(deps))

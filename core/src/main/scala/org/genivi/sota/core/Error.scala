@@ -16,8 +16,7 @@ import scala.util.control.NoStackTrace
 
 object ErrorCodes {
   val ExternalResolverError = ErrorCode( "external_resolver_error" )
-
-  val MissingVehicle = new ErrorCode("missing_vehicle")
+  val MissingDevice = ErrorCode("missing_device")
 }
 
 object Errors {
@@ -26,7 +25,6 @@ object Errors {
 
 object ErrorHandler {
   import Directives._
-
   import Json.{obj, string}
 
   def defaultHandler(log: LoggingAdapter): ExceptionHandler =

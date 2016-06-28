@@ -125,11 +125,11 @@ object Query extends
       (veh, (paks, comps)) <- s.vehicles;
       pakIds = paks.map(_.id).toSeq;
       compIds = comps.map(_.partNumber).toSeq;
-      entry2 = (veh, (pakIds, compIds));
+      entry2 = (veh.vin, (pakIds, compIds))
       if query(expr)(entry2)
     ) yield veh
 
-    ResolveFunctions.makeFakeDependencyMap(pkgId, vehs.toSeq)
+    ResolveFunctions.makeFakeDependencyMap(pkgId, vehs.map(_.vin).toSeq)
   }
 
   // scalastyle:off magic.number

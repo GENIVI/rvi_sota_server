@@ -14,20 +14,20 @@ object Errors {
 
   object Codes {
     val MissingDevice = ErrorCode("missing_device")
-    val ConflictingDeviceId = ErrorCode("conflicting_device_id")
+    val ConflictingDevice = ErrorCode("conflicting_device")
   }
 
   case object MissingDevice extends Throwable with NoStackTrace
-  case object ConflictingDeviceId extends Throwable with NoStackTrace
+  case object ConflictingDevice extends Throwable with NoStackTrace
 
   val onMissingDevice: PF = {
-    case Errors.MissingDevice =>
-      complete(StatusCodes.NotFound -> ErrorRepresentation(Codes.MissingDevice, "Device doesn't exist"))
+    case MissingDevice =>
+      complete(StatusCodes.NotFound -> ErrorRepresentation(Codes.MissingDevice, "device doesn't exist"))
   }
 
-  val onConflictingDeviceId: PF = {
-    case Errors.ConflictingDeviceId =>
-      complete(StatusCodes.Conflict -> ErrorRepresentation(Codes.ConflictingDeviceId, "deviceId is already in use"))
+  val onConflictingDevice: PF = {
+    case ConflictingDevice =>
+      complete(StatusCodes.Conflict ->
+        ErrorRepresentation(Codes.ConflictingDevice, "deviceId or deviceName is already in use"))
   }
-
 }

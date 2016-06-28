@@ -17,10 +17,10 @@ define(function(require) {
     render: function() {
       var vehicles = _.map(this.props.Vehicles.deref(), function(vehicle) {
         return (
-          <tr key={vehicle.vin}>
+          <tr key={vehicle.deviceId}>
             <td>
-              <Router.Link to='vehicle' params={{vin: vehicle.vin}}>
-              { vehicle.vin }
+              <Router.Link to='vehicle' params={{vin: vehicle.deviceName}}>
+              { vehicle.deviceName }
               </Router.Link>
             </td>
           </tr>
