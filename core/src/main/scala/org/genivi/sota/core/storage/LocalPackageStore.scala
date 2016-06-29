@@ -17,6 +17,7 @@ import akka.stream.scaladsl.{FileIO, Sink}
 import akka.util.ByteString
 import org.genivi.sota.core.DigestCalculator.DigestResult
 import org.genivi.sota.data.PackageId
+
 import scala.concurrent.Future
 
 
@@ -30,11 +31,11 @@ class LocalPackageStore()(implicit val system: ActorSystem, val mat: ActorMateri
 
   protected def localFileSink(packageId: PackageId, filename: String,
                               fileData: StrictForm.FileData): Sink[ByteString, Future[(Uri, PackageSize)]] = {
-    val file = storePath.resolve(filename).toFile
-    val uri = Uri(file.toURI.toString)
+    val path = storePath.resolve(filename)
+    val uri = Uri(path.toUri.toString)
 
     FileIO
-      .toFile(file)
+      .toPath(path)
       .mapMaterializedValue(_.map(result => (uri, result.count)))
   }
 
@@ -48,7 +49,7 @@ class LocalPackageStore()(implicit val system: ActorSystem, val mat: ActorMateri
   def retrieve(packageId: PackageId, packageUri: Uri): Future[(Uri, UniversalEntity)] = {
     val file = new File(new URI(packageUri.toString()))
     val size = file.length()
-    val source = FileIO.fromFile(file)
+    val source = FileIO.fromPath(file.toPath)
     Future.successful {
       (packageUri, HttpEntity(MediaTypes.`application/octet-stream`, size, source))
     }
