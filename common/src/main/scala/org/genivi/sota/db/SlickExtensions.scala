@@ -30,9 +30,9 @@ object SlickExtensions {
   implicit val uuidColumnType = MappedColumnType.base[UUID, String]( _.toString(), UUID.fromString )
 
   /**
-    * Define how to store a Joda Date time in the SQL database.
+    * Define how to store a [[java.time.Instant]] in the SQL database.
     */
-  implicit val jodaDateTimeMapping = {
+  implicit val javaInstantMapping = {
     MappedColumnType.base[Instant, Timestamp](
       dt => new Timestamp(dt.toEpochMilli),
       ts => ts.toInstant)
