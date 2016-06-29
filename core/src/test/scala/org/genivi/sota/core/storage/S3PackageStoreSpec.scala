@@ -81,7 +81,7 @@ class S3PackageStoreSpec extends TestKit(ActorSystem("LocalPackageStoreSpec"))
     val f = for {
       (uri, _, _) <- s3.store(packageId, fileData)
       file <- s3.retrieveFile(uri)
-      localContents <- FileIO.fromFile(file).runFold(ByteString.empty)(_ ++ _)
+      localContents <- FileIO.fromPath(file.toPath).runFold(ByteString.empty)(_ ++ _)
     } yield (file, localContents)
 
     whenReady(f) { case (file, localContents) =>
