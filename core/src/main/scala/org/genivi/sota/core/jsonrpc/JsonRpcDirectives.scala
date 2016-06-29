@@ -73,13 +73,13 @@ trait JsonRpcDirectives {
   }
 
   val ParseErrorHandler = RejectionHandler.newBuilder().handle{
-    case MalformedRequestContentRejection(_, Some(ParsingFailure(_, _))) =>
+    case MalformedRequestContentRejection(_, ParsingFailure(_, _)) =>
       complete(ErrorResponse( PredefinedErrors.ParseError, None ) )
 
-    case MalformedRequestContentRejection(_, Some(DecodingFailure(msg, _))) =>
+    case MalformedRequestContentRejection(_, DecodingFailure(msg, _)) =>
       complete(ErrorResponse( PredefinedErrors.InvalidRequest(msg.asJson), None ) )
 
-    case ml @ MalformedRequestContentRejection(msg, None) =>
+    case ml @ MalformedRequestContentRejection(msg, _) =>
       complete(ErrorResponse( PredefinedErrors.InvalidRequest(msg.asJson), None ) )
 
   }.result()
