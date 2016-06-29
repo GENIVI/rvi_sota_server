@@ -197,7 +197,7 @@ object SotaBuild extends Build {
 
 object Dependencies {
 
-  val AkkaVersion = "2.4.4"
+  val AkkaVersion = "2.4.7"
 
   val CirceVersion = "0.4.1"
 
