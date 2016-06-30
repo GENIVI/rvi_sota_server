@@ -46,12 +46,7 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri)
     Http().singleRequest(HttpRequest(uri = baseUri.withPath(devicesUri.path)
       .withQuery(Query("regex" -> re.get, "namespace" -> ns.get))))
       .flatMap { response: HttpResponse =>
-
-        println(s"Namespace: ${ns.get}")
-
-        val r = Unmarshal(response.entity).to[Seq[Device]]
-
-        r map { rr => println("RECEIVED SHIT" + rr.size); rr}
+        Unmarshal(response.entity).to[Seq[Device]]
       } andThen { case Failure(t) =>
         log.error(t, "Error contacting device registry")
     }
