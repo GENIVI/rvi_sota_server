@@ -24,15 +24,18 @@ import scala.concurrent.{ExecutionContext, Future}
  * The main application controller. Handles authentication and request proxying.
  *
  */
-class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, ldapAuthN: LdapAuth)
+class Application @Inject() (ws: WSClient,
+                             val messagesApi: MessagesApi,
+                             ldapAuthN: LdapAuth,
+                             configuration: play.api.Configuration)
   extends Controller with LoginLogout with AuthConfigImpl with I18nSupport with AuthElement {
 
   val auditLogger = LoggerFactory.getLogger("audit")
   implicit val context = play.api.libs.concurrent.Execution.Implicits.defaultContext
 
-  val coreApiUri = Play.current.configuration.getString("core.api.uri").get
-  val resolverApiUri = Play.current.configuration.getString("resolver.api.uri").get
-  val deviceRegistryApiUri = Play.current.configuration.getString("device_registry.api.uri").get
+  val coreApiUri = configuration.getString("core.api.uri").get
+  val resolverApiUri = configuration.getString("resolver.api.uri").get
+  val deviceRegistryApiUri = configuration.getString("device_registry.api.uri").get
 
   /**
    * Returns an Option[String] of the uri of the service to proxy to
@@ -61,7 +64,7 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, ldapAut
     def toWsHeaders(hdrs: Headers) = hdrs.toMap.map {
       case(name, value) => name -> value.mkString }
 
-    val w = WS.url(apiUri + req.path)
+    val w = ws.url(apiUri + req.path)
       .withFollowRedirects(false)
       .withMethod(req.method)
       .withHeaders(toWsHeaders(req.headers).toSeq :_*)
