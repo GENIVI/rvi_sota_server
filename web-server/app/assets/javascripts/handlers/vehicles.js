@@ -6,7 +6,7 @@ define(function(require) {
       sendRequest = require('../mixins/send-request');
 
   var createVehicle = function(payload) {
-    var url = '/api/v1/devices/';
+    var url = '/api/v1/devices';
     const device = {
       deviceName: payload.vehicle.vin,
       deviceId: payload.vehicle.vin,
