@@ -85,17 +85,16 @@ object DeviceSearch {
                     (implicit db: Database, ec: ExecutionContext): DBIO[Seq[DeviceUpdateStatus]] = {
     import org.genivi.sota.db.SlickExtensions._
 
-    val updateSpecsByDevice = updateSpecs.map(us => (us.device, (us.creationTime, us.status)))
+    val updateSpecsByDevice =
+      updateSpecs
+        .map(us => (us.device, (us.creationTime, us.status)))
+        .filter(_._1.inSet(devices.keys))
+        .result
 
-    val updateStatusByDevice = updateSpecs.filter(_.device.inSet(devices.keys)).map(_.device)
-      .joinLeft(updateSpecsByDevice).on(_ === _._1)
-      .map { case (device, statuses) => (device, statuses.map(_._2)) }
-      .result
-
-    updateStatusByDevice.map {
+    updateSpecsByDevice.map {
       _.groupBy(_._1)
         .values
-        .map { d => (d.head._1, d.flatMap(_._2)) }
+        .map { d => (d.head._1, d.map(_._2)) }
         .map { case (device, statuses) =>
           DeviceUpdateStatus(device, currentDeviceStatus(devices(device), statuses), devices(device))
         }.toSeq

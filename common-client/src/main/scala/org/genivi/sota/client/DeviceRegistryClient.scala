@@ -27,6 +27,7 @@ import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Failure
 
 
 class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri)
@@ -45,8 +46,15 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri)
     Http().singleRequest(HttpRequest(uri = baseUri.withPath(devicesUri.path)
       .withQuery(Query("regex" -> re.get, "namespace" -> ns.get))))
       .flatMap { response: HttpResponse =>
-        Unmarshal(response.entity).to[Seq[Device]]
-      }.recover { case _ => Seq.empty[Device] }
+
+        println(s"Namespace: ${ns.get}")
+
+        val r = Unmarshal(response.entity).to[Seq[Device]]
+
+        r map { rr => println("RECEIVED SHIT" + rr.size); rr}
+      } andThen { case Failure(t) =>
+        log.error(t, "Error contacting device registry")
+    }
 
   override def createDevice(device: DeviceT)
                            (implicit ec: ExecutionContext): Future[Id] =
