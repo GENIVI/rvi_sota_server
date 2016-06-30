@@ -15,7 +15,7 @@ import org.genivi.sota.data.{Device, Interval, PackageId}
 import java.time.Instant
 import java.time.format.{DateTimeFormatter, DateTimeParseException}
 
-import cats.Show
+import cats.syntax.show.toShowOps
 import io.circe.generic.semiauto._
 import io.circe.{Decoder, Encoder}
 
@@ -107,16 +107,15 @@ trait CirceInstances {
   import io.circe._
 
   // TODO generalize to refined and showable value class decoder/encoder
-  implicit val idEncoder: Encoder[Device.Id] = Encoder[String].contramap(implicitly[Show[Device.Id]].show(_))
-  implicit val idDecoder: Decoder[Device.Id] = refinedDecoder[String, Device.ValidId].map(Device.Id(_))
+  implicit val idEncoder: Encoder[Device.Id] = Encoder[String].contramap(_.show)
+  implicit val idDecoder: Decoder[Device.Id] = refinedDecoder[String, Device.ValidId].map(Device.Id)
 
-  implicit val deviceNameEncoder: Encoder[Device.DeviceName] =
-    Encoder[String].contramap(implicitly[Show[Device.DeviceName]].show(_))
-  implicit val deviceNameDecoder: Decoder[Device.DeviceName] = Decoder[String].map(Device.DeviceName(_))
+  implicit val deviceNameEncoder: Encoder[Device.DeviceName] = Encoder[String].contramap(_.show)
+  implicit val deviceNameDecoder: Decoder[Device.DeviceName] = Decoder[String].map(Device.DeviceName)
 
   implicit val deviceIdEncoder: Encoder[Device.DeviceId] =
-    Encoder[String].contramap(implicitly[Show[Device.DeviceId]].show(_))
-  implicit val deviceIdDecoder: Decoder[Device.DeviceId] = Decoder[String].map(Device.DeviceId(_))
+    Encoder[String].contramap(_.show)
+  implicit val deviceIdDecoder: Decoder[Device.DeviceId] = Decoder[String].map(Device.DeviceId)
 }
 
 object CirceInstances extends CirceInstances

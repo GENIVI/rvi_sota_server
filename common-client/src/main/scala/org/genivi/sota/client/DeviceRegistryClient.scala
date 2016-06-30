@@ -67,7 +67,7 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri)
 
   override def fetchDevice(id: Id)
                           (implicit ec: ExecutionContext): Future[Device] =
-    Http().singleRequest(HttpRequest(uri = baseUri.withPath(devicesUri.path / implicitly[Show[Id]].show(id))))
+    Http().singleRequest(HttpRequest(uri = baseUri.withPath(devicesUri.path / id.show)))
       .flatMap { response: HttpResponse => response.status match {
         case OK => Unmarshal(response.entity).to[Device]
         case NotFound => FastFuture.failed(Errors.MissingDevice)
@@ -77,7 +77,7 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri)
   override def fetchDeviceByDeviceId(ns: Namespace, id: DeviceId)
                                     (implicit ec: ExecutionContext): Future[Device] =
     Http().singleRequest(HttpRequest(uri = baseUri.withPath(devicesUri.path)
-      .withQuery(Query("namespace" -> ns.get, "deviceId" -> implicitly[Show[DeviceId]].show(id)))))
+      .withQuery(Query("namespace" -> ns.get, "deviceId" -> id.show))))
       .flatMap { response: HttpResponse => response.status match {
         case OK => Unmarshal(response.entity).to[Device]
         case NotFound => FastFuture.failed(Errors.MissingDevice)
@@ -88,7 +88,7 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri)
                            (implicit ec: ExecutionContext): Future[Unit] =
     Marshal(device).to[MessageEntity].flatMap { entity =>
       Http().singleRequest(HttpRequest(method = PUT,
-                                       uri = baseUri.withPath(devicesUri.path / implicitly[Show[Id]].show(id)),
+                                       uri = baseUri.withPath(devicesUri.path / id.show),
                                        entity = entity))
       .flatMap { response: HttpResponse => response.status match {
         case OK => FastFuture.successful(())
@@ -101,7 +101,7 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri)
   override def deleteDevice(id: Id)
                   (implicit ec: ExecutionContext): Future[Unit] =
     Http().singleRequest(
-      HttpRequest(method = DELETE, uri = baseUri.withPath(devicesUri.path / implicitly[Show[Id]].show(id)))
+      HttpRequest(method = DELETE, uri = baseUri.withPath(devicesUri.path / id.show))
     ).flatMap { response: HttpResponse => response.status match {
       case OK => FastFuture.successful(())
       case NotFound => FastFuture.failed(Errors.MissingDevice)
