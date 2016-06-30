@@ -175,6 +175,9 @@ object SotaBuild extends Build {
       flywayUser := sys.env.get("DEVICE_REGISTRY_DB_USER").orElse(sys.props.get("device-registry.db.user")).getOrElse("sota"),
       flywayPassword := sys.env.get("DEVICE_REGISTRY_DB_PASSWORD").orElse(sys.props.get("device-registry.db.password")).getOrElse("s0ta")
     ))
+    .settings(mappings in Docker += (file("deploy/wait-for-it.sh") -> "/opt/docker/wait-for-it.sh"))
+    .settings(mappings in Docker += (file("deploy/entrypoint-device-registry.sh") -> "/opt/docker/entrypoint.sh"))
+    .settings(dockerEntrypoint := Seq("./entrypoint.sh"))
     .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
     .configs(UnitTests)
     .dependsOn(common, commonData, commonTest % "test", commonDbTest % "test")

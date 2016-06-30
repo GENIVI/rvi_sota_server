@@ -75,3 +75,5 @@ services:
     environment:
      HOST: 0.0.0.0
      DEVICE_REGISTRY_DB_URL: "jdbc:mariadb://mysql:3306/sota_device_registry"
+     DEVICE_REGISTRY_DB_MIGRATE: 'true'
+     DB_ALIVE_URL: "mysql:3306"
