@@ -10,6 +10,7 @@ import akka.http.scaladsl.server._
 import de.heikoseeberger.akkahttpcirce.CirceSupport._
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.RefinementError
+import org.genivi.sota.marshalling.DeserializationException
 
 /**
   * When validation, JSON deserialisation fail or a duplicate entry
@@ -24,10 +25,13 @@ object Handlers {
   case object DuplicateEntry extends Throwable("Entry already exists")
 
   def rejectionHandler : RejectionHandler = RejectionHandler.newBuilder().handle {
-    case ValidationRejection(msg, None) =>
+    case ValidationRejection(msg, _) =>
       complete( StatusCodes.BadRequest -> ErrorRepresentation(ErrorCodes.InvalidEntity, msg) )
   }.handle{
-    case MalformedRequestContentRejection(_, Some(RefinementError(_, msg))) =>
+    case MalformedRequestContentRejection(_, RefinementError(_, msg)) =>
+      complete(StatusCodes.BadRequest -> ErrorRepresentation(ErrorCodes.InvalidEntity, msg))
+  }.handle{
+    case MalformedRequestContentRejection(_, DeserializationException(RefinementError(_, msg))) =>
       complete(StatusCodes.BadRequest -> ErrorRepresentation(ErrorCodes.InvalidEntity, msg))
   }.result().withFallback(RejectionHandler.default)
 

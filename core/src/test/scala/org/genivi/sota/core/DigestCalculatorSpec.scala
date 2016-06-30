@@ -41,11 +41,11 @@ class DigestCalculatorSpec extends TestKit(ActorSystem("DigestCalculatorTest"))
     val tempFile = File.createTempFile("testfile", ".txt")
 
     val ioResult = Source.single(ByteString("Some text"))
-      .runWith(FileIO.toFile(tempFile))
+      .runWith(FileIO.toPath(tempFile.toPath))
 
     whenReady(ioResult) { _ =>
       val probe = TestSink.probe[String]
-      val subscriber = FileIO.fromFile(tempFile)
+      val subscriber = FileIO.fromPath(tempFile.toPath)
         .via(DigestCalculator()).runWith(probe)
 
       subscriber.requestNext() shouldBe "02d92c580d4ede6c80a878bdd9f3142d8f757be8"

@@ -59,9 +59,9 @@ class PackageUploadSpec extends PropSpec
   def toBodyPart(name : String)(x: String) = BodyPart.Strict(name, HttpEntity( x ) )
 
   private[this] def mkRequest( pckg: Package ) : HttpRequest = {
-    val filePart = BodyPart.fromFile( "file",
+    val filePart = BodyPart.fromPath( "file",
       ContentType(MediaTypes.`application/x-redhat-package-manager`),
-      new File("""packages/ghc-7.6.3-18.3.el7.x86_64.rpm"""))
+      new File("""packages/ghc-7.6.3-18.3.el7.x86_64.rpm""").toPath)
     val parts = filePart ::
         List( pckg.description.map( toBodyPart("description") ),
           pckg.vendor.map( toBodyPart("vendor") )

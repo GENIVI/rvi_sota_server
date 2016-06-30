@@ -50,7 +50,7 @@ class PackagesResourceSpec extends FunSuite
       Map("filename" -> "linux-lts.rpm")))
 
   def readFile(uri: Uri): Future[ByteString] = {
-    FileIO.fromFile(new File(new URI(uri.toString())))
+    FileIO.fromPath(new File(new URI(uri.toString())).toPath)
       .runFold(ByteString.empty)(_ ++ _)
   }
 
