@@ -7,8 +7,8 @@ import java.io.File
 import java.security.InvalidParameterException
 import java.util.UUID
 
-import com.ning.http.client.AsyncHttpClient
-import com.ning.http.client.multipart.FilePart
+import org.asynchttpclient.AsyncHttpClient
+import org.asynchttpclient.request.body.multipart.FilePart
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 

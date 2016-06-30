@@ -10,12 +10,10 @@ import javax.inject.Inject
 import jp.t2v.lab.play2.auth.{AuthElement, LoginLogout}
 import org.genivi.webserver.Authentication.{Account, LdapAuth, User}
 import org.slf4j.LoggerFactory
-import play.api.Play.current
 import play.api._
 import play.api.data.Forms._
 import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.libs.iteratee.Enumerator
 import play.api.libs.ws._
 import play.api.mvc._
 import views.html
@@ -73,10 +71,14 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, ldapAut
       case Some(b) => w.withBody(b)
       case None => w.withBody(FileBody(req.body.asFile))
     }
-    wreq.execute.map { resp =>
+
+    wreq.stream.map { resp =>
+      val rStatus = resp.headers.status
+      val rHeaders = resp.headers.headers.mapValues(x => x.head)
       Result(
-        header = ResponseHeader(resp.status, resp.allHeaders.mapValues(x => x.head)),
-        body = Enumerator(resp.bodyAsBytes))
+        header = ResponseHeader(rStatus, rHeaders),
+        body = play.api.http.HttpEntity.Streamed(resp.body, contentLength = None, contentType = None)
+      )
     }
   }
 
