@@ -23,77 +23,33 @@
     "application/json"
   ],
   "paths": {
-    "/vehicles": {
+    "/devices": {
       "get": {
-        "description": "Get a list of all the vehicles in the Core database.",
+        "description": "Get a list of all the devices in the Core database.",
+        "parameters": [
+          {
+            "name": "deviceId",
+            "description": "Hi",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "deviceName",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "A array of VINs",
+            "description": "A array of Device",
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/Vehicle"
+                "$ref": "#/definitions/Device"
               }
             }
-          }
-        }
-      }
-    },
-    "/vehicles/{vin}": {
-      "get": {
-        "description": "Return a single vehicle object",
-        "parameters": [
-          {
-            "name": "vin",
-            "in": "path",
-            "description": "A VIN that exists in the system.",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/Vehicle"
-            }
-          }
-        }
-      },
-      "put": {
-        "description": "Add a vehicle to the database",
-        "parameters": [
-          {
-            "name": "vin",
-            "in": "path",
-            "description": "A VIN to be added to the system.",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Success"
-          }
-        }
-      },
-      "delete": {
-        "description": "Delete a vehicle from the database and remove all its associations.",
-        "parameters": [
-          {
-            "name": "vin",
-            "in": "path",
-            "description": "A VIN to be deleted from the system.",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "404": {
-            "description": "Not found"
           }
         }
       }
@@ -195,9 +151,9 @@
         }
       }
     },
-    "/packages/{name}/{version}/queued_vins": {
+    "/packages/{name}/{version}/queued_devices": {
       "get": {
-        "description": "Return a list of VINs that have the package queued for install.",
+        "description": "Return a list of device uuids that have the package queued for install.",
         "parameters": [
           {
             "name": "name",
@@ -245,12 +201,12 @@
     },
     "/history": {
       "get": {
-        "description": "Get the package install history of a vehicle.",
+        "description": "Get the package install history of a device.",
         "parameters": [
           {
-            "name": "vin",
+            "name": "uuid",
             "in": "query",
-            "description": "An existing VIN.",
+            "description": "An existing device uuid.",
             "required": true,
             "type": "string"
           }
@@ -270,14 +226,14 @@
         }
       }
     },
-    "/vehicle_updates/{vin}": {
+    "/vehicle_updates/{uuid}": {
       "post": {
         "description": "Create an update sending a package to vehicle",
         "parameters": [
           {
-            "name": "vin",
+            "name": "uuid",
             "in": "path",
-            "description": "The VIN to install the package on",
+            "description": "The device uuid to install the package on",
             "required": true,
             "type": "string"
           },
@@ -300,12 +256,12 @@
         }
       },
       "get": {
-        "description": "Get a list of the updates queued for a vin, and update the last seen time for that vin. This is called by the\nclient. To get a list of updates queued for a vin without updating the last seen time, use /vehicle_updates/{vin}/queued\n",
+        "description": "Get a list of the updates queued for a DeviceId, and update the last seen time for that DeviceId. This is called by the\nclient. To get a list of updates queued for a DeviceId without updating the last seen time, use /vehicle_updates/{uuid}/queued\n",
         "parameters": [
           {
-            "name": "vin",
+            "name": "uuid",
             "in": "path",
-            "description": "The VIN to list",
+            "description": "The device to list",
             "required": true,
             "type": "string"
           }
@@ -323,14 +279,14 @@
         }
       }
     },
-    "/vehicle_updates/{vin}/queued": {
+    "/vehicle_updates/{uuid}/queued": {
       "get": {
-        "description": "Get a list of the updates queued for a vin.",
+        "description": "Get a list of the updates queued for a device.",
         "parameters": [
           {
-            "name": "vin",
+            "name": "uuid",
             "in": "path",
-            "description": "The VIN to list",
+            "description": "The device to list",
             "required": true,
             "type": "string"
           }
@@ -348,14 +304,14 @@
         }
       }
     },
-    "/vehicle_updates/{vin}/{updateId}/download": {
+    "/vehicle_updates/{uuid}/{updateId}/download": {
       "get": {
         "description": "Download a package binary. This is called by the in-vehicle client.",
         "parameters": [
           {
-            "name": "vin",
+            "name": "uuid",
             "in": "path",
-            "description": "The VIN of the vehicle making this call",
+            "description": "The uuid of the vehicle making this call",
             "required": true,
             "type": "string"
           },
@@ -377,14 +333,14 @@
         }
       }
     },
-    "/vehicle_updates/{vin}/sync": {
+    "/vehicle_updates/{uuid}/sync": {
       "post": {
         "description": "todo",
         "parameters": [
           {
-            "name": "vin",
+            "name": "uuid",
             "in": "path",
-            "description": "The VIN of the vehicle making this call",
+            "description": "The uuid of the vehicle making this call",
             "required": true,
             "type": "string"
           }
@@ -396,12 +352,12 @@
         }
       }
     },
-    "/vehicle_updates/{vin}/{updateId}/cancelupdate": {
+    "/vehicle_updates/{uuid}/{updateId}/cancelupdate": {
       "put": {
         "description": "Cancel a currently pending update",
         "parameters": [
           {
-            "name": "vin",
+            "name": "uuid",
             "in": "path",
             "required": true,
             "type": "string"
@@ -421,13 +377,14 @@
         }
       }
     },
-    "/vehicle_updates/{vin}/{updateId}": {
+    "/vehicle_updates/{uuid}/{updateId}": {
       "post": {
         "description": "Report on the status of an install. This is used by the client to send the status and/or log files after an install completes.",
         "parameters": [
           {
-            "name": "vin",
+            "name": "uuid",
             "in": "path",
+            "description": "uuid of the device",
             "required": true,
             "type": "string"
           },
@@ -454,12 +411,12 @@
         }
       }
     },
-    "/vehicle_updates/{vin}/installed": {
+    "/vehicle_updates/{uuid}/installed": {
       "put": {
-        "description": "Update the list of installed packages on a vehicle. Note that this does not do any communication\nwith the client or install any packages; it simply updates the database with the information that \nthe package is installed.\n",
+        "description": "Update the list of installed packages on a vehicle. Note that this does not do any communication\nwith the client or install any packages; it simply updates the database with the information that\nthe package is installed.\n",
         "parameters": [
           {
-            "name": "vin",
+            "name": "uuid",
             "in": "path",
             "required": true,
             "type": "string"
@@ -484,12 +441,12 @@
         }
       }
     },
-    "/vehicle_updates/{vin}/order": {
+    "/vehicle_updates/{uuid}/order": {
       "put": {
-        "description": "Set the install order for a vehicle's queued packages. \n",
+        "description": "Set the install order for a vehicle's queued packages.\n",
         "parameters": [
           {
-            "name": "vin",
+            "name": "uuid",
             "in": "path",
             "required": true,
             "type": "string"
@@ -511,14 +468,14 @@
         }
       }
     },
-    "/vehicle_updates/{vin}/results": {
+    "/vehicle_updates/{uuid}/results": {
       "get": {
-        "description": "Get a list of results for all updates for a given vin.",
+        "description": "Get a list of results for all updates for a given DeviceId.",
         "parameters": [
           {
-            "name": "vin",
+            "name": "uuid",
             "in": "path",
-            "description": "The VIN to list",
+            "description": "The uuid to list",
             "required": true,
             "type": "string"
           }
@@ -536,14 +493,14 @@
         }
       }
     },
-    "/vehicle_updates/{vin}/{updateId}/results": {
+    "/vehicle_updates/{uuid}/{updateId}/results": {
       "get": {
         "description": "Get a list of results for a given update.",
         "parameters": [
           {
-            "name": "vin",
+            "name": "uuid",
             "in": "path",
-            "description": "The VIN to list",
+            "description": "The device to list",
             "required": true,
             "type": "string"
           },
@@ -570,27 +527,41 @@
     }
   },
   "definitions": {
+    "uuid": {
+      "type": "string",
+      "description": "32 lowercase hexadecimal digits, displayed in five groups separated by hyphens"
+    },
     "namespace": {
       "type": "string",
       "description": "The namespace scope of the request. Default value is 'default'"
     },
-    "VIN": {
+    "DeviceId": {
       "type": "string",
       "description": "A 17-digit VIN. May contain only capital letters and digits. Cannot contain the letters I, O, or Q."
     },
-    "Vehicle": {
+    "DeviceName": {
+      "type": "string",
+      "description": "Custom name for a device"
+    },
+    "Device": {
       "type": "object",
       "properties": {
         "namespace": {
           "$ref": "#/definitions/namespace"
         },
-        "VIN": {
-          "$ref": "#/definitions/VIN"
+        "deviceId": {
+          "$ref": "#/definitions/DeviceId"
+        },
+        "id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "deviceName": {
+          "$ref": "#/definitions/DeviceName"
         },
         "lastseen": {
           "type": "string",
           "format": "dateTime",
-          "description": "The last time a VIN was seen by the SOTA server."
+          "description": "The last time a device uuid was seen by the SOTA server."
         }
       }
     },
