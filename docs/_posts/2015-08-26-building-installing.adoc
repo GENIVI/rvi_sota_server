@@ -8,7 +8,7 @@ order: 1
 :toc: macro
 :icons: font
 
-Both the SOTA server components and the SOTA client are available as docker containers, and can be run quickly with https://docs.docker.com/compose[docker-compose]. For more detailed instructions on running SOTA with docker, see link:../doc/deployment-with-dockercompose.html[Deployment with docker-compose]. It is also possible to link:../doc/deployment-with-docker-launcher.html[deploy directly to EC2] using https://github.com/advancedtelematic/docker-launcher[docker-launcher], however this method is deprecated and unsupported.
+Both the SOTA server components and the SOTA client are available as docker containers, and can be run quickly with https://docs.docker.com/compose[docker-compose]. For more detailed instructions on running SOTA with docker, see link:../doc/deployment-with-dockercompose.html[Deployment with docker-compose].
 
 This page contains instructions on getting a local development system up and running.
 
@@ -38,7 +38,7 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.45-b02, mixed mode)
 
 === Prerequisite: MariaDB
 
-For development, a local MariaDB install is required. (Note that this is *not* required for deployment, as Docker Launcher will handle the creation of the database. If a Docker Launcher local deployment is attempted on a machine already running a database instance, there may be conflicts.) Create two databases called `sota_core` and `sota_resolver`:
+For development, a local MariaDB install is required. Create two databases called `sota_core` and `sota_resolver`:
 
 [source,sql]
 ---------------------------------------------------------------------
