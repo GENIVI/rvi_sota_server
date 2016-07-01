@@ -7,15 +7,15 @@ import java.io.File
 import java.security.InvalidParameterException
 import java.util.UUID
 
-import com.ning.http.client.AsyncHttpClient
-import com.ning.http.client.multipart.FilePart
+import org.asynchttpclient.AsyncHttpClient
+import org.asynchttpclient.request.body.multipart.FilePart
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 import org.scalatest.Tag
 import org.scalatestplus.play._
-import play.api.Play
-import play.api.libs.ws.{WS, WSResponse}
+import play.api.Configuration
+import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.mvc.{Cookie, Cookies}
 import play.api.test.Helpers._
 import io.circe._
@@ -34,6 +34,9 @@ object APITests extends Tag("APITests")
  */
 class APIFunTests extends PlaySpec with OneServerPerSuite {
 
+  val wsClient = app.injector.instanceOf[WSClient]
+  val configuration = app.injector.instanceOf[Configuration]
+
   val testNamespace = "default"
   val testVin = "TESTSTR0123456789"
   val testVinAlt = "TESTALT0123456789"
@@ -48,7 +51,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   val testComponentNameAlt = "Satnav"
   val testComponentDescription = "A radio component"
   val testComponentDescriptionAlt = "A satellite navigation component"
-  val webserverHost = Play.application.configuration.getString("test.webserver.host").get
+  val webserverHost = configuration.getString("test.webserver.host").get
   //val webserverPort = 80 //this isn't likely to change so hardcode it instead of using an env var
   val webserverPort = port
 
@@ -86,7 +89,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   }
 
   def getLoginCookie : Seq[Cookie] = {
-    val response = await(WS.url("http://" + webserverHost + s":$webserverPort/authenticate")
+    val response = await(wsClient.url("http://" + webserverHost + s":$webserverPort/authenticate")
       .withHeaders("Content-Type" -> "application/x-www-form-urlencoded")
       .post(Map("email" -> Seq("admin"), "password" -> Seq("genivirocks!"))))
     response.status mustBe OK
@@ -96,7 +99,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   import Method._
   def makeRequest(path: String, method: Method) : WSResponse = {
     val cookie = getLoginCookie
-    val req = WS.url("http://" + webserverHost + s":$webserverPort/api/v1/" + path)
+    val req = wsClient.url("http://" + webserverHost + s":$webserverPort/api/v1/" + path)
       .withHeaders("Cookie" -> Cookies.encodeCookieHeader(cookie))
     method match {
       case PUT => await(req.put(""))
@@ -108,7 +111,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
 
   def makeJsonRequest(path: String, method: Method, data: String) : WSResponse = {
     val cookie = getLoginCookie
-    val req = WS.url("http://" + webserverHost + s":$webserverPort/api/v1/" + path)
+    val req = wsClient.url("http://" + webserverHost + s":$webserverPort/api/v1/" + path)
       .withHeaders("Cookie" -> Cookies.encodeCookieHeader(cookie))
       .withHeaders("Content-Type" -> "application/json")
     method match {
@@ -137,7 +140,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
 
   def addPackage(packageName: String, packageVersion: String): Unit = {
     val cookie = getLoginCookie
-    val asyncHttpClient:AsyncHttpClient = WS.client.underlying
+    val asyncHttpClient:AsyncHttpClient = wsClient.underlying
     val putBuilder = asyncHttpClient.preparePut("http://" + webserverHost + s":$webserverPort/api/v1/packages/" +
       packageName + "/" + packageVersion + "?description=test&vendor=ACME&signature=none")
     val builder = putBuilder.addBodyPart(new FilePart("file", new File("../packages/ghc-7.6.3-18.3.el7.x86_64.rpm")))
@@ -374,7 +377,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     val updateId = UUID.randomUUID().toString
     val data = UpdateRequest(testNamespace, updateId, PackageId(testPackageName, testPackageVersion), currentTimestamp,
       currentTimestamp + "/" + tomorrowTimestamp, 1, "sig", "desc", true)
-    val response = await(WS.url("http://" + webserverHost + s":$webserverPort/api/v1/update_requests")
+    val response = await(wsClient.url("http://" + webserverHost + s":$webserverPort/api/v1/update_requests")
       .withHeaders("Cookie" -> Cookies.encodeCookieHeader(cookie))
       .withHeaders("Content-Type" -> "application/json")
       .post(data.asJson.noSpaces))

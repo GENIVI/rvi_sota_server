@@ -25,7 +25,7 @@ object SotaBuild extends Build {
 
   lazy val basicSettings = Seq(
     organization := "org.genivi",
-    scalaVersion := "2.11.7",
+    scalaVersion := "2.11.8",
     publishArtifact in Test := false,
     resolvers += Resolver.sonatypeRepo("snapshots"),
 
@@ -143,7 +143,7 @@ object SotaBuild extends Build {
       resolvers += "scalaz-bintray"  at "http://dl.bintray.com/scalaz/releases",
       dockerExposedPorts := Seq(9000),
       libraryDependencies ++= Seq (
-        "org.scalatestplus" %% "play" % "1.4.0-M3" % "test",
+        "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % "test", // https://github.com/playframework/scalatestplus-play
         "org.webjars" %% "webjars-play" % "2.4.0-1",
         "org.webjars" % "webjars-locator" % "0.27",
         "org.webjars.bower" % "react" % "0.13.3",
