@@ -110,8 +110,10 @@ object DbDepResolver {
     * Only pass on those [[VinPackages]] that satisfy the given [[FilterAST]]
     */
   protected def filterFlowFrom(filterAST: FilterAST): Flow[VinPackages, VinPackages, NotUsed] = {
+    val predicate = FilterAST.query(filterAST)
+
     Flow[VinPackages]
-      .filter(v => FilterAST.query(filterAST).apply(v.tupled))
+      .filter(v => predicate.apply(v.tupled))
   }
 }
 
