@@ -14,6 +14,20 @@ services:
       MYSQL_DATABASES: "sota_resolver sota_resolver_test sota_resolver% sota_core sota_core_test sota_core% sota_device_registry"
     command: ["--character-set-server=utf8", "--collation-server=utf8_unicode_ci", "--max-connections=1000"]
 
+  device_registry:
+    image: advancedtelematic/sota-device_registry
+    ports:
+     - 8083:8083
+    expose:
+     - 8083
+    links:
+     - mysql
+    environment:
+     HOST: 0.0.0.0
+     DEVICE_REGISTRY_DB_URL: "jdbc:mariadb://mysql:3306/sota_device_registry"
+     DEVICE_REGISTRY_DB_MIGRATE: 'true'
+     DB_ALIVE_URL: "mysql:3306"
+
   resolver:
     image: advancedtelematic/sota-resolver
     ports:
@@ -36,55 +50,30 @@ services:
       - 8080
     depends_on:
       - mysql
+      - device_registry
       - resolver
-      - device-registry
-      - rvi_server
     environment:
       HOST: 0.0.0.0
       CORE_DB_URL: "jdbc:mariadb://mysql:3306/sota_core"
       CORE_DB_MIGRATE: 'true'
-      RESOLVER_API_URI: "http://resolver:8081"
-      DEVICE_REGISTRY_API_URI: "http://device-registry:8083"
-      CORE_INTERACTION_PROTOCOL: 'rvi'
+      CORE_INTERACTION_PROTOCOL: 'none'
       DB_ALIVE_URL: "mysql:3306"
-      RVI_URI: "http://rvi_server:8801"
-      SOTA_SERVICES_URI: "http://core:8080/rvi"
+      DEVICE_REGISTRY_API_URI: "http://device-registry:8083"
+      RESOLVER_API_URI: "http://resolver:8081"
 
   webserver:
     image: advancedtelematic/sota-webserver
     depends_on:
+      - device_registry
       - resolver
       - core
-      - device-registry
     ports:
       - 9000:9000
     expose:
       - 9000
     environment:
       CORE_API_URI: "http://core:8080"
+      DEVICE_REGISTRY_API_URI: "http://device-registry:8083"
       RESOLVER_API_URI: "http://resolver:8081"
       PLAY_CRYPTO_SECRET: "YM5B6o<ywKn4tTyA;tOZ<2xUEajF4DDi=O/PPm1Q^w2LqtKISd9oqYT6b>>C1gQa"
       LDAP_INMEMORY_ENABLE: 'true'
-
-  device-registry:
-    image: advancedtelematic/sota-device_registry
-    ports:
-     - 8083:8083
-    expose:
-     - 8083
-    links:
-     - mysql
-    environment:
-     HOST: 0.0.0.0
-     DEVICE_REGISTRY_DB_URL: "jdbc:mariadb://mysql:3306/sota_device_registry"
-
-  rvi_server:
-    image: advancedtelematic/rvi
-    ports:
-      - 8801:8801
-      - 8807:8807
-    depends_on:
-      - mysql
-    stdin_open: true
-    tty: true
-    command: server

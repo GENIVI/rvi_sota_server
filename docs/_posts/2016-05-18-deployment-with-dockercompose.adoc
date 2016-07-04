@@ -18,7 +18,6 @@ Deploying with docker-compose should be quite straightforward. Assuming docker i
 * External images provided by ATS
 ** advancedtelematic/mariadb
 ** advancedtelematic/rvi (optional)
-** advancedtelematic/sota-client-debug (optional, to simulate a SOTA client)
 
 When you run docker-compose, it will first search for those images locally, and if it does not find them, it will pull the ones ATS has published on Docker Hub. To ensure you're running the latest code, you can build the images locally with `sbt docker:publishLocal`. To check for updates on the published images, you can do a `docker-compose -f deploy/docker-compose/[filename].yml pull`, or simply `docker pull [image name]` to update an individual image.
 
@@ -26,9 +25,11 @@ When you run docker-compose, it will first search for those images locally, and 
 
 There are three docker-compose files included in the git repo, under `/deploy/docker-compose`:
 
-* `server-bare.yml` contains all of the SOTA server components, with client communication disabled.
-* `server-rvi.yml` contains the server components plus the server-side RVI node, for communication with clients.
-* `server-rvi-client.yml` contains the server components, the server-side RVI node, plus a debug build of the SOTA client
+* `docker-compose.yml` contains the default SOTA Server components.
+* `core-rvi.yml` contains the additional RVI server node with environment overrides for the SOTA Core server.
+* `client-rvi.yml` contains the additional RVI client node for testing with the SOTA Client
+
+To start the base SOTA Server, run `docker-compose -f docker-compose.yml up`. To start the SOTA Server with an RVI backend node, run `docker-compose -f docker-compose.yml -f core-rvi.yml up`. To start the SOTA Server with both RVI backend and device nodes, run `docker-compose -f docker-compose.yml -f core-rvi.yml -f client-rvi.yml up`.
 
 == Cloud deployment
 
