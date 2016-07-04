@@ -134,10 +134,11 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
     val requestF = Http().singleRequest(httpRequest)
 
     requestF flatMap { response =>
-      val e = if(response.encoding == HttpEncodings.gzip)
+      val e = if (response.encoding == HttpEncodings.gzip) {
         response.entity.transformDataBytes(Gzip.decoderFlow)
-      else
+      } else {
         response.entity
+      }
 
       Unmarshal(e).to[Map[Vehicle.Vin, Set[PackageId]]].map { parsed =>
         parsed.map { case (k, v) => Vehicle(namespace, k) -> v }

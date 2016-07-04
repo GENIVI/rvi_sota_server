@@ -9,6 +9,7 @@ import akka.NotUsed
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Flow, Source}
 import org.genivi.sota.data.Namespace.Namespace
+import org.genivi.sota.data.Vehicle.Vin
 import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.components.Component.PartNumber
@@ -22,7 +23,7 @@ import org.genivi.sota.resolver.filters.FilterAST
 import scala.concurrent.{ExecutionContext, Future}
 
 case class VinPackages(vehicle: Vehicle, packageIds: Seq[PackageId], parts: Seq[PartNumber]) {
-  def tupled = (vehicle.vin, (packageIds, parts))
+  def tupled: (Vin, (Seq[PackageId], Seq[PartNumber])) = (vehicle.vin, (packageIds, parts))
 
   def +(other: VinPackages): VinPackages =
     copy(packageIds = this.packageIds ++ other.packageIds, parts = this.parts ++ other.parts)

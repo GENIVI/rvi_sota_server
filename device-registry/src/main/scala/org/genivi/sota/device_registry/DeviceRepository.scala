@@ -11,7 +11,6 @@ import eu.timepit.refined.string.Regex
 import java.util.UUID
 import org.genivi.sota.data.{Device, DeviceT}
 import org.genivi.sota.data.Namespace._
-import org.genivi.sota.data.PackageId
 import org.genivi.sota.db.Operators.regex
 import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.device_registry.common.Errors
