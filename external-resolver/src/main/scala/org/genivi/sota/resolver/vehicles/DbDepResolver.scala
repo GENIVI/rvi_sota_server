@@ -72,6 +72,9 @@ object DbDepResolver {
     db.stream(q)
   }
 
+  /**
+    * Pass on, except it wraps into [[PackageId]] a pair [[PackageId.Name]], [[PackageId.Version]]
+    */
   protected def toVinPackages: Flow[VinComponentRow, VinPackages, NotUsed] = {
     Flow[VinComponentRow].map {
       case (v, pName, pVersion, partNumber) =>
@@ -93,6 +96,9 @@ object DbDepResolver {
       .map(l => l.tail.foldRight(l.head)(_ + _))
   }
 
+  /**
+    * Utility to parse a Seq of [[Filter]] into a single [[FilterAST]] that AND-s them.
+    */
   protected def filterByPackageFilters(filters: Seq[Filter]): FilterAST = {
     filters
       .map(_.expression)
@@ -100,6 +106,9 @@ object DbDepResolver {
       .foldLeft[FilterAST](True)(And)
   }
 
+  /**
+    * Only pass on those [[VinPackages]] that satisfy the given [[FilterAST]]
+    */
   protected def filterFlowFrom(filterAST: FilterAST): Flow[VinPackages, VinPackages, NotUsed] = {
     Flow[VinPackages]
       .filter(v => FilterAST.query(filterAST).apply(v.tupled))
