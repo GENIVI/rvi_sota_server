@@ -10,10 +10,10 @@ define(function(require) {
         errors.renderRequestError(xhr);
       })
       .success(function(data) {
-        if (data == []) {
-          db.postStatus.reset(resourceName + " already exists");
-        } else {
+        if (_.isEmpty(data)) {
           callback();
+        } else {
+          db.postStatus.reset(resourceName + " already exists");
         }
       });
   };
