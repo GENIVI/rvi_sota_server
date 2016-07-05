@@ -43,8 +43,8 @@ trait DeviceRequests {
   def searchDevice(namespace: Namespace, regex: String): HttpRequest =
     Get(Resource.uri(api).withQuery(Query("namespace" -> namespace.get, "regex" -> regex)))
 
-  def fetchDeviceByDeviceId(namespace: Namespace, deviceId: Device.DeviceId)
-                           (implicit s: Show[Device.DeviceId]): HttpRequest =
+  def fetchByDeviceId(namespace: Namespace, deviceId: Device.DeviceId)
+                     (implicit s: Show[Device.DeviceId]): HttpRequest =
     Get(Resource.uri(api).withQuery(Query("namespace" -> namespace.get, "deviceId" -> s.show(deviceId))))
 
   def updateDevice(id: Id, device: DeviceT)

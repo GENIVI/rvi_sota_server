@@ -29,7 +29,7 @@ trait DeviceRegistry {
     (id: Id)
     (implicit ec: ExecutionContext): Future[Device]
 
-  def fetchDeviceByDeviceId
+  def fetchByDeviceId
     (ns: Namespace, id: DeviceId)
     (implicit ec: ExecutionContext): Future[Device]
 

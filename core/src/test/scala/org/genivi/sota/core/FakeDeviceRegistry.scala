@@ -53,7 +53,7 @@ class FakeDeviceRegistry()(implicit system: ActorSystem, mat: ActorMaterializer)
       case None => FastFuture.failed(MissingDevice)
     }
 
-  override def fetchDeviceByDeviceId
+  override def fetchByDeviceId
     (ns: Namespace, id: DeviceId)
     (implicit ec: ExecutionContext): Future[Device] =
     devices.find(_.deviceId.contains(id)) match {

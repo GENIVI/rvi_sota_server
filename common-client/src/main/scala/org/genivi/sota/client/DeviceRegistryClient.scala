@@ -74,15 +74,19 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri)
         case err => FastFuture.failed(new Exception(err.toString))
       }}
 
-  override def fetchDeviceByDeviceId(ns: Namespace, id: DeviceId)
-                                    (implicit ec: ExecutionContext): Future[Device] =
+  override def fetchByDeviceId(ns: Namespace, id: DeviceId)
+                              (implicit ec: ExecutionContext): Future[Device] =
     Http().singleRequest(HttpRequest(uri = baseUri.withPath(devicesUri.path)
       .withQuery(Query("namespace" -> ns.get, "deviceId" -> id.show))))
-      .flatMap { response: HttpResponse => response.status match {
-        case OK => Unmarshal(response.entity).to[Device]
-        case NotFound => FastFuture.failed(Errors.MissingDevice)
-        case err => FastFuture.failed(new Exception(err.toString))
-      }}
+      .flatMap { response: HttpResponse =>
+        response.status match {
+          case OK => Unmarshal(response.entity).to[Seq[Device]].flatMap {
+            case d +: _ => FastFuture.successful(d)
+            case _ => FastFuture.failed(Errors.MissingDevice)
+          }
+          case NotFound => FastFuture.failed(Errors.MissingDevice)
+          case err => FastFuture.failed(new Exception(err.toString))
+        }}
 
   override def updateDevice(id: Id, device: DeviceT)
                            (implicit ec: ExecutionContext): Future[Unit] =

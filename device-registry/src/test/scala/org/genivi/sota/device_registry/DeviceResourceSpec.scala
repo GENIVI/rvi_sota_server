@@ -47,9 +47,9 @@ class DeviceResourceSpec extends ResourcePropSpec {
   property("GET, PUT, DELETE, and POST '/ping' request fails on non-existent device") {
     forAll { (id: Id, device: DeviceT) =>
       fetchDevice(id)          ~> route ~> check { status shouldBe NotFound }
-     // updateDevice(id, device) ~> route ~> check { status shouldBe NotFound }
-     // deleteDevice(id)         ~> route ~> check { status shouldBe NotFound }
-     // updateLastSeen(id)       ~> route ~> check { status shouldBe NotFound }
+      updateDevice(id, device) ~> route ~> check { status shouldBe NotFound }
+      deleteDevice(id)         ~> route ~> check { status shouldBe NotFound }
+      updateLastSeen(id)       ~> route ~> check { status shouldBe NotFound }
     }
   }
 
@@ -73,9 +73,9 @@ class DeviceResourceSpec extends ResourcePropSpec {
     forAll { (deviceId: DeviceId, devicePre: DeviceT) =>
 
       val id: Id = createDeviceOk(devicePre.copy(deviceId = Some(deviceId)))
-      fetchDeviceByDeviceId(defaultNs, deviceId) ~> route ~> check {
+      fetchByDeviceId(defaultNs, deviceId) ~> route ~> check {
         status shouldBe OK
-        val devicePost1: Device = responseAs[Device]
+        val devicePost1: Device = responseAs[Seq[Device]].head
         fetchDevice(id) ~> route ~> check {
           status shouldBe OK
           val devicePost2: Device = responseAs[Device]
@@ -135,28 +135,33 @@ class DeviceResourceSpec extends ResourcePropSpec {
 
   property("PUT request after POST succeeds with updated device.") {
     forAll { (devicePre1: DeviceT, devicePre2: DeviceT) =>
-      val id: Id = createDeviceOk(devicePre1)
+      val d1 = devicePre1.copy(deviceName = DeviceName(devicePre1.deviceName.underlying + "#1"))
+      val d2 = devicePre2.copy(deviceName = DeviceName(devicePre2.deviceName.underlying + "#2"))
 
-      updateDevice(id, devicePre2) ~> route ~> check {
+      val id: Id = createDeviceOk(d1)
+
+      updateDevice(id, d2) ~> route ~> check {
         val updateStatus = status
-        val deviceId = devicePre1.deviceId
+        val deviceId = d1.deviceId
 
         deviceId match {
           case Some(deviceId) =>
-            fetchDeviceByDeviceId(defaultNs, deviceId) ~> route ~> check {
+            fetchByDeviceId(defaultNs, deviceId) ~> route ~> check {
               status match {
-                case OK => updateStatus shouldBe Conflict
-                case NotFound =>
-                  updateStatus shouldBe OK
+                case OK => responseAs[Seq[Device]].headOption match {
+                  case Some(_) => updateStatus shouldBe Conflict
+                  case None =>
+                    updateStatus shouldBe OK
 
-                  fetchDevice(id) ~> route ~> check {
-                    status shouldBe OK
-                    val devicePost: Device = responseAs[Device]
-                    devicePost.id shouldBe id
-                    devicePost.deviceId shouldBe devicePre2.deviceId
-                    devicePost.deviceType shouldBe devicePre2.deviceType
-                    devicePost.lastSeen shouldBe None
-                  }
+                    fetchDevice(id) ~> route ~> check {
+                      status shouldBe OK
+                      val devicePost: Device = responseAs[Device]
+                      devicePost.id shouldBe id
+                      devicePost.deviceId shouldBe d2.deviceId
+                      devicePost.deviceType shouldBe d2.deviceType
+                      devicePost.lastSeen shouldBe None
+                    }
+                }
                 case _ => assert(false, "unexpected status code: " + status)
               }
             }
@@ -246,6 +251,70 @@ class DeviceResourceSpec extends ResourcePropSpec {
       }
 
       deleteDeviceOk(id)
+    }
+  }
+
+  property("PUT request updates device.") {
+    forAll { (device1: DeviceT, device2: DeviceT) =>
+
+      val d1 = device1.copy(deviceName = DeviceName(device1.deviceName.underlying + "#1"),
+        deviceId = device1.deviceId.map(id => DeviceId(id.underlying + "#1")))
+      val d2 = device1.copy(deviceName = DeviceName(device2.deviceName.underlying + "#2"),
+        deviceId = device2.deviceId.map(id => DeviceId(id.underlying + "#2")))
+
+      val id: Id = createDeviceOk(d1)
+
+      updateDevice(id, d2) ~> route ~> check {
+        status shouldBe OK
+        fetchDevice(id) ~> route ~> check {
+          status shouldBe OK
+          val updatedDevice: Device = responseAs[Device]
+          updatedDevice.deviceId shouldBe d2.deviceId
+          updatedDevice.deviceType shouldBe d2.deviceType
+          updatedDevice.lastSeen shouldBe None
+        }
+      }
+
+      deleteDeviceOk(id)
+    }
+  }
+
+  property("PUT request with same deviceName fails with conflict.") {
+    forAll { (device1: DeviceT, device2: DeviceT) =>
+
+      val d1 = device1.copy(deviceName = DeviceName(device1.deviceName.underlying + "#1"))
+      val d2 = device2.copy(deviceName = DeviceName(device2.deviceName.underlying + "#2"))
+
+      val id1: Id = createDeviceOk(d1)
+      val id2: Id = createDeviceOk(d2)
+
+      updateDevice(id1, d1.copy(deviceName = d2.deviceName)) ~> route ~> check {
+        status shouldBe Conflict
+      }
+
+      deleteDeviceOk(id1)
+      deleteDeviceOk(id2)
+    }
+  }
+
+  property("PUT request with same deviceId fails with conflict.") {
+    forAll { (device1: DeviceT, device2: DeviceT) =>
+
+      val d1 = device1.copy(deviceName = DeviceName(device1.deviceName.underlying + "#1"))
+      val d2 = device2.copy(deviceName = DeviceName(device2.deviceName.underlying + "#2"))
+
+      val id1: Id = createDeviceOk(d1)
+      val id2: Id = createDeviceOk(d2)
+
+      updateDevice(id1, d1.copy(deviceId = d2.deviceId)) ~> route ~> check {
+        d2.deviceId match {
+          case Some(deviceId) => status shouldBe Conflict
+          case None => ()
+        }
+      }
+
+      deleteDeviceOk(id1)
+      deleteDeviceOk(id2)
     }
   }
 }
