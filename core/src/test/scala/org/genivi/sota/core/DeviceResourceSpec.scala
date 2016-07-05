@@ -87,19 +87,19 @@ class DeviceResourceSpec extends FunSuite
 
       Get(url) ~> service.route ~> check {
         status shouldBe StatusCodes.OK
-        val parsedResponse = responseAs[Seq[DeviceUpdateStatus]]
+        val parsedResponse = responseAs[Seq[DeviceSearchResult]]
 
         parsedResponse should have size 2
 
-        val foundDevice = parsedResponse.find(_.device == id1)
+        val foundDevice = parsedResponse.find(_.id == id1)
 
         foundDevice.flatMap(_.lastSeen) shouldNot be(defined)
-        foundDevice.map(_.status) should contain(DeviceStatus.NotSeen)
+        foundDevice.flatMap(_.status) should contain(DeviceStatus.NotSeen)
 
-        val foundDevice2 = parsedResponse.find(_.device == id2)
+        val foundDevice2 = parsedResponse.find(_.id == id2)
 
         foundDevice2.flatMap(_.lastSeen) should be(defined)
-        foundDevice2.map(_.status) should contain(DeviceStatus.Outdated)
+        foundDevice2.flatMap(_.status) should contain(DeviceStatus.Outdated)
       }
     }
   }
@@ -113,10 +113,10 @@ class DeviceResourceSpec extends FunSuite
 
       Get(url) ~> service.route ~> check {
         status shouldBe StatusCodes.OK
-        val parsedResponse = responseAs[Seq[DeviceUpdateStatus]].headOption
+        val parsedResponse = responseAs[Seq[DeviceSearchResult]].headOption
 
         parsedResponse.flatMap(_.lastSeen) shouldNot be(defined)
-        parsedResponse.map(_.status) should contain(DeviceStatus.NotSeen)
+        parsedResponse.flatMap(_.status) should contain(DeviceStatus.NotSeen)
       }
     }
   }
