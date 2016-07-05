@@ -9,6 +9,7 @@ import akka.NotUsed
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Flow, Source}
 import org.genivi.sota.data.Namespace.Namespace
+import org.genivi.sota.data.Vehicle.Vin
 import org.genivi.sota.data.{PackageId, Vehicle}
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.components.Component.PartNumber
@@ -22,7 +23,7 @@ import org.genivi.sota.resolver.filters.FilterAST
 import scala.concurrent.{ExecutionContext, Future}
 
 case class VinPackages(vehicle: Vehicle, packageIds: Seq[PackageId], parts: Seq[PartNumber]) {
-  def tupled = (vehicle.vin, (packageIds, parts))
+  def tupled: (Vin, (Seq[PackageId], Seq[PartNumber])) = (vehicle.vin, (packageIds, parts))
 
   def +(other: VinPackages): VinPackages =
     copy(packageIds = this.packageIds ++ other.packageIds, parts = this.parts ++ other.parts)
@@ -71,6 +72,9 @@ object DbDepResolver {
     db.stream(q)
   }
 
+  /**
+    * Pass on, except it wraps into [[PackageId]] a pair [[PackageId.Name]], [[PackageId.Version]]
+    */
   protected def toVinPackages: Flow[VinComponentRow, VinPackages, NotUsed] = {
     Flow[VinComponentRow].map {
       case (v, pName, pVersion, partNumber) =>
@@ -92,6 +96,9 @@ object DbDepResolver {
       .map(l => l.tail.foldRight(l.head)(_ + _))
   }
 
+  /**
+    * Utility to parse a Seq of [[Filter]] into a single [[FilterAST]] that AND-s them.
+    */
   protected def filterByPackageFilters(filters: Seq[Filter]): FilterAST = {
     filters
       .map(_.expression)
@@ -99,9 +106,14 @@ object DbDepResolver {
       .foldLeft[FilterAST](True)(And)
   }
 
+  /**
+    * Only pass on those [[VinPackages]] that satisfy the given [[FilterAST]]
+    */
   protected def filterFlowFrom(filterAST: FilterAST): Flow[VinPackages, VinPackages, NotUsed] = {
+    val predicate = FilterAST.query(filterAST)
+
     Flow[VinPackages]
-      .filter(v => FilterAST.query(filterAST).apply(v.tupled))
+      .filter(v => predicate.apply(v.tupled))
   }
 }
 

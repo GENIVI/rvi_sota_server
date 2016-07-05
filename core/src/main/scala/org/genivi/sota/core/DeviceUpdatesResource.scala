@@ -203,10 +203,8 @@ class DeviceUpdatesResource(db: Database,
     */
   def cancelUpdate(deviceId: Device.Id, updateId: Refined[String, Uuid]): Route = {
     val response = db.run(UpdateSpecs.cancelUpdate(deviceId, updateId)).map {
-      i: Int => i match {
-          case 0 => HttpResponse(StatusCodes.BadRequest)
-          case _ => HttpResponse(StatusCodes.NoContent)
-        }
+      case 0 => HttpResponse(StatusCodes.BadRequest)
+      case _ => HttpResponse(StatusCodes.NoContent)
     }
     complete(response)
   }
