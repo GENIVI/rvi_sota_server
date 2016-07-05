@@ -17,8 +17,7 @@ import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, Default
 import org.genivi.sota.core.rvi._
 import org.genivi.sota.core.storage.S3PackageStore
 import org.genivi.sota.core.transfer._
-import org.genivi.sota.http.HealthResource
-import org.genivi.sota.datatype.NamespaceDirective
+import org.genivi.sota.http.{HealthResource, NamespaceDirective}
 import org.genivi.sota.http.SotaDirectives._
 
 import scala.util.{Failure, Success, Try}

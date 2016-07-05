@@ -16,9 +16,9 @@ import org.genivi.sota.core.resolver.{Connectivity, ConnectivityClient, DefaultC
 import org.genivi.sota.core.rvi.{InstallReport, OperationResult, UpdateReport}
 import org.genivi.sota.core.transfer.DeviceUpdates
 import org.genivi.sota.data.{Device, DeviceGenerators, PackageIdGenerators, VehicleGenerators}
-import org.genivi.sota.datatype.NamespaceDirective
 import java.time.Instant
 
+import org.genivi.sota.http.NamespaceDirective
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalacheck.Gen
 import org.scalatest.concurrent.ScalaFutures

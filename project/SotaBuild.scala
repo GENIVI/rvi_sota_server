@@ -28,7 +28,7 @@ object SotaBuild extends Build {
     scalaVersion := "2.11.8",
     publishArtifact in Test := false,
     resolvers += Resolver.sonatypeRepo("snapshots"),
-
+    resolvers += "Sonatype Nexus Repository Manager" at "http://nexus.advancedtelematic.com:8081/repositories/releases",
     libraryDependencies ++= Dependencies.TestFrameworks,
 
     testOptions in Test ++= Seq(
@@ -64,7 +64,7 @@ object SotaBuild extends Build {
   // the sub-projects
   lazy val common = Project(id = "sota-common", base = file("common"))
     .settings(basicSettings ++ compilerSettings)
-    .settings( libraryDependencies ++= Dependencies.Rest :+ Dependencies.AkkaHttpCirceJson :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
+    .settings(libraryDependencies ++= Dependencies.JsonWebSecurity ++ Dependencies.Rest :+ Dependencies.AkkaHttpCirceJson :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
     .dependsOn(commonData)
     .settings(Publish.settings)
 
@@ -198,6 +198,10 @@ object SotaBuild extends Build {
     .settings(Publish.disable)
 }
 
+object Version {
+  val JsonWebSecurity = "0.2.1"
+}
+
 object Dependencies {
 
   val AkkaVersion = "2.4.7"
@@ -276,4 +280,10 @@ object Dependencies {
   lazy val Rest = Akka ++ Slick
 
   lazy val AmazonS3 =  "com.amazonaws" % "aws-java-sdk-s3" % "1.10.69"
+
+  val JsonWebSecurity = Seq(
+    "com.advancedtelematic" %% "jw-security-core" % Version.JsonWebSecurity,
+    "com.advancedtelematic" %% "jw-security-jca" % Version.JsonWebSecurity,
+    "com.advancedtelematic" %% "jw-security-akka-http" % Version.JsonWebSecurity
+  )
 }

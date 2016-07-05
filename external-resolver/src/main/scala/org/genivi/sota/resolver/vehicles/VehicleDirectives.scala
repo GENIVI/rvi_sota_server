@@ -14,7 +14,7 @@ import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
-import org.genivi.sota.datatype.NamespaceDirective
+import org.genivi.sota.http.NamespaceDirective
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.InstalledSoftware
@@ -22,6 +22,7 @@ import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.common.RefinementDirectives.{refinedPackageId, refinedPartNumber}
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.rest.Validation._
+
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 

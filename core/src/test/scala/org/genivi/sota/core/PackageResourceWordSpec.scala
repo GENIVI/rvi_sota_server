@@ -22,7 +22,7 @@ import slick.driver.MySQLDriver.api._
 import DataPackage._
 import org.genivi.sota.core.resolver.DefaultExternalResolverClient
 import org.genivi.sota.data.PackageId
-import org.genivi.sota.datatype.NamespaceDirective
+import org.genivi.sota.http.NamespaceDirective
 
 /**
  * WordSpec tests for Package REST actions

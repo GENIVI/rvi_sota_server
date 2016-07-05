@@ -9,12 +9,14 @@ import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.ActorMaterializer
+import org.genivi.sota.http.NamespaceDirective
 import org.genivi.sota.resolver.filters.FilterDirectives
 import org.genivi.sota.resolver.packages.PackageDirectives
 import org.genivi.sota.resolver.resolve.ResolveDirectives
 import org.genivi.sota.resolver.vehicles.VehicleDirectives
 import org.genivi.sota.resolver.components.ComponentDirectives
-import org.genivi.sota.rest.Handlers.{rejectionHandler, exceptionHandler}
+import org.genivi.sota.rest.Handlers.{exceptionHandler, rejectionHandler}
+
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 import slick.driver.MySQLDriver.api._
@@ -27,7 +29,7 @@ class Routing
   (implicit db: Database, system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext)
  {
    import Directives._
-   import org.genivi.sota.datatype.NamespaceDirective._
+   import NamespaceDirective._
 
   val route: Route = pathPrefix("api" / "v1") {
     handleRejections(rejectionHandler) {

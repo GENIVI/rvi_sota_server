@@ -17,12 +17,12 @@ import org.genivi.sota.core.resolver.{Connectivity, ExternalResolverClient}
 import org.genivi.sota.core.transfer.UpdateNotifier
 import org.genivi.sota.data.Device
 import org.genivi.sota.data.Namespace._
-import org.genivi.sota.datatype.NamespaceDirective
 import org.genivi.sota.rest.Validation.refined
+
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api.Database
-
 import Directives._
+import org.genivi.sota.http.NamespaceDirective
 
 
 object WebService {
