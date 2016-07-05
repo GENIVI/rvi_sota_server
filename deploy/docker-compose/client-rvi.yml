@@ -1,0 +1,15 @@
+version: '2'
+services:
+
+  rvi_device:
+    image: advancedtelematic/rvi:0.5.0
+    stdin_open: true
+    depends_on:
+      - rvi_backend
+    expose:
+      - 8901
+    ports:
+      - 8901:8901
+    command: device
+    environment:
+      RVI_BACKEND: "rvi_backend"

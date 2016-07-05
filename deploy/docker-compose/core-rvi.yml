@@ -1,0 +1,18 @@
+version: '2'
+services:
+
+  rvi_backend:
+    image: advancedtelematic/rvi:0.5.0
+    ports:
+      - 8801:8801
+      - 8807:8807
+    stdin_open: true
+    command: backend
+
+  core:
+    depends_on:
+      - rvi_backend
+    environment:
+      CORE_INTERACTION_PROTOCOL: 'rvi'
+      RVI_URI: "http://rvi_backend:8801"
+      SOTA_SERVICES_URI: "http://core:8080/rvi"
