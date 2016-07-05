@@ -4,17 +4,17 @@
  */
 package org.genivi.sota.core
 
+import java.time.Instant
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.marshalling.ToResponseMarshaller
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
-import eu.timepit.refined._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string._
 import io.circe.generic.auto._
-import io.circe.syntax._
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.resolver.{ConnectivityClient, ExternalResolverClient}
@@ -22,13 +22,24 @@ import org.genivi.sota.data.Device
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
-import org.genivi.sota.rest.Validation._
-import scala.concurrent.Future
+
+import scala.concurrent.{ExecutionContext, Future}
 import scala.languageFeature.implicitConversions
 import scala.languageFeature.postfixOps
 import scala.util.{Failure, Success}
 import slick.driver.MySQLDriver.api.Database
+import Device._
+import org.genivi.sota.core.data.DeviceStatus.DeviceStatus
 
+case class DeviceSearchResult(
+                        namespace: Namespace,
+                        id: Device.Id,
+                        deviceName: DeviceName,
+                        deviceId: Option[DeviceId],
+                        deviceType: Device.DeviceType,
+                        lastSeen: Option[Instant] = None,
+                        status: Option[DeviceStatus] = None
+                        )
 
 class DevicesResource(db: Database, client: ConnectivityClient,
                       resolverClient: ExternalResolverClient,
@@ -57,10 +68,33 @@ class DevicesResource(db: Database, client: ConnectivityClient,
         val devices = deviceRegistry.searchDevice(ns, regex)
 
         if (includeStatus) {
-          completeWith(DeviceSearch.fetchDeviceStatus(devices))
+          val f = DeviceSearch.fetchDeviceStatus(devices)
+          val response = f flatMap buildSearchResponse(devices)
+          completeWith(response)
         } else {
-          completeWith(devices)
+          val response = buildSearchResponse(devices)(Seq.empty)
+          completeWith(response)
         }
+    }
+  }
+
+  protected def buildSearchResponse(devicesF: Future[Seq[Device]])(deviceStatus: Seq[DeviceUpdateStatus])
+                                   (implicit ec: ExecutionContext): Future[Seq[DeviceSearchResult]] = {
+    val statusById = deviceStatus.map(r => (r.device, r)).toMap
+
+    devicesF map { _.map { d =>
+      val deviceStatus = statusById.get(d.id)
+
+      DeviceSearchResult(
+        d.namespace,
+        d.id,
+        d.deviceName,
+        d.deviceId,
+        d.deviceType,
+        deviceStatus.flatMap(_.lastSeen).orElse(d.lastSeen),
+        deviceStatus.map(_.status)
+      )
+    }
     }
   }
 

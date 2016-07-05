@@ -47,8 +47,9 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri)
       .withQuery(Query("regex" -> re.get, "namespace" -> ns.get))))
       .flatMap { response: HttpResponse =>
         Unmarshal(response.entity).to[Seq[Device]]
-      } andThen { case Failure(t) =>
-        log.error(t, "Error contacting device registry")
+      } recover { case t =>
+      log.error(t, "Could not contact device registry")
+      Seq.empty[Device]
     }
 
   override def createDevice(device: DeviceT)
