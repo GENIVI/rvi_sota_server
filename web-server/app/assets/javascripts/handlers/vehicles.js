@@ -36,7 +36,6 @@ define(function(require) {
             });
           break;
           case 'search-vehicles-by-regex':
-            console.log('test');
             var query = payload.regex ? '&regex=' + payload.regex : '';
 
             sendRequest.doGet('/api/v1/devices?namespace=default' + query)

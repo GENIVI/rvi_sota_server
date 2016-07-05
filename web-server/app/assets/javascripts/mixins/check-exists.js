@@ -6,15 +6,15 @@ define(function(require) {
 
   return function(url, resourceName, callback) {
     sendRequest.doGet(url, {global: false})
-      .error(function(xhr, textStatus) {
-        if (xhr.status == 404) {
-          callback();
-        } else {
-          errors.renderRequestError(xhr);
-        }
+      .error(function(xhr) {
+        errors.renderRequestError(xhr);
       })
-      .success(function() {
-        db.postStatus.reset(resourceName + " already exists");
+      .success(function(data) {
+        if (data == []) {
+          db.postStatus.reset(resourceName + " already exists");
+        } else {
+          callback();
+        }
       });
   };
 });
