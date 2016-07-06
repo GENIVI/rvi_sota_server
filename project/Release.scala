@@ -38,7 +38,15 @@ object Release {
       setReleaseVersion,
       tagRelease)
 
-    val allSteps = prepareSteps ++ publishSteps :+ pushChanges
+    // Disabled for now, this is done by team city directly
+    val dockerPublishSteps: Seq[ReleaseStep] = Seq(
+//      releaseStepCommand("core/docker:publish"),
+//      releaseStepCommand("resolver/docker:publish"),
+//      releaseStepCommand("webserver/docker:publish")
+      releaseStepCommand("sota-device_registry/docker:publish")
+    )
+
+    val allSteps = prepareSteps ++ dockerPublishSteps ++ publishSteps :+ pushChanges
 
     Seq(
       showReleaseVersion <<= (version, releaseVersion)((v,f)=>f(v)),
