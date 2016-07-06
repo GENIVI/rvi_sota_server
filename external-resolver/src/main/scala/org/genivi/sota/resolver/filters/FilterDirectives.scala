@@ -25,7 +25,7 @@ import slick.driver.MySQLDriver.api._
 
 /**
  * API routes for filters.
- * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
+ * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
  */
 class FilterDirectives(namespaceExtractor: Directive1[Namespace])
                       (implicit system: ActorSystem,

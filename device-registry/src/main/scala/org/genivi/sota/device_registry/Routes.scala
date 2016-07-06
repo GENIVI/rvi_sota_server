@@ -26,7 +26,7 @@ import slick.driver.MySQLDriver.api._
 /**
  * API routes for device registry.
  *
- * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
+ * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
  */
 class Routes(namespaceExtractor: Directive1[Namespace])
             (implicit system: ActorSystem,
