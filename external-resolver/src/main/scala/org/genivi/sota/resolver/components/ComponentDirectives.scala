@@ -21,7 +21,7 @@ import Directives._
 
 /**
  * API routes for creating, deleting, and listing components.
- * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
+ * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
  */
 class ComponentDirectives(namespaceExtractor: Directive1[Namespace])
                          (implicit system: ActorSystem,

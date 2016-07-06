@@ -21,7 +21,7 @@ import slick.driver.MySQLDriver.api._
 
 /**
  * Base API routing class.
- * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
+ * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
  */
 class Routing(namespaceExtractor: Directive1[Namespace])
   (implicit db: Database, system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext)

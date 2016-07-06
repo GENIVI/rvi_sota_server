@@ -29,7 +29,7 @@ import slick.driver.MySQLDriver.api._
 /**
  * API routes for everything related to vehicles: creation, deletion, and package and component association.
  *
- * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
+ * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
  */
 class VehicleDirectives(namespaceExtractor: Directive1[Namespace])
                        (implicit system: ActorSystem,
