@@ -58,7 +58,7 @@ services:
       CORE_DB_MIGRATE: 'true'
       CORE_INTERACTION_PROTOCOL: 'none'
       DB_ALIVE_URL: "mysql:3306"
-      DEVICE_REGISTRY_API_URI: "http://device-registry:8083"
+      DEVICE_REGISTRY_API_URI: "http://device_registry:8083"
       RESOLVER_API_URI: "http://resolver:8081"
 
   webserver:
@@ -73,7 +73,7 @@ services:
       - 9000
     environment:
       CORE_API_URI: "http://core:8080"
-      DEVICE_REGISTRY_API_URI: "http://device-registry:8083"
+      DEVICE_REGISTRY_API_URI: "http://device_registry:8083"
       RESOLVER_API_URI: "http://resolver:8081"
       PLAY_CRYPTO_SECRET: "YM5B6o<ywKn4tTyA;tOZ<2xUEajF4DDi=O/PPm1Q^w2LqtKISd9oqYT6b>>C1gQa"
       LDAP_INMEMORY_ENABLE: 'true'
