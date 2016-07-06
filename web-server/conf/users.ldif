@@ -29,12 +29,12 @@ uid: sota
 userPassword: s0ta
 
 
-dn: uid=admin,ou=users,dc=genivi,dc=org
+dn: uid=genivi,ou=users,dc=genivi,dc=org
 objectclass: top
 objectclass: person
 objectclass: organizationalPerson
 objectclass: inetOrgPerson
-cn: Sota Admin
-sn: Admin
-uid: admin
+cn: Genivi Sota Admin
+sn: genivi
+uid: genivi
 userPassword: genivirocks!

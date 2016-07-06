@@ -120,7 +120,7 @@ class LdapAuth @Inject() (config: Configuration, lifecicle: ApplicationLifecycle
     val connection = new LDAPConnection(connectionConfig.host, connectionConfig.port)
     try {
       connection.bind(
-        authenticationConfig.map(_.bind(s"dn:$dn", password) ).getOrElse(new SimpleBindRequest(dn, password)) )
+        authenticationConfig.map(_.bind(dn, password) ).getOrElse(new SimpleBindRequest(dn, password)) )
     } finally { connection.close() }
     NotUsed
   }.recoverWith {

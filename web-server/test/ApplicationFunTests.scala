@@ -26,7 +26,7 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
   val testFilterExpression = "vin_matches '.*'"
   val testDeleteFilterName = "TestDeleteFilter"
   val testPackageName = "Testpkg"
-  val userName = "admin@genivi.org"
+  val userName = "genivi"
   val password = "genivirocks!"
 
   override def beforeAll() {

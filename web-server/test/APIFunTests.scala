@@ -91,7 +91,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   def getLoginCookie : Seq[Cookie] = {
     val response = await(wsClient.url("http://" + webserverHost + s":$webserverPort/authenticate")
       .withHeaders("Content-Type" -> "application/x-www-form-urlencoded")
-      .post(Map("email" -> Seq("admin"), "password" -> Seq("genivirocks!"))))
+      .post(Map("email" -> Seq("genivi"), "password" -> Seq("genivirocks!"))))
     response.status mustBe OK
     Cookies.decodeCookieHeader(response.cookies.head.toString)
   }

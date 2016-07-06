@@ -61,12 +61,19 @@ services:
       DEVICE_REGISTRY_API_URI: "http://device_registry:8083"
       RESOLVER_API_URI: "http://resolver:8081"
 
+  ldapserver:
+    image: advancedtelematic/openldap:genivi
+    ports:
+      - 9389:389
+    command: "--loglevel debug"
+
   webserver:
     image: advancedtelematic/sota-webserver
     depends_on:
       - device_registry
       - resolver
       - core
+      - ldapserver
     ports:
       - 9000:9000
     expose:
@@ -76,4 +83,7 @@ services:
       DEVICE_REGISTRY_API_URI: "http://device_registry:8083"
       RESOLVER_API_URI: "http://resolver:8081"
       PLAY_CRYPTO_SECRET: "YM5B6o<ywKn4tTyA;tOZ<2xUEajF4DDi=O/PPm1Q^w2LqtKISd9oqYT6b>>C1gQa"
-      LDAP_INMEMORY_ENABLE: 'true'
+      LDAP_HOST: "ldapserver"
+      LDAP_PORT: "389"
+      LDAP_AUTHN_ID: "cn=admin,dc=genivi,dc=org"
+      LDAP_PASSWORD: "admin"
