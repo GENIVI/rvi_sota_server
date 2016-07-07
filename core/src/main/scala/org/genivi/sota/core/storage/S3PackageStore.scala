@@ -11,7 +11,7 @@ import akka.event.Logging
 import akka.http.scaladsl.common.StrictForm.FileData
 import akka.http.scaladsl.model._
 import akka.stream._
-import akka.stream.scaladsl.{FileIO, StreamConverters}
+import akka.stream.scaladsl.{FileIO, Sink, StreamConverters}
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.regions.{Region, Regions}
 import com.amazonaws.services.s3.AmazonS3Client
@@ -20,7 +20,8 @@ import com.typesafe.config.Config
 import org.genivi.sota.core.DigestCalculator.DigestResult
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.data.PackageId
-import java.time.{Instant, Duration}
+import java.time.{Duration, Instant}
+
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.Future

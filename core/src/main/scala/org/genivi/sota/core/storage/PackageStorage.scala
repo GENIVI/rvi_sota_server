@@ -9,7 +9,7 @@ import akka.actor.ActorSystem
 import akka.event.{Logging, LoggingAdapter}
 import akka.http.scaladsl.common.StrictForm
 import akka.stream._
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.{Keep, Sink, Source}
 import akka.util.ByteString
 import com.typesafe.config.Config
 import org.genivi.sota.core.DigestCalculator
@@ -77,9 +77,14 @@ object PackageStorage {
     val log = Logging.getLogger(system, this)
     val digestCalculator = DigestCalculator(HASH_ALGORITHM)
 
+    val (digestF, resultF) = fileData
+      .alsoToMat(digestCalculator)(Keep.right)
+      .toMat(sink)(Keep.both)
+      .run()
+
     val writeAsync = for {
-      (uri, sizeBytes) <- fileData.runWith(sink)
-      digest <- fileData.via(digestCalculator).runFold("")(_ ++ _)
+      digest <- digestF
+      (uri, sizeBytes) <- resultF
     } yield (uri, sizeBytes, digest)
 
     writeAsync andThen logResult(log, packageId)
