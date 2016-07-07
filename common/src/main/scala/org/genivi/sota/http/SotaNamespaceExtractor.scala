@@ -1,6 +1,7 @@
 package org.genivi.sota.http
 
 import akka.http.scaladsl.server.Directive1
+
 import com.typesafe.config.ConfigFactory
 import org.genivi.sota.data.Namespace.Namespace
 import org.slf4j.LoggerFactory

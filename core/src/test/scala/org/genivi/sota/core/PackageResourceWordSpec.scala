@@ -8,7 +8,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.server.MalformedQueryParamRejection
-import akka.http.scaladsl.testkit.ScalatestRouteTest
+import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.core.data.{Package => DataPackage}
@@ -23,6 +23,7 @@ import DataPackage._
 import org.genivi.sota.core.resolver.DefaultExternalResolverClient
 import org.genivi.sota.data.PackageId
 import org.genivi.sota.http.NamespaceDirective
+import scala.concurrent.duration._
 
 /**
  * WordSpec tests for Package REST actions
@@ -46,6 +47,10 @@ class PackageResourceWordSpec extends WordSpec
     Uri(config.getString("resolver.packagesUri")),
     Uri(config.getString("resolver.vehiclesUri"))
   )
+
+  implicit val routeTimeout: RouteTestTimeout =
+    RouteTestTimeout(10.second)
+
   lazy val service = new PackagesResource(externalResolverClient, db, defaultNamespaceExtractor)
 
   val testPackagesParams = List(
