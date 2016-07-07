@@ -28,7 +28,7 @@ object SotaBuild extends Build {
     scalaVersion := "2.11.8",
     publishArtifact in Test := false,
     resolvers += Resolver.sonatypeRepo("snapshots"),
-    resolvers += "Sonatype Nexus Repository Manager" at "http://nexus.advancedtelematic.com:8081/repositories/releases",
+    resolvers += "Sonatype Nexus Repository Manager" at "http://nexus.advancedtelematic.com:8081/content/repositories/releases",
     libraryDependencies ++= Dependencies.TestFrameworks,
 
     testOptions in Test ++= Seq(
