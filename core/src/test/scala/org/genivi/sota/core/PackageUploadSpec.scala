@@ -9,17 +9,19 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.http.scaladsl.unmarshalling._
 import io.circe.generic.auto._
 import java.io.File
+
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
-import org.genivi.sota.datatype.NamespaceDirective
+import org.genivi.sota.http.NamespaceDirective
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.rest.ErrorRepresentation
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Matchers, PropSpec}
+
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import slick.jdbc.JdbcBackend.Database

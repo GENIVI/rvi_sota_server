@@ -22,7 +22,7 @@ import org.genivi.sota.core.storage.PackageStorage
 import org.genivi.sota.core.storage.PackageStorage.PackageStorageOp
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.PackageId
-import org.genivi.sota.datatype.NamespaceDirective
+import org.genivi.sota.http.NamespaceDirective
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.rest.ErrorRepresentation
 import org.genivi.sota.rest.Validation._

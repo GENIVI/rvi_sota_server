@@ -54,6 +54,7 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
   }
 
   private def clientUpdateRequest(ns: Namespace): Directive1[UpdateRequest] = {
+    import ClientUpdateRequest._
     clientEntity(ns)
   }
 

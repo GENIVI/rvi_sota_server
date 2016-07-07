@@ -6,6 +6,7 @@ package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.ValidationRejection
+import akka.http.scaladsl.testkit.RouteTestTimeout
 import eu.timepit.refined.api.Refined
 import io.circe.Json
 import io.circe.generic.auto._
@@ -16,12 +17,14 @@ import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.packages.Package._
 import org.genivi.sota.resolver.test.generators.PackageGenerators
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
-
+import scala.concurrent.duration._
 
 /**
  * Spec for Packages REST actions
  */
 class PackagesResourcePropSpec extends ResourcePropSpec with PackageGenerators {
+
+  implicit val routeTimeout: RouteTestTimeout = RouteTestTimeout(10.seconds)
 
   property("create a new resource on PUT request") {
     forAll { (p : Package) =>

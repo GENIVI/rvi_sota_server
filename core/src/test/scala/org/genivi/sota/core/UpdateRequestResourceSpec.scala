@@ -20,7 +20,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 import akka.http.scaladsl.unmarshalling._
 import org.genivi.sota.data.Interval
-import org.genivi.sota.datatype.NamespaceDirective
+import org.genivi.sota.http.NamespaceDirective
 
 import scala.concurrent.Future
 

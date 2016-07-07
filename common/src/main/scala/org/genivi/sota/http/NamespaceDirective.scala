@@ -2,12 +2,11 @@
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.datatype
+package org.genivi.sota.http
 
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.directives.BasicDirectives
 import com.typesafe.config.{Config, ConfigFactory}
-import eu.timepit.refined._
 import eu.timepit.refined.string._
 import org.genivi.sota.data.Namespace._
 

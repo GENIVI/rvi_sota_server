@@ -11,8 +11,9 @@ import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateSpec}
 import org.genivi.sota.core.db.{Packages, UpdateRequests, UpdateSpecs}
 import org.genivi.sota.data.Device
 import org.genivi.sota.data.{Device, DeviceT}
-import org.genivi.sota.datatype.NamespaceDirective
 import org.genivi.sota.data.DeviceGenerators
+import org.genivi.sota.http.NamespaceDirective
+
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import slick.driver.MySQLDriver.api._

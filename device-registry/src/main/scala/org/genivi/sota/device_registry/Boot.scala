@@ -5,19 +5,17 @@
 package org.genivi.sota.device_registry
 
 import akka.actor.ActorSystem
-import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
 import org.genivi.sota.data.Namespace.Namespace
-import org.genivi.sota.datatype.NamespaceDirective
-import org.genivi.sota.device_registry.common.Errors
+import org.genivi.sota.http._
 import org.genivi.sota.rest.Handlers.{exceptionHandler, rejectionHandler}
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 import slick.driver.MySQLDriver.api._
-
 
 /**
  * Base API routing class.
@@ -36,18 +34,16 @@ class Routing(namespaceExtractor: Directive1[Namespace])
   }
 }
 
-object Boot extends App {
+object Boot extends App with Directives {
+  import SotaDirectives._
 
-  implicit val system       = ActorSystem("sota-device-registry")
+  implicit val system = ActorSystem("tadevice-registry")
   implicit val materializer = ActorMaterializer()
-  implicit val exec         = system.dispatcher
-  implicit val log          = Logging(system, "boot")
-  implicit val db           = Database.forConfig("database")
+  implicit val exec = system.dispatcher
+  implicit val log = LoggerFactory.getLogger(this.getClass)
+  implicit val db = Database.forConfig("database")
   val config = system.settings.config
 
-  log.info(org.genivi.sota.device_registry.BuildInfo.toString)
-
-  // Database migrations
   if (config.getBoolean("database.migrate")) {
     val url = config.getString("database.url")
     val user = config.getString("database.properties.user")
@@ -59,12 +55,27 @@ object Boot extends App {
     flyway.migrate()
   }
 
-  val route         = new Routing(NamespaceDirective.defaultNamespaceExtractor)
-  val host          = system.settings.config.getString("server.host")
-  val port          = system.settings.config.getInt("server.port")
-  val bindingFuture = Http().bindAndHandle(route.route, host, port)
+  lazy val version = {
+    val bi = org.genivi.sota.device_registry.BuildInfo
+    s"${bi.name}/${bi.version}"
+  }
 
-  log.info(s"Server online at http://$host:$port/")
+  val authNamespace = SotaNamespaceExtractor.fromConfig()
+
+  val routes: Route =
+    (logResponseMetrics("device-registry") & versionHeaders(version)) {
+      (handleRejections(rejectionHandler) & handleExceptions(exceptionHandler)) {
+        pathPrefix("api" / "v1") {
+          new Routes(authNamespace).route
+        } ~ new HealthResource(db, org.genivi.sota.device_registry.BuildInfo.toMap).route
+      }
+    }
+
+  val host = config.getString("server.host")
+  val port = config.getInt("server.port")
+  val binding = Http().bindAndHandle(routes, host, port)
+
+  log.info(s"device registry started at http://$host:$port/")
 
   sys.addShutdownHook {
     Try(db.close())
