@@ -19,7 +19,7 @@ define(function(require) {
         return (
           <tr key={vehicle.deviceId}>
             <td>
-              <Router.Link to='vehicle' params={{vin: vehicle.deviceName}}>
+              <Router.Link to='vehicle' params={{id: vehicle.id, vin: vehicle.deviceName}}>
               { vehicle.deviceName }
               </Router.Link>
             </td>

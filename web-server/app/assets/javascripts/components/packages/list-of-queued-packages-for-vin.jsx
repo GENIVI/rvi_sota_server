@@ -18,7 +18,7 @@ define(function(require) {
       this.props.Packages.addWatch("poll-package-queue-for-vin", _.bind(this.forceUpdate, this, null));
     },
     refreshData: function() {
-      SotaDispatcher.dispatch({actionType: 'get-package-queue-for-vin', vin: this.props.Vin});
+      SotaDispatcher.dispatch({actionType: 'get-package-queue-for-vin', id: this.props.Id});
     },
     label: "Queue",
     panel: function() {

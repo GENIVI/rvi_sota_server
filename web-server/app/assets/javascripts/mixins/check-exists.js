@@ -7,7 +7,11 @@ define(function(require) {
   return function(url, resourceName, callback) {
     sendRequest.doGet(url, {global: false})
       .error(function(xhr) {
-        errors.renderRequestError(xhr);
+        if (xhr.status == 404) {
+          callback();
+        } else {
+          errors.renderRequestError(xhr);
+        }
       })
       .success(function(data) {
         if (_.isEmpty(data)) {

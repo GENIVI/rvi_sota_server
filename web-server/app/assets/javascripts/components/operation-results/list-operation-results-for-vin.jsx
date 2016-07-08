@@ -13,6 +13,7 @@ define(function(require) {
     componentWillMount: function(){
       SotaDispatcher.dispatch({
         actionType: 'get-operation-results-for-vin',
+        id: this.context.router.getCurrentParams().id,
         vin: this.context.router.getCurrentParams().vin
       });
       this.props.OperationResultsForVin.addWatch("poll-operation-results", _.bind(this.forceUpdate, this, null));

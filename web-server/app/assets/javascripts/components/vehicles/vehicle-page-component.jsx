@@ -42,8 +42,8 @@ define(function(require) {
             <AddComponent Vin={params.vin}/>
             <ListOperationResultsForVin OperationResultsForVin={db.operationResultsForVin} Vin={params.vin}/>
             <h2>Package Updates</h2>
-            <QueuedPackages Packages={db.packageQueueForVin} Vin={params.vin}/>
-            <PackageHistory Packages={db.packageHistoryForVin} Vin={params.vin}/>
+            <QueuedPackages Packages={db.packageQueueForVin} Id={params.id}/>
+            <PackageHistory Packages={db.packageHistoryForVin} Id={params.id}/>
           </div>
         </div>
       </div>
