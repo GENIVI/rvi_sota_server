@@ -7,7 +7,7 @@ package org.genivi.sota.core
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.model.{ContentTypes, HttpHeader, HttpResponse, StatusCodes}
+import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
@@ -25,7 +25,6 @@ import org.genivi.sota.core.storage.PackageStorage
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
-import akka.http.scaladsl.model.headers.`Content-Type`
 import org.genivi.sota.core.transfer.DeviceUpdates
 import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec}
 import org.genivi.sota.core.data.client.PendingUpdateRequest
@@ -36,13 +35,15 @@ import org.genivi.sota.data.Namespace.Namespace
 
 import scala.language.implicitConversions
 import slick.driver.MySQLDriver.api.Database
-import cats.Show
-import org.apache.http.HttpHeaders
+import cats.syntax.show.toShowOps
+import org.genivi.sota.http.AuthDirectives.AuthScope
+
 
 class DeviceUpdatesResource(db: Database,
                             resolverClient: ExternalResolverClient,
                             deviceRegistry: DeviceRegistry,
-                            namespaceExtractor: Directive1[Namespace])
+                            authNamespace: Directive1[Namespace],
+                            authDirective: AuthScope => Directive0)
                            (implicit system: ActorSystem, mat: ActorMaterializer,
                             connectivity: Connectivity = DefaultConnectivity) {
 
@@ -166,12 +167,11 @@ class DeviceUpdatesResource(db: Database,
     }
   }
 
-  def sync(device: Device.Id)
-          (implicit s: Show[Device.Id]): Route = {
+  def sync(device: Device.Id): Route = {
     val ttl = Instant.now.plus(5, ChronoUnit.MINUTES)
     // TODO: Config RVI destination path (or ClientServices.getpackages)
     // TODO: pass namespace
-    connectivity.client.sendMessage(s"genivi.org/device/${s.show(device)}/sota/getpackages", io.circe.Json.Null, ttl)
+    connectivity.client.sendMessage(s"genivi.org/device/${device.show}/sota/getpackages", io.circe.Json.Null, ttl)
     // TODO: Confirm getpackages in progress to vehicle?
     complete(NoContent)
   }
@@ -209,26 +209,35 @@ class DeviceUpdatesResource(db: Database,
     complete(response)
   }
 
+  /**
+    * Routes are grouped first by HTTP method to avoid tricky misunderstandings on the part of the Routing DSL.
+    * These routes must be kept in synch with [[DeviceUpdatesResource]]
+    */
   val route = {
+    // TODO vehicle_updates -> device_updates
     (pathPrefix("api" / "v1" / "vehicle_updates") & extractDeviceUuid) { device =>
       get {
         pathEnd { logDeviceSeen(device) { pendingPackages(device) } } ~
-        path("queued") { pendingPackages(device) } ~
-        path("results") { results(device) } ~
-        (extractUuid & path("results")) { uuid => resultsForUpdate(device, uuid) } ~
-        (extractUuid & path("download")) { uuid => downloadPackage(device, uuid) }
+          path("queued") { pendingPackages(device) } ~
+          path("results") { results(device) } ~
+          (extractUuid & path("results")) { updateId => resultsForUpdate(device, updateId) } ~
+          (extractUuid & path("download")) { updateId => downloadPackage(device, updateId) }
       } ~
-      put {
-        path("installed") { updateInstalledPackages(device) } ~
-        path("order") { setInstallOrder(device) } ~
-        (extractUuid & path("cancelupdate") ) { uuid => cancelUpdate(device, uuid) } ~
-        path("unblock") { unblockInstall(device) }
-      } ~
-      post {
-        path("sync") { sync(device) } ~
-        (namespaceExtractor & pathEnd) { ns => queueDeviceUpdate(ns, device) } ~
-        (extractUuid & pathEnd) { reportInstall }
-      }
+        put {
+          path("installed") {
+            authDirective(s"ota-core.${device.show}.write") {
+              updateInstalledPackages(device)
+            }
+          } ~
+            path("order") { setInstallOrder(device) } ~
+            (extractUuid & path("cancelupdate") & authNamespace) { (updateId, _) => cancelUpdate(device, updateId) } ~
+            path("unblock") { unblockInstall(device) }
+        } ~
+        post {
+          path("sync") { sync(device) } ~
+            (authNamespace & pathEnd) { ns => queueDeviceUpdate(ns, device) } ~
+            (extractUuid & pathEnd) { reportInstall }
+        }
     }
   }
 }

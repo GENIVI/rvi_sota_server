@@ -32,7 +32,6 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
   import org.genivi.sota.data.InvalidVehicleGenerators
 
   val vehicles = "vehicles"
-  implicit val routeTimeout: RouteTestTimeout = RouteTestTimeout(5.second)
 
   property("Vehicles resource should create new resource on PUT request") {
     forAll { vehicle: Vehicle =>

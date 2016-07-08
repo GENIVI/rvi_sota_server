@@ -7,7 +7,7 @@ package org.genivi.sota.core
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.server.{Directive1, Directives}
+import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
 import eu.timepit.refined._
 import eu.timepit.refined.string.Uuid
@@ -22,33 +22,81 @@ import org.genivi.sota.rest.Validation.refined
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api.Database
 import Directives._
+import eu.timepit.refined.api.Refined
 import org.genivi.sota.http.NamespaceDirective
 
 
 object WebService {
-  // val extractVin : Directive1[Device.Id] = refined[Device.ValidVin](Slash ~ Segment)
-  val extractDeviceUuid : Directive1[Device.Id] = refined[Uuid](Slash ~ Segment).map(Device.Id(_))
+  val extractDeviceUuid : Directive1[Device.Id] = refined[Uuid](Slash ~ Segment).map(Device.Id)
   val extractUuid = refined[Uuid](Slash ~ Segment)
 }
 
 class WebService(notifier: UpdateNotifier,
                  resolver: ExternalResolverClient,
                  deviceRegistry: DeviceRegistry,
-                 db: Database)
+                 db: Database,
+                 authNamespace: Directive1[Namespace])
                 (implicit val system: ActorSystem, val mat: ActorMaterializer,
                  val connectivity: Connectivity, val ec: ExecutionContext) extends Directives {
   implicit val log = Logging(system, "webservice")
 
   import ErrorHandler._
   import NamespaceDirective._
+  import ErrorHandler._
+  import PackagesResource._
+  import WebService._
+  import eu.timepit.refined._
+  import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 
-  val vehicles = new DevicesResource(db, connectivity.client, resolver, deviceRegistry, defaultNamespaceExtractor)
-  val packages = new PackagesResource(resolver, db, defaultNamespaceExtractor)
+  val devicesResource = new DevicesResource(db, connectivity.client, resolver, deviceRegistry, authNamespace)
+  val packagesResource = new PackagesResource(resolver, db, authNamespace)
   val updateService = new UpdateService(notifier, deviceRegistry)
-  val updateRequests = new UpdateRequestsResource(db, resolver, updateService, defaultNamespaceExtractor)
-  val history = new HistoryResource(db, defaultNamespaceExtractor)
+  val updateRequestsResource = new UpdateRequestsResource(db, resolver, updateService, authNamespace)
+  val historyResource = new HistoryResource(db, authNamespace)
+
+  val deviceRoutes: Route = pathPrefix("devices") {
+    extractExecutionContext { implicit ec =>
+      authNamespace { ns =>
+        (pathEnd & get) { devicesResource.search(ns) }
+      }
+    }
+  }
+
+  val packageRoutes: Route =
+    pathPrefix("packages") {
+      authNamespace { ns =>
+        (pathEnd & get) { packagesResource.searchPackage(ns) } ~
+          extractPackageId { pid =>
+            pathEnd {
+              get { packagesResource.fetch(ns, pid) } ~
+                put { packagesResource.updatePackage(ns, pid) }
+            } ~
+              path("queued") { packagesResource.queuedDevices(ns, pid) }
+          }
+      }
+    }
+
+
+  val updateRequestRoute: Route =
+    pathPrefix("update_requests") {
+      (get & extractUuid) { updateRequestsResource.fetch } ~
+        pathEnd {
+          get { updateRequestsResource.fetchUpdates } ~
+            (post & authNamespace) { updateRequestsResource.createUpdate }
+        }
+    }
+
+  val historyRoutes: Route = {
+    (pathPrefix("history") & parameter('uuid.as[String Refined Device.ValidId])) { uuid =>
+      authNamespace { ns =>
+        (get & pathEnd) {
+          historyResource.history(ns, Device.Id(uuid))
+        }
+      }
+    }
+  }
 
   val route = (handleErrors & pathPrefix("api" / "v1")) {
-    vehicles.route ~ packages.route ~ updateRequests.route ~ history.route
+    deviceRoutes ~ packageRoutes ~ updateRequestRoute ~ historyRoutes
   }
 }

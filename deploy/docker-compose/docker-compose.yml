@@ -61,6 +61,7 @@ services:
       DB_ALIVE_URL: "mysql:3306"
       DEVICE_REGISTRY_API_URI: "http://device_registry:8083"
       RESOLVER_API_URI: "http://resolver:8081"
+      AUTH_PROTOCOL: "none"
 
   ldapserver:
     image: advancedtelematic/openldap:genivi

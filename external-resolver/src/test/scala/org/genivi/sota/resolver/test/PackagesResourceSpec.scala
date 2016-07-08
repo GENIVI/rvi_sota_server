@@ -24,8 +24,6 @@ import scala.concurrent.duration._
  */
 class PackagesResourcePropSpec extends ResourcePropSpec with PackageGenerators {
 
-  implicit val routeTimeout: RouteTestTimeout = RouteTestTimeout(10.seconds)
-
   property("create a new resource on PUT request") {
     forAll { (p : Package) =>
       addPackage(p.namespace, p.id.name.get, p.id.version.get, p.description, p.vendor) ~> route ~> check {
