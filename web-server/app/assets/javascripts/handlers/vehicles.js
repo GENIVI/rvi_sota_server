@@ -62,7 +62,7 @@ define(function(require) {
               });
           break;
           case 'get-package-queue-for-vin':
-            sendRequest.doGet('/api/v1/vehicle_updates/' + payload.vin)
+            sendRequest.doGet('/api/v1/vehicle_updates/' + payload.id)
               .success(function(pendingUpdates) {
                 var pkgs = _.map(pendingUpdates, function(pendingUpdate) {
                   return pendingUpdate.packageId
@@ -71,7 +71,7 @@ define(function(require) {
               });
           break;
           case 'get-package-history-for-vin':
-            sendRequest.doGet('/api/v1/history?vin=' + payload.vin)
+            sendRequest.doGet('/api/v1/history?uuid=' + payload.id)
               .success(function(packages) {
                 db.packageHistoryForVin.reset(packages);
               });
@@ -89,10 +89,10 @@ define(function(require) {
               });
           break;
           case 'sync-packages-for-vin':
-            sendRequest.doPost('/api/v1/vehicle_updates/' + payload.vin + '/sync');
+            sendRequest.doPost('/api/v1/vehicle_updates/' + payload.id + '/sync');
           break;
           case 'get-operation-results-for-vin':
-            sendRequest.doGet('api/v1/vehicle_updates/' + payload.vin + '/results')
+            sendRequest.doGet('api/v1/vehicle_updates/' + payload.id + '/results')
               .success(function(operationResults) {
                 db.operationResultsForVin.reset(operationResults);
               });
