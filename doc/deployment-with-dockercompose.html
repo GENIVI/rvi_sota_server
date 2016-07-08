@@ -158,9 +158,6 @@
 <li>
 <p>advancedtelematic/rvi (optional)</p>
 </li>
-<li>
-<p>advancedtelematic/sota-client-debug (optional, to simulate a SOTA client)</p>
-</li>
 </ul>
 </div>
 </li>
@@ -180,15 +177,18 @@
 <div class="ulist">
 <ul>
 <li>
-<p><code>server-bare.yml</code> contains all of the SOTA server components, with client communication disabled.</p>
+<p><code>docker-compose.yml</code> contains the default SOTA Server components.</p>
 </li>
 <li>
-<p><code>server-rvi.yml</code> contains the server components plus the server-side RVI node, for communication with clients.</p>
+<p><code>core-rvi.yml</code> contains the additional RVI server node with environment overrides for the SOTA Core server.</p>
 </li>
 <li>
-<p><code>server-rvi-client.yml</code> contains the server components, the server-side RVI node, plus a debug build of the SOTA client</p>
+<p><code>client-rvi.yml</code> contains the additional RVI client node for testing with the SOTA Client</p>
 </li>
 </ul>
+</div>
+<div class="paragraph">
+<p>To start the base SOTA Server, run <code>docker-compose -f docker-compose.yml up</code>. To start the SOTA Server with an RVI backend node, run <code>docker-compose -f docker-compose.yml -f core-rvi.yml up</code>. To start the SOTA Server with both RVI backend and device nodes, run <code>docker-compose -f docker-compose.yml -f core-rvi.yml -f client-rvi.yml up</code>.</p>
 </div>
 </div>
 </div>
