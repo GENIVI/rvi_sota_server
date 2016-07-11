@@ -36,7 +36,10 @@ import org.genivi.sota.data.Namespace.Namespace
 import scala.language.implicitConversions
 import slick.driver.MySQLDriver.api.Database
 import cats.syntax.show.toShowOps
+import com.typesafe.config.ConfigFactory
 import org.genivi.sota.http.AuthDirectives.AuthScope
+import org.genivi.sota.messaging.Messages.DeviceSeenMessage
+import org.genivi.sota.messaging.MessageBusManager
 
 
 class DeviceUpdatesResource(db: Database,
@@ -62,9 +65,13 @@ class DeviceUpdatesResource(db: Database,
 
   protected lazy val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
 
+  protected val publishFn =
+    MessageBusManager.start(system, ConfigFactory.load()).fold[DeviceSeenMessage => Unit](throw _, identity)
+
   def logDeviceSeen(id: Device.Id): Directive0 = {
     extractRequestContext flatMap { _ =>
       onComplete {
+        publishFn(new DeviceSeenMessage(id, Instant.now()))
         deviceRegistry.updateLastSeen(id)
       }
     } flatMap (_ => pass)
@@ -218,10 +225,10 @@ class DeviceUpdatesResource(db: Database,
     (pathPrefix("api" / "v1" / "vehicle_updates") & extractDeviceUuid) { device =>
       get {
         pathEnd { logDeviceSeen(device) { pendingPackages(device) } } ~
-          path("queued") { pendingPackages(device) } ~
-          path("results") { results(device) } ~
-          (extractUuid & path("results")) { updateId => resultsForUpdate(device, updateId) } ~
-          (extractUuid & path("download")) { updateId => downloadPackage(device, updateId) }
+        path("queued") { pendingPackages(device) } ~
+        path("results") { results(device) } ~
+        (extractUuid & path("results")) { updateId => resultsForUpdate(device, updateId) } ~
+        (extractUuid & path("download")) { updateId => downloadPackage(device, updateId) }
       } ~
         put {
           path("installed") {
