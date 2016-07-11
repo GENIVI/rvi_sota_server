@@ -1,0 +1,1 @@
+ALTER DATABASE COLLATE utf8_unicode_ci;
