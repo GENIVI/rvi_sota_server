@@ -14,7 +14,7 @@ import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{PackageId, Vehicle}
-import org.genivi.sota.http.NamespaceDirective
+import org.genivi.sota.http.NamespaceDirectives
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.rest.ErrorRepresentation
 import org.scalatest.concurrent.ScalaFutures
@@ -38,7 +38,7 @@ class PackageUploadSpec extends PropSpec
   with ScalatestRouteTest
   with ScalaFutures {
 
-  import NamespaceDirective._
+  import NamespaceDirectives._
 
   implicit val routeTimeout: RouteTestTimeout = RouteTestTimeout(10.second)
 

@@ -41,8 +41,8 @@ object Release {
     // Disabled for now, this is done by team city directly
     val dockerPublishSteps: Seq[ReleaseStep] = Seq(
       releaseStepCommand("sota-core/docker:publish"),
-//      releaseStepCommand("resolver/docker:publish"),
-//      releaseStepCommand("webserver/docker:publish")
+      releaseStepCommand("sota-resolver/docker:publish"),
+      releaseStepCommand("sota-webserver/docker:publish"),
       releaseStepCommand("sota-device_registry/docker:publish")
     )
 

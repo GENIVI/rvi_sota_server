@@ -7,9 +7,11 @@ package org.genivi.sota.resolver.test
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import org.genivi.sota.core.DatabaseSpec
+import org.genivi.sota.http.NamespaceDirectives
 import org.genivi.sota.resolver.Routing
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{BeforeAndAfterAll, PropSpec, Suite, WordSpec}
+
 import scala.concurrent.duration._
 
 /**
@@ -35,7 +37,7 @@ trait ResourceSpec extends
     RouteTestTimeout(10.second)
 
   // Route
-  lazy implicit val route: Route = new Routing().route
+  lazy implicit val route: Route = new Routing(NamespaceDirectives.defaultNamespaceExtractor).route
 }
 
 /**

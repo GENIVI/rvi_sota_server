@@ -42,6 +42,7 @@ services:
       RESOLVER_DB_URL: "jdbc:mariadb://mysql:3306/sota_resolver"
       RESOLVER_DB_MIGRATE: 'true'
       DB_ALIVE_URL: "mysql:3306"
+      AUTH_PROTOCOL: "none"
 
   core:
     image: advancedtelematic/sota-core

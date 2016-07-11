@@ -10,29 +10,10 @@ import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.{Directive, Directive0, Directives}
 
-object SotaDirectives {
+object LogDirectives {
   import Directives._
 
   type MetricsBuilder = (HttpRequest, HttpResponse) => Map[String, String]
-
-  def versionHeaders(version: String): Directive0 = {
-    val header = RawHeader("x-ats-version", version)
-    respondWithHeader(header)
-  }
-
-  private def defaultMetrics(request: HttpRequest, response: HttpResponse, serviceTime: Long):
-  Map[String, String] = {
-    Map(
-      "method" -> request.method.name,
-      "path" -> request.uri.path.toString,
-      "stime" -> serviceTime.toString,
-      "status" -> response.status.intValue.toString
-    )
-  }
-
-  private def formatResponseLog(metrics: Map[String, String]): String = {
-    metrics.toList.map { case (m, v) => s"$m=$v"}.mkString(" ")
-  }
 
   lazy val envServiceName = sys.env.get("SERVICE_NAME")
 
@@ -54,5 +35,19 @@ object SotaDirectives {
         resp
       }
     }
+  }
+
+  private def defaultMetrics(request: HttpRequest, response: HttpResponse, serviceTime: Long):
+  Map[String, String] = {
+    Map(
+      "method" -> request.method.name,
+      "path" -> request.uri.path.toString,
+      "stime" -> serviceTime.toString,
+      "status" -> response.status.intValue.toString
+    )
+  }
+
+  private def formatResponseLog(metrics: Map[String, String]): String = {
+    metrics.toList.map { case (m, v) => s"$m=$v"}.mkString(" ")
   }
 }

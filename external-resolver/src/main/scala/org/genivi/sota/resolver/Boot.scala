@@ -4,58 +4,63 @@
  */
 package org.genivi.sota.resolver
 
+import org.genivi.sota.http.{HealthResource, NamespaceDirectives, TraceId}
+
+import scala.concurrent.ExecutionContext
 import akka.actor.ActorSystem
-import akka.event.Logging
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.{Directives, Route}
+import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
-import org.genivi.sota.http.NamespaceDirective
+import org.genivi.sota.data.Namespace.Namespace
 import org.genivi.sota.resolver.filters.FilterDirectives
-import org.genivi.sota.resolver.packages.PackageDirectives
+import org.genivi.sota.resolver.packages.{PackageDirectives, PackageFiltersResource}
 import org.genivi.sota.resolver.resolve.ResolveDirectives
 import org.genivi.sota.resolver.vehicles.VehicleDirectives
 import org.genivi.sota.resolver.components.ComponentDirectives
 import org.genivi.sota.rest.Handlers.{exceptionHandler, rejectionHandler}
+import org.slf4j.LoggerFactory
 
-import scala.concurrent.ExecutionContext
 import scala.util.Try
+import org.genivi.sota.http.LogDirectives._
 import slick.driver.MySQLDriver.api._
+
 
 /**
  * Base API routing class.
- * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
+  *
+  * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
  */
-class Routing
+class Routing(namespaceDirective: Directive1[Namespace])
   (implicit db: Database, system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext)
  {
    import Directives._
-   import NamespaceDirective._
 
   val route: Route = pathPrefix("api" / "v1") {
     handleRejections(rejectionHandler) {
       handleExceptions(exceptionHandler) {
-        new VehicleDirectives(defaultNamespaceExtractor).route ~
-        new PackageDirectives(defaultNamespaceExtractor).route ~
-        new FilterDirectives(defaultNamespaceExtractor).route ~
-        new ResolveDirectives(defaultNamespaceExtractor).route ~
-        new ComponentDirectives(defaultNamespaceExtractor).route
+        new VehicleDirectives(namespaceDirective).route ~
+        new PackageDirectives(namespaceDirective).route ~
+        new FilterDirectives(namespaceDirective).route ~
+        new ResolveDirectives(namespaceDirective).route ~
+        new ComponentDirectives(namespaceDirective).route ~
+        new PackageFiltersResource(namespaceDirective).routes
       }
     }
   }
 }
 
-object Boot extends App {
 
-  implicit val system       = ActorSystem("sota-external-resolver")
+object Boot extends App with Directives {
+  import org.genivi.sota.http.VersionDirectives.versionHeaders
+
+  implicit val system = ActorSystem("ota-plus-resolver")
   implicit val materializer = ActorMaterializer()
-  implicit val exec         = system.dispatcher
-  implicit val log          = Logging(system, "boot")
-  implicit val db           = Database.forConfig("database")
+  implicit val exec = system.dispatcher
+  implicit val log = LoggerFactory.getLogger(this.getClass)
+  implicit val db = Database.forConfig("database")
+
   val config = system.settings.config
 
-  log.info(org.genivi.sota.resolver.BuildInfo.toString)
-
-  // Database migrations
   if (config.getBoolean("database.migrate")) {
     val url = config.getString("database.url")
     val user = config.getString("database.properties.user")
@@ -67,15 +72,31 @@ object Boot extends App {
     flyway.migrate()
   }
 
-  val route         = new Routing
-  val host          = system.settings.config.getString("server.host")
-  val port          = system.settings.config.getInt("server.port")
-  val bindingFuture = Http().bindAndHandle(route.route, host, port)
+  lazy val version = {
+    val bi = org.genivi.sota.resolver.BuildInfo
+    s"${bi.name}/${bi.version}"
+  }
 
-  log.info(s"Server online at http://${host}:${port}/")
+  val namespaceDirective = NamespaceDirectives.fromConfig()
+
+  val routes: Route =
+    (TraceId.withTraceId &
+      logResponseMetrics("sota-resolver", TraceId.traceMetrics) &
+      versionHeaders(version)) {
+      Route.seal {
+        new Routing(namespaceDirective).route ~
+        new HealthResource(db, org.genivi.sota.resolver.BuildInfo.toMap).route
+      }
+    }
+
+  val host = config.getString("server.host")
+  val port = config.getInt("server.port")
+  val bindingFuture = Http().bindAndHandle(routes, host, port)
+
+  log.info(s"sota resolver started at http://$host:$port/")
 
   sys.addShutdownHook {
-    Try( db.close()  )
-    Try( system.terminate() )
+    Try(db.close())
+    Try(system.terminate())
   }
 }

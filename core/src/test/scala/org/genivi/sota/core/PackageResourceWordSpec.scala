@@ -22,7 +22,7 @@ import slick.driver.MySQLDriver.api._
 import DataPackage._
 import org.genivi.sota.core.resolver.DefaultExternalResolverClient
 import org.genivi.sota.data.PackageId
-import org.genivi.sota.http.NamespaceDirective
+import org.genivi.sota.http.NamespaceDirectives
 import scala.concurrent.duration._
 
 /**
@@ -37,7 +37,7 @@ class PackageResourceWordSpec extends WordSpec
 
   import io.circe.generic.auto._
   import CirceMarshallingSupport._
-  import NamespaceDirective._
+  import NamespaceDirectives._
 
   lazy val config =system.settings.config
 

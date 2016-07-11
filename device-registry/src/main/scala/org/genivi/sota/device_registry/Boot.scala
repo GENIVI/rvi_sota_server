@@ -35,7 +35,8 @@ class Routing(namespaceExtractor: Directive1[Namespace])
 }
 
 object Boot extends App with Directives {
-  import SotaDirectives._
+  import LogDirectives._
+  import VersionDirectives._
 
   implicit val system = ActorSystem("tadevice-registry")
   implicit val materializer = ActorMaterializer()
@@ -60,7 +61,7 @@ object Boot extends App with Directives {
     s"${bi.name}/${bi.version}"
   }
 
-  val authNamespace = SotaNamespaceExtractor.fromConfig()
+  val authNamespace = NamespaceDirectives.fromConfig()
 
   val routes: Route =
     (logResponseMetrics("device-registry") & versionHeaders(version)) {

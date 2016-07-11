@@ -19,7 +19,7 @@ import org.genivi.sota.core.rvi._
 import org.genivi.sota.core.storage.S3PackageStore
 import org.genivi.sota.core.transfer._
 import org.genivi.sota.http._
-import org.genivi.sota.http.SotaDirectives._
+import org.genivi.sota.http.LogDirectives._
 
 import scala.util.{Failure, Success, Try}
 
@@ -40,6 +40,7 @@ class Settings(config: Config) {
 
 object Boot extends App with DatabaseConfig {
   import slick.driver.MySQLDriver.api.Database
+  import VersionDirectives._
 
   implicit val system = ActorSystem("sota-core-service")
   implicit val materializer = ActorMaterializer()
@@ -88,7 +89,7 @@ object Boot extends App with DatabaseConfig {
 
   def rviRoutes(notifier: UpdateNotifier): Route = {
     new HealthResource(db, org.genivi.sota.core.BuildInfo.toMap).route ~
-      new WebService(notifier, externalResolverClient, deviceRegistry, db, SotaNamespaceExtractor.fromConfig()).route ~
+      new WebService(notifier, externalResolverClient, deviceRegistry, db, NamespaceDirectives.fromConfig()).route ~
       startSotaServices(db)
   }
 
@@ -99,9 +100,9 @@ object Boot extends App with DatabaseConfig {
 
   val healthResource = new HealthResource(db, org.genivi.sota.core.BuildInfo.toMap)
   val webService = new WebService(DefaultUpdateNotifier, externalResolverClient, deviceRegistry, db,
-    SotaNamespaceExtractor.fromConfig())
+    NamespaceDirectives.fromConfig())
   val vehicleService = new DeviceUpdatesResource(db,
-     externalResolverClient, deviceRegistry, SotaNamespaceExtractor.fromConfig(), AuthDirectives.fromConfig())
+     externalResolverClient, deviceRegistry, NamespaceDirectives.fromConfig(), AuthDirectives.fromConfig())
 
   val routes = Route.seal(
     healthResource.route ~

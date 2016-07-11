@@ -12,7 +12,7 @@ import org.genivi.sota.core.db.{Packages, UpdateRequests, UpdateSpecs}
 import org.genivi.sota.data.Device
 import org.genivi.sota.data.{Device, DeviceT}
 import org.genivi.sota.data.DeviceGenerators
-import org.genivi.sota.http.NamespaceDirective
+import org.genivi.sota.http.NamespaceDirectives
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -25,7 +25,7 @@ object NamespaceSpec {
 
   lazy val defaultNamespace: Namespace = {
     val config = ConfigFactory.load()
-    NamespaceDirective.configNamespace(config).getOrElse("default-test-ns")
+    NamespaceDirectives.configNamespace(config).getOrElse("default-test-ns")
   }
 }
 
