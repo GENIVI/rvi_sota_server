@@ -9,22 +9,84 @@ import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.server.{Directive0, Directive1, Route}
+import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.Config
 import org.genivi.sota.client.DeviceRegistryClient
 import org.genivi.sota.core.db.DatabaseConfig
-import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, DefaultExternalResolverClient}
+import org.genivi.sota.core.resolver._
 import org.genivi.sota.core.rvi._
 import org.genivi.sota.core.storage.S3PackageStore
 import org.genivi.sota.core.transfer._
+import org.genivi.sota.data.Namespace.Namespace
+import org.genivi.sota.http.AuthDirectives.AuthScope
 import org.genivi.sota.http._
 import org.genivi.sota.http.LogDirectives._
+import slick.driver.MySQLDriver.api.Database
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 
-class Settings(config: Config) {
+trait RviBoot {
+  val settings: Settings
+
+  implicit val system: ActorSystem
+  implicit val materializer: ActorMaterializer
+  implicit val exec: ExecutionContext
+  implicit lazy val rviConnectivity = new RviConnectivity(settings.rviEndpoint)
+
+  def resolverClient: ExternalResolverClient
+
+  def deviceRegistryClient: DeviceRegistryClient
+
+  def startSotaServices(db: Database): Route = {
+    val s3PackageStoreOpt = S3PackageStore.loadCredentials(settings.config).map { new S3PackageStore(_) }
+    val transferProtocolProps =
+      TransferProtocolActor.props(db, rviConnectivity.client,
+        PackageTransferActor.props(rviConnectivity.client, s3PackageStoreOpt))
+    val updateController = system.actorOf(UpdateController.props(transferProtocolProps ), "update-controller")
+    new rvi.SotaServices(updateController, resolverClient, deviceRegistryClient).route
+  }
+
+  def rviRoutes(db: Database, notifier: UpdateNotifier, namespaceDirective: Directive1[Namespace]): Route = {
+      new WebService(notifier, resolverClient, deviceRegistryClient, db, namespaceDirective).route ~
+      startSotaServices(db)
+  }
+
+  def rviInteractionRoutes(db: Database, namespaceDirective: Directive1[Namespace]): Future[Route] = {
+    SotaServices.register(settings.rviSotaUri) map { sotaServices =>
+      rviRoutes(db, new RviUpdateNotifier(sotaServices), namespaceDirective)
+    }
+  }
+}
+
+trait HttpBoot {
+  implicit val system: ActorSystem
+  implicit val materializer: ActorMaterializer
+  implicit val defaultConnectivity: Connectivity = DefaultConnectivity
+  implicit val exec: ExecutionContext
+
+  def resolverClient: ExternalResolverClient
+
+  def deviceRegistryClient: DeviceRegistryClient
+
+  def httpInteractionRoutes(db: Database,
+                            namespaceDirective: Directive1[Namespace],
+                            authDirective: AuthScope => Directive0
+                           ): Route = {
+    val webService = new WebService(DefaultUpdateNotifier, resolverClient, deviceRegistryClient, db,
+      namespaceDirective)
+    val vehicleService = new DeviceUpdatesResource(db, resolverClient, deviceRegistryClient,
+      namespaceDirective, authDirective)
+
+    webService.route ~ vehicleService.route
+  }
+}
+
+
+class Settings(val config: Config) {
   val host = config.getString("server.host")
   val port = config.getInt("server.port")
 
@@ -35,11 +97,13 @@ class Settings(config: Config) {
 
   val deviceRegistryUri = Uri(config.getString("device_registry.baseUri"))
   val deviceRegistryApi = Uri(config.getString("device_registry.devicesUri"))
+
+  val rviSotaUri = Uri(config.getString("rvi.sotaServicesUri"))
+  val rviEndpoint = Uri(config.getString("rvi.endpoint"))
 }
 
 
-object Boot extends App with DatabaseConfig {
-  import slick.driver.MySQLDriver.api.Database
+object Boot extends App with DatabaseConfig with HttpBoot with RviBoot {
   import VersionDirectives._
 
   implicit val system = ActorSystem("sota-core-service")
@@ -66,73 +130,50 @@ object Boot extends App with DatabaseConfig {
     flyway.migrate()
   }
 
-  val externalResolverClient = new DefaultExternalResolverClient(
+  val resolverClient = new DefaultExternalResolverClient(
     settings.resolverUri, settings.resolverResolveUri, settings.resolverPackagesUri, settings.resolverVehiclesUri
   )
 
-  val deviceRegistry= new DeviceRegistryClient(
+  val deviceRegistryClient = new DeviceRegistryClient(
     settings.deviceRegistryUri, settings.deviceRegistryApi
   )
   
   val interactionProtocol = config.getString("core.interactionProtocol")
 
+  val healthResource = new HealthResource(db, org.genivi.sota.core.BuildInfo.toMap)
+
   log.info(s"using interaction protocol '$interactionProtocol'")
 
-  def startSotaServices(db: Database): Route = {
-    val s3PackageStoreOpt = S3PackageStore.loadCredentials(config).map { new S3PackageStore(_) }
-    val transferProtocolProps =
-      TransferProtocolActor.props(db, connectivity.client,
-        PackageTransferActor.props(connectivity.client, s3PackageStoreOpt))
-    val updateController = system.actorOf(UpdateController.props(transferProtocolProps ), "update-controller")
-    new rvi.SotaServices(updateController, externalResolverClient, deviceRegistry).route
-  }
-
-  def rviRoutes(notifier: UpdateNotifier): Route = {
-    new HealthResource(db, org.genivi.sota.core.BuildInfo.toMap).route ~
-      new WebService(notifier, externalResolverClient, deviceRegistry, db, NamespaceDirectives.fromConfig()).route ~
-      startSotaServices(db)
-  }
-
-  implicit val connectivity: Connectivity = interactionProtocol match {
-    case "rvi" => new RviConnectivity
-    case _ => DefaultConnectivity
-  }
-
-  val healthResource = new HealthResource(db, org.genivi.sota.core.BuildInfo.toMap)
-  val webService = new WebService(DefaultUpdateNotifier, externalResolverClient, deviceRegistry, db,
-    NamespaceDirectives.fromConfig())
-  val vehicleService = new DeviceUpdatesResource(db,
-     externalResolverClient, deviceRegistry, NamespaceDirectives.fromConfig(), AuthDirectives.fromConfig())
-
-  val routes = Route.seal(
-    healthResource.route ~
-      webService.route ~
-      vehicleService.route
-  )
-
-  val loggedRoutes = {
-    (logRequestResult(("sota-core", Logging.DebugLevel)) &
+  val sotaLog: Directive0 = {
+    logRequestResult(("sota-core", Logging.DebugLevel)) &
       TraceId.withTraceId &
       logResponseMetrics("sota-core", TraceId.traceMetrics) &
-      versionHeaders(version)) {
-      routes
-    }
+      versionHeaders(version)
   }
 
-  val startup = interactionProtocol match {
-    case "rvi" => for {
-      sotaServices <- SotaServices.register(Uri(config.getString("rvi.sotaServicesUri")))
-      notifier      = new RviUpdateNotifier(sotaServices)
-      binding      <- Http().bindAndHandle(rviRoutes(notifier), settings.host, settings.port)
-    } yield sotaServices
+  def routes(): Future[Route] = interactionProtocol match {
+    case "rvi" =>
+
+      println(settings.rviEndpoint)
+
+      rviInteractionRoutes(db, NamespaceDirectives.fromConfig()).map(_ ~ healthResource.route)
+
     case _ =>
+      FastFuture.successful {
+        httpInteractionRoutes(db, NamespaceDirectives.fromConfig(), AuthDirectives.fromConfig()) ~
+          healthResource.route
+      }
+  }
+
+  val startupF =
+    routes() map { r =>
+      val sealedRoutes = sotaLog(Route.seal(r))
 
       Http()
-        .bindAndHandle(loggedRoutes, settings.host, settings.port)
-        .map(_ => ServerServices("","","",""))
-  }
+        .bindAndHandle(sealedRoutes, settings.host, settings.port)
+    }
 
-  startup onComplete {
+  startupF onComplete {
     case Success(services) =>
       log.info(s"Server online at http://${settings.host}:${settings.port}")
     case Failure(e) =>

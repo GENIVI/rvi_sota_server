@@ -55,7 +55,7 @@ class UpdateNotifierSpec extends PropSpec
 
   implicit override val generatorDrivenConfig = PropertyCheckConfig(minSuccessful = 20)
 
-  implicit val connectivity = new RviConnectivity
+  implicit val connectivity = new RviConnectivity(system.settings.config.getString("rvi.endpoint"))
 
   property("notify about available updates", RequiresRvi) {
     val serviceUri = Uri.from(scheme="http", host=getLocalHostAddr, port=8088)
