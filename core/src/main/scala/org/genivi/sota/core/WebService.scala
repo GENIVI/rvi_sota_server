@@ -23,8 +23,6 @@ import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api.Database
 import Directives._
 import eu.timepit.refined.api.Refined
-import org.genivi.sota.http.NamespaceDirective
-
 
 object WebService {
   val extractDeviceUuid : Directive1[Device.Id] = refined[Uuid](Slash ~ Segment).map(Device.Id)
@@ -41,7 +39,6 @@ class WebService(notifier: UpdateNotifier,
   implicit val log = Logging(system, "webservice")
 
   import ErrorHandler._
-  import NamespaceDirective._
   import ErrorHandler._
   import PackagesResource._
   import WebService._

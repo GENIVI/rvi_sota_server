@@ -9,7 +9,7 @@ import io.circe.parser._
 import org.genivi.sota.data.Namespace._
 import eu.timepit.refined.refineV
 
-object AuthNamespace {
+object AuthNamespaceDirectives {
   import Directives._
 
   private[this] def badNamespaceRejection(msg: String): Rejection = AuthorizationFailedRejection

@@ -19,7 +19,6 @@ import akka.util.ByteString
 import io.circe.generic.auto._
 import org.genivi.sota.core.storage.PackageStorage.PackageStorageOp
 import org.genivi.sota.core.storage.{LocalPackageStore, PackageStorage}
-import org.genivi.sota.http.NamespaceDirective
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 
@@ -31,7 +30,7 @@ class PackagesResourceSpec extends FunSuite
   with ShouldMatchers
   with ScalaFutures
 {
-  import NamespaceDirective._
+  import org.genivi.sota.http.NamespaceDirectives._
 
   val resolver = new FakeExternalResolver()
 

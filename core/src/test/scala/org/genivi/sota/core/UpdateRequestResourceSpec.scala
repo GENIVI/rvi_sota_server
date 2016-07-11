@@ -20,7 +20,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 import akka.http.scaladsl.unmarshalling._
 import org.genivi.sota.data.Interval
-import org.genivi.sota.http.NamespaceDirective
+import org.genivi.sota.http.NamespaceDirectives
 
 import scala.concurrent.Future
 
@@ -34,7 +34,7 @@ class UpdateRequestResourceSpec extends FunSuite
 
   import CirceMarshallingSupport._
   import UpdateSpec._
-  import NamespaceDirective._
+  import NamespaceDirectives._
 
   implicit val log = Logging(system, "UpdateRequestResourceSpec")
 

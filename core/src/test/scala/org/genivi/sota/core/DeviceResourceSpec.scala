@@ -18,7 +18,7 @@ import org.genivi.sota.core.data.{DeviceStatus, DeviceUpdateStatus}
 import org.genivi.sota.core.jsonrpc.HttpTransport
 import org.genivi.sota.core.rvi._
 import org.genivi.sota.data.{Device, DeviceGenerators, Namespaces, PackageIdGenerators}
-import org.genivi.sota.http.NamespaceDirective
+import org.genivi.sota.http.NamespaceDirectives
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
@@ -43,7 +43,7 @@ class DeviceResourceSpec extends FunSuite
   import Generators._
   import PackageIdGenerators._
   import DeviceGenerators._
-  import NamespaceDirective._
+  import NamespaceDirectives._
 
   implicit val routeTimeout: RouteTestTimeout =
     RouteTestTimeout(10.second)

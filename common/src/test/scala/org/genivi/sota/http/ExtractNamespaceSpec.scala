@@ -17,7 +17,7 @@ class ExtractNamespaceSpec extends PropSpec
   with Matchers
   with Directives {
 
-  import AuthNamespace._
+  import AuthNamespaceDirectives._
 
   def route: Route = (path("test") & authNamespace) { (ns: Namespace) =>
     get { complete(StatusCodes.OK -> ns.get) }

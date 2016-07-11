@@ -18,7 +18,7 @@ import org.genivi.sota.core.transfer.DeviceUpdates
 import org.genivi.sota.data.{Device, DeviceGenerators, PackageIdGenerators, VehicleGenerators}
 import java.time.Instant
 
-import org.genivi.sota.http.{NamespaceDirective, AuthDirectives}
+import org.genivi.sota.http.{AuthDirectives, NamespaceDirectives}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalacheck.Gen
 import org.scalatest.concurrent.ScalaFutures
@@ -36,7 +36,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
   with Inspectors
   with UpdateResourcesDatabaseSpec {
 
-  import NamespaceDirective._
+  import NamespaceDirectives._
   import Device._
   import DeviceGenerators._
   import PackageIdGenerators._
