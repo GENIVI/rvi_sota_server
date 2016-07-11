@@ -167,7 +167,7 @@ trait SotaCore {
   implicit val materilizer = akka.stream.ActorMaterializer()
   implicit val exec = system.dispatcher
 
-  implicit val connectivity = new RviConnectivity
+  implicit val connectivity = new RviConnectivity(system.settings.config.getString("rvi.endpoint"))
   val deviceRegistry = new FakeDeviceRegistry()
 
   def sotaRviServices() : Route = {
