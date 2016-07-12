@@ -6,10 +6,13 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import com.advancedtelematic.ota.common.AuthNamespace
+import com.advancedtelematic.jwa.`HMAC SHA-256`
+import com.advancedtelematic.jws.{Jws, KeyInfo}
 import org.genivi.sota.data.Namespace._
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{Matchers, PropSpec}
+import com.advancedtelematic.json.signature.JcaSupport._
+
 
 class ExtractNamespaceSpec extends PropSpec
   with PropertyChecks
@@ -18,6 +21,7 @@ class ExtractNamespaceSpec extends PropSpec
   with Directives {
 
   import AuthNamespaceDirectives._
+  import org.genivi.sota.Generators._
 
   def route: Route = (path("test") & authNamespace) { (ns: Namespace) =>
     get { complete(StatusCodes.OK -> ns.get) }
