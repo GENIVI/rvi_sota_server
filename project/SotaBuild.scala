@@ -125,7 +125,7 @@ object SotaBuild extends Build {
     .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
     .settings(inConfig(IntegrationTests)(Defaults.testTasks): _*)
     .configs(IntegrationTests, UnitTests)
-    .dependsOn(common, commonData, commonTest % "test", commonDbTest % "test", commonClient)
+    .dependsOn(common, commonData, commonTest % "test", commonDbTest % "test", commonClient, commonMessaging)
     .enablePlugins(Packaging.plugins: _*)
     .enablePlugins(BuildInfoPlugin)
     .settings(Publish.settings)
@@ -189,11 +189,18 @@ object SotaBuild extends Build {
     .dependsOn(common, commonData)
     .settings(Publish.settings)
 
+  lazy val commonMessaging = Project(id = "sota-common-messaging", base = file("common-messaging"))
+    .settings(basicSettings ++ compilerSettings ++ Seq(
+      libraryDependencies ++= Dependencies.Circe ++ Dependencies.Akka :+ Dependencies.Kinesis :+ Dependencies.Nats
+    ))
+    .dependsOn(common, commonData)
+    .settings(Publish.settings)
+
   lazy val sota = Project(id = "sota", base = file("."))
     .settings( basicSettings )
     .settings( Versioning.settings )
     .settings(Release.settings(common, commonData, commonTest, core, externalResolver, deviceRegistry, commonClient))
-    .aggregate(common, commonData, commonTest, core, externalResolver, webServer, deviceRegistry, commonClient)
+    .aggregate(common, commonData, commonTest, core, externalResolver, webServer, deviceRegistry, commonClient, commonMessaging)
     .enablePlugins(Versioning.Plugin)
     .settings(Publish.disable)
 }
@@ -286,4 +293,8 @@ object Dependencies {
     "com.advancedtelematic" %% "jw-security-jca" % Version.JsonWebSecurity,
     "com.advancedtelematic" %% "jw-security-akka-http" % Version.JsonWebSecurity
   )
+
+  lazy val Kinesis = "com.amazonaws" % "amazon-kinesis-client" % "1.6.3"
+
+  lazy val Nats = "com.github.tyagihas" % "scala_nats_2.10" % "0.1"
 }

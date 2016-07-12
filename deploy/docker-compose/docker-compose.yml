@@ -14,6 +14,13 @@ services:
       MYSQL_DATABASES: "sota_resolver sota_resolver_test sota_resolver% sota_core sota_core_test sota_core% sota_device_registry"
     command: ["--character-set-server=utf8", "--collation-server=utf8_unicode_ci", "--max-connections=1000"]
 
+  nats:
+    image: nats:0.8.1
+    ports:
+      - '4222:4222'
+    expose:
+      - '4222'
+
   device_registry:
     image: advancedtelematic/sota-device_registry
     ports:
@@ -52,6 +59,7 @@ services:
       - 8080
     depends_on:
       - mysql
+      - nats
       - device_registry
       - resolver
     environment:
@@ -61,6 +69,8 @@ services:
       CORE_INTERACTION_PROTOCOL: 'none'
       DB_ALIVE_URL: "mysql:3306"
       DEVICE_REGISTRY_API_URI: "http://device_registry:8083"
+      NATS_HOST: 'nats'
+      NATS_PORT: '4222'
       RESOLVER_API_URI: "http://resolver:8081"
       PACKAGES_VERSION_FORMAT: ".+"
       AUTH_PROTOCOL: "none"
@@ -75,6 +85,7 @@ services:
     image: advancedtelematic/sota-webserver
     depends_on:
       - device_registry
+      - nats
       - resolver
       - core
       - ldapserver
@@ -85,6 +96,8 @@ services:
     environment:
       CORE_API_URI: "http://core:8080"
       DEVICE_REGISTRY_API_URI: "http://device_registry:8083"
+      NATS_HOST: 'nats'
+      NATS_PORT: '4222'
       RESOLVER_API_URI: "http://resolver:8081"
       PLAY_CRYPTO_SECRET: "YM5B6o<ywKn4tTyA;tOZ<2xUEajF4DDi=O/PPm1Q^w2LqtKISd9oqYT6b>>C1gQa"
       LDAP_HOST: "ldapserver"
