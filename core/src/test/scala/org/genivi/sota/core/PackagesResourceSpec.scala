@@ -16,7 +16,9 @@ import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.stream.scaladsl.FileIO
 import akka.util.ByteString
+import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
+import org.genivi.sota.core.db.Packages
 import org.genivi.sota.core.storage.PackageStorage.PackageStorageOp
 import org.genivi.sota.core.storage.{LocalPackageStore, PackageStorage}
 import org.scalatest.concurrent.ScalaFutures
@@ -66,6 +68,22 @@ class PackagesResourceSpec extends FunSuite
         whenReady(readFile(dataPackage.get.uri)) { contents =>
           contents shouldBe ByteString("Some Text")
         }
+      }
+    }
+  }
+
+  test("returns packages for the request namespace only") {
+    import Generators._
+    val pkg = PackageGen.sample.get.copy(namespace = Refined.unsafeApply("not-the-default-ns"))
+    val dbF = db.run(Packages.create(pkg))
+
+    whenReady(dbF) { pkg =>
+      Get("/packages") ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+
+        val packages = responseAs[List[DataPackage]]
+
+        packages.map(_.id) shouldNot contain(pkg.id)
       }
     }
   }
