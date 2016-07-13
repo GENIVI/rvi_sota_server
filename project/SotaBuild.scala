@@ -9,9 +9,7 @@ import sbtbuildinfo.BuildInfoKeys._
 import com.typesafe.sbt.packager.docker.DockerPlugin
 import DockerPlugin.autoImport.Docker
 import com.typesafe.sbt.packager.Keys._
-import com.typesafe.sbt.packager.docker._
 import com.typesafe.sbt.web._
-
 
 object SotaBuild extends Build {
 
@@ -119,16 +117,15 @@ object SotaBuild extends Build {
       flywayUser := sys.env.get("CORE_DB_USER").orElse( sys.props.get("core.db.user") ).getOrElse("sota"),
       flywayPassword := sys.env.get("CORE_DB_PASSWORD").orElse( sys.props.get("core.db.password")).getOrElse("s0ta")
     ))
-    .settings(mappings in Docker += (file("deploy/wait-for-it.sh") -> "/opt/docker/wait-for-it.sh"))
-    .settings(mappings in Docker += (file("deploy/entrypoint-core.sh") -> "/opt/docker/entrypoint.sh"))
-    .settings(dockerEntrypoint := Seq("./entrypoint.sh"))
     .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
     .settings(inConfig(IntegrationTests)(Defaults.testTasks): _*)
     .configs(IntegrationTests, UnitTests)
     .dependsOn(common, commonData, commonTest % "test", commonDbTest % "test", commonClient, commonMessaging)
     .enablePlugins(Packaging.plugins: _*)
+    .settings(Packaging.settings)
     .enablePlugins(BuildInfoPlugin)
     .settings(Publish.settings)
+
 
   import play.sbt.Play.autoImport._
   lazy val webServer = Project(id = "sota-webserver", base = file("web-server"),
