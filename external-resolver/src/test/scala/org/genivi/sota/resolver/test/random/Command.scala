@@ -14,7 +14,7 @@ import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
 import Misc._
 import eu.timepit.refined.api.Refined
-import org.genivi.sota.resolver.test.generators._
+import org.genivi.sota.resolver.test.generators.{ComponentGenerators, FilterGenerators, PackageGenerators}
 
 
 // scalastyle:off number.of.types
@@ -290,10 +290,9 @@ trait CommandUtils extends
 
 trait InvalidCommandUtils { _: CommandUtils =>
 
-  import InvalidPackageGenerators._
   import InvalidVehicleGenerators._
-  import InvalidFilterGenerators._
-  import InvalidComponentGenerators._
+  import org.genivi.sota.resolver.test.generators.InvalidFilterGenerators._
+  import org.genivi.sota.resolver.test.generators.InvalidComponentGenerators._
 
   def getIdent: String = Gen.identifier.sample.getOrElse(getIdent)
 
@@ -378,6 +377,7 @@ trait InvalidCommandUtils { _: CommandUtils =>
     Semantics(req, StatusCodes.BadRequest, Success)
   }
 
+  import org.genivi.sota.resolver.test.generators.InvalidPackageGenerators._
   def xlateToInvalidCommand(cmd: WellFormedCommand): InvalidCommand = cmd match {
 
     case AddVehicle(veh) =>
