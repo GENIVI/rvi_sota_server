@@ -45,7 +45,9 @@ object MessageBusManager {
         log.info("Starting Kinesis")
         KinesisClient.runWorker(system, config, system.log)
         KinesisClient.createPublisher(system, config, system.log)
-      case "test" => Xor.right((msg:DeviceSeenMessage) => system.eventStream.publish(msg))
+      case "test" =>
+        log.info("Starting Messaging in test mode")
+        Xor.right((msg:DeviceSeenMessage) => system.eventStream.publish(msg))
       case _ => throw new Missing("Unknown messaging mode specified")
     }
   }

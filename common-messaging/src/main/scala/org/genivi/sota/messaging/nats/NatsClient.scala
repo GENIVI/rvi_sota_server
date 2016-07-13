@@ -21,20 +21,17 @@ object NatsClient {
       userName   <- natsConfig.readString("user")
       password   <- natsConfig.readString("password")
       host       <- natsConfig.readString("host")
-      port       <- natsConfig.readString("port")
+      port       <- natsConfig.readInt("port")
     } yield {
       val props = new Properties()
       props.put("servers", "nats://" + userName + ":" + password + "@" + host + ":" + port)
-      try {
-        val client = Conn.connect(props)
-        system.registerOnTermination {
-          client.close()
-        }
-        client
-      } catch {
-        case ex:ConnectException =>
-          throw new ConnectException("Failed to connect to nats using props:" + props.getProperty("servers"))
+      //Log connection info as displaying it in the exception is not possible.
+      log.debug("NATS connection properties: " + props.getProperty("servers"))
+      val client = Conn.connect(props)
+      system.registerOnTermination {
+        client.close()
       }
+      client
     }
 
   def createPublisher(system: ActorSystem, config: Config): ConfigException Xor (DeviceSeenMessage => Unit) =
@@ -46,7 +43,7 @@ object NatsClient {
     })
 
   def runListener(system: ActorSystem, config: Config): ConfigException Xor Unit =
-    getClient(system, config).map{ conn =>
+    getClient(system, config).map { conn =>
         val subId =
           conn.subscribe("*",
                          (msg: Msg) =>

@@ -202,10 +202,6 @@ object SotaBuild extends Build {
     .settings(Publish.disable)
 }
 
-object Version {
-  val JsonWebSecurity = "0.2.1"
-}
-
 object Dependencies {
 
   val AkkaVersion = "2.4.7"
@@ -217,6 +213,10 @@ object Dependencies {
   val LogbackVersion = "1.1.3"
 
   val Play2AuthVersion = "0.14.2"
+
+  val AWSVersion = "1.11.15"
+
+  val JsonWebSecurityVersion = "0.2.1"
 
   val AkkaHttp = "com.typesafe.akka" %% "akka-http-experimental" % AkkaVersion
 
@@ -283,15 +283,15 @@ object Dependencies {
 
   lazy val Rest = Akka ++ Slick
 
-  lazy val AmazonS3 =  "com.amazonaws" % "aws-java-sdk-s3" % "1.10.69"
+  lazy val AmazonS3 =  "com.amazonaws" % "aws-java-sdk-s3" % AWSVersion
 
   val JsonWebSecurity = Seq(
-    "com.advancedtelematic" %% "jw-security-core" % Version.JsonWebSecurity,
-    "com.advancedtelematic" %% "jw-security-jca" % Version.JsonWebSecurity,
-    "com.advancedtelematic" %% "jw-security-akka-http" % Version.JsonWebSecurity
+    "com.advancedtelematic" %% "jw-security-core" % JsonWebSecurityVersion,
+    "com.advancedtelematic" %% "jw-security-jca" % JsonWebSecurityVersion,
+    "com.advancedtelematic" %% "jw-security-akka-http" % JsonWebSecurityVersion
   )
 
-  lazy val Kinesis = "com.amazonaws" % "amazon-kinesis-client" % "1.6.3"
+  lazy val Kinesis = "com.amazonaws" % "amazon-kinesis-client" % "1.6.4"
 
   lazy val Nats = "com.github.tyagihas" % "scala_nats_2.10" % "0.1"
 }
