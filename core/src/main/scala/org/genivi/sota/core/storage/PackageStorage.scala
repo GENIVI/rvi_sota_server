@@ -18,13 +18,15 @@ import org.genivi.sota.core.storage.PackageStorage.PackageSize
 import org.genivi.sota.data.PackageId
 import org.genivi.sota.core.data.Package
 import akka.http.scaladsl.model._
+import akka.http.scaladsl.server.directives.FileInfo
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
 class PackageStorage()(implicit system: ActorSystem, mat: ActorMaterializer, config: Config) {
-  def store(packageId: PackageId, fileData: StrictForm.FileData): Future[(Uri, PackageSize, DigestResult)] = {
-    storage.store(packageId, fileData)
+  def store(packageId: PackageId, fileName: String,
+            fileData: Source[ByteString, Any]): Future[(Uri, PackageSize, DigestResult)] = {
+    storage.store(packageId, fileName, fileData)
   }
 
   def retrieveResponse(packageModel: Package): Future[HttpResponse] = {
@@ -65,12 +67,12 @@ object PackageStorage {
   import cats.syntax.show._
   type PackageSize = Long
   type PackageRetrievalOp = Package => Future[HttpResponse]
-  type PackageStorageOp = (PackageId, StrictForm.FileData) => Future[(Uri, PackageSize, DigestResult)]
+  type PackageStorageOp = (PackageId, String, Source[ByteString, Any]) => Future[(Uri, PackageSize, DigestResult)]
 
   private val HASH_ALGORITHM = "SHA-1"
 
   protected[storage] def writePackage(packageId: PackageId,
-                                      fileData: Source[ByteString, NotUsed],
+                                      fileData: Source[ByteString, Any],
                                       sink: Sink[ByteString, Future[(Uri, PackageSize)]])
                   (implicit system: ActorSystem, mat: ActorMaterializer): Future[(Uri, PackageSize, DigestResult)] = {
     implicit val ec = system.dispatcher
@@ -104,7 +106,8 @@ object PackageStorage {
 }
 
 trait PackageStore {
-  def store(packageId: PackageId, fileData: StrictForm.FileData): Future[(Uri, PackageSize, DigestResult)]
+  def store(packageId: PackageId, fileName: String,
+            fileData: Source[ByteString, Any]): Future[(Uri, PackageSize, DigestResult)]
 
   def retrieve(packageId: PackageId, packageUri: Uri): Future[(Uri, UniversalEntity)]
 }
