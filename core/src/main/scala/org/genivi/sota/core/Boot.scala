@@ -153,9 +153,6 @@ object Boot extends App with DatabaseConfig with HttpBoot with RviBoot {
 
   def routes(): Future[Route] = interactionProtocol match {
     case "rvi" =>
-
-      println(settings.rviEndpoint)
-
       rviInteractionRoutes(db, NamespaceDirectives.fromConfig()).map(_ ~ healthResource.route)
 
     case _ =>

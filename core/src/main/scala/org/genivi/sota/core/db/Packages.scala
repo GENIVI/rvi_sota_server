@@ -60,7 +60,7 @@ object Packages {
    * List all the packages that are available on the SOTA system
    * @return a list of packages
    */
-  def list: DBIO[Seq[Package]] = packages.result
+  def list(ns: Namespace): DBIO[Seq[Package]] = packages.filter(_.namespace === ns).result
 
   /**
    * Add a new package to the SOTA system. If the package already exists, it is

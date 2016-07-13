@@ -59,7 +59,7 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
     parameters('regex.as[String Refined Regex].?) { (regex: Option[String Refined Regex]) =>
       val query = regex match {
         case Some(r) => Packages.searchByRegex(ns, r.get)
-        case None => Packages.list
+        case None => Packages.list(ns)
       }
       complete(db.run(query))
     }
