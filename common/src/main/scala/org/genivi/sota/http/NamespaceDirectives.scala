@@ -2,6 +2,7 @@ package org.genivi.sota.http
 
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.directives.BasicDirectives
+import com.advancedtelematic.jwt.JsonWebToken
 import com.typesafe.config.{Config, ConfigFactory}
 import org.genivi.sota.data.Namespace.Namespace
 import org.slf4j.LoggerFactory
@@ -33,9 +34,12 @@ object NamespaceDirectives {
     val config = ConfigFactory.load().getString("auth.protocol")
 
     config match {
-      case "oauth" =>
-        logger.info("Using namespace from oauth")
-        AuthNamespaceDirectives.authNamespace
+      case "oauth.idtoken" =>
+        logger.info("Using namespace from id token")
+        AuthNamespaceDirectives.authNamespace[IdToken]
+      case "oauth.accesstoken" =>
+        logger.info("Using namespace from access token")
+        AuthNamespaceDirectives.authNamespace[JsonWebToken]
       case _ =>
         logger.info("Using namespace from default conf extractor")
         defaultNamespaceExtractor

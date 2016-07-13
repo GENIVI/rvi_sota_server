@@ -116,6 +116,24 @@ trait CirceInstances {
   implicit val deviceIdEncoder: Encoder[Device.DeviceId] =
     Encoder[String].contramap(_.show)
   implicit val deviceIdDecoder: Decoder[Device.DeviceId] = Decoder[String].map(Device.DeviceId)
+
+
+  import shapeless._
+  import shapeless.ops.hlist.IsHCons
+  import shapeless.{Generic, HList, HNil}
+
+  implicit def anyValUnwrappedEncoder[A <: AnyVal, B <: HList, C](implicit gen: Generic.Aux[A, B],
+  hCons: IsHCons.Aux[B, C, HNil],
+  wrappedEncoder: Encoder[C] ): Encoder[A] =
+  wrappedEncoder.contramap[A](a => gen.to(a).head)
+
+  implicit def anyValWrapDecoder[A <: AnyVal, B <: HList, C](implicit gen: Generic.Aux[A, B],
+                                                             ev: (C :: HNil) =:= B,
+                                                             wrappedDecoder: Decoder[C] ): Decoder[A] = {
+    wrappedDecoder.map{ x =>
+      gen.from(ev(x :: HNil))
+    }
+  }
 }
 
 object CirceInstances extends CirceInstances
