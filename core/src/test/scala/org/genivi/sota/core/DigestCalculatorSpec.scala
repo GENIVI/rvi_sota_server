@@ -25,15 +25,13 @@ class DigestCalculatorSpec extends TestKit(ActorSystem("DigestCalculatorTest"))
   with DefaultPatience {
 
   implicit val mat = ActorMaterializer()
+  implicit val ec = system.dispatcher
 
   test("calculates digest for a string") {
     val strings = List(ByteString("Hello"))
     val source = Source(strings)
 
-    val probe = TestSink.probe[String]
-
-    val subscriber = source.via(DigestCalculator()).runWith(probe)
-    val digest = subscriber.requestNext()
+    val digest = source.runWith(DigestCalculator("SHA-1")).futureValue
     digest shouldBe "f7ff9e8b7bb2e09b70935a5d785e0cc5d9d0abf0"
   }
 
@@ -44,11 +42,10 @@ class DigestCalculatorSpec extends TestKit(ActorSystem("DigestCalculatorTest"))
       .runWith(FileIO.toPath(tempFile.toPath))
 
     whenReady(ioResult) { _ =>
-      val probe = TestSink.probe[String]
-      val subscriber = FileIO.fromPath(tempFile.toPath)
-        .via(DigestCalculator()).runWith(probe)
+        val digest = FileIO.fromPath(tempFile.toPath)
+        .runWith(DigestCalculator("SHA-1")).futureValue
 
-      subscriber.requestNext() shouldBe "02d92c580d4ede6c80a878bdd9f3142d8f757be8"
+      digest shouldBe "02d92c580d4ede6c80a878bdd9f3142d8f757be8"
     }
   }
 }

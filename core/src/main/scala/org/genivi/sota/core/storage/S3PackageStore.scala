@@ -4,14 +4,14 @@
  */
 package org.genivi.sota.core.storage
 
-import java.io.{File, InputStream}
+import java.io.{File, FileInputStream, InputStream}
 
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.common.StrictForm.FileData
 import akka.http.scaladsl.model._
 import akka.stream._
-import akka.stream.scaladsl.{FileIO, StreamConverters}
+import akka.stream.scaladsl.{FileIO, Sink, Source, StreamConverters}
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.regions.{Region, Regions}
 import com.amazonaws.services.s3.AmazonS3Client
@@ -20,7 +20,10 @@ import com.typesafe.config.Config
 import org.genivi.sota.core.DigestCalculator.DigestResult
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.data.PackageId
-import java.time.{Instant, Duration}
+import java.time.{Duration, Instant}
+
+import akka.util.ByteString
+import com.amazonaws.services.s3.transfer.TransferManager
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.Future
@@ -35,19 +38,36 @@ class S3PackageStore(credentials: S3Credentials)
 
   val bucketId = credentials.bucketId
 
+  val log = LoggerFactory.getLogger(this.getClass)
+
   lazy val s3client = {
     val client = new AmazonS3Client(credentials)
     client.setRegion(Region.getRegion(Regions.EU_CENTRAL_1))
     client
   }
 
-  override def store(packageId: PackageId, fileData: FileData): Future[(Uri, PackageSize, DigestResult)] = {
-    val filename = packageFileName(packageId, fileData.filename)
+  override def store(packageId: PackageId,
+                     fileName: String, fileData: Source[ByteString, Any]): Future[(Uri, PackageSize, DigestResult)] = {
+    val filename = packageFileName(packageId, Option(fileName))
 
-    val sink = StreamConverters.asInputStream()
-      .mapMaterializedValue { is => upload(is, filename, fileData) }
+    val tempFile = File.createTempFile(filename, ".tmp")
 
-    writePackage(packageId, fileData.entity.dataBytes, sink)
+    // The s3 sdk requires us to specify the file size if using a stream
+    // so we always need to cache the file into the filesystem before uploading
+    val sink = FileIO.toPath(tempFile.toPath)
+      .mapMaterializedValue {
+        _.flatMap { result =>
+          if(result.wasSuccessful) {
+            upload(tempFile, filename, fileData)
+              .andThen { case _ =>
+                Try(tempFile.delete())
+              }
+          } else
+            Future.failed(result.getError)
+        }
+      }
+
+    writePackage(packageId, fileData, sink)
   }
 
   protected def signedUri(packageId: PackageId, uri: Uri): Future[Uri] = {
@@ -57,12 +77,11 @@ class S3PackageStore(credentials: S3Credentials)
     f map (uri => Uri(uri.toURI.toString))
   }
 
-  protected def upload(is: InputStream, fileName: String, fileData: FileData): Future[(Uri, Long)] = {
-    val metadata = new ObjectMetadata()
-    metadata.setContentLength(fileData.entity.contentLength)
-
-    val request = new PutObjectRequest(bucketId, fileName, is, metadata)
+  protected def upload(file: File, fileName: String, fileData: Source[ByteString, Any]): Future[(Uri, Long)] = {
+    val request = new PutObjectRequest(bucketId, fileName, file)
       .withCannedAcl(CannedAccessControlList.AuthenticatedRead)
+
+    log.info(s"Uploading $fileName to amazon s3")
 
     val asyncPut = for {
       putResult <- Future { s3client.putObject(request) }
@@ -70,6 +89,7 @@ class S3PackageStore(credentials: S3Credentials)
     } yield (putResult, url)
 
     asyncPut map { case (putResult, url)  =>
+      log.info(s"$fileName uploaded to $url")
       (Uri(url.toString), putResult.getMetadata.getContentLength)
     }
   }

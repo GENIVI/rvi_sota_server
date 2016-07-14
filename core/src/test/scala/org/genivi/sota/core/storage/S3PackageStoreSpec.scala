@@ -49,7 +49,7 @@ class S3PackageStoreSpec extends TestKit(ActorSystem("LocalPackageStoreSpec"))
   test("stores a file on s3 with correct credentials", IntegrationTest) {
     val packageId = PackageIdGenerators.genPackageId.sample.get
 
-    val f = s3.store(packageId, fileData)
+    val f = s3.store(packageId, fileData.filename.get, fileData.entity.dataBytes)
 
     whenReady(f) { case (uri, _, _) =>
       uri.toString should startWith("https://rvi-sota-test.s3.eu-central-1.amazonaws.com/")
@@ -66,7 +66,7 @@ class S3PackageStoreSpec extends TestKit(ActorSystem("LocalPackageStoreSpec"))
     }
 
     val f = for {
-      (uri, _, _) <- s3.store(packageId, fileData)
+      (uri, _, _) <- s3.store(packageId, fileData.filename.get, fileData.entity.dataBytes)
       (s3Url, _) <- s3.retrieve(packageId, uri)
       downloadContents <- http(s3Url)
     } yield downloadContents
@@ -79,7 +79,7 @@ class S3PackageStoreSpec extends TestKit(ActorSystem("LocalPackageStoreSpec"))
   test("retrieves a file to a temporary file", IntegrationTest) {
     val packageId = PackageIdGenerators.genPackageId.sample.get
     val f = for {
-      (uri, _, _) <- s3.store(packageId, fileData)
+      (uri, _, _) <- s3.store(packageId, fileData.filename.get, fileData.entity.dataBytes)
       file <- s3.retrieveFile(uri)
       localContents <- FileIO.fromPath(file.toPath).runFold(ByteString.empty)(_ ++ _)
     } yield (file, localContents)
