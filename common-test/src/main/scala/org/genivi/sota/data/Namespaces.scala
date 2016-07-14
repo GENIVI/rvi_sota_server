@@ -19,10 +19,10 @@ trait Namespaces {
     */
   val NamespaceGen: Gen[Namespace] = {
     // TODO: for now, just use simple identifiers
-    Gen.identifier.map(Refined.unsafeApply)
+    Gen.identifier.map(Namespace.apply)
   }
 
-  val defaultNs: Namespace = Refined.unsafeApply("default")
+  val defaultNs: Namespace = Namespace("default")
 }
 
 object Namespaces extends Namespaces

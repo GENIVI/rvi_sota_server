@@ -7,7 +7,7 @@ package org.genivi.sota.core.data.client
 import java.util.UUID
 
 import org.genivi.sota.core.data.UpdateRequest
-import org.genivi.sota.data.Namespace.Namespace
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.PackageId
 import java.time.Instant
 import scala.language.implicitConversions

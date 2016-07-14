@@ -12,7 +12,7 @@ import java.time.Instant
 
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Uuid
-
+import org.genivi.sota.data.Namespace
 import slick.ast.{Node, TypedType}
 import slick.driver.MySQLDriver.api._
 import slick.lifted.Rep
@@ -29,6 +29,7 @@ object SlickExtensions {
 
   implicit val uuidColumnType = MappedColumnType.base[UUID, String]( _.toString(), UUID.fromString )
 
+  implicit val namespaceColumnType = MappedColumnType.base[Namespace, String](_.get, Namespace.apply)
   /**
     * Define how to store a [[java.time.Instant]] in the SQL database.
     */

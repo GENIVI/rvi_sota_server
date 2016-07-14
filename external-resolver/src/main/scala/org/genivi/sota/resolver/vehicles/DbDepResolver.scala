@@ -8,9 +8,8 @@ package org.genivi.sota.resolver.vehicles
 import akka.NotUsed
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Flow, Source}
-import org.genivi.sota.data.Namespace.Namespace
 import org.genivi.sota.data.Vehicle.Vin
-import org.genivi.sota.data.{PackageId, Vehicle}
+import org.genivi.sota.data.{Namespace, PackageId, Vehicle}
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.components.Component.PartNumber
 import org.genivi.sota.resolver.filters.{And, Filter, True}
@@ -31,6 +30,7 @@ case class VinPackages(vehicle: Vehicle, packageIds: Seq[PackageId], parts: Seq[
 
 object DbDepResolver {
   import org.genivi.sota.refined.SlickRefined._
+  import org.genivi.sota.db.SlickExtensions.namespaceColumnType
 
   type VinComponentRow = (Vehicle, Option[PackageId.Name], Option[PackageId.Version], Option[Component.PartNumber])
 

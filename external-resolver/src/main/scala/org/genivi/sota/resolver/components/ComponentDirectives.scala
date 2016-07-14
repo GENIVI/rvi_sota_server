@@ -15,9 +15,11 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.RefinementDirectives.refinedPartNumber
 import org.genivi.sota.resolver.common.Errors
+
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 import Directives._
+import org.genivi.sota.data.Namespace
 
 /**
  * API routes for creating, deleting, and listing components.

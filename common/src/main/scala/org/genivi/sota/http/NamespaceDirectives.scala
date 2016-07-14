@@ -4,7 +4,7 @@ import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.directives.BasicDirectives
 import com.advancedtelematic.jwt.JsonWebToken
 import com.typesafe.config.{Config, ConfigFactory}
-import org.genivi.sota.data.Namespace.Namespace
+import org.genivi.sota.data.Namespace
 import org.slf4j.LoggerFactory
 
 import scala.util.Try
@@ -14,21 +14,12 @@ object NamespaceDirectives {
 
   import eu.timepit.refined.refineV
 
-  def configNamespace(config: Config): Option[Namespace] = {
-    val namespaceString = Try(config.getString("core.defaultNs")).getOrElse("default")
-    val nsE: Either[String, Namespace] = refineV(namespaceString)
-    nsE.right.toOption
-  }
-
-  private lazy val defaultConfigNamespace: Namespace = {
-    configNamespace(ConfigFactory.load()) getOrElse {
-      val nsE: Either[String, Namespace] = refineV("default-config-ns")
-      nsE.right.toOption.get
-    }
+  def configNamespace(config: Config): Namespace = {
+    Namespace( Try(config.getString("core.defaultNs")).getOrElse("default"))
   }
 
   lazy val defaultNamespaceExtractor: Directive1[Namespace] =
-    BasicDirectives.provide(defaultConfigNamespace)
+    BasicDirectives.provide(configNamespace(ConfigFactory.load()))
 
   def fromConfig(): Directive1[Namespace] = {
     val config = ConfigFactory.load().getString("auth.protocol")

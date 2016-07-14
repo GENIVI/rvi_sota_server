@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.core.data
 
-import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.Namespace
 import java.time.Instant
 import org.genivi.sota.data.{PackageId, Device}
 import java.util.UUID

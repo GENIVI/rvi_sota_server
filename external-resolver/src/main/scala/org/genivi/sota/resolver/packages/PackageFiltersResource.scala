@@ -8,7 +8,7 @@ package org.genivi.sota.resolver.packages
 import akka.actor.ActorSystem
 import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
-import org.genivi.sota.data.Namespace.Namespace
+import org.genivi.sota.data.Namespace
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext

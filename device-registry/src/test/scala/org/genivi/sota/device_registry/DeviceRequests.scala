@@ -9,8 +9,7 @@ import akka.http.scaladsl.model.Uri.{Path, Query}
 import akka.http.scaladsl.model.{HttpRequest, Uri}
 import cats.Show
 import io.circe.generic.auto._
-import org.genivi.sota.data.{Device, DeviceT}
-import org.genivi.sota.data.Namespace.Namespace
+import org.genivi.sota.data.{Device, DeviceT, Namespace}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 
 import scala.concurrent.ExecutionContext

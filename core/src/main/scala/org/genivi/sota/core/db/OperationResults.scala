@@ -10,7 +10,7 @@ import java.util.UUID
 
 import org.genivi.sota.core.data.OperationResult
 import org.genivi.sota.core.data.UpdateRequest
-import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.Device
 
 import scala.concurrent.ExecutionContext

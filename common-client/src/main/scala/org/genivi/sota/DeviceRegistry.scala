@@ -8,11 +8,10 @@ import java.time.Instant
 
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
-import org.genivi.sota.data.{Device, DeviceT}
+import org.genivi.sota.data.{Device, DeviceT, Namespace}
 
 import scala.concurrent.{ExecutionContext, Future}
 import Device._
-import org.genivi.sota.data.Namespace.Namespace
 
 trait DeviceRegistry {
 

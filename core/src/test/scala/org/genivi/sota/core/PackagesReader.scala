@@ -4,7 +4,7 @@ import akka.http.scaladsl.model.Uri
 import eu.timepit.refined.refineV
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.PackageId
 
 
@@ -23,7 +23,7 @@ object PackagesReader {
       version     <- readVersion( src.get( "Version" ) )
       size        <- src.get("Size").map( _.toLong )
       checkSum    <- src.get("SHA1")
-    } yield Package(refineV[eu.timepit.refined.string.Uri]("default").right.get,
+    } yield Package(Namespace("default"),
                     PackageId(Refined.unsafeApply(name), version),
                     size = size, description = src.get("Description"),
                     checkSum = checkSum, uri = Uri.Empty, vendor = src.get( "Maintainer" ), signature = Some("Signature") )

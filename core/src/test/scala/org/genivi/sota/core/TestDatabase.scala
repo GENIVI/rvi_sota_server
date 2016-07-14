@@ -21,11 +21,11 @@ import slick.driver.MySQLDriver.api._
 object NamespaceSpec {
   import eu.timepit.refined.auto._
   import eu.timepit.refined.string._
-  import org.genivi.sota.data.Namespace._
+  import org.genivi.sota.data.Namespace
 
   lazy val defaultNamespace: Namespace = {
     val config = ConfigFactory.load()
-    NamespaceDirectives.configNamespace(config).getOrElse("default-test-ns")
+    NamespaceDirectives.configNamespace(config)
   }
 }
 

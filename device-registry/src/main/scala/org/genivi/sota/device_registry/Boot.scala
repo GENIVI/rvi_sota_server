@@ -8,7 +8,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
-import org.genivi.sota.data.Namespace.Namespace
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.http._
 import org.genivi.sota.rest.Handlers.{exceptionHandler, rejectionHandler}
 import org.slf4j.LoggerFactory

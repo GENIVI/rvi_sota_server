@@ -5,11 +5,13 @@
 
 package org.genivi.sota.data
 
-import eu.timepit.refined.api.Refined
-import eu.timepit.refined.string.Uri
-
+final case class Namespace(get: String) extends AnyVal
 
 object Namespace {
-  // TODO schema for namespace; URI seems reasonable enough
-  type Namespace = Refined[String, Uri]
+
+  import io.circe._
+
+  implicit val EncoderInstance = Encoder.encodeString.contramap[Namespace](_.get)
+  implicit val DecoderInstance = Decoder.decodeString.map(Namespace.apply)
+
 }

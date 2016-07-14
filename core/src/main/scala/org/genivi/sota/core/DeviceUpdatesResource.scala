@@ -31,7 +31,7 @@ import org.genivi.sota.core.data.client.PendingUpdateRequest
 import org.genivi.sota.core.data.UpdateStatus
 import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, PackageDownloadProcess}
 import org.genivi.sota.data.{Device, PackageId}
-import org.genivi.sota.data.Namespace.Namespace
+import org.genivi.sota.data.Namespace
 
 import scala.language.implicitConversions
 import slick.driver.MySQLDriver.api.Database

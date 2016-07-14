@@ -9,15 +9,17 @@ import eu.timepit.refined._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import java.util.UUID
-import org.genivi.sota.data.{Device, DeviceT}
+
+import org.genivi.sota.data.{Device, DeviceT, Namespace}
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.db.Operators.regex
 import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.refined.SlickRefined._
 import java.time.Instant
+
 import scala.concurrent.ExecutionContext
-import scala.util.{Success, Failure}
+import scala.util.{Failure, Success}
 import slick.driver.MySQLDriver.api._
 
 

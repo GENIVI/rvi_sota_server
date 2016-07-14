@@ -8,7 +8,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
 import io.circe.generic.auto._
-import org.genivi.sota.data.PackageId
+import org.genivi.sota.data.{Namespace, PackageId}
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors
@@ -18,6 +18,7 @@ import org.genivi.sota.resolver.vehicles.DbDepResolver
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 import Directives._
+import akka.http.scaladsl.unmarshalling.{FromStringUnmarshaller, Unmarshaller}
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 
 
@@ -35,6 +36,7 @@ class ResolveDirectives(namespaceExtractor: Directive1[Namespace])
       Errors.onMissingPackage
     }
 
+  implicit val NamespaceUnmarshaller: FromStringUnmarshaller[Namespace] = Unmarshaller.strict(Namespace.apply)
   /**
    * API route for resolving a package, i.e. returning the list of VINs it applies to.
    * @return Route object containing route for package resolution

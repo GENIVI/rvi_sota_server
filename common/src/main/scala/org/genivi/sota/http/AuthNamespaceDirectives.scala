@@ -9,23 +9,24 @@ import io.circe.parser._
 import org.genivi.sota.data.Namespace._
 import eu.timepit.refined.refineV
 import io.circe.Decoder
+import org.genivi.sota.data.Namespace
 
 /**
   * Type class defining an extraction of namespace information from a token of type `T`
   * @tparam T type of a token
   */
 trait NsFromToken[T] {
-  def namespace(token: T): Either[String, Namespace]
+  def namespace(token: T): String
 }
 
 object NsFromToken {
 
   implicit val NsFromIdToken = new NsFromToken[IdToken] {
-    override def namespace(token: IdToken): Either[String, Namespace] = refineV(token.sub.underlying)
+    override def namespace(token: IdToken): String = token.sub.underlying
   }
 
   implicit val NsFromJwt = new NsFromToken[JsonWebToken] {
-    override def namespace(token: JsonWebToken): Either[String, Namespace] = refineV(token.subject.underlying)
+    override def namespace(token: JsonWebToken): String = token.subject.underlying
   }
 
 }
@@ -60,16 +61,13 @@ object AuthNamespaceDirectives {
     extractCredentials flatMap { creds =>
       val maybeNamespace = creds match {
         case Some(OAuth2BearerToken(serializedToken)) =>
-          for {
-            token <- extractToken[T](serializedToken)
-            nsE = nsFromToken.namespace(token)
-            ns <- Xor.fromEither(nsE)
-          } yield ns
+          extractToken[T](serializedToken).map( nsFromToken.namespace )
+
         case _ => Xor.Left("No oauth token provided to extract namespace")
     }
 
     maybeNamespace match {
-      case Xor.Right(t) => provide(t)
+      case Xor.Right(t) => provide(Namespace(t))
       case Xor.Left(msg) =>
         extractLog flatMap { l =>
           l.info(s"Could not extract namespace: $msg")

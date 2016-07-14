@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.resolver.data
 
-import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.datatype.FirmwareCommon
 
 

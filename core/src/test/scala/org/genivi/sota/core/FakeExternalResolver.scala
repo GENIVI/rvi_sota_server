@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.{HttpResponse, Uri}
 import akka.stream.ActorMaterializer
 import io.circe.Json
 import org.genivi.sota.core.resolver.DefaultExternalResolverClient
-import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.{PackageId, Vehicle}
 
 import scala.concurrent.Future
