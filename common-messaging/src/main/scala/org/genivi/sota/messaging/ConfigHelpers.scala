@@ -11,5 +11,8 @@ object ConfigHelpers {
 
     def readString(path: String): ConfigException Xor String =
       Xor.catchOnly[ConfigException](config.getString(path))
+
+    def readInt(path: String): ConfigException Xor Int =
+      Xor.catchOnly[ConfigException](config.getInt(path))
   }
 }

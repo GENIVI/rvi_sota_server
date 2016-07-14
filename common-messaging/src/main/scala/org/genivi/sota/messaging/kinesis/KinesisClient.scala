@@ -38,13 +38,13 @@ object KinesisClient {
                       config: Config,
                       log: LoggingAdapter): ConfigException Xor (DeviceSeenMessage => Unit) = {
     for {
-      cfg        <- config.configAt("messaging.kinesis")
-      appName    <- cfg.readString("appName")
-      streamName <- cfg.readString("streamName")
-      regionName <- cfg.readString("regionName")
-      version    <- cfg.readString("appVersion")
+      cfg          <- config.configAt("messaging.kinesis")
+      appName      <- cfg.readString("appName")
+      streamName   <- cfg.readString("streamName")
+      regionName   <- cfg.readString("regionName")
+      version      <- cfg.readString("appVersion")
       clientConfig = getClientConfigWithUserAgent(appName, version)
-      credentials <- configureCredentialsProvider(config)
+      credentials  <- configureCredentialsProvider(config)
     } yield {
       val client = new AmazonKinesisClient(credentials, clientConfig)
       system.registerOnTermination(client.shutdown())
