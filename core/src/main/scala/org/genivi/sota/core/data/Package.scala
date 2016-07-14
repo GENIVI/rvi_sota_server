@@ -5,7 +5,7 @@
 package org.genivi.sota.core.data
 
 import akka.http.scaladsl.model.Uri
-import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.PackageId
 
 /**

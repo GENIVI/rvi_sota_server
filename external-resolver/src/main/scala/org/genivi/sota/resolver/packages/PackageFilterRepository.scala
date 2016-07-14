@@ -5,10 +5,11 @@
 package org.genivi.sota.resolver.packages
 
 import org.genivi.sota.data.Namespace._
-import org.genivi.sota.data.PackageId
+import org.genivi.sota.data.{Namespace, PackageId}
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.filters.{Filter, FilterRepository}
+
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.db.SlickExtensions._

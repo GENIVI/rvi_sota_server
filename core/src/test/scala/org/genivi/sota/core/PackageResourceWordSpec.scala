@@ -24,6 +24,7 @@ import org.genivi.sota.core.resolver.DefaultExternalResolverClient
 import org.genivi.sota.data.PackageId
 import org.genivi.sota.http.NamespaceDirectives
 import scala.concurrent.duration._
+import org.genivi.sota.data.Namespace
 
 /**
  * WordSpec tests for Package REST actions
@@ -57,7 +58,7 @@ class PackageResourceWordSpec extends WordSpec
     ("default", "vim", "7.0.1"), ("default", "vim", "7.1.1"),
     ("default", "go", "1.4.0"), ("default", "go", "1.5.0"), ("default", "scala", "2.11.0"))
   val testPackages:List[DataPackage] = testPackagesParams.map { pkg =>
-    DataPackage(Refined.unsafeApply(pkg._1), PackageId(Refined.unsafeApply(pkg._2), Refined.unsafeApply(pkg._3)),
+    DataPackage(Namespace(pkg._1), PackageId(Refined.unsafeApply(pkg._2), Refined.unsafeApply(pkg._3)),
                 Uri("www.example.com"), 123, "123", None, None, None)
   }
 

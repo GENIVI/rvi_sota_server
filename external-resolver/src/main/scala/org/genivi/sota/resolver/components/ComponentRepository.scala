@@ -7,6 +7,7 @@ package org.genivi.sota.resolver.components
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.db.Operators._
 import org.genivi.sota.refined.SlickRefined._
@@ -19,6 +20,7 @@ import slick.driver.MySQLDriver.api._
 
 
 object ComponentRepository {
+  import org.genivi.sota.db.SlickExtensions._
 
   // scalastyle:off
   private[components] class ComponentTable(tag: Tag)

@@ -12,6 +12,7 @@ import org.genivi.sota.data.Namespace._
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{Matchers, PropSpec}
 import com.advancedtelematic.json.signature.JcaSupport._
+import org.genivi.sota.data.Namespace
 
 
 class ExtractNamespaceSpec extends PropSpec

@@ -19,7 +19,7 @@ import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.resolver.{ConnectivityClient, ExternalResolverClient}
 import org.genivi.sota.data.Device
-import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 

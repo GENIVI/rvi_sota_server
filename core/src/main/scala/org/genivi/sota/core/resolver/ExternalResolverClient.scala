@@ -16,7 +16,7 @@ import akka.http.scaladsl.model.headers.{HttpEncoding, HttpEncodings}
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import org.genivi.sota.data.{PackageId, Vehicle}
-import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 
 import scala.concurrent.Future

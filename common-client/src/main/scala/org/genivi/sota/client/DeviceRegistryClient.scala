@@ -21,8 +21,7 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.common.DeviceRegistry
-import org.genivi.sota.data.{Device, DeviceT}
-import org.genivi.sota.data.Namespace.Namespace
+import org.genivi.sota.data.{Device, DeviceT, Namespace}
 import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 

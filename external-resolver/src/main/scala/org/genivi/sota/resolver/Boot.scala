@@ -11,7 +11,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
-import org.genivi.sota.data.Namespace.Namespace
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.resolver.filters.FilterDirectives
 import org.genivi.sota.resolver.packages.{PackageDirectives, PackageFiltersResource}
 import org.genivi.sota.resolver.resolve.ResolveDirectives

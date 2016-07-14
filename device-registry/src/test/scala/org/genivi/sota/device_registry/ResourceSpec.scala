@@ -9,7 +9,7 @@ import akka.http.scaladsl.testkit.RouteTestTimeout
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.core.DatabaseSpec
-import org.genivi.sota.data.Namespace.Namespace
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.device_registry.Routing
 import org.scalatest.Matchers
 import org.scalatest.prop.PropertyChecks
@@ -30,7 +30,7 @@ trait ResourceSpec extends
   implicit val routeTimeout: RouteTestTimeout =
     RouteTestTimeout(10.second)
 
-  lazy val defaultNs: Namespace = Refined.unsafeApply("default")
+  lazy val defaultNs: Namespace = Namespace("default")
 
   lazy val namespaceExtractor = Directives.provide(defaultNs)
 

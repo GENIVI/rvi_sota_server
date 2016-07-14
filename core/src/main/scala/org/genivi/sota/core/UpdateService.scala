@@ -16,7 +16,7 @@ import org.genivi.sota.core.db._
 import org.genivi.sota.core.resolver.Connectivity
 import org.genivi.sota.core.transfer.UpdateNotifier
 import org.genivi.sota.data.{Device, PackageId, Vehicle}
-import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.Namespace
 import java.time.Instant
 import scala.collection.immutable.ListSet
 import scala.concurrent.{ExecutionContext, Future}

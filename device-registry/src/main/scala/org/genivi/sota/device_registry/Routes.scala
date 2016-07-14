@@ -7,13 +7,13 @@ package org.genivi.sota.device_registry
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server._
+import akka.http.scaladsl.unmarshalling.{FromStringUnmarshaller, Unmarshaller}
 import akka.stream.ActorMaterializer
 import eu.timepit.refined._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
-import org.genivi.sota.data.{Device, DeviceT}
-import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.{Device, DeviceT, Namespace}
 import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
@@ -69,6 +69,8 @@ class Routes(namespaceExtractor: Directive1[Namespace])
 
   def updateLastSeen(id: Id): Route =
     complete(db.run(Devices.updateLastSeen(id)))
+
+  implicit val NamespaceUnmarshaller: FromStringUnmarshaller[Namespace] = Unmarshaller.strict(Namespace.apply)
 
   def api: Route =
     handleExceptions(ExceptionHandler(Errors.onMissingDevice orElse Errors.onConflictingDevice)) {

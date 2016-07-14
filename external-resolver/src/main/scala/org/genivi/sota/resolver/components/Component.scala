@@ -5,7 +5,7 @@
 package org.genivi.sota.resolver.components
 
 import eu.timepit.refined.api.{Refined, Validate}
-import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.Namespace
 
 
 case class Component(

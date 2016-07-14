@@ -9,7 +9,7 @@ import java.util.UUID
 import org.genivi.sota.data.Interval
 import java.time.Instant
 import java.time.Duration
-import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.{PackageId, Device}
 import org.genivi.sota.core.db.InstallHistories.InstallHistoryTable
 

@@ -6,17 +6,19 @@ package org.genivi.sota.resolver.filters
 
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
-import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.db.Operators._
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.packages.PackageFilterRepository
+
 import scala.concurrent.ExecutionContext
 import scala.util.control.NoStackTrace
 import slick.driver.MySQLDriver.api._
 
 
 object FilterRepository {
+  import org.genivi.sota.db.SlickExtensions._
 
   // scalastyle:off
   class FiltersTable(tag: Tag) extends Table[Filter](tag, "Filter") {

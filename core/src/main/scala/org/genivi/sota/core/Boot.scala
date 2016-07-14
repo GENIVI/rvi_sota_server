@@ -19,7 +19,7 @@ import org.genivi.sota.core.resolver._
 import org.genivi.sota.core.rvi._
 import org.genivi.sota.core.storage.S3PackageStore
 import org.genivi.sota.core.transfer._
-import org.genivi.sota.data.Namespace.Namespace
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.http.AuthDirectives.AuthScope
 import org.genivi.sota.http._
 import org.genivi.sota.http.LogDirectives._

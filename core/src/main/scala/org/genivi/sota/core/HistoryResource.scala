@@ -13,7 +13,7 @@ import io.circe.generic.auto._
 import org.genivi.sota.core.data.InstallHistory
 import org.genivi.sota.core.db.InstallHistories
 import org.genivi.sota.data.Device
-import org.genivi.sota.data.Namespace.Namespace
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import slick.driver.MySQLDriver.api._

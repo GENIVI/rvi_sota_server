@@ -8,7 +8,7 @@ import org.genivi.sota.core.RequiresRvi
 import org.genivi.sota.core.data.{UpdateSpec, UpdateStatus}
 import org.genivi.sota.core.rvi.{RviConnectivity, RviUpdateNotifier, SotaServices}
 import java.time.Instant
-import org.genivi.sota.data.Namespace.Namespace
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.{Namespaces, Device}
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks

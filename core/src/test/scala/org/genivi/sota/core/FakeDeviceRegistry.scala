@@ -9,7 +9,7 @@ import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import org.genivi.sota.common.DeviceRegistry
-import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.{Device, DeviceT, Namespaces}
 import org.genivi.sota.device_registry.common.Errors._
 import java.util.UUID._

@@ -6,7 +6,7 @@ package org.genivi.sota.core.db
 
 import akka.http.scaladsl.model.Uri
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.PackageId
 import org.genivi.sota.db.Operators.regex
 import org.genivi.sota.db.SlickExtensions._

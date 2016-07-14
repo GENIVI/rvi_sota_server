@@ -23,6 +23,7 @@ import org.genivi.sota.core.storage.PackageStorage.PackageStorageOp
 import org.genivi.sota.core.storage.{LocalPackageStore, PackageStorage}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
+import org.genivi.sota.data.Namespace
 
 import scala.concurrent.Future
 
@@ -74,7 +75,7 @@ class PackagesResourceSpec extends FunSuite
 
   test("returns packages for the request namespace only") {
     import Generators._
-    val pkg = PackageGen.sample.get.copy(namespace = Refined.unsafeApply("not-the-default-ns"))
+    val pkg = PackageGen.sample.get.copy(namespace = Namespace("not-the-default-ns"))
     val dbF = db.run(Packages.create(pkg))
 
     whenReady(dbF) { pkg =>
