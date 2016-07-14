@@ -46,7 +46,7 @@ object AuthDirectives {
     lazy val authKey = config.getString("auth.token.secret")
 
     protocol match {
-      case "oauth" =>
+      case o if o.startsWith("oauth") =>
         logger.info("Using oauth authentication")
         oauth(authKey)
       case _ =>
