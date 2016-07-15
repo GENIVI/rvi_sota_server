@@ -1,6 +1,6 @@
-FROM java:8
+FROM alpine:3.4
 
-RUN apt-get update && apt-get install -y mysql-client
+RUN apk --update add mysql-client git curl bash coreutils tar openjdk8-jre-base
 
 WORKDIR /migrations
 
@@ -8,11 +8,11 @@ RUN git clone https://github.com/advancedtelematic/rvi_sota_server.git
 
 RUN \
   mkdir flyway && \
-  curl -O https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/3.2.1/flyway-commandline-3.2.1.tar.gz
+  curl -o flyway.tgz https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/4.0.3/flyway-commandline-4.0.3.tar.gz
 
-RUN echo "0750456fff19128f3d42e45d2e2a6e318ecb947c flyway-commandline-3.2.1.tar.gz" | sha1sum -c -
+RUN echo "a9819bd1fddf4ef96885665d67b0248ba9b74bd4 flyway.tgz" | sha1sum -c -
 
-RUN tar xvf flyway-commandline-3.2.1.tar.gz -C flyway --strip-components=1
+RUN tar zxvf flyway.tgz -C flyway --strip-components=1
 
 ADD entrypoint.sh /migrations/entrypoint.sh
 

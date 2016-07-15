@@ -20,6 +20,7 @@ import org.genivi.sota.core.rvi._
 import org.genivi.sota.core.storage.S3PackageStore
 import org.genivi.sota.core.transfer._
 import org.genivi.sota.data.Namespace
+import org.genivi.sota.db.BootMigrations
 import org.genivi.sota.http.AuthDirectives.AuthScope
 import org.genivi.sota.http._
 import org.genivi.sota.http.LogDirectives._
@@ -103,31 +104,19 @@ class Settings(val config: Config) {
 }
 
 
-object Boot extends App with DatabaseConfig with HttpBoot with RviBoot {
+object Boot extends App with DatabaseConfig with HttpBoot with RviBoot with BootMigrations {
   import VersionDirectives._
 
   implicit val system = ActorSystem("sota-core-service")
   implicit val materializer = ActorMaterializer()
   implicit val exec = system.dispatcher
   implicit val log = Logging(system, "boot")
-  val config = system.settings.config
+  lazy val config = system.settings.config
   val settings = new Settings(config)
 
   lazy val version: String = {
     val bi = org.genivi.sota.core.BuildInfo
     bi.name + "/" + bi.version
-  }
-
-  // Database migrations
-  if (config.getBoolean("database.migrate")) {
-    val url = config.getString("database.url")
-    val user = config.getString("database.properties.user")
-    val password = config.getString("database.properties.password")
-
-    import org.flywaydb.core.Flyway
-    val flyway = new Flyway
-    flyway.setDataSource(url, user, password)
-    flyway.migrate()
   }
 
   val resolverClient = new DefaultExternalResolverClient(
