@@ -12,6 +12,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
 import org.genivi.sota.data.Namespace
+import org.genivi.sota.db.BootMigrations
 import org.genivi.sota.resolver.filters.FilterDirectives
 import org.genivi.sota.resolver.packages.{PackageDirectives, PackageFiltersResource}
 import org.genivi.sota.resolver.resolve.ResolveDirectives
@@ -50,7 +51,7 @@ class Routing(namespaceDirective: Directive1[Namespace])
 }
 
 
-object Boot extends App with Directives {
+object Boot extends App with Directives with BootMigrations {
   import org.genivi.sota.http.VersionDirectives.versionHeaders
 
   implicit val system = ActorSystem("ota-plus-resolver")
@@ -58,19 +59,7 @@ object Boot extends App with Directives {
   implicit val exec = system.dispatcher
   implicit val log = LoggerFactory.getLogger(this.getClass)
   implicit val db = Database.forConfig("database")
-
-  val config = system.settings.config
-
-  if (config.getBoolean("database.migrate")) {
-    val url = config.getString("database.url")
-    val user = config.getString("database.properties.user")
-    val password = config.getString("database.properties.password")
-
-    import org.flywaydb.core.Flyway
-    val flyway = new Flyway
-    flyway.setDataSource(url, user, password)
-    flyway.migrate()
-  }
+  lazy val config = system.settings.config
 
   lazy val version = {
     val bi = org.genivi.sota.resolver.BuildInfo
