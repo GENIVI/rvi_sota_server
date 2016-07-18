@@ -1,12 +1,9 @@
 package org.genivi.sota.messaging.kinesis
 
-import java.util
-
 import akka.event.EventStream
 import cats.data.Xor
-import com.amazonaws.services.kinesis.clientlibrary.interfaces.{IRecordProcessor, IRecordProcessorCheckpointer}
-import com.amazonaws.services.kinesis.clientlibrary.types.ShutdownReason
-import com.amazonaws.services.kinesis.model.Record
+import com.amazonaws.services.kinesis.clientlibrary.interfaces.v2.IRecordProcessor
+import com.amazonaws.services.kinesis.clientlibrary.types.{InitializationInput, ProcessRecordsInput, ShutdownInput}
 import io.circe.jawn
 import org.genivi.sota.messaging.Messages
 import org.slf4j.LoggerFactory
@@ -17,17 +14,17 @@ class RecordProcessor(eventStream: EventStream) extends IRecordProcessor {
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
-  override def shutdown(checkpointer: IRecordProcessorCheckpointer, reason: ShutdownReason): Unit = {
-    log.trace("Shutting down worker due to reason:" + reason.toString)
+  override def shutdown(shutdownInput: ShutdownInput): Unit = {
+    log.debug("Shutting down worker due to reason:" + shutdownInput.getShutdownReason.toString)
   }
 
-  override def initialize(shardId: String): Unit = {
-    log.trace("Initializing kinesis worker")
+  override def initialize(initializationInput: InitializationInput): Unit = {
+    log.debug(s"Initializing kinesis worker on shard ${initializationInput.getShardId}")
   }
 
-  /* We don't use checkpointer as the messages handled for now can be sent twice */
-  override def processRecords(records: util.List[Record], checkpointer: IRecordProcessorCheckpointer): Unit = {
-    for (record <- records) yield {
+  override def processRecords(processRecordsInput: ProcessRecordsInput): Unit = {
+    log.trace("Received record(s) from kinesis")
+    for (record <- processRecordsInput.getRecords) yield {
       jawn.parseByteBuffer(record.getData) match {
         case Xor.Left(e)     => log.error("Received unrecognized record data from Kinesis:" + e.getMessage)
         case Xor.Right(json) => Messages.parseMsg(json.toString) match {
@@ -37,5 +34,7 @@ class RecordProcessor(eventStream: EventStream) extends IRecordProcessor {
         }
       }
     }
+    //TODO: Handle failure to parse messages properly, See PRO-903
+    processRecordsInput.getCheckpointer.checkpoint()
   }
 }

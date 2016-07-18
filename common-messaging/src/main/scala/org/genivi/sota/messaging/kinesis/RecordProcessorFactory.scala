@@ -1,7 +1,7 @@
 package org.genivi.sota.messaging.kinesis
 
 import akka.event.EventStream
-import com.amazonaws.services.kinesis.clientlibrary.interfaces.{IRecordProcessor, IRecordProcessorFactory}
+import com.amazonaws.services.kinesis.clientlibrary.interfaces.v2.{IRecordProcessor, IRecordProcessorFactory}
 
 /**
   * This class exists only because the Kinesis API requires such a Factory.

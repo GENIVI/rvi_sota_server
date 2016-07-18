@@ -1,8 +1,8 @@
 package org.genivi.sota.messaging.nats
 
-import java.net.ConnectException
 import java.util.Properties
 
+import akka.Done
 import akka.actor.ActorSystem
 import cats.data.Xor
 import com.typesafe.config.{Config, ConfigException}
@@ -26,11 +26,10 @@ object NatsClient {
       val props = new Properties()
       props.put("servers", "nats://" + userName + ":" + password + "@" + host + ":" + port)
       //Log connection info as displaying it in the exception is not possible.
+      //TODO: Update to newer version of java_nats so we can rethrown ConnectException, See PRO-905
       log.debug("NATS connection properties: " + props.getProperty("servers"))
       val client = Conn.connect(props)
-      system.registerOnTermination {
-        client.close()
-      }
+      system.registerOnTermination { client.close() }
       client
     }
 
@@ -42,7 +41,7 @@ object NatsClient {
         conn.publish(msg.deviceId.underlying.get, msg.asJson.noSpaces)
     })
 
-  def runListener(system: ActorSystem, config: Config): ConfigException Xor Unit =
+  def runListener(system: ActorSystem, config: Config): ConfigException Xor Done =
     getClient(system, config).map { conn =>
         val subId =
           conn.subscribe("*",
@@ -54,5 +53,6 @@ object NatsClient {
                                + s"Got this parse error: ${ex.toString}")
                          })
         system.registerOnTermination{ conn.unsubscribe(subId); conn.close() }
+        Done
     }
 }

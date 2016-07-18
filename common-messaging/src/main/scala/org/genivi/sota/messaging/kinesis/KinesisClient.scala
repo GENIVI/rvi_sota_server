@@ -10,6 +10,7 @@ import cats.data.Xor
 import com.amazonaws.ClientConfiguration
 import com.amazonaws.auth.{AWSCredentialsProvider, BasicAWSCredentials}
 import com.amazonaws.internal.StaticCredentialsProvider
+import com.amazonaws.regions.Regions
 import com.amazonaws.services.kinesis.AmazonKinesisClient
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.{KinesisClientLibConfiguration, Worker}
 import com.typesafe.config.{Config, ConfigException}
@@ -42,11 +43,13 @@ object KinesisClient {
       appName      <- cfg.readString("appName")
       streamName   <- cfg.readString("streamName")
       regionName   <- cfg.readString("regionName")
+      region       =  Regions.fromName(regionName)
       version      <- cfg.readString("appVersion")
       clientConfig = getClientConfigWithUserAgent(appName, version)
       credentials  <- configureCredentialsProvider(config)
     } yield {
       val client = new AmazonKinesisClient(credentials, clientConfig)
+      client.configureRegion(region)
       system.registerOnTermination(client.shutdown())
       (msg: DeviceSeenMessage) =>
         {
@@ -72,9 +75,12 @@ object KinesisClient {
           credentials,
           UUID.randomUUID().toString).withRegionName(regionName).withCommonClientConfig(clientConfig)
     } yield {
-      val worker = new Worker(new RecordProcessorFactory(system.eventStream), kinesisClientConfig)
-      // We are stealing a thread from default dispatcher. Probably we better configure it
+      val worker = new Worker.Builder()
+        .recordProcessorFactory(new RecordProcessorFactory(system.eventStream))
+        .config(kinesisClientConfig)
+        .build()
 
+      // We are stealing a thread from default dispatcher. Probably we better configure it
       implicit val ec = system.dispatcher
       Future { worker.run() }
       system.registerOnTermination(Try { worker.shutdown() })
