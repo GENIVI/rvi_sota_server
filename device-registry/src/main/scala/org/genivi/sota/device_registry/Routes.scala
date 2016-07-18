@@ -4,8 +4,11 @@
  */
 package org.genivi.sota.device_registry
 
+import cats.syntax.show._
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.marshalling.Marshal
+import akka.http.scaladsl.model.{HttpResponse, MessageEntity, StatusCodes, Uri, ResponseEntity}
+import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.unmarshalling.{FromStringUnmarshaller, Unmarshaller}
 import akka.stream.ActorMaterializer
@@ -54,7 +57,12 @@ class Routes(namespaceExtractor: Directive1[Namespace])
     }
 
   def createDevice(ns: Namespace, device: DeviceT): Route = {
-    val f = db.run(Devices.create(ns, device)).map(id => Created -> id)
+    val f = db.run(Devices.create(ns, device))
+      .map(id => {
+        Marshal(id).to[ResponseEntity].map { body =>
+          HttpResponse(Created, List(Location(Uri("/devices/" + id.show))), body)
+        }
+      })
     complete(f)
   }
 
