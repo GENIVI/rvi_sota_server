@@ -101,7 +101,7 @@ object SotaBuild extends Build {
     .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
     .configs(RandomTests)
     .configs(UnitTests)
-    .dependsOn(common, commonData, commonTest % "test", commonDbTest % "test")
+    .dependsOn(common, commonData, commonClient, commonTest % "test", commonDbTest % "test")
     .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
     .enablePlugins(BuildInfoPlugin)
     .settings(Publish.settings)

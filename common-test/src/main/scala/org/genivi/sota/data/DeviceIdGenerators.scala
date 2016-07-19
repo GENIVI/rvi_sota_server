@@ -7,11 +7,12 @@ package org.genivi.sota.data
 import eu.timepit.refined.api.Refined
 import org.scalacheck.{Arbitrary, Gen}
 import cats.syntax.show._
+import org.genivi.sota.data.Device.DeviceId
 
 /**
   * Created by vladimir on 16/03/16.
   */
-trait VinGenerators {
+trait DeviceIdGenerators {
   /**
     * For property based testing purposes, we need to explain how to
     * randomly generate (possibly invalid) VINs.
@@ -19,18 +20,18 @@ trait VinGenerators {
     * @see [[https://www.scalacheck.org/]]
     */
 
-  val genVin: Gen[Vehicle.Vin] =
+  val genVin: Gen[DeviceId] =
     for {
       vin <- SemanticVin.genSemanticVin
-    } yield Refined.unsafeApply(vin.show)
+    } yield DeviceId(vin.show)
 
-  implicit lazy val arbVin: Arbitrary[Vehicle.Vin] =
+  implicit lazy val arbVin: Arbitrary[DeviceId] =
     Arbitrary(genVin)
 
   val genVinChar: Gen[Char] =
     Gen.oneOf('A' to 'Z' diff List('I', 'O', 'Q'))
 
-  val genInvalidVin: Gen[Vehicle.Vin] = {
+  val genInvalidDeviceId: Gen[DeviceId] = {
 
     val genTooLongVin: Gen[String] = for {
       n  <- Gen.choose(18, 100) // scalastyle:ignore magic.number
@@ -47,10 +48,9 @@ trait VinGenerators {
         suchThat(_.exists(c => !(c.isLetter || c.isDigit))).flatMap(_.mkString)
 
     Gen.oneOf(genTooLongVin, genTooShortVin, genNotAlphaNumVin)
-       .map(Refined.unsafeApply)
+       .map(DeviceId)
   }
 
-  def getInvalidVin: Vehicle.Vin =
-    genInvalidVin.sample.getOrElse(getInvalidVin)
-
+  def getInvalidVin: DeviceId =
+    genInvalidDeviceId.sample.getOrElse(getInvalidVin)
 }

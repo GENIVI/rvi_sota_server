@@ -15,9 +15,11 @@ import org.genivi.sota.data.{Device, Interval, PackageId}
 import java.time.Instant
 import java.time.format.{DateTimeFormatter, DateTimeParseException}
 
+import cats.Show
 import cats.syntax.show.toShowOps
 import io.circe.generic.semiauto._
 import io.circe.{Decoder, Encoder}
+import org.genivi.sota.data.Device.Id
 
 /**
   * Some datatypes we use don't have predefined JSON encoders and
@@ -117,6 +119,13 @@ trait CirceInstances {
     Encoder[String].contramap(_.show)
   implicit val deviceIdDecoder: Decoder[Device.DeviceId] = Decoder[String].map(Device.DeviceId)
 
+  implicit val deviceIdKeyDecoder: KeyDecoder[Device.Id] =
+    KeyDecoder.instance[Device.Id] { v =>
+      refineV[Device.ValidId](v).right.toOption.map(Device.Id)
+    }
+
+  implicit def showableKeyEncoder[K](implicit show: Show[K]): KeyEncoder[K] =
+    KeyEncoder.instance[K](_.show)
 
   import shapeless._
   import shapeless.ops.hlist.IsHCons

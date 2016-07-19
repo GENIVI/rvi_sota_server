@@ -20,15 +20,19 @@ import slick.driver.MySQLDriver.api._
 
 
 object ComponentRepository {
+
   import org.genivi.sota.db.SlickExtensions._
+  import org.genivi.sota.refined.SlickRefined._
 
   // scalastyle:off
   private[components] class ComponentTable(tag: Tag)
-      extends Table[Component](tag, "Component") {
+    extends Table[Component](tag, "Component") {
 
-    def namespace   = column[Namespace]           ("namespace")
-    def partNumber  = column[Component.PartNumber]("partNumber")
-    def description = column[String]              ("description")
+    def namespace = column[Namespace]("namespace")
+
+    def partNumber = column[Component.PartNumber]("partNumber")
+
+    def description = column[String]("description")
 
     // insertOrUpdate buggy for composite-keys, see Slick issue #966.
     def pk = primaryKey("pk_component", (namespace, partNumber))
@@ -36,6 +40,7 @@ object ComponentRepository {
     def * = (namespace, partNumber, description) <>
       ((Component.apply _).tupled, Component.unapply)
   }
+
   // scalastyle:on
 
   val components = TableQuery[ComponentTable]
@@ -44,16 +49,30 @@ object ComponentRepository {
     components.insertOrUpdate(comp)
 
   def removeComponent(namespace: Namespace, part: Component.PartNumber)
-                     (implicit db: Database, ec: ExecutionContext, mat: ActorMaterializer): Future[Int] =
-    // TODO: namespace
-    VehicleRepository.search(db, namespace, None, None, None, Some(part)) flatMap { vs =>
-      if (vs.nonEmpty) {
+                     (implicit db: Database, ec: ExecutionContext): Future[Int] =
+      isInstalled(namespace, part) flatMap { is =>
+      if (is) {
         Future.failed(Errors.ComponentIsInstalledException)
       } else {
-        val dbIO = components.filter (i => i.namespace === namespace && i.partNumber === part).delete
+        val dbIO = components
+          .filter(_.namespace === namespace)
+          .filter(_.partNumber === part)
+          .delete
+
         db.run(dbIO)
       }
     }
+
+  def isInstalled(namespace: Namespace, part: Component.PartNumber)
+                 (implicit db: Database, ec: ExecutionContext): Future[Boolean] = {
+     val dbIO = VehicleRepository.installedComponents
+       .filter(_.namespace === namespace)
+       .filter(_.partNumber === part)
+       .exists
+       .result
+
+    db.run(dbIO)
+  }
 
   def exists(namespace: Namespace,
              part: Component.PartNumber)

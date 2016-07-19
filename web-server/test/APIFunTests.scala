@@ -23,7 +23,10 @@ import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
 import io.circe.parser._
-import org.genivi.sota.data.Vehicle.Vin
+import org.genivi.sota.data.Device
+import org.genivi.sota.marshalling.CirceInstances._
+import org.genivi.sota.data.Device._
+import cats.syntax.show.toShowOps
 
 object APITests extends Tag("APITests")
 
@@ -71,9 +74,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   case class Uri(uri: String)
   case class Package(namespace: String, id: PackageId, uri: Uri, size: Long, checkSum: String, description: String, vendor: String)
   case class PackageResolver(id: PackageId, description: String, vendor: String)
-  case class Vehicle(namespace: String, vin: String)
   case class DeviceT(deviceName: String, deviceId: Option[String] = None, deviceType: String)
-  case class Device(namespace: String, deviceName: String, deviceId: Option[String] = None, deviceType: String, lastSeen: Option[String])
   case class FilterJson(namespace: String, name: String, expression: String)
   case class FilterPackageJson(namespace: String, filterName : String, packageName : String, packageVersion : String)
   case class ComponentJson(namespace: String, partNumber : String, description : String)
@@ -123,10 +124,6 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
 
   def addVin(vin: String): String = {
     val device = DeviceT(vin, Some(vin), "Vehicle")
-
-    // create in resolver
-    val resolverResponse = makeRequest("vehicles/" + vin, PUT)
-    resolverResponse.status mustBe NO_CONTENT
 
     // create in device registry
     val response = makeJsonRequest("devices", POST, device.asJson.noSpaces)
@@ -185,20 +182,20 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     }
   }
 
-  "test adding vins" taggedAs APITests in {
+  "test adding devices" taggedAs APITests in {
     testId = Some(addVin(testVin))
     //add second vin to aid in testing filtering later on
     testIdAlt = Some(addVin(testVinAlt))
   }
 
-  "test searching vins" taggedAs APITests in {
+  "test searching devices" taggedAs APITests in {
     val response = makeRequest(s"devices?namespace=$testNamespace&regex=" + testVin, GET)
     response.status mustBe OK
     val jsonResponse = decode[List[Device]](response.body)
     jsonResponse.toOption match {
-      case Some(resp : List[Device]) => resp.length mustBe 1
-                                        resp.head.deviceId mustEqual Some(testVin)
-      case None => fail("JSON parse error:" + jsonResponse.toString)
+      case Some(resp) => resp.length mustBe 1
+        resp.headOption.map(_.id.show) mustEqual testId
+      case None => fail(s"JSON parse error: $jsonResponse body: ${response.body}")
     }
   }
 
@@ -209,13 +206,13 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   }
 
   "test adding manually installed packages" taggedAs APITests in {
-    val response = makeRequest("vehicles/" + testVinAlt + "/package/" + testPackageNameAlt +
+    val response = makeRequest("vehicles/" + testIdAlt.get + "/package/" + testPackageNameAlt +
       "/" + testPackageVersion, PUT)
     response.status mustBe OK
   }
 
   "test viewing manually installed packages" taggedAs APITests in {
-    val response = makeRequest("vehicles/" + testVinAlt + "/package", GET)
+    val response = makeRequest("vehicles/" + testIdAlt.get + "/package", GET)
     response.status mustBe OK
     val jsonResponse = decode[List[PackageId]](response.body)
     jsonResponse.toOption match {
@@ -230,10 +227,10 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     val response = makeRequest("vehicles?packageName=" + testPackageNameAlt + "&packageVersion=" +
       testPackageVersion, GET)
     response.status mustBe OK
-    val jsonResponse = decode[List[Vehicle]](response.body)
+    val jsonResponse = decode[List[String]](response.body)
     jsonResponse.toOption match {
-      case Some(resp : List[Vehicle]) => resp.length mustBe 1
-                                         resp.head.vin mustEqual testVinAlt
+      case Some(resp) => resp.length mustBe 1
+        resp.headOption mustEqual testIdAlt
       case None => fail("JSON parse error:" + jsonResponse.toString)
     }
   }
@@ -342,12 +339,12 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
 
   "test adding component to vin" taggedAs APITests in {
     addComponent(testNamespace, testComponentName, testComponentDescription)
-    val response = makeRequest("vehicles/" + testVin + "/component/" + testComponentName, PUT)
+    val response = makeRequest("vehicles/" + testId.get + "/component/" + testComponentName, PUT)
     response.status mustBe OK
   }
 
   "test viewing components installed on vin" taggedAs APITests in {
-    val response = makeRequest("vehicles/" + testVin + "/component", GET)
+    val response = makeRequest("vehicles/" + testId.get + "/component", GET)
     response.status mustBe OK
     val jsonResponse = decode[List[String]](response.body)
     jsonResponse.toOption match {
@@ -357,14 +354,16 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     }
   }
 
-  "test listing vins with component installed" taggedAs APITests in {
+
+  "test listing devices with component installed" taggedAs APITests in {
     val response = makeRequest("vehicles?component=" + testComponentName, GET)
     response.status mustBe OK
-    val jsonResponse = decode[List[Vehicle]](response.body)
+    val jsonResponse = decode[List[String]](response.body)
     jsonResponse.toOption match {
-      case Some(resp : List[Vehicle]) => resp.length mustBe 1
-                                         resp.head.vin mustEqual testVin
-      case None => fail("JSON parse error:" + jsonResponse.toString)
+      case Some(resp) => resp.length mustBe 1
+        resp.headOption mustEqual testId
+      case None =>
+        fail("JSON parse error: " + jsonResponse.toString + s"body: ${response.body}")
     }
   }
 
@@ -390,10 +389,10 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     response.status mustBe OK
     import org.genivi.sota.marshalling.CirceInstances._
 
-    val jsonResponse = decode[Map[Vin, Seq[PackageId]]](response.body)(refinedMapDecoder)
+    val jsonResponse = decode[Map[String, Seq[PackageId]]](response.body)
     jsonResponse.toOption match {
-      case Some(resp : Map[Vin, Seq[PackageId]]) => resp.toList.length mustBe 1
-                                                    resp.head._1.get mustBe testVin
+      case Some(resp : Map[String, Seq[PackageId]]) => resp.toList.length mustBe 1
+                                                    resp.headOption.map(_._1) mustBe testId
                                                     resp.head._2.length mustBe 1
                                                     resp.head._2.head.name mustBe testPackageName
                                                     resp.head._2.head.version mustBe testPackageVersion

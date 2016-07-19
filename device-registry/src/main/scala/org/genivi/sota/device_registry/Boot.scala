@@ -39,7 +39,7 @@ object Boot extends App with Directives with BootMigrations {
   import LogDirectives._
   import VersionDirectives._
 
-  implicit val system = ActorSystem("tadevice-registry")
+  implicit val system = ActorSystem("device-registry")
   implicit val materializer = ActorMaterializer()
   implicit val exec = system.dispatcher
   implicit val log = LoggerFactory.getLogger(this.getClass)

@@ -19,7 +19,7 @@ import java.time.temporal.ChronoUnit
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 import akka.http.scaladsl.unmarshalling._
-import org.genivi.sota.data.Interval
+import org.genivi.sota.data.{Interval, Namespaces}
 import org.genivi.sota.http.NamespaceDirectives
 
 import scala.concurrent.Future
@@ -39,7 +39,7 @@ class UpdateRequestResourceSpec extends FunSuite
   implicit val log = Logging(system, "UpdateRequestResourceSpec")
 
   val resolver = new FakeExternalResolver()
-  val deviceRegistry = new FakeDeviceRegistry()
+  val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
 
   implicit val rviClient = new ConnectivityClient {
     override def sendMessage[A](service: String, message: A, expirationDate: Instant)(implicit encoder: Encoder[A]): Future[Int] = ???

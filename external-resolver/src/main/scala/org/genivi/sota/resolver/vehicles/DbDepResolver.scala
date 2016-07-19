@@ -5,11 +5,15 @@
 
 package org.genivi.sota.resolver.vehicles
 
+import java.util.UUID
+
 import akka.NotUsed
-import akka.stream.ActorMaterializer
+import eu.timepit.refined._
+import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Source}
-import org.genivi.sota.data.Vehicle.Vin
-import org.genivi.sota.data.{Namespace, PackageId, Vehicle}
+import org.genivi.sota.common.DeviceRegistry
+import org.genivi.sota.data.Device.DeviceId
+import org.genivi.sota.data.{Device, Namespace, PackageId}
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.components.Component.PartNumber
 import org.genivi.sota.resolver.filters.{And, Filter, True}
@@ -18,80 +22,128 @@ import org.genivi.sota.resolver.resolve.ResolveFunctions
 import slick.backend.DatabasePublisher
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.resolver.filters.FilterAST
+import slick.jdbc.GetResult
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class VinPackages(vehicle: Vehicle, packageIds: Seq[PackageId], parts: Seq[PartNumber]) {
-  def tupled: (Vin, (Seq[PackageId], Seq[PartNumber])) = (vehicle.vin, (packageIds, parts))
+case class DeviceIdPackages(device: Device.Id, vin: Option[DeviceId],
+                            packageIds: Seq[PackageId], parts: Seq[PartNumber]) {
+  def filterable: (Device.DeviceId, (Seq[PackageId], Seq[PartNumber])) =
+    (vin.getOrElse(DeviceId("")), (packageIds, parts))
 
-  def +(other: VinPackages): VinPackages =
+  def +(other: DeviceIdPackages): DeviceIdPackages =
     copy(packageIds = this.packageIds ++ other.packageIds, parts = this.parts ++ other.parts)
 }
 
 object DbDepResolver {
   import org.genivi.sota.refined.SlickRefined._
-  import org.genivi.sota.db.SlickExtensions.namespaceColumnType
+  import Device._
+  import cats.syntax.show._
 
-  type VinComponentRow = (Vehicle, Option[PackageId.Name], Option[PackageId.Version], Option[Component.PartNumber])
+  type DeviceComponentRow = (Device.Id, Option[PackageId.Name], Option[PackageId.Version], Option[Component.PartNumber])
 
  /*
   * Resolving package dependencies.
   */
-  def resolve(db: Database, namespace: Namespace, pkgId: PackageId)
-             (implicit ec: ExecutionContext, mat: ActorMaterializer): Future[Map[Vehicle.Vin, Seq[PackageId]]] = {
+  def resolve(namespace: Namespace, deviceRegistry: DeviceRegistry, pkgId: PackageId)
+             (implicit db: Database, ec: ExecutionContext,
+              mat: Materializer): Future[Map[Device.Id, Seq[PackageId]]] = {
     for {
+      devices <- deviceRegistry.listNamespace(namespace)
       filtersForPkg <- db.run(PackageFilterRepository.listFiltersForPackage(namespace, pkgId))
-      vf <- vehiclesForFilter(namespace, db, filterByPackageFilters(filtersForPkg))
-    } yield ResolveFunctions.makeFakeDependencyMap(pkgId, vf.map(_.vin))
+      vf <- filterDevices(namespace, devices.map(d => (d.id, d.deviceId)).toMap, filterByPackageFilters(filtersForPkg))
+    } yield ResolveFunctions.makeFakeDependencyMap(pkgId, vf)
   }
 
-  def vehiclesForFilter(namespace: Namespace, db: Database, filter: FilterAST)
-                       (implicit ec: ExecutionContext, mat: ActorMaterializer): Future[Seq[Vehicle]] = {
-    val allVehiclesPublisher = allVehicleComponents(db, namespace)
+  def filterDevices(namespace: Namespace, devices: Map[Device.Id, Option[DeviceId]], filter: FilterAST)
+                   (implicit db: Database, ec: ExecutionContext, mat: Materializer): Future[Seq[Device.Id]] = {
+    val allVehiclesPublisher = allVehicleComponents(devices.keys.toSeq, namespace)
 
     Source.fromPublisher(allVehiclesPublisher)
-      .via(toVinPackages)
+      .via(toVinPackages(devices))
       .via(groupByVehicle())
       .via(filterFlowFrom(filter))
-      .map(_.vehicle)
-      .runFold(Vector.empty[Vehicle])(_ :+ _)
+      .map(_.device)
+      .runFold(Vector.empty[Device.Id])(_ :+ _)
   }
 
-  protected def allVehicleComponents(db: Database, namespace: Namespace)
-                          (implicit ec: ExecutionContext): DatabasePublisher[VinComponentRow] = {
-    val q = VehicleRepository.vehicles
-      .filter(_.namespace === namespace)
-      .joinLeft(VehicleRepository.installedPackages).on(_.vin === _.vin)
-      .joinLeft(VehicleRepository.installedComponents).on(_._1.vin === _.vin)
-      .map { case ((v, ip), ic) =>
-        (v, ip.map(_.packageName), ip.map(_.packageVersion), ic.map(_.partNumber))
-      }
-      .sortBy(_._1.vin)
-      .result
+  protected def allVehicleComponents(devices: Seq[Device.Id], namespace: Namespace)
+                          (implicit db: Database,
+                           ec: ExecutionContext): DatabasePublisher[DeviceComponentRow] = {
+    val tmptable = s"""device_ids_tmp_${UUID.randomUUID().toString.replace("-", "")}"""
 
-    db.stream(q)
+    val createTmpTableIO =
+      sqlu"""
+            CREATE TEMPORARY TABLE #$tmptable
+           (`device_id` char(36) not null PRIMARY KEY)
+          """
+
+    val inserts =
+      devices.map(d => sqlu"insert into #$tmptable values ('#${d.show}');")
+
+    implicit val queryResParse = GetResult { r =>
+      val deviceId = refineV[Device.ValidId](r.nextString).right.map(Device.Id).right.get
+
+      val packageName = r.nextStringOption() flatMap { o =>
+        refineV[PackageId.ValidName](o).right.toOption
+      }
+
+      val packageVersion = r.nextStringOption() flatMap { o =>
+        refineV[PackageId.ValidVersion](o).right.toOption
+      }
+
+      val partNumber = r.nextStringOption() flatMap { o =>
+        refineV[Component.ValidPartNumber](o).right.toOption
+      }
+
+      (deviceId, packageName, packageVersion, partNumber)
+    }
+
+    val queryIO =
+      sql"""
+            SELECT tmp.device_id, ip.packageName, ip.packageVersion, ic.partNumber
+             from #$tmptable tmp
+              left join #${VehicleRepository.installedPackages.baseTableRow.tableName} ip
+              ON ip.device_uuid = tmp.device_id
+              left join #${VehicleRepository.installedComponents.baseTableRow.tableName} ic
+              ON ic.device_uuid = tmp.device_id
+              order by tmp.device_id asc
+        """.as[(Device.Id, Option[PackageId.Name], Option[PackageId.Version], Option[PartNumber])]
+
+    val dbIO = createTmpTableIO
+      .andThen(DBIO.sequence(inserts))
+      .flatMap(_ => queryIO)
+      .transactionally
+
+    db.stream(dbIO)
   }
 
   /**
     * Pass on, except it wraps into [[PackageId]] a pair [[PackageId.Name]], [[PackageId.Version]]
     */
-  protected def toVinPackages: Flow[VinComponentRow, VinPackages, NotUsed] = {
-    Flow[VinComponentRow].map {
+  protected def toVinPackages(deviceIdMapping: Map[Device.Id, Option[DeviceId]])
+  : Flow[DeviceComponentRow, DeviceIdPackages, NotUsed] = {
+    Flow[DeviceComponentRow].map {
       case (v, pName, pVersion, partNumber) =>
         val packageId = for {
           n <- pName
           v <- pVersion
         } yield PackageId(n, v)
 
-        VinPackages(v, packageId.toSeq, partNumber.toSeq)
+        val vin = deviceIdMapping(v)
+
+        DeviceIdPackages(v, vin, packageId.toSeq, partNumber.toSeq)
     }
   }
 
-  protected def groupByVehicle()(implicit ec: ExecutionContext,
-                                 mat: ActorMaterializer): Flow[VinPackages, VinPackages, NotUsed] = {
-    val groupByVin = GroupedByPredicate[VinPackages, Vehicle.Vin](_.vehicle.vin)
+  protected def insertMissingDevices(devices: Seq[Device.Id])(implicit ec: ExecutionContext,
+                                       mat: Materializer): Flow[DeviceIdPackages, DeviceIdPackages, NotUsed] = ???
 
-    Flow[VinPackages]
+  protected def groupByVehicle()(implicit ec: ExecutionContext,
+                                 mat: Materializer): Flow[DeviceIdPackages, DeviceIdPackages, NotUsed] = {
+    val groupByVin = GroupedByPredicate[DeviceIdPackages, Device.Id](_.device)
+
+    Flow[DeviceIdPackages]
       .via(groupByVin)
       .map(l => l.tail.foldRight(l.head)(_ + _))
   }
@@ -107,13 +159,13 @@ object DbDepResolver {
   }
 
   /**
-    * Only pass on those [[VinPackages]] that satisfy the given [[FilterAST]]
+    * Only pass on those [[DeviceIdPackages]] that satisfy the given [[FilterAST]]
     */
-  protected def filterFlowFrom(filterAST: FilterAST): Flow[VinPackages, VinPackages, NotUsed] = {
+  protected def filterFlowFrom(filterAST: FilterAST): Flow[DeviceIdPackages, DeviceIdPackages, NotUsed] = {
     val predicate = FilterAST.query(filterAST)
 
-    Flow[VinPackages]
-      .filter(v => predicate.apply(v.tupled))
+    Flow[DeviceIdPackages]
+      .filter(v => predicate.apply(v.filterable))
   }
 }
 

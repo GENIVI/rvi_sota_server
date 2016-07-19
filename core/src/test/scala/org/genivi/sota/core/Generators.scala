@@ -62,13 +62,13 @@ trait Generators {
   } yield UpdateRequest(UUID.randomUUID(), ns, packageId, Instant.now, Interval(startAfter, finishBefore),
                         prio, sig, desc, reqConfirm)
 
-  def vinDepGen(packages: Seq[Package]) : Gen[(Vehicle.Vin, Set[PackageId])] = for {
-    vin               <- VehicleGenerators.genVin
+  def vinDepGen(packages: Seq[Package]) : Gen[(Device.Id, Set[PackageId])] = for {
+    vin               <- DeviceGenerators.genId
     m                 <- Gen.choose(1, 10)
     packages          <- Gen.pick(m, packages).map( _.map(_.id) )
   } yield vin -> packages.toSet
 
-  def dependenciesGen(packages: Seq[Package] ) : Gen[UpdateService.VinsToPackageIds] = for {
+  def dependenciesGen(packages: Seq[Package] ) : Gen[UpdateService.DeviceToPackageIds] = for {
     n <- Gen.choose(1, 10)
     r <- Gen.listOfN(n, vinDepGen(packages))
   } yield r.toMap

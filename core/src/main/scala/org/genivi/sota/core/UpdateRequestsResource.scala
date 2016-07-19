@@ -64,17 +64,9 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
     */
   def createUpdate(ns: Namespace): Route = {
     clientUpdateRequest(ns) { req: UpdateRequest =>
-      complete(
-        updateService.queueUpdate(
-          req,
-          pkg => resolver.resolve(ns, pkg.id).map {
-            m => m.map { case (v, p) =>
-              // deviceRegistry.fetchDeviceByDeviceId(Device.DeviceId(v.vin.get))
-              (v.vin, p)
-            }
-          }
-        ) map (_ => (StatusCodes.Created, req))
-      )
+      val resultF = updateService.queueUpdate(req, pkg => resolver.resolve(ns, pkg.id))
+
+      complete(resultF map (_ => (StatusCodes.Created, req)))
     }
   }
 

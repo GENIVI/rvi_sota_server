@@ -5,24 +5,27 @@ import cats.state.{State, StateT}
 import org.genivi.sota.resolver.resolve.ResolveFunctions
 import org.genivi.sota.resolver.filters.{And, FilterAST, True}
 import org.genivi.sota.resolver.packages.Package
-import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.filters.Filter
 import FilterAST._
 import org.genivi.sota.resolver.test._
 import org.scalacheck.Gen
 import Misc.{function0Instance, lift, monGen}
-import org.genivi.sota.data.Vehicle.Vin
-import org.genivi.sota.data.{PackageId, Vehicle}
+import org.genivi.sota.data.Device.DeviceId
+import org.genivi.sota.data.{Device, PackageId}
 
 import scala.annotation.tailrec
 import scala.collection.immutable.Iterable
 import scala.concurrent.ExecutionContext
+import cats.syntax.show._
+import Device._
+import org.genivi.sota.resolver.components.Component
 
 sealed trait Query
 
+
 final case object ListVehicles                        extends Query
-final case class  ListPackagesOnVehicle(veh: Vehicle) extends Query
 final case class  ListVehiclesFor(cmp: Component)     extends Query
+final case class  ListPackagesOnVehicle(veh: Device.Id) extends Query
 final case class  ListPackagesFor(flt: Filter)        extends Query
 
 final case object ListFilters                         extends Query
@@ -31,7 +34,7 @@ final case class  ListFiltersFor(pak: Package)        extends Query
 final case class  Resolve(id: PackageId)              extends Query
 
 final case object ListComponents                      extends Query
-final case class  ListComponentsFor(veh: Vehicle)     extends Query
+final case class  ListComponentsFor(veh: Device.Id)     extends Query
 
 object Query extends
     VehicleRequestsHttp with
@@ -60,13 +63,12 @@ object Query extends
   }
 
   def semQuery(q: Query): State[RawStore, Semantics] = q match {
-
-    case ListVehicles               =>
+    case ListVehicles =>
       State.get map (s => Semantics(Some(q),
         listVehicles, StatusCodes.OK,
-        SuccessVehicles(s.vehicles.keySet)))
+        SuccessVehicles(s.devices.keySet)))
 
-    case ListVehiclesFor(cmp)           =>
+    case ListVehiclesFor(cmp) =>
       State.get map (s => Semantics(Some(q),
         listVehiclesHaving(cmp), StatusCodes.OK,
         SuccessVehicles(s.vehiclesHaving(cmp))))
@@ -79,12 +81,12 @@ object Query extends
     case ListComponentsFor(veh)     =>
       State.get map (s => Semantics(Some(q),
         listComponentsOnVehicle(veh), StatusCodes.OK,
-        SuccessPartNumbers(s.vehicles(veh)._2.map(_.partNumber))))
+        SuccessPartNumbers(s.devices(veh)._2.map(_.partNumber))))
 
     case ListPackagesOnVehicle(veh) =>
       State.get map (s => Semantics(Some(q),
         listPackagesOnVehicle(veh), StatusCodes.OK,
-        SuccessPackageIds(s.vehicles(veh)._1.map(_.id))))
+        SuccessPackageIds(s.devices(veh)._1.map(_.id))))
 
     case ListPackagesFor(flt) =>
       State.get map (s => Semantics(Some(q),
@@ -108,7 +110,7 @@ object Query extends
 
   }
 
-  private def vehicleMap(s: RawStore, pkgId: PackageId): Map[Vin, List[PackageId]] = {
+  private def vehicleMap(s: RawStore, pkgId: PackageId): Map[Device.Id, List[PackageId]] = {
 
     // An AST for each filter associated to the given package.
     val filters: Set[FilterAST] =
@@ -121,15 +123,16 @@ object Query extends
       filters.toList.foldLeft[FilterAST](True)(And)
 
     // Apply the resulting filter to select vehicles.
-    val vehs: Iterable[Vehicle] = for (
-      (veh, (paks, comps)) <- s.vehicles;
-      pakIds = paks.map(_.id).toSeq;
-      compIds = comps.map(_.partNumber).toSeq;
-      entry2 = (veh.vin, (pakIds, compIds))
+    val devIds: Iterable[Device.Id] = for {
+      (dev, (paks, comps)) <- s.devices
+      pakIds = paks.map(_.id).toSeq
+      compIds = comps.map(_.partNumber).toSeq
+    // TODO This will not work
+      entry2 = (DeviceId(dev.show), (pakIds, compIds))
       if query(expr)(entry2)
-    ) yield veh
+    } yield dev
 
-    ResolveFunctions.makeFakeDependencyMap(pkgId, vehs.map(_.vin).toSeq)
+    ResolveFunctions.makeFakeDependencyMap(pkgId, devIds.toSeq)
   }
 
   // scalastyle:off magic.number
@@ -144,23 +147,24 @@ object Query extends
       vpaks <- Store.numberOfVehiclesWithSomePackage
       pfilt <- Store.numberOfPackagesWithSomeFilter
       qry  <- lift(Gen.frequency(
-
         (10, Gen.const(ListVehicles)),
         (10, Gen.const(ListComponents)),
         ( 5, Gen.const(ListFilters)),
 
         (if (vehs > 0) 10 else 0, Gen.oneOf(
-          Store.pickVehicle.runA(s).map(ListPackagesOnVehicle(_)),
-          Store.pickVehicle.runA(s).map(ListComponentsFor(_))
+          Store.pickVehicle.runA(s).map(ListPackagesOnVehicle),
+          Store.pickVehicle.runA(s).map(ListComponentsFor),
+          Store.pickVehicle.runA(s).map(ListPackagesOnVehicle),
+          Store.pickVehicle.runA(s).map(ListComponentsFor)
         )),
-
-        (if (vcomp > 0) 10 else 0,
-          Store.pickVehicleWithComponent.runA(s) map { case (veh, cmp) => ListVehiclesFor(cmp) }),
 
         (if (pfilt > 0) 10 else 0, Gen.oneOf(
           Store.pickPackageWithFilter.runA(s) map { case (pkg, flt) => ListPackagesFor(flt) },
           Store.pickPackageWithFilter.runA(s) map { case (pkg, flt) => ListFiltersFor(pkg)  }
         )),
+
+        (if (vcomp > 0) 10 else 0,
+          Store.pickVehicleWithComponent.runA(s) map { case (veh, cmp) => ListVehiclesFor(cmp) }),
 
         (if (pkgs > 0) 10 else 0,
           Store.pickPackage.runA(s).map(pkg => Resolve(pkg.id)))

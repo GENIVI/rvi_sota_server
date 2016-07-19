@@ -14,6 +14,7 @@ import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
 import Misc._
 import eu.timepit.refined.api.Refined
+import org.genivi.sota.resolver.components.Component.PartNumber
 import org.genivi.sota.resolver.test.generators.{ComponentGenerators, FilterGenerators, PackageGenerators}
 
 
@@ -25,11 +26,11 @@ trait InvalidCommand    extends Command
 /**
   * The good ones.
   */
-final case class AddVehicle(veh: Vehicle) extends WellFormedCommand
+final case class AddVehicle(device: Device) extends WellFormedCommand
 final case class AddPackage(pkg: Package) extends WellFormedCommand
 
-final case class InstallPackage  (veh: Vehicle, pkg: Package) extends WellFormedCommand
-final case class UninstallPackage(veh: Vehicle, pkg: Package) extends WellFormedCommand
+final case class InstallPackage  (veh: Device.Id, pkg: Package) extends WellFormedCommand
+final case class UninstallPackage(veh: Device.Id, pkg: Package) extends WellFormedCommand
 
 final case class AddFilter (filt: Filter)               extends WellFormedCommand
 final case class EditFilter(old : Filter, neu: Filter)  extends WellFormedCommand {
@@ -46,17 +47,18 @@ final case class EditComponent  (old : Component, neu: Component)  extends WellF
   if (!(old.samePK(neu))) throw new IllegalArgumentException
 }
 final case class RemoveComponent(cmpn: Component)                  extends WellFormedCommand
-final case class InstallComponent  (veh: Vehicle, cmpn: Component) extends WellFormedCommand
-final case class UninstallComponent(veh: Vehicle, cmpn: Component) extends WellFormedCommand
+final case class InstallComponent  (veh: Device.Id, cmpn: Component) extends WellFormedCommand
+final case class UninstallComponent(veh: Device.Id, cmpn: Component) extends WellFormedCommand
 
 /**
   * The bad ones.
   */
-final case class AddVehicleFail(veh: Vehicle) extends InvalidCommand
+final case class AddVehicleFail(device: Device.Id) extends InvalidCommand
+
 final case class AddPackageFail(pkg: Package, statusCode: StatusCode, result: Result) extends InvalidCommand
 
-final case class InstallPackageFail  (veh: Vehicle, pkg: Package) extends InvalidCommand
-final case class UninstallPackageFail(veh: Vehicle, pkg: Package) extends InvalidCommand
+final case class InstallPackageFail  (veh: Device.Id, pkg: Package) extends InvalidCommand
+final case class UninstallPackageFail(veh: Device.Id, pkg: Package) extends InvalidCommand
 
 final case class AddFilterFail (filt: Filter)               extends InvalidCommand
 final case class EditFilterFail(old : Filter, neu: Filter)  extends InvalidCommand {
@@ -73,8 +75,8 @@ final case class EditComponentFail  (old : Component, neu: Component)  extends I
   if (!(old.samePK(neu))) throw new IllegalArgumentException
 }
 final case class RemoveComponentFail(cmpn: Component)                  extends InvalidCommand
-final case class InstallComponentFail  (veh: Vehicle, cmpn: Component) extends InvalidCommand
-final case class UninstallComponentFail(veh: Vehicle, cmpn: Component) extends InvalidCommand
+final case class InstallComponentFail  (veh: Device.Id, cmpn: Component) extends InvalidCommand
+final case class UninstallComponentFail(veh: Device.Id, cmpn: Component) extends InvalidCommand
 
 
 trait CommandUtils extends
@@ -93,12 +95,11 @@ trait CommandUtils extends
     */
   def semWellFormedCommand(cmd: WellFormedCommand)
                           (implicit ec: ExecutionContext): State[RawStore, Semantics] = cmd match {
-
     case AddVehicle(veh) =>
       for {
         s <- State.get
         _ <- State.set(s.creating(veh))
-      } yield Semantics(addVehicle(veh.vin), StatusCodes.NoContent, Success)
+      } yield Semantics(addVehicle(veh.id), StatusCodes.OK, Success)
 
     case AddPackage(pkg) =>
       for {
@@ -194,7 +195,7 @@ trait CommandUtils extends
       for {
         s <- State.get
         _ <- State.set(s.installing(veh, cmpn))
-        isDuplicatePK = s.vehicles(veh)._2.contains(cmpn)
+        isDuplicatePK = s.devices(veh)._2.contains(cmpn)
       } yield {
         val req = installComponent(veh, cmpn)
         if (isDuplicatePK) { Semantics(req, StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry)) }
@@ -210,20 +211,20 @@ trait CommandUtils extends
         StatusCodes.OK, Success) // whether already uninstalled or not, OK is the reply
 
   }
-  // scalastyle:on
 
   def genCommandAddVehicle: Gen[AddVehicle] =
-    VehicleGenerators.genVehicle.map(AddVehicle(_))
+    DeviceGenerators.genDevice.map(AddVehicle)
 
+  // scalastyle:on
   def genCommandAddPackage: Gen[AddPackage] =
-    PackageGenerators.genPackage.map(AddPackage(_))
+    PackageGenerators.genPackage.map(AddPackage)
 
   def genCommandAddFilter(s: RawStore): Gen[AddFilter] =
     FilterGenerators.genFilter(s.packages.keys.toList, s.components.toList)
-      .map(AddFilter(_))
+      .map(AddFilter)
 
   def genCommandAddComponent(s: RawStore): Gen[AddComponent] =
-    ComponentGenerators.genComponent.map(AddComponent(_))
+    ComponentGenerators.genComponent.map(AddComponent)
 
   def genCommandInstallPackage(s: RawStore): Gen[InstallPackage] =
     for {
@@ -290,7 +291,7 @@ trait CommandUtils extends
 
 trait InvalidCommandUtils { _: CommandUtils =>
 
-  import InvalidVehicleGenerators._
+  import InvalidDeviceGenerators._
   import org.genivi.sota.resolver.test.generators.InvalidFilterGenerators._
   import org.genivi.sota.resolver.test.generators.InvalidComponentGenerators._
 
@@ -303,20 +304,15 @@ trait InvalidCommandUtils { _: CommandUtils =>
 
   def pickOneOf[T](t1: T, t2: T, tn: T*): T = pickOneOf(Gen.oneOf(t1, t2, tn: _*))
 
-  def getBadReqAddVehicle(veh: Vehicle)
-                         (implicit ec: ExecutionContext): Semantics = {
-    Semantics(addVehicle(veh.vin), StatusCodes.BadRequest, Success)
-  }
-
   def getBadReqAddPackage(pkg: Package, statusCode: StatusCode, result: Result)
                          (implicit ec: ExecutionContext): Semantics =
     Semantics(addPackage(pkg), statusCode, result)
 
-  def getBadReqInstallPackage(veh: Vehicle, pkg: Package)
+  def getBadReqInstallPackage(veh: Device.Id, pkg: Package)
                              (implicit ec: ExecutionContext): Semantics =
     Semantics(installPackage(veh, pkg), StatusCodes.BadRequest, Success)
 
-  def getBadReqUninstallPackage(veh: Vehicle, pkg: Package)
+  def getBadReqUninstallPackage(veh: Device.Id, pkg: Package)
                                (implicit ec: ExecutionContext): Semantics =
     Semantics(uninstallPackage(veh, pkg), StatusCodes.BadRequest, Success)
 
@@ -365,13 +361,13 @@ trait InvalidCommandUtils { _: CommandUtils =>
     Semantics(req, StatusCodes.BadRequest, Success)
   }
 
-  def getBadReqInstallComponent(veh: Vehicle, cmpn: Component)
+  def getBadReqInstallComponent(veh: Device.Id, cmpn: Component)
                                (implicit ec: ExecutionContext): Semantics = {
     val req = installComponent(veh, cmpn)
     Semantics(req, StatusCodes.BadRequest, Success)
   }
 
-  def getBadReqUninstallComponent(veh: Vehicle, cmpn: Component)
+  def getBadReqUninstallComponent(veh: Device.Id, cmpn: Component)
                                  (implicit ec: ExecutionContext): Semantics = {
     val req = uninstallComponent(veh, cmpn)
     Semantics(req, StatusCodes.BadRequest, Success)
@@ -379,9 +375,8 @@ trait InvalidCommandUtils { _: CommandUtils =>
 
   import org.genivi.sota.resolver.test.generators.InvalidPackageGenerators._
   def xlateToInvalidCommand(cmd: WellFormedCommand): InvalidCommand = cmd match {
-
     case AddVehicle(veh) =>
-      AddVehicleFail(veh.copy(vin = VehicleGenerators.getInvalidVin))
+      AddVehicleFail(veh.id)
 
     case AddPackage(pkg) =>
       def expectNotFound(pkg: Package) =
@@ -405,15 +400,13 @@ trait InvalidCommandUtils { _: CommandUtils =>
       )
 
     case InstallPackage(veh0, pkg0) =>
-      val (veh: Vehicle, pkg: Package) = pickOneOf(
-        (getInvalidVehicle, pkg0),
+      val (veh: Device.Id, pkg: Package) = pickOneOf(
         (veh0, getInvalidPackage)
       )
       InstallPackageFail(veh, pkg)
 
     case UninstallPackage(veh0, pkg0) =>
-      val (veh: Vehicle, pkg: Package) = pickOneOf(
-        (getInvalidVehicle, pkg0),
+      val (veh: Device.Id, pkg: Package) = pickOneOf(
         (veh0, getInvalidPackage)
       )
       UninstallPackageFail(veh, pkg)
@@ -455,16 +448,14 @@ trait InvalidCommandUtils { _: CommandUtils =>
       RemoveComponentFail(getInvalidComponent)
 
     case InstallComponent(veh0, cmpn0) =>
-      val (veh: Vehicle, cmpn: Component) = pickOneOf(
-        (veh0, getInvalidComponent),
-        (getInvalidVehicle, cmpn0)
+      val (veh: Device.Id, cmpn: Component) = pickOneOf(
+        (veh0, getInvalidComponent)
       )
       InstallComponentFail(veh, cmpn)
 
     case UninstallComponent(veh0, cmpn0) =>
-      val (veh: Vehicle, cmpn: Component) = pickOneOf(
-        (veh0, getInvalidComponent),
-        (getInvalidVehicle, cmpn0)
+      val (veh: Device.Id, cmpn: Component) = pickOneOf(
+        (veh0, getInvalidComponent)
       )
       UninstallComponentFail(veh, cmpn)
 
@@ -583,8 +574,9 @@ object Command extends CommandUtils with InvalidCommandUtils {
   def semInvalidCommand(cmd: InvalidCommand)
                        (implicit ec: ExecutionContext): State[RawStore, Semantics] = {
     val sem = cmd match {
-
-      case AddVehicleFail(veh) => getBadReqAddVehicle(veh)
+      case AddVehicleFail(device: Device.Id) =>
+        import akka.http.scaladsl.client.RequestBuilding.Get
+        Semantics(Get("/fake_devices"), StatusCodes.MethodNotAllowed, Success)
 
       case AddPackageFail(pkg, statusCode, result) => getBadReqAddPackage(pkg, statusCode, result)
 

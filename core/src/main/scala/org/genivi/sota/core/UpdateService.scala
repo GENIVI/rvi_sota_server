@@ -15,7 +15,7 @@ import org.genivi.sota.core.data._
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.resolver.Connectivity
 import org.genivi.sota.core.transfer.UpdateNotifier
-import org.genivi.sota.data.{Device, PackageId, Vehicle}
+import org.genivi.sota.data.{Device, PackageId}
 import org.genivi.sota.data.Namespace
 import java.time.Instant
 import scala.collection.immutable.ListSet
@@ -49,7 +49,7 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
 
   implicit private val log = Logging(system, "updateservice")
 
-  def checkDevices( dependencies: VinsToPackageIds ) : Future[Boolean] = FastFuture.successful( true )
+  def checkDevices( dependencies: DeviceToPackageIds ) : Future[Boolean] = FastFuture.successful( true )
 
   /**
     * Fetch from DB the [[Package]]s corresponding to the given [[PackageId]]s,
@@ -95,16 +95,12 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
     */
   def mkUpdateSpecs(ns: Namespace,
                     request: UpdateRequest,
-                    vinsToPackageIds: VinsToPackageIds,
-                    idsToPackages: Map[PackageId, Package]): Future[Set[UpdateSpec]] = {
-    // TODO quite inefficient; bulk request to device registry?
-    val updateSpecs = vinsToPackageIds.map {
-      case (vin, requiredPackageIds) =>
-        deviceRegistry.fetchByDeviceId(ns, Device.DeviceId(vin.get)).map { d =>
-          UpdateSpec(request, d.id, UpdateStatus.Pending, requiredPackageIds map idsToPackages, 0, Instant.now)
-        }
+                    vinsToPackageIds: DeviceToPackageIds,
+                    idsToPackages: Map[PackageId, Package]): Set[UpdateSpec] = {
+    vinsToPackageIds.map {
+      case (device, requiredPackageIds) =>
+        UpdateSpec(request, device, UpdateStatus.Pending, requiredPackageIds map idsToPackages, 0, Instant.now)
     }.toSet
-    Future.sequence(updateSpecs) // TODO partial error instead of failing completely?
   }
 
   def persistRequest(request: UpdateRequest, updateSpecs: Set[UpdateSpec])
@@ -133,7 +129,7 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
       requirements    = allRequiredPackages(vinsToDeps)
       packages       <- fetchPackages(ns, requirements)
       idsToPackages   = packages.map( x => x.id -> x ).toMap
-      updateSpecs    <- mkUpdateSpecs(ns, request, vinsToDeps, idsToPackages)
+      updateSpecs     = mkUpdateSpecs(ns, request, vinsToDeps, idsToPackages)
       _              <- persistRequest(request, updateSpecs)
       _              <- Future.successful(notifier.notify(updateSpecs.toSeq))
     } yield updateSpecs
@@ -142,9 +138,9 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
   /**
     * Gather all [[PackageId]]s (dependencies) across all given VINs.
     */
-  def allRequiredPackages(vinsToDeps: Map[Vehicle.Vin, Set[PackageId]]): Set[PackageId] = {
-    log.debug(s"Dependencies from resolver: $vinsToDeps")
-    vinsToDeps.values.flatten.toSet
+  def allRequiredPackages(deviceToDeps: Map[Device.Id, Set[PackageId]]): Set[PackageId] = {
+    log.debug(s"Dependencies from resolver: $deviceToDeps")
+    deviceToDeps.values.flatten.toSet
   }
 
   /**
@@ -169,6 +165,6 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
 }
 
 object UpdateService {
-  type VinsToPackageIds = Map[Vehicle.Vin, Set[PackageId]]
-  type DependencyResolver = Package => Future[VinsToPackageIds]
+  type DeviceToPackageIds = Map[Device.Id, Set[PackageId]]
+  type DependencyResolver = Package => Future[DeviceToPackageIds]
 }

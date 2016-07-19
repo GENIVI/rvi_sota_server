@@ -20,6 +20,10 @@ trait DeviceRegistry {
     (ns: Namespace, re: String Refined Regex)
     (implicit ec: ExecutionContext): Future[Seq[Device]]
 
+  def listNamespace(ns: Namespace)
+  (implicit ec: ExecutionContext): Future[Seq[Device]] =
+    searchDevice(ns, Refined.unsafeApply(".*"))
+
   def createDevice
     (device: DeviceT)
     (implicit ec: ExecutionContext): Future[Id]
@@ -43,5 +47,4 @@ trait DeviceRegistry {
   def updateLastSeen
     (id: Id, seenAt: Instant = Instant.now)
     (implicit ec: ExecutionContext): Future[Unit]
-
 }

@@ -19,22 +19,25 @@ import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 import Directives._
 import akka.http.scaladsl.unmarshalling.{FromStringUnmarshaller, Unmarshaller}
+import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 
 
 /**
  * API routes for package resolution.
  */
-class ResolveDirectives(namespaceExtractor: Directive1[Namespace])
+class ResolveDirectives(namespaceExtractor: Directive1[Namespace],
+                        deviceRegistry: DeviceRegistry)
                        (implicit system: ActorSystem,
                         db: Database,
                         mat: ActorMaterializer,
                         ec: ExecutionContext) {
 
-  def resolvePackage(ns: Namespace, id: PackageId): Route =
-    completeOrRecoverWith(DbDepResolver.resolve(db, ns, id)) {
-      Errors.onMissingPackage
-    }
+  def resolvePackage(ns: Namespace, id: PackageId): Route = {
+    val resultF = DbDepResolver.resolve(ns, deviceRegistry, id)
+
+    completeOrRecoverWith(resultF) { Errors.onMissingPackage }
+  }
 
   implicit val NamespaceUnmarshaller: FromStringUnmarshaller[Namespace] = Unmarshaller.strict(Namespace.apply)
   /**

@@ -7,17 +7,19 @@ import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.resolver.packages.Package
 import org.scalacheck.Gen
 import Misc._
-import org.genivi.sota.data.{PackageId, Vehicle}
+import org.genivi.sota.data.Device._
+import cats.syntax.show.toShowOps
+import org.genivi.sota.data.{Device, PackageId}
 
 import scala.collection.immutable.Iterable
 
 // scalastyle:off number.of.methods
 case class RawStore(
-  vehicles  : Map[Vehicle, (Set[Package], Set[Component])],
-  packages  : Map[Package, Set[Filter]],
-  filters   : Set[Filter],
-  components: Set[Component],
-  qryAggregates: QueryKindAggregates
+                     devices  : Map[Device.Id, (Set[Package], Set[Component])],
+                     packages  : Map[Package, Set[Filter]],
+                     filters   : Set[Filter],
+                     components: Set[Component],
+                     qryAggregates: QueryKindAggregates
 ) {
 
   /**
@@ -40,8 +42,8 @@ case class RawStore(
 
   // INSERTING
 
-  def creating(veh: Vehicle): RawStore = {
-    copy(vehicles = vehicles.updated(veh, (Set.empty[Package], Set.empty[Component])))
+  def creating(veh: Device): RawStore = {
+    copy(devices = devices.updated(veh.id, (Set.empty[Package], Set.empty[Component])))
   }
 
   def creating(pkg: Package): RawStore = {
@@ -75,10 +77,10 @@ case class RawStore(
     var result = this
     val vehsAffected = vehiclesHaving(old)
     for (v <- vehsAffected) {
-      val (paks, oldComps) = result.vehicles(v)
+      val (paks, oldComps) = result.devices(v)
       val neuComps = oldComps - old + neu
-      val neuVehicles = result.vehicles.updated(v, (paks, neuComps))
-      result = result.copy(vehicles = neuVehicles)
+      val neuVehicles = result.devices.updated(v, (paks, neuComps))
+      result = result.copy(devices = neuVehicles)
     }
     result = result.copy(components = components - old + neu)
     result
@@ -95,7 +97,7 @@ case class RawStore(
   def removing(cmpn: Component): RawStore = {
     val installedOn = vehiclesHaving(cmpn)
     if (installedOn.nonEmpty) {
-      val vins = installedOn.map(veh => veh.vin.get).mkString
+      val vins = installedOn.map(_.show).mkString
       throw new RuntimeException(s"Component $cmpn can't be removed, still installed in : $vins")
     }
     copy(components = components - cmpn)
@@ -118,26 +120,26 @@ case class RawStore(
 
   // COMPONENTS FOR VEHICLES
 
-  def installing(veh: Vehicle, cmpn: Component): RawStore = {
-    val (paks, comps) = vehicles(veh)
-    copy(vehicles = vehicles.updated(veh, (paks, comps + cmpn)))
+  def installing(veh: Device.Id, cmpn: Component): RawStore = {
+    val (paks, comps) = devices(veh)
+    copy(devices = devices.updated(veh, (paks, comps + cmpn)))
   }
 
-  def uninstalling(veh: Vehicle, cmpn: Component): RawStore = {
-    val (paks, comps) = vehicles(veh)
-    copy(vehicles = vehicles.updated(veh, (paks, comps - cmpn)))
+  def uninstalling(veh: Device.Id, cmpn: Component): RawStore = {
+    val (paks, comps) = devices(veh)
+    copy(devices = devices.updated(veh, (paks, comps - cmpn)))
   }
 
   // PACKAGES FOR VEHICLES
 
-  def installing(veh: Vehicle, pkg: Package): RawStore = {
-    val (paks, comps) = vehicles(veh)
-    copy(vehicles = vehicles.updated(veh, (paks + pkg, comps)))
+  def installing(veh: Device.Id, pkg: Package): RawStore = {
+    val (paks, comps) = devices(veh)
+    copy(devices = devices.updated(veh, (paks + pkg, comps)))
   }
 
-  def uninstalling(veh: Vehicle, pkg: Package): RawStore = {
-    val (paks, comps) = vehicles(veh)
-    copy(vehicles = vehicles.updated(veh, (paks - pkg, comps)))
+  def uninstalling(veh: Device.Id, pkg: Package): RawStore = {
+    val (paks, comps) = devices(veh)
+    copy(devices = devices.updated(veh, (paks - pkg, comps)))
   }
 
   // FILTERS FOR PACKAGES
@@ -159,9 +161,9 @@ case class RawStore(
   /**
     * Vehicles with some package installed.
     */
-  def vehiclesWithSomePackage: Map[Vehicle, Set[Package]] = {
+  def vehiclesWithSomePackage: Map[Device.Id, Set[Package]] = {
     for (
-      (veh, (packs, comps)) <- vehicles
+      (veh, (packs, comps)) <- devices
       if packs.nonEmpty
     ) yield (veh, packs)
   }
@@ -169,9 +171,9 @@ case class RawStore(
   /**
     * Vehicles with some component installed.
     */
-  def vehiclesWithSomeComponent: Map[Vehicle, Set[Component]] = {
+  def vehiclesWithSomeComponent: Map[Device.Id, Set[Component]] = {
     for (
-      (veh, (packs, comps)) <- vehicles
+      (veh, (packs, comps)) <- devices
       if comps.nonEmpty
     ) yield (veh, comps)
   }
@@ -179,9 +181,9 @@ case class RawStore(
   /**
     * Each pair indicates a Component that can be installed on a Vehicle.
     */
-  def vehicleComponentPairsToInstall: Seq[(Vehicle, Component)] = {
+  def vehicleComponentPairsToInstall: Seq[(Device.Id, Component)] = {
     for (
-      (veh, (packs, installedComps)) <- vehicles.toSeq;
+      (veh, (packs, installedComps)) <- devices.toSeq;
       cmp <- components
       if !installedComps.contains(cmp)
     ) yield (veh, cmp)
@@ -205,16 +207,16 @@ case class RawStore(
     ) yield (p, f)
   }
 
-  def vehiclesHaving(cmpn: Component): Set[Vehicle] = toSet {
+  def vehiclesHaving(cmpn: Component): Set[Device.Id] = toSet {
     for (
-      (veh, (paks, comps)) <- vehicles
+      (veh, (paks, comps)) <- devices
       if comps.contains(cmpn)
     ) yield veh
   }
 
-  def vehiclesHaving(pkg: Package): Set[Vehicle] = toSet {
+  def vehiclesHaving(pkg: Package): Set[Device.Id] = toSet {
     for (
-      (veh, (paks, comps)) <- vehicles
+      (veh, (paks, comps)) <- devices
       if paks.contains(pkg)
     ) yield veh
   }
@@ -228,14 +230,14 @@ case class RawStore(
 
   def packagesInUse: Set[Package] = toSet {
     for (
-      (veh, (paks, comps)) <- vehicles;
+      (veh, (paks, comps)) <- devices;
       pkg <-  paks
     ) yield pkg
   }
 
   def componentsInUse: Set[Component] = toSet {
     for (
-      (veh, (paks, comps)) <- vehicles;
+      (veh, (paks, comps)) <- devices;
       cmpn  <-  comps
     ) yield cmpn
   }
@@ -264,23 +266,23 @@ case class RawStore(
     ) yield fs
   }
 
-  def lookupPkgsComps(vin: Vehicle.Vin): Option[(Set[Package], Set[Component])] = toHead {
+  def lookupPkgsComps(vin: Device.Id): Option[(Set[Package], Set[Component])] = toHead {
     for (
-      (veh, (paks, comps)) <- vehicles
-      if veh.vin == vin
+      (veh, (paks, comps)) <- devices
+      if veh == vin
     ) yield (paks, comps)
   }
 
-  def lookupPackages(vin: Vehicle.Vin): Option[Set[Package]] =
+  def lookupPackages(vin: Device.Id): Option[Set[Package]] =
     lookupPkgsComps(vin).map(_._1)
 
-  def lookupComponents(vin: Vehicle.Vin): Option[Set[Component]] =
+  def lookupComponents(vin: Device.Id): Option[Set[Component]] =
     lookupPkgsComps(vin).map(_._2)
 
   // WELL-FORMEDNESS
 
   def isValid: Boolean = {
-    vehicles.forall { entry =>
+    devices.forall { entry =>
       val (_, (paks, comps)) = entry
       paks.forall(packages.contains) && comps.forall(components.contains)
     } && packages.forall { entry =>
@@ -313,10 +315,10 @@ object Store {
     it.next
   }
 
-  def pickVehicle: StateT[Gen, RawStore, Vehicle] =
+  def pickVehicle: StateT[Gen, RawStore, Device.Id] =
     for {
       s    <- StateT.stateTMonadState[Gen, RawStore].get
-      vehs =  s.vehicles.keys
+      vehs =  s.devices.keys
     } yield pick(vehs)
 
   def pickPackage: StateT[Gen, RawStore, Package] =
@@ -349,7 +351,7 @@ object Store {
       comps = s.componentsUnused
     } yield pick(comps)
 
-  def pickVehicleWithComponent: StateT[Gen, RawStore, (Vehicle, Component)] =
+  def pickVehicleWithComponent: StateT[Gen, RawStore, (Device.Id, Component)] =
     for {
       s    <- StateT.stateTMonadState[Gen, RawStore].get
       vcs   = s.vehiclesWithSomeComponent
@@ -358,7 +360,7 @@ object Store {
       (veh, pick(comps))
     }
 
-  def pickVehicleComponentPairToInstall: StateT[Gen, RawStore, (Vehicle, Component)] =
+  def pickVehicleComponentPairToInstall: StateT[Gen, RawStore, (Device.Id, Component)] =
     for {
       s     <- StateT.stateTMonadState[Gen, RawStore].get
       pairs  = s.vehicleComponentPairsToInstall
@@ -366,7 +368,7 @@ object Store {
       pick(pairs)
     }
 
-  def pickVehicleWithPackage: StateT[Gen, RawStore, (Vehicle, Package)] =
+  def pickVehicleWithPackage: StateT[Gen, RawStore, (Device.Id, Package)] =
     for {
       s    <- StateT.stateTMonadState[Gen, RawStore].get
       vps   = s.vehiclesWithSomePackage
@@ -394,7 +396,7 @@ object Store {
 
   def numberOfVehicles: StateT[Gen, RawStore, Int] =
     StateT.stateTMonadState[Gen, RawStore].get map
-      (_.vehicles.keys.size)
+      (_.devices.keys.size)
 
   def numberOfPackages: StateT[Gen, RawStore, Int] =
     StateT.stateTMonadState[Gen, RawStore].get map

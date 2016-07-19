@@ -7,82 +7,38 @@ package org.genivi.sota.resolver.vehicles
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
-import org.genivi.sota.data.{Namespace, PackageId, Vehicle}
-import org.genivi.sota.db.SlickExtensions._
-import org.genivi.sota.refined.SlickRefined._
+import org.genivi.sota.common.DeviceRegistry
+import org.genivi.sota.data.{Device, Namespace, PackageId}
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.components.{Component, ComponentRepository}
 import org.genivi.sota.resolver.data.Firmware
 import org.genivi.sota.resolver.filters._
 import org.genivi.sota.resolver.packages.PackageRepository
 import slick.driver.MySQLDriver.api._
+import eu.timepit.refined.refineV
 
 import scala.concurrent.{ExecutionContext, Future}
 
 
+// TODO: No longer a vehicle repository?
 object VehicleRepository {
+  import org.genivi.sota.db.SlickExtensions._
+  import org.genivi.sota.refined.SlickRefined._
 
-  // scalastyle:off
-  class VinTable(tag: Tag) extends Table[Vehicle](tag, "Vehicle") {
-    def namespace = column[Namespace]("namespace")
-    def vin = column[Vehicle.Vin]("vin")
-
-    def * = (namespace, vin) <> (Vehicle.fromVin, Vehicle.toVin)
-
-    // insertOrUpdate buggy for composite-keys, see Slick issue #966.
-    def pk = primaryKey("vin", (namespace, vin))
-  }
-  // scalastyle:on
-
-  val vehicles = TableQuery[VinTable]
-
-  def add(vehicle: Vehicle): DBIO[Int] =
-    vehicles.insertOrUpdate(vehicle)
-
-  def list: DBIO[Seq[Vehicle]] =
-    vehicles.result
-
-  def exists(vin: Vehicle.Vin)(implicit ec: ExecutionContext): DBIO[Vehicle] =
-    vehicles
-      .filter(_.vin === vin)
-      .result
-      .headOption
-      .flatMap(_.
-        fold[DBIO[Vehicle]](DBIO.failed(Errors.MissingVehicle))(DBIO.successful))
-
-  def delete(namespace: Namespace, vin: Vehicle.Vin): DBIO[Int] =
-    vehicles.filter(i => i.namespace === namespace && i.vin === vin).delete
-
-  def deleteVin(namespace: Namespace, vin: Vehicle.Vin)
-               (implicit ec: ExecutionContext): DBIO[Unit] =
-    for {
-      _ <- VehicleRepository.exists(vin)
-      _ <- deleteInstalledPackageByVin(namespace, vin)
-      _ <- deleteInstalledComponentByVin(namespace, vin)
-      _ <- delete(namespace, vin)
-    } yield ()
-
-  /*
-   * Installed firmware.
-   */
-
-  // scalastyle:off
-  class InstalledFirmwareTable(tag: Tag) extends
-      Table[(Firmware, Vehicle.Vin)](tag, "Firmware") {
-
+  class InstalledFirmwareTable(tag: Tag) extends Table[(Firmware, Device.Id)](tag, "Firmware") {
     def namespace     = column[Namespace]           ("namespace")
     def module        = column[Firmware.Module]     ("module")
     def firmware_id   = column[Firmware.FirmwareId] ("firmware_id")
     def last_modified = column[Long]                ("last_modified")
-    def vin           = column[Vehicle.Vin]         ("vin")
+    def device = column[Device.Id]("device_uuid")
 
     // insertOrUpdate buggy for composite-keys, see Slick issue #966.
-    def pk = primaryKey("pk_installedFirmware", (namespace, module, firmware_id, vin))
+    def pk = primaryKey("pk_installedFirmware", (namespace, module, firmware_id, device))
 
-    def * = (namespace, module, firmware_id, last_modified, vin).shaped <>
+    def * = (namespace, module, firmware_id, last_modified, device).shaped <>
       (p => (Firmware(p._1, p._2, p._3, p._4), p._5),
-      (fw: (Firmware, Vehicle.Vin)) =>
-        Some((fw._1.namespace, fw._1.module, fw._1.firmwareId, fw._1.lastModified, fw._2)))
+        (fw: (Firmware, Device.Id)) =>
+          Some((fw._1.namespace, fw._1.module, fw._1.firmwareId, fw._1.lastModified, fw._2)))
   }
   // scalastyle:on
 
@@ -98,36 +54,35 @@ object VehicleRepository {
   }
 
   def installFirmware
-    (namespace: Namespace, module: Firmware.Module, firmware_id: Firmware.FirmwareId,
-     last_modified: Long, vin: Vehicle.Vin)
-    (implicit ec: ExecutionContext): DBIO[Unit] = {
+  (namespace: Namespace, module: Firmware.Module, firmware_id: Firmware.FirmwareId,
+   last_modified: Long, device: Device.Id)
+  (implicit ec: ExecutionContext): DBIO[Unit] = {
     for {
-      _ <- exists(vin)
       _ <- firmwareExists(namespace, module)
-      _ <- installedFirmware.insertOrUpdate((Firmware(namespace, module, firmware_id, last_modified), vin))
+      _ <- installedFirmware.insertOrUpdate((Firmware(namespace, module, firmware_id, last_modified), device))
     } yield()
   }
 
-  def firmwareOnVin
-    (namespace: Namespace, vin: Vehicle.Vin)
-    (implicit ec: ExecutionContext): DBIO[Seq[Firmware]] = {
-    for {
-      _ <- VehicleRepository.exists(vin)
-      ps <- installedFirmware.filter(i => i.namespace === namespace && i.vin === vin).result
-    } yield ps.map(_._1)
+  def firmwareOnDevice
+  (namespace: Namespace, deviceId: Device.Id)
+  (implicit ec: ExecutionContext): DBIO[Seq[Firmware]] = {
+    installedFirmware
+      .filter(_.namespace === namespace)
+      .filter(_.device === deviceId)
+      .result
+      .map(_.map(_._1))
   }
 
   //This method is only intended to be called when the client reports installed firmware.
   //It therefore clears all installed firmware for the given vin and replaces with the reported
   //state instead.
-  def updateInstalledFirmware(vin: Vehicle.Vin, firmware: Set[Firmware])
-    (implicit ec: ExecutionContext): DBIO[Unit] = {
-      (for {
-        vehicle <- exists(vin)
-        _       <- installedFirmware.filter(_.vin === vin).delete
-        _       <- installedFirmware ++= firmware.map(fw =>
-                    (Firmware(fw.namespace, fw.module, fw.firmwareId, fw.lastModified), vin))
-      } yield ()).transactionally
+  def updateInstalledFirmware(device: Device.Id, firmware: Set[Firmware])
+                             (implicit ec: ExecutionContext): DBIO[Unit] = {
+    (for {
+      _       <- installedFirmware.filter(_.device === device).delete
+      _       <- installedFirmware ++= firmware.map(fw =>
+        (Firmware(fw.namespace, fw.module, fw.firmwareId, fw.lastModified), device))
+    } yield ()).transactionally
   }
 
   /*
@@ -135,88 +90,80 @@ object VehicleRepository {
    */
 
   // scalastyle:off
-  class InstalledPackageTable(tag: Tag) extends Table[(Namespace, Vehicle.Vin, PackageId)](tag, "InstalledPackage") {
-
-    def namespace      = column[Namespace]        ("namespace")
-    def vin            = column[Vehicle.Vin]      ("vin")
-    def packageName    = column[PackageId.Name]   ("packageName")
+  class InstalledPackageTable(tag: Tag) extends Table[(Namespace, Device.Id, PackageId)](tag, "InstalledPackage") {
+    def device         = column[Device.Id]("device_uuid")
+    def namespace      = column[Namespace]("namespace")
+    def packageName    = column[PackageId.Name]("packageName")
     def packageVersion = column[PackageId.Version]("packageVersion")
 
     // insertOrUpdate buggy for composite-keys, see Slick issue #966.
-    def pk = primaryKey("pk_installedPackage", (namespace, vin, packageName, packageVersion))
+    def pk = primaryKey("pk_installedPackage", (namespace, device, packageName, packageVersion))
 
-    def * = (namespace, vin, packageName, packageVersion).shaped <>
+    def * = (namespace, device, packageName, packageVersion).shaped <>
       (p => (p._1, p._2, PackageId(p._3, p._4)),
-      (vp: (Namespace, Vehicle.Vin, PackageId)) => Some((vp._1, vp._2, vp._3.name, vp._3.version)))
+        (vp: (Namespace, Device.Id, PackageId)) => Some((vp._1, vp._2, vp._3.name, vp._3.version)))
   }
   // scalastyle:on
 
   val installedPackages = TableQuery[InstalledPackageTable]
 
   def installPackage
-    (namespace: Namespace, vin: Vehicle.Vin, pkgId: PackageId)
-    (implicit ec: ExecutionContext): DBIO[Unit] =
+  (namespace: Namespace, device: Device.Id, pkgId: PackageId)
+  (implicit ec: ExecutionContext): DBIO[Unit] =
     for {
-      _ <- exists(vin)
       _ <- PackageRepository.exists(namespace, pkgId)
-      _ <- installedPackages.insertOrUpdate((namespace, vin, pkgId))
+      _ <- installedPackages.insertOrUpdate((namespace, device, pkgId))
     } yield ()
 
   def uninstallPackage
-    (namespace: Namespace, vin: Vehicle.Vin, pkgId: PackageId)
-    (implicit ec: ExecutionContext): DBIO[Unit] =
+  (namespace: Namespace, device: Device.Id, pkgId: PackageId)
+  (implicit ec: ExecutionContext): DBIO[Unit] =
     for {
-      _ <- exists(vin)
       _ <- PackageRepository.exists(namespace, pkgId)
       _ <- installedPackages.filter {ip =>
-             ip.namespace      === namespace &&
-             ip.vin            === vin &&
-             ip.packageName    === pkgId.name &&
-             ip.packageVersion === pkgId.version
-           }.delete
+        ip.namespace === namespace &&
+          ip.device === device &&
+          ip.packageName === pkgId.name &&
+          ip.packageVersion === pkgId.version
+      }.delete
     } yield ()
 
-  def updateInstalledPackages(vin: Vehicle.Vin, packages: Set[PackageId] )
+  def updateInstalledPackages(namespace: Namespace, device: Device.Id, packages: Set[PackageId] )
                              (implicit ec: ExecutionContext): DBIO[Unit] = {
-    def filterAvailablePackages(namespace: Namespace, ids: Set[PackageId] ) : DBIO[Set[PackageId]] =
+    def filterAvailablePackages(ids: Set[PackageId]) : DBIO[Set[PackageId]] =
       PackageRepository.load(namespace, ids).map(_.map(_.id))
 
-    def helper(vehicle: Vehicle, newPackages: Set[PackageId], deletedPackages: Set[PackageId] )
-                               (implicit ec: ExecutionContext) : DBIO[Unit] = DBIO.seq(
+    def helper(newPackages: Set[PackageId], deletedPackages: Set[PackageId] )
+              (implicit ec: ExecutionContext) : DBIO[Unit] = DBIO.seq(
       installedPackages.filter( ip =>
-        ip.namespace === vehicle.namespace &&
-        ip.vin === vehicle.vin &&
-        (ip.packageName.mappedTo[String] ++ ip.packageVersion.mappedTo[String])
-          .inSet( deletedPackages.map( id => id.name.get + id.version.get ))
+        ip.device === device &&
+          (ip.packageName.mappedTo[String] ++ ip.packageVersion.mappedTo[String])
+            .inSet( deletedPackages.map( id => id.name.get + id.version.get ))
       ).delete,
-      installedPackages ++= newPackages.map((vehicle.namespace, vehicle.vin, _))
+      installedPackages ++= newPackages.map((namespace, device, _))
     ).transactionally
 
     for {
-      vehicle           <- VehicleRepository.exists(vin)
-      installedPackages <- VehicleRepository.installedOn(vehicle.namespace, vin)
+      installedPackages <- VehicleRepository.installedOn(device)
       newPackages       =  packages -- installedPackages
       deletedPackages   =  installedPackages -- packages
-      newAvailablePackages <- filterAvailablePackages(vehicle.namespace, newPackages)
-      _                 <- helper(vehicle, newAvailablePackages, deletedPackages)
+      newAvailablePackages <- filterAvailablePackages(newPackages)
+      _ <- helper(newAvailablePackages, deletedPackages)
     } yield ()
   }
 
-  def installedOn(namespace: Namespace, vin: Vehicle.Vin)
+  def installedOn(device: Device.Id)
                  (implicit ec: ExecutionContext) : DBIO[Set[PackageId]] =
-    for {
-      _ <- exists(vin)
-      installed <- installedPackages
-        .filter(i => i.namespace === namespace && i.vin === vin)
-        .result.map(_.map(_._3).toSet)
-    } yield installed
+    installedPackages
+      .filter(_.device === device)
+      .result.map(_.map(_._3).toSet)
 
-  def listInstalledPackages: DBIO[Seq[(Namespace, Vehicle.Vin, PackageId)]] =
+  def listInstalledPackages: DBIO[Seq[(Namespace, Device.Id, PackageId)]] =
     installedPackages.result
-    // TODO: namespaces?
+  // TODO: namespaces?
 
-  def deleteInstalledPackageByVin(namespace: Namespace, vin: Vehicle.Vin): DBIO[Int] =
-    installedPackages.filter(i => i.namespace === namespace && i.vin === vin).delete
+  def deleteInstalledPackageById(namespace: Namespace, device: Device.Id): DBIO[Int] =
+    installedPackages.filter(i => i.namespace === namespace && i.device === device).delete
 
   /*
    * Installed components.
@@ -224,79 +171,67 @@ object VehicleRepository {
 
   // scalastyle:off
   class InstalledComponentTable(tag: Tag)
-      extends Table[(Namespace, Vehicle.Vin, Component.PartNumber)](tag, "InstalledComponent") {
+    extends Table[(Namespace, Device.Id, Component.PartNumber)](tag, "InstalledComponent") {
 
-    def namespace  = column[Namespace]           ("namespace")
-    def vin        = column[Vehicle.Vin]         ("vin")
+    def namespace = column[Namespace]("namespace")
+    def device = column[Device.Id]("device_uuid")
     def partNumber = column[Component.PartNumber]("partNumber")
 
     // insertOrUpdate buggy for composite-keys, see Slick issue #966.
-    def pk = primaryKey("pk_installedComponent", (namespace, vin, partNumber))
+    def pk = primaryKey("pk_installedComponent", (namespace, device, partNumber))
 
-    def * = (namespace, vin, partNumber)
+    def * = (namespace, device, partNumber)
   }
   // scalastyle:on
 
   val installedComponents = TableQuery[InstalledComponentTable]
 
-  def listInstalledComponents: DBIO[Seq[(Namespace, Vehicle.Vin, Component.PartNumber)]] =
+  def listInstalledComponents: DBIO[Seq[(Namespace, Device.Id, Component.PartNumber)]] =
     installedComponents.result
 
-  def deleteInstalledComponentByVin(namespace: Namespace, vin: Vehicle.Vin): DBIO[Int] =
-    installedComponents.filter(i => i.namespace === namespace && i.vin === vin).delete
+  def deleteInstalledComponentById(namespace: Namespace, device: Device.Id): DBIO[Int] =
+    installedComponents.filter(i => i.namespace === namespace && i.device === device).delete
 
-  def installComponent(namespace: Namespace, vin: Vehicle.Vin, part: Component.PartNumber)
+  def installComponent(namespace: Namespace, device: Device.Id, part: Component.PartNumber)
                       (implicit ec: ExecutionContext): DBIO[Unit] =
     for {
-      _ <- VehicleRepository.exists(vin)
       _ <- ComponentRepository.exists(namespace, part)
-      _ <- installedComponents += ((namespace, vin, part))
+      _ <- installedComponents += ((namespace, device, part))
     } yield ()
 
   def uninstallComponent
-  (namespace: Namespace, vin: Vehicle.Vin, part: Component.PartNumber)
+  (namespace: Namespace, device: Device.Id, part: Component.PartNumber)
   (implicit ec: ExecutionContext): DBIO[Unit] =
     for {
-      _ <- exists(vin)
       _ <- ComponentRepository.exists(namespace, part)
       _ <- installedComponents.filter { ic =>
         ic.namespace  === namespace &&
-        ic.vin        === vin &&
-        ic.partNumber === part
+          ic.device === device &&
+          ic.partNumber === part
       }.delete
     } yield ()
 
-  def componentsOnVin(namespace: Namespace, vin: Vehicle.Vin)
-                     (implicit ec: ExecutionContext): DBIO[Seq[Component.PartNumber]] = {
-    val vinComponentsQ =
-      installedComponents
-        .filter(_.namespace === namespace)
-        .filter(_.vin === vin)
-        .map(_.partNumber)
-        .result
-
-    for {
-      _ <- exists(vin)
-      cs <- vinComponentsQ
-    } yield cs
+  def componentsOnDevice(namespace: Namespace, device: Device.Id)
+                        (implicit ec: ExecutionContext): DBIO[Seq[Component.PartNumber]] = {
+    installedComponents
+      .filter(_.namespace === namespace)
+      .filter(_.device === device)
+      .map(_.partNumber)
+      .result
   }
 
-  /*
-   * Searching
-   */
-
-  def search(db: Database,
-             namespace : Namespace,
+  def search(namespace : Namespace,
              re        : Option[Refined[String, Regex]],
              pkgName   : Option[PackageId.Name],
              pkgVersion: Option[PackageId.Version],
-             part      : Option[Component.PartNumber])
-            (implicit ec: ExecutionContext, mat: ActorMaterializer): Future[Seq[Vehicle]] = {
-
+             part      : Option[Component.PartNumber],
+             deviceRegistry: DeviceRegistry)
+            (implicit db: Database, ec: ExecutionContext, mat: ActorMaterializer): Future[Seq[Device.Id]] = {
     def toRegex[T](r: Refined[String, T]): Refined[String, Regex] =
-      Refined.unsafeApply(r.get)
+      refineV[Regex](r.get).right.getOrElse(Refined.unsafeApply(".*"))
 
-    val vins = re.fold[FilterAST](True)(VinMatches(_))
+    val vins = re.fold[FilterAST](True)(VinMatches)
+
     val pkgs = (pkgName, pkgVersion) match {
       case (Some(re1), Some(re2)) => HasPackage(toRegex(re1), toRegex(re2))
       case _ => True
@@ -306,6 +241,9 @@ object VehicleRepository {
 
     val filter = And(vins, And(pkgs, comps))
 
-    DbDepResolver.vehiclesForFilter(namespace, db, filter)
+    for {
+      devices <- deviceRegistry.listNamespace(namespace)
+      searchResult <- DbDepResolver.filterDevices(namespace, devices.map(d => d.id -> d.deviceId).toMap, filter)
+    } yield searchResult
   }
 }

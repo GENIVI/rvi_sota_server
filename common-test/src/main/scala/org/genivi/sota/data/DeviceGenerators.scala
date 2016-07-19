@@ -8,7 +8,9 @@ import eu.timepit.refined.api.Refined
 import org.scalacheck.{Arbitrary, Gen}
 import java.time.Instant
 
-object DeviceGenerators {
+import org.genivi.sota.data.Device.DeviceId
+
+trait DeviceGenerators {
 
   import Arbitrary._
   import Device._
@@ -80,4 +82,16 @@ object DeviceGenerators {
   implicit lazy val arbDevice: Arbitrary[Device] = Arbitrary(genDevice)
   implicit lazy val arbDeviceT: Arbitrary[DeviceT] = Arbitrary(genDeviceT)
 
+}
+
+object DeviceGenerators extends DeviceGenerators
+
+object InvalidDeviceGenerators extends DeviceGenerators with DeviceIdGenerators {
+  val genInvalidVehicle: Gen[Device] = for {
+  // TODO: for now, just generate an invalid VIN with a valid namespace
+    deviceId <- genInvalidDeviceId
+    d <- genDevice
+  } yield d.copy(deviceId = Option(deviceId), namespace = Namespaces.defaultNs)
+
+  def getInvalidVehicle: Device = genInvalidVehicle.sample.getOrElse(getInvalidVehicle)
 }

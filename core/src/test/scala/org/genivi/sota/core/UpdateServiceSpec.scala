@@ -5,16 +5,18 @@ import akka.stream.ActorMaterializer
 import akka.testkit.TestKit
 import eu.timepit.refined.api.Refined
 import java.util.UUID
+
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db.{Packages, UpdateSpecs}
 import org.genivi.sota.core.resolver.DefaultConnectivity
 import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, DeviceUpdates}
-import org.genivi.sota.data.{Device, DeviceT, Namespaces, PackageId, Vehicle, VehicleGenerators}
+import org.genivi.sota.data._
 import org.genivi.sota.data.Namespace._
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
+
 import scala.concurrent.{Await, Future}
 import scala.util.Random
 
@@ -49,7 +51,7 @@ class UpdateServiceSpec extends PropSpec
 
   implicit val updateQueueLog = akka.event.Logging(system, "sota.core.updateQueue")
   implicit val connectivity = DefaultConnectivity
-  val deviceRegistry = new FakeDeviceRegistry
+  val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
 
   val service = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
 
@@ -71,13 +73,13 @@ class UpdateServiceSpec extends PropSpec
   }
 
   property("decline if some of dependencies not found") {
-    def vinDepGen(missingPackages: Seq[PackageId]) : Gen[(Vehicle.Vin, Set[PackageId])] = for {
-      vin               <- VehicleGenerators.genVin
+    def vinDepGen(missingPackages: Seq[PackageId]) : Gen[(Device.Id, Set[PackageId])] = for {
+      deviceId          <- DeviceGenerators.genId
       m                 <- Gen.choose(1, 10)
       availablePackages <- Gen.pick(m, packages).map( _.map(_.id) )
       n                 <- Gen.choose(1, missingPackages.length)
       deps              <- Gen.pick(n, missingPackages).map( xs => Random.shuffle(availablePackages ++ xs).toSet )
-    } yield vin -> deps
+    } yield deviceId -> deps
 
     val resolverGen : Gen[(Seq[PackageId], UpdateService.DependencyResolver)] = for {
       n                 <- Gen.choose(1, 10)
@@ -94,20 +96,17 @@ class UpdateServiceSpec extends PropSpec
     }
   }
 
-  def createVehicles(vins: Set[Vehicle.Vin]) : Future[Unit] = {
-    Future.sequence(vins.map { vin =>
-      deviceRegistry.createDevice(DeviceT(genDeviceName.sample.get, Some(Device.DeviceId(vin.get))))
-    }.toSeq).map(_ => ())
-  }
-
   property("upload spec per device") {
-    import scala.concurrent.duration.DurationInt
-    forAll( updateRequestGen(defaultNs, AvailablePackageIdGen), dependenciesGen(packages) ) { (request, deps) =>
+    forAll(updateRequestGen(defaultNs, AvailablePackageIdGen), dependenciesGen(packages)) { (request, deps) =>
       val req = UpdateRequest(UUID.randomUUID(), request.namespace, request.packageId, request.creationTime,
         request.periodOfValidity, request.priority, request.signature, request.description, request.requestConfirmation)
-      whenReady(createVehicles(deps.keySet)
-        .flatMap(_ => service.queueUpdate(req, _ => Future.successful(deps)))) { specs =>
-        Await.result(db.run(UpdateSpecs.listUpdatesById(Refined.unsafeApply(req.id.toString))), 1.second)
+
+      val queueF = for {
+        specs <- service.queueUpdate(req, _ => Future.successful(deps))
+        _ <- db.run(UpdateSpecs.listUpdatesById(Refined.unsafeApply(req.id.toString)))
+      } yield specs
+
+      whenReady(queueF) { specs =>
         specs.size shouldBe deps.size
       }
     }

@@ -44,10 +44,12 @@ services:
       - 8081
     depends_on:
       - mysql
+      - device_registry
     environment:
       HOST: 0.0.0.0
       RESOLVER_DB_URL: "jdbc:mariadb://mysql:3306/sota_resolver"
       RESOLVER_DB_MIGRATE: 'true'
+      DEVICE_REGISTRY_API_URI: "http://device_registry:8083"
       DB_ALIVE_URL: "mysql:3306"
       AUTH_PROTOCOL: "none"
 

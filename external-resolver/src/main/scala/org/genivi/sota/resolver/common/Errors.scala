@@ -12,6 +12,7 @@ package org.genivi.sota.resolver.common
   * exceptions are raised.
   */
 
+// TODO: This can be moved to Boot handler and handled always instead of explicitly
 object Errors {
   import akka.http.scaladsl.model.StatusCodes
   import akka.http.scaladsl.server.Directives.complete
