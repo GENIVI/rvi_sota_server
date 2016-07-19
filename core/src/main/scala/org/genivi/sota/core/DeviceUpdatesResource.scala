@@ -66,7 +66,7 @@ class DeviceUpdatesResource(db: Database,
   protected lazy val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
 
   protected val publishFn =
-    MessageBusManager.start(system, ConfigFactory.load()).fold[DeviceSeenMessage => Unit](throw _, identity)
+    MessageBusManager.getPublisher(system, ConfigFactory.load()).fold[DeviceSeenMessage => Unit](throw _, identity)
 
   def logDeviceSeen(id: Device.Id): Directive0 = {
     extractRequestContext flatMap { _ =>

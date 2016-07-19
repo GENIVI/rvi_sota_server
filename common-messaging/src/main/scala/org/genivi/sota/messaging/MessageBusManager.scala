@@ -2,6 +2,7 @@ package org.genivi.sota.messaging
 
 import java.time.Instant
 
+import akka.Done
 import akka.actor.ActorSystem
 import akka.event.Logging
 import cats.data.Xor
@@ -34,19 +35,34 @@ object Messages {
 
 object MessageBusManager {
 
-  def start(system: ActorSystem, config: Config): ConfigException Xor (DeviceSeenMessage => Unit) = {
+
+  def getSubscriber(system: ActorSystem, config: Config): ConfigException Xor Done = {
     val log = Logging.getLogger(system, this.getClass)
     config.getString("messaging.mode") match {
       case "nats" =>
-        log.info("Starting NATS")
+        log.info("Starting messaging mode: NATS")
         NatsClient.runListener(system, config)
+      case "kinesis" =>
+        log.info("Starting messaging mode: Kinesis")
+        KinesisClient.runWorker(system, config, system.log)
+      case "test" =>
+        log.info("Starting messaging mode: Test")
+        Xor.Right(Done)
+      case _ => throw new Missing("Unknown messaging mode specified")
+    }
+  }
+
+  def getPublisher(system: ActorSystem, config: Config): ConfigException Xor (DeviceSeenMessage => Unit) = {
+    val log = Logging.getLogger(system, this.getClass)
+    config.getString("messaging.mode") match {
+      case "nats" =>
+        log.info("Starting messaging mode: NATS")
         NatsClient.createPublisher(system, config)
       case "kinesis" =>
-        log.info("Starting Kinesis")
-        KinesisClient.runWorker(system, config, system.log)
+        log.info("Starting messaging mode: Kinesis")
         KinesisClient.createPublisher(system, config, system.log)
       case "test" =>
-        log.info("Starting Messaging in test mode")
+        log.info("Starting messaging mode: Test")
         Xor.right((msg:DeviceSeenMessage) => system.eventStream.publish(msg))
       case _ => throw new Missing("Unknown messaging mode specified")
     }
