@@ -134,7 +134,7 @@
 <p>SOTA Resolver is an optional component. Its primary purpose is, when given a packageID, to return a list of the devices that need that package. This allows the building of update campaigns. To accomplish that task, Resolver keeps an inventory of software packages and device characteristics (like, for example, hardware components/ECUs available or installed software versions). It also implements a filter engine to select device by characteristic, and permits the association of filters with packages. Thus, when Resolver is asked to resolve a packageID, it checks which filters are associated with the package, runs the filters against the device inventory, and returns a list of matching devices so that Core can create a properly-targeted update.</p>
 </div>
 <div class="paragraph">
-<p>Finally, SOTA contains a bare-bones admin interface. This web-based HMI exposes all of the functionality of the APIs of each component, and can be studied as an example of how to implement a more full-featured interface, or how to interact directly with the APIs. It also forwards API calls with valid session cookies on to the other components, and thus can be used as an entrypoint to the system while leaving the other microservices firewalled.</p>
+<p>Finally, SOTA contains a bare-bones admin interface. This web-based HMI exposes all of the functionality of the APIs of each component, and can be studied as an example of how to implement a more full-featured interface, or how to interact directly with the APIs. It also forwards API calls with valid session cookies on to the other components.</p>
 </div>
 <div class="paragraph">
 <p>In summary, the system looks a bit like this:</p>
@@ -143,7 +143,7 @@
 <p><span class="image"><img src="../images/System-Architecture-Diagram.svg" alt="System Architecture Diagram"></span></p>
 </div>
 <div class="paragraph">
-<p>RVI clients would interact directly with Core&#8217;s RVI node (note: needs to be deployed separately), while HTTPS clients would interact with the web server, which forwards their calls on to core/resolver/device_registry. Other authentication architectures are possible; ATS&#8217;s commercial OTA offering uses SOTA as a base while implementing a more advanced security and authentication/authorization regime, with each API call getting authenticated directly by its final target. Other auth types, however, are out of scope of the open-source documentation.</p>
+<p>RVI clients would interact directly with Core&#8217;s RVI node (note: needs to be deployed separately), while HTTPS clients interact with Core directly. For the moment, however, setting up authentication is out of scope for this documentation; for more information we suggest <a href="https://github.com/advancedtelematic/rvi_sota_server/tree/master/common/src/main/scala/org/genivi/sota/http">looking at the code directly</a>.</p>
 </div>
 <div class="paragraph">
 <p>An ER diagram of the databases for core, resolver, and device registry can be found <a href="../images/ER-Diagram.svg">here</a>.</p>

@@ -122,10 +122,10 @@
 </div>
 
 <div class="paragraph">
-<p>SOTA consists of two independent modules: SOTA Core and SOTA Resolver. Core has all of the functions for creating update campaigns and managing packages and package binaries. Resolver maintains a database storing vehicles, packages (but not package binaries), hardware components, filters, packages, and the associations between those things.</p>
+<p>SOTA consists of three independent microservices: SOTA Core, SOTA Resolver, and SOTA Device Registry. Core has all of the functions for creating update campaigns and managing packages and package binaries. Resolver maintains a database storing vehicles, packages (but not package binaries), hardware components, filters, packages, and the associations between those things. Device Registry manages the creation of devices, and assigns each one a UUID.</p>
 </div>
 <div class="paragraph">
-<p>The complete API spec for Core and Resolver is available in <a href="https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md">OpenAPI 2.0</a> format. You can view the spec files yourself in JSON or YAML formats, or view it on the web in SwaggerUI.</p>
+<p>The complete API spec is available in <a href="https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md">OpenAPI 2.0</a> format. You can view the spec files yourself in JSON or YAML formats, or view it on the web in SwaggerUI.</p>
 </div>
 <div class="sect3">
 <h4 id="core">Core</h4>
@@ -141,6 +141,14 @@
 <p><a href="http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-resolver.html#!/default">SwaggerUI</a>
 <a href="http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-resolver.yml">YAML</a>
 <a href="http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-resolver.json">JSON</a></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="device-registry">Device Registry</h4>
+<div class="paragraph">
+<p><a href="http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-device_registry.html#!/default">SwaggerUI</a>
+<a href="http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-device_registry.yml">YAML</a>
+<a href="http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-device_registry.json">JSON</a></p>
 </div>
 </div>
 

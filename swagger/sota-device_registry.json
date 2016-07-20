@@ -1,0 +1,194 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "",
+    "title": "SOTA Device Registry",
+    "description": "https://github.com/advancedtelematic/rvi_sota_server",
+    "license": {
+      "name": "Mozilla Public License",
+      "url": "https://github.com/advancedtelematic/rvi_sota_server/blob/master/LICENSE"
+    }
+  },
+  "host": "localhost:8083",
+  "basePath": "/api/v1",
+  "securityDefinitions": {
+  },
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/devices": {
+      "get": {
+        "description": "Get a list of all the devices in a particular namespace in the device registry.",
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Device"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Register a new device with a name and an ID, get back its UUID",
+        "parameters": [
+          {
+            "name": "namespace",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "DeviceT",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DeviceT"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created - The UUID of the newly-created device"
+          }
+        }
+      }
+    },
+    "/devices/{uuid}": {
+      "get": {
+        "description": "Get the device object for a single device",
+        "parameters": [
+          {
+            "name": "uuid",
+            "description": "The uuid of an existing device object",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Device"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a device",
+        "parameters": [
+          {
+            "name": "uuid",
+            "description": "The uuid of an existing device object",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/devices/{uuid}/ping": {
+      "post": {
+        "description": "Update the last seen time for a device",
+        "parameters": [
+          {
+            "name": "uuid",
+            "description": "The uuid of an existing device object",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "uuid": {
+      "type": "string",
+      "description": "32 lowercase hexadecimal digits, displayed in five groups separated by hyphens"
+    },
+    "DeviceId": {
+      "type": "string",
+      "description": "A 17-digit VIN. May contain only capital letters and digits. Cannot contain the letters I, O, or Q."
+    },
+    "DeviceName": {
+      "type": "string",
+      "description": "Custom name for a device"
+    },
+    "DeviceType": {
+      "type": "string",
+      "description": "Valid values are \"Vehicle\" and \"Other\""
+    },
+    "namespace": {
+      "type": "string",
+      "description": "The namespace scope of the request. Default value is 'default'"
+    },
+    "DeviceT": {
+      "type": "object",
+      "properties": {
+        "deviceName": {
+          "$ref": "#/definitions/DeviceName"
+        },
+        "deviceId": {
+          "$ref": "#/definitions/DeviceId"
+        },
+        "deviceType": {
+          "$ref": "#/definitions/DeviceType"
+        }
+      }
+    },
+    "Device": {
+      "type": "object",
+      "properties": {
+        "namespace": {
+          "$ref": "#/definitions/namespace"
+        },
+        "deviceId": {
+          "$ref": "#/definitions/DeviceId"
+        },
+        "id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "deviceName": {
+          "$ref": "#/definitions/DeviceName"
+        },
+        "deviceType": {
+          "$ref": "#/definitions/DeviceType"
+        },
+        "lastseen": {
+          "type": "string",
+          "format": "dateTime",
+          "description": "The last time a device uuid was seen by the SOTA server."
+        }
+      }
+    }
+  }
+}
