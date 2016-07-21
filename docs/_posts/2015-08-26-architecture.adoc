@@ -7,19 +7,23 @@ order: 4
 ---
 :icons: font
 
-The RVI SOTA system is designed to be a complete, end-to-end solution for managing software updates in a fleet of vehicles. It includes https://github.com/PDXostc/rvi_sota_server[a server infrastructure] to manage vehicles, update campaigns, and software components, and https://github.com/PDXostc/rvi_sota_client[a client] that is installed on an in-vehichle GENIVI system. The server can push updates to the client, as well as notify clients via SMS when there is an update available. The server also implements dependency management, powerful targeting and filtering tools, and more.
+SOTA employs a microservice architecture, allowing piecemeal replacement of parts, depending on your project's needs. Here we provide a brief explanation of each of the microservices that comprise SOTA, and how they fit together. Each microservice exposes its functionality through a REST API.
 
-The server is split up into three main components. There is a https://github.com/PDXostc/rvi_sota_server/tree/master/web-server[web server], which exposes all server-side functionality, both via a web GUI to get up and running quickly, and via a REST API to interface with OEM logistics and provisioning systems, billing systems, authorization servers, or independent GUI implementations. The https://github.com/PDXostc/rvi_sota_server/tree/master/core[SOTA core server] is what takes care of the actual communication with the client: it notifies the client of updates, sends the package binaries and metadata, keeps track of the status of ongoing, pending, and completed updates, and so on. The https://github.com/PDXostc/rvi_sota_server/tree/master/external-resolver[resolver] is the component that takes care of the business logic of which updates apply to which vehicles, based on administrator-defined filters, dependencies, or whatever else might be required.
+SOTA Core is what actually handles the distribution of software updates to vehicles. It manages per-vehicle download queues, creation and persistent storage of the state of OTA update campaigns, and distribution of software packages to vehicles.
 
-Both the core and the resolver implement REST APIs internally, but are only exposed to the outside world through the web API.
+SOTA Device Registry is a required component. While the original specification for SOTA called for clients to always be vehicles uniquely identified by VINs, there are automotive applications that don't necessarily want to use VINs as mandatory primary keys. The device registry keeps track of the client devices, and assigns each registered device a UUID, with VIN being an optional secondary identifier. Core creates update campaigns to vehicles/devices identified by their UUIDs, and so to create a campaign from a list of VINs (or other secondary identifiers) and corresponding software packages, it is necessary to query the device registry to resolve the UUID from the VIN and namespace.
 
-This project includes a fully functional and feature-complete resolver component, but the reason the resolver is architecturally separate from the core is to allow independent implementations by individual OEMs suitable to their own needs.
+SOTA Resolver is an optional component. Its primary purpose is, when given a packageID, to return a list of the devices that need that package. This allows the building of update campaigns. To accomplish that task, Resolver keeps an inventory of software packages and device characteristics (like, for example, hardware components/ECUs available or installed software versions). It also implements a filter engine to select device by characteristic, and permits the association of filters with packages. Thus, when Resolver is asked to resolve a packageID, it checks which filters are associated with the package, runs the filters against the device inventory, and returns a list of matching devices so that Core can create a properly-targeted update.
 
-The system architecture is illustrated here:
+Finally, SOTA contains a bare-bones admin interface. This web-based HMI exposes all of the functionality of the APIs of each component, and can be studied as an example of how to implement a more full-featured interface, or how to interact directly with the APIs. It also forwards API calls with valid session cookies on to the other components.
+
+In summary, the system looks a bit like this:
 
 image:../images/System-Architecture-Diagram.svg[System Architecture Diagram]
 
-The data model for the system is illustrated link:../images/Data-Model.svg[here].
+RVI clients would interact directly with Core's RVI node (note: needs to be deployed separately), while HTTPS clients interact with Core directly. For the moment, however, setting up authentication is out of scope for this documentation; for more information we suggest link:https://github.com/advancedtelematic/rvi_sota_server/tree/master/common/src/main/scala/org/genivi/sota/http[looking at the code directly].
+
+An ER diagram of the databases for core, resolver, and device registry can be found link:../images/ER-Diagram.svg[here].
 
 == Context Diagrams
 
