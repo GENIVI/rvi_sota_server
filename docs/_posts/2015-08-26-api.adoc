@@ -6,9 +6,9 @@ date: 2015-08-26 10:30:27
 order: 1
 ---
 
-SOTA consists of two independent modules: SOTA Core and SOTA Resolver. Core has all of the functions for creating update campaigns and managing packages and package binaries. Resolver maintains a database storing vehicles, packages (but not package binaries), hardware components, filters, packages, and the associations between those things.
+SOTA consists of three independent microservices: SOTA Core, SOTA Resolver, and SOTA Device Registry. Core has all of the functions for creating update campaigns and managing packages and package binaries. Resolver maintains a database storing vehicles, packages (but not package binaries), hardware components, filters, packages, and the associations between those things. Device Registry manages the creation of devices, and assigns each one a UUID.
 
-The complete API spec for Core and Resolver is available in https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md[OpenAPI 2.0] format. You can view the spec files yourself in JSON or YAML formats, or view it on the web in SwaggerUI.
+The complete API spec is available in https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md[OpenAPI 2.0] format. You can view the spec files yourself in JSON or YAML formats, or view it on the web in SwaggerUI.
 
 ==== Core
 http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-core.html#!/default[SwaggerUI]
@@ -19,3 +19,8 @@ http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-core.json[JSON]
 http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-resolver.html#!/default[SwaggerUI]
 http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-resolver.yml[YAML]
 http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-resolver.json[JSON]
+
+==== Device Registry
+http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-device_registry.html#!/default[SwaggerUI]
+http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-device_registry.yml[YAML]
+http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-device_registry.json[JSON]

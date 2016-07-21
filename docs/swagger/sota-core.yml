@@ -363,6 +363,9 @@ definitions:
   DeviceName:
     type: string
     description: Custom name for a device
+  DeviceType:
+    type: string
+    description: Valid values are "Vehicle" and "Other"
   Device:
     type: object
     properties:
@@ -374,6 +377,8 @@ definitions:
         $ref: '#/definitions/uuid'
       deviceName:
         $ref: '#/definitions/DeviceName'
+      deviceType:
+        $ref: '#/definitions/DeviceType'
       lastseen:
         type: string
         format: dateTime
