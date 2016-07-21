@@ -6,11 +6,13 @@ import com.amazonaws.services.kinesis.clientlibrary.interfaces.v2.IRecordProcess
 import com.amazonaws.services.kinesis.clientlibrary.types.{InitializationInput, ProcessRecordsInput, ShutdownInput}
 import io.circe.jawn
 import org.genivi.sota.messaging.Messages
+import org.genivi.sota.messaging.Messages.Message
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
 
-class RecordProcessor(eventStream: EventStream) extends IRecordProcessor {
+class RecordProcessor(eventStream: EventStream, parseFn: String => Xor[io.circe.Error, Message])
+  extends IRecordProcessor {
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
@@ -27,7 +29,7 @@ class RecordProcessor(eventStream: EventStream) extends IRecordProcessor {
     for (record <- processRecordsInput.getRecords) yield {
       jawn.parseByteBuffer(record.getData) match {
         case Xor.Left(e)     => log.error("Received unrecognized record data from Kinesis:" + e.getMessage)
-        case Xor.Right(json) => Messages.parseMsg(json.toString) match {
+        case Xor.Right(json) => parseFn(json.toString) match {
           case Xor.Right(m) => eventStream.publish(m)
           case Xor.Left(ex) => log.error(s"Received unrecognized json from Kinesis: ${json.toString()}\n" +
             s"Got this parse error: ${ex.toString}")
