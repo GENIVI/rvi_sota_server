@@ -7,11 +7,12 @@ package org.genivi.sota.device_registry
 import cats.syntax.show._
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshal
-import akka.http.scaladsl.model.{HttpResponse, MessageEntity, StatusCodes, Uri, ResponseEntity}
+import akka.http.scaladsl.model.{HttpResponse, StatusCodes, Uri, ResponseEntity}
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.unmarshalling.{FromStringUnmarshaller, Unmarshaller}
 import akka.stream.ActorMaterializer
+import com.typesafe.config.ConfigFactory
 import eu.timepit.refined._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
@@ -20,6 +21,8 @@ import org.genivi.sota.data.{Device, DeviceT, Namespace}
 import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
+import org.genivi.sota.messaging.MessageBusManager
+import org.genivi.sota.messaging.Messages.DeviceCreatedMessage
 import org.genivi.sota.rest.Validation._
 
 import scala.concurrent.ExecutionContext
@@ -44,6 +47,9 @@ class Routes(namespaceExtractor: Directive1[Namespace])
   val extractId: Directive1[Id] = refined[ValidId](Slash ~ Segment).map(Id(_))
   val extractDeviceId: Directive1[DeviceId] = parameter('deviceId.as[String]).map(DeviceId(_))
 
+  protected val publishFn = MessageBusManager.getDeviceCreatedPublisher(system, ConfigFactory.load())
+                              .fold[DeviceCreatedMessage => Unit](throw _, identity)
+
   def searchDevice(ns: Namespace): Route =
     parameters(('regex.as[String Refined Regex].?,
                 'deviceId.as[String].?)) { // TODO: Use refined
@@ -63,7 +69,10 @@ class Routes(namespaceExtractor: Directive1[Namespace])
           HttpResponse(Created, List(Location(Uri("/devices/" + id.show))), body)
         }
       })
-    complete(f)
+    f.onComplete(f => {
+      publishFn(new DeviceCreatedMessage(ns, device.deviceName, device.deviceId, device.deviceType))
+    })
+   complete(f)
   }
 
   def fetchDevice(id: Id): Route =
