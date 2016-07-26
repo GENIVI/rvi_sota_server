@@ -8,7 +8,7 @@ define(function(require) {
       this.dispatchCallback = function(payload) {
         switch(payload.actionType) {
           case 'get-components':
-            sendRequest.doGet('/api/v1/components')
+            sendRequest.doGet('/api/v1/resolver/components')
               .success(function(components) {
                 db.components.reset(components);
               });
@@ -16,13 +16,13 @@ define(function(require) {
           case 'search-components-by-regex':
             var query = payload.regex ? '?regex=' + payload.regex : '';
 
-            sendRequest.doGet('/api/v1/components' + query)
+            sendRequest.doGet('/api/v1/resolver/components' + query)
               .success(function(components) {
                 db.searchableComponents.reset(components);
               });
           break;
           case 'get-component':
-            sendRequest.doGet('/api/v1/components')
+            sendRequest.doGet('/api/v1/resolver/components')
               .success(function(components) {
                 var showComponent = _.find(components, function(component) {
                   return component.partNumber == payload.partNumber;
@@ -31,21 +31,21 @@ define(function(require) {
               });
           break;
           case 'create-component':
-            var url = '/api/v1/components/' + payload.component.partNumber;
+            var url = '/api/v1/resolver/components/' + payload.component.partNumber;
             sendRequest.doPut(url, payload.component)
               .success(function() {
                 SotaDispatcher.dispatch({actionType: 'search-components-by-regex'});
               });
           break;
           case 'destroy-component':
-            sendRequest.doDelete('/api/v1/components/' + payload.partNumber)
+            sendRequest.doDelete('/api/v1/resolver/components/' + payload.partNumber)
               .success(_.bind(function(component) {
                 location.hash = '#/components';
                 SotaDispatcher.dispatch({actionType: 'get-components'});
               }, this));
             break;
           case 'get-vins-for-component':
-            sendRequest.doGet('/api/v1/vehicles?component=' + payload.partNumber )
+            sendRequest.doGet('/api/v1/resolver/devices?component=' + payload.partNumber )
               .success(function(vehicles) {
                 var formattedVehicles = _.map(vehicles, function(vehicle) {
                   return {vin: vehicle.vin};

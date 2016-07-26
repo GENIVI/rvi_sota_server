@@ -2,7 +2,7 @@
  * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.resolver.vehicles
+package org.genivi.sota.resolver.devices
 
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
@@ -19,9 +19,7 @@ import eu.timepit.refined.refineV
 
 import scala.concurrent.{ExecutionContext, Future}
 
-
-// TODO: No longer a vehicle repository?
-object VehicleRepository {
+object DeviceRepository {
   import org.genivi.sota.db.SlickExtensions._
   import org.genivi.sota.refined.SlickRefined._
 
@@ -144,7 +142,7 @@ object VehicleRepository {
     ).transactionally
 
     for {
-      installedPackages <- VehicleRepository.installedOn(device)
+      installedPackages <- DeviceRepository.installedOn(device)
       newPackages       =  packages -- installedPackages
       deletedPackages   =  installedPackages -- packages
       newAvailablePackages <- filterAvailablePackages(newPackages)

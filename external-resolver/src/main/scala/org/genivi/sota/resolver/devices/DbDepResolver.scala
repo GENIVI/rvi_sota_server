@@ -3,7 +3,7 @@
  * License: MPL-2.0
  */
 
-package org.genivi.sota.resolver.vehicles
+package org.genivi.sota.resolver.devices
 
 import java.util.UUID
 
@@ -57,19 +57,20 @@ object DbDepResolver {
 
   def filterDevices(namespace: Namespace, devices: Map[Device.Id, Option[DeviceId]], filter: FilterAST)
                    (implicit db: Database, ec: ExecutionContext, mat: Materializer): Future[Seq[Device.Id]] = {
-    val allVehiclesPublisher = allVehicleComponents(devices.keys.toSeq, namespace)
+    val allDevicesPublisher = allDeviceComponents(devices.keys.toSeq, namespace)
 
-    Source.fromPublisher(allVehiclesPublisher)
+    Source.fromPublisher(allDevicesPublisher)
       .via(toVinPackages(devices))
-      .via(groupByVehicle())
+      .via(groupByDevice())
       .via(filterFlowFrom(filter))
       .map(_.device)
       .runFold(Vector.empty[Device.Id])(_ :+ _)
   }
 
-  protected def allVehicleComponents(devices: Seq[Device.Id], namespace: Namespace)
-                          (implicit db: Database,
-                           ec: ExecutionContext): DatabasePublisher[DeviceComponentRow] = {
+  protected def allDeviceComponents(devices: Seq[Device.Id], namespace: Namespace)
+                                   (implicit db: Database,
+                                    ec: ExecutionContext): DatabasePublisher[DeviceComponentRow] = {
+
     val tmptable = s"""device_ids_tmp_${UUID.randomUUID().toString.replace("-", "")}"""
 
     val createTmpTableIO =
@@ -103,9 +104,9 @@ object DbDepResolver {
       sql"""
             SELECT tmp.device_id, ip.packageName, ip.packageVersion, ic.partNumber
              from #$tmptable tmp
-              left join #${VehicleRepository.installedPackages.baseTableRow.tableName} ip
+              left join #${DeviceRepository.installedPackages.baseTableRow.tableName} ip
               ON ip.device_uuid = tmp.device_id
-              left join #${VehicleRepository.installedComponents.baseTableRow.tableName} ic
+              left join #${DeviceRepository.installedComponents.baseTableRow.tableName} ic
               ON ic.device_uuid = tmp.device_id
               order by tmp.device_id asc
         """.as[(Device.Id, Option[PackageId.Name], Option[PackageId.Version], Option[PartNumber])]
@@ -139,8 +140,8 @@ object DbDepResolver {
   protected def insertMissingDevices(devices: Seq[Device.Id])(implicit ec: ExecutionContext,
                                        mat: Materializer): Flow[DeviceIdPackages, DeviceIdPackages, NotUsed] = ???
 
-  protected def groupByVehicle()(implicit ec: ExecutionContext,
-                                 mat: Materializer): Flow[DeviceIdPackages, DeviceIdPackages, NotUsed] = {
+  protected def groupByDevice()(implicit ec: ExecutionContext,
+                                mat: Materializer): Flow[DeviceIdPackages, DeviceIdPackages, NotUsed] = {
     val groupByVin = GroupedByPredicate[DeviceIdPackages, Device.Id](_.device)
 
     Flow[DeviceIdPackages]

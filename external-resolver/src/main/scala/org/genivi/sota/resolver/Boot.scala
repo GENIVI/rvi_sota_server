@@ -20,7 +20,7 @@ import org.genivi.sota.db.BootMigrations
 import org.genivi.sota.resolver.filters.FilterDirectives
 import org.genivi.sota.resolver.packages.{PackageDirectives, PackageFiltersResource}
 import org.genivi.sota.resolver.resolve.ResolveDirectives
-import org.genivi.sota.resolver.vehicles.VehicleDirectives
+import org.genivi.sota.resolver.devices.DeviceDirectives
 import org.genivi.sota.resolver.components.ComponentDirectives
 import org.genivi.sota.rest.Handlers.{exceptionHandler, rejectionHandler}
 import org.slf4j.LoggerFactory
@@ -40,10 +40,10 @@ class Routing(namespaceDirective: Directive1[Namespace], deviceRegistry: DeviceR
  {
    import Directives._
 
-  val route: Route = pathPrefix("api" / "v1") {
+  val route: Route = pathPrefix("api" / "v1" / "resolver") {
     handleRejections(rejectionHandler) {
       handleExceptions(exceptionHandler) {
-        new VehicleDirectives(namespaceDirective, deviceRegistry).route ~
+        new DeviceDirectives(namespaceDirective, deviceRegistry).route ~
         new PackageDirectives(namespaceDirective).route ~
         new FilterDirectives(namespaceDirective).route ~
         new ResolveDirectives(namespaceDirective, deviceRegistry).route ~

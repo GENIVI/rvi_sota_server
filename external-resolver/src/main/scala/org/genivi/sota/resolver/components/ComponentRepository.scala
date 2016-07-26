@@ -12,7 +12,7 @@ import org.genivi.sota.data.Namespace._
 import org.genivi.sota.db.Operators._
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
-import org.genivi.sota.resolver.vehicles.VehicleRepository
+import org.genivi.sota.resolver.devices.DeviceRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
@@ -65,7 +65,7 @@ object ComponentRepository {
 
   def isInstalled(namespace: Namespace, part: Component.PartNumber)
                  (implicit db: Database, ec: ExecutionContext): Future[Boolean] = {
-     val dbIO = VehicleRepository.installedComponents
+     val dbIO = DeviceRepository.installedComponents
        .filter(_.namespace === namespace)
        .filter(_.partNumber === part)
        .exists

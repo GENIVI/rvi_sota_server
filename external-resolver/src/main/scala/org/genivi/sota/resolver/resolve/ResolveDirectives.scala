@@ -13,7 +13,7 @@ import org.genivi.sota.data.Namespace._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.common.RefinementDirectives._
-import org.genivi.sota.resolver.vehicles.DbDepResolver
+import org.genivi.sota.resolver.devices.DbDepResolver
 
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._

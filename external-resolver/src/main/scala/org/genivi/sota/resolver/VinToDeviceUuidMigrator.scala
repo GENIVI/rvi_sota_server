@@ -42,12 +42,12 @@ object VinToDeviceUuidMigrator {
 
             deviceRegistry.fetchByDeviceId(namespace, deviceId)
               .map { d =>
-                logger.info(s"Got device uuid for $u: ${d.id}")
+                logger.info(s"Got device uuid for $u: ${d.id.show}")
                 Option(d.id)
               }
               .recover {
                 case ex =>
-                  logger.warn(s"Could not get device name for ($ns, $u)", ex)
+                  logger.warn(s"Could not get device uuid for ($ns, $u)", ex)
                   None
               }
               .map {
@@ -67,9 +67,9 @@ object VinToDeviceUuidMigrator {
       }
     }
 
-    val r = Await.result(resultF, 3.minutes)
+    val result = Await.result(resultF, 3.minutes)
 
-    val (success, failure) = r.partition(_.isDefined)
+    val (success, failure) = result.partition(_.isDefined)
 
     logger.info(
       s"""
