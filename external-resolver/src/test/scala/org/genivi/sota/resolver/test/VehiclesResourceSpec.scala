@@ -33,7 +33,7 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
     with PackageGenerators with ScalaFutures {
   import org.genivi.sota.data.DeviceGenerators._
 
-  val vehicles = "vehicles"
+  val devices = "devices"
 
   import org.scalacheck.Shrink
   implicit val noShrink: Shrink[List[Package]] = Shrink.shrinkAny
@@ -51,7 +51,7 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
 
       val (installedBefore, update) = state
       installedBefore.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
-      Put( Resource.uri(vehicles, id.show, "packages"),
+      Put( Resource.uri(devices, id.show, "packages"),
           InstalledSoftware(update.map(_.id), Set())) ~> route ~> check {
         status shouldBe StatusCodes.NoContent
       }
@@ -70,7 +70,7 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
 
       val (availablePackages, update) = state
       availablePackages.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
-      Put( Resource.uri(vehicles, id.show, "packages"),
+      Put( Resource.uri(devices, id.show, "packages"),
           InstalledSoftware(update.map(_.id), Set())) ~> route ~> check {
         status shouldBe StatusCodes.NoContent
       }
@@ -84,7 +84,7 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
  */
 class VehiclesResourceWordSpec extends ResourceWordSpec with Namespaces {
 
-  val vehicles = "vehicles"
+  val devices = "devices"
 
   val deviceId: Device.Id = refineV[Device.ValidId]("1f22860a-3ea2-491f-9042-37c98c2d51cd").right.map(Device.Id).right.get
   val device: Device     = Device(defaultNs, deviceId, DeviceName("Somename"))
@@ -106,7 +106,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec with Namespaces {
     }
 
     "list installed packages on a VIN on GET request to /vehicles/:vin/package" in {
-      Get(Resource.uri(vehicles, deviceId.show, "package")) ~> route ~> check {
+      Get(Resource.uri(devices, deviceId.show, "package")) ~> route ~> check {
         status shouldBe StatusCodes.OK
         val name: PackageId.Name = Refined.unsafeApply("apa")
         val version: PackageId.Version = Refined.unsafeApply("1.0.1")
@@ -115,17 +115,17 @@ class VehiclesResourceWordSpec extends ResourceWordSpec with Namespaces {
     }
 
     "uninstall a package on a VIN on DELETE request to /vehicles/:vin/package/:packageName/:packageVersion" in {
-      Delete(Resource.uri(vehicles, deviceId.show, "package", "apa", "1.0.1")) ~> route ~> check {
+      Delete(Resource.uri(devices, deviceId.show, "package", "apa", "1.0.1")) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
-      Get(Resource.uri(vehicles, deviceId.show, "package")) ~> route ~> check {
+      Get(Resource.uri(devices, deviceId.show, "package")) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Seq[PackageId]] shouldBe List()
       }
     }
 
     "fail to uninstall a package that isn't installed on a VIN" in {
-      Delete(Resource.uri(vehicles, deviceId.show, "package", "bepa", "1.0.1")) ~> route ~> check {
+      Delete(Resource.uri(devices, deviceId.show, "package", "bepa", "1.0.1")) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
       }
@@ -142,7 +142,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec with Namespaces {
   }
 
   "list components on a VIN on GET /vehicles/:vin/component" in {
-    Get(Resource.uri(vehicles, deviceId.show, "component")) ~> route ~> check {
+    Get(Resource.uri(devices, deviceId.show, "component")) ~> route ~> check {
       status shouldBe StatusCodes.OK
       responseAs[Seq[Component.PartNumber]] shouldBe List(Refined.unsafeApply("jobby0"))
     }

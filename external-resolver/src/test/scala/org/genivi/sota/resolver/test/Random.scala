@@ -48,12 +48,6 @@ class Random extends ResourcePropSpec {
             RouteTestTimeout(10.second)
 
           sem.request ~> route ~> check {
-            if(status != sem.statusCode) {
-              println("SEM" + sem)
-              println("Status:" + status)
-              // println(responseAs[String])
-            }
-
             status shouldBe sem.statusCode
             sem.result match {
               case Failure(c)            => responseAs[ErrorRepresentation].code           shouldBe c

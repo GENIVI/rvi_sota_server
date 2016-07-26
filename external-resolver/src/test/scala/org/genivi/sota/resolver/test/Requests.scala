@@ -32,7 +32,7 @@ import scala.concurrent.duration._
  */
 object Resource {
   def uri(pathSuffixes: String*): Uri = {
-    val BasePath = Path("/api") / "v1"
+    val BasePath = Path("/api") / "v1" / "resolver"
     Uri.Empty.withPath(pathSuffixes.foldLeft(BasePath)(_/_))
   }
 }
@@ -42,13 +42,13 @@ object Resource {
  */
 trait VehicleRequestsHttp {
   def listVehicles: HttpRequest =
-    Get(Resource.uri("vehicles"))
+    Get(Resource.uri("devices"))
 
   def listVehiclesHaving(cmp: Component): HttpRequest =
     listVehiclesHaving(cmp.partNumber.get)
 
   def listVehiclesHaving(partNumber: String): HttpRequest =
-    Get(Resource.uri("vehicles").withQuery(Query("component" -> partNumber)))
+    Get(Resource.uri("devices").withQuery(Query("component" -> partNumber)))
 
   def addVehicle(device: Device.Id): HttpRequest = {
     import scala.concurrent.ExecutionContext.Implicits.global
@@ -59,25 +59,25 @@ trait VehicleRequestsHttp {
     installPackage(device, pkg.id.name.get, pkg.id.version.get)
 
   def installPackage(device: Device.Id, pname: String, pversion: String): HttpRequest =
-    Put(Resource.uri("vehicles", device.show, "package", pname, pversion))
+    Put(Resource.uri("devices", device.show, "package", pname, pversion))
 
   def uninstallPackage(device: Device.Id, pkg: Package): HttpRequest =
     uninstallPackage(device, pkg.id.name.get, pkg.id.version.get)
 
   def uninstallPackage(device: Device.Id, pname: String, pversion: String): HttpRequest =
-    Delete(Resource.uri("vehicles", device.show, "package", pname, pversion))
+    Delete(Resource.uri("devices", device.show, "package", pname, pversion))
 
   def listPackagesOnVehicle(veh: Device.Id): HttpRequest =
-    Get(Resource.uri("vehicles", veh.show, "package"))
+    Get(Resource.uri("devices", veh.show, "package"))
 
   def listComponentsOnVehicle(veh: Device.Id): HttpRequest =
     listComponentsOnVehicle(veh.show)
 
   def listComponentsOnVehicle(vin: String): HttpRequest =
-    Get(Resource.uri("vehicles", vin, "component"))
+    Get(Resource.uri("devices", vin, "component"))
 
   private def path(device: Device.Id, part: Component.PartNumber): Uri =
-    Resource.uri("vehicles", device.show, "component", part.get)
+    Resource.uri("devices", device.show, "component", part.get)
 
   def installComponent(veh: Device.Id, cmpn: Component): HttpRequest =
     installComponent(veh, cmpn.partNumber)
@@ -151,7 +151,7 @@ trait FirmwareRequests extends Matchers { self: ScalatestRouteTest =>
   def installFirmware
     (device: Device.Id, packages: Set[PackageId], firmware: Set[Firmware])
       : HttpRequest
-  = Put(Resource.uri("vehicles", device.show, "packages"), InstalledSoftware(packages, firmware))
+  = Put(Resource.uri("devices", device.show, "packages"), InstalledSoftware(packages, firmware))
 
   def installFirmwareOK
     (device: Device.Id, packages: Set[PackageId], firmware: Set[Firmware])
