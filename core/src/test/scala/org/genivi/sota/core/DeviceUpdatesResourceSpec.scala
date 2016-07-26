@@ -277,7 +277,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
     }
   }
 
-  test("after blocking installation queue, no packages are returned even if some are pending for installation") {
+  ignore("after blocking installation queue, no packages are returned even if some are pending for installation") {
     // insert update spec
     whenReady(createUpdateSpec()) { case (packageModel, device, updateSpec) =>
       // block the installation queue of the device
