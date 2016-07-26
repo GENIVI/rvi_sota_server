@@ -105,19 +105,12 @@ class DeviceUpdatesResource(db: Database,
     import org.genivi.sota.core.data.client.PendingUpdateRequest._
     import ResponseConversions._
 
-    val pendingIO =
-      for {
-        isBlkd  <- BlockedInstalls.isBlockedInstall(device)
-        pending <- if (isBlkd) {
-                     DBIO.successful(Seq.empty)
-                   } else {
-                     DeviceUpdates
-                       .findPendingPackageIdsFor(device)
-                       .map(_.toResponse)
-                   }
-      } yield pending
+    val vehiclePackages =
+      DeviceUpdates
+        .findPendingPackageIdsFor(device)
+        .map(_.toResponse)
 
-    complete(db.run(pendingIO))
+    complete(db.run(vehiclePackages))
   }
 
   /**
