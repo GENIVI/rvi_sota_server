@@ -91,7 +91,7 @@ define(function(require) {
         <DefaultRoute handler={wrapComponent(ListOfUpdates, {Updates: db.updates})} />
       </Route>
       <Route name="components">
-        <Route name="component" path="/component/:partNumber" handler={wrapComponent(ShowComponent, {Component: db.showComponent})} />
+        <Route name="component" path="/components/:partNumber" handler={wrapComponent(ShowComponent, {Component: db.showComponent})} />
         <DefaultRoute handler={ComponentsPage}/>
       </Route>
     </Route>
