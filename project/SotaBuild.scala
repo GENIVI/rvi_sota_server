@@ -177,7 +177,7 @@ object SotaBuild extends Build {
     .settings(dockerEntrypoint := Seq("./entrypoint.sh"))
     .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
     .configs(UnitTests)
-    .dependsOn(common, commonData, commonMessaging, commonTest % "test", commonDbTest % "test")
+    .dependsOn(common, commonData, commonTest % "test", commonDbTest % "test")
     .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
     .settings(Publish.settings)
 
