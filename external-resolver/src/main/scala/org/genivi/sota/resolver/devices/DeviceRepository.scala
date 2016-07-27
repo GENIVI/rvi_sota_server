@@ -4,6 +4,8 @@
  */
 package org.genivi.sota.resolver.devices
 
+import java.time.Instant
+
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
@@ -18,6 +20,7 @@ import slick.driver.MySQLDriver.api._
 import eu.timepit.refined.refineV
 
 import scala.concurrent.{ExecutionContext, Future}
+
 
 object DeviceRepository {
   import org.genivi.sota.db.SlickExtensions._
