@@ -61,8 +61,15 @@ class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
       'component.as[Component.PartNumber].?)) { case (re, pn, pv, cp) =>
       complete(DeviceRepository.search(ns, re, pn, pv, cp, deviceRegistry))
     }
-  def getPackages(device: Device.Id): Route =
-    complete(db.run(DeviceRepository.installedOn(device)))
+
+  def getPackages(device: Device.Id): Route = {
+    val result = for {
+      native <- DeviceRepository.installedOn(device)
+      foreign <- ForeignPackages.installedOn(device)
+    } yield native ++ foreign
+
+    complete(db.run(result))
+  }
 
   def installPackage(namespace: Namespace, device: Device.Id, pkgId: PackageId): Route =
     completeOrRecoverWith(db.run(DeviceRepository.installPackage(namespace, device, pkgId))) {
@@ -80,6 +87,7 @@ class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
         for {
           _ <- DeviceRepository.updateInstalledPackages(namespace, device, installedSoftware.packages)
           _ <- DeviceRepository.updateInstalledFirmware(device, installedSoftware.firmware)
+          _ <- ForeignPackages.setInstalled(device, installedSoftware.packages)
         } yield ()
       }
     }

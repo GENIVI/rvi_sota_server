@@ -11,7 +11,7 @@ import io.circe.generic.auto._
 import org.genivi.sota.data.{Device, Namespaces, PackageId}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
-import org.genivi.sota.resolver.packages.Package
+import org.genivi.sota.resolver.packages.{Package, PackageRepository}
 import org.genivi.sota.resolver.components.Component
 import akka.http.scaladsl.testkit.RouteTestTimeout
 import org.genivi.sota.data.Device.DeviceName
@@ -22,6 +22,7 @@ import org.scalacheck._
 import Device._
 import cats.syntax.show._
 import org.scalatest.concurrent.ScalaFutures
+import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.duration._
 
@@ -77,6 +78,23 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
     }
   }
 
+  property("installs packages as foreign if they are not native") {
+    val packageGen = Gen.nonEmptyContainerOf[Set, PackageId](genPackageId)
+
+    forAll(genDevice, packageGen, minSuccessful(3)) { (device, packageIds) =>
+      val id = deviceRegistry.createDevice(device.toResponse).futureValue
+
+      Put(Resource.uri(devices, id.show, "packages"),
+        InstalledSoftware(packageIds, Set())) ~> route ~> check {
+        status shouldBe StatusCodes.NoContent
+
+        Get(Resource.uri(devices, id.show, "package")) ~> route ~> check {
+          status shouldBe StatusCodes.OK
+          responseAs[Set[PackageId]] shouldBe packageIds
+        }
+      }
+    }
+  }
 }
 
 /**
