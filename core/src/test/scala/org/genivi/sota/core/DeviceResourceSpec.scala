@@ -53,7 +53,7 @@ class DeviceResourceSpec extends FunSuite
   implicit val rviClient = new JsonRpcRviClient( serverTransport.requestTransport, system.dispatcher)
 
   val fakeResolver = new FakeExternalResolver()
-  val deviceRegistry = new FakeDeviceRegistry()
+  val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
 
   lazy val service = new DevicesResource(db, rviClient, fakeResolver, deviceRegistry, defaultNamespaceExtractor)
 
@@ -106,14 +106,15 @@ class DeviceResourceSpec extends FunSuite
 
   test("search with status=true returns current status for a device") {
     val device = genDeviceT.sample.get.copy(deviceId = Some(genDeviceId.sample.get))
-    whenReady(deviceRegistry.createDevice(device)) { _ =>
+
+    whenReady(deviceRegistry.createDevice(device)) { createdId =>
       val url = Uri.Empty
         .withPath(BasePath)
         .withQuery(Uri.Query("status" -> "true"))
 
       Get(url) ~> service.route ~> check {
         status shouldBe StatusCodes.OK
-        val parsedResponse = responseAs[Seq[DeviceSearchResult]].headOption
+        val parsedResponse = responseAs[Seq[DeviceSearchResult]].find(_.id == createdId)
 
         parsedResponse.flatMap(_.lastSeen) shouldNot be(defined)
         parsedResponse.flatMap(_.status) should contain(DeviceStatus.NotSeen)

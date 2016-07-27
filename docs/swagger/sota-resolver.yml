@@ -7,7 +7,7 @@ info:
     name: Mozilla Public License
     url: 'https://github.com/advancedtelematic/rvi_sota_server/blob/master/LICENSE'
 host: 'localhost:8081'
-basePath: /api/v1
+basePath: /api/v1/resolver
 securityDefinitions: {}
 schemes:
   - http
@@ -23,64 +23,24 @@ produces:
       # PUT /vehicles/:vin/packages
       # GET /vehicles/firmware/:vin
 
-
-
 paths:
-  /vehicles:
+  /devices:
     get:
-      description: 'Get a list of all the vehicles in the Core database.'
+      description: 'Get a list of all the device uuids known to resolver'
       responses:
         200:
-          description: An array of Vehicle objects
+          description: An array of uuids
           schema:
             type: array
             items:
-              $ref: '#/definitions/Vehicle'
-  /vehicles/{vin}:
+              $ref: '#/definitions/uuid'
+  /devices/{uuid}/package:
     get:
-      description: 'Return a single vehicle object'
+      description: Return a list of packages installed on the device.
       parameters:
-      - name: vin
+      - name: uuid
         in: path
-        description: A VIN that exists in the system.
-        required: true
-        type: string
-      responses: 
-        200:
-          description: OK
-          schema:
-            $ref: '#/definitions/Vehicle'
-    put:
-      description: 'Add a vehicle to the database'
-      parameters:
-      - name: vin
-        in: path
-        description: A VIN to be added to the system.
-        required: true
-        type: string
-      responses: 
-        204:
-          description: Success
-    delete:
-      description: Delete a vehicle from the database and remove all its associations.
-      parameters:
-      - name: vin
-        in: path
-        description: A VIN to be deleted from the system.
-        required: true
-        type: string
-      responses:
-        200:
-          description: OK
-        404:
-          description: Not found
-  /vehicles/{vin}/package:
-    get:
-      description: Return a list of packages installed on the vehicle.
-      parameters:
-      - name: vin
-        in: path
-        description: The target VIN.
+        description: the vehicle uuid.
         required: true
         type: string
       responses:
@@ -90,15 +50,15 @@ paths:
             type: array
             items:
               $ref: '#/definitions/packageId'
-  /vehicles/{vin}/package/{name}/{version}:
+  /devices/{uuid}/package/{name}/{version}:
     put:
       description: |
-        Mark a package as installed on a vehicle. Note that this does not install the package; it only updates 
+        Mark a package as installed on a vehicle. Note that this does not install the package; it only updates
         resolver's database of installed packages.
       parameters:
-      - name: vin
+      - name: uuid
         in: path
-        description: The target VIN.
+        description: The target uuid.
         required: true
         type: string
       - name: name
@@ -116,12 +76,12 @@ paths:
           description: Returns an empty JSON object.
     delete:
       description: |
-        Remove a package that is marked as installed on a vehicle. Note that this does not uninstall the package; 
+        Remove a package that is marked as installed on a vehicle. Note that this does not uninstall the package;
         it only updates resolver's database of installed packages.
       parameters:
-      - name: vin
+      - name: uuid
         in: path
-        description: The target VIN.
+        description: The target uuid.
         required: true
         type: string
       - name: name
@@ -137,21 +97,21 @@ paths:
       responses:
         200:
           description: Returns an empty JSON object.
-  /vehicles/{vin}/packages:
+  /devices/{uuid}/packages:
     put:
       description: |
-        Mark a list of packages and firmwares as installed on a vehicle. Note that this does not install anything. 
-        It only updates resolver's database of installed packages. This endpoint is for ingesting the list of 
+        Mark a list of packages and firmwares as installed on a device. Note that this does not install anything.
+        It only updates resolver's database of installed packages. This endpoint is for ingesting the list of
         installed packages sent from the in-vehicle client.
       parameters:
-      - name: vin
+      - name: uuid
         in: path
-        description: The target VIN.
+        description: The target uuid.
         required: true
         type: string
       - name: PackagesList
         in: body
-        description: A complete list of the packages and firmwares on the vehicle.
+        description: A complete list of the packages and firmwares on the device.
         required: true
         schema:
           type: array
@@ -160,13 +120,13 @@ paths:
       responses:
         200:
           description: todo--this endpoint doesn't work right now
-  /vehicles/{vin}/component:
+  /devices/{uuid}/component:
     get:
-      description: Return a list of components installed in the vehicle.
+      description: Return a list of components installed in the device.
       parameters:
-      - name: vin
+      - name: uuid
         in: path
-        description: The target VIN.
+        description: The target uuid.
         required: true
         type: string
       responses:
@@ -176,13 +136,13 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Component'
-  /vehicles/{vin}/component/{partNumber}:
+  /devices/{uuid}/component/{partNumber}:
     put:
-      description: Declare that a component is installed in the vehicle
+      description: Declare that a component is installed in the device
       parameters:
-      - name: vin
+      - name: uuid
         in: path
-        description: The target VIN.
+        description: The target uuid.
         required: true
         type: string
       - name: partNumber
@@ -194,16 +154,16 @@ paths:
         200:
           description: An empty JSON object.
     delete:
-      description: Remove a vehicle to component association
+      description: Remove a device to component association
       parameters:
-      - name: vin
+      - name: uuid
         in: path
-        description: The target VIN.
+        description: The target device.
         required: true
         type: string
       - name: partNumber
         in: path
-        description: A component part number known to the system and installed on the target vin.
+        description: A component part number known to the system and installed on the target uuid.
         required: true
         type: string
       responses:
@@ -292,7 +252,7 @@ paths:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/Filter'      
+            $ref: '#/definitions/Filter'
     delete:
       description: Delete a filter
       parameters:
@@ -480,13 +440,13 @@ paths:
       responses:
         200:
           description: ''
-  /firmware/{vin}:
+  /firmware/{uuid}:
     get:
-      description: Get a list of firmware installed on the vehicle.
+      description: Get a list of firmware installed on the uuid.
       parameters:
-      - name: vin
+      - name: uuid
         in: path
-        description: The target VIN.
+        description: The target uuid.
         required: true
         type: string
       responses:
@@ -499,23 +459,12 @@ paths:
 
 
 definitions:
+  uuid:
+    type: string
+    description: 32 lowercase hexadecimal digits, displayed in five groups separated by hyphens
   namespace:
     type: string
     description: The namespace scope of the request. Default value is 'default'
-  VIN:
-    type: string
-    description: A 17-digit VIN. May contain only capital letters and digits. Cannot contain the letters I, O, or Q.
-  Vehicle:
-    type: object
-    properties:
-      namespace:
-        $ref: '#/definitions/namespace'
-      VIN:
-        $ref: '#/definitions/VIN'
-      lastseen:
-        type: string
-        format: dateTime
-        description: The last time a VIN was seen by the SOTA server.
   resolverPackage:
     type: object
     properties:
@@ -579,16 +528,16 @@ definitions:
   PackagesList:
     type: object
     properties:
-      todo: 
+      todo:
         type: string
   Firmware:
     type: object
     properties:
-      namespace: 
+      namespace:
         type: string
-      module: 
+      module:
         type: string
-      firmwareId: 
+      firmwareId:
         type: string
       lastModified:
         type: string

@@ -1,5 +1,7 @@
 package org.genivi.sota.core.resolver
 
+import java.util.UUID
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.ContentTypes._
 import akka.http.scaladsl.model.{HttpEntity, HttpResponse, StatusCodes, Uri}
@@ -7,10 +9,11 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
 import cats.data.Xor
 import eu.timepit.refined.api.Refined
-import io.circe.Json
 import io.circe.jawn._
-import org.genivi.sota.data.{PackageId, Vehicle}
+import org.genivi.sota.data.{Device, PackageId}
 import io.circe.generic.auto._
+import Device._
+import cats.syntax.show._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
@@ -42,28 +45,21 @@ class ExternalResolverClientSpec extends PropSpec with Matchers with BeforeAndAf
     }
   }
 
-  val s: String = s"""[["V1NBEAGLEB0ARD000",[{"version":"23.5.2","name":"rust"}]]]"""
+  val id0 = Device.Id(Refined.unsafeApply(UUID.randomUUID().toString))
 
-  val m: Map[Vehicle.Vin, Set[PackageId]] =
-    Map(Refined.unsafeApply("V1NBEAGLEB0ARD000") -> Set(PackageId(Refined.unsafeApply("rust"), Refined.unsafeApply("23.5.2"))))
+  val s: String = s"""{"${id0.show}": [{"version":"23.5.2","name":"rust"}]}"""
+
+  val m: Map[Device.Id, Set[PackageId]] =
+    Map(id0 -> Set(PackageId(Refined.unsafeApply("rust"), Refined.unsafeApply("23.5.2"))))
 
   property("parse the external resolver's response") {
-    import org.genivi.sota.marshalling.CirceInstances.refinedMapDecoder
-    decode[Map[Vehicle.Vin, Set[PackageId]]](s)(refinedMapDecoder) shouldBe Xor.Right(m)
+    decode[Map[Device.Id, Set[PackageId]]](s) shouldBe Xor.Right(m)
   }
 
   val resp: HttpResponse = HttpResponse(entity = HttpEntity(`application/json`, s))
 
-  property("parse from a HttpResponse as Json") {
-
-    ScalaFutures.whenReady(Unmarshal(resp.entity).to[Json]) { json =>
-      json.noSpaces shouldBe s
-    }
-
-  }
-
   property("parse from a HttpResponse as a Map") {
-    ScalaFutures.whenReady(Unmarshal(resp.entity).to[Map[Vehicle.Vin, Set[PackageId]]]) { m2 =>
+    ScalaFutures.whenReady(Unmarshal(resp.entity).to[Map[Device.Id, Set[PackageId]]]) { m2 =>
       m2 shouldBe m
     }
 

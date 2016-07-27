@@ -12,8 +12,7 @@ import java.io.File
 
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
-import org.genivi.sota.data.Namespace
-import org.genivi.sota.data.{PackageId, Vehicle}
+import org.genivi.sota.data.{Device, Namespace, PackageId}
 import org.genivi.sota.http.NamespaceDirectives
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.rest.ErrorRepresentation
@@ -50,9 +49,9 @@ class PackageUploadSpec extends PropSpec
     val resolver = new ExternalResolverClient {
       override def putPackage(namespace: Namespace, packageId: PackageId, description: Option[String], vendor: Option[String]): Future[Unit] = resolverResult
 
-      override def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Vehicle, Set[PackageId]]] = ???
+      override def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Device.Id, Set[PackageId]]] = ???
 
-      override def setInstalledPackages( vin: Vehicle.Vin, json: io.circe.Json) : Future[Unit] = ???
+      override def setInstalledPackages(device: Device.Id, json: io.circe.Json) : Future[Unit] = ???
     }
 
     val resource = new PackagesResource(resolver, db, defaultNamespaceExtractor)

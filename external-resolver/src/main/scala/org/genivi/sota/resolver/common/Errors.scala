@@ -5,13 +5,14 @@
 package org.genivi.sota.resolver.common
 
 /**
-  * The resolver deals with vehicles, packages, filters and components,
+  * The resolver deals with devices, packages, filters and components,
   * sometimes when working with these entities they might not exist, in
   * which case we have to throw an error. This file contains common
   * exceptions and handlers for how to complete requests in which the
   * exceptions are raised.
   */
 
+// TODO: This can be moved to Boot handler and handled always instead of explicitly
 object Errors {
   import akka.http.scaladsl.model.StatusCodes
   import akka.http.scaladsl.server.Directives.complete
@@ -24,7 +25,6 @@ object Errors {
     val FilterNotFound     = ErrorCode("filter_not_found")
     val PackageNotFound    = ErrorCode("package_not_found")
     val FirmwareNotFound   = ErrorCode("firmware_not_found")
-    val MissingVehicle     = ErrorCode("missing_vehicle")
     val MissingComponent   = ErrorCode("missing_component")
     val ComponentInstalled = ErrorCode("component_is_installed")
   }
@@ -34,8 +34,6 @@ object Errors {
   case object MissingFirmwareException      extends Throwable with NoStackTrace
 
   case object MissingFilterException        extends Throwable with NoStackTrace
-
-  case object MissingVehicle                extends Throwable with NoStackTrace
 
   case object MissingComponent              extends Throwable with NoStackTrace
 
@@ -57,11 +55,6 @@ object Errors {
       complete(StatusCodes.NotFound -> ErrorRepresentation(Codes.FirmwareNotFound, "Firmware doesn't exist"))
   }
 
-  val onMissingVehicle : PF = {
-    case Errors.MissingVehicle =>
-      complete(StatusCodes.NotFound -> ErrorRepresentation(Codes.MissingVehicle, "Vehicle doesn't exist"))
-  }
-
   val onMissingComponent : PF = {
     case Errors.MissingComponent =>
       complete(StatusCodes.NotFound -> ErrorRepresentation(Codes.MissingComponent, "Component doesn't exist"))
@@ -71,7 +64,7 @@ object Errors {
     case Errors.ComponentIsInstalledException =>
       complete(StatusCodes.BadRequest ->
         ErrorRepresentation(Codes.ComponentInstalled,
-          "Components that are installed on vehicles cannot be removed."))
+          "Components that are installed on devices cannot be removed."))
   }
 
 }

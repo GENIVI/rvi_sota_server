@@ -4,13 +4,12 @@
  */
 package org.genivi.sota.resolver.resolve
 
-import org.genivi.sota.data.{PackageId, Vehicle}
+import org.genivi.sota.data.{Device, PackageId}
 
 object ResolveFunctions {
 
-  def makeFakeDependencyMap(pkgId: PackageId, vs: Seq[Vehicle.Vin])
-      : Map[Vehicle.Vin, List[PackageId]] =
-    vs.map(vin => Map(vin -> List(pkgId)))
-      .foldRight(Map[Vehicle.Vin, List[PackageId]]())(_++_)
-
+  def makeFakeDependencyMap(pkgId: PackageId,
+                            vs: Seq[Device.Id]): Map[Device.Id, List[PackageId]] =
+    vs.map(device => Map(device -> List(pkgId)))
+      .foldRight(Map.empty[Device.Id, List[PackageId]])(_++_)
 }

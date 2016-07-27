@@ -110,14 +110,8 @@ class SotaServices(updateController: ActorRef, resolverClient: ExternalResolverC
 
   def updatePackagesInResolver( message: InstalledPackages ) : Future[Unit] = {
     log.debug( s"InstalledPackages from rvi: $message" )
-    deviceRegistry.fetchDevice(message.device).map { d => d.deviceId match {
-      case Some(deviceId) =>
-        // TODO: validation
-        resolverClient.setInstalledPackages(Refined.unsafeApply(deviceId.underlying), message.installed_software)
-      case None => FastFuture.successful(())
-    }}
+    resolverClient.setInstalledPackages(message.device, message.installed_software)
   }
-
 }
 
 object SotaServices {

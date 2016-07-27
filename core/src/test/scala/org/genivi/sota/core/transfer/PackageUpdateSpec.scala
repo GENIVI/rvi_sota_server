@@ -14,18 +14,21 @@ import eu.timepit.refined.refineV
 import org.genivi.sota.core.Generators.updateRequestGen
 import org.genivi.sota.core._
 import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateSpec}
-import org.genivi.sota.core.db.{Packages}
+import org.genivi.sota.core.db.Packages
 import org.genivi.sota.core.jsonrpc.HttpTransport
 import org.genivi.sota.core.resolver.DefaultExternalResolverClient
 import org.genivi.sota.core.rvi._
-import org.genivi.sota.data.{Device, Namespaces, PackageId, Vehicle, VehicleGenerators}
+import org.genivi.sota.data.{Device, Namespaces, PackageId}
 import org.genivi.sota.data.Namespace._
-import java.time.{Instant, Duration}
+import java.time.{Duration, Instant}
+import java.util.UUID
+
 import org.scalacheck.Gen
 import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture, whenReady}
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
+
 import scala.concurrent.{Await, ExecutionContext, Future}
 import slick.jdbc.JdbcBackend.Database
 
@@ -37,23 +40,23 @@ object DataGenerators {
 
   val packages = scala.util.Random.shuffle( PackagesReader.read().take(10).map(Generators.generatePackageData ) )
 
-  def dependenciesGen(packageId: PackageId, vin: Vehicle.Vin) : Gen[UpdateService.VinsToPackageIds] =
+  def dependenciesGen(packageId: PackageId, device: Device.Id) : Gen[UpdateService.DeviceToPackageIds] =
     for {
       n                <- Gen.choose(1, 3)
       requiredPackages <- Gen.containerOfN[Set, PackageId](n, Gen.oneOf(packages ).map( _.id ))
-    } yield Map( vin -> (requiredPackages + packageId) )
+    } yield Map( device -> (requiredPackages + packageId) )
 
 
-  def updateWithDependencies(vin: Vehicle.Vin) : Gen[(UpdateRequest, UpdateService.VinsToPackageIds)] =
+  def updateWithDependencies(device: Device.Id) : Gen[(UpdateRequest, UpdateService.DeviceToPackageIds)] =
     for {
       packageId    <- Gen.oneOf( packages.map( _.id) )
       request      <- updateRequestGen(Namespaces.defaultNs, packageId)
-      dependencies <- dependenciesGen( packageId, vin )
+      dependencies <- dependenciesGen( packageId, device )
     } yield (request, dependencies)
 
-  def requestsGen(vin: Vehicle.Vin): Gen[Map[UpdateRequest, UpdateService.VinsToPackageIds]] = for {
+  def requestsGen(device: Device.Id): Gen[Map[UpdateRequest, UpdateService.DeviceToPackageIds]] = for {
     n        <- Gen.choose(1, 4)
-    requests <- Gen.listOfN(1, updateWithDependencies(vin)).map( _.toMap )
+    requests <- Gen.listOfN(1, updateWithDependencies(device)).map( _.toMap )
   } yield requests
 
 }
@@ -168,14 +171,14 @@ trait SotaCore {
   implicit val exec = system.dispatcher
 
   implicit val connectivity = new RviConnectivity(system.settings.config.getString("rvi.endpoint"))
-  val deviceRegistry = new FakeDeviceRegistry()
+  val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
 
   def sotaRviServices() : Route = {
     val transferProtocolProps =
       TransferProtocolActor.props(db, connectivity.client,
                                   PackageTransferActor.props(connectivity.client))
     val updateController = system.actorOf( UpdateController.props(transferProtocolProps ), "update-controller")
-    val client = new DefaultExternalResolverClient( Uri.Empty, Uri.Empty, Uri.Empty, Uri.Empty )
+    val client = new FakeExternalResolver()
     new SotaServices(updateController, client, deviceRegistry).route
   }
 
@@ -202,16 +205,16 @@ class PackageUpdateSpec extends PropSpec
   }
 
   def init(services: ServerServices,
-           generatedData: Map[UpdateRequest, UpdateService.VinsToPackageIds]): Future[Set[UpdateSpec]] = {
+           generatedData: Map[UpdateRequest, UpdateService.DeviceToPackageIds]): Future[Set[UpdateSpec]] = {
     import slick.driver.MySQLDriver.api._
 
     implicit val _db = db
 
     val notifier = new RviUpdateNotifier(services)
-    val deviceRegistry = new FakeDeviceRegistry()
+    val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
     val updateService = new UpdateService(notifier, deviceRegistry)(system, connectivity, exec)
-    val devices: Set[Vehicle.Vin] =
-      generatedData.values.map( _.keySet ).fold(Set.empty[Vehicle.Vin])( _ union _)
+    val devices: Set[Device.Id] =
+      generatedData.values.map( _.keySet ).fold(Set.empty[Device.Id])( _ union _)
 
     for {
       specs <- Future.sequence( generatedData.map {
@@ -225,7 +228,7 @@ class PackageUpdateSpec extends PropSpec
   implicit val patience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
   implicit override val generatorDrivenConfig = PropertyCheckConfig(minSuccessful = 1)
   import org.scalacheck.Shrink
-  implicit val noShrink: Shrink[Map[UpdateRequest, UpdateService.VinsToPackageIds]] = Shrink.shrinkAny
+  implicit val noShrink: Shrink[Map[UpdateRequest, UpdateService.DeviceToPackageIds]] = Shrink.shrinkAny
 
   import org.genivi.sota.core.rvi.UpdateEvents
   import scala.concurrent.duration.DurationInt
@@ -243,8 +246,8 @@ class PackageUpdateSpec extends PropSpec
 
   implicit val log = Logging(system, "org.genivi.sota.core.PackageUpload")
 
-  property("updates should be transfered to device", RequiresRvi) {
-    forAll( requestsGen(Refined.unsafeApply("V1234567890123456")) ) { (requests) =>
+  property("updates should be transferred to device", RequiresRvi) {
+    forAll( requestsGen(Device.Id(Refined.unsafeApply[String, Device.ValidId](UUID.randomUUID().toString))) ) { (requests) =>
       val probe = TestProbe()
       val serviceUri = Uri.from(scheme="http", host=getLocalHostAddr, port=8088)
       system.eventStream.subscribe(probe.ref, classOf[UpdateEvents.InstallReportReceived])

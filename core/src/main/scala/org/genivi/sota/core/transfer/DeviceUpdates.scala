@@ -51,12 +51,7 @@ object DeviceUpdates {
             (implicit ec: ExecutionContext): Future[Unit] = {
     // TODO: core should be able to send this instead!
     val j = Json.obj("packages" -> packageIds.asJson, "firmware" -> Json.arr())
-    deviceRegistry.fetchDevice(device).map { d => d.deviceId match {
-      case Some(deviceId) =>
-        // TODO: validation
-        resolverClient.setInstalledPackages(Refined.unsafeApply(deviceId.underlying), j)
-      case None => FastFuture.successful(())
-    }}
+    resolverClient.setInstalledPackages(device, j)
   }
 
   def buildReportInstallResponse(device: Device.Id, updateReport: UpdateReport)

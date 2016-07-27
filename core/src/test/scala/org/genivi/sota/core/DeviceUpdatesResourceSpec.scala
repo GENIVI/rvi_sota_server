@@ -15,7 +15,7 @@ import org.genivi.sota.core.db.{BlockedInstalls, InstallHistories, Packages}
 import org.genivi.sota.core.resolver.{Connectivity, ConnectivityClient, DefaultConnectivity}
 import org.genivi.sota.core.rvi.{InstallReport, OperationResult, UpdateReport}
 import org.genivi.sota.core.transfer.DeviceUpdates
-import org.genivi.sota.data.{Device, DeviceGenerators, PackageIdGenerators, VehicleGenerators}
+import org.genivi.sota.data._
 import java.time.Instant
 
 import org.genivi.sota.http.{AuthDirectives, NamespaceDirectives}
@@ -40,7 +40,6 @@ class DeviceUpdatesResourceSpec extends FunSuite
   import Device._
   import DeviceGenerators._
   import PackageIdGenerators._
-  import VehicleGenerators._
 
   implicit val patience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
   implicit val _db = db
@@ -49,13 +48,12 @@ class DeviceUpdatesResourceSpec extends FunSuite
   lazy val service = new DeviceUpdatesResource(db, fakeResolver, fakeDeviceRegistry, defaultNamespaceExtractor,
     AuthDirectives.allowAll)
 
-  val fakeResolver = new FakeExternalResolver
+  val fakeResolver = new FakeExternalResolver()
 
   val baseUri = Uri.Empty.withPath(Path("/api/v1/vehicle_updates"))
   val (fakeDeviceRegistry, deviceUri, deviceUuid) = {
-    val registry = new FakeDeviceRegistry()
-    val deviceId = DeviceId(genVin.sample.get.get) // TODO unify Vins and DeviceIds
-    val device = genDeviceT.sample.get.copy(deviceId = Some(deviceId))
+    val registry = new FakeDeviceRegistry(Namespaces.defaultNs)
+    val device = genDeviceT.sample.get
     val id = Await.result(registry.createDevice(device), 1.seconds)
     (registry, Uri.Empty.withPath(baseUri.path / id.underlying.get), id)
   }
@@ -116,15 +114,9 @@ class DeviceUpdatesResourceSpec extends FunSuite
       status shouldBe StatusCodes.OK
       responseAs[List[UUID]] should be(empty)
 
-      val device = fakeDeviceRegistry.devices.find(_.id == deviceUuid)
-
-      device match {
-        case Some(d) =>
-          d.lastSeen shouldBe defined
-          d.lastSeen.get.isAfter(now) shouldBe true
-        case _ =>
-          fail("Device should be in database")
-      }
+      val device = fakeDeviceRegistry.fetchDevice(deviceUuid).futureValue
+      device.lastSeen shouldBe defined
+      device.lastSeen.get.isAfter(now) shouldBe true
     }
   }
 

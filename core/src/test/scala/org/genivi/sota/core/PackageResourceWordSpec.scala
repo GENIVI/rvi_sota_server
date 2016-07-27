@@ -20,7 +20,6 @@ import org.scalatest.{Matchers, WordSpec}
 import scala.concurrent.Await
 import slick.driver.MySQLDriver.api._
 import DataPackage._
-import org.genivi.sota.core.resolver.DefaultExternalResolverClient
 import org.genivi.sota.data.PackageId
 import org.genivi.sota.http.NamespaceDirectives
 import scala.concurrent.duration._
@@ -40,14 +39,7 @@ class PackageResourceWordSpec extends WordSpec
   import CirceMarshallingSupport._
   import NamespaceDirectives._
 
-  lazy val config =system.settings.config
-
-  val externalResolverClient = new DefaultExternalResolverClient(
-    Uri(config.getString("resolver.baseUri")),
-    Uri(config.getString("resolver.resolveUri")),
-    Uri(config.getString("resolver.packagesUri")),
-    Uri(config.getString("resolver.vehiclesUri"))
-  )
+  val externalResolverClient = new FakeExternalResolver()
 
   implicit val routeTimeout: RouteTestTimeout =
     RouteTestTimeout(10.second)

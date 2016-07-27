@@ -7,13 +7,14 @@ import org.genivi.sota.core.data.{UpdateSpec, UpdateStatus}
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.rvi.OperationResult
 import org.genivi.sota.core.rvi.UpdateReport
-import org.genivi.sota.data.DeviceGenerators
+import org.genivi.sota.data.{DeviceGenerators, Namespaces}
 import org.genivi.sota.db.SlickExtensions
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalacheck.Gen
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
+
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
@@ -34,7 +35,7 @@ class DeviceUpdatesSpec extends FunSuite
 
   implicit val actorSystem = ActorSystem("InstalledPackagesUpdateSpec-ActorSystem")
   implicit val materializer = ActorMaterializer()
-  val deviceRegistry = new FakeDeviceRegistry
+  val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
 
   implicit val ec = ExecutionContext.global
   implicit val _db = db

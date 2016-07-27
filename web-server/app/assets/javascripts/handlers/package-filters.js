@@ -6,7 +6,7 @@ define(function(require) {
 
   var handlers = {
     getPackagesForFilter: function(payload) {
-      sendRequest.doGet('/api/v1/filters/' + payload.filter + '/package')
+      sendRequest.doGet('/api/v1/resolver/filters/' + payload.filter + '/package')
         .success(function(packages) {
           db.packagesForFilter.reset(packages);
         });

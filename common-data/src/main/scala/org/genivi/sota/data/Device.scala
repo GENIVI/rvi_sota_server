@@ -16,6 +16,7 @@ import Device._
 /*
  * Device transfer object
  */
+// TODO: Use org.genivi.sota.core.data.client.ResponseEncoder
 final case class DeviceT(
   deviceName: DeviceName,
   deviceId: Option[Device.DeviceId] = None,
@@ -28,10 +29,13 @@ final case class Device(namespace: Namespace,
                   deviceName: DeviceName,
                   deviceId: Option[DeviceId] = None,
                   deviceType: Device.DeviceType = DeviceType.Other,
-                  lastSeen: Option[Instant] = None)
+                  lastSeen: Option[Instant] = None) {
+
+  // TODO: Use org.genivi.sota.core.data.client.ResponseEncoder
+  def toResponse: DeviceT = DeviceT(deviceName, deviceId, deviceType)
+}
 
 object Device {
-
   type ValidId = Uuid
   final case class Id(underlying: String Refined ValidId) extends AnyVal
   implicit val showId = new Show[Id] {

@@ -6,7 +6,7 @@ define(function(require) {
 
   var Handler = (function() {
       var updateFilter = function(payload) {
-        sendRequest.doPut("/api/v1/filters/" + payload.filter.name, payload.filter)
+        sendRequest.doPut("/api/v1/resolver/filters/" + payload.filter.name, payload.filter)
           .success(function() {
             SotaDispatcher.dispatch({actionType: 'get-filter', name: payload.filter.name});
           });
@@ -14,7 +14,7 @@ define(function(require) {
       this.dispatchCallback = function(payload) {
         switch(payload.actionType) {
           case 'get-filters':
-            sendRequest.doGet('/api/v1/filters')
+            sendRequest.doGet('/api/v1/resolver/filters')
               .success(function(filters) {
                 db.filters.reset(filters);
               });
@@ -22,13 +22,13 @@ define(function(require) {
           case 'search-filters-by-regex':
             var query = payload.regex ? '?regex=' + payload.regex : '';
 
-            sendRequest.doGet('/api/v1/filters' + query)
+            sendRequest.doGet('/api/v1/resolver/filters' + query)
               .success(function(filters) {
                 db.searchableFilters.reset(filters);
               });
           break;
           case 'get-filter':
-            sendRequest.doGet('/api/v1/filters')
+            sendRequest.doGet('/api/v1/resolver/filters')
               .success(function(filters) {
                 var showFilter = _.find(filters, function(filter) {
                   return filter.name == payload.name;
@@ -37,7 +37,7 @@ define(function(require) {
               });
           break;
           case 'create-filter':
-            sendRequest.doPost('/api/v1/filters', payload.filter)
+            sendRequest.doPost('/api/v1/resolver/filters', payload.filter)
               .success(function(filters) {
                 SotaDispatcher.dispatch({actionType: 'get-filters'});
                 SotaDispatcher.dispatch({actionType: 'search-filters-by-regex'});
@@ -50,7 +50,7 @@ define(function(require) {
               }, this));
             break;
           case 'destroy-filter':
-            sendRequest.doDelete('/api/v1/filters/' + payload.name)
+            sendRequest.doDelete('/api/v1/resolver/filters/' + payload.name)
               .success(_.bind(function(filter) {
                 location.hash = '#/filters';
                 SotaDispatcher.dispatch({actionType: 'get-filters'});
