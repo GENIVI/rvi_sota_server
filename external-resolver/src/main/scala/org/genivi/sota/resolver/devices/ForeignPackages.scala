@@ -50,6 +50,7 @@ object ForeignPackages {
       (packages -- nonForeign).map(p => InstalledForeignPackage(device, p, now))
 
     val dbIO = for {
+      deleteExisting <- foreignPackages.filter(_.device === device).delete
       nonForeignInstalled <- DeviceRepository.installedOn(device)
       installNow = installedNow(nonForeignInstalled)
       insertCount <- foreignPackages ++= installNow
