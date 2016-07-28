@@ -75,10 +75,7 @@ object DeviceSearch {
   }
 
   protected def deviceWithLastSeen(devices: Seq[Device]): Map[Device.Id, Option[Instant]] = {
-    devices
-      .filter(_.deviceId.isDefined)
-      .flatMap { device => List((device.id, device.lastSeen))
-      }.toMap
+    devices.map { device => (device.id, device.lastSeen) }.toMap
   }
 
   def dbDeviceStatus(devices: Map[Device.Id, Option[Instant]])
