@@ -95,6 +95,29 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
       }
     }
   }
+
+  property("updates foreign packages if already existing") {
+    val packageGen = Gen.nonEmptyContainerOf[Set, PackageId](genPackageId)
+
+    forAll(genDevice, packageGen, minSuccessful(3)) { (device, packageIds) =>
+      val id = deviceRegistry.createDevice(device.toResponse).futureValue
+
+      val installedSoftware = InstalledSoftware(packageIds, Set())
+
+      Put(Resource.uri(devices, id.show, "packages"), installedSoftware) ~> route ~> check {
+        status shouldBe StatusCodes.NoContent
+
+        Put(Resource.uri(devices, id.show, "packages"), installedSoftware) ~> route ~> check {
+          status shouldBe StatusCodes.NoContent
+
+          Get(Resource.uri(devices, id.show, "package")) ~> route ~> check {
+            status shouldBe StatusCodes.OK
+            responseAs[Set[PackageId]] shouldBe packageIds
+          }
+        }
+      }
+    }
+  }
 }
 
 /**
