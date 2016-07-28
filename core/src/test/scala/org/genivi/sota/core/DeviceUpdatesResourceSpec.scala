@@ -271,35 +271,60 @@ class DeviceUpdatesResourceSpec extends FunSuite
     }
   }
 
+  test("PUT to block and unblock the update queue") {
+      val url = Uri.Empty.withPath(deviceUri.path / "blocked")
+      Get(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+        responseAs[List[BlockedInstall]] should be(empty)
+      }
+
+      Put(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.NoContent
+      }
+
+      Get(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+        responseAs[List[BlockedInstall]] shouldNot be(empty)
+      }
+
+      Delete(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.NoContent
+      }
+
+      Get(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+        responseAs[List[BlockedInstall]] should be(empty)
+      }
+  }
+
   ignore("after blocking installation queue, no packages are returned even if some are pending for installation") {
-    // insert update spec
     whenReady(createUpdateSpec()) { case (packageModel, device, updateSpec) =>
-      // block the installation queue of the device
-      whenReady(db.run(BlockedInstalls.updateBlockedInstallQueue(device.id, isBlocked = true))) { case _ =>
+      // Block the installation queue of the device
+      val blockUrl = Uri.Empty.withPath(deviceUri.path / "blocked")
+      Put(blockUrl) ~> service.route ~> check {
+        status shouldBe StatusCodes.NoContent
+      }
 
-        // check zero packages are returned for install
-        val url = baseUri.withPath(baseUri.path / device.id.underlying.get / "queued")
-        Get(url) ~> service.route ~> check {
-          status shouldBe StatusCodes.OK
-          val parsedResponse = responseAs[List[PendingUpdateRequest]]
-          parsedResponse should be(empty)
-        }
+      // Check zero packages are returned for install
+      val url = baseUri.withPath(baseUri.path / device.id.underlying.get / "queued")
+      Get(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+        val parsedResponse = responseAs[List[PendingUpdateRequest]]
+        parsedResponse should be(empty)
+      }
 
-        // unblock the installation queue
-        val urlUnblock = baseUri.withPath(baseUri.path / device.id.underlying.get / "unblock")
-        Put(urlUnblock) ~> service.route ~> check {
-          status shouldBe StatusCodes.NoContent
-        }
+      // Unblock the installation queue
+      Delete(blockUrl) ~> service.route ~> check {
+        status shouldBe StatusCodes.NoContent
+      }
 
-        // check the pending package is returned for install
-        Get(url) ~> service.route ~> check {
-          status shouldBe StatusCodes.OK
-          val parsedResponse = responseAs[List[PendingUpdateRequest]]
-          parsedResponse.size shouldBe 1
-          val pendingReq = parsedResponse.head
-          (updateSpec.request.packageId) shouldBe (pendingReq.packageId)
-        }
-
+      // Check the pending package is returned for install
+      Get(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+        val parsedResponse = responseAs[List[PendingUpdateRequest]]
+        parsedResponse.size shouldBe 1
+        val pendingReq = parsedResponse.head
+        (updateSpec.request.packageId) shouldBe (pendingReq.packageId)
       }
     }
   }

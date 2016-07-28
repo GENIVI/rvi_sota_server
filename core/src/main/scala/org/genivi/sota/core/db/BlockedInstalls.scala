@@ -38,6 +38,11 @@ object BlockedInstalls {
   // scalastyle:on
   val all = TableQuery[BlockedInstallTable]
 
+  def get(id: Device.Id)
+         (implicit ec: ExecutionContext): DBIO[Seq[BlockedInstall]] = {
+    all.filter(d => d.id === id).result
+  }
+
   def delete(id: Device.Id)
             (implicit ec: ExecutionContext): DBIO[Int] = {
     all
