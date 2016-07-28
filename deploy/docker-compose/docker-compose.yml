@@ -29,10 +29,13 @@ services:
      - 8083
     links:
      - mysql
+     - nats
     environment:
      HOST: 0.0.0.0
      DEVICE_REGISTRY_DB_URL: "jdbc:mariadb://mysql:3306/sota_device_registry"
      DEVICE_REGISTRY_DB_MIGRATE: 'true'
+     NATS_HOST: 'nats'
+     NATS_PORT: '4222'
      DB_ALIVE_URL: "mysql:3306"
      AUTH_PROTOCOL: "none"
 

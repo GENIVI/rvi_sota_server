@@ -5,7 +5,8 @@ import java.util.UUID
 
 import akka.Done
 import akka.actor.ActorSystem
-import akka.event.LoggingAdapter
+import io.circe.syntax._
+import org.genivi.sota.marshalling.CirceInstances._
 import cats.data.Xor
 import com.amazonaws.ClientConfiguration
 import com.amazonaws.auth.{AWSCredentialsProvider, BasicAWSCredentials}
@@ -15,7 +16,8 @@ import com.amazonaws.services.kinesis.AmazonKinesisClient
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.{KinesisClientLibConfiguration, Worker}
 import com.typesafe.config.{Config, ConfigException}
 import org.genivi.sota.messaging.ConfigHelpers._
-import org.genivi.sota.messaging.Messages.DeviceSeenMessage
+import org.genivi.sota.messaging.Messages
+import org.genivi.sota.messaging.Messages.{DeviceCreatedMessage, DeviceSeenMessage, Message}
 
 import scala.concurrent.Future
 import scala.util.Try
@@ -35,9 +37,7 @@ object KinesisClient {
       awsSecretKey <- awsConfig.readString("secretAccessKey")
     } yield new StaticCredentialsProvider(new BasicAWSCredentials(awsAccessKey, awsSecretKey))
 
-  def createPublisher(system: ActorSystem,
-                      config: Config,
-                      log: LoggingAdapter): ConfigException Xor (DeviceSeenMessage => Unit) = {
+  private[this] def getAmazonClient(system: ActorSystem, config: Config): ConfigException Xor AmazonKinesisClient =
     for {
       cfg          <- config.configAt("messaging.kinesis")
       appName      <- cfg.readString("appName")
@@ -51,32 +51,46 @@ object KinesisClient {
       val client = new AmazonKinesisClient(credentials, clientConfig)
       client.configureRegion(region)
       system.registerOnTermination(client.shutdown())
+      client
+    }
+
+  def getDeviceSeenPublisher(system: ActorSystem,
+                             config: Config): ConfigException Xor (DeviceSeenMessage => Unit) =
+    getAmazonClient(system, config).map { client =>
       (msg: DeviceSeenMessage) =>
         {
-          import io.circe.syntax._
-          import org.genivi.sota.marshalling.CirceInstances._
-          client.putRecord(streamName, ByteBuffer.wrap(msg.asJson.noSpaces.getBytes), msg.deviceId.underlying.get)
+          client.putRecord(DeviceSeenMessage.getClass.getName, ByteBuffer.wrap(msg.asJson.noSpaces.getBytes),
+            msg.deviceId.underlying.get)
         }: Unit
     }
+
+  def getDeviceCreatedPublisher(system: ActorSystem,
+                             config: Config): ConfigException Xor (DeviceCreatedMessage => Unit) =
+  getAmazonClient(system, config).map { client =>
+    (msg: DeviceCreatedMessage) =>
+      {
+        client.putRecord(DeviceCreatedMessage.getClass.getName, ByteBuffer.wrap(msg.asJson.noSpaces.getBytes),
+          msg.deviceName.underlying)
+      }: Unit
   }
 
-  def runWorker(system: ActorSystem, config: Config, log: LoggingAdapter): ConfigException Xor Done = {
+  def runWorker(system: ActorSystem, config: Config, streamName: String, parseFn: String => io.circe.Error Xor Message)
+  : ConfigException Xor Done =
     for {
-      cfg        <- config.configAt("messaging.kinesis")
-      appName    <- cfg.readString("appName")
-      streamName <- cfg.readString("streamName")
-      regionName <- cfg.readString("regionName")
-      version    <- cfg.readString("appVersion")
-      clientConfig = getClientConfigWithUserAgent(appName, version)
-      credentials <- configureCredentialsProvider(config)
+      cfg                 <- config.configAt("messaging.kinesis")
+      appName             <- cfg.readString("appName")
+      regionName          <- cfg.readString("regionName")
+      version             <- cfg.readString("appVersion")
+      clientConfig        = getClientConfigWithUserAgent(appName, version)
+      credentials         <- configureCredentialsProvider(config)
       kinesisClientConfig = new KinesisClientLibConfiguration(
-          appName,
-          streamName,
-          credentials,
-          UUID.randomUUID().toString).withRegionName(regionName).withCommonClientConfig(clientConfig)
+        appName,
+        streamName,
+        credentials,
+        UUID.randomUUID().toString).withRegionName(regionName).withCommonClientConfig(clientConfig)
     } yield {
       val worker = new Worker.Builder()
-        .recordProcessorFactory(new RecordProcessorFactory(system.eventStream))
+        .recordProcessorFactory(new RecordProcessorFactory(system.eventStream, parseFn))
         .config(kinesisClientConfig)
         .build()
 
@@ -86,6 +100,13 @@ object KinesisClient {
       system.registerOnTermination(Try { worker.shutdown() })
       Done
     }
+
+  def runDeviceSeenWorker(system: ActorSystem, config: Config): ConfigException Xor Done = {
+    runWorker(system, config, DeviceSeenMessage.getClass.getName, Messages.parseDeviceSeenMsg)
+  }
+
+  def runDeviceCreatedWorker(system: ActorSystem, config: Config): ConfigException Xor Done = {
+    runWorker(system, config, DeviceCreatedMessage.getClass.getName, Messages.parseDeviceCreatedMsg)
   }
 
 }

@@ -72,14 +72,16 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   }
   case class PackageId(name: String, version: String)
   case class Uri(uri: String)
-  case class Package(namespace: String, id: PackageId, uri: Uri, size: Long, checkSum: String, description: String, vendor: String)
+  case class Package(namespace: String, id: PackageId, uri: Uri, size: Long, checkSum: String, description: String,
+                     vendor: String)
   case class PackageResolver(id: PackageId, description: String, vendor: String)
   case class DeviceT(deviceName: String, deviceId: Option[String] = None, deviceType: String)
   case class FilterJson(namespace: String, name: String, expression: String)
   case class FilterPackageJson(namespace: String, filterName : String, packageName : String, packageVersion : String)
   case class ComponentJson(namespace: String, partNumber : String, description : String)
-  case class UpdateRequest(namespace: String, id: String, packageId: PackageId, creationTime: String, periodOfValidity: String,
-                           priority: Int, signature: String, description: String, requestConfirmation: Boolean)
+  case class UpdateRequest(namespace: String, id: String, packageId: PackageId, creationTime: String,
+                           periodOfValidity: String, priority: Int, signature: String, description: String,
+                           requestConfirmation: Boolean)
   import UpdateStatus._
   case class UpdateSpec(request: UpdateRequest, device: String, status: UpdateStatus, dependencies: Set[Package])
   object UpdateSpec {
@@ -122,8 +124,8 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     }
   }
 
-  def addVin(vin: String): String = {
-    val device = DeviceT(vin, Some(vin), "Vehicle")
+  def addDevice(deviceName: String): String = {
+    val device = DeviceT(deviceName, Some(deviceName), "Vehicle")
 
     // create in device registry
     val response = makeJsonRequest("devices", POST, device.asJson.noSpaces)
@@ -159,7 +161,8 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   }
 
   def addFilterToPackage(packageName : String): Unit = {
-    val response = makeRequest("resolver/packages/" + packageName + "/" + testPackageVersion + "/filter/" + testFilterName, PUT)
+    val response =
+      makeRequest("resolver/packages/" + packageName + "/" + testPackageVersion + "/filter/" + testFilterName, PUT)
     response.status mustBe OK
     val jsonResponse = decode[FilterPackageJson](response.body)
     jsonResponse.toOption match {
@@ -183,9 +186,9 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   }
 
   "test adding devices" taggedAs APITests in {
-    testId = Some(addVin(testVin))
-    //add second vin to aid in testing filtering later on
-    testIdAlt = Some(addVin(testVinAlt))
+    testId = Some(addDevice(testVin))
+    //add second device to aid in testing filtering later on
+    testIdAlt = Some(addDevice(testVinAlt))
   }
 
   "test searching devices" taggedAs APITests in {
@@ -337,13 +340,13 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     searchResponse.body.toString mustEqual "[]"
   }
 
-  "test adding component to vin" taggedAs APITests in {
+  "test adding component to device" taggedAs APITests in {
     addComponent(testNamespace, testComponentName, testComponentDescription)
     val response = makeRequest("resolver/devices/" + testId.get + "/component/" + testComponentName, PUT)
     response.status mustBe OK
   }
 
-  "test viewing components installed on vin" taggedAs APITests in {
+  "test viewing components installed on device" taggedAs APITests in {
     val response = makeRequest("resolver/devices/" + testId.get + "/component", GET)
     response.status mustBe OK
     val jsonResponse = decode[List[String]](response.body)
@@ -384,7 +387,9 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   }
 
   "test list of vins affected by update" taggedAs APITests in {
-    val response = makeRequest(s"resolver/resolve?namespace=$testNamespace&package_name=$testPackageName&package_version=$testPackageVersion", GET)
+    val response = makeRequest(
+      s"resolver/resolve?namespace=$testNamespace&package_name=$testPackageName&package_version=$testPackageVersion",
+      GET)
 
     response.status mustBe OK
     import org.genivi.sota.marshalling.CirceInstances._

@@ -6,8 +6,10 @@ import akka.Done
 import akka.actor.ActorSystem
 import cats.data.Xor
 import com.typesafe.config.{Config, ConfigException}
+import io.circe.syntax._
+import org.genivi.sota.marshalling.CirceInstances._
 import org.genivi.sota.messaging.ConfigHelpers._
-import org.genivi.sota.messaging.Messages.DeviceSeenMessage
+import org.genivi.sota.messaging.Messages.{DeviceCreatedMessage, DeviceSeenMessage, Message}
 import org.genivi.sota.messaging.Messages
 import org.nats.{Conn, Msg}
 import org.slf4j.LoggerFactory
@@ -33,26 +35,39 @@ object NatsClient {
       client
     }
 
-  def createPublisher(system: ActorSystem, config: Config): ConfigException Xor (DeviceSeenMessage => Unit) =
+  def getDeviceSeenPublisher(system: ActorSystem, config: Config): ConfigException Xor (DeviceSeenMessage => Unit) =
     getClient(system, config).map(conn =>
           (msg: DeviceSeenMessage) => {
-        import io.circe.syntax._
-        import org.genivi.sota.marshalling.CirceInstances._
-        conn.publish(msg.deviceId.underlying.get, msg.asJson.noSpaces)
-    })
+        conn.publish(msg.getClass.getName, msg.asJson.noSpaces)
+      })
 
-  def runListener(system: ActorSystem, config: Config): ConfigException Xor Done =
+  def getDeviceCreatedPublisher(system: ActorSystem, config: Config)
+      : ConfigException Xor (DeviceCreatedMessage => Unit) =
+    getClient(system, config).map(conn =>
+      (msg: DeviceCreatedMessage) => {
+        conn.publish(msg.getClass.getName, msg.asJson.noSpaces)
+      })
+
+  def runListener(system: ActorSystem, config: Config, subjectName: String,
+                  parseFn: String => io.circe.Error Xor Message)
+      : ConfigException Xor Done =
     getClient(system, config).map { conn =>
-        val subId =
-          conn.subscribe("*",
-                         (msg: Msg) =>
-                           Messages.parseMsg(msg.body) match {
-                             case Xor.Right(m) =>
-                               system.eventStream.publish(m)
-                             case Xor.Left(ex) => log.error(s"invalid message received from message bus: ${msg.body}\n"
-                               + s"Got this parse error: ${ex.toString}")
-                         })
-        system.registerOnTermination{ conn.unsubscribe(subId); conn.close() }
-        Done
+      val subId =
+        conn.subscribe(subjectName,
+          (msg: Msg) =>
+            parseFn(msg.body) match {
+              case Xor.Right(m) =>
+                system.eventStream.publish(m)
+              case Xor.Left(ex) => log.error(s"invalid message received from message bus: ${msg.body}\n"
+                + s"Got this parse error: ${ex.toString}")
+            })
+      system.registerOnTermination{ conn.unsubscribe(subId); conn.close() }
+      Done
     }
+
+  def runDeviceSeenListener(system: ActorSystem, config: Config): ConfigException Xor Done =
+    runListener(system, config, DeviceSeenMessage.getClass.getName, Messages.parseDeviceSeenMsg)
+
+  def runDeviceCreatedListener(system: ActorSystem, config: Config): ConfigException Xor Done =
+    runListener(system, config, DeviceCreatedMessage.getClass.getName, Messages.parseDeviceCreatedMsg)
 }
