@@ -26,7 +26,7 @@ import org.genivi.sota.http.AuthDirectives.AuthScope
 import org.genivi.sota.http._
 import org.genivi.sota.http.LogDirectives._
 import org.genivi.sota.messaging.{MessageBusManager, MessageBusPublisher}
-import org.genivi.sota.messaging.Messages.DeviceSeenMessage
+import org.genivi.sota.messaging.Messages.DeviceSeen
 import slick.driver.MySQLDriver.api.Database
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -79,7 +79,7 @@ trait HttpBoot {
   def httpInteractionRoutes(db: Database,
                             namespaceDirective: Directive1[Namespace],
                             authDirective: AuthScope => Directive0,
-                            messageBusPublisher: MessageBusPublisher[DeviceSeenMessage]
+                            messageBusPublisher: MessageBusPublisher[DeviceSeen]
                            ): Route = {
     val webService = new WebService(DefaultUpdateNotifier, resolverClient, deviceRegistryClient, db,
       namespaceDirective)
@@ -135,7 +135,7 @@ object Boot extends App with DatabaseConfig with HttpBoot with RviBoot with Boot
 
   val healthResource = new HealthResource(db, org.genivi.sota.core.BuildInfo.toMap)
 
-  lazy val messageBusPublisher: MessageBusPublisher[DeviceSeenMessage] =
+  lazy val messageBusPublisher: MessageBusPublisher[DeviceSeen] =
     MessageBusManager
       .getDeviceSeenPublisher(system, system.settings.config) match {
       case Xor.Right(v) => v

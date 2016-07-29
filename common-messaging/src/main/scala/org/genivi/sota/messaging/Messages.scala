@@ -12,34 +12,32 @@ import org.genivi.sota.data.{Device, Namespace}
 
 object Messages {
 
-  def parseDeviceSeenMsg(json: String): io.circe.Error Xor DeviceSeenMessage = {
-    decode[DeviceSeenMessage](json)
+  def parseDeviceSeenMsg(json: String): io.circe.Error Xor DeviceSeen = {
+    decode[DeviceSeen](json)
   }
 
-  def parseDeviceCreatedMsg(json: String): io.circe.Error Xor DeviceCreatedMessage = {
-    decode[DeviceCreatedMessage](json)
+  def parseDeviceCreatedMsg(json: String): io.circe.Error Xor DeviceCreated = {
+    decode[DeviceCreated](json)
   }
 
   trait Message
 
-  final case class DeviceSeenMessage(
-                                      deviceId: Device.Id,
-                                      lastSeen: Instant) extends Message
+  final case class DeviceSeen(deviceId: Device.Id,
+                              lastSeen: Instant) extends Message
 
-  final case class DeviceCreatedMessage(
-                                         namespace: Namespace,
-                                         deviceName: DeviceName,
-                                         deviceId: Option[Device.DeviceId],
-                                         deviceType: Device.DeviceType) extends Message
+  final case class DeviceCreated(namespace: Namespace,
+                                 deviceName: DeviceName,
+                                 deviceId: Option[Device.DeviceId],
+                                 deviceType: Device.DeviceType) extends Message
 
 
-  object DeviceSeenMessage {
-    implicit val EncoderInstance: Encoder[DeviceSeenMessage] = deriveEncoder
-    implicit val DecoderInstance: Decoder[DeviceSeenMessage] = deriveDecoder
+  object DeviceSeen {
+    implicit val EncoderInstance: Encoder[DeviceSeen] = deriveEncoder
+    implicit val DecoderInstance: Decoder[DeviceSeen] = deriveDecoder
   }
 
-  object DeviceCreatedMessage {
-    implicit val EncoderInstance: Encoder[DeviceCreatedMessage] = deriveEncoder
-    implicit val DecoderInstance: Decoder[DeviceCreatedMessage] = deriveDecoder
+  object DeviceCreated {
+    implicit val EncoderInstance: Encoder[DeviceCreated] = deriveEncoder
+    implicit val DecoderInstance: Decoder[DeviceCreated] = deriveDecoder
   }
 }

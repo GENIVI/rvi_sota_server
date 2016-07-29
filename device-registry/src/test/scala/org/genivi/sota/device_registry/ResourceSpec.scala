@@ -4,19 +4,16 @@
  */
 package org.genivi.sota.device_registry.test
 
-import akka.http.scaladsl.server.{Directive1, Directives, Route}
+import akka.http.scaladsl.server.{Directives, Route}
 import akka.http.scaladsl.testkit.RouteTestTimeout
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import cats.syntax.xor
-import eu.timepit.refined.api.Refined
 import org.genivi.sota.core.DatabaseSpec
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.device_registry.Routing
+import org.genivi.sota.messaging.Messages.DeviceCreated
 import org.genivi.sota.messaging.{MessageBusManager, MessageBusPublisher}
-import org.genivi.sota.messaging.Messages.DeviceCreatedMessage
-import org.scalatest.Matchers
 import org.scalatest.prop.PropertyChecks
-import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec, Suite, WordSpec}
+import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec, Suite}
 
 import scala.concurrent.duration._
 
@@ -39,7 +36,7 @@ trait ResourceSpec extends
 
   lazy val namespaceExtractor = Directives.provide(defaultNs)
 
-  lazy val messageBusPublish: MessageBusPublisher[DeviceCreatedMessage] =
+  lazy val messageBusPublish: MessageBusPublisher[DeviceCreated] =
     MessageBusManager
       .getDeviceCreatedPublisher(system, system.settings.config) match {
       case Xor.Right(v) => v

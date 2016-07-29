@@ -8,11 +8,12 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
+import cats.data.Xor
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.db.BootMigrations
 import org.genivi.sota.http._
 import org.genivi.sota.messaging.{MessageBusManager, MessageBusPublisher}
-import org.genivi.sota.messaging.Messages.DeviceCreatedMessage
+import org.genivi.sota.messaging.Messages.DeviceCreated
 import org.genivi.sota.rest.Handlers.{exceptionHandler, rejectionHandler}
 import org.slf4j.LoggerFactory
 
@@ -24,7 +25,7 @@ import slick.driver.MySQLDriver.api._
  * Base API routing class.
  * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
  */
-class Routing(namespaceExtractor: Directive1[Namespace], messageBusPublisher: MessageBusPublisher[DeviceCreatedMessage])
+class Routing(namespaceExtractor: Directive1[Namespace], messageBusPublisher: MessageBusPublisher[DeviceCreated])
   (implicit db: Database, system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext)
     extends Directives {
 
@@ -55,14 +56,13 @@ object Boot extends App with Directives with BootMigrations {
 
   val authNamespace = NamespaceDirectives.fromConfig()
 
-  val messageBusPublish: MessageBusPublisher[DeviceCreatedMessage] =
-    MessageBusManager
-      .getDeviceCreatedPublisher(system, config)
-      .recover { case error =>
+  val messageBusPublish: MessageBusPublisher[DeviceCreated] =
+    MessageBusManager.getDeviceCreatedPublisher(system, config) match {
+      case Xor.Right(v) => v
+      case Xor.Left(error) =>
         log.error("Could not initialize message bus publisher", error)
         MessageBusPublisher.ignore
-      }
-      .toOption.get
+    }
 
   val routes: Route =
     (logResponseMetrics("device-registry") & versionHeaders(version)) {
