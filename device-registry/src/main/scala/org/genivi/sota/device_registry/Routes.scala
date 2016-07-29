@@ -7,7 +7,7 @@ package org.genivi.sota.device_registry
 import cats.syntax.show._
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshal
-import akka.http.scaladsl.model.{HttpResponse, StatusCodes, Uri, ResponseEntity}
+import akka.http.scaladsl.model.{HttpResponse, ResponseEntity, StatusCodes, Uri}
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.unmarshalling.{FromStringUnmarshaller, Unmarshaller}
@@ -21,20 +21,24 @@ import org.genivi.sota.data.{Device, DeviceT, Namespace}
 import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
-import org.genivi.sota.messaging.MessageBusManager
+import org.genivi.sota.messaging.{MessageBusManager, MessageBusPublisher}
 import org.genivi.sota.messaging.Messages.DeviceCreatedMessage
 import org.genivi.sota.rest.Validation._
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
+import scala.util.Success
 
 /**
  * API routes for device registry.
  *
  * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
  */
-class Routes(namespaceExtractor: Directive1[Namespace])
+class Routes(namespaceExtractor: Directive1[Namespace],
+             messageBusPublisher: MessageBusPublisher[DeviceCreatedMessage]
+            )
             (implicit system: ActorSystem,
              db: Database,
              mat: ActorMaterializer,
@@ -44,11 +48,10 @@ class Routes(namespaceExtractor: Directive1[Namespace])
   import Directives._
   import StatusCodes._
 
-  val extractId: Directive1[Id] = refined[ValidId](Slash ~ Segment).map(Id(_))
-  val extractDeviceId: Directive1[DeviceId] = parameter('deviceId.as[String]).map(DeviceId(_))
+  val logger = LoggerFactory.getLogger(this.getClass)
 
-  protected val publishFn = MessageBusManager.getDeviceCreatedPublisher(system, ConfigFactory.load())
-                              .fold[DeviceCreatedMessage => Unit](throw _, identity)
+  val extractId: Directive1[Id] = refined[ValidId](Slash ~ Segment).map(Id)
+  val extractDeviceId: Directive1[DeviceId] = parameter('deviceId.as[String]).map(DeviceId)
 
   def searchDevice(ns: Namespace): Route =
     parameters(('regex.as[String Refined Regex].?,
@@ -63,14 +66,18 @@ class Routes(namespaceExtractor: Directive1[Namespace])
     }
 
   def createDevice(ns: Namespace, device: DeviceT): Route = {
-    val f = db.run(Devices.create(ns, device))
-      .map(id => {
-        Marshal(id).to[ResponseEntity].map { body =>
-          publishFn(new DeviceCreatedMessage(ns, device.deviceName, device.deviceId, device.deviceType))
-          HttpResponse(Created, List(Location(Uri("/devices/" + id.show))), body)
-        }
-      })
-   complete(f)
+    val f = db
+      .run(Devices.create(ns, device))
+      .andThen {
+        case scala.util.Success(_) =>
+          messageBusPublisher.publish(DeviceCreatedMessage(ns, device.deviceName, device.deviceId, device.deviceType))
+      }
+
+   onSuccess(f) { id =>
+     respondWithHeaders(List(Location(Uri("/devices/" + id.show)))) {
+       complete(Created -> id)
+     }
+   }
   }
 
   def fetchDevice(id: Id): Route =

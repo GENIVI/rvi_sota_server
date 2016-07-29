@@ -12,6 +12,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive0, Directive1, Route}
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
+import cats.data.Xor
 import com.typesafe.config.Config
 import org.genivi.sota.client.DeviceRegistryClient
 import org.genivi.sota.core.db.DatabaseConfig
@@ -24,6 +25,8 @@ import org.genivi.sota.db.BootMigrations
 import org.genivi.sota.http.AuthDirectives.AuthScope
 import org.genivi.sota.http._
 import org.genivi.sota.http.LogDirectives._
+import org.genivi.sota.messaging.{MessageBusManager, MessageBusPublisher}
+import org.genivi.sota.messaging.Messages.DeviceSeenMessage
 import slick.driver.MySQLDriver.api.Database
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -75,12 +78,13 @@ trait HttpBoot {
 
   def httpInteractionRoutes(db: Database,
                             namespaceDirective: Directive1[Namespace],
-                            authDirective: AuthScope => Directive0
+                            authDirective: AuthScope => Directive0,
+                            messageBusPublisher: MessageBusPublisher[DeviceSeenMessage]
                            ): Route = {
     val webService = new WebService(DefaultUpdateNotifier, resolverClient, deviceRegistryClient, db,
       namespaceDirective)
     val vehicleService = new DeviceUpdatesResource(db, resolverClient, deviceRegistryClient,
-      namespaceDirective, authDirective)
+      namespaceDirective, authDirective, messageBusPublisher)
 
     webService.route ~ vehicleService.route
   }
@@ -131,6 +135,15 @@ object Boot extends App with DatabaseConfig with HttpBoot with RviBoot with Boot
 
   val healthResource = new HealthResource(db, org.genivi.sota.core.BuildInfo.toMap)
 
+  lazy val messageBusPublisher: MessageBusPublisher[DeviceSeenMessage] =
+    MessageBusManager
+      .getDeviceSeenPublisher(system, system.settings.config) match {
+      case Xor.Right(v) => v
+      case Xor.Left(err) =>
+        log.error("Could not initialize message bus publisher", err)
+        MessageBusPublisher.ignore
+    }
+
   log.info(s"using interaction protocol '$interactionProtocol'")
 
   val sotaLog: Directive0 = {
@@ -146,7 +159,7 @@ object Boot extends App with DatabaseConfig with HttpBoot with RviBoot with Boot
 
     case _ =>
       FastFuture.successful {
-        httpInteractionRoutes(db, NamespaceDirectives.fromConfig(), AuthDirectives.fromConfig()) ~
+        httpInteractionRoutes(db, NamespaceDirectives.fromConfig(), AuthDirectives.fromConfig(), messageBusPublisher) ~
           healthResource.route
       }
   }
