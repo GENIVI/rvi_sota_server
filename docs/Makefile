@@ -1,9 +1,7 @@
 all: 
-	mkdir -p output
-	docker build -t sota_docs_site .
-	docker run -t -i -v $(PWD)/output:/data/output sota_docs_site jekyll build -d output
+	docker run -t -i -v $(PWD):/site advancedtelematic/jekyll-asciidoc
 
 clean:
-	rm -rf output
+	rm -rf _site/
 
 .PHONY: all clean

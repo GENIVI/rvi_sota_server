@@ -1,10 +1,10 @@
-FROM ruby:2.2.3
+FROM ruby:2.2.5
 
-RUN gem install asciidoctor
-RUN gem install jekyll
-RUN gem install jekyll-asciidoc
-RUN gem install therubyracer
+ADD Gemfile /
 
-WORKDIR /data
+RUN bundle install
+VOLUME /site
+WORKDIR /site
+ENTRYPOINT ["jekyll"]
+CMD ["b"]
 
-ADD . /data
