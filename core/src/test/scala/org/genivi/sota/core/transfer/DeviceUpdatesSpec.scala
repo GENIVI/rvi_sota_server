@@ -46,7 +46,7 @@ class DeviceUpdatesSpec extends FunSuite
     whenReady(deviceRegistry.createDevice(device)) { id =>
       val resolverClient = new FakeExternalResolver
       val packageIds = Gen.listOf(PackageIdGen).sample.get
-      val f = update(id, packageIds, resolverClient, deviceRegistry)
+      val f = update(id, packageIds, resolverClient)
 
       whenReady(f) { _ =>
         forAll(packageIds) { id =>
