@@ -4,8 +4,9 @@
   */
 package org.genivi.sota.core.db
 
-import org.genivi.sota.data.{BlockedInstall, Device}
+import org.genivi.sota.data.Device
 import org.genivi.sota.data.Namespace._
+import org.genivi.sota.core.data.BlockedInstall
 import org.genivi.sota.refined.SlickRefined._
 import java.time.Instant
 

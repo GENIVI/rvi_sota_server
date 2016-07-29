@@ -10,7 +10,7 @@ import io.circe.{Encoder, Json}
 import java.util.UUID
 
 import org.genivi.sota.core.data.client.PendingUpdateRequest
-import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateStatus}
+import org.genivi.sota.core.data.{BlockedInstall, Package, UpdateRequest, UpdateStatus}
 import org.genivi.sota.core.db.{BlockedInstalls, InstallHistories, Packages}
 import org.genivi.sota.core.resolver.{Connectivity, ConnectivityClient, DefaultConnectivity}
 import org.genivi.sota.core.rvi.{InstallReport, OperationResult, UpdateReport}
