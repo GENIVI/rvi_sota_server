@@ -4,8 +4,9 @@
   */
 package org.genivi.sota.core.db
 
-import org.genivi.sota.data.{BlockedInstall, Device}
+import org.genivi.sota.data.Device
 import org.genivi.sota.data.Namespace._
+import org.genivi.sota.core.data.BlockedInstall
 import org.genivi.sota.refined.SlickRefined._
 import java.time.Instant
 
@@ -37,6 +38,11 @@ object BlockedInstalls {
   // scalastyle:on
   val all = TableQuery[BlockedInstallTable]
 
+  def get(id: Device.Id)
+         (implicit ec: ExecutionContext): DBIO[Seq[BlockedInstall]] = {
+    all.filter(d => d.id === id).result
+  }
+
   def delete(id: Device.Id)
             (implicit ec: ExecutionContext): DBIO[Int] = {
     all
@@ -49,15 +55,6 @@ object BlockedInstalls {
     all.insertOrUpdate(
       BlockedInstall.from(id)
     )
-  }
-
-  def updateBlockedInstallQueue(id: Device.Id, isBlocked: Boolean)
-                               (implicit ec: ExecutionContext): DBIO[Int] = {
-    if (isBlocked) {
-      persist(id)
-    } else {
-      delete(id)
-    }
   }
 
   def isBlockedInstall(id: Device.Id)

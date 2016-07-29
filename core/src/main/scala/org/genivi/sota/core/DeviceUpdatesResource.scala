@@ -39,7 +39,6 @@ import org.genivi.sota.http.AuthDirectives.AuthScope
 import org.genivi.sota.messaging.Messages.DeviceSeen
 import org.genivi.sota.messaging.MessageBusPublisher
 
-
 class DeviceUpdatesResource(db: Database,
                             resolverClient: ExternalResolverClient,
                             deviceRegistry: DeviceRegistry,
@@ -184,14 +183,28 @@ class DeviceUpdatesResource(db: Database,
   }
 
   /**
-    * The web app PUT to unblock the installation queue of the given device.
+    * The web app GET whether the installation queue of the given device is blocked.
     */
-  def unblockInstall(deviceId: Device.Id): Route = {
-    val resp =
-      db.run(BlockedInstalls.updateBlockedInstallQueue(deviceId, isBlocked = false))
-        .map(_ => NoContent)
+  def getBlockedInstall(deviceId: Device.Id): Route = {
+    complete(db.run(BlockedInstalls.get(deviceId)))
+  }
 
-    complete(resp)
+  /**
+    * The web app PUT to block the installation queue of the given device.
+    */
+  def setBlockedInstall(deviceId: Device.Id): Route = {
+    val resp = db.run(BlockedInstalls.persist(deviceId))
+      .map(_ => NoContent)
+      complete(resp)
+  }
+
+  /**
+    * The web app DELETE to unblock the installation queue of the given device.
+    */
+  def deleteBlockedInstall(deviceId: Device.Id): Route = {
+    val resp = db.run(BlockedInstalls.delete(deviceId))
+      .map(_ => NoContent)
+      complete(resp)
   }
 
   /**
@@ -215,6 +228,7 @@ class DeviceUpdatesResource(db: Database,
       get {
         pathEnd { logDeviceSeen(device) { pendingPackages(device) } } ~
         path("queued") { pendingPackages(device) } ~
+        path("blocked") {getBlockedInstall(device) } ~
         path("results") { results(device) } ~
         (extractUuid & path("results")) { updateId => resultsForUpdate(device, updateId) } ~
         (extractUuid & path("download")) { updateId => downloadPackage(device, updateId) }
@@ -227,12 +241,15 @@ class DeviceUpdatesResource(db: Database,
           } ~
             path("order") { setInstallOrder(device) } ~
             (extractUuid & path("cancelupdate") & authNamespace) { (updateId, _) => cancelUpdate(device, updateId) } ~
-            path("unblock") { unblockInstall(device) }
+            path("blocked") { setBlockedInstall(device) }
         } ~
         post {
           path("sync") { sync(device) } ~
             (authNamespace & pathEnd) { ns => queueDeviceUpdate(ns, device) } ~
             (extractUuid & pathEnd) { reportInstall }
+        } ~
+        delete {
+          path("blocked") { deleteBlockedInstall(device) }
         }
     }
   }
