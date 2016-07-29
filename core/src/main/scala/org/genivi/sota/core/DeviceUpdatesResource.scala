@@ -25,6 +25,7 @@ import org.genivi.sota.core.storage.PackageStorage
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
+import cats.data.Xor.{Left, Right}
 import org.genivi.sota.core.transfer.DeviceUpdates
 import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec}
 import org.genivi.sota.core.data.client.PendingUpdateRequest
@@ -36,10 +37,12 @@ import org.genivi.sota.data.Namespace
 import scala.language.implicitConversions
 import slick.driver.MySQLDriver.api.Database
 import cats.syntax.show.toShowOps
+import cats.syntax.xor
 import com.typesafe.config.ConfigFactory
 import org.genivi.sota.http.AuthDirectives.AuthScope
-import org.genivi.sota.messaging.Messages.DeviceSeenMessage
+import org.genivi.sota.messaging.Messages.{DeviceSeenMessage, Message}
 import org.genivi.sota.messaging.MessageBusManager
+import org.slf4j.LoggerFactory
 
 
 class DeviceUpdatesResource(db: Database,
@@ -58,6 +61,7 @@ class DeviceUpdatesResource(db: Database,
   implicit val ec = system.dispatcher
   implicit val _db = db
   implicit val _config = system.settings.config
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   lazy val packageRetrievalOp = (new PackageStorage).retrieveResponse _
 
@@ -65,13 +69,20 @@ class DeviceUpdatesResource(db: Database,
 
   protected lazy val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
 
-  protected val publishFn = MessageBusManager.getDeviceSeenPublisher(system, ConfigFactory.load())
-                              .fold[DeviceSeenMessage => Unit](throw _, identity)
+  protected lazy val messageBusPublishFn: DeviceSeenMessage => Unit =
+    MessageBusManager
+      .getDeviceSeenPublisher(system, ConfigFactory.load())
+      .recover {
+        case error => (_: DeviceSeenMessage) => {
+          logger.error("Could not initialize message bus publisher", error)
+        }
+      }
+      .toOption.get
 
   def logDeviceSeen(id: Device.Id): Directive0 = {
     extractRequestContext flatMap { _ =>
       onComplete {
-        publishFn(new DeviceSeenMessage(id, Instant.now()))
+        messageBusPublishFn(DeviceSeenMessage(id, Instant.now()))
         deviceRegistry.updateLastSeen(id)
       }
     } flatMap (_ => pass)
@@ -83,7 +94,7 @@ class DeviceUpdatesResource(db: Database,
   def updateInstalledPackages(id: Device.Id): Route = {
     entity(as[List[PackageId]]) { ids =>
       val f = DeviceUpdates
-        .update(id, ids, resolverClient, deviceRegistry)
+        .update(id, ids, resolverClient)
         .map(_ => OK)
 
       complete(f)
