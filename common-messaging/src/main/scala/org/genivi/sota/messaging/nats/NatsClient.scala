@@ -9,8 +9,8 @@ import com.typesafe.config.{Config, ConfigException}
 import io.circe.syntax._
 import org.genivi.sota.marshalling.CirceInstances._
 import org.genivi.sota.messaging.ConfigHelpers._
-import org.genivi.sota.messaging.Messages.{DeviceCreatedMessage, DeviceSeenMessage, Message}
-import org.genivi.sota.messaging.Messages
+import org.genivi.sota.messaging.Messages._
+import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
 import org.nats.{Conn, Msg}
 import org.slf4j.LoggerFactory
 
@@ -35,18 +35,18 @@ object NatsClient {
       client
     }
 
-  def getDeviceSeenPublisher(system: ActorSystem, config: Config): ConfigException Xor (DeviceSeenMessage => Unit) =
-    getClient(system, config).map(conn =>
-          (msg: DeviceSeenMessage) => {
+  def getDeviceSeenPublisher(system: ActorSystem, config: Config): ConfigException Xor MessageBusPublisher[DeviceSeen] =
+    getClient(system, config).map { conn =>
+      MessageBusPublisher { msg =>
         conn.publish(msg.getClass.getName, msg.asJson.noSpaces)
-      })
+      }
+    }
 
-  def getDeviceCreatedPublisher(system: ActorSystem, config: Config)
-      : ConfigException Xor (DeviceCreatedMessage => Unit) =
-    getClient(system, config).map(conn =>
-      (msg: DeviceCreatedMessage) => {
-        conn.publish(msg.getClass.getName, msg.asJson.noSpaces)
-      })
+  def getDeviceCreatedPublisher(system: ActorSystem,
+                                config: Config): ConfigException Xor MessageBusPublisher[DeviceCreated] =
+    getClient(system, config).map { conn =>
+      MessageBusPublisher { msg => conn.publish(msg.getClass.getName, msg.asJson.noSpaces) }
+    }
 
   def runListener(system: ActorSystem, config: Config, subjectName: String,
                   parseFn: String => io.circe.Error Xor Message)
@@ -66,8 +66,8 @@ object NatsClient {
     }
 
   def runDeviceSeenListener(system: ActorSystem, config: Config): ConfigException Xor Done =
-    runListener(system, config, DeviceSeenMessage.getClass.getName, Messages.parseDeviceSeenMsg)
+    runListener(system, config, DeviceSeen.getClass.getName, Messages.parseDeviceSeenMsg)
 
   def runDeviceCreatedListener(system: ActorSystem, config: Config): ConfigException Xor Done =
-    runListener(system, config, DeviceCreatedMessage.getClass.getName, Messages.parseDeviceCreatedMsg)
+    runListener(system, config, DeviceCreated.getClass.getName, Messages.parseDeviceCreatedMsg)
 }

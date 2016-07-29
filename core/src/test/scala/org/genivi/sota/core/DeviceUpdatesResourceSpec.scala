@@ -21,7 +21,7 @@ import java.time.Instant
 import org.genivi.sota.http.{AuthDirectives, NamespaceDirectives}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
-import org.genivi.sota.messaging.Messages.DeviceSeenMessage
+import org.genivi.sota.messaging.Messages.DeviceSeen$
 import org.scalacheck.Gen
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}

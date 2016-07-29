@@ -12,7 +12,6 @@ import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Uuid
-import slick.dbio.DBIO
 import io.circe.generic.auto._
 import java.util.UUID
 
@@ -25,7 +24,6 @@ import org.genivi.sota.core.storage.PackageStorage
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
-import cats.data.Xor.{Left, Right}
 import org.genivi.sota.core.transfer.DeviceUpdates
 import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec}
 import org.genivi.sota.core.data.client.PendingUpdateRequest
@@ -37,12 +35,9 @@ import org.genivi.sota.data.Namespace
 import scala.language.implicitConversions
 import slick.driver.MySQLDriver.api.Database
 import cats.syntax.show.toShowOps
-import cats.syntax.xor
-import com.typesafe.config.ConfigFactory
 import org.genivi.sota.http.AuthDirectives.AuthScope
-import org.genivi.sota.messaging.Messages.{DeviceSeenMessage, Message}
-import org.genivi.sota.messaging.{MessageBusManager, MessageBusPublisher}
-import org.slf4j.LoggerFactory
+import org.genivi.sota.messaging.Messages.DeviceSeen
+import org.genivi.sota.messaging.MessageBusPublisher
 
 
 class DeviceUpdatesResource(db: Database,
@@ -50,7 +45,7 @@ class DeviceUpdatesResource(db: Database,
                             deviceRegistry: DeviceRegistry,
                             authNamespace: Directive1[Namespace],
                             authDirective: AuthScope => Directive0,
-                            messageBusPublisher: MessageBusPublisher[DeviceSeenMessage])
+                            messageBusPublisher: MessageBusPublisher[DeviceSeen])
                            (implicit system: ActorSystem, mat: ActorMaterializer,
                             connectivity: Connectivity = DefaultConnectivity) {
 
@@ -72,7 +67,7 @@ class DeviceUpdatesResource(db: Database,
   def logDeviceSeen(id: Device.Id): Directive0 = {
     extractRequestContext flatMap { _ =>
       onComplete {
-        messageBusPublisher.publish(DeviceSeenMessage(id, Instant.now()))
+        messageBusPublisher.publishSafe(DeviceSeen(id, Instant.now()))
         deviceRegistry.updateLastSeen(id)
       }
     } flatMap (_ => pass)

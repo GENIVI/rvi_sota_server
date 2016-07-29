@@ -2,16 +2,29 @@ package org.genivi.sota.messaging
 
 import akka.Done
 import akka.actor.ActorSystem
-import akka.event.Logging
+import akka.event.{EventStream, Logging}
 import cats.data.Xor
 import com.typesafe.config.ConfigException.Missing
 import com.typesafe.config.{Config, ConfigException}
-import org.genivi.sota.messaging.Messages.{DeviceCreatedMessage, DeviceSeenMessage, Message}
+import org.genivi.sota.messaging.Messages._
 import org.genivi.sota.messaging.kinesis.KinesisClient
 import org.genivi.sota.messaging.nats.NatsClient
+import org.slf4j.LoggerFactory
 
-trait MessageBusPublisher[-T <: Message] {
-  def publish(msg: T)
+import scala.util.Try
+
+trait MessageBusPublisher[T <: Message] {
+  lazy private val logger = LoggerFactory.getLogger(this.getClass)
+
+  def publish(msg: T): Unit
+
+  def publishSafe(msg: T): Try[Unit] = {
+    val t = Try(publish(msg))
+    if(t.isFailure) {
+      logger.error(s"Could not publish $msg msg to bus", t.failed.get)
+    }
+    t
+  }
 }
 
 object MessageBusPublisher {
@@ -25,11 +38,9 @@ object MessageBusPublisher {
 }
 
 object MessageBusManager {
+  lazy val log = LoggerFactory.getLogger(this.getClass)
 
-  // TODO: All these can be made more general
-
-  def getSubscriber(system: ActorSystem, config: Config): ConfigException Xor Done = {
-    val log = Logging.getLogger(system, this.getClass)
+  def subscribeDeviceSeen(system: ActorSystem, config: Config): ConfigException Xor Done = {
     config.getString("messaging.mode") match {
       case "nats" =>
         log.info("Starting messaging mode: NATS")
@@ -44,8 +55,7 @@ object MessageBusManager {
     }
   }
 
-  def getDeviceCreatedSubscriber(system: ActorSystem, config: Config): ConfigException Xor Done = {
-    val log = Logging.getLogger(system, this.getClass)
+  def subscribeDeviceCreated(system: ActorSystem, config: Config): ConfigException Xor Done = {
     config.getString("messaging.mode") match {
       case "nats" =>
         log.info("Starting messaging mode: NATS")
@@ -61,32 +71,28 @@ object MessageBusManager {
   }
 
   def getDeviceSeenPublisher(system: ActorSystem,
-                             config: Config): ConfigException Xor MessageBusPublisher[DeviceSeenMessage] = {
+                             config: Config): ConfigException Xor MessageBusPublisher[DeviceSeen] = {
     val log = Logging.getLogger(system, this.getClass)
 
-    val fn = config.getString("messaging.mode") match {
+    config.getString("messaging.mode") match {
       case "nats" =>
         log.info("Starting messaging mode: NATS")
-        NatsClient
-          .getDeviceSeenPublisher(system, config)
+        NatsClient.getDeviceSeenPublisher(system, config)
       case "kinesis" =>
         log.info("Starting messaging mode: Kinesis")
-        KinesisClient
-          .getDeviceSeenPublisher(system, config)
+        KinesisClient.getDeviceSeenPublisher(system, config)
       case "test" =>
         log.info("Starting messaging mode: Test")
-        Xor.right((msg:DeviceSeenMessage) => system.eventStream.publish(msg))
+        Xor.right(MessageBusPublisher(system.eventStream.publish))
       case _ => Xor.left(new Missing("Unknown messaging mode specified"))
     }
-
-    fn map(MessageBusPublisher(_))
   }
 
   def getDeviceCreatedPublisher(system: ActorSystem, config: Config)
-      : ConfigException Xor MessageBusPublisher[DeviceCreatedMessage] = {
+      : ConfigException Xor MessageBusPublisher[DeviceCreated] = {
     val log = Logging.getLogger(system, this.getClass)
 
-    val fn = config.getString("messaging.mode") match {
+    config.getString("messaging.mode") match {
       case "nats" =>
         log.info("Starting messaging mode: NATS")
         NatsClient.getDeviceCreatedPublisher(system, config)
@@ -95,10 +101,9 @@ object MessageBusManager {
         KinesisClient.getDeviceCreatedPublisher(system, config)
       case "test" =>
         log.info("Starting messaging mode: Test")
-        Xor.right((msg:DeviceCreatedMessage) => system.eventStream.publish(msg))
+        Xor.right(MessageBusPublisher(system.eventStream.publish))
       case _ => Xor.left(new Missing("Unknown messaging mode specified"))
     }
 
-    fn map(MessageBusPublisher(_))
   }
 }

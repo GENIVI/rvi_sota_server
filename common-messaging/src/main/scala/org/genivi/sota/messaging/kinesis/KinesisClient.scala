@@ -16,11 +16,13 @@ import com.amazonaws.services.kinesis.AmazonKinesisClient
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.{KinesisClientLibConfiguration, Worker}
 import com.typesafe.config.{Config, ConfigException}
 import org.genivi.sota.messaging.ConfigHelpers._
-import org.genivi.sota.messaging.Messages
-import org.genivi.sota.messaging.Messages.{DeviceCreatedMessage, DeviceSeenMessage, Message}
-
+import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
+import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceSeen, Message}
+import org.genivi.sota.data.Device._
+import cats.syntax.show.toShowOps
 import scala.concurrent.Future
 import scala.util.Try
+import scala.concurrent.blocking
 
 object KinesisClient {
 
@@ -54,23 +56,21 @@ object KinesisClient {
     }
 
   def getDeviceSeenPublisher(system: ActorSystem,
-                             config: Config): ConfigException Xor (DeviceSeenMessage => Unit) =
+                             config: Config): ConfigException Xor MessageBusPublisher[DeviceSeen] =
     getAmazonClient(system, config).map { client =>
-      (msg: DeviceSeenMessage) =>
-        {
-          client.putRecord(DeviceSeenMessage.streamName, ByteBuffer.wrap(msg.asJson.noSpaces.getBytes),
-            msg.deviceId.underlying.get)
-        }: Unit
+        MessageBusPublisher { msg =>
+          client.putRecord(DeviceSeen.streamName, ByteBuffer.wrap(msg.asJson.noSpaces.getBytes),
+            msg.deviceId.show)
+        }
     }
 
   def getDeviceCreatedPublisher(system: ActorSystem,
-                             config: Config): ConfigException Xor (DeviceCreatedMessage => Unit) =
+                             config: Config): ConfigException Xor MessageBusPublisher[DeviceCreated] =
   getAmazonClient(system, config).map { client =>
-    (msg: DeviceCreatedMessage) =>
-      {
-        client.putRecord(DeviceCreatedMessage.streamName, ByteBuffer.wrap(msg.asJson.noSpaces.getBytes),
-          msg.deviceName.underlying)
-      }: Unit
+    MessageBusPublisher { msg =>
+      client.putRecord(DeviceCreated.streamName, ByteBuffer.wrap(msg.asJson.noSpaces.getBytes),
+        msg.deviceName.underlying)
+    }
   }
 
   def runWorker(system: ActorSystem, config: Config, streamName: String, parseFn: String => io.circe.Error Xor Message)
@@ -93,19 +93,17 @@ object KinesisClient {
         .config(kinesisClientConfig)
         .build()
 
-      // We are stealing a thread from default dispatcher. Probably we better configure it
-      implicit val ec = system.dispatcher
-      Future { worker.run() }
+      Future(blocking { worker.run() })(system.dispatcher)
       system.registerOnTermination(Try { worker.shutdown() })
       Done
     }
 
   def runDeviceSeenWorker(system: ActorSystem, config: Config): ConfigException Xor Done = {
-    runWorker(system, config, DeviceSeenMessage.streamName, Messages.parseDeviceSeenMsg)
+    runWorker(system, config, DeviceSeen.streamName, Messages.parseDeviceSeenMsg)
   }
 
   def runDeviceCreatedWorker(system: ActorSystem, config: Config): ConfigException Xor Done = {
-    runWorker(system, config, DeviceCreatedMessage.streamName, Messages.parseDeviceCreatedMsg)
+    runWorker(system, config, DeviceCreated.streamName, Messages.parseDeviceCreatedMsg)
   }
 
 

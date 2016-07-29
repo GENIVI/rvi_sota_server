@@ -12,7 +12,6 @@ import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.unmarshalling.{FromStringUnmarshaller, Unmarshaller}
 import akka.stream.ActorMaterializer
-import com.typesafe.config.ConfigFactory
 import eu.timepit.refined._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
@@ -21,8 +20,8 @@ import org.genivi.sota.data.{Device, DeviceT, Namespace}
 import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
-import org.genivi.sota.messaging.{MessageBusManager, MessageBusPublisher}
-import org.genivi.sota.messaging.Messages.DeviceCreatedMessage
+import org.genivi.sota.messaging.MessageBusPublisher
+import org.genivi.sota.messaging.Messages.DeviceCreated
 import org.genivi.sota.rest.Validation._
 import org.slf4j.LoggerFactory
 
@@ -37,7 +36,7 @@ import scala.util.Success
  * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
  */
 class Routes(namespaceExtractor: Directive1[Namespace],
-             messageBusPublisher: MessageBusPublisher[DeviceCreatedMessage]
+             messageBusPublisher: MessageBusPublisher[DeviceCreated]
             )
             (implicit system: ActorSystem,
              db: Database,
@@ -70,7 +69,7 @@ class Routes(namespaceExtractor: Directive1[Namespace],
       .run(Devices.create(ns, device))
       .andThen {
         case scala.util.Success(_) =>
-          messageBusPublisher.publish(DeviceCreatedMessage(ns, device.deviceName, device.deviceId, device.deviceType))
+          messageBusPublisher.publish(DeviceCreated(ns, device.deviceName, device.deviceId, device.deviceType))
       }
 
    onSuccess(f) { id =>

@@ -1,7 +1,7 @@
 package org.genivi.sota.messaging
 
 import akka.event.EventStream
-import org.genivi.sota.messaging.Messages.DeviceSeenMessage
+import org.genivi.sota.messaging.Messages.DeviceSeen
 
 trait MessageBusClient {
 
@@ -16,7 +16,7 @@ trait MessageBusClient {
     */
   def init(eventStream: EventStream): Unit
 
-  def sendMsg(msg: DeviceSeenMessage): Unit
+  def sendMsg(msg: DeviceSeen): Unit
 
   def shutdown(): Unit
 }
