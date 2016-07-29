@@ -41,7 +41,7 @@ import cats.syntax.xor
 import com.typesafe.config.ConfigFactory
 import org.genivi.sota.http.AuthDirectives.AuthScope
 import org.genivi.sota.messaging.Messages.{DeviceSeenMessage, Message}
-import org.genivi.sota.messaging.MessageBusManager
+import org.genivi.sota.messaging.{MessageBusManager, MessageBusPublisher}
 import org.slf4j.LoggerFactory
 
 
@@ -49,7 +49,8 @@ class DeviceUpdatesResource(db: Database,
                             resolverClient: ExternalResolverClient,
                             deviceRegistry: DeviceRegistry,
                             authNamespace: Directive1[Namespace],
-                            authDirective: AuthScope => Directive0)
+                            authDirective: AuthScope => Directive0,
+                            messageBusPublisher: MessageBusPublisher[DeviceSeenMessage])
                            (implicit system: ActorSystem, mat: ActorMaterializer,
                             connectivity: Connectivity = DefaultConnectivity) {
 
@@ -61,7 +62,6 @@ class DeviceUpdatesResource(db: Database,
   implicit val ec = system.dispatcher
   implicit val _db = db
   implicit val _config = system.settings.config
-  private val logger = LoggerFactory.getLogger(this.getClass)
 
   lazy val packageRetrievalOp = (new PackageStorage).retrieveResponse _
 
@@ -69,20 +69,10 @@ class DeviceUpdatesResource(db: Database,
 
   protected lazy val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
 
-  protected lazy val messageBusPublishFn: DeviceSeenMessage => Unit =
-    MessageBusManager
-      .getDeviceSeenPublisher(system, ConfigFactory.load())
-      .recover {
-        case error => (_: DeviceSeenMessage) => {
-          logger.error("Could not initialize message bus publisher", error)
-        }
-      }
-      .toOption.get
-
   def logDeviceSeen(id: Device.Id): Directive0 = {
     extractRequestContext flatMap { _ =>
       onComplete {
-        messageBusPublishFn(DeviceSeenMessage(id, Instant.now()))
+        messageBusPublisher.publish(DeviceSeenMessage(id, Instant.now()))
         deviceRegistry.updateLastSeen(id)
       }
     } flatMap (_ => pass)

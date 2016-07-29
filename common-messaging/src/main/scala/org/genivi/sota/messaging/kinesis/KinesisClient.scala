@@ -41,7 +41,6 @@ object KinesisClient {
     for {
       cfg          <- config.configAt("messaging.kinesis")
       appName      <- cfg.readString("appName")
-      streamName   <- cfg.readString("streamName")
       regionName   <- cfg.readString("regionName")
       region       =  Regions.fromName(regionName)
       version      <- cfg.readString("appVersion")
@@ -59,7 +58,7 @@ object KinesisClient {
     getAmazonClient(system, config).map { client =>
       (msg: DeviceSeenMessage) =>
         {
-          client.putRecord(DeviceSeenMessage.getClass.getName, ByteBuffer.wrap(msg.asJson.noSpaces.getBytes),
+          client.putRecord(DeviceSeenMessage.streamName, ByteBuffer.wrap(msg.asJson.noSpaces.getBytes),
             msg.deviceId.underlying.get)
         }: Unit
     }
@@ -69,7 +68,7 @@ object KinesisClient {
   getAmazonClient(system, config).map { client =>
     (msg: DeviceCreatedMessage) =>
       {
-        client.putRecord(DeviceCreatedMessage.getClass.getName, ByteBuffer.wrap(msg.asJson.noSpaces.getBytes),
+        client.putRecord(DeviceCreatedMessage.streamName, ByteBuffer.wrap(msg.asJson.noSpaces.getBytes),
           msg.deviceName.underlying)
       }: Unit
   }
@@ -102,11 +101,17 @@ object KinesisClient {
     }
 
   def runDeviceSeenWorker(system: ActorSystem, config: Config): ConfigException Xor Done = {
-    runWorker(system, config, DeviceSeenMessage.getClass.getName, Messages.parseDeviceSeenMsg)
+    runWorker(system, config, DeviceSeenMessage.streamName, Messages.parseDeviceSeenMsg)
   }
 
   def runDeviceCreatedWorker(system: ActorSystem, config: Config): ConfigException Xor Done = {
-    runWorker(system, config, DeviceCreatedMessage.getClass.getName, Messages.parseDeviceCreatedMsg)
+    runWorker(system, config, DeviceCreatedMessage.streamName, Messages.parseDeviceCreatedMsg)
   }
 
+
+  private implicit class StreamNameOp[T](v: T) {
+    def streamName: String = {
+      v.getClass.getSimpleName.filterNot(c => List('$').contains(c))
+    }
+  }
 }

@@ -11,6 +11,8 @@ import akka.stream.ActorMaterializer
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.db.BootMigrations
 import org.genivi.sota.http._
+import org.genivi.sota.messaging.{MessageBusManager, MessageBusPublisher}
+import org.genivi.sota.messaging.Messages.DeviceCreatedMessage
 import org.genivi.sota.rest.Handlers.{exceptionHandler, rejectionHandler}
 import org.slf4j.LoggerFactory
 
@@ -22,14 +24,14 @@ import slick.driver.MySQLDriver.api._
  * Base API routing class.
  * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
  */
-class Routing(namespaceExtractor: Directive1[Namespace])
+class Routing(namespaceExtractor: Directive1[Namespace], messageBusPublisher: MessageBusPublisher[DeviceCreatedMessage])
   (implicit db: Database, system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext)
     extends Directives {
 
   val route: Route = pathPrefix("api" / "v1") {
     handleRejections(rejectionHandler) {
       handleExceptions(exceptionHandler) {
-        new Routes(namespaceExtractor).route
+        new Routes(namespaceExtractor, messageBusPublisher).route
       }
     }
   }
@@ -53,11 +55,20 @@ object Boot extends App with Directives with BootMigrations {
 
   val authNamespace = NamespaceDirectives.fromConfig()
 
+  val messageBusPublish: MessageBusPublisher[DeviceCreatedMessage] =
+    MessageBusManager
+      .getDeviceCreatedPublisher(system, config)
+      .recover { case error =>
+        log.error("Could not initialize message bus publisher", error)
+        MessageBusPublisher.ignore
+      }
+      .toOption.get
+
   val routes: Route =
     (logResponseMetrics("device-registry") & versionHeaders(version)) {
       (handleRejections(rejectionHandler) & handleExceptions(exceptionHandler)) {
         pathPrefix("api" / "v1") {
-          new Routes(authNamespace).route
+          new Routes(authNamespace, messageBusPublish).route
         } ~ new HealthResource(db, org.genivi.sota.device_registry.BuildInfo.toMap).route
       }
     }
