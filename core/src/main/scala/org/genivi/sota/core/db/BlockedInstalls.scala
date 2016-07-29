@@ -57,15 +57,6 @@ object BlockedInstalls {
     )
   }
 
-  def updateBlockedInstallQueue(id: Device.Id, isBlocked: Boolean)
-                               (implicit ec: ExecutionContext): DBIO[Int] = {
-    if (isBlocked) {
-      persist(id)
-    } else {
-      delete(id)
-    }
-  }
-
   def isBlockedInstall(id: Device.Id)
                       (implicit ec: ExecutionContext): DBIO[Boolean] = {
     all

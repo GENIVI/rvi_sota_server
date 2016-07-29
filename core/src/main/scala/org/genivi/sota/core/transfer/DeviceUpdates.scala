@@ -92,7 +92,7 @@ object DeviceUpdates {
       _    <- UpdateSpecs.setStatus(spec, newStatus)
       _    <- InstallHistories.log(spec, updateReport.isSuccess)
       _    <- if (updateReport.isFail) {
-                BlockedInstalls.updateBlockedInstallQueue(device, isBlocked = true)
+                BlockedInstalls.persist(device)
               } else {
                 DBIO.successful(true)
               }
