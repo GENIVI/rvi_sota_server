@@ -13,7 +13,7 @@ import org.genivi.sota.data.Namespace
 import org.genivi.sota.db.BootMigrations
 import org.genivi.sota.http._
 import org.genivi.sota.messaging.{MessageBusManager, MessageBusPublisher}
-import org.genivi.sota.messaging.Messages.DeviceCreated
+import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted}
 import org.genivi.sota.rest.Handlers.{exceptionHandler, rejectionHandler}
 import org.slf4j.LoggerFactory
 
@@ -25,14 +25,15 @@ import slick.driver.MySQLDriver.api._
  * Base API routing class.
  * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
  */
-class Routing(namespaceExtractor: Directive1[Namespace], messageBusPublisher: MessageBusPublisher[DeviceCreated])
+class Routing(namespaceExtractor: Directive1[Namespace], messageBusPublisherCreated: MessageBusPublisher[DeviceCreated],
+              messageBusPublisherDeleted: MessageBusPublisher[DeviceDeleted])
   (implicit db: Database, system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext)
     extends Directives {
 
   val route: Route = pathPrefix("api" / "v1") {
     handleRejections(rejectionHandler) {
       handleExceptions(exceptionHandler) {
-        new Routes(namespaceExtractor, messageBusPublisher).route
+        new Routes(namespaceExtractor, messageBusPublisherCreated, messageBusPublisherDeleted).route
       }
     }
   }
@@ -56,8 +57,16 @@ object Boot extends App with Directives with BootMigrations {
 
   val authNamespace = NamespaceDirectives.fromConfig()
 
-  val messageBusPublish: MessageBusPublisher[DeviceCreated] =
-    MessageBusManager.getDeviceCreatedPublisher(system, config) match {
+  lazy val messageBusPublishDeviceCreated: MessageBusPublisher[DeviceCreated] =
+    MessageBusManager.getPublisher[DeviceCreated](system, config) match {
+      case Xor.Right(v) => v
+      case Xor.Left(error) =>
+        log.error("Could not initialize message bus publisher", error)
+        MessageBusPublisher.ignore
+    }
+
+  lazy val messageBusPublishDeviceDeleted: MessageBusPublisher[DeviceDeleted] =
+    MessageBusManager.getPublisher[DeviceDeleted](system, config) match {
       case Xor.Right(v) => v
       case Xor.Left(error) =>
         log.error("Could not initialize message bus publisher", error)
@@ -68,7 +77,7 @@ object Boot extends App with Directives with BootMigrations {
     (logResponseMetrics("device-registry") & versionHeaders(version)) {
       (handleRejections(rejectionHandler) & handleExceptions(exceptionHandler)) {
         pathPrefix("api" / "v1") {
-          new Routes(authNamespace, messageBusPublish).route
+          new Routes(authNamespace, messageBusPublishDeviceCreated, messageBusPublishDeviceDeleted).route
         } ~ new HealthResource(db, org.genivi.sota.device_registry.BuildInfo.toMap).route
       }
     }

@@ -15,11 +15,11 @@ import com.amazonaws.regions.Regions
 import com.amazonaws.services.kinesis.AmazonKinesisClient
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.{KinesisClientLibConfiguration, Worker}
 import com.typesafe.config.{Config, ConfigException}
+import io.circe.{Decoder, Encoder}
 import org.genivi.sota.messaging.ConfigHelpers._
-import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
-import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceSeen, Message}
-import org.genivi.sota.data.Device._
-import cats.syntax.show.toShowOps
+import org.genivi.sota.messaging.MessageBusPublisher
+import org.genivi.sota.messaging.Messages._
+
 import scala.concurrent.Future
 import scala.util.Try
 import scala.concurrent.blocking
@@ -55,26 +55,18 @@ object KinesisClient {
       client
     }
 
-  def getDeviceSeenPublisher(system: ActorSystem,
-                             config: Config): ConfigException Xor MessageBusPublisher[DeviceSeen] =
+  def getPublisher[T <: Message](system: ActorSystem, config: Config)
+                                (implicit encoder: Encoder[T]): ConfigException Xor MessageBusPublisher[T] =
     getAmazonClient(system, config).map { client =>
-        MessageBusPublisher { msg =>
-          client.putRecord(DeviceSeen.streamName, ByteBuffer.wrap(msg.asJson.noSpaces.getBytes),
-            msg.deviceId.show)
-        }
+      MessageBusPublisher { msg =>
+        client.putRecord(msg.streamName, ByteBuffer.wrap(msg.asJson.noSpaces.getBytes),
+          msg.partitionKey)
+      }
     }
 
-  def getDeviceCreatedPublisher(system: ActorSystem,
-                             config: Config): ConfigException Xor MessageBusPublisher[DeviceCreated] =
-  getAmazonClient(system, config).map { client =>
-    MessageBusPublisher { msg =>
-      client.putRecord(DeviceCreated.streamName, ByteBuffer.wrap(msg.asJson.noSpaces.getBytes),
-        msg.deviceName.underlying)
-    }
-  }
-
-  def runWorker(system: ActorSystem, config: Config, streamName: String, parseFn: String => io.circe.Error Xor Message)
-  : ConfigException Xor Done =
+  def runWorker[T <: Message](system: ActorSystem, config: Config, streamName: String)
+                             (implicit decoder: Decoder[T])
+                             : ConfigException Xor Done =
     for {
       cfg                 <- config.configAt("messaging.kinesis")
       appName             <- cfg.readString("appName")
@@ -89,7 +81,7 @@ object KinesisClient {
         UUID.randomUUID().toString).withRegionName(regionName).withCommonClientConfig(clientConfig)
     } yield {
       val worker = new Worker.Builder()
-        .recordProcessorFactory(new RecordProcessorFactory(system.eventStream, parseFn))
+        .recordProcessorFactory(new RecordProcessorFactory(system.eventStream))
         .config(kinesisClientConfig)
         .build()
 
@@ -97,19 +89,4 @@ object KinesisClient {
       system.registerOnTermination(Try { worker.shutdown() })
       Done
     }
-
-  def runDeviceSeenWorker(system: ActorSystem, config: Config): ConfigException Xor Done = {
-    runWorker(system, config, DeviceSeen.streamName, Messages.parseDeviceSeenMsg)
-  }
-
-  def runDeviceCreatedWorker(system: ActorSystem, config: Config): ConfigException Xor Done = {
-    runWorker(system, config, DeviceCreated.streamName, Messages.parseDeviceCreatedMsg)
-  }
-
-
-  private implicit class StreamNameOp[T](v: T) {
-    def streamName: String = {
-      v.getClass.getSimpleName.filterNot(c => List('$').contains(c))
-    }
-  }
 }

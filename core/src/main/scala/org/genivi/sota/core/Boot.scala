@@ -137,7 +137,7 @@ object Boot extends App with DatabaseConfig with HttpBoot with RviBoot with Boot
 
   lazy val messageBusPublisher: MessageBusPublisher[DeviceSeen] =
     MessageBusManager
-      .getDeviceSeenPublisher(system, system.settings.config) match {
+      .getPublisher[DeviceSeen](system, system.settings.config) match {
       case Xor.Right(v) => v
       case Xor.Left(err) =>
         log.error("Could not initialize message bus publisher", err)

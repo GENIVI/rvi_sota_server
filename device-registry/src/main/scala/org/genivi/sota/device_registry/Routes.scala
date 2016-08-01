@@ -21,7 +21,7 @@ import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
-import org.genivi.sota.messaging.Messages.DeviceCreated
+import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted}
 import org.genivi.sota.rest.Validation._
 import org.slf4j.LoggerFactory
 
@@ -36,7 +36,8 @@ import scala.util.Success
  * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
  */
 class Routes(namespaceExtractor: Directive1[Namespace],
-             messageBusPublisher: MessageBusPublisher[DeviceCreated]
+             messageBusPublisherCreated: MessageBusPublisher[DeviceCreated],
+             messageBusPublisherDeleted: MessageBusPublisher[DeviceDeleted]
             )
             (implicit system: ActorSystem,
              db: Database,
@@ -69,7 +70,7 @@ class Routes(namespaceExtractor: Directive1[Namespace],
       .run(Devices.create(ns, device))
       .andThen {
         case scala.util.Success(_) =>
-          messageBusPublisher.publish(DeviceCreated(ns, device.deviceName, device.deviceId, device.deviceType))
+          messageBusPublisherCreated.publish(DeviceCreated(ns, device.deviceName, device.deviceId, device.deviceType))
       }
 
    onSuccess(f) { id =>
@@ -85,8 +86,15 @@ class Routes(namespaceExtractor: Directive1[Namespace],
   def updateDevice(ns: Namespace, id: Id, device: DeviceT): Route =
     complete(db.run(Devices.update(ns, id, device)))
 
-  def deleteDevice(ns: Namespace, id: Id): Route =
-    complete(db.run(Devices.delete(ns, id)))
+  def deleteDevice(ns: Namespace, id: Id): Route = {
+    val f = db
+      .run(Devices.delete(ns, id))
+      .andThen {
+        case scala.util.Success(_) =>
+          messageBusPublisherDeleted.publish(DeviceDeleted(ns, id))
+      }
+    complete(f)
+  }
 
   def updateLastSeen(id: Id): Route =
     complete(db.run(Devices.updateLastSeen(id)))

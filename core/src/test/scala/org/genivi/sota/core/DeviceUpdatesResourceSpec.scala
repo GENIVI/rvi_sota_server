@@ -11,8 +11,8 @@ import java.util.UUID
 
 import org.genivi.sota.core.data.client.PendingUpdateRequest
 import org.genivi.sota.core.data.{BlockedInstall, Package, UpdateRequest, UpdateStatus}
-import org.genivi.sota.core.db.{BlockedInstalls, InstallHistories, Packages}
-import org.genivi.sota.core.resolver.{Connectivity, ConnectivityClient, DefaultConnectivity}
+import org.genivi.sota.core.db.{InstallHistories, Packages}
+import org.genivi.sota.core.resolver.{Connectivity, ConnectivityClient}
 import org.genivi.sota.core.rvi.{InstallReport, OperationResult, UpdateReport}
 import org.genivi.sota.core.transfer.DeviceUpdates
 import org.genivi.sota.data._
@@ -21,7 +21,6 @@ import java.time.Instant
 import org.genivi.sota.http.{AuthDirectives, NamespaceDirectives}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
-import org.genivi.sota.messaging.Messages.DeviceSeen$
 import org.scalacheck.Gen
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
