@@ -30,7 +30,8 @@ class UpdateRequestResourceSpec extends FunSuite
   with UpdateResourcesDatabaseSpec
   with ScalaFutures
   with DatabaseSpec
-  with DefaultPatience {
+  with DefaultPatience
+  with LongRequestTimeout {
 
   import CirceMarshallingSupport._
   import UpdateSpec._

@@ -44,9 +44,6 @@ class Random extends ResourcePropSpec {
         case Nil           => ()
         case (sem :: sems) =>
 
-          implicit val routeTimeout: RouteTestTimeout =
-            RouteTestTimeout(10.second)
-
           sem.request ~> route ~> check {
             status shouldBe sem.statusCode
             sem.result match {
