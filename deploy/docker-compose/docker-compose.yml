@@ -21,7 +21,7 @@ services:
     expose:
       - '4222'
 
-  device_registry:
+  device-registry:
     image: advancedtelematic/sota-device_registry
     ports:
      - 8083:8083
@@ -47,12 +47,12 @@ services:
       - 8081
     depends_on:
       - mysql
-      - device_registry
+      - device-registry
     environment:
       HOST: 0.0.0.0
       RESOLVER_DB_URL: "jdbc:mariadb://mysql:3306/sota_resolver"
       RESOLVER_DB_MIGRATE: 'true'
-      DEVICE_REGISTRY_API_URI: "http://device_registry:8083"
+      DEVICE_REGISTRY_API_URI: "http://device-registry:8083"
       DB_ALIVE_URL: "mysql:3306"
       AUTH_PROTOCOL: "none"
 
@@ -65,7 +65,7 @@ services:
     depends_on:
       - mysql
       - nats
-      - device_registry
+      - device-registry
       - resolver
     environment:
       HOST: 0.0.0.0
@@ -73,7 +73,7 @@ services:
       CORE_DB_MIGRATE: 'true'
       CORE_INTERACTION_PROTOCOL: 'none'
       DB_ALIVE_URL: "mysql:3306"
-      DEVICE_REGISTRY_API_URI: "http://device_registry:8083"
+      DEVICE_REGISTRY_API_URI: "http://device-registry:8083"
       NATS_HOST: 'nats'
       NATS_PORT: '4222'
       RESOLVER_API_URI: "http://resolver:8081"
@@ -89,7 +89,7 @@ services:
   webserver:
     image: advancedtelematic/sota-webserver
     depends_on:
-      - device_registry
+      - device-registry
       - nats
       - resolver
       - core
@@ -100,7 +100,7 @@ services:
       - 9000
     environment:
       CORE_API_URI: "http://core:8080"
-      DEVICE_REGISTRY_API_URI: "http://device_registry:8083"
+      DEVICE_REGISTRY_API_URI: "http://device-registry:8083"
       NATS_HOST: 'nats'
       NATS_PORT: '4222'
       RESOLVER_API_URI: "http://resolver:8081"
