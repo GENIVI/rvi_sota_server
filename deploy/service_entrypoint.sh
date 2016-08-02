@@ -5,12 +5,12 @@ if [[ "$#" -lt "1" ]]; then
  exit 1
 fi
 
-SERVICE_NAME=$1
+_service_name=$1
 
 shift
 
 if [ -z "$DB_ALIVE_URL" ]; then
-	exec bin/$SERVICE_NAME $@
+	exec bin/$_service_name $@
 else
-	./wait-for-it.sh $DB_ALIVE_URL --strict --timeout=120 && exec bin/$SERVICE_NAME $@
+	./wait-for-it.sh $DB_ALIVE_URL --strict --timeout=120 && exec bin/$_service_name $@
 fi
