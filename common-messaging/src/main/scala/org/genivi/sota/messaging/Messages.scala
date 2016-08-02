@@ -7,7 +7,7 @@ import io.circe.{Decoder, Encoder}
 import io.circe.parser._
 import io.circe.generic.semiauto._
 import org.genivi.sota.marshalling.CirceInstances._
-import org.genivi.sota.data.Device.DeviceName
+import org.genivi.sota.data.Device.{DeviceName, Id}
 import org.genivi.sota.data.{Device, Namespace}
 
 object Messages {
@@ -20,16 +20,36 @@ object Messages {
     decode[DeviceCreated](json)
   }
 
-  trait Message
+  def parseDeviceDeletedMsg(json: String): io.circe.Error Xor DeviceDeleted = {
+    decode[DeviceDeleted](json)
+  }
+
+  sealed trait Message {
+    def partitionKey: String
+  }
 
   final case class DeviceSeen(deviceId: Device.Id,
-                              lastSeen: Instant) extends Message
+                              lastSeen: Instant) extends Message {
+    override val partitionKey = deviceId.underlying.get
+  }
 
   final case class DeviceCreated(namespace: Namespace,
                                  deviceName: DeviceName,
                                  deviceId: Option[Device.DeviceId],
-                                 deviceType: Device.DeviceType) extends Message
+                                 deviceType: Device.DeviceType) extends Message {
+    override val partitionKey = deviceName.underlying
+  }
 
+  case class DeviceDeleted(ns: Namespace, id: Id) extends Message {
+    override val partitionKey = id.underlying.get
+  }
+
+
+  implicit class StreamNameOp[T](v: T) {
+    def streamName: String = {
+      v.getClass.getSimpleName.filterNot(c => List('$').contains(c))
+    }
+  }
 
   object DeviceSeen {
     implicit val EncoderInstance: Encoder[DeviceSeen] = deriveEncoder
@@ -39,5 +59,10 @@ object Messages {
   object DeviceCreated {
     implicit val EncoderInstance: Encoder[DeviceCreated] = deriveEncoder
     implicit val DecoderInstance: Decoder[DeviceCreated] = deriveDecoder
+  }
+
+  object DeviceDeleted {
+    implicit val EncoderInstance: Encoder[DeviceDeleted] = deriveEncoder
+    implicit val DecoderInstance: Decoder[DeviceDeleted] = deriveDecoder
   }
 }

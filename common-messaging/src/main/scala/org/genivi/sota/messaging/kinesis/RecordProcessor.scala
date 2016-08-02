@@ -1,17 +1,16 @@
 package org.genivi.sota.messaging.kinesis
 
 import akka.event.EventStream
-import cats.data.Xor
 import com.amazonaws.services.kinesis.clientlibrary.interfaces.v2.IRecordProcessor
 import com.amazonaws.services.kinesis.clientlibrary.types.{InitializationInput, ProcessRecordsInput, ShutdownInput}
-import io.circe.jawn
-import org.genivi.sota.messaging.Messages
+import io.circe.{Decoder, jawn}
+import io.circe.parser._
 import org.genivi.sota.messaging.Messages.Message
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
 
-class RecordProcessor(eventStream: EventStream, parseFn: String => Xor[io.circe.Error, Message])
+class RecordProcessor[T <: Message](eventStream: EventStream, implicit val decoder: Decoder[T])
   extends IRecordProcessor {
 
   private val log = LoggerFactory.getLogger(this.getClass)
@@ -26,16 +25,11 @@ class RecordProcessor(eventStream: EventStream, parseFn: String => Xor[io.circe.
 
   override def processRecords(processRecordsInput: ProcessRecordsInput): Unit = {
     log.trace("Received record(s) from kinesis")
-    for (record <- processRecordsInput.getRecords) yield {
-      jawn.parseByteBuffer(record.getData) match {
-        case Xor.Left(e)     => log.error("Received unrecognized record data from Kinesis:" + e.getMessage)
-        case Xor.Right(json) => parseFn(json.toString) match {
-          case Xor.Right(m) => eventStream.publish(m)
-          case Xor.Left(ex) => log.error(s"Received unrecognized json from Kinesis: ${json.toString()}\n" +
-            s"Got this parse error: ${ex.toString}")
-        }
-      }
-    }
+    for {
+      record <- processRecordsInput.getRecords
+      json   <- jawn.parseByteBuffer(record.getData).toOption
+      msg    <- decode[T](json.toString).toOption
+    } yield eventStream.publish(msg)
     //TODO: Handle failure to parse messages properly, See PRO-903
     processRecordsInput.getCheckpointer.checkpoint()
   }

@@ -10,7 +10,7 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.genivi.sota.core.DatabaseSpec
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.device_registry.Routing
-import org.genivi.sota.messaging.Messages.DeviceCreated
+import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted}
 import org.genivi.sota.messaging.{MessageBusManager, MessageBusPublisher}
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec, Suite}
@@ -36,16 +36,24 @@ trait ResourceSpec extends
 
   lazy val namespaceExtractor = Directives.provide(defaultNs)
 
-  lazy val messageBusPublish: MessageBusPublisher[DeviceCreated] =
+  lazy val messageBusPublishCreated: MessageBusPublisher[DeviceCreated] =
     MessageBusManager
-      .getDeviceCreatedPublisher(system, system.settings.config) match {
+      .getPublisher[DeviceCreated](system, system.settings.config) match {
+      case Xor.Right(v) => v
+      case Xor.Left(err) => throw err
+    }
+
+  lazy val messageBusPublishDeleted: MessageBusPublisher[DeviceDeleted] =
+    MessageBusManager
+      .getPublisher[DeviceDeleted](system, system.settings.config) match {
       case Xor.Right(v) => v
       case Xor.Left(err) => throw err
     }
 
 
   // Route
-  lazy implicit val route: Route = new Routing(namespaceExtractor, messageBusPublish).route
+  lazy implicit val route: Route =
+    new Routing(namespaceExtractor, messageBusPublishCreated, messageBusPublishDeleted).route
 
 }
 
