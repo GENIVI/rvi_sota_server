@@ -16,19 +16,12 @@ import org.scalatest.prop.PropertyChecks
 import org.scalatest.{BeforeAndAfterAll, PropSpec, Suite, WordSpec}
 import Device._
 import cats.syntax.show._
-import scala.concurrent.duration._
-
-import akka.http.scaladsl.unmarshalling.{FromStringUnmarshaller, Unmarshaller}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 
-/**
- * Generic trait for REST specs
- * Includes helpers for Packages, Components, Filters, PackageFilters and
- * Resolver
- */
 trait ResourceSpec extends
-         VehicleRequests
+  LongRequestTimeout
+    with VehicleRequests
     with PackageRequests
     with FirmwareRequests
     with ComponentRequests
@@ -40,8 +33,6 @@ trait ResourceSpec extends
     with BeforeAndAfterAll { self: Suite =>
 
   implicit val _db = db
-
-  implicit override val routeTimeout: RouteTestTimeout = RouteTestTimeout(10.second)
 
   val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
 

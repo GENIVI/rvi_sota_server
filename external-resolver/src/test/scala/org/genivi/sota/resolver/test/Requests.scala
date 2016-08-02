@@ -8,11 +8,9 @@ import akka.http.scaladsl.client.RequestBuilding.{Delete, Get, Post, Put}
 import akka.http.scaladsl.model.Uri.{Path, Query}
 import akka.http.scaladsl.model.{HttpRequest, StatusCodes, Uri}
 import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.data._
-import Device.{DeviceId, showDevice}
 import cats.syntax.show.toShowOps
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.InstalledSoftware
@@ -24,7 +22,6 @@ import org.genivi.sota.resolver.resolve.ResolveFunctions
 import org.scalatest.Matchers
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
 
 /**
  * Generic test resource object
@@ -96,9 +93,7 @@ trait VehicleRequestsHttp {
 trait VehicleRequests extends
     VehicleRequestsHttp with
     PackageRequestsHttp with
-    Matchers { self: ScalatestRouteTest =>
-
-  implicit val routeTimeout: RouteTestTimeout = RouteTestTimeout(5.second)
+    Matchers { self: ResourceSpec =>
 
   def installPackageOK(device: Device.Id, pname: String, pversion: String)(implicit route: Route): Unit =
     installPackage(device, pname, pversion) ~> route ~> check {
@@ -134,7 +129,7 @@ trait PackageRequestsHttp {
 }
 
 trait PackageRequests extends
-  PackageRequestsHttp with Namespaces with Matchers { self: ScalatestRouteTest =>
+  PackageRequestsHttp with Namespaces with Matchers { self: ResourceSpec =>
 
     def addPackageOK(name: String, version: String, desc: Option[String], vendor: Option[String])
                   (implicit route: Route): Unit =
@@ -146,7 +141,7 @@ trait PackageRequests extends
 /**
  * Testing Trait for building Firmware requests
  */
-trait FirmwareRequests extends Matchers { self: ScalatestRouteTest =>
+trait FirmwareRequests extends Matchers { self: ResourceSpec =>
 
   def installFirmware
     (device: Device.Id, packages: Set[PackageId], firmware: Set[Firmware])
@@ -196,7 +191,7 @@ trait ComponentRequestsHttp {
 
 trait ComponentRequests extends
     ComponentRequestsHttp with
-    Matchers { self: ScalatestRouteTest =>
+    Matchers { self: ResourceSpec =>
 
   def addComponentOK(part: Component.PartNumber, desc: String)
                     (implicit route: Route): Unit =
@@ -245,12 +240,10 @@ trait FilterRequestsHttp extends Namespaces {
 
 }
 
-trait FilterRequests extends FilterRequestsHttp with Matchers { self: ScalatestRouteTest =>
+trait FilterRequests extends FilterRequestsHttp with Matchers {
+  self: ResourceSpec =>
 
   def addFilterOK(name: String, expr: String)(implicit route: Route): Unit = {
-
-    implicit val routeTimeout: RouteTestTimeout = RouteTestTimeout(5.second)
-
     addFilter(name, expr) ~> route ~> check {
       status shouldBe StatusCodes.OK
       responseAs[Filter] shouldBe Filter(defaultNs, Refined.unsafeApply(name), Refined.unsafeApply(expr))
@@ -267,7 +260,6 @@ trait FilterRequests extends FilterRequestsHttp with Matchers { self: ScalatestR
     deleteFilter(name) ~> route ~> check {
       status shouldBe StatusCodes.OK
     }
-
 }
 
 /**
@@ -308,7 +300,7 @@ trait PackageFilterRequestsHttp {
 trait PackageFilterRequests extends
   PackageFilterRequestsHttp with
   Matchers with
-  Namespaces { self: ScalatestRouteTest =>
+  Namespaces { self: ResourceSpec =>
 
   def addPackageFilterOK(pname: String, pversion: String, fname: String)(implicit route: Route): Unit =
     addPackageFilter(pname, pversion, fname) ~> route ~> check {
@@ -342,7 +334,7 @@ trait ResolveRequestsHttp {
 trait ResolveRequests extends
   ResolveRequestsHttp with
   Matchers with
-  Namespaces { self: ScalatestRouteTest =>
+  Namespaces { self: ResourceSpec =>
 
   def resolveOK(pname: String, pversion: String, vins: Seq[Device.Id])(implicit route: Route): Unit = {
     resolve(defaultNs, pname, pversion) ~> route ~> check {
@@ -353,5 +345,4 @@ trait ResolveRequests extends
           Refined.unsafeApply(pversion)), vins)
     }
   }
-
 }

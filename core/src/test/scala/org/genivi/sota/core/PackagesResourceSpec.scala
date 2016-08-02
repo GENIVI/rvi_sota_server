@@ -8,12 +8,13 @@ package org.genivi.sota.core
 import java.io.File
 import java.net.URI
 
+import akka.actor.ActorSystem
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.generic.auto._
 import org.genivi.sota.core.data.{Package => DataPackage}
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.Uri.Path
-import akka.http.scaladsl.testkit.ScalatestRouteTest
+import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import akka.stream.scaladsl.FileIO
 import akka.util.ByteString
 import eu.timepit.refined.api.Refined
@@ -32,6 +33,7 @@ class PackagesResourceSpec extends FunSuite
   with DatabaseSpec
   with ShouldMatchers
   with ScalaFutures
+  with LongRequestTimeout
 {
   import org.genivi.sota.http.NamespaceDirectives._
 
