@@ -15,10 +15,14 @@ object Errors {
   object Codes {
     val MissingDevice = ErrorCode("missing_device")
     val ConflictingDevice = ErrorCode("conflicting_device")
+    val MissingSystemInfo = ErrorCode("missing_system_info")
+    val SystemInfoAlreadyExists = ErrorCode("system_info_already_exists")
   }
 
   case object MissingDevice extends Throwable with NoStackTrace
   case object ConflictingDevice extends Throwable with NoStackTrace
+  case object MissingSystemInfo extends Throwable with NoStackTrace
+  case object SystemInfoAlreadyExists extends Throwable with NoStackTrace
 
   val onMissingDevice: PF = {
     case MissingDevice =>
@@ -30,4 +34,17 @@ object Errors {
       complete(StatusCodes.Conflict ->
         ErrorRepresentation(Codes.ConflictingDevice, "deviceId or deviceName is already in use"))
   }
+
+  val onMissingSystemInfo: PF = {
+    case MissingSystemInfo =>
+      complete(StatusCodes.NotFound -> ErrorRepresentation(Codes.MissingSystemInfo
+                                                          , "system info doesn't exist for this uuid"))
+  }
+
+  val onSystemInfoAlreadyExists: PF = {
+    case SystemInfoAlreadyExists =>
+      complete(StatusCodes.Conflict ->
+        ErrorRepresentation(Codes.SystemInfoAlreadyExists, "system info have been set for this uuid"))
+  }
+
 }

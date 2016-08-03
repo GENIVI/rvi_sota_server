@@ -8,6 +8,8 @@ import cats.Show
 import eu.timepit.refined._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
+import io.circe.Json
+import io.circe.jawn._
 import java.util.UUID
 
 import org.genivi.sota.data.{Device, DeviceT, Namespace}
@@ -54,8 +56,28 @@ object Devices {
 
     def pk = primaryKey("id", id)
   }
+
+  type SystemInfoType = Json
+  case class SystemInfo(id: Device.Id, systemInfo: SystemInfoType)
+
+  class SystemInfoTable(tag: Tag) extends Table[SystemInfo] (tag, "DeviceSystem") {
+    def id = column[Id]("uuid")
+    def systemInfo = column[Json]("system_info")
+
+    implicit val jsonColumnType = MappedColumnType.base[Json, String](
+      {json => json.noSpaces},
+      {str  => parse(str).fold(_ => Json.Null, x => x)}
+    )
+
+    def * = (id, systemInfo).shaped <>
+      ((SystemInfo.apply _).tupled, SystemInfo.unapply)
+
+    def pk = primaryKey("id", id)
+  }
+
   // scalastyle:on
   val devices = TableQuery[DeviceTable]
+  val systemInfos = TableQuery[SystemInfoTable]
 
   def list(ns: Namespace): DBIO[Seq[Device]] = devices.filter(_.namespace === ns).result
 
@@ -93,6 +115,15 @@ object Devices {
       .headOption
       .flatMap(_.
         fold[DBIO[Device]](DBIO.failed(Errors.MissingDevice))(DBIO.successful))
+
+  def existsSystem(id: Id)
+            (implicit ec: ExecutionContext): DBIO[SystemInfo] =
+    systemInfos
+      .filter(_.id === id)
+      .result
+      .headOption
+      .flatMap(_.
+                 fold[DBIO[SystemInfo]](DBIO.failed(Errors.MissingSystemInfo))(DBIO.successful))
 
   def findByDeviceId(ns: Namespace, deviceId: DeviceId)
                     (implicit ec: ExecutionContext): DBIO[Seq[Device]] =
@@ -133,9 +164,36 @@ object Devices {
   } yield ()
 
   def delete(ns: Namespace, id: Id)
-            (implicit ec: ExecutionContext): DBIO[Unit] = for {
-    _ <- exists(ns, id)
-    _ <- devices.filter(d => d.namespace === ns && d.id === id).delete
+            (implicit ec: ExecutionContext): DBIO[Unit] = {
+    val dbIO = for {
+      _ <- exists(ns, id)
+      _ <- devices.filter(d => d.namespace === ns && d.id === id).delete
+      _ <- systemInfos.filter(d => d.id === id).delete
+    } yield ()
+
+    dbIO.transactionally
+  }
+
+  def findSystemInfoById(id: Id)(implicit ec: ExecutionContext): DBIO[SystemInfoType] = {
+    systemInfos
+      .filter(_.id === id)
+      .result
+      .headOption
+      .flatMap(_.fold[DBIO[SystemInfoType]](DBIO.failed(Errors.MissingSystemInfo))(x => DBIO.successful(x.systemInfo)))
+  }
+
+  def createSystemInfo(id: Id, data: SystemInfoType)(implicit ec: ExecutionContext): DBIO[Unit] = for {
+    _ <- findById(id) // check that the device exists
+    _ <- existsSystem(id).asTry.flatMap {
+           case Success(_) => DBIO.failed(Errors.SystemInfoAlreadyExists)
+           case Failure(_) => DBIO.successful(())
+         }
+    _ <- systemInfos += SystemInfo(id,data)
+  } yield ()
+
+  def updateSystemInfo(id: Id, data: SystemInfoType)(implicit ec: ExecutionContext): DBIO[Unit] = for {
+    _ <- findById(id) // check that the device exists
+    _ <- systemInfos.insertOrUpdate(SystemInfo(id,data))
   } yield ()
 
 }

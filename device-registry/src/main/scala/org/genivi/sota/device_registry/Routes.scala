@@ -15,6 +15,7 @@ import akka.stream.ActorMaterializer
 import eu.timepit.refined._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
+import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.data.{Device, DeviceT, Namespace}
 import org.genivi.sota.device_registry.common.Errors
@@ -66,10 +67,19 @@ class Routes(namespaceExtractor: Directive1[Namespace],
 
    onSuccess(f) { id =>
      respondWithHeaders(List(Location(Uri("/devices/" + id.show)))) {
-       complete(Created -> id)
+        complete(Created -> id)
      }
    }
   }
+
+  def fetchSystemInfo(id: Id): Route =
+    complete(db.run(Devices.findSystemInfoById(id)))
+
+  def createSystemInfo(id: Id, data: Json): Route =
+    complete(Created -> db.run(Devices.createSystemInfo(id,data)))
+
+  def updateSystemInfo(id: Id, data: Json): Route =
+    complete(db.run(Devices.updateSystemInfo(id,data)))
 
   def fetchDevice(id: Id): Route =
     complete(db.run(Devices.findById(id)))
@@ -93,7 +103,9 @@ class Routes(namespaceExtractor: Directive1[Namespace],
   implicit val NamespaceUnmarshaller: FromStringUnmarshaller[Namespace] = Unmarshaller.strict(Namespace.apply)
 
   def api: Route =
-    handleExceptions(ExceptionHandler(Errors.onMissingDevice orElse Errors.onConflictingDevice)) {
+    handleExceptions(ExceptionHandler(Errors.onMissingDevice orElse Errors.onConflictingDevice
+                                                             orElse Errors.onMissingSystemInfo
+                                                             orElse Errors.onSystemInfoAlreadyExists)) {
       pathPrefix("devices") {
         namespaceExtractor { ns =>
           (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
@@ -108,6 +120,15 @@ class Routes(namespaceExtractor: Directive1[Namespace],
         } ~
         (extractId & post & path("ping")) { id =>
           updateLastSeen(id)
+        } ~
+        (extractId & get & path("system_info") & pathEnd) { id =>
+          fetchSystemInfo(id)
+        } ~
+        (extractId & post & path("system_info") & pathEnd) { id =>
+          entity(as[Json]) {body => createSystemInfo(id, body)}
+        } ~
+        (extractId & put & path("system_info") & pathEnd) { id =>
+          entity(as[Json]) {body => updateSystemInfo(id, body)}
         } ~
         (extractId & get & pathEnd) { id =>
           fetchDevice(id)

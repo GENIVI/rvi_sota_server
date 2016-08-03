@@ -8,7 +8,8 @@ import akka.http.scaladsl.model.StatusCodes
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
-import org.genivi.sota.data.{Device, DeviceT, Namespaces, DeviceGenerators, RegexGenerators}
+import io.circe.Json
+import org.genivi.sota.data.{Device, DeviceT, Namespaces, DeviceGenerators, SimpleJsonGenerator,RegexGenerators}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -24,7 +25,9 @@ class DeviceResourceSpec extends ResourcePropSpec {
   import Arbitrary._
   import Device._
   import DeviceGenerators._
+  import SimpleJsonGenerator._
   import StatusCodes._
+
 
   def createDeviceOk(device: DeviceT): Id = {
     createDevice(device) ~> route ~> check {
@@ -44,12 +47,15 @@ class DeviceResourceSpec extends ResourcePropSpec {
     case None => false
   }
 
-  property("GET, PUT, DELETE, and POST '/ping' request fails on non-existent device") {
-    forAll { (id: Id, device: DeviceT) =>
+  property("GET, PUT, DELETE, and POST '/ping' and /system_info request fails on non-existent device") {
+    forAll { (id: Id, device: DeviceT, json: Json) =>
       fetchDevice(id)          ~> route ~> check { status shouldBe NotFound }
       updateDevice(id, device) ~> route ~> check { status shouldBe NotFound }
       deleteDevice(id)         ~> route ~> check { status shouldBe NotFound }
       updateLastSeen(id)       ~> route ~> check { status shouldBe NotFound }
+      fetchSystemInfo(id)      ~> route ~> check { status shouldBe NotFound }
+      createSystemInfo(id, json) ~> route ~> check { status shouldBe NotFound}
+      updateSystemInfo(id, json) ~> route ~> check { status shouldBe NotFound}
     }
   }
 
@@ -315,6 +321,64 @@ class DeviceResourceSpec extends ResourcePropSpec {
 
       deleteDeviceOk(id1)
       deleteDeviceOk(id2)
+    }
+  }
+
+  property("GET system_info after POST should return what was posted.") {
+    forAll { (device: DeviceT, json1: Json) =>
+      val id: Id = createDeviceOk(device)
+
+      createSystemInfo(id, json1) ~> route ~> check {
+        status shouldBe Created
+      }
+
+      fetchSystemInfo(id) ~> route ~> check {
+        status shouldBe OK
+        val json2: Json = responseAs[Json]
+        json1 shouldBe json2
+      }
+
+      deleteDeviceOk(id)
+    }
+  }
+
+  property("GET system_info after PUT should return what was updated.") {
+    forAll { (device: DeviceT, json1: Json, json2: Json) =>
+      val id: Id = createDeviceOk(device)
+
+      createSystemInfo(id, json1) ~> route ~> check {
+        status shouldBe Created
+      }
+
+      updateSystemInfo(id, json2) ~> route ~> check {
+        status shouldBe OK
+      }
+
+      fetchSystemInfo(id) ~> route ~> check {
+        status shouldBe OK
+        val json3: Json = responseAs[Json]
+        json2 shouldBe json3
+      }
+
+      deleteDeviceOk(id)
+    }
+  }
+
+  property("PUT system_info if not previously created should create it.") {
+    forAll { (device: DeviceT, json: Json) =>
+      val id: Id = createDeviceOk(device)
+
+      updateSystemInfo(id, json) ~> route ~> check {
+        status shouldBe OK
+      }
+
+      fetchSystemInfo(id) ~> route ~> check {
+        status shouldBe OK
+        val json2: Json = responseAs[Json]
+        json shouldBe json2
+      }
+
+      deleteDeviceOk(id)
     }
   }
 }
