@@ -87,10 +87,6 @@ object Boot extends App with Directives with BootMigrations {
     settings.deviceRegistryUri, settings.deviceRegistryApi
   )
 
-  if(sys.env.get("VINS_UUIDS_MIGRATE").contains("true")) {
-    VinToDeviceUuidMigrator(deviceRegistryClient)
-  }
-
   val routes: Route =
     (TraceId.withTraceId &
       logResponseMetrics("sota-resolver", TraceId.traceMetrics) &
