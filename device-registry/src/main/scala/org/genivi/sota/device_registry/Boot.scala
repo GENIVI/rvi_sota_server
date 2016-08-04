@@ -58,20 +58,10 @@ object Boot extends App with Directives with BootMigrations {
   val authNamespace = NamespaceDirectives.fromConfig()
 
   lazy val messageBusPublishDeviceCreated: MessageBusPublisher[DeviceCreated] =
-    MessageBusManager.getPublisher[DeviceCreated](system, config) match {
-      case Xor.Right(v) => v
-      case Xor.Left(error) =>
-        log.error("Could not initialize message bus publisher", error)
-        MessageBusPublisher.ignore
-    }
+    MessageBusManager.getPublisher[DeviceCreated]()
 
   lazy val messageBusPublishDeviceDeleted: MessageBusPublisher[DeviceDeleted] =
-    MessageBusManager.getPublisher[DeviceDeleted](system, config) match {
-      case Xor.Right(v) => v
-      case Xor.Left(error) =>
-        log.error("Could not initialize message bus publisher", error)
-        MessageBusPublisher.ignore
-    }
+    MessageBusManager.getPublisher[DeviceDeleted]()
 
   val routes: Route =
     (logResponseMetrics("device-registry") & versionHeaders(version)) {

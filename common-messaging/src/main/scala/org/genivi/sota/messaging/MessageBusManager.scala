@@ -64,8 +64,15 @@ object MessageBusManager {
     }
   }
 
-  def getPublisher[T <: Message](system: ActorSystem, config: Config)
-                                (implicit encoder: Encoder[T])
+  def getPublisher[T <: Message]()(implicit system: ActorSystem,
+                                   encoder: Encoder[T]): MessageBusPublisher[T] =
+    MessageBusManager.getPublisherSafe[T](system, system.settings.config) match {
+      case Xor.Right(v) => v
+      case Xor.Left(err) => throw err
+    }
+
+  def getPublisherSafe[T <: Message](system: ActorSystem, config: Config)
+                                    (implicit encoder: Encoder[T])
       : ConfigException Xor MessageBusPublisher[T] = {
     val log = Logging.getLogger(system, this.getClass)
 

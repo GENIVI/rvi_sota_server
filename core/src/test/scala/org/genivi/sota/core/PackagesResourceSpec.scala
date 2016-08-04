@@ -17,6 +17,7 @@ import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import akka.stream.scaladsl.FileIO
 import akka.util.ByteString
+import cats.data.Xor
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.core.db.Packages
@@ -25,6 +26,8 @@ import org.genivi.sota.core.storage.{LocalPackageStore, PackageStorage}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 import org.genivi.sota.data.Namespace
+import org.genivi.sota.messaging.{MessageBusManager, MessageBusPublisher}
+import org.genivi.sota.messaging.Messages.PackageCreated
 
 import scala.concurrent.Future
 
@@ -39,7 +42,10 @@ class PackagesResourceSpec extends FunSuite
 
   val resolver = new FakeExternalResolver()
 
-  val service = new PackagesResource(resolver, db, defaultNamespaceExtractor) {
+  lazy val messageBusPublisher: MessageBusPublisher[PackageCreated] =
+    MessageBusManager.getPublisher[PackageCreated]()
+
+  val service = new PackagesResource(resolver, db, messageBusPublisher, defaultNamespaceExtractor) {
     override val packageStorageOp: PackageStorageOp = new LocalPackageStore().store _
   }
 

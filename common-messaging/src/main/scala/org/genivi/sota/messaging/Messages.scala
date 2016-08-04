@@ -8,21 +8,21 @@ import io.circe.parser._
 import io.circe.generic.semiauto._
 import org.genivi.sota.marshalling.CirceInstances._
 import org.genivi.sota.data.Device.{DeviceName, Id}
-import org.genivi.sota.data.{Device, Namespace}
+import org.genivi.sota.data.{Device, Namespace, PackageId}
 
 object Messages {
 
-  def parseDeviceSeenMsg(json: String): io.circe.Error Xor DeviceSeen = {
+  def parseDeviceSeenMsg(json: String): io.circe.Error Xor DeviceSeen =
     decode[DeviceSeen](json)
-  }
 
-  def parseDeviceCreatedMsg(json: String): io.circe.Error Xor DeviceCreated = {
+  def parseDeviceCreatedMsg(json: String): io.circe.Error Xor DeviceCreated =
     decode[DeviceCreated](json)
-  }
 
-  def parseDeviceDeletedMsg(json: String): io.circe.Error Xor DeviceDeleted = {
+  def parseDeviceDeletedMsg(json: String): io.circe.Error Xor DeviceDeleted =
     decode[DeviceDeleted](json)
-  }
+
+  def parsePackageCreatedMsg(json: String): io.circe.Error Xor PackageCreated =
+    decode[PackageCreated](json)
 
   sealed trait Message {
     def partitionKey: String
@@ -40,10 +40,16 @@ object Messages {
     override val partitionKey = deviceName.underlying
   }
 
-  case class DeviceDeleted(ns: Namespace, id: Id) extends Message {
+  final case class DeviceDeleted(ns: Namespace, id: Id) extends Message {
     override val partitionKey = id.underlying.get
   }
 
+  final case class PackageCreated(ns: Namespace, pid: PackageId,
+                   description: Option[String], vendor: Option[String],
+                   signature: Option[String],
+                   fileName: String) extends Message {
+    override val partitionKey = pid.mkString
+  }
 
   implicit class StreamNameOp[T](v: T) {
     def streamName: String = {
@@ -64,5 +70,10 @@ object Messages {
   object DeviceDeleted {
     implicit val EncoderInstance: Encoder[DeviceDeleted] = deriveEncoder
     implicit val DecoderInstance: Decoder[DeviceDeleted] = deriveDecoder
+  }
+
+  object PackageCreated {
+    implicit val EncoderInstance: Encoder[PackageCreated] = deriveEncoder
+    implicit val DecoderInstance: Decoder[PackageCreated] = deriveDecoder
   }
 }
