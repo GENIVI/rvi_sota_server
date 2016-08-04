@@ -25,8 +25,6 @@ trait ResourceSpec extends
     with DatabaseSpec
     with BeforeAndAfterAll { self: Suite =>
 
-  import cats.data.Xor
-
   implicit val _db = db
 
   implicit val routeTimeout: RouteTestTimeout =
@@ -37,18 +35,10 @@ trait ResourceSpec extends
   lazy val namespaceExtractor = Directives.provide(defaultNs)
 
   lazy val messageBusPublishCreated: MessageBusPublisher[DeviceCreated] =
-    MessageBusManager
-      .getPublisher[DeviceCreated](system, system.settings.config) match {
-      case Xor.Right(v) => v
-      case Xor.Left(err) => throw err
-    }
+    MessageBusManager.getPublisher[DeviceCreated]()
 
   lazy val messageBusPublishDeleted: MessageBusPublisher[DeviceDeleted] =
-    MessageBusManager
-      .getPublisher[DeviceDeleted](system, system.settings.config) match {
-      case Xor.Right(v) => v
-      case Xor.Left(err) => throw err
-    }
+    MessageBusManager.getPublisher[DeviceDeleted]()
 
 
   // Route

@@ -22,8 +22,11 @@ import slick.driver.MySQLDriver.api._
 import DataPackage._
 import org.genivi.sota.data.PackageId
 import org.genivi.sota.http.NamespaceDirectives
+
 import scala.concurrent.duration._
 import org.genivi.sota.data.Namespace
+import org.genivi.sota.messaging.Messages.PackageCreated
+import org.genivi.sota.messaging.{MessageBusManager, MessageBusPublisher}
 
 /**
  * WordSpec tests for Package REST actions
@@ -44,7 +47,10 @@ class PackageResourceWordSpec extends WordSpec
   implicit val routeTimeout: RouteTestTimeout =
     RouteTestTimeout(10.second)
 
-  lazy val service = new PackagesResource(externalResolverClient, db, defaultNamespaceExtractor)
+  lazy val messageBusPublish: MessageBusPublisher[PackageCreated] =
+    MessageBusManager.getPublisher[PackageCreated]()
+
+  lazy val service = new PackagesResource(externalResolverClient, db, messageBusPublish, defaultNamespaceExtractor)
 
   val testPackagesParams = List(
     ("default", "vim", "7.0.1"), ("default", "vim", "7.1.1"),

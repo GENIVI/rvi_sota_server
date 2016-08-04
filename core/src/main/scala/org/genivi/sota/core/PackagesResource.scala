@@ -26,6 +26,8 @@ import org.genivi.sota.core.storage.PackageStorage.PackageStorageOp
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.PackageId
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
+import org.genivi.sota.messaging.Messages.PackageCreated
+import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.rest.ErrorRepresentation
 import org.genivi.sota.rest.Validation._
 import slick.driver.MySQLDriver.api.Database
@@ -43,6 +45,7 @@ object PackagesResource {
 }
 
 class PackagesResource(resolver: ExternalResolverClient, db : Database,
+                       messageBusPublisher: MessageBusPublisher[PackageCreated],
                        namespaceExtractor: Directive1[Namespace])
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
 
@@ -99,6 +102,10 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
         _ <- resolver.putPackage(ns, pid, description, vendor)
         (uri, size, digest) <- packageStorageOp(pid, fileName, file)
         pkg <- db.run(Packages.create(Package(ns, pid, uri, size, digest, description, vendor, signature)))
+                  .andThen{
+                    case scala.util.Success(_) =>
+                      messageBusPublisher.publish(PackageCreated(ns, pid, description, vendor, signature, fileName))
+                  }
       } yield StatusCodes.NoContent
     }
 

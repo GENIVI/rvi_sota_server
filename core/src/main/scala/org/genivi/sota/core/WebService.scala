@@ -22,7 +22,10 @@ import org.genivi.sota.rest.Validation.refined
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api.Database
 import Directives._
+import cats.data.Xor
 import eu.timepit.refined.api.Refined
+import org.genivi.sota.messaging.{MessageBusManager, MessageBusPublisher}
+import org.genivi.sota.messaging.Messages.PackageCreated
 
 object WebService {
   val extractDeviceUuid : Directive1[Device.Id] = refined[Uuid](Slash ~ Segment).map(Device.Id)
@@ -45,8 +48,11 @@ class WebService(notifier: UpdateNotifier,
   import eu.timepit.refined._
   import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 
+  lazy val messageBusPublisher: MessageBusPublisher[PackageCreated] =
+    MessageBusManager.getPublisher[PackageCreated]()
+
   val devicesResource = new DevicesResource(db, connectivity.client, resolver, deviceRegistry, authNamespace)
-  val packagesResource = new PackagesResource(resolver, db, authNamespace)
+  val packagesResource = new PackagesResource(resolver, db, messageBusPublisher, authNamespace)
   val updateService = new UpdateService(notifier, deviceRegistry)
   val updateRequestsResource = new UpdateRequestsResource(db, resolver, updateService, authNamespace)
   val historyResource = new HistoryResource(db, authNamespace)
