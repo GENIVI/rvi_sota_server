@@ -16,7 +16,7 @@ import org.genivi.sota.data.{Device, Namespace, PackageId}
 import org.genivi.sota.http.NamespaceDirectives
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.messaging.Messages.PackageCreated
-import org.genivi.sota.messaging.{MessageBusManager, MessageBusPublisher}
+import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.rest.ErrorRepresentation
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.PropertyChecks
@@ -56,8 +56,7 @@ class PackageUploadSpec extends PropSpec
       override def setInstalledPackages(device: Device.Id, json: io.circe.Json) : Future[Unit] = ???
     }
 
-    lazy val messageBusPublisher: MessageBusPublisher[PackageCreated] =
-      MessageBusManager.getPublisher[PackageCreated]()
+    lazy val messageBusPublisher = MessageBusPublisher.ignore
 
     val resource = new PackagesResource(resolver, db, messageBusPublisher, defaultNamespaceExtractor)
   }

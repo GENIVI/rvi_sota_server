@@ -45,7 +45,7 @@ object PackagesResource {
 }
 
 class PackagesResource(resolver: ExternalResolverClient, db : Database,
-                       messageBusPublisher: MessageBusPublisher[PackageCreated],
+                       messageBusPublisher: MessageBusPublisher,
                        namespaceExtractor: Directive1[Namespace])
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
 

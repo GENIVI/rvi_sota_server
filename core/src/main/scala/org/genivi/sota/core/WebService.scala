@@ -24,7 +24,7 @@ import slick.driver.MySQLDriver.api.Database
 import Directives._
 import cats.data.Xor
 import eu.timepit.refined.api.Refined
-import org.genivi.sota.messaging.{MessageBusManager, MessageBusPublisher}
+import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.Messages.PackageCreated
 
 object WebService {
@@ -36,7 +36,8 @@ class WebService(notifier: UpdateNotifier,
                  resolver: ExternalResolverClient,
                  deviceRegistry: DeviceRegistry,
                  db: Database,
-                 authNamespace: Directive1[Namespace])
+                 authNamespace: Directive1[Namespace],
+                 messageBusPublisher: MessageBusPublisher)
                 (implicit val system: ActorSystem, val mat: ActorMaterializer,
                  val connectivity: Connectivity, val ec: ExecutionContext) extends Directives {
   implicit val log = Logging(system, "webservice")
@@ -47,9 +48,6 @@ class WebService(notifier: UpdateNotifier,
   import WebService._
   import eu.timepit.refined._
   import org.genivi.sota.marshalling.RefinedMarshallingSupport._
-
-  lazy val messageBusPublisher: MessageBusPublisher[PackageCreated] =
-    MessageBusManager.getPublisher[PackageCreated]()
 
   val devicesResource = new DevicesResource(db, connectivity.client, resolver, deviceRegistry, authNamespace)
   val packagesResource = new PackagesResource(resolver, db, messageBusPublisher, authNamespace)

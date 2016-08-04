@@ -26,7 +26,7 @@ import org.genivi.sota.core.storage.{LocalPackageStore, PackageStorage}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 import org.genivi.sota.data.Namespace
-import org.genivi.sota.messaging.{MessageBusManager, MessageBusPublisher}
+import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.Messages.PackageCreated
 
 import scala.concurrent.Future
@@ -42,10 +42,7 @@ class PackagesResourceSpec extends FunSuite
 
   val resolver = new FakeExternalResolver()
 
-  lazy val messageBusPublisher: MessageBusPublisher[PackageCreated] =
-    MessageBusManager.getPublisher[PackageCreated]()
-
-  val service = new PackagesResource(resolver, db, messageBusPublisher, defaultNamespaceExtractor) {
+    val service = new PackagesResource(resolver, db, MessageBusPublisher.ignore, defaultNamespaceExtractor) {
     override val packageStorageOp: PackageStorageOp = new LocalPackageStore().store _
   }
 

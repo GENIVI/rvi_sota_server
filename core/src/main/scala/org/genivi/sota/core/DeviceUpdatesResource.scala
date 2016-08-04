@@ -44,7 +44,7 @@ class DeviceUpdatesResource(db: Database,
                             deviceRegistry: DeviceRegistry,
                             authNamespace: Directive1[Namespace],
                             authDirective: AuthScope => Directive0,
-                            messageBusPublisher: MessageBusPublisher[DeviceSeen])
+                            messageBus: MessageBusPublisher)
                            (implicit system: ActorSystem, mat: ActorMaterializer,
                             connectivity: Connectivity = DefaultConnectivity) {
 
@@ -66,8 +66,10 @@ class DeviceUpdatesResource(db: Database,
   def logDeviceSeen(id: Device.Id): Directive0 = {
     extractRequestContext flatMap { _ =>
       onComplete {
-        messageBusPublisher.publishSafe(DeviceSeen(id, Instant.now()))
-        deviceRegistry.updateLastSeen(id)
+        for {
+          _ <- messageBus.publishSafe(DeviceSeen(id, Instant.now()))
+          _ <- deviceRegistry.updateLastSeen(id)
+        } yield ()
       }
     } flatMap (_ => pass)
   }

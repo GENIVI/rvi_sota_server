@@ -26,7 +26,7 @@ import org.genivi.sota.http.NamespaceDirectives
 import scala.concurrent.duration._
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.messaging.Messages.PackageCreated
-import org.genivi.sota.messaging.{MessageBusManager, MessageBusPublisher}
+import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
 
 /**
  * WordSpec tests for Package REST actions
@@ -47,10 +47,9 @@ class PackageResourceWordSpec extends WordSpec
   implicit val routeTimeout: RouteTestTimeout =
     RouteTestTimeout(10.second)
 
-  lazy val messageBusPublish: MessageBusPublisher[PackageCreated] =
-    MessageBusManager.getPublisher[PackageCreated]()
+  lazy val messageBusPublisher = MessageBusPublisher.ignore
 
-  lazy val service = new PackagesResource(externalResolverClient, db, messageBusPublish, defaultNamespaceExtractor)
+  lazy val service = new PackagesResource(externalResolverClient, db, messageBusPublisher, defaultNamespaceExtractor)
 
   val testPackagesParams = List(
     ("default", "vim", "7.0.1"), ("default", "vim", "7.1.1"),
