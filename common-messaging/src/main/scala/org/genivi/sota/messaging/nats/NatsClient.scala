@@ -20,6 +20,7 @@ import org.reactivestreams.{Publisher, Subscriber, Subscription}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future, blocking}
+import scala.util.Try
 
 object NatsClient {
   val log = LoggerFactory.getLogger(this.getClass)
@@ -51,9 +52,9 @@ object NatsClient {
 
   def source[T <: Message](system: ActorSystem, config: Config, subjectName: String)
                           (implicit decoder: Decoder[T]): ConfigException Xor Source[T, NotUsed] =
-  fromConfig(system, config).map { conn =>
-    Source.actorRef[T](MessageBus.DEFAULT_CLIENT_BUFFER_SIZE,
-      OverflowStrategy.dropHead).mapMaterializedValue { ref =>
+    fromConfig(system, config).map { conn =>
+      Source.actorRef[T](MessageBus.DEFAULT_CLIENT_BUFFER_SIZE,
+        OverflowStrategy.dropHead).mapMaterializedValue { ref =>
 
         val subId = conn.subscribe(subjectName, (msg: Msg) =>
           decode[T](msg.body) match {
@@ -63,8 +64,10 @@ object NatsClient {
               + s"Got this parse error: ${ex.toString}")
           })
 
-        system.registerOnTermination{ conn.unsubscribe(subId); conn.close() }
-
+        (conn, subId)
+      }.watchTermination() { case ((c, subId), doneF) =>
+        implicit val _ec = system.dispatcher
+        doneF.andThen { case _ => Try { c.unsubscribe(subId); conn.close() }}
         NotUsed
       }
   }

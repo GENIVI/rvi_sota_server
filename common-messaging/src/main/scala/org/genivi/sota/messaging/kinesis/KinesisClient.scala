@@ -6,7 +6,7 @@ import java.util.UUID
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.OverflowStrategy
-import akka.stream.scaladsl.Source
+import akka.stream.scaladsl.{Keep, Source}
 import io.circe.syntax._
 import org.genivi.sota.marshalling.CirceInstances._
 import cats.data.Xor
@@ -96,8 +96,11 @@ object KinesisClient {
           .build()
 
         Future(blocking { worker.run() })
-        system.registerOnTermination(Try { worker.shutdown() })
 
+        worker
+      }.watchTermination() { (worker, doneF) =>
+        implicit val _ec = system.dispatcher
+        doneF.andThen { case _ => Try(worker.shutdown()) }
         NotUsed
       }
     }

@@ -68,7 +68,7 @@ object MessageBus {
         Xor.right(LocalMessageBus.subscribe(system))
       case "test" =>
         log.info("Starting messaging mode: Test")
-        Xor.Right(Source.empty[T])
+        Xor.Right(LocalMessageBus.subscribe(system))
       case mode => Xor.left(new Missing(s"Unknown messaging mode specified ($mode)"))
     }
   }
@@ -86,7 +86,7 @@ object MessageBus {
         Xor.right(LocalMessageBus.publisher(system))
       case "test" =>
         log.info("Starting messaging mode: Test")
-        Xor.right(MessageBusPublisher(system.eventStream.publish))
+        Xor.right(LocalMessageBus.publisher(system))
       case mode => Xor.left(new Missing(s"Unknown messaging mode specified ($mode)"))
     }
   }
