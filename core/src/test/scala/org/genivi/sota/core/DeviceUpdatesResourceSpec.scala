@@ -35,7 +35,8 @@ class DeviceUpdatesResourceSpec extends FunSuite
   with ScalaFutures
   with DatabaseSpec
   with Inspectors
-  with UpdateResourcesDatabaseSpec {
+  with UpdateResourcesDatabaseSpec
+  with LongRequestTimeout {
 
   import NamespaceDirectives._
   import Device._

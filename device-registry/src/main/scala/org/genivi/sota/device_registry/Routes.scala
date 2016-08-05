@@ -28,17 +28,8 @@ import org.slf4j.LoggerFactory
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
-import scala.util.Success
-
-/**
- * API routes for device registry.
- *
- * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
- */
 class Routes(namespaceExtractor: Directive1[Namespace],
-             messageBusPublisherCreated: MessageBusPublisher[DeviceCreated],
-             messageBusPublisherDeleted: MessageBusPublisher[DeviceDeleted]
-            )
+             messageBus: MessageBusPublisher)
             (implicit system: ActorSystem,
              db: Database,
              mat: ActorMaterializer,
@@ -70,7 +61,7 @@ class Routes(namespaceExtractor: Directive1[Namespace],
       .run(Devices.create(ns, device))
       .andThen {
         case scala.util.Success(_) =>
-          messageBusPublisherCreated.publish(DeviceCreated(ns, device.deviceName, device.deviceId, device.deviceType))
+          messageBus.publish(DeviceCreated(ns, device.deviceName, device.deviceId, device.deviceType))
       }
 
    onSuccess(f) { id =>
@@ -91,7 +82,7 @@ class Routes(namespaceExtractor: Directive1[Namespace],
       .run(Devices.delete(ns, id))
       .andThen {
         case scala.util.Success(_) =>
-          messageBusPublisherDeleted.publish(DeviceDeleted(ns, id))
+          messageBus.publish(DeviceDeleted(ns, id))
       }
     complete(f)
   }

@@ -3,8 +3,10 @@ package org.genivi.sota.messaging.kinesis
 import java.nio.ByteBuffer
 import java.util.UUID
 
-import akka.Done
+import akka.NotUsed
 import akka.actor.ActorSystem
+import akka.stream.OverflowStrategy
+import akka.stream.scaladsl.{Keep, Source}
 import io.circe.syntax._
 import org.genivi.sota.marshalling.CirceInstances._
 import cats.data.Xor
@@ -17,12 +19,11 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.{KinesisClientLib
 import com.typesafe.config.{Config, ConfigException}
 import io.circe.{Decoder, Encoder}
 import org.genivi.sota.messaging.ConfigHelpers._
-import org.genivi.sota.messaging.MessageBusPublisher
+import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
 import org.genivi.sota.messaging.Messages._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.util.Try
-import scala.concurrent.blocking
 
 object KinesisClient {
 
@@ -55,18 +56,21 @@ object KinesisClient {
       client
     }
 
-  def getPublisher[T <: Message](system: ActorSystem, config: Config)
-                                (implicit encoder: Encoder[T]): ConfigException Xor MessageBusPublisher[T] =
+  def publisher(system: ActorSystem, config: Config): ConfigException Xor MessageBusPublisher =
     getAmazonClient(system, config).map { client =>
-      MessageBusPublisher { msg =>
-        client.putRecord(msg.streamName, ByteBuffer.wrap(msg.asJson.noSpaces.getBytes),
-          msg.partitionKey)
+      new MessageBusPublisher {
+        override def publish[T <: Message](msg: T)(implicit ex: ExecutionContext, encoder: Encoder[T]): Future[Unit] =
+          Future {
+            blocking {
+              client.putRecord(msg.streamName, ByteBuffer.wrap(msg.asJson.noSpaces.getBytes), msg.partitionKey)
+            }
+          }
       }
     }
 
-  def runWorker[T <: Message](system: ActorSystem, config: Config, streamName: String)
-                             (implicit decoder: Decoder[T])
-                             : ConfigException Xor Done =
+  def source[T <: Message](system: ActorSystem, config: Config, streamName: String)
+                          (implicit decoder: Decoder[T])
+                             : ConfigException Xor Source[T, NotUsed] =
     for {
       cfg                 <- config.configAt("messaging.kinesis")
       appName             <- cfg.readString("appName")
@@ -80,13 +84,24 @@ object KinesisClient {
         credentials,
         UUID.randomUUID().toString).withRegionName(regionName).withCommonClientConfig(clientConfig)
     } yield {
-      val worker = new Worker.Builder()
-        .recordProcessorFactory(new RecordProcessorFactory(system.eventStream))
-        .config(kinesisClientConfig)
-        .build()
+      Source.actorRef[T](MessageBus.DEFAULT_CLIENT_BUFFER_SIZE,
+        OverflowStrategy.dropTail).mapMaterializedValue { ref =>
 
-      Future(blocking { worker.run() })(system.dispatcher)
-      system.registerOnTermination(Try { worker.shutdown() })
-      Done
+        implicit val ec = system.dispatcher
+        implicit val _system = system
+
+        val worker = new Worker.Builder()
+          .recordProcessorFactory(new RecordProcessorFactory(ref))
+          .config(kinesisClientConfig)
+          .build()
+
+        Future(blocking { worker.run() })
+
+        worker
+      }.watchTermination() { (worker, doneF) =>
+        implicit val _ec = system.dispatcher
+        doneF.andThen { case _ => Try(worker.shutdown()) }
+        NotUsed
+      }
     }
 }

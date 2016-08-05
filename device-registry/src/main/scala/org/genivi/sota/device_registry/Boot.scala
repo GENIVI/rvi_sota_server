@@ -12,7 +12,7 @@ import cats.data.Xor
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.db.BootMigrations
 import org.genivi.sota.http._
-import org.genivi.sota.messaging.{MessageBusManager, MessageBusPublisher}
+import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
 import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted}
 import org.genivi.sota.rest.Handlers.{exceptionHandler, rejectionHandler}
 import org.slf4j.LoggerFactory
@@ -25,15 +25,14 @@ import slick.driver.MySQLDriver.api._
  * Base API routing class.
  * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
  */
-class Routing(namespaceExtractor: Directive1[Namespace], messageBusPublisherCreated: MessageBusPublisher[DeviceCreated],
-              messageBusPublisherDeleted: MessageBusPublisher[DeviceDeleted])
+class Routing(namespaceExtractor: Directive1[Namespace], messageBus: MessageBusPublisher)
   (implicit db: Database, system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext)
     extends Directives {
 
   val route: Route = pathPrefix("api" / "v1") {
     handleRejections(rejectionHandler) {
       handleExceptions(exceptionHandler) {
-        new Routes(namespaceExtractor, messageBusPublisherCreated, messageBusPublisherDeleted).route
+        new Routes(namespaceExtractor, messageBus).route
       }
     }
   }
@@ -57,17 +56,19 @@ object Boot extends App with Directives with BootMigrations {
 
   val authNamespace = NamespaceDirectives.fromConfig()
 
-  lazy val messageBusPublishDeviceCreated: MessageBusPublisher[DeviceCreated] =
-    MessageBusManager.getPublisher[DeviceCreated]()
-
-  lazy val messageBusPublishDeviceDeleted: MessageBusPublisher[DeviceDeleted] =
-    MessageBusManager.getPublisher[DeviceDeleted]()
+  lazy val messageBus =
+    MessageBus.publisher(system, config) match {
+      case Xor.Right(v) => v
+      case Xor.Left(error) =>
+        log.error("Could not initialize message bus publisher", error)
+        MessageBusPublisher.ignore
+    }
 
   val routes: Route =
     (logResponseMetrics("device-registry") & versionHeaders(version)) {
       (handleRejections(rejectionHandler) & handleExceptions(exceptionHandler)) {
         pathPrefix("api" / "v1") {
-          new Routes(authNamespace, messageBusPublishDeviceCreated, messageBusPublishDeviceDeleted).route
+          new Routes(authNamespace, messageBus).route
         } ~ new HealthResource(db, org.genivi.sota.device_registry.BuildInfo.toMap).route
       }
     }

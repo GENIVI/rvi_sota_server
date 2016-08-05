@@ -25,8 +25,7 @@ import org.genivi.sota.db.BootMigrations
 import org.genivi.sota.http.AuthDirectives.AuthScope
 import org.genivi.sota.http._
 import org.genivi.sota.http.LogDirectives._
-import org.genivi.sota.messaging.{MessageBusManager, MessageBusPublisher}
-import org.genivi.sota.messaging.Messages.DeviceSeen
+import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
 import slick.driver.MySQLDriver.api.Database
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -45,6 +44,8 @@ trait RviBoot {
 
   def deviceRegistryClient: DeviceRegistryClient
 
+  def messageBusPublisher: MessageBusPublisher
+
   def startSotaServices(db: Database): Route = {
     val s3PackageStoreOpt = S3PackageStore.loadCredentials(settings.config).map { new S3PackageStore(_) }
     val transferProtocolProps =
@@ -55,7 +56,8 @@ trait RviBoot {
   }
 
   def rviRoutes(db: Database, notifier: UpdateNotifier, namespaceDirective: Directive1[Namespace]): Route = {
-      new WebService(notifier, resolverClient, deviceRegistryClient, db, namespaceDirective).route ~
+      new WebService(notifier, resolverClient,
+        deviceRegistryClient, db, namespaceDirective, messageBusPublisher).route ~
       startSotaServices(db)
   }
 
@@ -76,15 +78,16 @@ trait HttpBoot {
 
   def deviceRegistryClient: DeviceRegistryClient
 
+  def messageBusPublisher: MessageBusPublisher
+
   def httpInteractionRoutes(db: Database,
                             namespaceDirective: Directive1[Namespace],
                             authDirective: AuthScope => Directive0,
-                            messageBusPublisher: MessageBusPublisher[DeviceSeen]
-                           ): Route = {
+                            messageBus: MessageBusPublisher): Route = {
     val webService = new WebService(DefaultUpdateNotifier, resolverClient, deviceRegistryClient, db,
-      namespaceDirective)
+      namespaceDirective, messageBusPublisher)
     val vehicleService = new DeviceUpdatesResource(db, resolverClient, deviceRegistryClient,
-      namespaceDirective, authDirective, messageBusPublisher)
+      namespaceDirective, authDirective, messageBus)
 
     webService.route ~ vehicleService.route
   }
@@ -130,12 +133,19 @@ object Boot extends App with DatabaseConfig with HttpBoot with RviBoot with Boot
   val deviceRegistryClient = new DeviceRegistryClient(
     settings.deviceRegistryUri, settings.deviceRegistryApi
   )
-  
+
+  val messageBusPublisher: MessageBusPublisher =
+    MessageBus.publisher(system, system.settings.config) match {
+      case Xor.Right(c) => c
+      case Xor.Left(err) =>
+        log.error("Could not initialize message bus client", err)
+        MessageBusPublisher.ignore
+    }
+
+
   val interactionProtocol = config.getString("core.interactionProtocol")
 
   val healthResource = new HealthResource(db, org.genivi.sota.core.BuildInfo.toMap)
-
-  lazy val messageBusPublisher = MessageBusManager.getPublisher[DeviceSeen]()
 
   log.info(s"using interaction protocol '$interactionProtocol'")
 
