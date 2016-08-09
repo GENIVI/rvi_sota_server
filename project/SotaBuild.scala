@@ -27,6 +27,7 @@ object SotaBuild extends Build {
     publishArtifact in Test := false,
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += "Sonatype Nexus Repository Manager" at "http://nexus.advancedtelematic.com:8081/content/repositories/releases",
+    resolvers += "version99 Empty loggers" at "http://version99.qos.ch",
     libraryDependencies ++= Dependencies.TestFrameworks,
 
     testOptions in Test ++= Seq(
@@ -101,10 +102,11 @@ object SotaBuild extends Build {
     .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
     .configs(RandomTests)
     .configs(UnitTests)
-    .dependsOn(common, commonData, commonClient, commonTest % "test", commonDbTest % "test")
+    .dependsOn(common, commonData, commonClient, commonMessaging, commonTest % "test", commonDbTest % "test")
     .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
     .enablePlugins(BuildInfoPlugin)
     .settings(Publish.settings)
+    .settings(mainClass in Compile := Some("org.genivi.sota.resolver.Boot"))
 
   lazy val core = Project(id = "sota-core", base = file("core"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
@@ -234,11 +236,15 @@ object Dependencies {
 
   val Generex = "com.github.mifmif" % "generex" % "1.0.0"
 
-  val Logback = "ch.qos.logback" % "logback-classic" % LogbackVersion
+  val Logback = Seq(
+    "ch.qos.logback" % "logback-classic" % LogbackVersion,
+    "org.slf4j" % "jcl-over-slf4j" % "1.7.16",
+    "commons-logging" % "commons-logging" % "99-empty"
+  )
 
   lazy val Akka = Seq(
-    AkkaHttp, AkkaHttpCirceJson, AkkaHttpTestKit, AkkaTestKit, AkkaSlf4j, Logback
-  )
+    AkkaHttp, AkkaHttpCirceJson, AkkaHttpTestKit, AkkaTestKit, AkkaSlf4j
+  ) ++ Logback
 
   val Circe = Seq(
     "io.circe" %% "circe-core" % CirceVersion,
@@ -283,7 +289,7 @@ object Dependencies {
 
   lazy val Rest = Akka ++ Slick
 
-  lazy val AmazonS3 =  "com.amazonaws" % "aws-java-sdk-s3" % AWSVersion
+  lazy val AmazonS3 = "com.amazonaws" % "aws-java-sdk-s3" % AWSVersion
 
   val JsonWebSecurity = Seq(
     "com.advancedtelematic" %% "jw-security-core" % JsonWebSecurityVersion,
@@ -293,5 +299,5 @@ object Dependencies {
 
   lazy val Kinesis = "com.amazonaws" % "amazon-kinesis-client" % "1.6.4"
 
-  lazy val Nats = "com.github.tyagihas" % "scala_nats_2.11" % "0.2"
+  lazy val Nats = "com.github.tyagihas" % "scala_nats_2.11" % "0.2" exclude("org.slf4j", "slf4j-simple")
 }
