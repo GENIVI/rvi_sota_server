@@ -44,16 +44,17 @@ object NatsClient {
   def publisher(system: ActorSystem, config: Config): ConfigException Xor MessageBusPublisher = {
     fromConfig(system, config) map { c =>
       new MessageBusPublisher {
-        override def publish[T <: Message](msg: T)(implicit ec: ExecutionContext,
-                                                   encoder: Encoder[T],
-                                                   tag: ClassTag[T]): Future[Unit] = {
-          Future  { blocking { c.publish(tag.runtimeClass.streamName, msg.asJson.noSpaces) } }
-        }
+        override def publish[T](msg: T)(implicit ex: ExecutionContext, messageLike: MessageLike[T]): Future[Unit] =
+          Future  {
+            blocking {
+              c.publish(messageLike.streamName, msg.asJson(messageLike.encoder).noSpaces)
+            }
+          }
       }
     }
   }
 
-  def source[T <: Message](system: ActorSystem, config: Config, subjectName: String)
+  def source[T](system: ActorSystem, config: Config, subjectName: String)
                           (implicit decoder: Decoder[T]): ConfigException Xor Source[T, NotUsed] =
     fromConfig(system, config).map { conn =>
 

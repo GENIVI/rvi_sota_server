@@ -7,7 +7,7 @@ package org.genivi.sota.resolver.daemon
 
 import akka.NotUsed
 import akka.actor.Status.Failure
-import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props, Terminated}
+import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Kill, PoisonPill, Props, Terminated}
 import akka.stream.ActorMaterializer
 import akka.stream.actor.ActorSubscriberMessage.{OnComplete, OnError, OnNext}
 import akka.stream.actor.{ActorSubscriber, RequestStrategy, WatermarkRequestStrategy}
@@ -28,6 +28,7 @@ import org.genivi.sota.resolver.daemon.MessageBusListenerActor.Subscribe
 import scala.concurrent.duration._
 import org.genivi.sota.messaging.Messages.PackageCreated._
 import org.genivi.sota.messaging.Messages._
+
 import scala.util.Try
 
 
@@ -43,7 +44,6 @@ class PackageCreatedListener(db: Database) extends ActorSubscriber with ActorLog
 
     case pId: PackageId =>
       log.info(s"Saved package from bus (id: ${pId.show})")
-      context.stop(self)
 
     case OnNext(e: PackageCreated) =>
       val p = Package(e.namespace, e.pid, e.description, e.vendor)
@@ -51,8 +51,8 @@ class PackageCreatedListener(db: Database) extends ActorSubscriber with ActorLog
       db.run(dbIO).map(_ => p.id).pipeTo(self)
 
     case OnComplete =>
-      log.info("Upstream completed")
-      context.stop(self)
+      log.info("PackageCreated Upstream completed")
+      self ! PoisonPill
 
     case OnError(ex) =>
       log.info(s"Error from upstream: ${ex.getMessage}")
