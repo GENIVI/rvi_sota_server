@@ -53,6 +53,7 @@ services:
       RESOLVER_DB_URL: "jdbc:mariadb://mysql:3306/sota_resolver"
       RESOLVER_DB_MIGRATE: 'true'
       DEVICE_REGISTRY_API_URI: "http://device-registry:8083"
+      PACKAGES_VERSION_FORMAT: ".+"
       DB_ALIVE_URL: "mysql:3306"
       AUTH_PROTOCOL: "none"
 
