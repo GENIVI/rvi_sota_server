@@ -23,6 +23,7 @@ import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
 import org.genivi.sota.messaging.Messages._
 
 import scala.concurrent.{ExecutionContext, Future, blocking}
+import scala.reflect.ClassTag
 import scala.util.Try
 
 object KinesisClient {
@@ -59,10 +60,12 @@ object KinesisClient {
   def publisher(system: ActorSystem, config: Config): ConfigException Xor MessageBusPublisher =
     getAmazonClient(system, config).map { client =>
       new MessageBusPublisher {
-        override def publish[T <: Message](msg: T)(implicit ex: ExecutionContext, encoder: Encoder[T]): Future[Unit] =
+        override def publish[T <: Message](msg: T)
+                                          (implicit ex: ExecutionContext,
+                                           encoder: Encoder[T], tag: ClassTag[T]): Future[Unit] =
           Future {
             blocking {
-              client.putRecord(msg.streamName, ByteBuffer.wrap(msg.asJson.noSpaces.getBytes), msg.partitionKey)
+              client.putRecord(tag.runtimeClass.streamName, ByteBuffer.wrap(msg.asJson.noSpaces.getBytes), msg.partitionKey)
             }
           }
       }

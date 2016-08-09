@@ -27,6 +27,8 @@ import org.slf4j.LoggerFactory
 
 import scala.util.Try
 import org.genivi.sota.http.LogDirectives._
+import org.genivi.sota.resolver.daemon.MessageBusListenerActor
+import org.genivi.sota.resolver.daemon.MessageBusListenerActor.Subscribe
 import slick.driver.MySQLDriver.api._
 
 
@@ -96,6 +98,10 @@ object Boot extends App with Directives with BootMigrations {
         new HealthResource(db, org.genivi.sota.resolver.BuildInfo.toMap).route
       }
     }
+
+
+  val messageBusListener = system.actorOf(MessageBusListenerActor.props(db))
+  messageBusListener ! Subscribe
 
   val host = config.getString("server.host")
   val port = config.getInt("server.port")

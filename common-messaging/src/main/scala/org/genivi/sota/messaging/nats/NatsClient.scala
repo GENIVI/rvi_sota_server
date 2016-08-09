@@ -2,8 +2,9 @@ package org.genivi.sota.messaging.nats
 
 import java.util.Properties
 
-import akka.{Done, NotUsed}
-import akka.actor.{ActorRef, ActorSystem}
+
+import akka.NotUsed
+import akka.actor.ActorSystem
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.Source
 import cats.data.Xor
@@ -14,12 +15,12 @@ import io.circe.parser._
 import org.genivi.sota.marshalling.CirceInstances._
 import org.genivi.sota.messaging.ConfigHelpers._
 import org.genivi.sota.messaging.Messages._
-import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher, Messages}
+import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
 import org.nats.{Conn, Msg}
-import org.reactivestreams.{Publisher, Subscriber, Subscription}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future, blocking}
+import scala.reflect.ClassTag
 import scala.util.Try
 
 object NatsClient {
@@ -43,8 +44,10 @@ object NatsClient {
   def publisher(system: ActorSystem, config: Config): ConfigException Xor MessageBusPublisher = {
     fromConfig(system, config) map { c =>
       new MessageBusPublisher {
-        override def publish[T <: Message](msg: T)(implicit ec: ExecutionContext, encoder: Encoder[T]): Future[Unit] = {
-          Future  { blocking { c.publish(msg.streamName, msg.asJson.noSpaces) } }
+        override def publish[T <: Message](msg: T)(implicit ec: ExecutionContext,
+                                                   encoder: Encoder[T],
+                                                   tag: ClassTag[T]): Future[Unit] = {
+          Future  { blocking { c.publish(tag.runtimeClass.streamName, msg.asJson.noSpaces) } }
         }
       }
     }
@@ -53,16 +56,17 @@ object NatsClient {
   def source[T <: Message](system: ActorSystem, config: Config, subjectName: String)
                           (implicit decoder: Decoder[T]): ConfigException Xor Source[T, NotUsed] =
     fromConfig(system, config).map { conn =>
+
       Source.actorRef[T](MessageBus.DEFAULT_CLIENT_BUFFER_SIZE,
         OverflowStrategy.dropHead).mapMaterializedValue { ref =>
-
-        val subId = conn.subscribe(subjectName, (msg: Msg) =>
+        val subId = conn.subscribe(subjectName, (msg: Msg) => {
           decode[T](msg.body) match {
             case Xor.Right(m) =>
               ref ! m
             case Xor.Left(ex) => log.error(s"invalid message received from message bus: ${msg.body}\n"
               + s"Got this parse error: ${ex.toString}")
-          })
+          }
+        })
 
         (conn, subId)
       }.watchTermination() { case ((c, subId), doneF) =>

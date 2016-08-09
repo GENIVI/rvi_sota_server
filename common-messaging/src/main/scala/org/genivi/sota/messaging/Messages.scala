@@ -44,17 +44,21 @@ object Messages {
     override val partitionKey = id.underlying.get
   }
 
-  final case class PackageCreated(ns: Namespace, pid: PackageId,
-                   description: Option[String], vendor: Option[String],
-                   signature: Option[String],
-                   fileName: String) extends Message {
+  final case class PackageCreated(namespace: Namespace, pid: PackageId,
+                                  description: Option[String], vendor: Option[String],
+                                  signature: Option[String],
+                                  fileName: String) extends Message {
     override val partitionKey = pid.mkString
   }
 
-  implicit class StreamNameOp[T](v: T) {
+  implicit class StreamNameOp[T <: Class[_]](v: T) {
     def streamName: String = {
-      v.getClass.getSimpleName.filterNot(c => List('$').contains(c))
+      v.getSimpleName.filterNot(c => List('$').contains(c))
     }
+  }
+
+  implicit class StreamNameInstanceOp[T <: Message](v: T) {
+    def streamName: String = v.getClass.streamName
   }
 
   object DeviceSeen {

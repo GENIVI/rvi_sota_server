@@ -26,7 +26,8 @@ object LocalMessageBus {
 
   def publisher(system: ActorSystem): MessageBusPublisher = {
     new MessageBusPublisher {
-      override def publish[T <: Message](msg: T)(implicit ex: ExecutionContext, encoder: Encoder[T]): Future[Unit] =
+      override def publish[T <: Message](msg: T)(implicit ex: ExecutionContext, encoder: Encoder[T],
+                                                 m: ClassTag[T]): Future[Unit] =
         Future.fromTry(Try(system.eventStream.publish(msg)))
     }
   }

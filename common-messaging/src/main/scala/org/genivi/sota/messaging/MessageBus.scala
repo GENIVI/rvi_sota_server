@@ -20,9 +20,10 @@ import scala.util.{Failure, Success, Try}
 trait MessageBusPublisher {
   lazy private val logger = LoggerFactory.getLogger(this.getClass)
 
-  def publish[T <: Message](msg: T)(implicit ex: ExecutionContext, encoder: Encoder[T]): Future[Unit]
+  def publish[T <: Message](msg: T)(implicit ex: ExecutionContext, encoder: Encoder[T],
+                                    classTag: ClassTag[T]): Future[Unit]
 
-  def publishSafe[T <: Message](msg: T)(implicit ec: ExecutionContext, encoder: Encoder[T]): Future[Try[Unit]] = {
+  def publishSafe[T <: Message](msg: T)(implicit ec: ExecutionContext, encoder: Encoder[T], classTag: ClassTag[T]): Future[Try[Unit]] = {
     publish(msg)
       .map(r => Success(r))
       .recover { case t =>
@@ -34,12 +35,14 @@ trait MessageBusPublisher {
 
 object MessageBusPublisher {
   def ignore = new MessageBusPublisher {
-    override def publish[T <: Message](msg: T)(implicit ex: ExecutionContext, encoder: Encoder[T]): Future[Unit] =
+    override def publish[T <: Message](msg: T)(implicit ex: ExecutionContext,
+                                               encoder: Encoder[T], classTag: ClassTag[T]): Future[Unit] =
       Future.successful(())
   }
 
   def apply(fn: Message => Unit): MessageBusPublisher = new MessageBusPublisher {
-    override def publish[T <: Message](msg: T)(implicit ex: ExecutionContext, encoder: Encoder[T]): Future[Unit] =
+    override def publish[T <: Message](msg: T)(implicit ex: ExecutionContext,
+                                               encoder: Encoder[T], classTag: ClassTag[T]): Future[Unit] =
       Future.successful(fn(msg))
   }
 }
@@ -57,7 +60,7 @@ object MessageBus {
     config.getString("messaging.mode").toLowerCase().trim match {
       case "nats" =>
         log.info("Starting messaging mode: NATS")
-        log.trace(s"Using subject name: ${m.runtimeClass.streamName}")
+        log.info(s"Using subject name: ${m.runtimeClass.streamName}")
         NatsClient.source(system, config, m.runtimeClass.streamName)
       case "kinesis" =>
         log.info("Starting messaging mode: Kinesis")
