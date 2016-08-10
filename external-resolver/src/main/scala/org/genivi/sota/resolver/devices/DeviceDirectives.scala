@@ -15,6 +15,7 @@ import io.circe.generic.auto._
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{Device, Namespace, PackageId}
+import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.InstalledSoftware
@@ -38,21 +39,22 @@ class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
                         db: Database,
                         mat: ActorMaterializer,
                         ec: ExecutionContext) {
+
   import Directives._
 
   /**
-   * Exception handler for package routes.
-   */
+    * Exception handler for package routes.
+    */
   def installedPackagesHandler: ExceptionHandler =
-    ExceptionHandler(Errors.onMissingPackage)
+  ExceptionHandler(Errors.onMissingPackage)
 
   /**
-   * Exception handler for component routes.
-   */
+    * Exception handler for component routes.
+    */
   def installedComponentsHandler: ExceptionHandler =
-    ExceptionHandler(Errors.onMissingComponent)
+  ExceptionHandler(Errors.onMissingComponent)
 
-  val extractDeviceId : Directive1[Device.Id] = refined[Device.ValidId](Slash ~ Segment).map(Device.Id)
+  val extractDeviceId: Directive1[Device.Id] = refined[Device.ValidId](Slash ~ Segment).map(Device.Id)
 
   def searchDevices(ns: Namespace): Route =
     parameters(('regex.as[String Refined Regex].?,
@@ -62,14 +64,25 @@ class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
       complete(DeviceRepository.search(ns, re, pn, pv, cp, deviceRegistry))
     }
 
-  def getPackages(device: Device.Id): Route = {
+  def getPackages(device: Device.Id, regexFilter: Option[Refined[String, Regex]]): Route = {
+    def filter(regex: Option[String], packages: Set[PackageId]): Set[PackageId] =
+      regex match {
+        case Some(r) =>
+          packages.filter { p =>
+            p.name.get.matches(r) || p.version.get.matches(r)
+          }
+        case None =>
+          packages
+      }
+
     val result = for {
       native <- DeviceRepository.installedOn(device)
       foreign <- ForeignPackages.installedOn(device)
-    } yield native ++ foreign
+    } yield filter(regexFilter.map(_.get), native ++ foreign)
 
     complete(db.run(result))
   }
+
 
   def installPackage(namespace: Namespace, device: Device.Id, pkgId: PackageId): Route =
     completeOrRecoverWith(db.run(DeviceRepository.installPackage(namespace, device, pkgId))) {
@@ -114,7 +127,9 @@ class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
   def packageApi(device: Device.Id): Route = {
     (pathPrefix("package") & namespaceExtractor) { ns =>
       (get & pathEnd) {
-        getPackages(device)
+        parameters('regex.as[Refined[String, Regex]].?) { regFilter =>
+          getPackages(device, regFilter)
+        }
       } ~
       refinedPackageId { pkgId =>
         (put & pathEnd) {
