@@ -9,6 +9,7 @@ import akka.http.scaladsl.model.Uri.{Path, Query}
 import akka.http.scaladsl.model.{HttpRequest, Uri}
 import cats.Show
 import io.circe.generic.auto._
+import io.circe.Json
 import org.genivi.sota.data.{Device, DeviceT, Namespace}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 
@@ -62,5 +63,17 @@ trait DeviceRequests {
   def updateLastSeen(id: Id)
                     (implicit s: Show[Id]): HttpRequest =
     Post(Resource.uri(api, s.show(id), "ping"))
+
+  def fetchSystemInfo(id: Id)
+                     (implicit s: Show[Id]): HttpRequest =
+    Get(Resource.uri(api, s.show(id), "system_info"))
+
+  def createSystemInfo(id: Id, json: Json)
+                      (implicit s: Show[Id], ec: ExecutionContext): HttpRequest =
+    Post(Resource.uri(api, s.show(id),"system_info"), json)
+
+  def updateSystemInfo(id: Id, json: Json)
+                      (implicit s: Show[Id], ec: ExecutionContext): HttpRequest =
+    Put(Resource.uri(api, s.show(id),"system_info"), json)
 
 }

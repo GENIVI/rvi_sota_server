@@ -14,6 +14,7 @@ import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
+import io.circe.Json
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import org.genivi.sota.common.DeviceRegistry
@@ -34,6 +35,7 @@ class FakeDeviceRegistry(namespace: Namespace)
   val logger = Logging.getLogger(system, this)
 
   private val devices =  new ConcurrentHashMap[Device.Id, Device]()
+  private val systemInfo = new ConcurrentHashMap[Device.Id, Json]()
 
   override def searchDevice
   (ns: Namespace, re: String Refined Regex)
@@ -108,6 +110,27 @@ class FakeDeviceRegistry(namespace: Namespace)
     }
 
     FastFuture.successful(())
+  }
+
+  override def updateSystemInfo
+  (id: Id, json: Json)
+  (implicit ec: ExecutionContext): Future[Unit] = {
+    devices.asScala.get(id) match {
+      case Some(_) =>
+        systemInfo.put(id, json)
+        FastFuture.successful(())
+      case None =>
+        FastFuture.failed(MissingDevice)
+    }
+  }
+
+  override def getSystemInfo
+  (id: Id)
+  (implicit ec: ExecutionContext): Future[Json] = {
+    systemInfo.asScala.get(id) match {
+      case Some(x) => FastFuture.successful(x)
+      case None => FastFuture.failed(MissingDevice)
+    }
   }
 
   def addDevice(device: Device): Device = {

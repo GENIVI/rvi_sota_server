@@ -5,6 +5,7 @@
 package org.genivi.sota.common
 
 import java.time.Instant
+import io.circe.Json
 
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
@@ -47,4 +48,12 @@ trait DeviceRegistry {
   def updateLastSeen
     (id: Id, seenAt: Instant = Instant.now)
     (implicit ec: ExecutionContext): Future[Unit]
+
+  def updateSystemInfo
+    (id: Id, json: Json)
+    (implicit ec: ExecutionContext): Future[Unit]
+
+  def getSystemInfo
+    (id:Id)
+    (implicit ec: ExecutionContext): Future[Json]
 }

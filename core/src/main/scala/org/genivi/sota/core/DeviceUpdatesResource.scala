@@ -13,6 +13,7 @@ import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Uuid
 import io.circe.generic.auto._
+import io.circe.Json
 import java.util.UUID
 
 import org.genivi.sota.common.DeviceRegistry
@@ -72,6 +73,12 @@ class DeviceUpdatesResource(db: Database,
         } yield ()
       }
     } flatMap (_ => pass)
+  }
+
+  def updateSystemInfo(id: Device.Id): Route = {
+    entity(as[Json]) { json =>
+      complete(deviceRegistry.updateSystemInfo(id,json))
+    }
   }
 
   /**
@@ -241,6 +248,7 @@ class DeviceUpdatesResource(db: Database,
               updateInstalledPackages(device)
             }
           } ~
+            path("system_info"){ updateSystemInfo(device) } ~
             path("order") { setInstallOrder(device) } ~
             (extractUuid & path("cancelupdate") & authNamespace) { (updateId, _) => cancelUpdate(device, updateId) } ~
             path("blocked") { setBlockedInstall(device) }

@@ -10,8 +10,9 @@ import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling._
+import akka.http.scaladsl.model.ContentTypes
 import akka.http.scaladsl.model.Uri.Query
-import akka.http.scaladsl.model.{HttpMethods, HttpRequest, HttpResponse, MessageEntity, StatusCodes, Uri}
+import akka.http.scaladsl.model.{HttpEntity, HttpMethods, HttpRequest, HttpResponse, MessageEntity, StatusCodes, Uri}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
@@ -19,6 +20,7 @@ import cats.Show
 import cats.syntax.show._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
+import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.data.{Device, DeviceT, Namespace}
@@ -125,6 +127,36 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri)
           case err => FastFuture.failed(new Exception(err.toString))
         }
       }
+  }
+
+  override def updateSystemInfo(id: Id, json: Json)
+                              (implicit ec: ExecutionContext): Future[Unit] = {
+    val request = HttpRequest( method = PUT
+                             , uri = baseUri.withPath(devicesUri.path / id.show / "system_info")
+                             , entity = HttpEntity(ContentTypes.`application/json`, json.noSpaces))
+
+    Http().singleRequest(request)
+      .flatMap { response: HttpResponse =>
+        response.status match {
+          case OK => FastFuture.successful(())
+          case NotFound => FastFuture.failed(Errors.MissingDevice)
+          case err => FastFuture.failed(new Exception(err.toString))
+        }
+    }
+  }
+
+  override def getSystemInfo(id: Id)
+                            (implicit ec: ExecutionContext): Future[Json] = {
+    val request = HttpRequest( method = GET , uri = baseUri.withPath(devicesUri.path / id.show / "system_info"))
+
+    Http().singleRequest(request)
+      .flatMap { response: HttpResponse =>
+      response.status match {
+        case OK => Unmarshal(response.entity).to[Json]
+        case NotFound => FastFuture.failed(Errors.MissingDevice)
+        case err => FastFuture.failed(new Exception(err.toString))
+      }
+    }
   }
 
 }

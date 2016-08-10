@@ -16,6 +16,7 @@ import org.genivi.sota.core.resolver.{Connectivity, ConnectivityClient}
 import org.genivi.sota.core.rvi.{InstallReport, OperationResult, UpdateReport}
 import org.genivi.sota.core.transfer.DeviceUpdates
 import org.genivi.sota.data._
+import org.genivi.sota.data.SimpleJsonGenerator
 import java.time.Instant
 
 import org.genivi.sota.http.{AuthDirectives, NamespaceDirectives}
@@ -71,6 +72,21 @@ class DeviceUpdatesResourceSpec extends FunSuite
         fakeResolver.installedPackages.toList should contain(p)
       }
     }
+  }
+
+  test("system_info updates are forwarded to device registry") {
+    import SimpleJsonGenerator._
+
+    val newSystemInfo = simpleJsonGen.sample.get
+    val uri = Uri.Empty.withPath(deviceUri.path / "system_info")
+
+    Put(uri, newSystemInfo) ~> service.route ~> check {
+      status shouldBe StatusCodes.OK
+
+      val systemInfo = fakeDeviceRegistry.getSystemInfo(deviceUuid).futureValue
+      newSystemInfo shouldBe systemInfo
+    }
+
   }
 
   test("GET to download file returns the file contents") {
