@@ -4,7 +4,8 @@ import java.nio.ByteBuffer
 import java.util.UUID
 
 import akka.NotUsed
-import akka.actor.ActorSystem
+import akka.actor.{ActorSystem, Status}
+import akka.actor.FSM.Failure
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{Keep, Source}
 import io.circe.syntax._
@@ -21,9 +22,9 @@ import io.circe.{Decoder, Encoder}
 import org.genivi.sota.messaging.ConfigHelpers._
 import org.genivi.sota.messaging.Messages.MessageLike
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
-
 import scala.concurrent.{ExecutionContext, Future, blocking}
-import scala.util.Try
+import scala.util.{Success, Try}
+import akka.pattern.pipe
 
 object KinesisClient {
 
@@ -99,6 +100,9 @@ object KinesisClient {
           .build()
 
         Future(blocking { worker.run() })
+          .map(Status.Success(_))
+          .recover { case ex => Status.Failure(ex) }
+          .pipeTo(ref)
 
         worker
       }.watchTermination() { (worker, doneF) =>
