@@ -10,70 +10,78 @@ import org.genivi.sota.marshalling.CirceInstances._
 import org.genivi.sota.data.Device.{DeviceName, Id}
 import org.genivi.sota.data.{Device, Namespace, PackageId}
 
+import scala.reflect.ClassTag
+
 object Messages {
 
-  def parseDeviceSeenMsg(json: String): io.circe.Error Xor DeviceSeen =
-    decode[DeviceSeen](json)
-
-  def parseDeviceCreatedMsg(json: String): io.circe.Error Xor DeviceCreated =
-    decode[DeviceCreated](json)
-
-  def parseDeviceDeletedMsg(json: String): io.circe.Error Xor DeviceDeleted =
-    decode[DeviceDeleted](json)
-
-  def parsePackageCreatedMsg(json: String): io.circe.Error Xor PackageCreated =
-    decode[PackageCreated](json)
-
-  sealed trait Message {
-    def partitionKey: String
-  }
+  sealed trait Message
 
   final case class DeviceSeen(deviceId: Device.Id,
-                              lastSeen: Instant) extends Message {
-    override val partitionKey = deviceId.underlying.get
-  }
+                              lastSeen: Instant) extends Message
 
   final case class DeviceCreated(namespace: Namespace,
                                  deviceName: DeviceName,
                                  deviceId: Option[Device.DeviceId],
-                                 deviceType: Device.DeviceType) extends Message {
-    override val partitionKey = deviceName.underlying
-  }
+                                 deviceType: Device.DeviceType) extends Message
 
-  final case class DeviceDeleted(ns: Namespace, id: Id) extends Message {
-    override val partitionKey = id.underlying.get
-  }
+  final case class DeviceDeleted(ns: Namespace, id: Id) extends Message
 
-  final case class PackageCreated(ns: Namespace, pid: PackageId,
-                   description: Option[String], vendor: Option[String],
-                   signature: Option[String],
-                   fileName: String) extends Message {
-    override val partitionKey = pid.mkString
-  }
+  final case class PackageCreated(namespace: Namespace, pid: PackageId,
+                                  description: Option[String], vendor: Option[String],
+                                  signature: Option[String],
+                                  fileName: String) extends Message
 
-  implicit class StreamNameOp[T](v: T) {
+  implicit class StreamNameOp[T <: Class[_]](v: T) {
     def streamName: String = {
-      v.getClass.getSimpleName.filterNot(c => List('$').contains(c))
+      v.getSimpleName.filterNot(c => List('$').contains(c))
     }
   }
 
-  object DeviceSeen {
-    implicit val EncoderInstance: Encoder[DeviceSeen] = deriveEncoder
-    implicit val DecoderInstance: Decoder[DeviceSeen] = deriveDecoder
+  implicit class StreamNameInstanceOp[T <: Message](v: T) {
+    def streamName: String = v.getClass.streamName
   }
 
-  object DeviceCreated {
-    implicit val EncoderInstance: Encoder[DeviceCreated] = deriveEncoder
-    implicit val DecoderInstance: Decoder[DeviceCreated] = deriveDecoder
+  abstract class MessageLike[T]()(implicit val tag: ClassTag[T]) {
+    def streamName: String = tag.runtimeClass.streamName
+
+    def partitionKey(v: T): String
+
+    def parse(json: String): io.circe.Error Xor T = decode[T](json)
+
+    implicit val encoder: Encoder[T]
+
+    implicit val decoder: Decoder[T]
   }
 
-  object DeviceDeleted {
-    implicit val EncoderInstance: Encoder[DeviceDeleted] = deriveEncoder
-    implicit val DecoderInstance: Decoder[DeviceDeleted] = deriveDecoder
+
+  implicit val deviceSeenMessageLike = new MessageLike[DeviceSeen] {
+    override def partitionKey(v: DeviceSeen): String = v.deviceId.underlying.get
+
+    implicit val encoder: Encoder[DeviceSeen] = deriveEncoder
+    implicit val decoder: Decoder[DeviceSeen] = deriveDecoder
   }
 
-  object PackageCreated {
-    implicit val EncoderInstance: Encoder[PackageCreated] = deriveEncoder
-    implicit val DecoderInstance: Decoder[PackageCreated] = deriveDecoder
+  implicit val deviceCreatedMessageLike = new MessageLike[DeviceCreated] {
+    override def partitionKey(v: DeviceCreated): String =
+      v.deviceName.underlying
+
+    implicit val encoder: Encoder[DeviceCreated] = deriveEncoder
+    implicit val decoder: Decoder[DeviceCreated] = deriveDecoder
+  }
+
+  implicit val deviceDeletedMessageLike = new MessageLike[DeviceDeleted] {
+    override def partitionKey(v: DeviceDeleted): String =
+      v.id.underlying.get
+
+    implicit val encoder: Encoder[DeviceDeleted] = deriveEncoder
+    implicit val decoder: Decoder[DeviceDeleted] = deriveDecoder
+  }
+
+
+  implicit val packageCreatedMessageLike = new MessageLike[PackageCreated] {
+    override def partitionKey(v: PackageCreated): String = v.pid.mkString
+
+    implicit val encoder: Encoder[PackageCreated] = deriveEncoder
+    implicit val decoder: Decoder[PackageCreated] = deriveDecoder
   }
 }

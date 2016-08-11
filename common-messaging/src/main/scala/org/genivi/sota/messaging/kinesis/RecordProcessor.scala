@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
 
-class RecordProcessor[T <: Message](subscriber: ActorRef)(implicit val decoder: Decoder[T], system: ActorSystem)
+class RecordProcessor[T](subscriber: ActorRef)(implicit val decoder: Decoder[T], system: ActorSystem)
   extends IRecordProcessor {
 
   private val log = LoggerFactory.getLogger(this.getClass)

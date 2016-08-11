@@ -98,15 +98,16 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
                      description: Option[String], vendor: Option[String],
                      signature: Option[String],
                      fileName: String, file: Source[ByteString, Any]): Future[StatusCode] = {
-      for {
+      val resultF = for {
         _ <- resolver.putPackage(ns, pid, description, vendor)
         (uri, size, digest) <- packageStorageOp(pid, fileName, file)
         pkg <- db.run(Packages.create(Package(ns, pid, uri, size, digest, description, vendor, signature)))
-                  .andThen{
-                    case scala.util.Success(_) =>
-                      messageBusPublisher.publish(PackageCreated(ns, pid, description, vendor, signature, fileName))
-                  }
       } yield StatusCodes.NoContent
+
+      resultF.andThen {
+        case scala.util.Success(_) =>
+          messageBusPublisher.publish(PackageCreated(ns, pid, description, vendor, signature, fileName))
+      }
     }
 
     def handleErrors(throwable: Throwable): Route = throwable match {

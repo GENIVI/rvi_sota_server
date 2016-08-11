@@ -9,25 +9,24 @@ import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.Source
-import io.circe.Encoder
-import org.genivi.sota.messaging.Messages.Message
+import org.genivi.sota.messaging.Messages.{Message, MessageLike}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.reflect.ClassTag
 import scala.util.Try
 
 object LocalMessageBus {
-  def subscribe[T <: Message](system: ActorSystem)(implicit m: ClassTag[T]): Source[T, NotUsed] = {
+  def subscribe[T](system: ActorSystem)(implicit m: MessageLike[T]): Source[T, NotUsed] = {
     Source.actorRef(MessageBus.DEFAULT_CLIENT_BUFFER_SIZE, OverflowStrategy.dropTail).mapMaterializedValue { ref =>
-      system.eventStream.subscribe(ref, m.runtimeClass)
+      system.eventStream.subscribe(ref, m.tag.runtimeClass)
       NotUsed
     }
   }
 
   def publisher(system: ActorSystem): MessageBusPublisher = {
     new MessageBusPublisher {
-      override def publish[T <: Message](msg: T)(implicit ex: ExecutionContext, encoder: Encoder[T]): Future[Unit] =
-        Future.fromTry(Try(system.eventStream.publish(msg)))
+      override def publish[T](msg: T)(implicit ex: ExecutionContext, messageLike: MessageLike[T]): Future[Unit] = {
+        Future.fromTry(Try(system.eventStream.publish(msg.asInstanceOf[AnyRef])))
+      }
     }
   }
 }

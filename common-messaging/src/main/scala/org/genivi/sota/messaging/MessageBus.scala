@@ -20,9 +20,9 @@ import scala.util.{Failure, Success, Try}
 trait MessageBusPublisher {
   lazy private val logger = LoggerFactory.getLogger(this.getClass)
 
-  def publish[T <: Message](msg: T)(implicit ex: ExecutionContext, encoder: Encoder[T]): Future[Unit]
+  def publish[T](msg: T)(implicit ex: ExecutionContext, messageLike: MessageLike[T]): Future[Unit]
 
-  def publishSafe[T <: Message](msg: T)(implicit ec: ExecutionContext, encoder: Encoder[T]): Future[Try[Unit]] = {
+  def publishSafe[T](msg: T)(implicit ec: ExecutionContext, messageLike: MessageLike[T]): Future[Try[Unit]] = {
     publish(msg)
       .map(r => Success(r))
       .recover { case t =>
@@ -34,16 +34,10 @@ trait MessageBusPublisher {
 
 object MessageBusPublisher {
   def ignore = new MessageBusPublisher {
-    override def publish[T <: Message](msg: T)(implicit ex: ExecutionContext, encoder: Encoder[T]): Future[Unit] =
+    override def publish[T](msg: T)(implicit ex: ExecutionContext, messageLike: MessageLike[T]): Future[Unit] =
       Future.successful(())
   }
-
-  def apply(fn: Message => Unit): MessageBusPublisher = new MessageBusPublisher {
-    override def publish[T <: Message](msg: T)(implicit ex: ExecutionContext, encoder: Encoder[T]): Future[Unit] =
-      Future.successful(fn(msg))
-  }
 }
-
 
 object MessageBus {
   val DEFAULT_CLIENT_BUFFER_SIZE = 1024 // number of msgs
@@ -52,24 +46,22 @@ object MessageBus {
 
   import org.genivi.sota.marshalling.CirceInstances._
 
-  def subscribe[T <: Message](system: ActorSystem, config: Config)
-                             (implicit decoder: Decoder[T], m: ClassTag[T]): ConfigException Xor Source[T, NotUsed] = {
+  def subscribe[T](system: ActorSystem, config: Config)
+                  (implicit messageLike: MessageLike[T]): ConfigException Xor Source[T, NotUsed] = {
     config.getString("messaging.mode").toLowerCase().trim match {
       case "nats" =>
         log.info("Starting messaging mode: NATS")
-        log.trace(s"Using subject name: ${m.runtimeClass.streamName}")
-        NatsClient.source(system, config, m.runtimeClass.streamName)
+        log.info(s"Using subject name: ${messageLike.streamName}")
+        NatsClient.source(system, config, messageLike.streamName)(messageLike.decoder)
       case "kinesis" =>
         log.info("Starting messaging mode: Kinesis")
-        log.trace(s"Using stream name: ${m.runtimeClass.streamName}")
-        KinesisClient.source(system, config, m.runtimeClass.streamName)
-      case "local" =>
+        log.info(s"Using stream name: ${messageLike.streamName}")
+        KinesisClient.source(system, config, messageLike.streamName)(messageLike.decoder)
+      case "local" | "test" =>
         log.info("Using local event bus")
-        Xor.right(LocalMessageBus.subscribe(system))
-      case "test" =>
-        log.info("Starting messaging mode: Test")
-        Xor.Right(LocalMessageBus.subscribe(system))
-      case mode => Xor.left(new Missing(s"Unknown messaging mode specified ($mode)"))
+        Xor.right(LocalMessageBus.subscribe(system)(messageLike))
+      case mode =>
+        Xor.left(new Missing(s"Unknown messaging mode specified ($mode)"))
     }
   }
 
@@ -81,13 +73,11 @@ object MessageBus {
       case "kinesis" =>
         log.info("Starting messaging mode: Kinesis")
         KinesisClient.publisher(system, config)
-      case "local" =>
+      case "local" | "test" =>
         log.info("Using local message bus")
         Xor.right(LocalMessageBus.publisher(system))
-      case "test" =>
-        log.info("Starting messaging mode: Test")
-        Xor.right(LocalMessageBus.publisher(system))
-      case mode => Xor.left(new Missing(s"Unknown messaging mode specified ($mode)"))
+      case mode =>
+        Xor.left(new Missing(s"Unknown messaging mode specified ($mode)"))
     }
   }
 }

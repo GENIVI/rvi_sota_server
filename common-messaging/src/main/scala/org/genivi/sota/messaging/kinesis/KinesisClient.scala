@@ -19,8 +19,8 @@ import com.amazonaws.services.kinesis.clientlibrary.lib.worker.{KinesisClientLib
 import com.typesafe.config.{Config, ConfigException}
 import io.circe.{Decoder, Encoder}
 import org.genivi.sota.messaging.ConfigHelpers._
+import org.genivi.sota.messaging.Messages.MessageLike
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
-import org.genivi.sota.messaging.Messages._
 
 import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.util.Try
@@ -59,16 +59,19 @@ object KinesisClient {
   def publisher(system: ActorSystem, config: Config): ConfigException Xor MessageBusPublisher =
     getAmazonClient(system, config).map { client =>
       new MessageBusPublisher {
-        override def publish[T <: Message](msg: T)(implicit ex: ExecutionContext, encoder: Encoder[T]): Future[Unit] =
+        override def publish[T](msg: T)(implicit ex: ExecutionContext, messageLike: MessageLike[T]): Future[Unit] =
           Future {
             blocking {
-              client.putRecord(msg.streamName, ByteBuffer.wrap(msg.asJson.noSpaces.getBytes), msg.partitionKey)
+              client.putRecord(
+                messageLike.streamName,
+                ByteBuffer.wrap(msg.asJson(messageLike.encoder).noSpaces.getBytes),
+                messageLike.partitionKey(msg))
             }
           }
       }
     }
 
-  def source[T <: Message](system: ActorSystem, config: Config, streamName: String)
+  def source[T](system: ActorSystem, config: Config, streamName: String)
                           (implicit decoder: Decoder[T])
                              : ConfigException Xor Source[T, NotUsed] =
     for {
@@ -91,7 +94,7 @@ object KinesisClient {
         implicit val _system = system
 
         val worker = new Worker.Builder()
-          .recordProcessorFactory(new RecordProcessorFactory(ref))
+          .recordProcessorFactory(new RecordProcessorFactory(ref)(decoder, _system))
           .config(kinesisClientConfig)
           .build()
 
