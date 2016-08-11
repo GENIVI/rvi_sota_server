@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.resolver.test
 
-import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.{StatusCodes, Uri}
 import eu.timepit.refined.refineV
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
@@ -91,6 +91,26 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
         Get(Resource.uri(devices, id.show, "package")) ~> route ~> check {
           status shouldBe StatusCodes.OK
           responseAs[Set[PackageId]] shouldBe packageIds
+        }
+      }
+    }
+  }
+
+  property("filters installed packages by regex") {
+    val packageGen = Gen.nonEmptyContainerOf[Set, PackageId](genPackageId)
+
+    forAll(genDevice, packageGen, minSuccessful(3)) { (device, packageIds) =>
+      val id = deviceRegistry.createDevice(device.toResponse).futureValue
+
+      Put(Resource.uri(devices, id.show, "packages"),
+        InstalledSoftware(packageIds, Set())) ~> route ~> check {
+        status shouldBe StatusCodes.NoContent
+
+        val query = Uri.Query("regex" -> "doesnotexist")
+
+        Get(Resource.uri(devices, id.show, "package").withQuery(query)) ~> route ~> check {
+          status shouldBe StatusCodes.OK
+          responseAs[Set[PackageId]] should be(empty)
         }
       }
     }
