@@ -135,6 +135,13 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
     }
   }
 
+  case class PackageInfo(description: String)
+
+  def updatePackageInfo(ns: Namespace, pid: PackageId): Route = {
+    entity(as[PackageInfo]) { pi =>
+      complete(db.run(Packages.updateInfo(ns,pid,pi.description)))
+    }
+  }
 
   /**
     * An ota client GET the devices waiting for the given [[Package]] to be installed.
@@ -149,6 +156,11 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
         searchPackage(ns)
       } ~
       (namespaceExtractor & extractPackageId) { (ns, pid) =>
+        path("info") {
+          put {
+            updatePackageInfo(ns,pid)
+          }
+        } ~
         pathEnd {
           get {
             fetch(ns, pid)

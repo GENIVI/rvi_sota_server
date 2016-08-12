@@ -97,4 +97,15 @@ object Packages {
       (x.name.mappedTo[String] ++ x.version.mappedTo[String] inSet ids.map( id => id.name.get + id.version.get))
     ).result
   }
+
+  /**
+   * Update the description about a package from its name & version
+   * @param id The name/version of the package to update
+   * @param description the new description
+   */
+  def updateInfo(ns: Namespace, id : PackageId, description: String)
+                (implicit ec: ExecutionContext): DBIO[Unit] = {
+    packages.filter(p => p.namespace === ns && p.name === id.name && p.version === id.version)
+            .map(_.description).update(description).map(_ => ())
+  }
 }
