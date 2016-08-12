@@ -72,7 +72,10 @@ class WebService(notifier: UpdateNotifier,
               get { packagesResource.fetch(ns, pid) } ~
                 put { packagesResource.updatePackage(ns, pid) }
             } ~
-              path("queued") { packagesResource.queuedDevices(ns, pid) }
+            path("info") {
+              put {packagesResource.updatePackageInfo(ns, pid)}
+            } ~
+            path("queued") { packagesResource.queuedDevices(ns, pid) }
           }
       }
     }
