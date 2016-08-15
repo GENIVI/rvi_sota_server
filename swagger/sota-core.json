@@ -304,6 +304,65 @@
         }
       }
     },
+    "/vehicle_updates/{uuid}/blocked": {
+      "get": {
+        "description": "Get whether the update queue for the given device is blocked.",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The device to query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/BlockedInstall"
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Put a block on the update queue for the given device.",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The device to block",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a block on the update queue for the given device.",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The device to unblock",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
     "/vehicle_updates/{uuid}/{updateId}/download": {
       "get": {
         "description": "Download a package binary. This is called by the in-vehicle client.",
@@ -543,6 +602,10 @@
       "type": "string",
       "description": "Custom name for a device"
     },
+    "DeviceType": {
+      "type": "string",
+      "description": "Valid values are \"Vehicle\" and \"Other\""
+    },
     "Device": {
       "type": "object",
       "properties": {
@@ -557,6 +620,9 @@
         },
         "deviceName": {
           "$ref": "#/definitions/DeviceName"
+        },
+        "deviceType": {
+          "$ref": "#/definitions/DeviceType"
         },
         "lastseen": {
           "type": "string",
@@ -704,6 +770,20 @@
     },
     "orderMapping": {
       "type": "object"
+    },
+    "BlockedInstall": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The UUID of the device"
+        },
+        "blockedAt": {
+          "type": "string",
+          "format": "dateTime",
+          "description": "The time the update queue for the device was blocked."
+        }
+      }
     }
   }
 }
