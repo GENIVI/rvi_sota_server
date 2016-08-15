@@ -24,12 +24,18 @@ object Messages {
                                  deviceId: Option[Device.DeviceId],
                                  deviceType: Device.DeviceType) extends Message
 
-  final case class DeviceDeleted(ns: Namespace, id: Id) extends Message
+  final case class DeviceDeleted(namespace: Namespace, deviceId: Id) extends Message
 
-  final case class PackageCreated(namespace: Namespace, pid: PackageId,
+  final case class PackageCreated(namespace: Namespace, packageId: PackageId,
                                   description: Option[String], vendor: Option[String],
                                   signature: Option[String],
                                   fileName: String) extends Message
+
+  //Create custom UpdateSpec here instead of using org.genivi.sota.core.data.UpdateSpec as that would require moving
+  //multiple RVI messages into SotaCommon. Furthermore, for now this class contains just the info required by the
+  //front end.
+  final case class UpdateSpec(namespace: Namespace, deviceId: Device.Id, packageId: PackageId,
+                              status: String) extends Message
 
   implicit class StreamNameOp[T <: Class[_]](v: T) {
     def streamName: String = {
@@ -71,7 +77,7 @@ object Messages {
 
   implicit val deviceDeletedMessageLike = new MessageLike[DeviceDeleted] {
     override def partitionKey(v: DeviceDeleted): String =
-      v.id.underlying.get
+      v.deviceId.underlying.get
 
     implicit val encoder: Encoder[DeviceDeleted] = deriveEncoder
     implicit val decoder: Decoder[DeviceDeleted] = deriveDecoder
@@ -79,9 +85,16 @@ object Messages {
 
 
   implicit val packageCreatedMessageLike = new MessageLike[PackageCreated] {
-    override def partitionKey(v: PackageCreated): String = v.pid.mkString
+    override def partitionKey(v: PackageCreated): String = v.packageId.mkString
 
     implicit val encoder: Encoder[PackageCreated] = deriveEncoder
     implicit val decoder: Decoder[PackageCreated] = deriveDecoder
+  }
+
+  implicit val updateSpecMessageLike = new MessageLike[UpdateSpec] {
+    override def partitionKey(v: UpdateSpec): String = v.deviceId.underlying.get
+
+    implicit val encoder: Encoder[UpdateSpec] = deriveEncoder
+    implicit val decoder: Decoder[UpdateSpec] = deriveDecoder
   }
 }

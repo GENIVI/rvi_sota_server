@@ -20,7 +20,7 @@ import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.data.client.ResponseConversions
 import org.genivi.sota.core.db.{BlockedInstalls, OperationResults, UpdateSpecs}
 import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, ExternalResolverClient}
-import org.genivi.sota.core.rvi.{InstallReport, VinInstallReport}
+import org.genivi.sota.core.rvi.InstallReport
 import org.genivi.sota.core.storage.PackageStorage
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -134,13 +134,7 @@ class DeviceUpdatesResource(db: Database,
     entity(as[InstallReport]) { report =>
       val responseF =
         DeviceUpdates
-          .buildReportInstallResponse(report.device, report.update_report)
-      complete(responseF)
-    } ~
-    entity(as[VinInstallReport]) { report =>
-      val responseF =
-        DeviceUpdates
-          .buildReportInstallResponse(report.vin, report.update_report)
+          .buildReportInstallResponse(report.device, report.update_report, messageBus)
       complete(responseF)
     }
   }
@@ -237,7 +231,7 @@ class DeviceUpdatesResource(db: Database,
       get {
         pathEnd { logDeviceSeen(device) { pendingPackages(device) } } ~
         path("queued") { pendingPackages(device) } ~
-        path("blocked") {getBlockedInstall(device) } ~
+        path("blocked") { getBlockedInstall(device) } ~
         path("results") { results(device) } ~
         (extractUuid & path("results")) { updateId => resultsForUpdate(device, updateId) } ~
         (extractUuid & path("download")) { updateId => downloadPackage(device, updateId) }
