@@ -8,7 +8,7 @@ import akka.http.scaladsl.model.Uri
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.PackageId
-import org.genivi.sota.db.Operators.regex
+import org.genivi.sota.db.Operators._
 import org.genivi.sota.db.SlickExtensions._
 import slick.driver.MySQLDriver.api._
 
@@ -76,7 +76,10 @@ object Packages {
    * @param reg The regular expression to search with
    */
   def searchByRegex(ns: Namespace, reg:String): DBIO[Seq[Package]] =
-    packages.filter(p => p.namespace === ns && (regex(p.name, reg) || regex(p.version, reg))).result
+    packages
+      .filter(p => p.namespace === ns)
+      .regexFilter(Some(reg))(_.name, _.version)
+      .result
 
   /**
    * Return the information about a package from its name & version

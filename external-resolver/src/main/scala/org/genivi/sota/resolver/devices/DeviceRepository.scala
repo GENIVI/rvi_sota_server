@@ -18,7 +18,7 @@ import org.genivi.sota.resolver.filters._
 import org.genivi.sota.resolver.packages.PackageRepository
 import slick.driver.MySQLDriver.api._
 import eu.timepit.refined.refineV
-import org.genivi.sota.db.Operators.regex
+import org.genivi.sota.db.Operators._
 import scala.concurrent.{ExecutionContext, Future}
 
 
@@ -155,16 +155,10 @@ object DeviceRepository {
 
   def installedOn(device: Device.Id, regexFilter: Option[String] = None)
                  (implicit ec: ExecutionContext) : DBIO[Set[PackageId]] = {
-    val baseQuery = installedPackages.filter(_.device === device)
-
-    val filteredQuery = regexFilter match {
-      case Some(r) =>
-        baseQuery.filter(p => regex(p.packageName, regexFilter) || regex(p.packageVersion, regexFilter) )
-      case None =>
-        baseQuery
-    }
-
-    filteredQuery.result.map(_.map(_._3).toSet)
+    installedPackages
+      .filter(_.device === device)
+      .regexFilter(regexFilter)(_.packageName, _.packageVersion)
+      .result.map(_.map(_._3).toSet)
   }
 
   def listInstalledPackages: DBIO[Seq[(Namespace, Device.Id, PackageId)]] =

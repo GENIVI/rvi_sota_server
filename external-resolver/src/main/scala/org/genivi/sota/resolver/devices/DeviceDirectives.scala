@@ -65,20 +65,10 @@ class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
     }
 
   def getPackages(device: Device.Id, regexFilter: Option[Refined[String, Regex]]): Route = {
-    def filter(regex: Option[String], packages: Set[PackageId]): Set[PackageId] =
-      regex match {
-        case Some(r) =>
-          packages.filter { p =>
-            p.name.get.matches(r) || p.version.get.matches(r)
-          }
-        case None =>
-          packages
-      }
-
     val result = for {
-      native <- DeviceRepository.installedOn(device)
-      foreign <- ForeignPackages.installedOn(device)
-    } yield filter(regexFilter.map(_.get), native ++ foreign)
+      native <- DeviceRepository.installedOn(device, regexFilter.map(_.get))
+      foreign <- ForeignPackages.installedOn(device, regexFilter.map(_.get))
+    } yield native ++ foreign
 
     complete(db.run(result))
   }
