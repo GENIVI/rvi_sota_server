@@ -53,6 +53,7 @@ class DeviceUpdatesResource(db: Database,
   import WebService._
   import org.genivi.sota.marshalling.CirceMarshallingSupport._
   import Device._
+  import ErrorHandler._
 
   implicit val ec = system.dispatcher
   implicit val _db = db
@@ -221,11 +222,7 @@ class DeviceUpdatesResource(db: Database,
     complete(response)
   }
 
-  /**
-    * Routes are grouped first by HTTP method to avoid tricky misunderstandings on the part of the Routing DSL.
-    * These routes must be kept in synch with [[DeviceUpdatesResource]]
-    */
-  val route = {
+  val route = handleErrors {
     // TODO vehicle_updates -> device_updates
     (pathPrefix("api" / "v1" / "vehicle_updates") & extractDeviceUuid) { device =>
       get {

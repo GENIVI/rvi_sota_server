@@ -11,7 +11,7 @@ import java.util.UUID
 
 import org.genivi.sota.core.data.client.PendingUpdateRequest
 import org.genivi.sota.core.data.{BlockedInstall, Package, UpdateRequest, UpdateStatus}
-import org.genivi.sota.core.db.{InstallHistories, Packages}
+import org.genivi.sota.core.db.{BlacklistedPackages, InstallHistories, Packages}
 import org.genivi.sota.core.resolver.{Connectivity, ConnectivityClient}
 import org.genivi.sota.core.rvi.{InstallReport, OperationResult, UpdateReport}
 import org.genivi.sota.core.transfer.DeviceUpdates
@@ -30,6 +30,8 @@ import org.scalatest.{FunSuite, Inspectors, ShouldMatchers}
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+import Device._
+import cats.syntax.show._
 
 class DeviceUpdatesResourceSpec extends FunSuite
   with ShouldMatchers
@@ -111,7 +113,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
     Get(url) ~> service.route ~> check {
       status shouldBe StatusCodes.NotFound
-      responseAs[String] should include("Package not found")
+      responseAs[String] should include("package not found")
     }
   }
 
@@ -174,7 +176,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
     Post(url, installReport) ~> service.route ~> check {
       status shouldBe StatusCodes.NotFound
-      responseAs[String] should include("Could not find an update request with id ")
+      responseAs[String] should include("UpdateSpec not found")
     }
   }
 
@@ -204,7 +206,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
   }
 
 
-  test("POST on queues a package for update to a specific vehile") {
+  test("POST queues a package for update to a specific vehicle") {
     val f = createUpdateSpec()
 
     whenReady(f) { case (packageModel, device, updateSpec) =>
@@ -216,6 +218,42 @@ class DeviceUpdatesResourceSpec extends FunSuite
         val updateRequest = responseAs[UpdateRequest]
         updateRequest.packageId should be (packageModel.id)
         updateRequest.creationTime.isAfter(now) shouldBe true
+      }
+    }
+  }
+
+  test("update requests with blacklisted packages are excluded from queue") {
+    val f = for {
+      (p, d, us) <- createUpdateSpec()
+      _ <- BlacklistedPackages.create(p.namespace, p.id, None)
+    } yield (p, d, us)
+
+    whenReady(f) { case (packageModel, device, updateSpec) =>
+      val url = baseUri.withPath(baseUri.path / device.id.underlying.get / "queued")
+
+      Get(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+
+        val resp = responseAs[List[PendingUpdateRequest]]
+
+        resp shouldBe empty
+      }
+    }
+  }
+
+  test("downloading an update with a blacklisted package returns bad request") {
+    val f = for {
+      (p, d, us) <- createUpdateSpec()
+      _ <- BlacklistedPackages.create(p.namespace, p.id, None)
+    } yield (p, d, us)
+
+    whenReady(f) { case (packageModel, device, updateSpec) =>
+      val url =
+        baseUri
+          .withPath(baseUri.path / device.id.show / updateSpec.request.id.toString / "download" )
+
+      Get(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.BadRequest
       }
     }
   }

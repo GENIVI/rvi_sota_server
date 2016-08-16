@@ -8,6 +8,8 @@ package org.genivi.sota.core
 import java.io.File
 import java.net.URI
 
+import cats.syntax.show._
+import org.genivi.sota.data.PackageId._
 import akka.actor.ActorSystem
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.generic.auto._
@@ -20,7 +22,7 @@ import akka.util.ByteString
 import cats.data.Xor
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
-import org.genivi.sota.core.db.Packages
+import org.genivi.sota.core.db.{BlacklistedPackageRequest, Packages}
 import org.genivi.sota.core.storage.PackageStorage.PackageStorageOp
 import org.genivi.sota.core.storage.{LocalPackageStore, PackageStorage}
 import org.scalatest.concurrent.ScalaFutures
@@ -37,12 +39,13 @@ class PackagesResourceSpec extends FunSuite
   with ShouldMatchers
   with ScalaFutures
   with LongRequestTimeout
+  with Generators
 {
   import org.genivi.sota.http.NamespaceDirectives._
 
   val resolver = new FakeExternalResolver()
 
-    val service = new PackagesResource(resolver, db, MessageBusPublisher.ignore, defaultNamespaceExtractor) {
+  val service = new PackagesResource(resolver, db, MessageBusPublisher.ignore, defaultNamespaceExtractor) {
     override val packageStorageOp: PackageStorageOp = new LocalPackageStore().store _
   }
 
@@ -79,7 +82,6 @@ class PackagesResourceSpec extends FunSuite
   }
 
   test("returns packages for the request namespace only") {
-    import Generators._
     val pkg = PackageGen.sample.get.copy(namespace = Namespace("not-the-default-ns"))
     val dbF = db.run(Packages.create(pkg))
 

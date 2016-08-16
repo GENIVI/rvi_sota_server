@@ -8,6 +8,7 @@ import akka.Done
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.common.StrictForm
+import akka.http.scaladsl.model.HttpHeader.ParsingResult.Ok
 import akka.http.scaladsl.model.{FormData, StatusCode, StatusCodes}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.directives.{CompleteOrRecoverWithMagnet, DebuggingDirectives}
@@ -19,7 +20,7 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.core.db.{Packages, UpdateSpecs}
+import org.genivi.sota.core.db._
 import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
 import org.genivi.sota.core.storage.PackageStorage
 import org.genivi.sota.core.storage.PackageStorage.PackageStorageOp
@@ -55,6 +56,7 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
   import PackagesResource._
 
   implicit val _config = system.settings.config
+  implicit val _db = db
 
   private[this] val log = Logging.getLogger(system, "org.genivi.sota.core.PackagesResource")
 
@@ -142,7 +144,6 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
       complete(db.run(Packages.updateInfo(ns,pid,pi.description)))
     }
   }
-
   /**
     * An ota client GET the devices waiting for the given [[Package]] to be installed.
     */

@@ -5,6 +5,7 @@
 package org.genivi.sota.core.db
 
 import akka.http.scaladsl.model.Uri
+import org.genivi.sota.core.Errors
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.PackageId
@@ -12,7 +13,7 @@ import org.genivi.sota.db.Operators._
 import org.genivi.sota.db.SlickExtensions._
 import slick.driver.MySQLDriver.api._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * Database mapping definition for the Package SQL table. This defines all the
@@ -110,5 +111,19 @@ object Packages {
                 (implicit ec: ExecutionContext): DBIO[Unit] = {
     packages.filter(p => p.namespace === ns && p.name === id.name && p.version === id.version)
             .map(_.description).update(description).map(_ => ())
+  }
+
+  def find(ns: Namespace, packageId: PackageId)
+          (implicit ec: ExecutionContext): DBIO[Package] = {
+    packages
+      .filter(_.namespace === ns)
+      .filter(_.name === packageId.name)
+      .filter(_.version === packageId.version)
+      .result
+      .headOption
+      .flatMap {
+        case Some(p) => DBIO.successful(p)
+        case None => DBIO.failed(Errors.MissingPackage)
+      }
   }
 }

@@ -4,42 +4,33 @@
  */
 package org.genivi.sota.core.transfer
 
-import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
-import akka.http.scaladsl.util.FastFuture
-import cats.Show
-import eu.timepit.refined.api.Refined
-import io.circe.Json
-import io.circe.syntax._
-import org.genivi.sota.core.data.UpdateStatus.UpdateStatus
 import java.util.UUID
 
-import org.genivi.sota.common.DeviceRegistry
+import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
+import cats.Show
+import io.circe.Json
+import io.circe.syntax._
+import org.genivi.sota.core.Errors
+import org.genivi.sota.core.data.UpdateStatus.UpdateStatus
 import org.genivi.sota.core.data._
-import org.genivi.sota.core.db.Packages
-import org.genivi.sota.core.db.OperationResults
-import org.genivi.sota.core.db.InstallHistories
-import org.genivi.sota.core.db.UpdateSpecs
 import org.genivi.sota.core.db.UpdateSpecs._
-import org.genivi.sota.core.db.BlockedInstalls
+import org.genivi.sota.core.db._
 import org.genivi.sota.core.resolver.ExternalResolverClient
 import org.genivi.sota.core.rvi.UpdateReport
-import org.genivi.sota.data.Namespace
-import org.genivi.sota.data.{Device, PackageId}
+import org.genivi.sota.data.{Device, Namespace, PackageId}
+import org.genivi.sota.db.Operators._
 import org.genivi.sota.db.SlickExtensions
+import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
+import slick.dbio.DBIO
+import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
-import slick.dbio.DBIO
-import slick.driver.MySQLDriver.api._
-import cats.syntax.show._
-import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
 
 object DeviceUpdates {
   import SlickExtensions._
-  import org.genivi.sota.refined.SlickRefined._
   import org.genivi.sota.marshalling.CirceInstances._
 
-  case class UpdateSpecNotFound(msg: String) extends Exception(msg) with NoStackTrace
   case class SetOrderFailed(msg: String) extends Exception(msg) with NoStackTrace
 
   /**
@@ -59,8 +50,6 @@ object DeviceUpdates {
                                 (implicit ec: ExecutionContext, db: Database): Future[HttpResponse] = {
     reportInstall(device, updateReport, messageBus) map { _ =>
       HttpResponse(StatusCodes.NoContent)
-    } recover { case t: UpdateSpecNotFound =>
-      HttpResponse(StatusCodes.NotFound, entity = t.getMessage)
     }
   }
 
@@ -123,8 +112,10 @@ object DeviceUpdates {
       .sortBy { case (sp, _) => (sp.installPos.asc, sp.creationTime.asc) }
       .map    { case (_, ur) => ur }
       .result
+      .flatMap(BlacklistedPackages.filterBlacklisted[UpdateRequest](ur => (ur.namespace, ur.packageId)))
       .map { _.zipWithIndex.map { case (ur, idx) => ur.copy(installPos = idx) } }
   }
+
 
   /**
     * Find the [[UpdateSpec]]-s (including dependencies) whatever their [[UpdateStatus]]
@@ -160,13 +151,7 @@ object DeviceUpdates {
       }
     }
 
-    specsWithDepsIO flatMap {
-      case Some(us) => DBIO.successful(us)
-      case None =>
-        DBIO.failed(
-          UpdateSpecNotFound(s"Could not find an update request with id $updateRequestId for device ${device.show}")
-        )
-    }
+    specsWithDepsIO.failIfNone(Errors.MissingEntity(classOf[UpdateSpec]))
   }
 
   /**

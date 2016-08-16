@@ -8,6 +8,8 @@ package org.genivi.sota.db
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
+import scala.util.Success
+
 /**
   * Some database operators are shared between the core and the
   * resolver.
