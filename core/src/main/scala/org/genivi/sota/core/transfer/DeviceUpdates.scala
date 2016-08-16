@@ -32,6 +32,7 @@ import scala.util.control.NoStackTrace
 import slick.dbio.DBIO
 import slick.driver.MySQLDriver.api._
 import cats.syntax.show._
+import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
 
 object DeviceUpdates {
   import SlickExtensions._
@@ -53,9 +54,10 @@ object DeviceUpdates {
     resolverClient.setInstalledPackages(device, j)
   }
 
-  def buildReportInstallResponse(device: Device.Id, updateReport: UpdateReport)
+  def buildReportInstallResponse(device: Device.Id, updateReport: UpdateReport,
+                                 messageBus: MessageBusPublisher)
                                 (implicit ec: ExecutionContext, db: Database): Future[HttpResponse] = {
-    reportInstall(device, updateReport) map { _ =>
+    reportInstall(device, updateReport, messageBus) map { _ =>
       HttpResponse(StatusCodes.NoContent)
     } recover { case t: UpdateSpecNotFound =>
       HttpResponse(StatusCodes.NotFound, entity = t.getMessage)
@@ -71,7 +73,7 @@ object DeviceUpdates {
     *   <li>Persist the outcome of the [[UpdateSpec]] as a whole in [[InstallHistories.InstallHistoryTable]]</li>
     * </ul>
     */
-  def reportInstall(device: Device.Id, updateReport: UpdateReport)
+  def reportInstall(device: Device.Id, updateReport: UpdateReport, messageBus: MessageBusPublisher)
                    (implicit ec: ExecutionContext, db: Database): Future[UpdateSpec] = {
 
     // add a row (with fresh UUID) to OperationResult table for each result of this report
@@ -98,7 +100,11 @@ object DeviceUpdates {
               }
     } yield spec.copy(status = newStatus)
 
-    db.run(dbIO.transactionally)
+    db.run(dbIO.transactionally).andThen {
+      case scala.util.Success(spec) =>
+        messageBus.publish(Messages.UpdateSpec(spec.namespace, device, spec.request.packageId,
+        spec.status.toString))
+    }
   }
 
   /**

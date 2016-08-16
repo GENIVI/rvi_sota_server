@@ -46,7 +46,7 @@ class PackageCreatedListener(db: Database) extends ActorSubscriber with ActorLog
       log.info(s"Saved package from bus (id: ${pId.show})")
 
     case OnNext(e: PackageCreated) =>
-      val p = Package(e.namespace, e.pid, e.description, e.vendor)
+      val p = Package(e.namespace, e.packageId, e.description, e.vendor)
       val dbIO = PackageRepository.add(p)
       db.run(dbIO).map(_ => p.id).pipeTo(self)
 
@@ -63,7 +63,7 @@ class PackageCreatedListener(db: Database) extends ActorSubscriber with ActorLog
 object MessageBusListenerActor {
   case object Subscribe
 
-  def props(db: Database) = Props(classOf[MessageBusListenerActor], db)
+  def props(db: Database): Props = Props(classOf[MessageBusListenerActor], db)
 }
 
 class MessageBusListenerActor(db: Database) extends Actor with ActorLogging {

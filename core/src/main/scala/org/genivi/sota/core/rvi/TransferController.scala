@@ -27,8 +27,10 @@ import org.genivi.sota.core.resolver.ConnectivityClient
 import org.genivi.sota.core.storage.S3PackageStore
 import java.time.Instant
 import java.time.Duration
+
 import org.genivi.sota.core.transfer.DeviceUpdates
 import org.genivi.sota.data.Device
+import org.genivi.sota.messaging.MessageBusPublisher
 
 import scala.collection.immutable.Queue
 import scala.concurrent.duration.FiniteDuration
@@ -102,8 +104,9 @@ object TransferProtocolActor {
    */
   def props(db: Database,
             rviClient: ConnectivityClient,
-            transferActorProps: (UUID, String, Package, ClientServices) => Props): Props =
-    Props( new TransferProtocolActor( db, rviClient, transferActorProps) )
+            transferActorProps: (UUID, String, Package, ClientServices) => Props,
+            messageBus: MessageBusPublisher): Props =
+    Props( new TransferProtocolActor( db, rviClient, transferActorProps, messageBus) )
 }
 
 object UpdateEvents {
@@ -129,7 +132,8 @@ object UpdateEvents {
  */
 class TransferProtocolActor(db: Database,
                             rviClient: ConnectivityClient,
-                            transferActorProps: (UUID, String, Package, ClientServices) => Props)
+                            transferActorProps: (UUID, String, Package, ClientServices) => Props,
+                            messageBus: MessageBusPublisher)
     extends Actor with ActorLogging {
   import cats.syntax.eq._
   import cats.syntax.show._
@@ -181,7 +185,7 @@ class TransferProtocolActor(db: Database,
       context.system.eventStream.publish( UpdateEvents.InstallReportReceived(r) )
       log.debug(s"Install report received from $device: ${update.update_id} installed with ${update.operation_results}")
       assert(updates.requestId == update.update_id) // TODO debug code
-      DeviceUpdates.reportInstall(device, update)(dispatcher, db)
+      DeviceUpdates.reportInstall(device, update, messageBus)(dispatcher, db)
       rviClient.sendMessage(services.getpackages, io.circe.Json.Null, ttl())
 
     case ReceiveTimeout =>

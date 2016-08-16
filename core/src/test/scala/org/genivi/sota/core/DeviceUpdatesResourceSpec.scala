@@ -19,6 +19,7 @@ import org.genivi.sota.data._
 import org.genivi.sota.data.SimpleJsonGenerator
 import java.time.Instant
 
+import eu.timepit.refined.api.Refined
 import org.genivi.sota.http.{AuthDirectives, NamespaceDirectives}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
@@ -61,6 +62,8 @@ class DeviceUpdatesResourceSpec extends FunSuite
     (registry, Uri.Empty.withPath(baseUri.path / id.underlying.get), id)
   }
 
+  val id = Device.Id(Refined.unsafeApply(UUID.randomUUID().toString))
+
   test("install updates are forwarded to external resolver") {
     val packageIds = Gen.listOf(genPackageId).sample.get
     val uri = Uri.Empty.withPath(deviceUri.path / "installed")
@@ -91,7 +94,8 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
   test("GET to download file returns the file contents") {
     whenReady(createUpdateSpec()) { case (packageModel, device, updateSpec) =>
-      val url = Uri.Empty.withPath(baseUri.path / device.id.underlying.get / updateSpec.request.id.toString / "download")
+      val url =
+        Uri.Empty.withPath(baseUri.path / device.id.underlying.get / updateSpec.request.id.toString / "download")
 
       Get(url) ~> service.route ~> check {
         status shouldBe StatusCodes.OK
@@ -141,7 +145,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
   test("POST an update report updates an UpdateSpec status") {
     whenReady(createUpdateSpec()) { case (_, device, updateSpec) =>
       val url = Uri.Empty.withPath(baseUri.path / device.id.underlying.get / updateSpec.request.id.toString)
-      val result = OperationResult("opid", 1, "some result")
+      val result = OperationResult(id, 1, "some result")
       val updateReport = UpdateReport(updateSpec.request.id, List(result))
       val installReport = InstallReport(device.id, updateReport)
 
@@ -164,7 +168,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
   test("Returns 404 if package does not exist") {
     val fakeUpdateRequestUuid = UUID.randomUUID()
     val url = Uri.Empty.withPath(deviceUri.path / fakeUpdateRequestUuid.toString)
-    val result = OperationResult(UUID.randomUUID().toString, 1, "some result")
+    val result = OperationResult(id, 1, "some result")
     val updateReport = UpdateReport(fakeUpdateRequestUuid, List(result))
     val installReport = InstallReport(deviceUuid, updateReport)
 
@@ -190,7 +194,8 @@ class DeviceUpdatesResourceSpec extends FunSuite
     } yield (packageModel, device, updateSpec)
 
     whenReady(f) { case (packageModel, device, updateSpec) =>
-      val url = Uri.Empty.withPath(baseUri.path / device.id.underlying.get / updateSpec.request.id.toString / "download")
+      val url =
+        Uri.Empty.withPath(baseUri.path / device.id.underlying.get / updateSpec.request.id.toString / "download")
       Get(url) ~> service.route ~> check {
         status shouldBe StatusCodes.Found
         header("Location").map(_.value()) should contain("https://some-fake-place")
@@ -252,7 +257,8 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
   test("can cancel pending updates") {
     whenReady(createUpdateSpec()) { case (_, device, updateSpec) =>
-      val url = Uri.Empty.withPath(baseUri.path / device.id.underlying.get / updateSpec.request.id.toString / "cancelupdate")
+      val url =
+        Uri.Empty.withPath(baseUri.path / device.id.underlying.get / updateSpec.request.id.toString / "cancelupdate")
       Put(url) ~> service.route ~> check {
         status shouldBe StatusCodes.NoContent
 

@@ -51,10 +51,10 @@ with DefaultPatience {
 
       publisher.sendNext(pkg)
 
-      val dbIO = PackageRepository.exists(pkg.namespace, pkg.pid)
+      val dbIO = PackageRepository.exists(pkg.namespace, pkg.packageId)
 
       eventually {
-        db.run(dbIO).futureValue.id shouldBe pkg.pid
+        db.run(dbIO).futureValue.id shouldBe pkg.packageId
       }
     }
   }

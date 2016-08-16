@@ -23,6 +23,8 @@ import org.genivi.sota.data.Namespace._
 import java.time.{Duration, Instant}
 import java.util.UUID
 
+import cats.data.Xor
+import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
 import org.scalacheck.Gen
 import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture, whenReady}
 import org.scalatest.prop.PropertyChecks
@@ -167,16 +169,23 @@ trait SotaCore {
     UpdateController, JsonRpcRviClient, RviConnectivity}
 
   implicit val system = akka.actor.ActorSystem("PackageUpdateSpec")
-  implicit val materilizer = akka.stream.ActorMaterializer()
+  implicit val materializer = akka.stream.ActorMaterializer()
   implicit val exec = system.dispatcher
 
   implicit val connectivity = new RviConnectivity(system.settings.config.getString("rvi.endpoint"))
   val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
 
+  lazy val messageBus =
+    MessageBus.publisher(system, system.settings.config) match {
+      case Xor.Right(v) => v
+      case Xor.Left(error) => throw error
+    }
+
   def sotaRviServices() : Route = {
     val transferProtocolProps =
       TransferProtocolActor.props(db, connectivity.client,
-                                  PackageTransferActor.props(connectivity.client))
+                                  PackageTransferActor.props(connectivity.client),
+                                  messageBus)
     val updateController = system.actorOf( UpdateController.props(transferProtocolProps ), "update-controller")
     val client = new FakeExternalResolver()
     new SotaServices(updateController, client, deviceRegistry).route

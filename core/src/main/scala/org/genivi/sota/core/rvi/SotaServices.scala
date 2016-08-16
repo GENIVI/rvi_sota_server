@@ -17,7 +17,7 @@ import java.util.UUID
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.resolver.{Connectivity, ExternalResolverClient}
 import org.genivi.sota.core.data.UpdateRequest
-import org.genivi.sota.data.{PackageId, Device}
+import org.genivi.sota.data.Device
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -43,7 +43,7 @@ final case class StartDownload(device: Device.Id, update_id: UUID, services: Cli
  */
 final case class RviParameters[T](parameters: List[T], service_name: String )
 
-final case class OperationResult(id: String, result_code: Int, result_text: String) {
+final case class OperationResult(id: Device.Id, result_code: Int, result_text: String) {
   def isSuccess: Boolean = (result_code == 0) || (result_code == 1)
   def isFail: Boolean = !isSuccess
 }
@@ -52,7 +52,7 @@ final case class OperationResult(id: String, result_code: Int, result_text: Stri
   * @param update_id id of the [[UpdateRequest]] this report describes
   */
 final case class UpdateReport(update_id: UUID, operation_results: List[OperationResult]) {
-  def isSuccess: Boolean = !(operation_results.exists(_.isFail))
+  def isSuccess: Boolean = !operation_results.exists(_.isFail)
   def isFail: Boolean = !isSuccess
 }
 
@@ -60,9 +60,6 @@ final case class UpdateReport(update_id: UUID, operation_results: List[Operation
  * RVI message from client to report installation of a downloaded package.
  */
 final case class InstallReport(device: Device.Id, update_report: UpdateReport)
-
-// TODO: Remove this once clients send `device` instead
-final case class VinInstallReport(vin: Device.Id, update_report: UpdateReport)
 
 /**
  * RVI message from client to report all installed packages.

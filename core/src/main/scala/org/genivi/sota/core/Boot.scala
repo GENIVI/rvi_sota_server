@@ -50,7 +50,7 @@ trait RviBoot {
     val s3PackageStoreOpt = S3PackageStore.loadCredentials(settings.config).map { new S3PackageStore(_) }
     val transferProtocolProps =
       TransferProtocolActor.props(db, rviConnectivity.client,
-        PackageTransferActor.props(rviConnectivity.client, s3PackageStoreOpt))
+        PackageTransferActor.props(rviConnectivity.client, s3PackageStoreOpt), messageBusPublisher)
     val updateController = system.actorOf(UpdateController.props(transferProtocolProps ), "update-controller")
     new rvi.SotaServices(updateController, resolverClient, deviceRegistryClient).route
   }

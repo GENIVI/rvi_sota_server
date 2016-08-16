@@ -1,15 +1,19 @@
 package org.genivi.sota.core.transfer
 
+import java.util.UUID
+
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import eu.timepit.refined.api.Refined
 import org.genivi.sota.core._
 import org.genivi.sota.core.data.{UpdateSpec, UpdateStatus}
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.rvi.OperationResult
 import org.genivi.sota.core.rvi.UpdateReport
-import org.genivi.sota.data.{DeviceGenerators, Namespaces}
+import org.genivi.sota.data.{Device, DeviceGenerators, Namespaces}
 import org.genivi.sota.db.SlickExtensions
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.genivi.sota.messaging.MessageBusPublisher
 import org.scalacheck.Gen
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
@@ -36,6 +40,7 @@ class DeviceUpdatesSpec extends FunSuite
   implicit val actorSystem = ActorSystem("InstalledPackagesUpdateSpec-ActorSystem")
   implicit val materializer = ActorMaterializer()
   val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
+  val id = Device.Id(Refined.unsafeApply(UUID.randomUUID().toString))
 
   implicit val ec = ExecutionContext.global
   implicit val _db = db
@@ -59,9 +64,9 @@ class DeviceUpdatesSpec extends FunSuite
   test("marks reported packages as installed") {
     val f = for {
       (_, device, updateSpec) <- createUpdateSpec()
-      result = OperationResult("opid", 1, "some result")
+      result = OperationResult(id, 1, "some result")
       report = UpdateReport(updateSpec.request.id, List(result))
-      _ <- reportInstall(device.id, report)
+      _ <- reportInstall(device.id, report, MessageBusPublisher.ignore)
       updatedSpec <- db.run(findUpdateSpecFor(device.id, updateSpec.request.id))
       history <- db.run(InstallHistories.list(device.namespace, device.id))
     } yield (updatedSpec.status, history)
@@ -146,7 +151,7 @@ class DeviceUpdatesSpec extends FunSuite
 
   private def mkUpdateReport(updateSpec: UpdateSpec, isSuccess: Boolean): UpdateReport = {
     val result_code = if (isSuccess) 0 else 3
-    val result = OperationResult("opid", result_code, "some result")
+    val result = OperationResult(id, result_code, "some result")
     UpdateReport(updateSpec.request.id, List(result))
   }
 
@@ -177,8 +182,8 @@ class DeviceUpdatesSpec extends FunSuite
       // fail install for update spec B only
       val device = updateSpec0.device
       val f2 = for {
-        _      <- reportInstall(device, mkUpdateReport(updateSpec0, isSuccess = true))
-        _      <- reportInstall(device, mkUpdateReport(updateSpec1, isSuccess = false))
+        _      <- reportInstall(device, mkUpdateReport(updateSpec0, isSuccess = true), MessageBusPublisher.ignore)
+        _      <- reportInstall(device, mkUpdateReport(updateSpec1, isSuccess = false), MessageBusPublisher.ignore)
         usRow0 <- db.run(UpdateSpecs.findBy(updateSpec0))
         usRow1 <- db.run(UpdateSpecs.findBy(updateSpec1))
         usRow2 <- db.run(UpdateSpecs.findBy(updateSpec2))
@@ -220,8 +225,8 @@ class DeviceUpdatesSpec extends FunSuite
       // fail install for update spec B only
       val device = updateSpec0.device
       val f2 = for {
-        _    <- reportInstall(device, mkUpdateReport(updateSpec0, isSuccess = true))
-        _    <- reportInstall(device, mkUpdateReport(updateSpec1, isSuccess = false))
+        _    <- reportInstall(device, mkUpdateReport(updateSpec0, isSuccess = true), MessageBusPublisher.ignore)
+        _    <- reportInstall(device, mkUpdateReport(updateSpec1, isSuccess = false), MessageBusPublisher.ignore)
         usRow0 <- db.run(UpdateSpecs.findBy(updateSpec0))
         usRow1 <- db.run(UpdateSpecs.findBy(updateSpec1))
         usRow2 <- db.run(UpdateSpecs.findBy(updateSpec2))
