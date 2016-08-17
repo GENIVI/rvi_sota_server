@@ -116,6 +116,26 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
     }
   }
 
+  property("filters installed packages by partial regex") {
+    forAll(genDevice, genPackageId, minSuccessful(3)) { (device, packageId) =>
+      val id = deviceRegistry.createDevice(device.toResponse).futureValue
+
+      Put(Resource.uri(devices, id.show, "packages"),
+        InstalledSoftware(Set(packageId), Set())) ~> route ~> check {
+        status shouldBe StatusCodes.NoContent
+
+        val partialPackageName = packageId.name.get.headOption.map(_.toString).getOrElse(".*")
+
+        val query = Uri.Query("regex" -> partialPackageName)
+
+        Get(Resource.uri(devices, id.show, "package").withQuery(query)) ~> route ~> check {
+          status shouldBe StatusCodes.OK
+          responseAs[Set[PackageId]] should contain(packageId)
+        }
+      }
+    }
+  }
+
   property("updates foreign packages if already existing") {
     val packageGen = Gen.nonEmptyContainerOf[Set, PackageId](genPackageId)
 

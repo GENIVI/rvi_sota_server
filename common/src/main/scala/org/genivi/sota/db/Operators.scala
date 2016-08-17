@@ -39,4 +39,15 @@ object Operators {
       io.flatMap(_.fold[DBIO[T]](DBIO.failed(t))(DBIO.successful))
   }
 
+  implicit class QueryReg[QTable, Row, S[_]](baseQuery: Query[QTable, Row, S]) {
+    def regexFilter(reg: Option[String])(fieldsFn: (QTable => Rep[_])*): Query[QTable, Row, S] = {
+      reg match {
+        case Some(r) =>
+          baseQuery.filter { table =>
+            fieldsFn.foldLeft(false.bind) { case (acc, rep) => acc || regex(rep(table), r) }
+          }
+        case None => baseQuery
+      }
+    }
+  }
 }

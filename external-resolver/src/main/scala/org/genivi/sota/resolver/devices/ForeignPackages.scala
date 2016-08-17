@@ -9,10 +9,11 @@ import java.time.Instant
 
 import org.genivi.sota.data.{Device, Namespace, PackageId}
 import slick.driver.MySQLDriver.api._
-
+import org.genivi.sota.db.Operators._
 import scala.concurrent.ExecutionContext
 
 object ForeignPackages {
+
   import org.genivi.sota.db.SlickExtensions._
   import org.genivi.sota.refined.SlickRefined._
 
@@ -25,8 +26,9 @@ object ForeignPackages {
     Some((fp.device, fp.packageId.name, fp.packageId.version, fp.lastModified))
 
   private def fromTuple(installedForeignPkgRow: InstalledForeignPkgRow): InstalledForeignPackage =
-    installedForeignPkgRow match { case (device, name, version, lastModified) =>
-      InstalledForeignPackage(device, PackageId(name, version), lastModified)
+    installedForeignPkgRow match {
+      case (device, name, version, lastModified) =>
+        InstalledForeignPackage(device, PackageId(name, version), lastModified)
     }
 
   class InstalledForeignPackageTable(tag: Tag) extends Table[InstalledForeignPackage](tag, "InstalledForeignPackage") {
@@ -59,8 +61,11 @@ object ForeignPackages {
     dbIO.transactionally
   }
 
-  def installedOn(device: Device.Id)
+  def installedOn(device: Device.Id, regexFilter: Option[String] = None)
                  (implicit ec: ExecutionContext): DBIO[Seq[PackageId]] = {
-    foreignPackages.filter(_.device === device).result.map(_.map(_.packageId))
+    foreignPackages
+      .filter(_.device === device)
+      .regexFilter(regexFilter)(_.name, _.version)
+      .result.map(_.map(_.packageId))
   }
 }
