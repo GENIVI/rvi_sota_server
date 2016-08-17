@@ -17,12 +17,16 @@ object Errors {
     val ConflictingDevice = ErrorCode("conflicting_device")
     val MissingSystemInfo = ErrorCode("missing_system_info")
     val SystemInfoAlreadyExists = ErrorCode("system_info_already_exists")
+    val MissingGroupInfo = ErrorCode("missing_group_info")
+    val GroupInfoAlreadyExists = ErrorCode("group_info_already_exists")
   }
 
   case object MissingDevice extends Throwable with NoStackTrace
   case object ConflictingDevice extends Throwable with NoStackTrace
   case object MissingSystemInfo extends Throwable with NoStackTrace
   case object SystemInfoAlreadyExists extends Throwable with NoStackTrace
+  case object MissingGroupInfo extends Throwable with NoStackTrace
+  case object GroupInfoAlreadyExists extends Throwable with NoStackTrace
 
   val onMissingDevice: PF = {
     case MissingDevice =>
@@ -45,6 +49,18 @@ object Errors {
     case SystemInfoAlreadyExists =>
       complete(StatusCodes.Conflict ->
         ErrorRepresentation(Codes.SystemInfoAlreadyExists, "system info have been set for this uuid"))
+  }
+
+  val onMissingGroupInfo: PF = {
+    case MissingGroupInfo =>
+      complete(StatusCodes.NotFound -> ErrorRepresentation(Codes.MissingGroupInfo
+        , "group info doesn't exist for this name"))
+  }
+
+  val onGroupInfoAlreadyExists: PF = {
+    case GroupInfoAlreadyExists =>
+      complete(StatusCodes.Conflict ->
+        ErrorRepresentation(Codes.GroupInfoAlreadyExists, "group info have been set for this user"))
   }
 
 }

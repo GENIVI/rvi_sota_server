@@ -81,6 +81,22 @@ class Routes(namespaceExtractor: Directive1[Namespace],
   def updateSystemInfo(id: Id, data: Json): Route =
     complete(db.run(Devices.updateSystemInfo(id,data)))
 
+  def fetchGroupInfo(groupName: String, ns: Namespace): Route =
+      complete(db.run(GroupInfo.findByName(groupName, ns)))
+
+  def createGroupInfo(groupName: String, namespace: Namespace, data: Json): Route = {
+    if (groupName.isEmpty) { complete(BadRequest -> "Group name cannot be empty") }
+    else { complete(Created -> db.run(GroupInfo.create(groupName, namespace, data))) }
+  }
+
+  def updateGroupInfo(groupName: String, namespace: Namespace, data: Json): Route = {
+    if (groupName.isEmpty) { complete(BadRequest -> "Group name cannot be empty") }
+    else { complete(db.run(GroupInfo.update(groupName, namespace, data))) }
+  }
+  def deleteGroupInfo(groupName: String, namespace: Namespace): Route = {
+    complete(db.run(GroupInfo.delete(groupName, namespace)))
+  }
+
   def fetchDevice(id: Id): Route =
     complete(db.run(Devices.findById(id)))
 
@@ -105,7 +121,9 @@ class Routes(namespaceExtractor: Directive1[Namespace],
   def api: Route =
     handleExceptions(ExceptionHandler(Errors.onMissingDevice orElse Errors.onConflictingDevice
                                                              orElse Errors.onMissingSystemInfo
-                                                             orElse Errors.onSystemInfoAlreadyExists)) {
+                                                             orElse Errors.onSystemInfoAlreadyExists
+                                                             orElse Errors.onMissingGroupInfo
+                                                             orElse Errors.onGroupInfoAlreadyExists)) {
       pathPrefix("devices") {
         namespaceExtractor { ns =>
           (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
@@ -116,6 +134,18 @@ class Routes(namespaceExtractor: Directive1[Namespace],
               (delete & pathEnd) {
                 deleteDevice(ns, id)
               }
+          } ~
+          (get & path("group_info") & pathEnd & parameter('groupName.as[String])) {
+            groupName => fetchGroupInfo(groupName, ns)
+          } ~
+          (post & path("group_info") & pathEnd & parameter('groupName.as[String])) { groupName =>
+            entity(as[Json]) {body => createGroupInfo(groupName, ns, body)}
+          } ~
+          (put & path("group_info") & pathEnd & parameter('groupName.as[String])) { groupName =>
+            entity(as[Json]) {body => updateGroupInfo(groupName, ns, body)}
+          } ~
+          (delete & path("group_info") & pathEnd & parameter('groupName.as[String])) { groupName =>
+            deleteGroupInfo(groupName, ns)
           }
         } ~
         (extractId & post & path("ping")) { id =>
