@@ -84,7 +84,55 @@ paths:
       responses:
         200:
           description: OK
-        
+  /devices/{uuid}/system_info:
+    post:
+      description: Create the system info for a device
+      parameters:
+      - name: uuid
+        description: The uuid of an existing device object
+        in: path
+        required: true
+        type: string
+      - name: system
+        description: The json object representing the system info
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/SystemInfo'
+      responses:
+        201:
+          description: Created
+    put:
+      description: Update the system info for a device
+      parameters:
+      - name: uuid
+        description: The uuid of an existing device object
+        in: path
+        required: true
+        type: string
+      - name: system
+        description: The json object representing the system info
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/SystemInfo'
+      responses:
+        200:
+          description: OK
+    get:
+      description: Retrieve the system info for a device
+      parameters:
+      - name: uuid
+        description: The uuid of an existing device object
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/SystemInfo'
+
 definitions:
   uuid:
     type: string
@@ -127,3 +175,6 @@ definitions:
         type: string
         format: dateTime
         description: The last time a device uuid was seen by the SOTA server.
+  SystemInfo:
+    type: object
+    description: An object representing system info. No schema yet defined.
