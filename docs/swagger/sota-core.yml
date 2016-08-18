@@ -258,6 +258,24 @@ paths:
           description: OK
           schema:
             type: file
+  /vehicle_updates/{uuid}/system_info:
+    put:
+      description: Update the system info for a device
+      parameters:
+      - name: uuid
+        in: path
+        description: The uuid of the vehicle making this call
+        required: true
+        type: string
+      - name: system
+        description: The json object representing the system info
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/SystemInfo'
+      responses:
+        200:
+          description: OK
   /vehicle_updates/{uuid}/sync:
     post:
       description: todo
@@ -529,3 +547,7 @@ definitions:
         type: string
         format: dateTime
         description: The time the update queue for the device was blocked.
+  SystemInfo:
+    type: object
+    description: An object representing system info. No schema yet defined.
+        
