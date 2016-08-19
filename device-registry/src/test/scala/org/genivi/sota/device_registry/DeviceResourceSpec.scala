@@ -18,7 +18,7 @@ import org.scalacheck._
 
 
 /**
- * Spec for Devices REST actions
+ * Spec for DeviceRepository REST actions
  */
 class DeviceResourceSpec extends ResourcePropSpec {
 
