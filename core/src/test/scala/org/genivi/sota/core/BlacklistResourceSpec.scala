@@ -150,7 +150,4 @@ class BlacklistResourceSpec extends FunSuite
       status shouldBe StatusCodes.NotFound
     }
   }
-
-  // TODO: Move this to package resource spec
-  test("returning a list of packages returns blacklisting information") (pending)
 }

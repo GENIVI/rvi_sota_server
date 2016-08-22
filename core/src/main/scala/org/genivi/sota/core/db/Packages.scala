@@ -9,7 +9,6 @@ import org.genivi.sota.core.Errors
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.PackageId
-import org.genivi.sota.db.Operators._
 import org.genivi.sota.db.SlickExtensions._
 import slick.driver.MySQLDriver.api._
 
@@ -25,6 +24,7 @@ import scala.concurrent.{ExecutionContext, Future}
 object Packages {
 
   import org.genivi.sota.refined.SlickRefined._
+  import org.genivi.sota.db.Operators._
 
   /**
    * Slick mapping definition for the Package table
@@ -72,23 +72,24 @@ object Packages {
   def create(pkg: Package)(implicit ec: ExecutionContext): DBIO[Package] =
     packages.insertOrUpdate(pkg).map(_ => pkg)
 
-  /**
-   * Find a package using a regular expression match on its name or version
-   * @param reg The regular expression to search with
-   */
-  def searchByRegex(ns: Namespace, reg:String): DBIO[Seq[Package]] =
+  def searchByRegexWithBlacklist(ns: Namespace, reg: Option[String]): DBIO[Seq[(Package, Boolean)]] =
     packages
       .filter(p => p.namespace === ns)
-      .regexFilter(Some(reg))(_.name, _.version)
+      .regexFilter(reg)(_.name, _.version)
+      .joinLeft(BlacklistedPackages.active).on { case (p, b) =>
+      p.name === b.pkgName && p.version === b.pkgVersion &&
+        p.namespace === b.namespace }
+      .map { case (pkg, blacklistO) =>
+        (pkg, blacklistO.map(_.active).getOrElse(false))
+      }
       .result
 
-  /**
-   * Return the information about a package from its name & version
-   * @param id The name/version of the package to fetch
-   * @return The full package information
-   */
-  def byId(ns: Namespace, id : PackageId) : DBIO[Option[Package]] =
-    packages.filter(p => p.namespace === ns && p.name === id.name && p.version === id.version).result.headOption
+
+  def byId(ns: Namespace, id : PackageId)(implicit ec: ExecutionContext): DBIO[Package] =
+    packages
+      .filter(p => p.namespace === ns && p.name === id.name && p.version === id.version)
+      .result
+      .failIfNone(Errors.MissingPackage)
 
   /**
     * Fetch from DB the [[Package]]s corresponding to the given [[PackageId]]s.
@@ -120,10 +121,6 @@ object Packages {
       .filter(_.name === packageId.name)
       .filter(_.version === packageId.version)
       .result
-      .headOption
-      .flatMap {
-        case Some(p) => DBIO.successful(p)
-        case None => DBIO.failed(Errors.MissingPackage)
-      }
+      .failIfNone(Errors.MissingPackage)
   }
 }

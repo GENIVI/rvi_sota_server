@@ -7,18 +7,15 @@ package org.genivi.sota.core
 import akka.Done
 import akka.actor.ActorSystem
 import akka.event.Logging
-import akka.http.scaladsl.common.StrictForm
-import akka.http.scaladsl.model.HttpHeader.ParsingResult.Ok
-import akka.http.scaladsl.model.{FormData, StatusCode, StatusCodes}
+import akka.http.scaladsl.model.{StatusCode, StatusCodes}
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.directives.{CompleteOrRecoverWithMagnet, DebuggingDirectives}
 import akka.http.scaladsl.server.{Directive1, Route}
 import akka.stream._
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.ByteString
+import cats.data.OptionT
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
-import io.circe.generic.auto._
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
@@ -32,6 +29,13 @@ import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.rest.ErrorRepresentation
 import org.genivi.sota.rest.Validation._
 import slick.driver.MySQLDriver.api.Database
+import org.genivi.sota.core.data.client.ResponseConversions._
+import org.genivi.sota.core.data.PackageResponse._
+import cats.std.future._
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import akka.http.scaladsl.marshalling._
+import akka.http.scaladsl.unmarshalling._
+import io.circe.generic.auto._
 
 import scala.concurrent.Future
 
@@ -50,9 +54,7 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
                        namespaceExtractor: Directive1[Namespace])
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
 
-  import akka.stream.stage._
   import system.dispatcher
-  import org.genivi.sota.marshalling.CirceMarshallingSupport._
   import PackagesResource._
 
   implicit val _config = system.settings.config
@@ -67,11 +69,15 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
     */
   def searchPackage(ns: Namespace): Route = {
     parameters('regex.as[String Refined Regex].?) { (regex: Option[String Refined Regex]) =>
-      val query = regex match {
-        case Some(r) => Packages.searchByRegex(ns, r.get)
-        case None => Packages.list(ns)
+      val query = Packages.searchByRegexWithBlacklist(ns, regex.map(_.get))
+
+      val result = db.run(query).map { pkgs =>
+        pkgs.map { case (pkg, blacklist) =>
+          pkg.toResponse(blacklist)
+        }
       }
-      complete(db.run(query))
+
+      complete(result)
     }
   }
 
@@ -82,7 +88,14 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
     // TODO: Include error description with rejectEmptyResponse?
     rejectEmptyResponse {
       complete {
-        db.run(Packages.byId(ns, pid))
+        val query = for {
+          p <- Packages.byId(ns, pid)
+          isBlacklisted <- BlacklistedPackages.isBlacklisted(ns, pid)
+        } yield (p, isBlacklisted)
+
+        db.run(query).map { case (pkg, blacklisted) =>
+          pkg.toResponse(blacklisted)
+        }
       }
     }
   }

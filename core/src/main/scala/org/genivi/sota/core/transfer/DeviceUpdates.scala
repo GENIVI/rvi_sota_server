@@ -25,6 +25,7 @@ import slick.dbio.DBIO
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 import scala.util.control.NoStackTrace
 
 object DeviceUpdates {
@@ -138,8 +139,11 @@ object DeviceUpdates {
         val (_, _, deviceId, status, installPos, creationTime) = updateSpec
         (UpdateSpec(updateReq, deviceId, status, Set.empty, installPos, creationTime), requiredPO)
       } map { case (spec, requiredPO) =>
-        val depsIO = requiredPO map { case (namespace, _, _, packageName, packageVersion) =>
-          Packages.byId(namespace, PackageId(packageName, packageVersion))
+        val depsIO = requiredPO map {
+          case (namespace, _, _, packageName, packageVersion) =>
+            Packages
+              .byId(namespace, PackageId(packageName, packageVersion))
+              .map(Some(_))
         } getOrElse DBIO.successful(None)
 
         depsIO map { p => spec.copy(dependencies = p.toSet) }

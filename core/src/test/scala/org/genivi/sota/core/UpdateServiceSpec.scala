@@ -147,13 +147,13 @@ class UpdateServiceSpec extends PropSpec
     val device = genDevice.sample.get
     val newPackage = PackageGen.sample.get
 
-    val f = for {
+    val packageF = for {
       packageM <- db.run(Packages.create(newPackage))
       _ <- BlacklistedPackages.create(packageM.namespace, packageM.id)
       _ <- service.queueDeviceUpdate(device.namespace, device.id, packageM.id)
     } yield packageM
 
-    f.failed.futureValue shouldBe Errors.BlacklistedPackage
+    packageF.failed.futureValue shouldBe Errors.BlacklistedPackage
   }
 
   property("fails if dependencies include blacklisted package") {
@@ -170,9 +170,9 @@ class UpdateServiceSpec extends PropSpec
       _ <- service.queueUpdate(req, _ => Future.successful(fakeDependency))
     } yield packageM
 
-    val e = f.failed.futureValue
+    val throwableF = f.failed.futureValue
 
-    e shouldBe Errors.BlacklistedPackage
+    throwableF shouldBe Errors.BlacklistedPackage
   }
 
   override def afterAll() : Unit = {

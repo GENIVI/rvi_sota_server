@@ -78,7 +78,6 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
   def loadPackage(ns: Namespace, id : PackageId)
                  (implicit db: Database, ec: ExecutionContext): Future[Package] = {
     val dbIO = Packages.byId(ns, id)
-      .failIfNone(Errors.MissingPackage)
       .flatMap(BlacklistedPackages.ensureNotBlacklisted)
 
     db.run(dbIO)

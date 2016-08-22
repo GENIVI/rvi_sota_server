@@ -24,15 +24,15 @@ class BlacklistResource(namespaceExtractor: Directive1[Namespace])
 
   implicit val _ec = system.dispatcher
 
-  def addPackageToBlacklist(namespace: Namespace, packageId: PackageId): Route =
+  def addPackageToBlacklist(namespace: Namespace): Route =
     entity(as[BlacklistedPackageRequest]) { req =>
       val f = BlacklistedPackages.create(namespace, req.packageId, req.comment).map(_ => StatusCodes.Created)
       complete(f)
     }
 
-  def updatePackageBlacklist(ns: Namespace, packageId: PackageId): Route =
+  def updatePackageBlacklist(namespace: Namespace): Route =
     entity(as[BlacklistedPackageRequest]) { req =>
-      complete(BlacklistedPackages.update(ns, req.packageId, req.comment).map(_ => StatusCodes.OK))
+      complete(BlacklistedPackages.update(namespace, req.packageId, req.comment).map(_ => StatusCodes.OK))
     }
 
   def deletePackageBlacklist(namespace: Namespace, packageId: PackageId): Route =
@@ -45,8 +45,8 @@ class BlacklistResource(namespaceExtractor: Directive1[Namespace])
   val route: Route =
     (handleErrors & pathPrefix("blacklist") & namespaceExtractor) { ns =>
       extractPackageId { pkgId =>
-        post { addPackageToBlacklist(ns, pkgId) } ~
-        put { updatePackageBlacklist(ns, pkgId) } ~
+        post { addPackageToBlacklist(ns) } ~
+        put { updatePackageBlacklist(ns) } ~
         delete { deletePackageBlacklist(ns, pkgId) }
       } ~
         get {

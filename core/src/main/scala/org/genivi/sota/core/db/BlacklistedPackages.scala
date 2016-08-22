@@ -8,7 +8,7 @@ import org.genivi.sota.data.{Namespace, PackageId}
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
-import org.genivi.sota.core.data.{Package, UpdateRequest}
+import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db.Packages.PackageTable
 
 case class BlacklistedPackage(id: UUID, namespace: Namespace,
@@ -68,7 +68,7 @@ object BlacklistedPackages {
 
   private val all = TableQuery[BlacklistedPackagesTable]
 
-  private val active = all.filter(_.active === true)
+  protected[db] val active = all.filter(_.active === true)
 
   def create(namespace: Namespace, pkgId: PackageId, comment: Option[String] = None)
             (implicit db: Database, ec: ExecutionContext): Future[BlacklistedPackage] = {
@@ -95,10 +95,10 @@ object BlacklistedPackages {
     db.run(dbIO)
   }
 
-  def update(ns: Namespace, packageId: PackageId, comment: Option[String])
+  def update(namespace: Namespace, packageId: PackageId, comment: Option[String])
             (implicit db: Database, ec: ExecutionContext): Future[Unit] = {
     val dbIO =
-      findActiveQuery(ns, packageId)
+      findActiveQuery(namespace, packageId)
         .map(_.comment)
         .update(comment.getOrElse(""))
         .handleSingleUpdateError(MissingPackageError)
@@ -139,6 +139,10 @@ object BlacklistedPackages {
         items.filterNot(item => blacklistedIds.contains(pkgIdFn(item)._2))
       }
     }
+  }
+
+  def isBlacklisted(namespace: Namespace, pkgId: PackageId): DBIO[Boolean] = {
+    findActiveQuery(namespace, pkgId).exists.result
   }
 
   private def markAsActive(ns: Namespace, packageId: PackageId)

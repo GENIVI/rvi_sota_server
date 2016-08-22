@@ -10,16 +10,16 @@ import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.PackageId
 import java.time.Instant
+
 import scala.language.implicitConversions
 import org.genivi.sota.data.Interval
 
 case class PendingUpdateRequest(requestId: UUID, packageId: PackageId, installPos: Int, createdAt: Instant)
 
 object PendingUpdateRequest {
-  implicit def toResponseEncoder: ResponseEncoder[PendingUpdateRequest, UpdateRequest] =
-    ResponseEncoder { u =>
-      PendingUpdateRequest(u.id, u.packageId, u.installPos, u.creationTime)
-    }
+  implicit val toResponseEncoder = ResponseEncoder { (u: UpdateRequest) =>
+    PendingUpdateRequest(u.id, u.packageId, u.installPos, u.creationTime)
+  }
 }
 
 case class ClientUpdateRequest(id: UUID,
