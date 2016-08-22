@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.db
 
-import java.sql.Timestamp
+import java.sql.{BatchUpdateException, SQLIntegrityConstraintViolationException, Timestamp}
 import java.util.UUID
 
 import akka.http.scaladsl.model.Uri
@@ -16,6 +16,9 @@ import org.genivi.sota.data.Namespace
 import slick.ast.{Node, TypedType}
 import slick.driver.MySQLDriver.api._
 import slick.lifted.Rep
+
+import scala.concurrent.ExecutionContext
+import scala.util.{Failure, Success}
 
 /**
   * Explain to the database layer, Slick, how to map Uri and UUIDs into
@@ -51,4 +54,19 @@ object SlickExtensions {
 
   implicit def uuidToJava(refined: Refined[String, Uuid]): Rep[UUID] =
     UUID.fromString(refined.get).bind
+
+  implicit class DbioActionExtensions[T](action: DBIO[T]) {
+    def handleIntegrityErrors(error: Throwable)(implicit ec: ExecutionContext): DBIO[T] = {
+      action.asTry.flatMap {
+        case Success(i) =>
+          DBIO.successful(i)
+        case Failure(e: SQLIntegrityConstraintViolationException) =>
+          DBIO.failed(error)
+        case Failure(e: BatchUpdateException) if e.getCause.isInstanceOf[SQLIntegrityConstraintViolationException] =>
+          DBIO.failed(error)
+        case Failure(e) =>
+          DBIO.failed(e)
+      }
+    }
+  }
 }

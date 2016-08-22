@@ -9,7 +9,7 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import io.circe.Json
-import org.genivi.sota.data.{Device, DeviceT, Namespaces, DeviceGenerators, SimpleJsonGenerator,RegexGenerators}
+import org.genivi.sota.data.{Device, DeviceT, DeviceGenerators, SimpleJsonGenerator,RegexGenerators}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -18,7 +18,7 @@ import org.scalacheck._
 
 
 /**
- * Spec for Devices REST actions
+ * Spec for DeviceRepository REST actions
  */
 class DeviceResourceSpec extends ResourcePropSpec {
 
@@ -47,15 +47,30 @@ class DeviceResourceSpec extends ResourcePropSpec {
     case None => false
   }
 
-  property("GET, PUT, DELETE, and POST '/ping' and /system_info request fails on non-existent device") {
+  property("GET, PUT, DELETE, and POST '/ping' request fails on non-existent device") {
     forAll { (id: Id, device: DeviceT, json: Json) =>
       fetchDevice(id)          ~> route ~> check { status shouldBe NotFound }
       updateDevice(id, device) ~> route ~> check { status shouldBe NotFound }
       deleteDevice(id)         ~> route ~> check { status shouldBe NotFound }
       updateLastSeen(id)       ~> route ~> check { status shouldBe NotFound }
+    }
+  }
+
+  property("GET /system_info request fails on non-existent device") {
+    forAll { (id: Id, json: Json) =>
       fetchSystemInfo(id)      ~> route ~> check { status shouldBe NotFound }
       createSystemInfo(id, json) ~> route ~> check { status shouldBe NotFound}
       updateSystemInfo(id, json) ~> route ~> check { status shouldBe NotFound}
+    }
+  }
+
+  property("GET /group_info request fails on non-existent device") {
+    forAll { (json: Json, groupName: String) =>
+      whenever (! groupName.isEmpty && ! json.isNull) {
+        fetchGroupInfo (groupName, defaultNs) ~> route ~> check {
+          status shouldBe NotFound
+        }
+      }
     }
   }
 
@@ -379,6 +394,78 @@ class DeviceResourceSpec extends ResourcePropSpec {
       }
 
       deleteDeviceOk(id)
+    }
+  }
+
+  property("GET group_info after POST should return what was posted.") {
+    forAll { (groupName: String, json1: Json) =>
+      whenever(!groupName.isEmpty && !json1.isNull) {
+        createGroupInfo(groupName, defaultNs, json1) ~> route ~> check {
+          status shouldBe Created
+        }
+
+        fetchGroupInfo(groupName, defaultNs) ~> route ~> check {
+          status shouldBe OK
+          val json2: Json = responseAs[Json]
+          json1 shouldBe json2
+        }
+      }
+    }
+  }
+
+  property("GET group_info after PUT should return what was updated.") {
+    forAll { (groupName: String, json1: Json, json2: Json) =>
+      whenever(!groupName.isEmpty && !json1.isNull && !json2.isNull) {
+        createGroupInfo(groupName, defaultNs, json1) ~> route ~> check {
+          status shouldBe Created
+        }
+
+        updateGroupInfo(groupName, defaultNs, json2) ~> route ~> check {
+          status shouldBe OK
+        }
+
+        fetchGroupInfo(groupName, defaultNs) ~> route ~> check {
+          status shouldBe OK
+          val json3: Json = responseAs[Json]
+          json2 shouldBe json3
+        }
+      }
+    }
+  }
+
+  property("PUT group_info if not previously created should create it.") {
+    forAll { (groupName: String, json: Json) =>
+
+      whenever(!groupName.isEmpty && !json.isNull) {
+        updateGroupInfo(groupName, defaultNs, json) ~> route ~> check {
+          status shouldBe OK
+        }
+
+        fetchGroupInfo(groupName, defaultNs) ~> route ~> check {
+          status shouldBe OK
+          val json2: Json = responseAs[Json]
+          json shouldBe json2
+        }
+      }
+    }
+  }
+
+  property("DELETE group_info should delete group.") {
+    forAll { (groupName: String, json: Json) =>
+
+      whenever(!groupName.isEmpty && !json.isNull) {
+        createGroupInfo(groupName, defaultNs, json) ~> route ~> check {
+          status shouldBe Created
+        }
+
+        deleteGroupInfo(groupName, defaultNs) ~> route ~> check {
+          status shouldBe OK
+        }
+
+        fetchGroupInfo(groupName, defaultNs) ~> route ~> check {
+          status shouldBe NotFound
+        }
+      }
     }
   }
 }

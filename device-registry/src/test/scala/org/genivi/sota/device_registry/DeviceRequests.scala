@@ -76,4 +76,18 @@ trait DeviceRequests {
                       (implicit s: Show[Id], ec: ExecutionContext): HttpRequest =
     Put(Resource.uri(api, s.show(id),"system_info"), json)
 
+  def fetchGroupInfo(groupName: String, namespace: Namespace): HttpRequest =
+    Get(Resource.uri(api, "group_info").withQuery(Query("namespace" -> namespace.get, "groupName" -> groupName)))
+
+  def createGroupInfo(groupName: String, namespace: Namespace, json: Json)
+                      (implicit ec: ExecutionContext): HttpRequest =
+    Post(Resource.uri(api, "group_info").withQuery(Query("namespace" -> namespace.get, "groupName" -> groupName)), json)
+
+  def updateGroupInfo(groupName: String, namespace: Namespace, json: Json)
+                      (implicit ec: ExecutionContext): HttpRequest =
+    Put(Resource.uri(api, "group_info").withQuery(Query("namespace" -> namespace.get, "groupName" -> groupName)), json)
+
+  def deleteGroupInfo(groupName: String, namespace: Namespace)
+                     (implicit ec: ExecutionContext): HttpRequest =
+    Delete(Resource.uri(api, "group_info").withQuery(Query("namespace" -> namespace.get, "groupName" -> groupName)))
 }

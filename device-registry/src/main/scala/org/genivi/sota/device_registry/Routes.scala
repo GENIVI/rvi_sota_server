@@ -49,17 +49,17 @@ class Routes(namespaceExtractor: Directive1[Namespace],
     parameters(('regex.as[String Refined Regex].?,
                 'deviceId.as[String].?)) { // TODO: Use refined
       case (Some(re), None) =>
-        complete(db.run(Devices.search(ns, re)))
+        complete(db.run(DeviceRepository.search(ns, re)))
       case (None, Some(id)) =>
-        complete(db.run(Devices.findByDeviceId(ns, DeviceId(id))))
-      case (None, None) => complete(db.run(Devices.list(ns)))
+        complete(db.run(DeviceRepository.findByDeviceId(ns, DeviceId(id))))
+      case (None, None) => complete(db.run(DeviceRepository.list(ns)))
       case _ =>
         complete((BadRequest, "'regex' and 'deviceId' parameters cannot be used together!"))
     }
 
   def createDevice(ns: Namespace, device: DeviceT): Route = {
     val f = db
-      .run(Devices.create(ns, device))
+      .run(DeviceRepository.create(ns, device))
       .andThen {
         case scala.util.Success(_) =>
           messageBus.publish(DeviceCreated(ns, device.deviceName, device.deviceId, device.deviceType))
@@ -73,23 +73,39 @@ class Routes(namespaceExtractor: Directive1[Namespace],
   }
 
   def fetchSystemInfo(id: Id): Route =
-    complete(db.run(Devices.findSystemInfoById(id)))
+    complete(db.run(SystemInfo.findById(id)))
 
   def createSystemInfo(id: Id, data: Json): Route =
-    complete(Created -> db.run(Devices.createSystemInfo(id,data)))
+    complete(Created -> db.run(SystemInfo.create(id, data)))
 
   def updateSystemInfo(id: Id, data: Json): Route =
-    complete(db.run(Devices.updateSystemInfo(id,data)))
+    complete(db.run(SystemInfo.update(id, data)))
+
+  def fetchGroupInfo(groupName: String, ns: Namespace): Route =
+      complete(db.run(GroupInfo.findByName(groupName, ns)))
+
+  def createGroupInfo(groupName: String, namespace: Namespace, data: Json): Route = {
+    if (groupName.isEmpty) { complete(BadRequest -> "Group name cannot be empty") }
+    else { complete(Created -> db.run(GroupInfo.create(groupName, namespace, data))) }
+  }
+
+  def updateGroupInfo(groupName: String, namespace: Namespace, data: Json): Route = {
+    if (groupName.isEmpty) { complete(BadRequest -> "Group name cannot be empty") }
+    else { complete(db.run(GroupInfo.update(groupName, namespace, data))) }
+  }
+  def deleteGroupInfo(groupName: String, namespace: Namespace): Route = {
+    complete(db.run(GroupInfo.delete(groupName, namespace)))
+  }
 
   def fetchDevice(id: Id): Route =
-    complete(db.run(Devices.findById(id)))
+    complete(db.run(DeviceRepository.findById(id)))
 
   def updateDevice(ns: Namespace, id: Id, device: DeviceT): Route =
-    complete(db.run(Devices.update(ns, id, device)))
+    complete(db.run(DeviceRepository.update(ns, id, device)))
 
   def deleteDevice(ns: Namespace, id: Id): Route = {
     val f = db
-      .run(Devices.delete(ns, id))
+      .run(DeviceRepository.delete(ns, id))
       .andThen {
         case scala.util.Success(_) =>
           messageBus.publish(DeviceDeleted(ns, id))
@@ -98,14 +114,16 @@ class Routes(namespaceExtractor: Directive1[Namespace],
   }
 
   def updateLastSeen(id: Id): Route =
-    complete(db.run(Devices.updateLastSeen(id)))
+    complete(db.run(DeviceRepository.updateLastSeen(id)))
 
   implicit val NamespaceUnmarshaller: FromStringUnmarshaller[Namespace] = Unmarshaller.strict(Namespace.apply)
 
   def api: Route =
     handleExceptions(ExceptionHandler(Errors.onMissingDevice orElse Errors.onConflictingDevice
                                                              orElse Errors.onMissingSystemInfo
-                                                             orElse Errors.onSystemInfoAlreadyExists)) {
+                                                             orElse Errors.onSystemInfoAlreadyExists
+                                                             orElse Errors.onMissingGroupInfo
+                                                             orElse Errors.onGroupInfoAlreadyExists)) {
       pathPrefix("devices") {
         namespaceExtractor { ns =>
           (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
@@ -116,6 +134,18 @@ class Routes(namespaceExtractor: Directive1[Namespace],
               (delete & pathEnd) {
                 deleteDevice(ns, id)
               }
+          } ~
+          (get & path("group_info") & pathEnd & parameter('groupName.as[String])) {
+            groupName => fetchGroupInfo(groupName, ns)
+          } ~
+          (post & path("group_info") & pathEnd & parameter('groupName.as[String])) { groupName =>
+            entity(as[Json]) {body => createGroupInfo(groupName, ns, body)}
+          } ~
+          (put & path("group_info") & pathEnd & parameter('groupName.as[String])) { groupName =>
+            entity(as[Json]) {body => updateGroupInfo(groupName, ns, body)}
+          } ~
+          (delete & path("group_info") & pathEnd & parameter('groupName.as[String])) { groupName =>
+            deleteGroupInfo(groupName, ns)
           }
         } ~
         (extractId & post & path("ping")) { id =>
