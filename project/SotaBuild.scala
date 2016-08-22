@@ -299,5 +299,5 @@ object Dependencies {
 
   lazy val Kinesis = "com.amazonaws" % "amazon-kinesis-client" % "1.6.4"
 
-  lazy val Nats = "com.github.tyagihas" % "scala_nats_2.11" % "0.2" exclude("org.slf4j", "slf4j-simple")
+  lazy val Nats = "com.github.tyagihas" % "scala_nats_2.11" % "0.2.1" exclude("org.slf4j", "slf4j-simple")
 }
