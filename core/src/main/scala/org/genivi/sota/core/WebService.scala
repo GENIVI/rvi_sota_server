@@ -53,13 +53,15 @@ class WebService(notifier: UpdateNotifier,
   val updateService = new UpdateService(notifier, deviceRegistry)
   val updateRequestsResource = new UpdateRequestsResource(db, resolver, updateService, authNamespace)
   val historyResource = new HistoryResource(db, authNamespace)
-  val blacklistResource = new BlacklistResource(authNamespace)(db, system)
+  val blacklistResource = new BlacklistResource(authNamespace, messageBusPublisher)(db, system)
+  val impactResource = new ImpactResource(authNamespace)(db, system)
 
   val route = (handleErrors & pathPrefix("api" / "v1")) {
     devicesResource.route ~
       packagesResource.route ~
       updateRequestsResource.route ~
       historyResource.route ~
-      blacklistResource.route
+      blacklistResource.route ~
+      impactResource.route
   }
 }
