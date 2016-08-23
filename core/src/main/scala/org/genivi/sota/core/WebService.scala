@@ -43,7 +43,6 @@ class WebService(notifier: UpdateNotifier,
   implicit val log = Logging(system, "webservice")
 
   import ErrorHandler._
-  import ErrorHandler._
   import PackagesResource._
   import WebService._
   import eu.timepit.refined._
@@ -54,53 +53,13 @@ class WebService(notifier: UpdateNotifier,
   val updateService = new UpdateService(notifier, deviceRegistry)
   val updateRequestsResource = new UpdateRequestsResource(db, resolver, updateService, authNamespace)
   val historyResource = new HistoryResource(db, authNamespace)
-
-  val deviceRoutes: Route = pathPrefix("devices") {
-    extractExecutionContext { implicit ec =>
-      authNamespace { ns =>
-        (pathEnd & get) { devicesResource.search(ns) }
-      }
-    }
-  }
-
-  val packageRoutes: Route =
-    pathPrefix("packages") {
-      authNamespace { ns =>
-        (pathEnd & get) { packagesResource.searchPackage(ns) } ~
-          extractPackageId { pid =>
-            pathEnd {
-              get { packagesResource.fetch(ns, pid) } ~
-                put { packagesResource.updatePackage(ns, pid) }
-            } ~
-            path("info") {
-              put {packagesResource.updatePackageInfo(ns, pid)}
-            } ~
-            path("queued") { packagesResource.queuedDevices(ns, pid) }
-          }
-      }
-    }
-
-
-  val updateRequestRoute: Route =
-    pathPrefix("update_requests") {
-      (get & extractUuid) { updateRequestsResource.fetch } ~
-        pathEnd {
-          get { updateRequestsResource.fetchUpdates } ~
-            (post & authNamespace) { updateRequestsResource.createUpdate }
-        }
-    }
-
-  val historyRoutes: Route = {
-    (pathPrefix("history") & parameter('uuid.as[String Refined Device.ValidId])) { uuid =>
-      authNamespace { ns =>
-        (get & pathEnd) {
-          historyResource.history(ns, Device.Id(uuid))
-        }
-      }
-    }
-  }
+  val blacklistResource = new BlacklistResource(authNamespace)(db, system)
 
   val route = (handleErrors & pathPrefix("api" / "v1")) {
-    deviceRoutes ~ packageRoutes ~ updateRequestRoute ~ historyRoutes
+    devicesResource.route ~
+      packagesResource.route ~
+      updateRequestsResource.route ~
+      historyResource.route ~
+      blacklistResource.route
   }
 }
