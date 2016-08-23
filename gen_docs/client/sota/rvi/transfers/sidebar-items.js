@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Transfer","Holds the details of the transferred chunks relating to an `UpdateRequestId`."],["Transfers","Holds all currently active transfers where each is referenced by `UpdateRequestId`."]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Command","System-wide commands that are sent to the interpreter."]]});

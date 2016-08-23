@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["PackageManager","An enumeration of the available package managers for querying and installing new packages."]],"fn":[["parse_package",""]],"type":[["InstallOutcome","The outcome when installing a package as a tuple of the `UpdateResultCode` and any stdout/stderr output."]]});

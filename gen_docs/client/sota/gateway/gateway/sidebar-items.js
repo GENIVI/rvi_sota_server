@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Interpret","Encapsulates a `Command` to be sent to the `GlobalInterpreter` for processing, with an optional channel to receive the outcome `Event`."]],"trait":[["Gateway","A `Gateway` may send `Command`s to the `GlobalInterpreter`, as well as listen to the system-wide `Event` messages."]]});

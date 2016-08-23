@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["ReportParams","Type for \"Get All Packages\" messages."]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Method","Enumerate the supported HTTP methods."]],"struct":[["Url","Encapsulate a single crate URL with additional methods and traits."]]});

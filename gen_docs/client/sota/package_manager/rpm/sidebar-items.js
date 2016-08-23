@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["install_package","Installs a new RPM package."],["installed_packages","Returns a list of installed RPM packages with `rpm -qa ==queryformat ${NAME} ${VERSION}\\n`."]]});

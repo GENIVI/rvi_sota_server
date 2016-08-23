@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Websocket","The `Websocket` gateway allows connected clients to listen to `Event`s that happen in the SOTA client."],["WebsocketHandler",""]]});

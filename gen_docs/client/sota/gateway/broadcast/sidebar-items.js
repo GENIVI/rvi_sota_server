@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Broadcast","Retain a list of all peers that should receive the incoming message."]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["SystemInfo","A reference to the command that will report on the system information."]]});

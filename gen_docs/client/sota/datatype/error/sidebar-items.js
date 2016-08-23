@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Error","System-wide errors that are returned from `Result` type failures."]]});

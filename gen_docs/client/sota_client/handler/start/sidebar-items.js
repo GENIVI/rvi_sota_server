@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["StartParams","Type for \"Start Transfer\" messages."]]});

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Gateway` trait in crate `sota`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Gateway">
+
+    <title>sota::gateway::gateway::Gateway - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../../index.html'>sota</a>::<wbr><a href='../index.html'>gateway</a>::<wbr><a href='index.html'>gateway</a></p><script>window.sidebarCurrent = {name: 'Gateway', ty: 'trait', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content trait">
+<h1 class='fqn'><span class='in-band'>Trait <a href='../../index.html'>sota</a>::<wbr><a href='../index.html'>gateway</a>::<wbr><a href='index.html'>gateway</a>::<wbr><a class='trait' href=''>Gateway</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-3741' class='srclink' href='../../../src/sota/src/gateway/gateway.rs.html#17-32' title='goto source code'>[src]</a></span></h1>
+<pre class='rust trait'>pub trait Gateway {
+    fn <a href='#tymethod.initialize' class='fnname'>initialize</a>(&amp;mut self, itx: Sender&lt;<a class='struct' href='../../../sota/gateway/gateway/struct.Interpret.html' title='sota::gateway::gateway::Interpret'>Interpret</a>&gt;) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>,&nbsp;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;;
+
+    fn <a href='#method.start' class='fnname'>start</a>(&amp;mut self, itx: Sender&lt;<a class='struct' href='../../../sota/gateway/gateway/struct.Interpret.html' title='sota::gateway::gateway::Interpret'>Interpret</a>&gt;, erx: Receiver&lt;<a class='enum' href='../../../sota/datatype/event/enum.Event.html' title='sota::datatype::event::Event'>Event</a>&gt;) { ... }
+    fn <a href='#method.pulse' class='fnname'>pulse</a>(&amp;self, _: <a class='enum' href='../../../sota/datatype/event/enum.Event.html' title='sota::datatype::event::Event'>Event</a>) { ... }
+}</pre><div class='docblock'><p>A <code>Gateway</code> may send <code>Command</code>s to the <code>GlobalInterpreter</code>, as well as listen
+to the system-wide <code>Event</code> messages.</p>
+</div>
+            <h2 id='required-methods'>Required Methods</h2>
+            <div class='methods'>
+        <h3 id='tymethod.initialize' class='method stab '><code>fn <a href='#tymethod.initialize' class='fnname'>initialize</a>(&amp;mut self, itx: Sender&lt;<a class='struct' href='../../../sota/gateway/gateway/struct.Interpret.html' title='sota::gateway::gateway::Interpret'>Interpret</a>&gt;) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>,&nbsp;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;</code></h3></div>
+            <h2 id='provided-methods'>Provided Methods</h2>
+            <div class='methods'>
+        <h3 id='method.start' class='method stab '><code>fn <a href='#method.start' class='fnname'>start</a>(&amp;mut self, itx: Sender&lt;<a class='struct' href='../../../sota/gateway/gateway/struct.Interpret.html' title='sota::gateway::gateway::Interpret'>Interpret</a>&gt;, erx: Receiver&lt;<a class='enum' href='../../../sota/datatype/event/enum.Event.html' title='sota::datatype::event::Event'>Event</a>&gt;)</code></h3><h3 id='method.pulse' class='method stab '><code>fn <a href='#method.pulse' class='fnname'>pulse</a>(&amp;self, _: <a class='enum' href='../../../sota/datatype/event/enum.Event.html' title='sota::datatype::event::Event'>Event</a>)</code></h3></div>
+        <h2 id='implementors'>Implementors</h2>
+        <ul class='item-list' id='implementors-list'>
+    <li><code>impl Gateway for <a class='struct' href='../../../sota/gateway/console/struct.Console.html' title='sota::gateway::console::Console'>Console</a></code></li>
+<li><code>impl Gateway for <a class='struct' href='../../../sota/gateway/dbus/struct.DBus.html' title='sota::gateway::dbus::DBus'>DBus</a></code></li>
+<li><code>impl Gateway for <a class='struct' href='../../../sota/gateway/http/struct.Http.html' title='sota::gateway::http::Http'>Http</a></code></li>
+<li><code>impl Gateway for <a class='struct' href='../../../sota/gateway/websocket/struct.Websocket.html' title='sota::gateway::websocket::Websocket'>Websocket</a></code></li>
+</ul><script type="text/javascript" async
+                         src="../../../implementors/sota/gateway/gateway/trait.Gateway.js">
+                 </script></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../../";
+        window.currentCrate = "sota";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../../jquery.js"></script>
+    <script src="../../../main.js"></script>
+    
+    <script defer src="../../../search-index.js"></script>
+</body>
+</html>

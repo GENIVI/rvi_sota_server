@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["DBus","The `DBus` gateway is used with the RVI module for communicating with the system session bus."]]});

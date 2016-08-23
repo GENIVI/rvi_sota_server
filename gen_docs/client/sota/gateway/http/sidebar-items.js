@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Http","The `Http` gateway parses `Command`s from the body of incoming requests."]]});

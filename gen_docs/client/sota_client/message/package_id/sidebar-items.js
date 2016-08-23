@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["PackageId","Encodes a package, defined through a `name` and `version`."]]});

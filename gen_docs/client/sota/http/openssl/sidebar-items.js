@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["get_openssl","This function will return a clone of `Openssl` where the CA certificates have been bound with `set_ca_certificates()`."],["set_ca_certificates","This function *must* be called before any call is made to `get_openssl()`"]]});

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `OTA` struct in crate `sota`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, OTA">
+
+    <title>sota::ota_plus::OTA - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>sota</a>::<wbr><a href='index.html'>ota_plus</a></p><script>window.sidebarCurrent = {name: 'OTA', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>sota</a>::<wbr><a href='index.html'>ota_plus</a>::<wbr><a class='struct' href=''>OTA</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-4510' class='srclink' href='../../src/sota/src/ota_plus.rs.html#15-18' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct OTA&lt;'c,&nbsp;'h&gt; {
+    // some fields omitted
+}</pre><div class='docblock'><p>Encapsulate the client configuration and HTTP client used for over-the-air
+communication.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl&lt;'c,&nbsp;'h&gt; <a class='struct' href='../../sota/ota_plus/struct.OTA.html' title='sota::ota_plus::OTA'>OTA</a>&lt;'c,&nbsp;'h&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a id='src-4515' class='srclink' href='../../src/sota/src/ota_plus.rs.html#20-122' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>(config: &amp;'c <a class='struct' href='../../sota/datatype/config/struct.Config.html' title='sota::datatype::config::Config'>Config</a>, client: &amp;'h <a class='trait' href='../../sota/http/http_client/trait.Client.html' title='sota::http::http_client::Client'>Client</a>) -&gt; <a class='struct' href='../../sota/ota_plus/struct.OTA.html' title='sota::ota_plus::OTA'>OTA</a>&lt;'c,&nbsp;'h&gt;</code></h4>
+<div class='docblock'><p>Creates a new instance for OTA communication.</p>
+</div><h4 id='method.endpoint' class='method'><code>fn <a href='#method.endpoint' class='fnname'>endpoint</a>(&amp;self, path: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>) -&gt; <a class='struct' href='../../sota/datatype/url/struct.Url.html' title='sota::datatype::url::Url'>Url</a></code></h4>
+<div class='docblock'><p>Takes a path and returns a new endpoint of the format
+<code>&lt;Core server&gt;/api/v1/vehicle_updates/&lt;uuid&gt;/&lt;path&gt;</code>.</p>
+</div><h4 id='method.get_package_updates' class='method'><code>fn <a href='#method.get_package_updates' class='fnname'>get_package_updates</a>(&amp;mut self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='struct' href='../../sota/datatype/package/struct.PendingUpdateRequest.html' title='sota::datatype::package::PendingUpdateRequest'>PendingUpdateRequest</a>&gt;,&nbsp;<a class='enum' href='../../sota/datatype/error/enum.Error.html' title='sota::datatype::error::Error'>Error</a>&gt;</code></h4>
+<div class='docblock'><p>Query the Core server to identify any new package updates available.</p>
+</div><h4 id='method.download_package_update' class='method'><code>fn <a href='#method.download_package_update' class='fnname'>download_package_update</a>(&amp;mut self, id: <a class='type' href='../../sota/datatype/package/type.UpdateRequestId.html' title='sota::datatype::package::UpdateRequestId'>UpdateRequestId</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/std/path/struct.PathBuf.html' title='std::path::PathBuf'>PathBuf</a>,&nbsp;<a class='enum' href='../../sota/datatype/error/enum.Error.html' title='sota::datatype::error::Error'>Error</a>&gt;</code></h4>
+<div class='docblock'><p>Download a specific update from the Core server.</p>
+</div><h4 id='method.install_package_update' class='method'><code>fn <a href='#method.install_package_update' class='fnname'>install_package_update</a>(&amp;mut self, id: <a class='type' href='../../sota/datatype/package/type.UpdateRequestId.html' title='sota::datatype::package::UpdateRequestId'>UpdateRequestId</a>, etx: &amp;Sender&lt;<a class='enum' href='../../sota/datatype/event/enum.Event.html' title='sota::datatype::event::Event'>Event</a>&gt;) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='../../sota/datatype/update/struct.UpdateReport.html' title='sota::datatype::update::UpdateReport'>UpdateReport</a>,&nbsp;<a class='enum' href='../../sota/datatype/error/enum.Error.html' title='sota::datatype::error::Error'>Error</a>&gt;</code></h4>
+<div class='docblock'><p>Download and install an update, sending <code>Event::UpdateStateChanged</code>
+notifications at each step.</p>
+</div><h4 id='method.update_installed_packages' class='method'><code>fn <a href='#method.update_installed_packages' class='fnname'>update_installed_packages</a>(&amp;mut self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>,&nbsp;<a class='enum' href='../../sota/datatype/error/enum.Error.html' title='sota::datatype::error::Error'>Error</a>&gt;</code></h4>
+<div class='docblock'><p>Send a list of the currently installed packages to the Core server.</p>
+</div><h4 id='method.send_install_report' class='method'><code>fn <a href='#method.send_install_report' class='fnname'>send_install_report</a>(&amp;mut self, update_report: &amp;<a class='struct' href='../../sota/datatype/update/struct.UpdateReport.html' title='sota::datatype::update::UpdateReport'>UpdateReport</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>,&nbsp;<a class='enum' href='../../sota/datatype/error/enum.Error.html' title='sota::datatype::error::Error'>Error</a>&gt;</code></h4>
+<div class='docblock'><p>Send the outcome of a package installation to the Core server.</p>
+</div><h4 id='method.send_system_info' class='method'><code>fn <a href='#method.send_system_info' class='fnname'>send_system_info</a>(&amp;mut self, info: &amp;<a class='enum' href='https://doc.rust-lang.org/rustc-serialize/rustc_serialize/json/enum.Json.html' title='rustc_serialize::json::Json'>Json</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>,&nbsp;<a class='enum' href='../../sota/datatype/error/enum.Error.html' title='sota::datatype::error::Error'>Error</a>&gt;</code></h4>
+<div class='docblock'><p>Send system information from the device to the Core server.</p>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "sota";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>
