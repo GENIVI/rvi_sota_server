@@ -56,7 +56,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
   val fakeResolver = new FakeExternalResolver()
 
-  val baseUri = Uri.Empty.withPath(Path("/api/v1/vehicle_updates"))
+  val baseUri = Uri.Empty.withPath(Path("/api/v1/device_updates"))
   val (fakeDeviceRegistry, deviceUri, deviceUuid) = {
     val registry = new FakeDeviceRegistry(Namespaces.defaultNs)
     val device = genDeviceT.sample.get
