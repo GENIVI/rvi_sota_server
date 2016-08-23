@@ -42,7 +42,7 @@ class WebService(notifier: UpdateNotifier,
                  val connectivity: Connectivity, val ec: ExecutionContext) extends Directives {
   implicit val log = Logging(system, "webservice")
 
-  import ErrorHandler._
+  import org.genivi.sota.http.ErrorHandler._
   import PackagesResource._
   import WebService._
   import eu.timepit.refined._

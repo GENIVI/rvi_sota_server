@@ -15,6 +15,7 @@ import io.circe.generic.auto._
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{Device, Namespace, PackageId}
+import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
@@ -42,18 +43,6 @@ class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
 
   import Directives._
 
-  /**
-    * Exception handler for package routes.
-    */
-  def installedPackagesHandler: ExceptionHandler =
-  ExceptionHandler(Errors.onMissingPackage)
-
-  /**
-    * Exception handler for component routes.
-    */
-  def installedComponentsHandler: ExceptionHandler =
-  ExceptionHandler(Errors.onMissingComponent)
-
   val extractDeviceId: Directive1[Device.Id] = refined[Device.ValidId](Slash ~ Segment).map(Device.Id)
 
   def searchDevices(ns: Namespace): Route =
@@ -75,14 +64,10 @@ class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
 
 
   def installPackage(namespace: Namespace, device: Device.Id, pkgId: PackageId): Route =
-    completeOrRecoverWith(db.run(DeviceRepository.installPackage(namespace, device, pkgId))) {
-      Errors.onMissingPackage
-    }
+    complete(db.run(DeviceRepository.installPackage(namespace, device, pkgId)))
 
   def uninstallPackage(ns: Namespace, device: Device.Id, pkgId: PackageId): Route =
-    completeOrRecoverWith(db.run(DeviceRepository.uninstallPackage(ns, device, pkgId))) {
-      Errors.onMissingPackage
-    }
+    complete(db.run(DeviceRepository.uninstallPackage(ns, device, pkgId)))
 
   def updateInstalledSoftware(device: Device.Id): Route = {
     def updateSoftwareOnDb(namespace: Namespace, installedSoftware: InstalledSoftware): Future[Unit] = {
@@ -130,7 +115,7 @@ class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
         }
       }
     } ~
-    (path("packages") & put & handleExceptions(installedPackagesHandler)) {
+    (path("packages") & put) {
       updateInstalledSoftware(device)
     }
   }
@@ -157,7 +142,7 @@ class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
       (get & pathEnd) {
         getComponents(ns, device)
       } ~
-      (refinedPartNumber & handleExceptions(installedComponentsHandler)) { part =>
+      refinedPartNumber { part =>
         (put & pathEnd) {
           installComponent(ns, device, part)
         } ~
@@ -181,14 +166,7 @@ class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
   def getFirmware(ns: Namespace, deviceId: Device.Id): Route =
     complete(db.run(DeviceRepository.firmwareOnDevice(ns, deviceId)))
 
-
-  /**
-   * Base API route for vehicles.
-   *
-   * @return      Route object containing routes for creating, deleting, and listing vehicles
-   * @throws      Errors.MissingVehicle if vehicle doesn't exist
-   */
-  def route: Route = {
+  def route: Route = ErrorHandler.handleErrors {
     deviceApi ~
     (pathPrefix("firmware") & get & namespaceExtractor & extractDeviceId) { (ns, device) =>
       getFirmware(ns, device)

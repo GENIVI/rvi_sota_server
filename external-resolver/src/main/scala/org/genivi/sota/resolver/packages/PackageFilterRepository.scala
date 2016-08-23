@@ -49,8 +49,6 @@ object PackageFilterRepository {
    */
   def list: DBIO[Seq[PackageFilter]] = packageFilters.result
 
-  case object MissingPackageFilterException extends Throwable
-
   def exists(pf: PackageFilter)(implicit ec: ExecutionContext): DBIO[PackageFilter] =
     packageFilters
       .filter(r => r.namespace      === pf.namespace
@@ -61,7 +59,7 @@ object PackageFilterRepository {
       .headOption
       .flatMap(_.
         fold[DBIO[PackageFilter]]
-          (DBIO.failed(MissingPackageFilterException))
+          (DBIO.failed(Errors.MissingPackageFilter))
           (DBIO.successful))
 
   /**

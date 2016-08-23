@@ -19,6 +19,7 @@ import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.data.{Device, DeviceT, Namespace}
 import org.genivi.sota.device_registry.common.Errors
+import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
@@ -119,11 +120,7 @@ class Routes(namespaceExtractor: Directive1[Namespace],
   implicit val NamespaceUnmarshaller: FromStringUnmarshaller[Namespace] = Unmarshaller.strict(Namespace.apply)
 
   def api: Route =
-    handleExceptions(ExceptionHandler(Errors.onMissingDevice orElse Errors.onConflictingDevice
-                                                             orElse Errors.onMissingSystemInfo
-                                                             orElse Errors.onSystemInfoAlreadyExists
-                                                             orElse Errors.onMissingGroupInfo
-                                                             orElse Errors.onGroupInfoAlreadyExists)) {
+    ErrorHandler.handleErrors {
       pathPrefix("devices") {
         namespaceExtractor { ns =>
           (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~

@@ -13,13 +13,13 @@ import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.Namespace._
+import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
-import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.packages.PackageFilterRepository
 import org.genivi.sota.rest.Validation._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext}
 import slick.driver.MySQLDriver.api._
 
 
@@ -40,9 +40,7 @@ class FilterDirectives(namespaceExtractor: Directive1[Namespace])
     }
 
   def getPackages(ns: Namespace, fname: String Refined Filter.ValidName): Route =
-    completeOrRecoverWith(db.run(PackageFilterRepository.listPackagesForFilter(ns, fname))) {
-      Errors.onMissingFilter
-    }
+    complete(db.run(PackageFilterRepository.listPackagesForFilter(ns, fname)))
 
   def createFilter(ns: Namespace): Route =
     entity(as[Filter]) { filter =>
@@ -67,14 +65,8 @@ class FilterDirectives(namespaceExtractor: Directive1[Namespace])
       complete("OK")
     }
 
-  /**
-   * API route for filters.
-   * @return      Route object containing routes for getting, creating,
-   *              editing, deleting, and validating filters
-   * @throws      Errors.MissingFilterException if the filter doesn't exist
-   */
   def route: Route =
-    handleExceptions(ExceptionHandler(Errors.onMissingFilter orElse Errors.onMissingPackage)) {
+    ErrorHandler.handleErrors {
       (pathPrefix("filters") & namespaceExtractor) { ns =>
         (get & pathEnd) {
           searchFilter(ns)

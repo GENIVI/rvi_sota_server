@@ -14,7 +14,7 @@ import org.genivi.sota.db.BootMigrations
 import org.genivi.sota.http._
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
 import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted}
-import org.genivi.sota.rest.Handlers.{exceptionHandler, rejectionHandler}
+import org.genivi.sota.rest.SotaRejectionHandler.rejectionHandler
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
@@ -31,9 +31,7 @@ class Routing(namespaceExtractor: Directive1[Namespace], messageBus: MessageBusP
 
   val route: Route = pathPrefix("api" / "v1") {
     handleRejections(rejectionHandler) {
-      handleExceptions(exceptionHandler) {
-        new Routes(namespaceExtractor, messageBus).route
-      }
+      new Routes(namespaceExtractor, messageBus).route
     }
   }
 }
@@ -66,7 +64,7 @@ object Boot extends App with Directives with BootMigrations {
 
   val routes: Route =
     (logResponseMetrics("device-registry") & versionHeaders(version)) {
-      (handleRejections(rejectionHandler) & handleExceptions(exceptionHandler)) {
+      handleRejections(rejectionHandler) {
         pathPrefix("api" / "v1") {
           new Routes(authNamespace, messageBus).route
         } ~ new HealthResource(db, org.genivi.sota.device_registry.BuildInfo.toMap).route

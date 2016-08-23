@@ -9,6 +9,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
 import org.genivi.sota.data.Namespace
+import org.genivi.sota.http.ErrorHandler
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
@@ -23,7 +24,9 @@ class PackageFiltersResource(namespaceDirective: Directive1[Namespace])
 
   val packageDirectives = new PackageDirectives(namespaceDirective)
 
-  val routes: Route = (pathPrefix("package_filters") & refinedPackageId & namespaceDirective) { (pid, ns) =>
-    packageDirectives.packageFilterApi(ns, pid)
+  val routes: Route = ErrorHandler.handleErrors {
+    (pathPrefix("package_filters") & refinedPackageId & namespaceDirective) { (pid, ns) =>
+      packageDirectives.packageFilterApi(ns, pid)
+    }
   }
 }

@@ -11,7 +11,7 @@ import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Uuid
-import org.genivi.sota.core.Errors
+import org.genivi.sota.core.SotaCoreErrors
 import org.genivi.sota.core.data.{Package, UpdateSpec, UpdateStatus}
 import org.genivi.sota.core.db.{BlacklistedPackages, Packages, UpdateSpecs}
 import org.genivi.sota.core.db.UpdateSpecs._
@@ -64,7 +64,7 @@ class PackageDownloadProcess(db: Database, packageRetrieval: PackageRetrievalOp)
       .map { case (_, packageM) => packageM }
       .result
       .headOption
-      .failIfNone(Errors.MissingPackage)
+      .failIfNone(SotaCoreErrors.MissingPackage)
       .flatMap(BlacklistedPackages.ensureNotBlacklisted)
   }
 }

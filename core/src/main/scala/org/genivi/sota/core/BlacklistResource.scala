@@ -5,7 +5,7 @@
 
 package org.genivi.sota.core
 
-import ErrorHandler._
+import org.genivi.sota.http.ErrorHandler._
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directive1, Route}

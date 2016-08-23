@@ -4,6 +4,10 @@
  */
 package org.genivi.sota.device_registry.common
 
+import org.genivi.sota.device_registry.GroupInfo.GroupInfo
+import org.genivi.sota.device_registry.SystemInfo.SystemInfo
+import org.genivi.sota.http.Errors.{EntityAlreadyExists, MissingEntity, RawError}
+
 object Errors {
   import akka.http.scaladsl.model.StatusCodes
   import akka.http.scaladsl.server.Directives.complete
@@ -21,46 +25,13 @@ object Errors {
     val GroupInfoAlreadyExists = ErrorCode("group_info_already_exists")
   }
 
-  case object MissingDevice extends Throwable with NoStackTrace
-  case object ConflictingDevice extends Throwable with NoStackTrace
-  case object MissingSystemInfo extends Throwable with NoStackTrace
-  case object SystemInfoAlreadyExists extends Throwable with NoStackTrace
-  case object MissingGroupInfo extends Throwable with NoStackTrace
-  case object GroupInfoAlreadyExists extends Throwable with NoStackTrace
+  val MissingDevice = RawError(Codes.MissingDevice, StatusCodes.NotFound, "device doesn't exist")
+  val ConflictingDevice = RawError(Codes.ConflictingDevice, StatusCodes.Conflict,
+    "deviceId or deviceName is already in use")
+  val MissingSystemInfo = RawError(Codes.MissingSystemInfo, StatusCodes.NotFound,
+    "system info doesn't exist for this uuid")
+  val ConflictingSystemInfo = EntityAlreadyExists(classOf[SystemInfo])
 
-  val onMissingDevice: PF = {
-    case MissingDevice =>
-      complete(StatusCodes.NotFound -> ErrorRepresentation(Codes.MissingDevice, "device doesn't exist"))
-  }
-
-  val onConflictingDevice: PF = {
-    case ConflictingDevice =>
-      complete(StatusCodes.Conflict ->
-        ErrorRepresentation(Codes.ConflictingDevice, "deviceId or deviceName is already in use"))
-  }
-
-  val onMissingSystemInfo: PF = {
-    case MissingSystemInfo =>
-      complete(StatusCodes.NotFound -> ErrorRepresentation(Codes.MissingSystemInfo
-                                                          , "system info doesn't exist for this uuid"))
-  }
-
-  val onSystemInfoAlreadyExists: PF = {
-    case SystemInfoAlreadyExists =>
-      complete(StatusCodes.Conflict ->
-        ErrorRepresentation(Codes.SystemInfoAlreadyExists, "system info have been set for this uuid"))
-  }
-
-  val onMissingGroupInfo: PF = {
-    case MissingGroupInfo =>
-      complete(StatusCodes.NotFound -> ErrorRepresentation(Codes.MissingGroupInfo
-        , "group info doesn't exist for this name"))
-  }
-
-  val onGroupInfoAlreadyExists: PF = {
-    case GroupInfoAlreadyExists =>
-      complete(StatusCodes.Conflict ->
-        ErrorRepresentation(Codes.GroupInfoAlreadyExists, "group info have been set for this user"))
-  }
-
+  val MissingGroupInfo = MissingEntity(classOf[GroupInfo])
+  val ConflictingGroupInfo = EntityAlreadyExists(classOf[GroupInfo])
 }

@@ -52,7 +52,7 @@ object ComponentRepository {
                      (implicit db: Database, ec: ExecutionContext): Future[Int] =
       isInstalled(namespace, part) flatMap { is =>
       if (is) {
-        Future.failed(Errors.ComponentIsInstalledException)
+        Future.failed(Errors.ComponentInstalled)
       } else {
         val dbIO = components
           .filter(_.namespace === namespace)

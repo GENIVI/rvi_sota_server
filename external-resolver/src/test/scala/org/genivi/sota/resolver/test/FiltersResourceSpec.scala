@@ -80,7 +80,7 @@ class FiltersResourceWordSpec extends ResourceWordSpec with Namespaces {
     "fail on trying to update non-existing filters" in {
       updateFilter("nonexistant", filterExpr) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        responseAs[ErrorRepresentation].code shouldBe ErrorCode("filter_not_found")
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.MissingEntity
       }
     }
 
@@ -96,7 +96,7 @@ class FiltersResourceWordSpec extends ResourceWordSpec with Namespaces {
     "fail on trying to delete non-existing filters" in {
       deleteFilter("nonexistant") ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        responseAs[ErrorRepresentation].code shouldBe ErrorCode("filter_not_found")
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.MissingEntity
       }
     }
 

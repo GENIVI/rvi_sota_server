@@ -61,7 +61,7 @@ object SystemInfo extends SlickJsonHelper {
   def create(id: Id, data: SystemInfoType)(implicit ec: ExecutionContext): DBIO[Unit] = for {
     _ <- DeviceRepository.findById(id) // check that the device exists
     _ <- exists(id).asTry.flatMap {
-      case Success(_) => DBIO.failed(Errors.SystemInfoAlreadyExists)
+      case Success(_) => DBIO.failed(Errors.ConflictingSystemInfo)
       case Failure(_) => DBIO.successful(())
     }
     _ <- systemInfos += SystemInfo(id,data)

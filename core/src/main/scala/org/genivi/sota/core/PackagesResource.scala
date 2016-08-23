@@ -36,6 +36,9 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.unmarshalling._
 import io.circe.generic.auto._
+import org.genivi.sota.core.SotaCoreErrors.SotaCoreErrorCodes
+import org.genivi.sota.http.ErrorHandler
+import org.genivi.sota.http.Errors.RawError
 
 import scala.concurrent.Future
 
@@ -128,7 +131,7 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
     def handleErrors(throwable: Throwable): Route = throwable match {
       case ExternalResolverRequestFailed(msg, cause) =>
         log.error(cause, s"Unable to create/update package: $msg")
-        complete(StatusCodes.ServiceUnavailable -> ErrorRepresentation(ErrorCodes.ExternalResolverError, msg))
+        failWith(RawError(SotaCoreErrorCodes.ExternalResolverError, StatusCodes.ServiceUnavailable, msg))
       case e => failWith(e)
     }
 
@@ -164,28 +167,29 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
     complete(db.run(UpdateSpecs.getDevicesQueuedForPackage(ns, pid.name, pid.version)))
   }
 
-  val route =
+  val route = ErrorHandler.handleErrors {
     pathPrefix("packages") {
       (get & namespaceExtractor & pathEnd) { ns =>
         searchPackage(ns)
       } ~
-      (namespaceExtractor & extractPackageId) { (ns, pid) =>
-        path("info") {
-          put {
-            updatePackageInfo(ns,pid)
-          }
-        } ~
-        pathEnd {
-          get {
-            fetch(ns, pid)
+        (namespaceExtractor & extractPackageId) { (ns, pid) =>
+          path("info") {
+            put {
+              updatePackageInfo(ns, pid)
+            }
           } ~
-          put {
-            updatePackage(ns, pid)
-          }
-        } ~
-        path("queued") {
-          queuedDevices(ns, pid)
+            pathEnd {
+              get {
+                fetch(ns, pid)
+              } ~
+                put {
+                  updatePackage(ns, pid)
+                }
+            } ~
+            path("queued") {
+              queuedDevices(ns, pid)
+            }
         }
-      }
     }
+  }
 }

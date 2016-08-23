@@ -22,7 +22,7 @@ import org.genivi.sota.resolver.packages.{PackageDirectives, PackageFiltersResou
 import org.genivi.sota.resolver.resolve.ResolveDirectives
 import org.genivi.sota.resolver.devices.DeviceDirectives
 import org.genivi.sota.resolver.components.ComponentDirectives
-import org.genivi.sota.rest.Handlers.{exceptionHandler, rejectionHandler}
+import org.genivi.sota.rest.SotaRejectionHandler.rejectionHandler
 import org.slf4j.LoggerFactory
 
 import scala.util.Try
@@ -42,18 +42,16 @@ class Routing(namespaceDirective: Directive1[Namespace], deviceRegistry: DeviceR
  {
    import Directives._
 
-  val route: Route = pathPrefix("api" / "v1" / "resolver") {
-    handleRejections(rejectionHandler) {
-      handleExceptions(exceptionHandler) {
-        new DeviceDirectives(namespaceDirective, deviceRegistry).route ~
-        new PackageDirectives(namespaceDirective).route ~
-        new FilterDirectives(namespaceDirective).route ~
-        new ResolveDirectives(namespaceDirective, deviceRegistry).route ~
-        new ComponentDirectives(namespaceDirective).route ~
-        new PackageFiltersResource(namespaceDirective).routes
-      }
-    }
-  }
+   val route: Route = pathPrefix("api" / "v1" / "resolver") {
+     handleRejections(rejectionHandler) {
+       new DeviceDirectives(namespaceDirective, deviceRegistry).route ~
+         new PackageDirectives(namespaceDirective).route ~
+         new FilterDirectives(namespaceDirective).route ~
+         new ResolveDirectives(namespaceDirective, deviceRegistry).route ~
+         new ComponentDirectives(namespaceDirective).route ~
+         new PackageFiltersResource(namespaceDirective).routes
+     }
+   }
 }
 
 
