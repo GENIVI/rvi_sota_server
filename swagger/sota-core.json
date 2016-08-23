@@ -611,6 +611,96 @@
           }
         }
       }
+    },
+    "/blacklist": {
+      "get": {
+        "description": "Get a list of blacklisted packages",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/BlacklistItem"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/blacklist/{package_name}/{package_version}": {
+      "put": {
+        "parameters": [
+          {
+            "name": "package_name",
+            "in": "path",
+            "description": "package name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "package_version",
+            "in": "path",
+            "description": "package version",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "description": "Update a blacklist item",
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        }
+      },
+      "get": {
+        "parameters": [
+          {
+            "name": "package_name",
+            "in": "path",
+            "description": "package name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "package_version",
+            "in": "path",
+            "description": "package version",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "description": "Get a blacklist item",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "parameters": [
+          {
+            "name": "package_name",
+            "in": "path",
+            "description": "package name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "package_version",
+            "in": "path",
+            "description": "package version",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "OK"
+          }
+        },
+        "description": "Create a blacklist item"
+      }
     }
   },
   "definitions": {
@@ -696,6 +786,10 @@
         "signature": {
           "type": "string",
           "description": "A cryptographic signature signing the binary."
+        },
+        "isBlackListed": {
+          "type": "boolean",
+          "description": "True if the package is currently blacklisted"
         }
       }
     },
@@ -813,9 +907,17 @@
         }
       }
     },
-    "SystemInfo": {
+    "BlacklistItem": {
       "type": "object",
-      "description": "An object representing system info. No schema yet defined."
+      "properties": {
+        "packageId": {
+          "$ref": "#/definitions/packageId"
+        },
+        "comment": {
+          "type": "string",
+          "description": "A free text comment about the item"
+        }
+      }
     }
   }
 }
