@@ -8,6 +8,9 @@ package org.genivi.sota.db
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
+import scala.collection.TraversableLike
+import scala.util.Success
+
 /**
   * Some database operators are shared between the core and the
   * resolver.
@@ -37,6 +40,13 @@ object Operators {
     def failIfNone(t: Throwable)
                   (implicit ec: ExecutionContext): DBIO[T] =
       io.flatMap(_.fold[DBIO[T]](DBIO.failed(t))(DBIO.successful))
+  }
+
+  implicit class DBIOSeqOps[+T](io: DBIO[Seq[T]]) {
+    def failIfNone(t: Throwable)
+                  (implicit ec: ExecutionContext): DBIO[T] = {
+      DBIOOps(io.map(_.headOption)).failIfNone(t)
+    }
   }
 
   implicit class QueryReg[QTable, Row, S[_]](baseQuery: Query[QTable, Row, S]) {

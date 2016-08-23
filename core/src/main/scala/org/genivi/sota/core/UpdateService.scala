@@ -23,7 +23,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
 import slick.dbio.DBIO
 import slick.driver.MySQLDriver.api._
-
+import org.genivi.sota.db.Operators._
 
 case class PackagesNotFound(packageIds: (PackageId)*)
                            (implicit show: Show[PackageId])
@@ -77,9 +77,10 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
 
   def loadPackage(ns: Namespace, id : PackageId)
                  (implicit db: Database, ec: ExecutionContext): Future[Package] = {
-    db.run(Packages.byId(ns, id)).flatMap { x =>
-      x.fold[Future[Package]](FastFuture.failed( PackagesNotFound(id)) )(FastFuture.successful)
-    }
+    val dbIO = Packages.byId(ns, id)
+      .flatMap(BlacklistedPackages.ensureNotBlacklisted)
+
+    db.run(dbIO)
   }
 
   /**
@@ -127,6 +128,7 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
       pckg           <- loadPackage(ns, request.packageId)
       vinsToDeps     <- resolver(pckg)
       requirements    = allRequiredPackages(vinsToDeps)
+      _ <- db.run(BlacklistedPackages.ensureNotBlacklistedIds(pckg.namespace)(requirements.toSeq))
       packages       <- fetchPackages(ns, requirements)
       idsToPackages   = packages.map( x => x.id -> x ).toMap
       updateSpecs     = mkUpdateSpecs(ns, request, vinsToDeps, idsToPackages)

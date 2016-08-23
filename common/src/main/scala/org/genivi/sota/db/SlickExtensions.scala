@@ -69,4 +69,15 @@ object SlickExtensions {
       }
     }
   }
+
+  implicit class DbioUpdateActionExtensions(action: DBIO[Int]) {
+    def handleSingleUpdateError(result: Throwable)(implicit ec: ExecutionContext): DBIO[Unit] = {
+      action.flatMap {
+        case c if c == 1 =>
+          DBIO.successful(())
+        case _ =>
+          DBIO.failed(result)
+      }
+    }
+  }
 }

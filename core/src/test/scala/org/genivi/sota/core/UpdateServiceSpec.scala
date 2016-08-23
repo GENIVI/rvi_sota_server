@@ -4,15 +4,14 @@ import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import akka.testkit.TestKit
 import eu.timepit.refined.api.Refined
-import java.util.UUID
 
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.core.db.{Packages, UpdateSpecs}
+import org.genivi.sota.core.db.{BlacklistedPackages, Packages, UpdateSpecs}
 import org.genivi.sota.core.resolver.DefaultConnectivity
 import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, DeviceUpdates}
 import org.genivi.sota.data._
-import org.genivi.sota.data.Namespace._
 import org.scalacheck.Gen
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
@@ -29,6 +28,7 @@ class UpdateServiceSpec extends PropSpec
   with Matchers
   with DatabaseSpec
   with BeforeAndAfterAll
+  with ScalaFutures
   with Namespaces {
 
   import org.genivi.sota.data.DeviceGenerators._
@@ -56,7 +56,6 @@ class UpdateServiceSpec extends PropSpec
   val service = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
 
   import org.genivi.sota.core.data.UpdateRequest
-  import org.scalatest.concurrent.ScalaFutures.{whenReady, PatienceConfig}
 
   val AvailablePackageIdGen = Gen.oneOf(packages).map( _.id )
 
@@ -67,7 +66,7 @@ class UpdateServiceSpec extends PropSpec
   property("decline if package not found") {
     forAll(updateRequestGen(defaultNs, PackageIdGen)) { (request: UpdateRequest) =>
       whenReady( service.queueUpdate( request, _ => FastFuture.successful( Map.empty ) ).failed ) { e =>
-        e shouldBe PackagesNotFound( request.packageId )
+        e shouldBe Errors.MissingPackage
       }
     }
   }
@@ -97,10 +96,7 @@ class UpdateServiceSpec extends PropSpec
   }
 
   property("upload spec per device") {
-    forAll(updateRequestGen(defaultNs, AvailablePackageIdGen), dependenciesGen(packages)) { (request, deps) =>
-      val req = UpdateRequest(UUID.randomUUID(), request.namespace, request.packageId, request.creationTime,
-        request.periodOfValidity, request.priority, request.signature, request.description, request.requestConfirmation)
-
+    forAll(updateRequestGen(defaultNs, AvailablePackageIdGen), dependenciesGen(packages)) { (req, deps) =>
       val queueF = for {
         specs <- service.queueUpdate(req, _ => Future.successful(deps))
         _ <- db.run(UpdateSpecs.listUpdatesById(Refined.unsafeApply(req.id.toString)))
@@ -130,6 +126,53 @@ class UpdateServiceSpec extends PropSpec
       updateRequest.packageId shouldBe newPackage.id
       queuedPackages.map(_.packageId) should contain(newPackage.id)
     }
+  }
+
+  property("queuing an update for a blacklisted package fails") {
+    val newPackage = PackageGen.sample.get
+    val req = updateRequestGen(defaultNs, PackageIdGen).sample.get.copy(packageId = newPackage.id)
+
+    val f = for {
+      packageM <- db.run(Packages.create(newPackage))
+      _ <- BlacklistedPackages.create(packageM.namespace, packageM.id)
+      _ <- service.queueUpdate(req, _ => Future.successful(Map.empty))
+    } yield packageM
+
+    val e = f.failed.futureValue
+
+    e shouldBe Errors.BlacklistedPackage
+  }
+
+  property("queuing a device update for a blacklisted package fails") {
+    val device = genDevice.sample.get
+    val newPackage = PackageGen.sample.get
+
+    val packageF = for {
+      packageM <- db.run(Packages.create(newPackage))
+      _ <- BlacklistedPackages.create(packageM.namespace, packageM.id)
+      _ <- service.queueDeviceUpdate(device.namespace, device.id, packageM.id)
+    } yield packageM
+
+    packageF.failed.futureValue shouldBe Errors.BlacklistedPackage
+  }
+
+  property("fails if dependencies include blacklisted package") {
+    val newPackage = PackageGen.sample.get
+    val dependency = PackageGen.sample.get
+    val device = DeviceGenerators.genId.sample.get
+    val req = updateRequestGen(defaultNs, PackageIdGen).sample.get.copy(packageId = newPackage.id)
+    val fakeDependency = Map(device -> Set(dependency.id))
+
+    val f = for {
+      packageM <- db.run(Packages.create(newPackage))
+      _ <- db.run(Packages.create(dependency))
+      _ <- BlacklistedPackages.create(dependency.namespace, dependency.id)
+      _ <- service.queueUpdate(req, _ => Future.successful(fakeDependency))
+    } yield packageM
+
+    val throwableF = f.failed.futureValue
+
+    throwableF shouldBe Errors.BlacklistedPackage
   }
 
   override def afterAll() : Unit = {

@@ -4,19 +4,24 @@
  */
 package org.genivi.sota.core.transfer
 
+import java.util.UUID
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Uuid
+import org.genivi.sota.core.Errors
 import org.genivi.sota.core.data.{Package, UpdateSpec, UpdateStatus}
-import org.genivi.sota.core.db.{Packages, UpdateSpecs}
+import org.genivi.sota.core.db.{BlacklistedPackages, Packages, UpdateSpecs}
 import org.genivi.sota.core.db.UpdateSpecs._
 import org.genivi.sota.core.storage.PackageStorage.PackageRetrievalOp
 import org.genivi.sota.data.Device
 import org.genivi.sota.db.SlickExtensions
 import org.genivi.sota.refined.SlickRefined._
 import slick.driver.MySQLDriver.api._
+import org.genivi.sota.db.Operators._
+
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.implicitConversions
@@ -37,29 +42,29 @@ class PackageDownloadProcess(db: Database, packageRetrieval: PackageRetrievalOp)
     */
   def buildClientDownloadResponse(device: Device.Id, updateRequestId: Refined[String, Uuid])
                                  (implicit ec: ExecutionContext): Future[HttpResponse] = {
-    val availablePackageIO = findForDownload(updateRequestId)
+    val dbIO = for {
+      pkg <- findForDownload(updateRequestId)
+      _ <- UpdateSpecs.setStatus(device, UUID.fromString(updateRequestId.get), UpdateStatus.InFlight)
+    } yield pkg
 
-    db.run(availablePackageIO) flatMap {
-      case Some(packageModel) =>
-        UpdateSpecs.setStatus(device, java.util.UUID.fromString(updateRequestId.get), UpdateStatus.InFlight)
-        packageRetrieval(packageModel)
-      case None =>
-        Future.successful(HttpResponse(StatusCodes.NotFound, entity = "Package not found"))
-    }
+    db.run(dbIO.transactionally).flatMap(packageRetrieval)
   }
 
   /**
     * Each [[UpdateRequest]] refers to a single package,
     * that this method returns after database lookup.
     */
-  private def findForDownload(updateRequestId: Refined[String, Uuid]): DBIO[Option[Package]] = {
+  private def findForDownload(updateRequestId: Refined[String, Uuid])
+                             (implicit ec: ExecutionContext): DBIO[Package] = {
     updateRequests
       .filter(_.id === updateRequestId)
       .join(Packages.packages)
       .on((updateRequest, packageM) =>
         packageM.name === updateRequest.packageName && packageM.version === updateRequest.packageVersion)
       .map { case (_, packageM) => packageM }
-      .result.headOption
+      .result
+      .headOption
+      .failIfNone(Errors.MissingPackage)
+      .flatMap(BlacklistedPackages.ensureNotBlacklisted)
   }
-
 }

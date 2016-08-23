@@ -227,7 +227,7 @@ object UpdateSpecs {
         if (rowsAffected == 1) {
           DBIO.successful(rowsAffected)
         } else {
-          DBIO.failed(Errors.MissingUpdateSpec)
+          DBIO.failed(Errors.MissingEntity(classOf[UpdateSpec]))
         }
       }
   }

@@ -5,8 +5,13 @@
 package org.genivi.sota.core.data
 
 import akka.http.scaladsl.model.Uri
+import io.circe.Json
+import org.genivi.sota.core.data.client.GenericResponseEncoder
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.PackageId
+import io.circe.syntax._
+import io.circe.generic.auto._
+import org.genivi.sota.marshalling.CirceInstances._
 
 /**
  * Domain object for a software package.
@@ -30,3 +35,24 @@ case class Package(
   vendor: Option[String],
   signature: Option[String]
 )
+
+case class PackageResponse(
+                            namespace: Namespace,
+                            id: PackageId,
+                            uri: Uri,
+                            size: Long,
+                            checkSum: String,
+                            description: Option[String],
+                            vendor: Option[String],
+                            signature: Option[String],
+                            isBlackListed: Boolean
+                          )
+
+object PackageResponse {
+  implicit val pkgResponseEncoder = GenericResponseEncoder {
+    (p: Package, isBlacklisted: Boolean) =>
+    p.asJson
+      .deepMerge(
+        Json.obj("isBlackListed" -> Json.fromBoolean(isBlacklisted)))
+  }
+}
