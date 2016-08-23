@@ -90,9 +90,6 @@ class PackageDirectives(namespaceExtractor: Directive1[Namespace])
    */
   def route: Route =
     pathPrefix("packages") {
-      (get & pathEnd) {
-        ok
-      } ~
       (get & path("filter")) {
         getFilters
      } ~
