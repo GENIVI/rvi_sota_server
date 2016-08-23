@@ -183,7 +183,7 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
             updatePackage(ns, pid)
           }
         } ~
-        path("queued_devices") {
+        path("queued") {
           queuedDevices(ns, pid)
         }
       }

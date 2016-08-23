@@ -10,6 +10,7 @@ import org.genivi.sota.marshalling.CirceInstances._
 import org.genivi.sota.data.Device.{DeviceName, Id}
 import org.genivi.sota.data.{Device, Namespace, PackageId}
 
+import scala.concurrent.Future
 import scala.reflect.ClassTag
 
 object Messages {
@@ -30,6 +31,9 @@ object Messages {
                                   description: Option[String], vendor: Option[String],
                                   signature: Option[String],
                                   fileName: String) extends Message
+
+  final case class PackageBlacklisted(namespace: Namespace, packageId: PackageId) extends Message
+
 
   //Create custom UpdateSpec here instead of using org.genivi.sota.core.data.UpdateSpec as that would require moving
   //multiple RVI messages into SotaCommon. Furthermore, for now this class contains just the info required by the
@@ -96,5 +100,12 @@ object Messages {
 
     implicit val encoder: Encoder[UpdateSpec] = deriveEncoder
     implicit val decoder: Decoder[UpdateSpec] = deriveDecoder
+  }
+
+  implicit val blacklistedPackageMessageLike = new MessageLike[PackageBlacklisted]() {
+    override def partitionKey(v: PackageBlacklisted): String = v.packageId.mkString
+
+    override implicit val encoder: Encoder[PackageBlacklisted] = deriveEncoder
+    override implicit val decoder: Decoder[PackageBlacklisted] = deriveDecoder
   }
 }

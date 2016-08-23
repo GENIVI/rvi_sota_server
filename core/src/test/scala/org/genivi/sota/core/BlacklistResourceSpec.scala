@@ -15,6 +15,7 @@ import org.genivi.sota.data.PackageId
 import org.scalatest.{FunSuite, ShouldMatchers}
 import org.scalatest.concurrent.ScalaFutures
 import org.genivi.sota.http.NamespaceDirectives._
+import org.genivi.sota.messaging.MessageBusPublisher
 
 class BlacklistResourceSpec extends FunSuite
   with ScalatestRouteTest
@@ -26,7 +27,7 @@ class BlacklistResourceSpec extends FunSuite
 
   implicit val _db = db
 
-  val serviceRoute = new BlacklistResource(defaultNamespaceExtractor).route
+  val serviceRoute = new BlacklistResource(defaultNamespaceExtractor, MessageBusPublisher.ignore).route
 
   def blacklistUrl(pkg: PackageId): Uri =
     Uri.Empty.withPath(Path("/blacklist") / pkg.name.get / pkg.version.get)

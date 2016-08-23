@@ -466,6 +466,19 @@ paths:
           description: OK
       description: Create a blacklist item
 
+  "/impact/blacklist":
+    get:
+      description: Current impact analysis for blacklisted packages
+      responses:
+        200:
+          description: An array of tuples (DeviceId -> PackageId)
+          schema:
+            type: array
+            items:
+              type: array
+              items:
+                type: string
+
 definitions:
   uuid:
     type: string

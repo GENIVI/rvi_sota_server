@@ -15,8 +15,13 @@ import slick.driver.MySQLDriver.api._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import io.circe.generic.auto._
+import org.genivi.sota.messaging.MessageBusPublisher
+import org.genivi.sota.messaging.Messages.PackageBlacklisted
+import org.genivi.sota.messaging.Messages._
+import MessageBusPublisher._
 
-class BlacklistResource(namespaceExtractor: Directive1[Namespace])
+class BlacklistResource(namespaceExtractor: Directive1[Namespace],
+                        messageBus: MessageBusPublisher)
                        (implicit db: Database, system: ActorSystem) {
 
   import akka.http.scaladsl.server.Directives._
@@ -26,7 +31,12 @@ class BlacklistResource(namespaceExtractor: Directive1[Namespace])
 
   def addPackageToBlacklist(namespace: Namespace): Route =
     entity(as[BlacklistedPackageRequest]) { req =>
-      val f = BlacklistedPackages.create(namespace, req.packageId, req.comment).map(_ => StatusCodes.Created)
+      val f =
+        BlacklistedPackages
+          .create(namespace, req.packageId, req.comment)
+          .pipeToBus(messageBus)(_ => PackageBlacklisted(namespace, req.packageId))
+          .map(_ => StatusCodes.Created)
+
       complete(f)
     }
 

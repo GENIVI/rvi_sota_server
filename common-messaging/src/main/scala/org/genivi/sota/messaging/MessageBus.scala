@@ -37,6 +37,15 @@ object MessageBusPublisher {
     override def publish[T](msg: T)(implicit ex: ExecutionContext, messageLike: MessageLike[T]): Future[Unit] =
       Future.successful(())
   }
+
+  implicit class FuturePipeToBus[T](v: Future[T]) {
+    def pipeToBus[M](messageBusPublisher: MessageBusPublisher)
+                    (fn: T => M)(implicit ec: ExecutionContext, messageLike: MessageLike[M]): Future[T] = {
+      v.andThen {
+        case Success(futureResult) => messageBusPublisher.publish(fn(futureResult))
+      }
+    }
+  }
 }
 
 object MessageBus {

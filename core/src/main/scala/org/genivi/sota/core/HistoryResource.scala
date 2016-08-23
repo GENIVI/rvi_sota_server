@@ -33,7 +33,11 @@ class HistoryResource(db: Database, namespaceExtractor: Directive1[Namespace])
   }
 
   val route =
-    (pathPrefix("history") & parameter('uuid.as[String Refined ValidId]) & namespaceExtractor) { (uuid, ns) =>
-      (get & pathEnd) { history(ns, Id(uuid)) }
+    (pathPrefix("history") & parameter('uuid.as[String Refined Device.ValidId])) { uuid =>
+      namespaceExtractor { ns =>
+        (get & pathEnd) {
+          history(ns, Device.Id(uuid))
+        }
+      }
     }
 }

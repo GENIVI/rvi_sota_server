@@ -4,7 +4,7 @@ import java.time.Instant
 import java.util.UUID
 
 import org.genivi.sota.core.Errors
-import org.genivi.sota.data.{Namespace, PackageId}
+import org.genivi.sota.data.{Device, Namespace, PackageId}
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -168,5 +168,28 @@ object BlacklistedPackages {
 
   def findFor(namespace: Namespace)(implicit db: Database): Future[Seq[BlacklistedPackage]] =
     db.run(findAction(namespace))
+
+  def impact(namespace: Namespace)
+            (implicit db: Database, ec: ExecutionContext): Future[Seq[(Device.Id, PackageId)]] = {
+    val query = active
+      .filter(_.namespace === namespace)
+      .join(UpdateRequests.all).on { case (blacklist, requests) =>
+      blacklist.namespace === requests.namespace &&
+        blacklist.pkgName === requests.packageName &&
+        blacklist.pkgVersion === requests.packageVersion
+    }.join(UpdateSpecs.updateSpecs).on { case ((blacklist, requests), specs) =>
+      requests.id === specs.requestId
+    }.map { case ((blacklist, requests), specs) =>
+      (specs.device, blacklist.pkgName, blacklist.pkgVersion)
+    }
+
+    val dbIO = query.result.map {
+      _.map { case (deviceId, pkgName, pkgVersion) =>
+        deviceId -> PackageId(pkgName, pkgVersion)
+      }
+    }
+
+    db.run(dbIO)
+  }
 }
 
