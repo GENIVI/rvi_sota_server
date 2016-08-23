@@ -9,7 +9,7 @@ define(function(require) {
       this.dispatchCallback = function(payload) {
         switch(payload.actionType) {
           case 'list-firmware-on-vin':
-            sendRequest.doGet('/api/v1/firmware/' + payload.vin)
+            sendRequest.doGet('/api/v1/resolver/firmware/' + payload.vin)
               .success(function(firmware) {
                 db.firmwareOnVin.reset(firmware);
               });

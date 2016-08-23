@@ -123,7 +123,6 @@ class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
   def getComponents(ns: Namespace, device: Device.Id): Route =
     complete(db.run(DeviceRepository.componentsOnDevice(ns, device)))
 
-
   def installComponent(ns: Namespace, device: Device.Id, part: Component.PartNumber): Route =
     complete(db.run(DeviceRepository.installComponent(ns, device, part)))
 
