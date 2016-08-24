@@ -32,12 +32,13 @@ define(function(require) {
         version: params.version
       });
     },
-    label: "Affected Vins",
+    label: "Affected Devices",
     panel: function() {
-      var vehicles = _.map(this.props.AffectedVins.deref(), function(vin) {
+      var affectedIds = _.keys(this.props.AffectedVins.deref());
+      var vehicles = _.map(affectedIds, function(vin) {
         return (
-          <li className="list-group-item" key={vin[0]}>
-            { vin[0] }
+          <li className="list-group-item" key={vin}>
+            { vin }
           </li>
         );
       });

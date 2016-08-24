@@ -15,7 +15,7 @@ import org.genivi.sota.resolver.components.Component
 /**
  * Specs for Component REST actions
  */
-class ComponentResourceWordSpec extends ResourceWordSpec with Namespaces {
+class ComponentResourceSpec extends ResourceWordSpec with Namespaces {
 
   val components = "components"
 

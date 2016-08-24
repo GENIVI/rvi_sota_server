@@ -50,7 +50,7 @@ define(function(require) {
               });
           break;
           case 'get-packages-for-vin':
-            sendRequest.doGet('/api/v1/vehicles/' + payload.vin + '/package')
+            sendRequest.doGet('/api/v1/resolver/devices/' + payload.vin + '/package')
               .success(function(packages) {
                 var list = _.map(packages, function(package) {
                   return {id: package}
@@ -59,7 +59,7 @@ define(function(require) {
               });
           break;
           case 'get-vehicles-queued-for-package':
-            sendRequest.doGet('/api/v1/packages/' + payload.name + "/" + payload.version + "/queued_vins")
+            sendRequest.doGet('/api/v1/packages/' + payload.name + "/" + payload.version + "/queued_devices")
               .success(function(vehicles) {
                 var list = _.map(vehicles, function(vin) {
                   return {vin: vin};

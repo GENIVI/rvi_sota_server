@@ -12,7 +12,7 @@ define(function(require) {
         });
     },
     getFiltersForPackage: function(payload) {
-      sendRequest.doGet('/api/v1/packages/' + payload.name + '/' + payload.version + '/filter')
+      sendRequest.doGet('/api/v1/resolver/packages/' + payload.name + '/' + payload.version + '/filter')
         .success(function(filters) {
           db.filtersForPackage.reset(filters);
         });

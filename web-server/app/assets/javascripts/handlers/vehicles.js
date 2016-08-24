@@ -8,16 +8,13 @@ define(function(require) {
   var createVehicle = function(payload) {
     var url = '/api/v1/devices';
     const device = {
-      deviceName: payload.vehicle.vin,
-      deviceId: payload.vehicle.vin,
+      deviceName: payload.vehicle.deviceName,
+      deviceId: payload.vehicle.deviceName,
       deviceType: 'Vehicle'
     }
     sendRequest.doPost(url, device)
       .success(function(vehicles) {
-        sendRequest.doPut('/api/v1/vehicles/' + device.deviceId)
-          .success(function(vehicles) {
-          SotaDispatcher.dispatch({actionType: 'search-vehicles-by-regex'});
-          });
+        SotaDispatcher.dispatch({actionType: 'search-vehicles-by-regex'});
       });
   }
 
@@ -31,9 +28,7 @@ define(function(require) {
               });
           break;
           case 'create-vehicle':
-            checkExists('/api/v1/devices?namespace=default&deviceId=' + payload.vehicle.vin, "Vehicle", function() {
-              createVehicle(payload);
-            });
+            createVehicle(payload);
           break;
           case 'search-vehicles-by-regex':
             var query = payload.regex ? '&regex=' + payload.regex : '';
@@ -44,7 +39,7 @@ define(function(require) {
               });
           break;
           case 'fetch-affected-vins':
-            var affectedVinsUrl = '/api/v1/resolve?namespace=default' +
+            var affectedVinsUrl = '/api/v1/resolver/resolve?namespace=default' +
             '&package_name=' + payload.name + '&package_version=' + payload.version;
 
             sendRequest.doGet(affectedVinsUrl)
@@ -53,7 +48,7 @@ define(function(require) {
               });
           break;
           case 'get-vehicles-for-package':
-            sendRequest.doGet('/api/v1/vehicles?packageName=' + payload.name + '&packageVersion=' + payload.version)
+            sendRequest.doGet('/api/v1/resolver/devices?packageName=' + payload.name + '&packageVersion=' + payload.version)
               .success(function(vehicles) {
                 var list = _.map(vehicles, function(vehicle) {
                   return {vin: vehicle.vin};
@@ -77,13 +72,13 @@ define(function(require) {
               });
           break;
           case 'list-components-on-vin':
-            sendRequest.doGet('/api/v1/vehicles/' + payload.vin + '/components')
+            sendRequest.doGet('/api/v1/resolver/devices/' + payload.vin + '/component')
               .success(function(components) {
                 db.componentsOnVin.reset(components);
               });
           break;
           case 'add-component-to-vin':
-            sendRequest.doPut('/api/v1/vehicles/' + payload.vin + '/components/' + payload.partNumber)
+            sendRequest.doPut('/api/v1/devices/' + payload.vin + '/components/' + payload.partNumber)
               .success(function() {
                 SotaDispatcher.dispatch({actionType: 'list-components-on-vin', vin: payload.vin});
               });

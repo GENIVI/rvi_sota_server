@@ -24,7 +24,7 @@ define(function(require) {
         <form ref='form' onSubmit={this.handleSubmit}>
           <div className="form-group">
             <label htmlFor="name">Vehicle Name</label>
-            <input type="text" className="form-control" name="vin" ref="vin" placeholder="VIN"/>
+            <input type="text" className="form-control" name="deviceName" ref="deviceName" placeholder="Vehicle Name"/>
           </div>
           <div className="form-group">
             <button type="submit" className="btn btn-primary">Add Vehicle</button>

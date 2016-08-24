@@ -217,19 +217,19 @@ class VehiclesResourceWordSpec extends ResourceWordSpec with Namespaces {
    * Tests related to installing components on VINs.
    */
 
-  "install component on VIN on PUT /vehicles/:vin/component/:partNumber" in {
+  "install component on Device Id on PUT /devices/:vin/component/:partNumber" in {
     addComponentOK(Refined.unsafeApply("jobby0"), "nice")
     installComponentOK(deviceId, Refined.unsafeApply("jobby0"))
   }
 
-  "list components on a VIN on GET /vehicles/:vin/component" in {
+  "list components on a Device Id on GET /devices/:vin/component" in {
     Get(Resource.uri(devices, deviceId.show, "component")) ~> route ~> check {
       status shouldBe StatusCodes.OK
       responseAs[Seq[Component.PartNumber]] shouldBe List(Refined.unsafeApply("jobby0"))
     }
   }
 
-  "fail to delete components that are installed on vehicles" in {
+  "fail to delete components that are installed on devices" in {
     Delete(Resource.uri("components", "jobby0")) ~> route ~> check {
       status shouldBe StatusCodes.BadRequest
       responseAs[ErrorRepresentation].code shouldBe Codes.ComponentInstalled
