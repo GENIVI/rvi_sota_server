@@ -103,7 +103,7 @@ class PackagesResourceWordSpec extends ResourceWordSpec with Namespaces {
       }
       Get(Resource.uri("packages", "bepa", "1.0.0")) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.MissingEntity
       }
     }
   }

@@ -51,7 +51,7 @@ object DeviceRepository {
       ifw <- installedFirmware.filter(i => i.namespace === namespace && i.module === module).result.headOption
     } yield ifw
     res.flatMap(_.fold[DBIO[Firmware.Module]]
-      (DBIO.failed(Errors.MissingFirmwareException))(x => DBIO.successful(x._1.module)))
+      (DBIO.failed(Errors.MissingFirmware))(x => DBIO.successful(x._1.module)))
   }
 
   def installFirmware

@@ -141,7 +141,7 @@ trait CommandUtils extends
       } yield {
         val req = deleteFilter(filt)
         if (success) { Semantics(req, StatusCodes.OK, Success) }
-        else         { Semantics(req, StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry)) }
+        else         { Semantics(req, StatusCodes.Conflict, Failure(ErrorCodes.ConflictingEntity)) }
       }
 
     case AddFilterToPackage(pkg, filt) =>
@@ -152,7 +152,7 @@ trait CommandUtils extends
       } yield {
         val req = addPackageFilter2(PackageFilter(pkg.namespace, pkg.id.name, pkg.id.version, filt.name))
         if (success) { Semantics(req, StatusCodes.OK, Success) }
-        else         { Semantics(req, StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry)) }
+        else         { Semantics(req, StatusCodes.Conflict, Failure(ErrorCodes.ConflictingEntity)) }
       }
 
     case RemoveFilterForPackage(pkg, filt) =>
@@ -170,7 +170,7 @@ trait CommandUtils extends
         isDuplicatePK = s.components.exists(_.partNumber == cmpn.partNumber)
       } yield {
         val req = addComponent(cmpn.partNumber, cmpn.description)
-        if (isDuplicatePK) { Semantics(req, StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry)) }
+        if (isDuplicatePK) { Semantics(req, StatusCodes.Conflict, Failure(ErrorCodes.ConflictingEntity)) }
         else               { Semantics(req, StatusCodes.OK, Success) }
       }
 
@@ -188,7 +188,7 @@ trait CommandUtils extends
       } yield {
         val req = deleteComponent(cmpn.partNumber)
         if (success) { Semantics(req, StatusCodes.OK, Success) }
-        else         { Semantics(req, StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry)) }
+        else         { Semantics(req, StatusCodes.Conflict, Failure(ErrorCodes.ConflictingEntity)) }
       }
 
     case InstallComponent(veh, cmpn) =>
@@ -198,7 +198,7 @@ trait CommandUtils extends
         isDuplicatePK = s.devices(veh)._2.contains(cmpn)
       } yield {
         val req = installComponent(veh, cmpn)
-        if (isDuplicatePK) { Semantics(req, StatusCodes.Conflict, Failure(ErrorCodes.DuplicateEntry)) }
+        if (isDuplicatePK) { Semantics(req, StatusCodes.Conflict, Failure(ErrorCodes.ConflictingEntity)) }
         else               { Semantics(req, StatusCodes.OK, Success) }
       }
 

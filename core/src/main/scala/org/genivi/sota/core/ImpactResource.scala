@@ -13,6 +13,7 @@ import slick.driver.MySQLDriver.api._
 import org.genivi.sota.marshalling.CirceInstances._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.generic.auto._
+import org.genivi.sota.http.ErrorHandler
 
 class ImpactResource(namespaceExtractor: Directive1[Namespace])
                     (implicit db: Database, system: ActorSystem) {

@@ -10,6 +10,7 @@ import akka.http.scaladsl.unmarshalling._
 import io.circe.generic.auto._
 import java.io.File
 
+import org.genivi.sota.core.SotaCoreErrors.SotaCoreErrorCodes
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
 import org.genivi.sota.data.{Device, Namespace, PackageId}
@@ -92,7 +93,7 @@ class PackageUploadSpec extends PropSpec
       forAll { (pckg: Package) =>
         mkRequest( pckg ) ~> resource.route ~> check {
           status shouldBe StatusCodes.ServiceUnavailable
-          responseAs[ErrorRepresentation].code shouldBe ErrorCodes.ExternalResolverError
+          responseAs[ErrorRepresentation].code shouldBe SotaCoreErrorCodes.ExternalResolverError
         }
       }
     }

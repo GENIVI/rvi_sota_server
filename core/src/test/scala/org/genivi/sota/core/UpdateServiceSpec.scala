@@ -66,7 +66,7 @@ class UpdateServiceSpec extends PropSpec
   property("decline if package not found") {
     forAll(updateRequestGen(defaultNs, PackageIdGen)) { (request: UpdateRequest) =>
       whenReady( service.queueUpdate( request, _ => FastFuture.successful( Map.empty ) ).failed ) { e =>
-        e shouldBe Errors.MissingPackage
+        e shouldBe SotaCoreErrors.MissingPackage
       }
     }
   }
@@ -140,7 +140,7 @@ class UpdateServiceSpec extends PropSpec
 
     val e = f.failed.futureValue
 
-    e shouldBe Errors.BlacklistedPackage
+    e shouldBe SotaCoreErrors.BlacklistedPackage
   }
 
   property("queuing a device update for a blacklisted package fails") {
@@ -153,7 +153,7 @@ class UpdateServiceSpec extends PropSpec
       _ <- service.queueDeviceUpdate(device.namespace, device.id, packageM.id)
     } yield packageM
 
-    packageF.failed.futureValue shouldBe Errors.BlacklistedPackage
+    packageF.failed.futureValue shouldBe SotaCoreErrors.BlacklistedPackage
   }
 
   property("fails if dependencies include blacklisted package") {
@@ -172,7 +172,7 @@ class UpdateServiceSpec extends PropSpec
 
     val throwableF = f.failed.futureValue
 
-    throwableF shouldBe Errors.BlacklistedPackage
+    throwableF shouldBe SotaCoreErrors.BlacklistedPackage
   }
 
   override def afterAll() : Unit = {

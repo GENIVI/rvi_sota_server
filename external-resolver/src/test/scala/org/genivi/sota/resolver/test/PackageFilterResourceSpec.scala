@@ -12,7 +12,7 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.resolver.packages.{Package, PackageFilter}
-import org.genivi.sota.rest.{ErrorRepresentation, ErrorCode}
+import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 
 /**
  * Spec for Package Filter REST actions
@@ -41,21 +41,21 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec with Namespaces {
     "not allow assignment of filters to non-existing package names" in {
       addPackageFilter("nonexistant", pkgVersion, filterName) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.MissingEntity
       }
     }
 
     "not allow assignment of filters to non-existing package versions" in {
       addPackageFilter(pkgName, "0.0.9", filterName) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.MissingEntity
       }
     }
 
     "not allow assignment of non-existing filters to existing packages " in {
       addPackageFilter(pkgName, pkgVersion, "nonexistant") ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        responseAs[ErrorRepresentation].code shouldBe Codes.FilterNotFound
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.MissingEntity
       }
     }
 
@@ -131,7 +131,7 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec with Namespaces {
     "fail if package filter does not exist" in {
       deletePackageFilter("nonexistant", pkgVersion, filterName) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        responseAs[ErrorRepresentation].code shouldBe Codes.FilterNotFound
+        responseAs[ErrorRepresentation].code shouldBe Codes.PackageFilterNotFound
       }
     }
 

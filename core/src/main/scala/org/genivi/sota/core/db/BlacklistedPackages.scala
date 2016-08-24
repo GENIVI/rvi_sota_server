@@ -3,13 +3,14 @@ package org.genivi.sota.core.db
 import java.time.Instant
 import java.util.UUID
 
-import org.genivi.sota.core.Errors
+import org.genivi.sota.core.SotaCoreErrors
 import org.genivi.sota.data.{Device, Namespace, PackageId}
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db.Packages.PackageTable
+import org.genivi.sota.http.Errors.MissingEntity
 
 case class BlacklistedPackage(id: UUID, namespace: Namespace,
                               packageId: PackageId, comment: String, updatedAt: Instant)
@@ -64,7 +65,7 @@ object BlacklistedPackages {
 
   // scalastyle:on
 
-  private val MissingPackageError = Errors.MissingEntity(classOf[BlacklistedPackage])
+  private val MissingPackageError = MissingEntity(classOf[BlacklistedPackage])
 
   private val all = TableQuery[BlacklistedPackagesTable]
 
@@ -111,7 +112,7 @@ object BlacklistedPackages {
 
     isBlacklistedIO.flatMap {
       case false => DBIO.successful(pkg)
-      case true => DBIO.failed(Errors.BlacklistedPackage)
+      case true => DBIO.failed(SotaCoreErrors.BlacklistedPackage)
     }
   }
 
@@ -122,7 +123,7 @@ object BlacklistedPackages {
       if(notBlacklisted == allPkgs)
         DBIO.successful(allPkgs)
       else
-        DBIO.failed(Errors.BlacklistedPackage)
+        DBIO.failed(SotaCoreErrors.BlacklistedPackage)
     }
   }
 

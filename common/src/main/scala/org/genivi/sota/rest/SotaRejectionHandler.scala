@@ -18,7 +18,7 @@ import org.genivi.sota.marshalling.DeserializationException
   * correct status code and JSON error message (see Errors.scala).
   */
 
-object Handlers {
+object SotaRejectionHandler {
 
   case class InvalidEntity(msg: String) extends Throwable(msg)
 
@@ -34,10 +34,4 @@ object Handlers {
     case MalformedRequestContentRejection(_, DeserializationException(RefinementError(_, msg))) =>
       complete(StatusCodes.BadRequest -> ErrorRepresentation(ErrorCodes.InvalidEntity, msg))
   }.result().withFallback(RejectionHandler.default)
-
-  def exceptionHandler: ExceptionHandler = ExceptionHandler {
-    case err: java.sql.SQLIntegrityConstraintViolationException if err.getErrorCode == 1062 =>
-      complete(StatusCodes.Conflict ->
-        ErrorRepresentation(ErrorCodes.DuplicateEntry, "Entry already exists"))
-  }
 }

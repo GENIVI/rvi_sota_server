@@ -20,6 +20,7 @@ import slick.driver.MySQLDriver.api._
 import Directives._
 import akka.http.scaladsl.unmarshalling.{FromStringUnmarshaller, Unmarshaller}
 import org.genivi.sota.common.DeviceRegistry
+import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 
 
@@ -36,20 +37,17 @@ class ResolveDirectives(namespaceExtractor: Directive1[Namespace],
   def resolvePackage(ns: Namespace, id: PackageId): Route = {
     val resultF = DbDepResolver.resolve(ns, deviceRegistry, id)
 
-    completeOrRecoverWith(resultF) { Errors.onMissingPackage }
+    complete(resultF)
   }
 
   implicit val NamespaceUnmarshaller: FromStringUnmarshaller[Namespace] = Unmarshaller.strict(Namespace.apply)
-  /**
-   * API route for resolving a package, i.e. returning the list of VINs it applies to.
-   * @return Route object containing route for package resolution
-   * @throws Errors.MissingPackageException if the package doesn't exist
-   */
-  def route: Route =
+
+  def route: Route = ErrorHandler.handleErrors {
     (get &
       encodeResponse &
       pathPrefix("resolve") &
       parameter('namespace.as[Namespace]) & refinedPackageIdParams) { (ns, id) =>
       resolvePackage(ns, id)
     }
+  }
 }

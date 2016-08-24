@@ -182,7 +182,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec with Namespaces {
     "fail to install a non-existing package on a VIN" in {
       installPackage(deviceId, "bepa", "1.0.1") ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.MissingEntity
       }
     }
 
@@ -208,7 +208,7 @@ class VehiclesResourceWordSpec extends ResourceWordSpec with Namespaces {
     "fail to uninstall a package that isn't installed on a VIN" in {
       Delete(Resource.uri(devices, deviceId.show, "package", "bepa", "1.0.1")) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.MissingEntity
       }
     }
   }

@@ -37,6 +37,7 @@ class PackagesResourceSpec extends FunSuite
   with ShouldMatchers
   with ScalaFutures
   with LongRequestTimeout
+  with DefaultPatience
   with Generators
 {
   import org.genivi.sota.http.NamespaceDirectives._

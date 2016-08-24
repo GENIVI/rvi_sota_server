@@ -74,7 +74,7 @@ object PackageRepository {
                 && p.version   === pkgId.version)
       .result
       .headOption
-      .failIfNone(Errors.MissingPackageException)
+      .failIfNone(Errors.MissingPackage)
 
   /**
    * Loads a group of Packages from the database by ID

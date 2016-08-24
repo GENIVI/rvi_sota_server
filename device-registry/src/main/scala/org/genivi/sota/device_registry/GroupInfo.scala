@@ -47,7 +47,7 @@ object GroupInfo extends SlickJsonHelper {
   def create(groupName: String, namespace: Namespace, data: GroupInfoType)(implicit ec: ExecutionContext)
       : DBIO[Int] =
     (groupInfos += GroupInfo(groupName, namespace, data))
-      .handleIntegrityErrors(Errors.GroupInfoAlreadyExists)
+      .handleIntegrityErrors(Errors.ConflictingGroupInfo)
 
   def update(groupName: String, namespace: Namespace, data: GroupInfoType)(implicit ec: ExecutionContext)
       : DBIO[Int] =

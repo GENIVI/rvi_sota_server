@@ -53,7 +53,7 @@ class DeviceUpdatesResource(db: Database,
   import WebService._
   import org.genivi.sota.marshalling.CirceMarshallingSupport._
   import Device._
-  import ErrorHandler._
+  import org.genivi.sota.http.ErrorHandler._
 
   implicit val ec = system.dispatcher
   implicit val _db = db

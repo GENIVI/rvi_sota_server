@@ -20,6 +20,7 @@ import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 import Directives._
 import org.genivi.sota.data.Namespace
+import org.genivi.sota.http.ErrorHandler
 
 /**
  * API routes for creating, deleting, and listing components.
@@ -45,26 +46,19 @@ class ComponentDirectives(namespaceExtractor: Directive1[Namespace])
 
 
   def deleteComponent(ns: Namespace, part: Component.PartNumber): Route =
-    completeOrRecoverWith(ComponentRepository.removeComponent(ns, part)) {
-      Errors.onComponentInstalled
-    }
+    complete(ComponentRepository.removeComponent(ns, part))
 
-  /**
-   * API route for components.
-   * @return      Route object containing routes for creating, editing, and listing components
-   * @throws      Errors.ComponentIsInstalledException on DELETE call, if component doesn't exist
-   */
-  def route: Route =
+  def route: Route = ErrorHandler.handleErrors {
     (pathPrefix("components") & namespaceExtractor) { ns =>
       (get & pathEnd) {
         searchComponent(ns)
       } ~
-      (put & refinedPartNumber & pathEnd) { part =>
-        addComponent(ns, part)
-      } ~
-      (delete & refinedPartNumber & pathEnd) { part =>
-        deleteComponent(ns, part)
-      }
+        (put & refinedPartNumber & pathEnd) { part =>
+          addComponent(ns, part)
+        } ~
+        (delete & refinedPartNumber & pathEnd) { part =>
+          deleteComponent(ns, part)
+        }
     }
-
+  }
 }

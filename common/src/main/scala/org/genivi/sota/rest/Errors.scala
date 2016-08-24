@@ -14,9 +14,9 @@ import io.circe.{Encoder, Decoder}
   */
 
 object ErrorCodes {
-  val InvalidEntity = new ErrorCode("invalid_entity")
-  val DuplicateEntry = new ErrorCode("duplicate_entry")
-  val FilterNotFound = new ErrorCode("filter_not_found")
+  val InvalidEntity = ErrorCode("invalid_entity")
+  val MissingEntity = ErrorCode("missing_entity")
+  val ConflictingEntity = ErrorCode("conflicting_entity")
 }
 
 case class ErrorRepresentation( code: ErrorCode, description: String )

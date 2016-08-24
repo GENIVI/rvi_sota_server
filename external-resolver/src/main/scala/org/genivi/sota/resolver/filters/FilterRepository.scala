@@ -44,14 +44,14 @@ object FilterRepository {
       .filter(i => i.namespace === namespace && i.name === name)
       .result
       .headOption
-      .failIfNone(Errors.MissingFilterException)
+      .failIfNone(Errors.MissingFilter)
 
   def update(filter: Filter)(implicit ec: ExecutionContext): DBIO[Filter] = {
     val q = for {
       f <- filters if f.name === filter.name
     } yield f.expression
     q.update(filter.expression)
-     .flatMap(i => if (i == 0) DBIO.failed(Errors.MissingFilterException) else DBIO.successful(filter))
+     .flatMap(i => if (i == 0) DBIO.failed(Errors.MissingFilter) else DBIO.successful(filter))
   }
 
   def delete(namespace: Namespace, name: Filter.Name)(implicit ec: ExecutionContext): DBIO[Int] =

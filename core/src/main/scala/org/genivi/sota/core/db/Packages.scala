@@ -5,7 +5,7 @@
 package org.genivi.sota.core.db
 
 import akka.http.scaladsl.model.Uri
-import org.genivi.sota.core.Errors
+import org.genivi.sota.core.SotaCoreErrors
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.PackageId
@@ -89,7 +89,7 @@ object Packages {
     packages
       .filter(p => p.namespace === ns && p.name === id.name && p.version === id.version)
       .result
-      .failIfNone(Errors.MissingPackage)
+      .failIfNone(SotaCoreErrors.MissingPackage)
 
   /**
     * Fetch from DB the [[Package]]s corresponding to the given [[PackageId]]s.
@@ -121,6 +121,6 @@ object Packages {
       .filter(_.name === packageId.name)
       .filter(_.version === packageId.version)
       .result
-      .failIfNone(Errors.MissingPackage)
+      .failIfNone(SotaCoreErrors.MissingPackage)
   }
 }
