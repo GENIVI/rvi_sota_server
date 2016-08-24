@@ -223,8 +223,9 @@ class DeviceUpdatesResource(db: Database,
   }
 
   val route = handleErrors {
-    // TODO vehicle_updates -> device_updates
-    (pathPrefix("api" / "v1" / "vehicle_updates") & extractDeviceUuid) { device =>
+    // vehicle_updates is deprecated and will be removed sometime in the future
+    (pathPrefix("api" / "v1") & ( pathPrefix("vehicle_updates") | pathPrefix("device_updates"))
+                              & extractDeviceUuid) { device =>
       get {
         pathEnd { logDeviceSeen(device) { pendingPackages(device) } } ~
         path("queued") { pendingPackages(device) } ~

@@ -47,6 +47,7 @@ class Application @Inject() (ws: WSClient,
     case "resolver" :: "packages" :: _ :: _ :: "filter" :: _ => resolverApiUri
     case "packages" :: _ => coreApiUri
     case "update_requests" :: _ => coreApiUri
+    case "device_updates" :: _ => coreApiUri
     case "vehicle_updates" :: _ => coreApiUri
     case "history" :: _ => coreApiUri
     case "devices" :: _ => deviceRegistryApiUri
