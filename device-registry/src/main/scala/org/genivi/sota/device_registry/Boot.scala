@@ -11,6 +11,7 @@ import akka.stream.ActorMaterializer
 import cats.data.Xor
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.db.BootMigrations
+import org.genivi.sota.http
 import org.genivi.sota.http._
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
 import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted}
@@ -63,7 +64,9 @@ object Boot extends App with Directives with BootMigrations {
     }
 
   val routes: Route =
-    (logResponseMetrics("device-registry") & versionHeaders(version)) {
+    (TraceId.withTraceId &
+      logResponseMetrics("device-registry", TraceId.traceMetrics) &
+      versionHeaders(version)) {
       handleRejections(rejectionHandler) {
         pathPrefix("api" / "v1") {
           new Routes(authNamespace, messageBus).route
