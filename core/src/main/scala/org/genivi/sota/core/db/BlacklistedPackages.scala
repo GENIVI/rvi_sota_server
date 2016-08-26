@@ -118,21 +118,21 @@ object BlacklistedPackages {
 
   def ensureNotBlacklistedIds(namespace: Namespace)
                              (allPkgs: Seq[PackageId])
-                             (implicit ec: ExecutionContext): DBIO[Seq[PackageId]] = {
+                             (implicit ec: ExecutionContext): DBIO[Seq[PackageId]] =
     filterBlacklisted[PackageId]((namespace, _))(allPkgs).flatMap { notBlacklisted =>
-      if(notBlacklisted == allPkgs)
+      if(notBlacklisted == allPkgs) {
         DBIO.successful(allPkgs)
-      else
+      } else {
         DBIO.failed(SotaCoreErrors.BlacklistedPackage)
+      }
     }
-  }
 
   def filterBlacklisted[T](pkgIdFn: T => (Namespace, PackageId))
                           (items: Seq[T])
-                          (implicit ec: ExecutionContext): DBIO[Seq[T]] = {
-    if(items.isEmpty)
+                          (implicit ec: ExecutionContext): DBIO[Seq[T]] =
+    if (items.isEmpty) {
       DBIO.successful(items)
-    else {
+    } else {
       val namespaceBlacklist = findAction(pkgIdFn(items.head)._1)
 
       namespaceBlacklist.map { blacklist =>
@@ -140,29 +140,29 @@ object BlacklistedPackages {
         items.filterNot(item => blacklistedIds.contains(pkgIdFn(item)._2))
       }
     }
-  }
 
-  def isBlacklisted(namespace: Namespace, pkgId: PackageId): DBIO[Boolean] = {
+  def isBlacklisted(namespace: Namespace, pkgId: PackageId): DBIO[Boolean] =
     findActiveQuery(namespace, pkgId).exists.result
-  }
 
-  private def markAsActive(ns: Namespace, packageId: PackageId)
+  private def markAsActive(namespace: Namespace, packageId: PackageId)
                           (implicit ec: ExecutionContext): DBIO[Unit] =
     all
-      .filter(_.namespace === ns)
+      .filter(_.namespace === namespace)
       .filter(_.pkgName === packageId.name)
       .filter(_.pkgVersion === packageId.version)
       .map(_.active)
       .update(true)
       .map(_ => ())
 
-  private def findActiveQuery(ns: Namespace,
-                        packageId: PackageId): Query[BlacklistedPackagesTable, BlacklistedPackage, Seq] = {
+  private def findActiveQuery(namespace: Namespace,
+                        packageId: PackageId): Query[BlacklistedPackagesTable, BlacklistedPackage, Seq] =
     active
-      .filter(_.namespace === ns)
+      .filter(_.namespace === namespace)
       .filter(_.pkgName === packageId.name)
       .filter(_.pkgVersion === packageId.version)
-  }
+
+  def findActivePkg(namespace: Namespace, packageId: PackageId)(implicit db: Database): Future[BlacklistedPackage] =
+    db.run(findActiveQuery(namespace, packageId).result.head)
 
   def findAction(namespace: Namespace): DBIO[Seq[BlacklistedPackage]] =
     active.filter(_.namespace === namespace).result

@@ -414,25 +414,41 @@ paths:
           schema:
             type: array
             items:
-             $ref: '#/definitions/BlacklistItem'
-
-  "/blacklist/{package_name}/{package_version}":
+             $ref: '#/definitions/BlacklistedPackage'
     put:
+      consumes:
+        - application/json
       parameters:
-        - name: package_name
-          in: path
-          description: package name
+        - name: BlacklistedPackageRequest
+          in: body
+          description: An object describing the package to blacklist
           required: true
-          type: string
-        - name: package_version
-          in: path
-          description: package version
-          required: true
-          type: string
+          schema:
+            type: object
+            items:
+              $ref: '#definitions/BlacklistedPackageRequest'
       description: Update a blacklist item
+      responses:
+        200:
+          description: OK
+    post:
+      consumes:
+        - application/json
+      parameters:
+        - name: BlacklistedPackageRequest
+          in: body
+          description: An object describing the package to blacklist
+          required: true
+          schema:
+            type: object
+            items:
+              $ref: '#definitions/BlacklistedPackageRequest'
       responses:
         201:
           description: Created
+      description: Create a blacklist item
+
+  "/blacklist/{package_name}/{package_version}":
     get:
       parameters:
         - name: package_name
@@ -449,7 +465,7 @@ paths:
       responses:
         200:
           description: OK
-    post:
+    delete:
       parameters:
         - name: package_name
           in: path
@@ -461,10 +477,10 @@ paths:
           description: package version
           required: true
           type: string
+      description: Delete a blacklist item
       responses:
-        201:
+        200:
           description: OK
-      description: Create a blacklist item
 
   "/impact/blacklist":
     get:
@@ -624,6 +640,22 @@ definitions:
         format: dateTime
         description: The time the update queue for the device was blocked.
   BlacklistItem:
+    type: object
+    properties:
+      id:
+        $ref: '#/definitions/uuid'
+      namespace:
+        $ref: '#/definitions/namespace'
+      packageId:
+        $ref: '#/definitions/packageId'
+      comment:
+        type: string
+        description: A free text comment about the item
+      updatedAt:
+        type: string
+        format: dateTime
+        description: The last time this blacklist entry was changed.
+  BlacklistedPackageRequest:
     type: object
     properties:
       packageId:

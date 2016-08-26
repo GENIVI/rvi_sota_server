@@ -45,22 +45,23 @@ class BlacklistResource(namespaceExtractor: Directive1[Namespace],
       complete(BlacklistedPackages.update(namespace, req.packageId, req.comment).map(_ => StatusCodes.OK))
     }
 
+  def getNamespaceBlacklist(namespace: Namespace): Route =
+    complete(BlacklistedPackages.findFor(namespace))
+
+  def getPackageBlacklist(namespace: Namespace, packageId: PackageId): Route =
+    complete(BlacklistedPackages.findFor(namespace))
+
   def deletePackageBlacklist(namespace: Namespace, packageId: PackageId): Route =
     complete(BlacklistedPackages.remove(namespace, packageId).map(_ => StatusCodes.OK))
 
-  def getNamespaceBlacklist(namespace: Namespace): Route = {
-    complete(BlacklistedPackages.findFor(namespace))
-  }
-
   val route: Route =
     (handleErrors & pathPrefix("blacklist") & namespaceExtractor) { ns =>
+      post { addPackageToBlacklist(ns) } ~
+      put { updatePackageBlacklist(ns) } ~
+      get { getNamespaceBlacklist(ns) } ~
       extractPackageId { pkgId =>
-        post { addPackageToBlacklist(ns) } ~
-        put { updatePackageBlacklist(ns) } ~
+        get { getPackageBlacklist(ns, pkgId) } ~
         delete { deletePackageBlacklist(ns, pkgId) }
-      } ~
-        get {
-          getNamespaceBlacklist(ns)
-        }
+      }
     }
 }

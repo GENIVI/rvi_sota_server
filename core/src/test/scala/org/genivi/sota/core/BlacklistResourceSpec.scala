@@ -29,6 +29,8 @@ class BlacklistResourceSpec extends FunSuite
 
   val serviceRoute = new BlacklistResource(defaultNamespaceExtractor, MessageBusPublisher.ignore).route
 
+  private val blacklistPath = "/blacklist"
+
   def blacklistUrl(pkg: PackageId): Uri =
     Uri.Empty.withPath(Path("/blacklist") / pkg.name.get / pkg.version.get)
 
@@ -36,11 +38,9 @@ class BlacklistResourceSpec extends FunSuite
     val pkg = PackageGen.sample.get
     db.run(Packages.create(pkg)).futureValue
 
-    val url = blacklistUrl(pkg.id)
-
     val blacklistReq = BlacklistedPackageRequest(pkg.id, Some("Some comment"))
 
-    Post(url, blacklistReq) ~> serviceRoute ~> check {
+    Post(blacklistPath, blacklistReq) ~> serviceRoute ~> check {
       status shouldBe StatusCodes.Created
     }
 
@@ -54,11 +54,9 @@ class BlacklistResourceSpec extends FunSuite
   test("cannot create blacklist for non existent package") {
     val pkg = PackageGen.sample.get
 
-    val url = blacklistUrl(pkg.id)
-
     val blacklistReq = BlacklistedPackageRequest(pkg.id, Some("Some comment"))
 
-    Post(url, blacklistReq) ~> serviceRoute ~> check {
+    Post(blacklistPath, blacklistReq) ~> serviceRoute ~> check {
       status shouldBe StatusCodes.NotFound
     }
   }
@@ -79,9 +77,8 @@ class BlacklistResourceSpec extends FunSuite
   test("packages blacklist can be updated") {
     val pkg = createBlacklist()
     val blacklistReq = BlacklistedPackageRequest(pkg, Some("Hi"))
-    val url = blacklistUrl(pkg)
 
-    Put(url, blacklistReq) ~> serviceRoute ~> check {
+    Put(blacklistPath, blacklistReq) ~> serviceRoute ~> check {
       status shouldBe StatusCodes.OK
 
       Get("/blacklist") ~> serviceRoute ~> check {
@@ -96,11 +93,9 @@ class BlacklistResourceSpec extends FunSuite
     val pkg = PackageGen.sample.get
     db.run(Packages.create(pkg)).futureValue
 
-    val url = blacklistUrl(pkg.id)
-
     val blacklistReq = BlacklistedPackageRequest(pkg.id, Some("Some comment"))
 
-    Put(url, blacklistReq.copy(comment = Some("Hi"))) ~> serviceRoute ~> check {
+    Put(blacklistPath, blacklistReq.copy(comment = Some("Hi"))) ~> serviceRoute ~> check {
       status shouldBe StatusCodes.NotFound
     }
   }
@@ -129,7 +124,7 @@ class BlacklistResourceSpec extends FunSuite
 
     val blacklistReq = BlacklistedPackageRequest(pkg, Some("Some comment"))
 
-    Post(url, blacklistReq) ~> serviceRoute ~> check {
+    Post(blacklistPath, blacklistReq) ~> serviceRoute ~> check {
       status shouldBe StatusCodes.Created
     }
 
