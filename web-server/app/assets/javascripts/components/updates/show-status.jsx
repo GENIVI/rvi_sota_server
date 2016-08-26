@@ -20,11 +20,11 @@ define(function(require) {
     failedVINsTable: function() {
       var failedVINRows = _.map(this.props.UpdateStatus.deref(), function(value) {
         if(Array.isArray(value)) {
-          if(value[2] === "Failed") {
+          if(value[3] === "Failed") {
             return (
-              <tr key={value[1]}>
+              <tr key={value[2]}>
                 <td>
-                  {value[1]}
+                  {value[2]}
                 </td>
               </tr>
             )
@@ -56,11 +56,11 @@ define(function(require) {
     completedVINsTable: function() {
       var completedVINRows = _.map(this.props.UpdateStatus.deref(), function(value) {
         if(Array.isArray(value)) {
-          if(value[2] === "Finished") {
+          if(value[3] === "Finished") {
             return (
-              <tr key={value[1]}>
+              <tr key={value[2]}>
                 <td>
-                  {value[1]}
+                  {value[2]}
                 </td>
               </tr>
             )
@@ -107,20 +107,21 @@ define(function(require) {
 
       var rows = _.map(this.props.UpdateStatus.deref(), function(value) {
         if(Array.isArray(value)) {
-          if(value[2] === "Pending") {
+          var updateStatus = value[3];
+          if(updateStatus === "Pending") {
             pendingVINs++;
-          } else if (value[2] === "Finished") {
+          } else if (updateStatus === "Finished") {
             completedVINs++;
-          } else if(value[2] === "Failed") {
+          } else if(updateStatus === "Failed") {
             failedVINs++;
           }
           return (
-            <tr key={value[1]}>
-              <td>
-                {value[1]}
-              </td>
+            <tr key={value[2]}>
               <td>
                 {value[2]}
+              </td>
+              <td>
+                {value[3]}
               </td>
             </tr>
           );
