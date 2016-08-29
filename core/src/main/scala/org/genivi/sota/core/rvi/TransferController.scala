@@ -417,7 +417,7 @@ class PackageTransferActor(updateId: UUID,
   def transferring(channel: FileChannel, lastSentChunk: Int, attempt: Int) : Receive = {
     case ChunksReceived(_, _, indexes) =>
       log.debug(s"${pckg.id.show}. Chunk received by client: $indexes" )
-      val nextIndex = indexes.sorted.sliding(2, 1).find {
+      val mayBeNext = indexes.sorted.sliding(2, 1).find {
         case first :: second :: Nil => second - first > 1
         case first :: Nil => true
         case _ => false
@@ -425,8 +425,8 @@ class PackageTransferActor(updateId: UUID,
         case first :: _ :: Nil => first + 1
         case 1 :: Nil => 2
         case Nil => 1
-        case _ => indexes.max + 1
-      }.get
+      }
+      val nextIndex = mayBeNext.getOrElse(indexes.max + 1)
       log.debug(s"Next chunk index: $nextIndex")
       if( nextIndex > lastIndex ) finish()
       else {
