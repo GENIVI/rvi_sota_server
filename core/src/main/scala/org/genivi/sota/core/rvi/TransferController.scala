@@ -270,9 +270,9 @@ object StartDownloadMessage {
 /**
   * The [[ConnectivityClient]] notifies which chunks it received for THE package being transferred.
   *
-  * @param updReqID of the [[UpdateRequest]]
+  * @param update_id of the [[UpdateRequest]]
   */
-case class ChunksReceived(device: Device.Id, updReqID: UUID, chunks: List[Int])
+case class ChunksReceived(device: Device.Id, update_id: UUID, chunks: List[Int])
 
 /**
   * Sent by [[PackageTransferActor]] to the [[ConnectivityClient]] (step 2 of 3) to transfer a chunk.
@@ -386,7 +386,7 @@ class PackageTransferActor(updateId: UUID,
    */
   def downloadingRemotePackage(): Receive = {
     if(isLocalFile(pckg.uri)) {
-      self ! pckg.uri
+      self ! (new URI(pckg.uri.toString()))
     } else {
       s3PackageStore
         .retrieveFile(packageUri = pckg.uri)
