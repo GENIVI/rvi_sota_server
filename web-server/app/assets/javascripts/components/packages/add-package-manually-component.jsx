@@ -18,7 +18,8 @@ define(function(require) {
       var pkgName = React.findDOMNode(this.refs.name).value.trim();
       var pkgVersion = React.findDOMNode(this.refs.version).value.trim();
 
-      sendRequest.doPut('/api/v1/vehicles/' + this.props.Vin + "/package/" + pkgName + "/" + pkgVersion)
+      //Do the request here so we can refresh the vehicles list on success
+      sendRequest.doPut('/api/v1/resolver/devices/' + this.props.Vin + "/package/" + pkgName + "/" + pkgVersion)
         .success(_.bind(function() {
           SotaDispatcher.dispatch({actionType: 'get-packages-for-vin', vin: this.props.Vin});
         }, this));
