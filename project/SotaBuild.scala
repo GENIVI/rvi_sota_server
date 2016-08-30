@@ -218,7 +218,7 @@ object Dependencies {
 
   val AWSVersion = "1.11.15"
 
-  val JsonWebSecurityVersion = "0.2.1"
+  val JsonWebSecurityVersion = "0.3.1"
 
   val AkkaHttp = "com.typesafe.akka" %% "akka-http-experimental" % AkkaVersion
 

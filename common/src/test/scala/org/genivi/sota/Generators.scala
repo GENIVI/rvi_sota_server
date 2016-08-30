@@ -16,7 +16,7 @@ import org.scalacheck.{Arbitrary, Gen}
 
 object Generators {
 
-  val HmacKeySize = 16
+  val HmacKeySize = 32
 
   val SecretKeyGen: Gen[SecretKey] = Gen.containerOfN[Array, Byte](HmacKeySize, arbitrary[Byte] )
       .map( bytes => new SecretKeySpec(bytes, "HmacSHA256") )
