@@ -6,12 +6,12 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import com.advancedtelematic.jwa.`HMAC SHA-256`
-import com.advancedtelematic.jws.{Jws, KeyInfo}
+import com.advancedtelematic.jws.{CompactSerialization, Jws, JwsPayload}
 import org.genivi.sota.data.Namespace._
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{Matchers, PropSpec}
 import com.advancedtelematic.json.signature.JcaSupport._
+import com.advancedtelematic.jwa.HS256
 import org.genivi.sota.data.Namespace
 
 
@@ -30,8 +30,8 @@ class ExtractNamespaceSpec extends PropSpec
 
   property("namespace is deriveable from user context") {
     forAll(TokenGen, SecretKeyGen) { (token, key) =>
-      val keyInfo = KeyInfo[SecretKey](key, None, None, None)
-      val jwsSerialized = Jws.signCompact(token, `HMAC SHA-256`, keyInfo)
+      val keyInfo = HS256.signingKey(key).toOption.get
+      val jwsSerialized = CompactSerialization( HS256.withKey( JwsPayload(token), keyInfo) ).value
       Get("/test").withHeaders(Authorization(OAuth2BearerToken(jwsSerialized.toString))) ~>
         route ~> check { responseAs[String] shouldEqual token.subject.underlying }
     }
