@@ -74,7 +74,7 @@ object Packages {
 
   def searchByRegexWithBlacklist(ns: Namespace, reg: Option[String]): DBIO[Seq[(Package, Boolean)]] =
     packages
-      .filter(p => p.namespace === ns)
+      .filter(_.namespace === ns)
       .regexFilter(reg)(_.name, _.version)
       .joinLeft(BlacklistedPackages.active).on { case (p, b) =>
       p.name === b.pkgName && p.version === b.pkgVersion &&
