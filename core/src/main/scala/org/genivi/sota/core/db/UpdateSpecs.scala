@@ -158,7 +158,7 @@ object UpdateSpecs {
     val q = for {
       r  <- updateRequests if (r.id === updateId)
       ns  = r.namespace
-      us <- updateSpecs if(us.device === device && us.requestId == r.id && us.namespace == r.namespace)
+      us <- updateSpecs if(us.device === device && us.requestId === r.id && us.namespace === r.namespace)
       rp <- requiredPackages if (rp.device === device &&
                                  rp.namespace === ns &&
                                  rp.requestId === updateId)
