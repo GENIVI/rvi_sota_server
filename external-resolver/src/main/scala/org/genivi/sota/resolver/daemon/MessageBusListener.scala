@@ -23,7 +23,8 @@ import akka.pattern.pipe
 import cats.data.Xor
 import com.typesafe.config.ConfigException
 import org.genivi.sota.data.PackageId
-import org.genivi.sota.resolver.daemon.MessageBusListenerActor.Subscribe
+import org.genivi.sota.messaging.daemon.MessageBusListenerActor
+import org.genivi.sota.messaging.daemon.MessageBusListenerActor.Subscribe
 
 import scala.concurrent.duration._
 import org.genivi.sota.messaging.Messages.PackageCreated._
@@ -60,58 +61,9 @@ class PackageCreatedListener(db: Database) extends ActorSubscriber with ActorLog
   }
 }
 
-object MessageBusListenerActor {
-  case object Subscribe
-
-  def props(db: Database): Props = Props(classOf[MessageBusListenerActor], db)
-}
-
-class MessageBusListenerActor(db: Database) extends Actor with ActorLogging {
-
-  implicit val materializer = ActorMaterializer()
-  implicit val ec = context.dispatcher
-
-  override def postRestart(reason: Throwable): Unit = trySubscribeDelayed()
-
-  private def subscribed(listener: ActorRef): Receive = {
-    context watch listener
-
-    {
-      case Terminated(_) =>
-        log.error("Source/Listener died, subscribing again")
-        trySubscribeDelayed()
-        context become idle
-    }
-  }
-
-
-  private def subscribe(): Unit = {
-    log.info(s"Subscribing to ${classOf[PackageCreated].streamName}")
-    subscribeFn() match {
-      case Xor.Right(source) =>
-        val ref = source.runWith(Sink.actorSubscriber(Props(classOf[PackageCreatedListener], db)))
-        context become subscribed(ref)
-      case Xor.Left(err) =>
-        throw err
-    }
-  }
-
-  private def idle: Receive = {
-    case Subscribe =>
-      Try(subscribe()).failed.foreach { ex =>
-        log.error(ex, "Could not subscribe, trying again")
-        trySubscribeDelayed()
-      }
-  }
-
-  override def receive: Receive = idle
-
-  private def trySubscribeDelayed(delay: FiniteDuration = 5.seconds): Unit = {
-    context.system.scheduler.scheduleOnce(delay, self, Subscribe)
-  }
-
-  protected def subscribeFn(): ConfigException Xor Source[PackageCreated, NotUsed] =
-    MessageBus.subscribe[PackageCreated](context.system, context.system.settings.config)
+object ResolverMessageBusListenerActor {
+  def props(db : Database): Props =
+    MessageBusListenerActor.props[PackageCreated](Props(classOf[PackageCreatedListener], db))
 }
 
 
@@ -121,6 +73,6 @@ object MessageBusListener extends App {
   implicit val log = LoggerFactory.getLogger(this.getClass)
   implicit val db = Database.forConfig("database")
 
-  val ref = system.actorOf(MessageBusListenerActor.props(db))
+  val ref = system.actorOf(ResolverMessageBusListenerActor.props(db))
   ref ! Subscribe
 }
