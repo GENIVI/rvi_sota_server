@@ -51,9 +51,8 @@ class FakeDeviceRegistry(namespace: Namespace)
   }
 
   // TODO: handle conflicts on deviceId
-  override def createDevice
-  (d: DeviceT)
-  (implicit ec: ExecutionContext): Future[Id] = {
+  override def createDevice(d: DeviceT)
+                           (implicit ec: ExecutionContext): Future[Id] = {
     val id: Id = Id(Refined.unsafeApply(randomUUID.toString))
     devices.put(id,
       Device(namespace = namespace,
