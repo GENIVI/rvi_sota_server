@@ -22,6 +22,7 @@ class BlacklistResourceSpec extends FunSuite
   with DatabaseSpec
   with ShouldMatchers
   with ScalaFutures
+  with DefaultPatience
   with LongRequestTimeout
   with Generators {
 
@@ -133,6 +134,38 @@ class BlacklistResourceSpec extends FunSuite
       r.find(_.packageId == pkg) shouldNot be(empty)
     }
   }
+
+  test("creating the same blacklist after DELETE works, updating the previous entry") {
+    val pkg = createBlacklist()
+    val url = blacklistUrl(pkg)
+
+    Delete(url) ~> serviceRoute ~> check {
+      status shouldBe StatusCodes.OK
+    }
+
+    val blacklistReq = BlacklistedPackageRequest(pkg, Some("Some comment"))
+
+    Post(url, blacklistReq) ~> serviceRoute ~> check {
+      status shouldBe StatusCodes.Created
+    }
+
+    Get("/blacklist") ~> serviceRoute ~> check {
+      val r = responseAs[Seq[BlacklistedPackage]]
+      r.filter(_.packageId == pkg) should have size 1
+    }
+  }
+
+  test("creating the same blacklist twice fails") {
+    val pkg = createBlacklist()
+    val url = blacklistUrl(pkg)
+
+    val blacklistReq = BlacklistedPackageRequest(pkg, Some("Some comment"))
+
+    Post(url, blacklistReq) ~> serviceRoute ~> check {
+      status shouldBe StatusCodes.Conflict
+    }
+  }
+
 
   test("cannot remove an already removed package") {
     val pkg = createBlacklist()

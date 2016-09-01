@@ -10,6 +10,7 @@ import slick.driver.MySQLDriver.api._
 import scala.concurrent.{ExecutionContext, Future}
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db.Packages.PackageTable
+import org.genivi.sota.http.Errors
 import org.genivi.sota.http.Errors.MissingEntity
 
 case class BlacklistedPackage(id: UUID, namespace: Namespace,
@@ -58,28 +59,51 @@ object BlacklistedPackages {
 
     def uniquePackageId = index("BlacklistedPackage_unique_package_id", (namespace, pkgName, pkgVersion), unique = true)
 
-    // TODO foreign key to packages?
     def packagesFk = foreignKey("BlacklistedPackage_pkg_fk", (namespace, pkgName, pkgVersion),
       TableQuery[PackageTable])(r => (r.namespace, r.name, r.version))
   }
 
   // scalastyle:on
 
-  private val MissingPackageError = MissingEntity(classOf[BlacklistedPackage])
+
 
   private val all = TableQuery[BlacklistedPackagesTable]
 
   protected[db] val active = all.filter(_.active === true)
+
+  private val BlacklistExists = Errors.EntityAlreadyExists(classOf[BlacklistedPackage])
+  private val MissingBlacklistError = MissingEntity(classOf[BlacklistedPackage])
 
   def create(namespace: Namespace, pkgId: PackageId, comment: Option[String] = None)
             (implicit db: Database, ec: ExecutionContext): Future[BlacklistedPackage] = {
     val newBlacklist = BlacklistedPackage(UUID.randomUUID(), namespace,
       pkgId, comment.getOrElse(""), Instant.now())
 
+    def insertOrUpdate(): DBIO[Unit] = {
+      val findQuery = all
+        .filter(_.namespace === namespace)
+        .filter(_.pkgName === pkgId.name)
+        .filter(_.pkgVersion === pkgId.version)
+
+      findQuery.map(_.active).result.headOption.flatMap { existing =>
+        val isActive = existing.contains(true)
+
+        if(isActive)
+          DBIO.failed(BlacklistExists)
+        else if (existing.isDefined)
+          findQuery.map(b => (b.active, b.comment))
+            .update((true, newBlacklist.comment))
+            .handleSingleUpdateError(MissingBlacklistError)
+        else
+          (all += newBlacklist)
+            .andThen(markAsActive(namespace, pkgId))
+            .handleIntegrityErrors(BlacklistExists)
+      }
+    }
+
     val dbIO = for {
       _ <- Packages.find(namespace, pkgId)
-      _ <- all.insertOrUpdate(newBlacklist)
-      _ <- markAsActive(namespace, pkgId)
+      _ <- insertOrUpdate()
     } yield newBlacklist
 
     db.run(dbIO.transactionally)
@@ -91,7 +115,7 @@ object BlacklistedPackages {
       findActiveQuery(namespace, packageId)
         .map(_.active)
         .update(false)
-        .handleSingleUpdateError(MissingPackageError)
+        .handleSingleUpdateError(MissingBlacklistError)
 
     db.run(dbIO)
   }
@@ -102,7 +126,7 @@ object BlacklistedPackages {
       findActiveQuery(namespace, packageId)
         .map(_.comment)
         .update(comment.getOrElse(""))
-        .handleSingleUpdateError(MissingPackageError)
+        .handleSingleUpdateError(MissingBlacklistError)
 
     db.run(dbIO)
   }
