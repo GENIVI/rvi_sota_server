@@ -17,15 +17,18 @@ object Messages {
 
   sealed trait Message
 
-  final case class DeviceSeen(deviceId: Device.Id,
+  val PartitionPrefix = 1
+
+  final case class DeviceSeen(uuid: Id,
                               lastSeen: Instant) extends Message
 
   final case class DeviceCreated(namespace: Namespace,
+                                 uuid: Id,
                                  deviceName: DeviceName,
                                  deviceId: Option[Device.DeviceId],
                                  deviceType: Device.DeviceType) extends Message
 
-  final case class DeviceDeleted(namespace: Namespace, deviceId: Id) extends Message
+  final case class DeviceDeleted(namespace: Namespace, uuid: Id) extends Message
 
   final case class PackageCreated(namespace: Namespace, packageId: PackageId,
                                   description: Option[String], vendor: Option[String],
@@ -65,7 +68,8 @@ object Messages {
 
 
   implicit val deviceSeenMessageLike = new MessageLike[DeviceSeen] {
-    override def partitionKey(v: DeviceSeen): String = v.deviceId.underlying.get
+    override def partitionKey(v: DeviceSeen): String =
+      v.uuid.underlying.get.take(PartitionPrefix)
 
     implicit val encoder: Encoder[DeviceSeen] = deriveEncoder
     implicit val decoder: Decoder[DeviceSeen] = deriveDecoder
@@ -73,7 +77,7 @@ object Messages {
 
   implicit val deviceCreatedMessageLike = new MessageLike[DeviceCreated] {
     override def partitionKey(v: DeviceCreated): String =
-      v.deviceName.underlying
+      v.uuid.underlying.get.take(PartitionPrefix)
 
     implicit val encoder: Encoder[DeviceCreated] = deriveEncoder
     implicit val decoder: Decoder[DeviceCreated] = deriveDecoder
@@ -81,7 +85,7 @@ object Messages {
 
   implicit val deviceDeletedMessageLike = new MessageLike[DeviceDeleted] {
     override def partitionKey(v: DeviceDeleted): String =
-      v.deviceId.underlying.get
+      v.uuid.underlying.get.take(PartitionPrefix)
 
     implicit val encoder: Encoder[DeviceDeleted] = deriveEncoder
     implicit val decoder: Decoder[DeviceDeleted] = deriveDecoder

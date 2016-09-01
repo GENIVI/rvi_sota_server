@@ -62,8 +62,8 @@ class Routes(namespaceExtractor: Directive1[Namespace],
     val f = db
       .run(DeviceRepository.create(ns, device))
       .andThen {
-        case scala.util.Success(_) =>
-          messageBus.publish(DeviceCreated(ns, device.deviceName, device.deviceId, device.deviceType))
+        case scala.util.Success(uuid) =>
+          messageBus.publish(DeviceCreated(ns, uuid, device.deviceName, device.deviceId, device.deviceType))
       }
 
    onSuccess(f) { id =>
