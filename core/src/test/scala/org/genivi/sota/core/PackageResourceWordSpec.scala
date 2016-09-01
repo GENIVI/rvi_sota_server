@@ -27,6 +27,7 @@ import scala.concurrent.duration._
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.messaging.Messages.PackageCreated
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
+import org.scalatest.concurrent.PatienceConfiguration
 
 /**
  * WordSpec tests for Package REST actions
@@ -36,6 +37,8 @@ class PackageResourceWordSpec extends WordSpec
   with ScalatestRouteTest
   with ShouldMatchers
   with DatabaseSpec
+  with PatienceConfiguration
+  with DefaultPatience
   with BeforeAndAfterAll {
 
   import io.circe.generic.auto._
