@@ -11,7 +11,7 @@ services:
       MYSQL_ROOT_PASSWORD: "sota-test"
       MYSQL_USER: "sota"
       MYSQL_PASSWORD: "s0ta"
-      MYSQL_DATABASES: "sota_resolver sota_resolver_test sota_resolver% sota_core sota_core_test sota_core% sota_device_registry%"
+      MYSQL_DATABASES: "sota_resolver sota_resolver_test sota_resolver% sota_core sota_core_test sota_core% sota_device_registry% sota_device_registry_test%"
     command: ["--character-set-server=utf8", "--collation-server=utf8_unicode_ci", "--max-connections=1000"]
 
   nats:
