@@ -98,24 +98,28 @@ object DeviceUpdates {
     }
   }
 
-  /**
-    * Find the [[UpdateRequest]]-s for:
-    * <ul>
-    *   <li>the given device</li>
-    *   <li>and for which [[UpdateSpec]]-s exist with Pending or InFlight [[UpdateStatus]]</li>
-    * </ul>
-    */
-  def findPendingPackageIdsFor(device: Device.Id)
-                              (implicit db: Database, ec: ExecutionContext) : DBIO[Seq[UpdateRequest]] = {
+  def findPendingPackageIdsFor(device: Device.Id, includeInFlight: Boolean = true)
+                              (implicit db: Database,
+                               ec: ExecutionContext): DBIO[Seq[(UpdateRequest, UpdateStatus)]] = {
+    val statusToInclude =
+      if(includeInFlight)
+        List(UpdateStatus.InFlight, UpdateStatus.Pending)
+      else
+        List(UpdateStatus.Pending)
+
     updateSpecs
       .filter(_.device === device)
-      .filter(_.status.inSet(List(UpdateStatus.InFlight, UpdateStatus.Pending)))
+      .filter(_.status.inSet(statusToInclude))
       .join(updateRequests).on(_.requestId === _.id)
       .sortBy { case (sp, _) => (sp.installPos.asc, sp.creationTime.asc) }
-      .map    { case (_, ur) => ur }
+      .map(r => (r._2, r._1.status))
       .result
-      .flatMap(BlacklistedPackages.filterBlacklisted[UpdateRequest](ur => (ur.namespace, ur.packageId)))
-      .map { _.zipWithIndex.map { case (ur, idx) => ur.copy(installPos = idx) } }
+      .flatMap {
+        BlacklistedPackages.filterBlacklisted[(UpdateRequest, UpdateStatus)] {
+          case (ur, _) => (ur.namespace, ur.packageId)
+        }
+      }
+      .map { _.zipWithIndex.map { case ((ur, us), idx) => (ur.copy(installPos = idx), us) } }
   }
 
 

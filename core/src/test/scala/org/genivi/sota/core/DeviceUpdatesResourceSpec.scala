@@ -11,7 +11,7 @@ import java.util.UUID
 
 import org.genivi.sota.core.data.client.PendingUpdateRequest
 import org.genivi.sota.core.data.{BlockedInstall, Package, UpdateRequest, UpdateStatus}
-import org.genivi.sota.core.db.{BlacklistedPackages, InstallHistories, Packages}
+import org.genivi.sota.core.db.{BlacklistedPackages, InstallHistories, Packages, UpdateSpecs}
 import org.genivi.sota.core.resolver.{Connectivity, ConnectivityClient}
 import org.genivi.sota.core.rvi.{InstallReport, OperationResult, UpdateReport}
 import org.genivi.sota.core.transfer.DeviceUpdates
@@ -46,6 +46,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
   import Device._
   import DeviceGenerators._
   import PackageIdGenerators._
+  import org.genivi.sota.core.data.UpdateSpec._
 
   implicit val patience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
   implicit val _db = db
@@ -237,6 +238,55 @@ class DeviceUpdatesResourceSpec extends FunSuite
         val resp = responseAs[List[PendingUpdateRequest]]
 
         resp shouldBe empty
+      }
+    }
+  }
+
+  test("queue items includes update status") {
+    whenReady(createUpdateSpec()) { case (packageModel, device, updateSpec) =>
+      val url = baseUri.withPath(baseUri.path / device.id.underlying.get / "queued")
+
+      Get(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+
+        val resp = responseAs[List[PendingUpdateRequest]]
+
+        resp.map(_.status) should contain(updateSpec.status)
+      }
+    }
+  }
+
+  test("does not return in flight updates for for / endpoint") {
+    val f = for {
+      (_, d, us) <- createUpdateSpec()
+      _ <- db.run(UpdateSpecs.setStatus(us, UpdateStatus.InFlight))
+    } yield d
+
+    whenReady(f) { device =>
+      val url = baseUri.withPath(baseUri.path / device.id.underlying.get)
+
+      Get(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+
+        responseAs[List[PendingUpdateRequest]] shouldBe empty
+      }
+    }
+  }
+
+  test("returns in flight updates for /queued endpoint") {
+    val f = for {
+      (_, d, us) <- createUpdateSpec()
+      _ <- db.run(UpdateSpecs.setStatus(us, UpdateStatus.InFlight))
+    } yield (d, us)
+
+    whenReady(f) { case (device, us) =>
+      val url = baseUri.withPath(baseUri.path / device.id.underlying.get / "queued")
+
+      Get(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+
+        val resp = responseAs[List[PendingUpdateRequest]]
+        resp.map(_.requestId) should contain(us.request.id)
       }
     }
   }

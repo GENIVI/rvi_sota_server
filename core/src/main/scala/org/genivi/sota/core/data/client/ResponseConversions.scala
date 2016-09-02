@@ -40,35 +40,56 @@ object ResponseConversions {
     def toResponse: Seq[C]
   }
 
-  trait ToResponseGeneric[C, A] {
+  trait ToResponseGenericSeq[C] {
+    def toResponse: Seq[C]
+  }
+
+  trait ToResponseGenericUnary[C, A] {
     def toResponse(args: A): C
   }
 
-  implicit def toResponseConversion[S, C](v: S)(implicit encoder: ResponseEncoder[S, C, HNil]): ToResponse[C] = {
-    new ToResponse[C] {
-      override def toResponse = encoder(v, HNil)
-    }
+  trait ToResponseGeneric[C, T, L] {
+    def toResponse(args: T)(implicit gen: Generic.Aux[T, L]): C
   }
 
-  implicit def toRespSeqConversion[C, S](v: Seq[S])(implicit encoder: ResponseEncoder[S, C, HNil]): ToResponseSeq[C] = {
+  implicit def toRespGenericSeqNoArgsConversion[C, S](v: Seq[S])
+                                               (implicit encoder: ResponseEncoder[S, C, HNil]): ToResponseSeq[C] = {
     new ToResponseSeq[C] {
       override def toResponse = v.map(encoder(_, HNil))
     }
   }
 
+  implicit def toRespGenericSeqConversion[S, C, A](v: Seq[(S, A)])
+                                                  (implicit encoder: ResponseEncoder[S, C, A])
+  : ToResponseGenericSeq[C] = {
+    new ToResponseGenericSeq[C] {
+      override def toResponse = v.map { case (elem, args) => encoder(elem, args) }
+    }
+  }
+
+  implicit def toRespGenericSeqUnaryConversion[S, C, A, L](v: Seq[(S, A)])
+                                                  (implicit encoder: ResponseEncoder[S, C, L],
+                                                   evidence: (A :: HNil) =:= L)
+  : ToResponseGenericSeq[C] =
+    new ToResponseGenericSeq[C] {
+      override def toResponse = v.map { case (elem, arg) => encoder(elem, evidence(arg :: HNil))
+      }
+    }
+
   implicit def toResponseGenericUnaryConversion[S, C, A, L](v: S)
                                                            (implicit encoder: ResponseEncoder[S, C, L],
-                                                            evidence: (A :: HNil) =:= L): ToResponseGeneric[C, A] = {
-    new ToResponseGeneric[C, A] {
+                                                            evidence: (A :: HNil) =:= L)
+  : ToResponseGenericUnary[C, A] = {
+    new ToResponseGenericUnary[C, A] {
       override def toResponse(arg: A) = encoder(v, evidence(arg :: HNil))
     }
   }
 
-  implicit def toResponseGenericConversion[S, C, A](v: S)(implicit encoder: ResponseEncoder[S, C, A])
-  : ToResponseGeneric[C, A] = {
-    new ToResponseGeneric[C, A] {
-      override def toResponse(args: A) = encoder(v, args)
+  implicit def toResponseGenericConversionTuple[S, C, T <: Product, L](v: S)(implicit encoder: ResponseEncoder[S, C, L])
+
+  : ToResponseGeneric[C, T, L] = {
+    new ToResponseGeneric[C, T, L] {
+      override def toResponse(args: T)(implicit gen: Generic.Aux[T, L]): C = encoder(v, gen.to(args))
     }
   }
 }
-

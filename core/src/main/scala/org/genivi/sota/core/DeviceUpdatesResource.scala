@@ -106,13 +106,14 @@ class DeviceUpdatesResource(db: Database,
     *
     * @see [[data.UpdateStatus]] (two of interest: InFlight and Pending)
     */
-  def pendingPackages(device: Device.Id): Route = {
+  def pendingPackages(device: Device.Id, includeInFlight: Boolean = true): Route = {
     import org.genivi.sota.core.data.client.PendingUpdateRequest._
     import ResponseConversions._
+    import UpdateSpec._
 
     val vehiclePackages =
       DeviceUpdates
-        .findPendingPackageIdsFor(device)
+        .findPendingPackageIdsFor(device, includeInFlight)
         .map(_.toResponse)
 
     complete(db.run(vehiclePackages))
@@ -227,7 +228,7 @@ class DeviceUpdatesResource(db: Database,
     (pathPrefix("api" / "v1") & ( pathPrefix("vehicle_updates") | pathPrefix("device_updates"))
                               & extractDeviceUuid) { device =>
       get {
-        pathEnd { logDeviceSeen(device) { pendingPackages(device) } } ~
+        pathEnd { logDeviceSeen(device) { pendingPackages(device, includeInFlight = false) } } ~
         path("queued") { pendingPackages(device) } ~
         path("blocked") { getBlockedInstall(device) } ~
         path("results") { results(device) } ~
