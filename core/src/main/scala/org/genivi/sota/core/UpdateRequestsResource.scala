@@ -18,8 +18,7 @@ import org.genivi.sota.core.data._
 import org.genivi.sota.core.data.client._
 import org.genivi.sota.core.db.UpdateSpecs
 import org.genivi.sota.core.resolver.ExternalResolverClient
-import org.genivi.sota.data.Device
-import org.genivi.sota.data.Namespace
+import org.genivi.sota.data.{Device, Namespace, Uuid}
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.rest.Validation._
 import slick.driver.MySQLDriver.api.Database
@@ -42,7 +41,7 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
   /**
     * An ota client GET (device, status) for the [[UpdateRequest]] given by the argument.
     */
-  def fetch(updateRequestId: Refined[String, Uuid]): Route = {
+  def fetch(updateRequestId: Refined[String, Uuid.Valid]): Route = {
     complete(db.run(UpdateSpecs.listUpdatesById(updateRequestId)))
   }
 

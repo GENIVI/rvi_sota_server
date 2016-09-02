@@ -4,7 +4,6 @@
  */
 package org.genivi.sota.resolver.devices
 
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server._
@@ -14,17 +13,16 @@ import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.data.Namespace._
-import org.genivi.sota.data.{Device, Namespace, PackageId}
+import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
 import org.genivi.sota.http.ErrorHandler
-import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
-import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.resolver.common.Errors
+import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.resolver.common.RefinementDirectives.{refinedPackageId, refinedPartNumber}
 import org.genivi.sota.resolver.components.Component
+import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.rest.Validation._
-
 import scala.concurrent.{ExecutionContext, Future}
 import slick.driver.MySQLDriver.api._
 
@@ -43,7 +41,7 @@ class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
 
   import Directives._
 
-  val extractDeviceId: Directive1[Device.Id] = refined[Device.ValidId](Slash ~ Segment).map(Device.Id)
+  val extractUuid: Directive1[Uuid] = refined[Uuid.Valid](Slash ~ Segment).map(Uuid(_))
 
   def searchDevices(ns: Namespace): Route =
     parameters(('regex.as[String Refined Regex].?,
@@ -53,7 +51,7 @@ class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
       complete(DeviceRepository.search(ns, re, pn, pv, cp, deviceRegistry))
     }
 
-  def getPackages(device: Device.Id, regexFilter: Option[Refined[String, Regex]]): Route = {
+  def getPackages(device: Uuid, regexFilter: Option[Refined[String, Regex]]): Route = {
     val result = for {
       native <- DeviceRepository.installedOn(device, regexFilter.map(_.get))
       foreign <- ForeignPackages.installedOn(device, regexFilter.map(_.get))
@@ -63,13 +61,13 @@ class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
   }
 
 
-  def installPackage(namespace: Namespace, device: Device.Id, pkgId: PackageId): Route =
+  def installPackage(namespace: Namespace, device: Uuid, pkgId: PackageId): Route =
     complete(db.run(DeviceRepository.installPackage(namespace, device, pkgId)))
 
-  def uninstallPackage(ns: Namespace, device: Device.Id, pkgId: PackageId): Route =
+  def uninstallPackage(ns: Namespace, device: Uuid, pkgId: PackageId): Route =
     complete(db.run(DeviceRepository.uninstallPackage(ns, device, pkgId)))
 
-  def updateInstalledSoftware(device: Device.Id): Route = {
+  def updateInstalledSoftware(device: Uuid): Route = {
     def updateSoftwareOnDb(namespace: Namespace, installedSoftware: InstalledSoftware): Future[Unit] = {
       db.run {
         for {
@@ -99,7 +97,7 @@ class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
    *              vehicle -> package associations
    * @throws      Errors.MissingPackageException if package doesn't exist
     */
-  def packageApi(device: Device.Id): Route = {
+  def packageApi(device: Uuid): Route = {
     (pathPrefix("package") & namespaceExtractor) { ns =>
       (get & pathEnd) {
         parameters('regex.as[Refined[String, Regex]].?) { regFilter =>
@@ -120,13 +118,13 @@ class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
     }
   }
 
-  def getComponents(ns: Namespace, device: Device.Id): Route =
+  def getComponents(ns: Namespace, device: Uuid): Route =
     complete(db.run(DeviceRepository.componentsOnDevice(ns, device)))
 
-  def installComponent(ns: Namespace, device: Device.Id, part: Component.PartNumber): Route =
+  def installComponent(ns: Namespace, device: Uuid, part: Component.PartNumber): Route =
     complete(db.run(DeviceRepository.installComponent(ns, device, part)))
 
-  def uninstallComponent(ns: Namespace, device: Device.Id, part: Component.PartNumber): Route =
+  def uninstallComponent(ns: Namespace, device: Uuid, part: Component.PartNumber): Route =
     complete(db.run(DeviceRepository.uninstallComponent(ns, device, part)))
 
   /**
@@ -136,7 +134,7 @@ class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
    *              vehicle -> component associations
    * @throws      Errors.MissingComponent if component doesn't exist
    */
-  def componentApi(device: Device.Id): Route =
+  def componentApi(device: Uuid): Route =
     (pathPrefix("component") & namespaceExtractor) { ns =>
       (get & pathEnd) {
         getComponents(ns, device)
@@ -156,18 +154,18 @@ class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
       namespaceExtractor { ns =>
         (get & pathEnd) { searchDevices(ns) }
       } ~
-      extractDeviceId { device =>
+      extractUuid { device =>
         packageApi(device) ~
           componentApi(device)
       }
     }
 
-  def getFirmware(ns: Namespace, deviceId: Device.Id): Route =
+  def getFirmware(ns: Namespace, deviceId: Uuid): Route =
     complete(db.run(DeviceRepository.firmwareOnDevice(ns, deviceId)))
 
   def route: Route = ErrorHandler.handleErrors {
     deviceApi ~
-    (pathPrefix("firmware") & get & namespaceExtractor & extractDeviceId) { (ns, device) =>
+    (pathPrefix("firmware") & get & namespaceExtractor & extractUuid) { (ns, device) =>
       getFirmware(ns, device)
     }
   }

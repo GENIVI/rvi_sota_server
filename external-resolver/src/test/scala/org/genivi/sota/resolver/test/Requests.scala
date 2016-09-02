@@ -47,45 +47,45 @@ trait VehicleRequestsHttp {
   def listVehiclesHaving(partNumber: String): HttpRequest =
     Get(Resource.uri("devices").withQuery(Query("component" -> partNumber)))
 
-  def addVehicle(device: Device.Id): HttpRequest = {
+  def addVehicle(device: Uuid): HttpRequest = {
     import scala.concurrent.ExecutionContext.Implicits.global
     Put("/fake_devices", device.show)
   }
 
-  def installPackage(device: Device.Id, pkg: Package): HttpRequest =
+  def installPackage(device: Uuid, pkg: Package): HttpRequest =
     installPackage(device, pkg.id.name.get, pkg.id.version.get)
 
-  def installPackage(device: Device.Id, pname: String, pversion: String): HttpRequest =
+  def installPackage(device: Uuid, pname: String, pversion: String): HttpRequest =
     Put(Resource.uri("devices", device.show, "package", pname, pversion))
 
-  def uninstallPackage(device: Device.Id, pkg: Package): HttpRequest =
+  def uninstallPackage(device: Uuid, pkg: Package): HttpRequest =
     uninstallPackage(device, pkg.id.name.get, pkg.id.version.get)
 
-  def uninstallPackage(device: Device.Id, pname: String, pversion: String): HttpRequest =
+  def uninstallPackage(device: Uuid, pname: String, pversion: String): HttpRequest =
     Delete(Resource.uri("devices", device.show, "package", pname, pversion))
 
-  def listPackagesOnVehicle(veh: Device.Id): HttpRequest =
+  def listPackagesOnVehicle(veh: Uuid): HttpRequest =
     Get(Resource.uri("devices", veh.show, "package"))
 
-  def listComponentsOnVehicle(veh: Device.Id): HttpRequest =
+  def listComponentsOnVehicle(veh: Uuid): HttpRequest =
     listComponentsOnVehicle(veh.show)
 
   def listComponentsOnVehicle(vin: String): HttpRequest =
     Get(Resource.uri("devices", vin, "component"))
 
-  private def path(device: Device.Id, part: Component.PartNumber): Uri =
+  private def path(device: Uuid, part: Component.PartNumber): Uri =
     Resource.uri("devices", device.show, "component", part.get)
 
-  def installComponent(veh: Device.Id, cmpn: Component): HttpRequest =
+  def installComponent(veh: Uuid, cmpn: Component): HttpRequest =
     installComponent(veh, cmpn.partNumber)
 
-  def installComponent(device: Device.Id, part: Component.PartNumber): HttpRequest =
+  def installComponent(device: Uuid, part: Component.PartNumber): HttpRequest =
     Put(path(device, part))
 
-  def uninstallComponent(device: Device.Id, cmpn: Component): HttpRequest =
+  def uninstallComponent(device: Uuid, cmpn: Component): HttpRequest =
     uninstallComponent(device, cmpn.partNumber)
 
-  def uninstallComponent(device: Device.Id, part: Component.PartNumber): HttpRequest =
+  def uninstallComponent(device: Uuid, part: Component.PartNumber): HttpRequest =
     Delete(path(device, part))
 
 }
@@ -95,18 +95,18 @@ trait VehicleRequests extends
     PackageRequestsHttp with
     Matchers { self: ResourceSpec =>
 
-  def installPackageOK(device: Device.Id, pname: String, pversion: String)(implicit route: Route): Unit =
+  def installPackageOK(device: Uuid, pname: String, pversion: String)(implicit route: Route): Unit =
     installPackage(device, pname, pversion) ~> route ~> check {
       status shouldBe StatusCodes.OK
     }
 
-  def installComponentOK(device: Device.Id, part: Component.PartNumber)
+  def installComponentOK(device: Uuid, part: Component.PartNumber)
                         (implicit route: Route): Unit =
     installComponent(device, part) ~> route ~> check {
       status shouldBe StatusCodes.OK
     }
 
-  def uninstallComponentOK(device: Device.Id, part: Component.PartNumber)
+  def uninstallComponentOK(device: Uuid, part: Component.PartNumber)
                           (implicit route: Route): Unit =
     uninstallComponent(device, part) ~> route ~> check {
       status shouldBe StatusCodes.OK
@@ -144,12 +144,12 @@ trait PackageRequests extends
 trait FirmwareRequests extends Matchers { self: ResourceSpec =>
 
   def installFirmware
-    (device: Device.Id, packages: Set[PackageId], firmware: Set[Firmware])
+    (device: Uuid, packages: Set[PackageId], firmware: Set[Firmware])
       : HttpRequest
   = Put(Resource.uri("devices", device.show, "packages"), InstalledSoftware(packages, firmware))
 
   def installFirmwareOK
-    (device: Device.Id, packages: Set[PackageId], firmware: Set[Firmware])
+    (device: Uuid, packages: Set[PackageId], firmware: Set[Firmware])
     (implicit route: Route)
       : Unit
   = installFirmware(device, packages, firmware) ~> route ~> check {
@@ -336,11 +336,11 @@ trait ResolveRequests extends
   Matchers with
   Namespaces { self: ResourceSpec =>
 
-  def resolveOK(pname: String, pversion: String, vins: Seq[Device.Id])(implicit route: Route): Unit = {
+  def resolveOK(pname: String, pversion: String, vins: Seq[Uuid])(implicit route: Route): Unit = {
     resolve(defaultNs, pname, pversion) ~> route ~> check {
       status shouldBe StatusCodes.OK
 
-      responseAs[Map[Device.Id, Seq[PackageId]]] shouldBe
+      responseAs[Map[Uuid, Seq[PackageId]]] shouldBe
         ResolveFunctions.makeFakeDependencyMap(PackageId(Refined.unsafeApply(pname),
           Refined.unsafeApply(pversion)), vins)
     }

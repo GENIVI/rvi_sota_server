@@ -3,12 +3,13 @@ package org.genivi.sota.messaging
 import java.time.Instant
 
 import cats.data.Xor
+import cats.syntax.show._
 import io.circe.{Decoder, Encoder}
 import io.circe.parser._
 import io.circe.generic.semiauto._
 import org.genivi.sota.marshalling.CirceInstances._
-import org.genivi.sota.data.Device.{DeviceName, Id}
-import org.genivi.sota.data.{Device, Namespace, PackageId}
+import org.genivi.sota.data.Device.{DeviceName}
+import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -19,16 +20,16 @@ object Messages {
 
   val PartitionPrefix = 1
 
-  final case class DeviceSeen(uuid: Id,
+  final case class DeviceSeen(uuid: Uuid,
                               lastSeen: Instant) extends Message
 
   final case class DeviceCreated(namespace: Namespace,
-                                 uuid: Id,
+                                 uuid: Uuid,
                                  deviceName: DeviceName,
                                  deviceId: Option[Device.DeviceId],
                                  deviceType: Device.DeviceType) extends Message
 
-  final case class DeviceDeleted(namespace: Namespace, uuid: Id) extends Message
+  final case class DeviceDeleted(namespace: Namespace, uuid: Uuid) extends Message
 
   final case class PackageCreated(namespace: Namespace, packageId: PackageId,
                                   description: Option[String], vendor: Option[String],
@@ -41,7 +42,7 @@ object Messages {
   //Create custom UpdateSpec here instead of using org.genivi.sota.core.data.UpdateSpec as that would require moving
   //multiple RVI messages into SotaCommon. Furthermore, for now this class contains just the info required by the
   //front end.
-  final case class UpdateSpec(namespace: Namespace, deviceId: Device.Id, packageId: PackageId,
+  final case class UpdateSpec(namespace: Namespace, device: Uuid, packageId: PackageId,
                               status: String) extends Message
 
   implicit class StreamNameOp[T <: Class[_]](v: T) {
@@ -100,7 +101,7 @@ object Messages {
   }
 
   implicit val updateSpecMessageLike = new MessageLike[UpdateSpec] {
-    override def partitionKey(v: UpdateSpec): String = v.deviceId.underlying.get
+    override def partitionKey(v: UpdateSpec): String = v.device.show
 
     implicit val encoder: Encoder[UpdateSpec] = deriveEncoder
     implicit val decoder: Decoder[UpdateSpec] = deriveDecoder
