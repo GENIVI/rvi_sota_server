@@ -74,11 +74,7 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
     parameters('regex.as[String Refined Regex].?) { (regex: Option[String Refined Regex]) =>
       val query = Packages.searchByRegexWithBlacklist(ns, regex.map(_.get))
 
-      val result = db.run(query).map { pkgs =>
-        pkgs.map { case (pkg, blacklist) =>
-          pkg.toResponse(blacklist)
-        }
-      }
+      val result = db.run(query).map(_.toResponse)
 
       complete(result)
     }

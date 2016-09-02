@@ -120,7 +120,7 @@ class UpdateServiceSpec extends PropSpec
       (device, packageM) <- db.run(dbSetup)
       updateRequest <- service.queueDeviceUpdate(device.namespace, device.id, packageM.id)
       queuedPackages <- db.run(DeviceUpdates.findPendingPackageIdsFor(device.id))
-    } yield (updateRequest, queuedPackages)
+    } yield (updateRequest, queuedPackages.map(_._1))
 
     whenReady(f) { case (updateRequest, queuedPackages) =>
       updateRequest.packageId shouldBe newPackage.id

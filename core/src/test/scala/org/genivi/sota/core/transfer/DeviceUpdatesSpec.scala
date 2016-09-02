@@ -18,6 +18,7 @@ import org.scalacheck.Gen
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
+import org.genivi.sota.marshalling.CirceInstances._
 
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
@@ -36,6 +37,7 @@ class DeviceUpdatesSpec extends FunSuite
   import Generators._
   import SlickExtensions._
   import UpdateStatus._
+  import UpdateSpec._
 
   implicit val actorSystem = ActorSystem("InstalledPackagesUpdateSpec-ActorSystem")
   implicit val materializer = ActorMaterializer()
@@ -82,7 +84,7 @@ class DeviceUpdatesSpec extends FunSuite
       (_, device, updateSpec0) <- createUpdateSpecAction()
       (_, updateSpec1) <- createUpdateSpecFor(device.id, installPos = 2)
       result <- findPendingPackageIdsFor(device.id)
-    } yield (result, updateSpec0, updateSpec1)
+    } yield (result.map(_._1), updateSpec0, updateSpec1)
 
     whenReady(db.run(dbIO)) { case (result, updateSpec0, updateSpec1)  =>
       result shouldNot be(empty)
@@ -104,7 +106,7 @@ class DeviceUpdatesSpec extends FunSuite
       (_, spec1) <- createUpdateSpecFor(device.id)
       _ <- persistInstallOrder(device.id, List(spec0.request.id, spec1.request.id))
       dbSpecs <- findPendingPackageIdsFor(device.id)
-    } yield (dbSpecs, spec0, spec1)
+    } yield (dbSpecs.map(_._1), spec0, spec1)
 
     whenReady(db.run(dbIO)) { case (Seq(dbSpec0, dbSpec1), spec0, spec1) =>
       dbSpec0.id shouldBe spec0.request.id
@@ -165,7 +167,7 @@ class DeviceUpdatesSpec extends FunSuite
       (_, updateSpec1) <- createUpdateSpecFor(device.id, installPos = 1)
       (_, updateSpec2) <- createUpdateSpecFor(device.id, installPos = 2)
       result <- findPendingPackageIdsFor(device.id)
-    } yield (result, updateSpec0, updateSpec1, updateSpec2)
+    } yield (result.map(_._1), updateSpec0, updateSpec1, updateSpec2)
 
     whenReady(db.run(dbIO)) { case (result, updateSpec0, updateSpec1, updateSpec2)  =>
       result shouldNot be(empty)
