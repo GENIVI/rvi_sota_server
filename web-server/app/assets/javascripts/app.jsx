@@ -76,7 +76,7 @@ define(function(require) {
   var routes = (
     <Route handler={App} path="/">
       <Route name="vehicles" handler={VehiclesPageComponent}/>
-      <Route name="vehicle" path="vehicles/:vin" handler={VehiclePageComponent}/>
+      <Route name="vehicle" path="vehicles/:id/:vin" handler={VehiclePageComponent}/>
       <Route name="packages">
         <Route name="package" path="/packages/:name/:version" handler={wrapComponent(ShowPackage, {Package: db.showPackage})}/>
         <Route name="new-campaign" path="/packages/:name/:version/new-campaign" handler={wrapComponent(CreateCampaign)}/>
@@ -91,7 +91,7 @@ define(function(require) {
         <DefaultRoute handler={wrapComponent(ListOfUpdates, {Updates: db.updates})} />
       </Route>
       <Route name="components">
-        <Route name="component" path="/component/:partNumber" handler={wrapComponent(ShowComponent, {Component: db.showComponent})} />
+        <Route name="component" path="/components/:partNumber" handler={wrapComponent(ShowComponent, {Component: db.showComponent})} />
         <DefaultRoute handler={ComponentsPage}/>
       </Route>
     </Route>

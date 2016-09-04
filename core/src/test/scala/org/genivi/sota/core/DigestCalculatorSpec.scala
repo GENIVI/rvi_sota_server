@@ -1,5 +1,5 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
 package org.genivi.sota.core
@@ -25,15 +25,13 @@ class DigestCalculatorSpec extends TestKit(ActorSystem("DigestCalculatorTest"))
   with DefaultPatience {
 
   implicit val mat = ActorMaterializer()
+  implicit val ec = system.dispatcher
 
   test("calculates digest for a string") {
     val strings = List(ByteString("Hello"))
     val source = Source(strings)
 
-    val probe = TestSink.probe[String]
-
-    val subscriber = source.via(DigestCalculator()).runWith(probe)
-    val digest = subscriber.requestNext()
+    val digest = source.runWith(DigestCalculator("SHA-1")).futureValue
     digest shouldBe "f7ff9e8b7bb2e09b70935a5d785e0cc5d9d0abf0"
   }
 
@@ -41,14 +39,13 @@ class DigestCalculatorSpec extends TestKit(ActorSystem("DigestCalculatorTest"))
     val tempFile = File.createTempFile("testfile", ".txt")
 
     val ioResult = Source.single(ByteString("Some text"))
-      .runWith(FileIO.toFile(tempFile))
+      .runWith(FileIO.toPath(tempFile.toPath))
 
     whenReady(ioResult) { _ =>
-      val probe = TestSink.probe[String]
-      val subscriber = FileIO.fromFile(tempFile)
-        .via(DigestCalculator()).runWith(probe)
+        val digest = FileIO.fromPath(tempFile.toPath)
+        .runWith(DigestCalculator("SHA-1")).futureValue
 
-      subscriber.requestNext() shouldBe "02d92c580d4ede6c80a878bdd9f3142d8f757be8"
+      digest shouldBe "02d92c580d4ede6c80a878bdd9f3142d8f757be8"
     }
   }
 }

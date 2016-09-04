@@ -1,5 +1,5 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
 package org.genivi.sota.core.storage
@@ -13,10 +13,11 @@ import akka.event.Logging
 import akka.http.scaladsl.common.StrictForm
 import akka.http.scaladsl.model._
 import akka.stream._
-import akka.stream.scaladsl.{FileIO, Sink}
+import akka.stream.scaladsl.{FileIO, Sink, Source}
 import akka.util.ByteString
 import org.genivi.sota.core.DigestCalculator.DigestResult
 import org.genivi.sota.data.PackageId
+
 import scala.concurrent.Future
 
 
@@ -29,26 +30,26 @@ class LocalPackageStore()(implicit val system: ActorSystem, val mat: ActorMateri
   val log = Logging.getLogger(system, this)
 
   protected def localFileSink(packageId: PackageId, filename: String,
-                              fileData: StrictForm.FileData): Sink[ByteString, Future[(Uri, PackageSize)]] = {
-    val file = storePath.resolve(filename).toFile
-    val uri = Uri(file.toURI.toString)
+                              fileData: Source[ByteString, Any]): Sink[ByteString, Future[(Uri, PackageSize)]] = {
+    val path = storePath.resolve(filename)
+    val uri = Uri(path.toUri.toString)
 
     FileIO
-      .toFile(file)
+      .toPath(path)
       .mapMaterializedValue(_.map(result => (uri, result.count)))
   }
 
-  override def store(packageId: PackageId, fileData: StrictForm.FileData): Future[(Uri, PackageSize, DigestResult)] = {
-    val fileName = packageFileName(packageId, fileData.filename)
-    val sink = localFileSink(packageId, fileName, fileData)
-    val dataStream = fileData.entity.dataBytes
-    writePackage(packageId, dataStream, sink)
+  override def store(packageId: PackageId,
+                     fileName: String, fileData: Source[ByteString, Any]): Future[(Uri, PackageSize, DigestResult)] = {
+    val fname = packageFileName(packageId, Option(fileName))
+    val sink = localFileSink(packageId, fname, fileData)
+    writePackage(packageId, fileData, sink)
   }
 
   def retrieve(packageId: PackageId, packageUri: Uri): Future[(Uri, UniversalEntity)] = {
     val file = new File(new URI(packageUri.toString()))
     val size = file.length()
-    val source = FileIO.fromFile(file)
+    val source = FileIO.fromPath(file.toPath)
     Future.successful {
       (packageUri, HttpEntity(MediaTypes.`application/octet-stream`, size, source))
     }

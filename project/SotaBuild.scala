@@ -9,9 +9,7 @@ import sbtbuildinfo.BuildInfoKeys._
 import com.typesafe.sbt.packager.docker.DockerPlugin
 import DockerPlugin.autoImport.Docker
 import com.typesafe.sbt.packager.Keys._
-import com.typesafe.sbt.packager.docker._
 import com.typesafe.sbt.web._
-
 
 object SotaBuild extends Build {
 
@@ -25,10 +23,11 @@ object SotaBuild extends Build {
 
   lazy val basicSettings = Seq(
     organization := "org.genivi",
-    scalaVersion := "2.11.7",
+    scalaVersion := "2.11.8",
     publishArtifact in Test := false,
     resolvers += Resolver.sonatypeRepo("snapshots"),
-
+    resolvers += "Sonatype Nexus Repository Manager" at "http://nexus.advancedtelematic.com:8081/content/repositories/releases",
+    resolvers += "version99 Empty loggers" at "http://version99.qos.ch",
     libraryDependencies ++= Dependencies.TestFrameworks,
 
     testOptions in Test ++= Seq(
@@ -64,18 +63,18 @@ object SotaBuild extends Build {
   // the sub-projects
   lazy val common = Project(id = "sota-common", base = file("common"))
     .settings(basicSettings ++ compilerSettings)
-    .settings( libraryDependencies ++= Dependencies.Rest :+ Dependencies.AkkaHttpCirceJson :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
+    .settings(libraryDependencies ++= Dependencies.JsonWebSecurity ++ Dependencies.Rest :+ Dependencies.AkkaHttpCirceJson :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
     .dependsOn(commonData)
     .settings(Publish.settings)
 
   lazy val commonData = Project(id = "sota-common-data", base = file("common-data"))
     .settings(basicSettings ++ compilerSettings)
-    .settings(libraryDependencies ++= Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.CommonsCodec :+ Dependencies.TypesafeConfig)
+    .settings(libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.CommonsCodec :+ Dependencies.TypesafeConfig)
     .settings(Publish.settings)
 
   lazy val commonTest = Project(id = "sota-common-test", base = file("common-test"))
     .settings(basicSettings ++ compilerSettings)
-    .settings(libraryDependencies ++= Seq (Dependencies.Cats, Dependencies.Refined))
+    .settings(libraryDependencies ++= Seq (Dependencies.Cats, Dependencies.Refined, Dependencies.Generex))
     .dependsOn(commonData)
     .settings(Publish.settings)
 
@@ -103,10 +102,11 @@ object SotaBuild extends Build {
     .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
     .configs(RandomTests)
     .configs(UnitTests)
-    .dependsOn(common, commonData, commonTest % "test", commonDbTest % "test")
+    .dependsOn(common, commonData, commonClient, commonMessaging, commonTest % "test", commonDbTest % "test")
     .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
     .enablePlugins(BuildInfoPlugin)
     .settings(Publish.settings)
+    .settings(mainClass in Compile := Some("org.genivi.sota.resolver.Boot"))
 
   lazy val core = Project(id = "sota-core", base = file("core"))
     .settings( commonSettings ++ Migrations.settings ++ Seq(
@@ -119,16 +119,15 @@ object SotaBuild extends Build {
       flywayUser := sys.env.get("CORE_DB_USER").orElse( sys.props.get("core.db.user") ).getOrElse("sota"),
       flywayPassword := sys.env.get("CORE_DB_PASSWORD").orElse( sys.props.get("core.db.password")).getOrElse("s0ta")
     ))
-    .settings(mappings in Docker += (file("deploy/wait-for-it.sh") -> "/opt/docker/wait-for-it.sh"))
-    .settings(mappings in Docker += (file("deploy/entrypoint-core.sh") -> "/opt/docker/entrypoint.sh"))
-    .settings(dockerEntrypoint := Seq("./entrypoint.sh"))
     .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
     .settings(inConfig(IntegrationTests)(Defaults.testTasks): _*)
     .configs(IntegrationTests, UnitTests)
-    .dependsOn(common, commonData, commonTest % "test", commonDbTest % "test")
+    .dependsOn(common, commonData, commonTest % "test", commonDbTest % "test", commonClient, commonMessaging)
     .enablePlugins(Packaging.plugins: _*)
+    .settings(Packaging.settings)
     .enablePlugins(BuildInfoPlugin)
     .settings(Publish.settings)
+
 
   import play.sbt.Play.autoImport._
   lazy val webServer = Project(id = "sota-webserver", base = file("web-server"),
@@ -143,7 +142,7 @@ object SotaBuild extends Build {
       resolvers += "scalaz-bintray"  at "http://dl.bintray.com/scalaz/releases",
       dockerExposedPorts := Seq(9000),
       libraryDependencies ++= Seq (
-        "org.scalatestplus" %% "play" % "1.4.0-M3" % "test",
+        "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % "test", // https://github.com/playframework/scalatestplus-play
         "org.webjars" %% "webjars-play" % "2.4.0-1",
         "org.webjars" % "webjars-locator" % "0.27",
         "org.webjars.bower" % "react" % "0.13.3",
@@ -158,7 +157,7 @@ object SotaBuild extends Build {
         play.sbt.Play.autoImport.cache
       ) ++ Dependencies.Database ++ Dependencies.Play2Auth
     ))
-    .dependsOn(common)
+    .dependsOn(common, commonData)
     .enablePlugins(PlayScala, SbtWeb, BuildInfoPlugin)
     .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
     .settings(inConfig(IntegrationTests)(Defaults.testTasks): _*)
@@ -168,37 +167,58 @@ object SotaBuild extends Build {
 
   lazy val deviceRegistry = Project(id = "sota-device_registry", base = file("device-registry"))
     .settings(commonSettings ++ Migrations.settings ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Refined :+ Dependencies.Flyway :+ Dependencies.Generex,
-      parallelExecution in Test := false,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Refined :+ Dependencies.Flyway,
+      parallelExecution in Test := true,
       dockerExposedPorts := Seq(8083),
       flywayUrl := sys.env.get("DEVICE_REGISTRY_DB_URL").orElse(sys.props.get("device-registry.db.url")).getOrElse("jdbc:mysql://localhost:3306/sota_device_registry"),
       flywayUser := sys.env.get("DEVICE_REGISTRY_DB_USER").orElse(sys.props.get("device-registry.db.user")).getOrElse("sota"),
       flywayPassword := sys.env.get("DEVICE_REGISTRY_DB_PASSWORD").orElse(sys.props.get("device-registry.db.password")).getOrElse("s0ta")
     ))
-    .dependsOn(common, commonData, commonTest % "test")
+    .settings(mappings in Docker += (file("deploy/wait-for-it.sh") -> "/opt/docker/wait-for-it.sh"))
+    .settings(mappings in Docker += (file("deploy/entrypoint-device-registry.sh") -> "/opt/docker/entrypoint.sh"))
+    .settings(dockerEntrypoint := Seq("./entrypoint.sh"))
+    .settings(inConfig(UnitTests)(Defaults.testTasks): _*)
+    .configs(UnitTests)
+    .dependsOn(common, commonData, commonMessaging, commonTest % "test", commonDbTest % "test")
     .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
+    .settings(Publish.settings)
+
+  lazy val commonClient = Project(id = "sota-common-client", base = file("common-client"))
+    .settings(basicSettings ++ compilerSettings)
+    .dependsOn(common, commonData)
+    .settings(Publish.settings)
+
+  lazy val commonMessaging = Project(id = "sota-common-messaging", base = file("common-messaging"))
+    .settings(basicSettings ++ compilerSettings ++ Seq(
+      libraryDependencies ++= Dependencies.Circe ++ Dependencies.Akka :+ Dependencies.Kinesis :+ Dependencies.Nats
+    ))
+    .dependsOn(common, commonData)
     .settings(Publish.settings)
 
   lazy val sota = Project(id = "sota", base = file("."))
     .settings( basicSettings )
     .settings( Versioning.settings )
-    .settings(Release.settings(common, commonData, commonTest, core, externalResolver))
-    .aggregate(common, commonData, commonTest, core, externalResolver, webServer)
+    .settings(Release.settings(common, commonData, commonTest, core, externalResolver, deviceRegistry, commonClient, commonMessaging))
+    .aggregate(common, commonData, commonTest, core, externalResolver, webServer, deviceRegistry, commonClient, commonMessaging)
     .enablePlugins(Versioning.Plugin)
     .settings(Publish.disable)
 }
 
 object Dependencies {
 
-  val AkkaVersion = "2.4.4"
+  val AkkaVersion = "2.4.7"
 
-  val CirceVersion = "0.4.0"
+  val CirceVersion = "0.4.1"
 
-  val AkkaHttpCirceVersion = "1.6.0"
+  val AkkaHttpCirceVersion = "1.7.0"
 
   val LogbackVersion = "1.1.3"
 
   val Play2AuthVersion = "0.14.2"
+
+  val AWSVersion = "1.11.15"
+
+  val JsonWebSecurityVersion = "0.3.1"
 
   val AkkaHttp = "com.typesafe.akka" %% "akka-http-experimental" % AkkaVersion
 
@@ -214,13 +234,17 @@ object Dependencies {
 
   val AkkaSlf4j = "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion
 
-  val Generex = "com.github.mifmif" % "generex" % "1.0.0" % "test"
+  val Generex = "com.github.mifmif" % "generex" % "1.0.0"
 
-  val Logback = "ch.qos.logback" % "logback-classic" % LogbackVersion
+  val Logback = Seq(
+    "ch.qos.logback" % "logback-classic" % LogbackVersion,
+    "org.slf4j" % "jcl-over-slf4j" % "1.7.16",
+    "commons-logging" % "commons-logging" % "99-empty"
+  )
 
   lazy val Akka = Seq(
-    AkkaHttp, AkkaHttpCirceJson, AkkaHttpTestKit, AkkaTestKit, AkkaSlf4j, Logback
-  )
+    AkkaHttp, AkkaHttpCirceJson, AkkaHttpTestKit, AkkaTestKit, AkkaSlf4j
+  ) ++ Logback
 
   val Circe = Seq(
     "io.circe" %% "circe-core" % CirceVersion,
@@ -240,7 +264,7 @@ object Dependencies {
 
   lazy val ScalaCheck = "org.scalacheck" %% "scalacheck" % "1.12.4" % "test"
 
-  lazy val Flyway = "org.flywaydb" % "flyway-core" % "3.2.1"
+  lazy val Flyway = "org.flywaydb" % "flyway-core" % "4.0.3"
 
   lazy val TestFrameworks = Seq( ScalaTest, ScalaCheck )
 
@@ -265,5 +289,15 @@ object Dependencies {
 
   lazy val Rest = Akka ++ Slick
 
-  lazy val AmazonS3 =  "com.amazonaws" % "aws-java-sdk-s3" % "1.10.69"
+  lazy val AmazonS3 = "com.amazonaws" % "aws-java-sdk-s3" % AWSVersion
+
+  val JsonWebSecurity = Seq(
+    "com.advancedtelematic" %% "jw-security-core" % JsonWebSecurityVersion,
+    "com.advancedtelematic" %% "jw-security-jca" % JsonWebSecurityVersion,
+    "com.advancedtelematic" %% "jw-security-akka-http" % JsonWebSecurityVersion
+  )
+
+  lazy val Kinesis = "com.amazonaws" % "amazon-kinesis-client" % "1.6.4"
+
+  lazy val Nats = "com.github.tyagihas" % "scala_nats_2.11" % "0.2.1" exclude("org.slf4j", "slf4j-simple")
 }

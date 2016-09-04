@@ -1,5 +1,5 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
 package org.genivi.sota.core.data.client
@@ -7,19 +7,24 @@ package org.genivi.sota.core.data.client
 import java.util.UUID
 
 import org.genivi.sota.core.data.UpdateRequest
-import org.genivi.sota.data.Namespace.Namespace
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.PackageId
 import java.time.Instant
+
+import org.genivi.sota.core.data.UpdateStatus.UpdateStatus
+
 import scala.language.implicitConversions
 import org.genivi.sota.data.Interval
 
-case class PendingUpdateRequest(requestId: UUID, packageId: PackageId, installPos: Int, createdAt: Instant)
+case class PendingUpdateRequest(requestId: UUID, packageId: PackageId, installPos: Int,
+                                status: UpdateStatus,
+                                createdAt: Instant)
 
 object PendingUpdateRequest {
-  implicit def toResponseEncoder: ResponseEncoder[PendingUpdateRequest, UpdateRequest] =
-    ResponseEncoder { u =>
-      PendingUpdateRequest(u.id, u.packageId, u.installPos, u.creationTime)
-    }
+  implicit val toResponseEncoder = GenericResponseEncoder {
+    (u: UpdateRequest, updateStatus: UpdateStatus) =>
+      PendingUpdateRequest(u.id, u.packageId, u.installPos, updateStatus, u.creationTime)
+  }
 }
 
 case class ClientUpdateRequest(id: UUID,

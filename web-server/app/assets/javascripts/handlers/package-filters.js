@@ -6,13 +6,13 @@ define(function(require) {
 
   var handlers = {
     getPackagesForFilter: function(payload) {
-      sendRequest.doGet('/api/v1/filters/' + payload.filter + '/package')
+      sendRequest.doGet('/api/v1/resolver/filters/' + payload.filter + '/package')
         .success(function(packages) {
           db.packagesForFilter.reset(packages);
         });
     },
     getFiltersForPackage: function(payload) {
-      sendRequest.doGet('/api/v1/packages/' + payload.name + '/' + payload.version + '/filter')
+      sendRequest.doGet('/api/v1/resolver/packages/' + payload.name + '/' + payload.version + '/filter')
         .success(function(filters) {
           db.filtersForPackage.reset(filters);
         });

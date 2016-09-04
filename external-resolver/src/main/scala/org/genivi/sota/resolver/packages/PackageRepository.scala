@@ -1,16 +1,16 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
 package org.genivi.sota.resolver.packages
 
-import org.genivi.sota.data.Namespace._
-import org.genivi.sota.data.PackageId
+import org.genivi.sota.data.{Namespace, PackageId}
 import org.genivi.sota.db.Operators._
 import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.filters.{Filter, FilterRepository}
+
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
@@ -74,7 +74,7 @@ object PackageRepository {
                 && p.version   === pkgId.version)
       .result
       .headOption
-      .failIfNone(Errors.MissingPackageException)
+      .failIfNone(Errors.MissingPackage)
 
   /**
    * Loads a group of Packages from the database by ID

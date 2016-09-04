@@ -4,17 +4,20 @@ import akka.http.scaladsl.model.Multipart.FormData.BodyPart
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.PathMatchers
+import akka.http.scaladsl.testkit.RouteTestTimeout
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.http.scaladsl.unmarshalling._
 import io.circe.generic.auto._
 import java.io.File
 
+import org.genivi.sota.core.SotaCoreErrors.SotaCoreErrorCodes
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
-import org.genivi.sota.data.Namespace._
-import org.genivi.sota.data.{PackageId, Vehicle}
-import org.genivi.sota.datatype.NamespaceDirective
+import org.genivi.sota.data.{Device, Namespace, PackageId}
+import org.genivi.sota.http.NamespaceDirectives
 import org.genivi.sota.marshalling.CirceMarshallingSupport
+import org.genivi.sota.messaging.Messages.PackageCreated
+import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.rest.ErrorRepresentation
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.PropertyChecks
@@ -22,6 +25,7 @@ import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Matchers, PropSpec}
 
 import scala.concurrent.Future
+import scala.concurrent.duration._
 import slick.jdbc.JdbcBackend.Database
 
 
@@ -36,7 +40,9 @@ class PackageUploadSpec extends PropSpec
   with ScalatestRouteTest
   with ScalaFutures {
 
-  import NamespaceDirective._
+  import NamespaceDirectives._
+
+  implicit val routeTimeout: RouteTestTimeout = RouteTestTimeout(10.second)
 
   val PackagesPath = Path / "packages"
 
@@ -46,20 +52,22 @@ class PackageUploadSpec extends PropSpec
     val resolver = new ExternalResolverClient {
       override def putPackage(namespace: Namespace, packageId: PackageId, description: Option[String], vendor: Option[String]): Future[Unit] = resolverResult
 
-      override def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Vehicle, Set[PackageId]]] = ???
+      override def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Device.Id, Set[PackageId]]] = ???
 
-      override def setInstalledPackages( vin: Vehicle.Vin, json: io.circe.Json) : Future[Unit] = ???
+      override def setInstalledPackages(device: Device.Id, json: io.circe.Json) : Future[Unit] = ???
     }
 
-    val resource = new PackagesResource(resolver, db, defaultNamespaceExtractor)
+    lazy val messageBusPublisher = MessageBusPublisher.ignore
+
+    val resource = new PackagesResource(resolver, db, messageBusPublisher, defaultNamespaceExtractor)
   }
 
   def toBodyPart(name : String)(x: String) = BodyPart.Strict(name, HttpEntity( x ) )
 
   private[this] def mkRequest( pckg: Package ) : HttpRequest = {
-    val filePart = BodyPart.fromFile( "file",
+    val filePart = BodyPart.fromPath( "file",
       ContentType(MediaTypes.`application/x-redhat-package-manager`),
-      new File("""packages/ghc-7.6.3-18.3.el7.x86_64.rpm"""))
+      new File("""packages/ghc-7.6.3-18.3.el7.x86_64.rpm""").toPath)
     val parts = filePart ::
         List( pckg.description.map( toBodyPart("description") ),
           pckg.vendor.map( toBodyPart("vendor") )
@@ -85,7 +93,7 @@ class PackageUploadSpec extends PropSpec
       forAll { (pckg: Package) =>
         mkRequest( pckg ) ~> resource.route ~> check {
           status shouldBe StatusCodes.ServiceUnavailable
-          responseAs[ErrorRepresentation].code shouldBe ErrorCodes.ExternalResolverError
+          responseAs[ErrorRepresentation].code shouldBe SotaCoreErrorCodes.ExternalResolverError
         }
       }
     }

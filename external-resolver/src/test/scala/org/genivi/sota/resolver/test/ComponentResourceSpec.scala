@@ -1,5 +1,5 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
 package org.genivi.sota.resolver.test
@@ -15,7 +15,7 @@ import org.genivi.sota.resolver.components.Component
 /**
  * Specs for Component REST actions
  */
-class ComponentResourceWordSpec extends ResourceWordSpec with Namespaces {
+class ComponentResourceSpec extends ResourceWordSpec with Namespaces {
 
   val components = "components"
 

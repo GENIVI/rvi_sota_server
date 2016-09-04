@@ -1,5 +1,5 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, Jaguar Land Rover
  * License: MPL-2.0
  */
 package org.genivi.sota.resolver.test
@@ -9,11 +9,11 @@ import akka.http.scaladsl.unmarshalling._
 import eu.timepit.refined.api.Refined
 import io.circe._
 import io.circe.generic.auto._
-import org.genivi.sota.data.Namespaces
 import org.genivi.sota.rest.ErrorCodes
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.filters.Filter
 import Filter._
+import org.genivi.sota.data.Namespaces
 import org.genivi.sota.resolver.filters.FilterAST._
 import org.genivi.sota.resolver.packages.PackageFilter
 import org.genivi.sota.resolver.test.generators.FilterGenerators
@@ -80,7 +80,7 @@ class FiltersResourceWordSpec extends ResourceWordSpec with Namespaces {
     "fail on trying to update non-existing filters" in {
       updateFilter("nonexistant", filterExpr) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        responseAs[ErrorRepresentation].code shouldBe ErrorCode("filter_not_found")
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.MissingEntity
       }
     }
 
@@ -96,7 +96,7 @@ class FiltersResourceWordSpec extends ResourceWordSpec with Namespaces {
     "fail on trying to delete non-existing filters" in {
       deleteFilter("nonexistant") ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        responseAs[ErrorRepresentation].code shouldBe ErrorCode("filter_not_found")
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.MissingEntity
       }
     }
 

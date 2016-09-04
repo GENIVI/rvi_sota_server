@@ -7,7 +7,7 @@ import io.circe.generic.auto._
 import org.genivi.sota.data.Namespaces
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.filters.Filter
-import org.genivi.sota.rest.{ErrorRepresentation, ErrorCodes}
+import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 
 /**
  * Spec for Validate REST actions

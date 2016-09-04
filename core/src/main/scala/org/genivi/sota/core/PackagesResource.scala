@@ -1,32 +1,46 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
 package org.genivi.sota.core
 
+import akka.Done
 import akka.actor.ActorSystem
 import akka.event.Logging
-import akka.http.scaladsl.common.StrictForm
-import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.{StatusCode, StatusCodes}
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.directives.DebuggingDirectives
 import akka.http.scaladsl.server.{Directive1, Route}
 import akka.stream._
+import akka.stream.scaladsl.{Sink, Source}
+import akka.util.ByteString
+import cats.data.OptionT
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
-import io.circe.generic.auto._
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.core.db.{Packages, UpdateSpecs}
+import org.genivi.sota.core.db._
 import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
 import org.genivi.sota.core.storage.PackageStorage
 import org.genivi.sota.core.storage.PackageStorage.PackageStorageOp
-import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.PackageId
-import org.genivi.sota.datatype.NamespaceDirective
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
+import org.genivi.sota.messaging.Messages.PackageCreated
+import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.rest.ErrorRepresentation
 import org.genivi.sota.rest.Validation._
 import slick.driver.MySQLDriver.api.Database
+import org.genivi.sota.core.data.client.ResponseConversions._
+import org.genivi.sota.core.data.PackageResponse._
+import cats.std.future._
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import akka.http.scaladsl.marshalling._
+import akka.http.scaladsl.unmarshalling._
+import io.circe.generic.auto._
+import org.genivi.sota.core.SotaCoreErrors.SotaCoreErrorCodes
+import org.genivi.sota.http.ErrorHandler
+import org.genivi.sota.http.Errors.RawError
+
+import scala.concurrent.Future
 
 object PackagesResource {
   /**
@@ -39,15 +53,15 @@ object PackagesResource {
 }
 
 class PackagesResource(resolver: ExternalResolverClient, db : Database,
+                       messageBusPublisher: MessageBusPublisher,
                        namespaceExtractor: Directive1[Namespace])
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
 
-  import akka.stream.stage._
   import system.dispatcher
-  import org.genivi.sota.marshalling.CirceMarshallingSupport._
   import PackagesResource._
 
   implicit val _config = system.settings.config
+  implicit val _db = db
 
   private[this] val log = Logging.getLogger(system, "org.genivi.sota.core.PackagesResource")
 
@@ -58,11 +72,11 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
     */
   def searchPackage(ns: Namespace): Route = {
     parameters('regex.as[String Refined Regex].?) { (regex: Option[String Refined Regex]) =>
-      val query = regex match {
-        case Some(r) => Packages.searchByRegex(ns, r.get)
-        case None => Packages.list
-      }
-      complete(db.run(query))
+      val query = Packages.searchByRegexWithBlacklist(ns, regex.map(_.get))
+
+      val result = db.run(query).map(_.toResponse)
+
+      complete(result)
     }
   }
 
@@ -73,7 +87,14 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
     // TODO: Include error description with rejectEmptyResponse?
     rejectEmptyResponse {
       complete {
-        db.run(Packages.byId(ns, pid))
+        val query = for {
+          p <- Packages.byId(ns, pid)
+          isBlacklisted <- BlacklistedPackages.isBlacklisted(ns, pid)
+        } yield (p, isBlacklisted)
+
+        db.run(query).map { case (pkg, blacklisted) =>
+          pkg.toResponse(blacklisted)
+        }
       }
     }
   }
@@ -87,52 +108,84 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
     * </ul>
     */
   def updatePackage(ns: Namespace, pid: PackageId): Route = {
+    def storePackage(ns: Namespace, pid: PackageId,
+                     description: Option[String], vendor: Option[String],
+                     signature: Option[String],
+                     fileName: String, file: Source[ByteString, Any]): Future[StatusCode] = {
+      val resultF = for {
+        _ <- resolver.putPackage(ns, pid, description, vendor)
+        (uri, size, digest) <- packageStorageOp(pid, fileName, file)
+        pkg <- db.run(Packages.create(Package(ns, pid, uri, size, digest, description, vendor, signature)))
+      } yield StatusCodes.NoContent
+
+      resultF.andThen {
+        case scala.util.Success(_) =>
+          messageBusPublisher.publish(PackageCreated(ns, pid, description, vendor, signature, fileName))
+      }
+    }
+
+    def handleErrors(throwable: Throwable): Route = throwable match {
+      case ExternalResolverRequestFailed(msg, cause) =>
+        log.error(cause, s"Unable to create/update package: $msg")
+        failWith(RawError(SotaCoreErrorCodes.ExternalResolverError, StatusCodes.ServiceUnavailable, msg))
+      case e => failWith(e)
+    }
+
+    // FIXME: There is a bug in akka, so we need to drain the stream before
+    // returning the response
+    def drainStream(file: Source[ByteString, Any]): Future[Done] = {
+      file.runWith(Sink.ignore).recoverWith { case t =>
+        log.warning(s"Could not drain stream: ${t.getMessage}")
+        Future.successful(Done)
+      }
+    }
+
     // TODO: Fix form fields metadata causing error for large upload
     parameters('description.?, 'vendor.?, 'signature.?) { (description, vendor, signature) =>
-      formFields('file.as[StrictForm.FileData]) { fileData =>
-        completeOrRecoverWith(
-          for {
-            _ <- resolver.putPackage(ns, pid, description, vendor)
-            (uri, size, digest) <- packageStorageOp(pid, fileData)
-            _ <- db.run(Packages.create(
-              Package(ns, pid, uri, size, digest, description, vendor, signature)))
-          } yield StatusCodes.NoContent
-        ) {
-          case ExternalResolverRequestFailed(msg, cause) =>
-            log.error(cause, s"Unable to create/update package: $msg")
-            complete(
-              StatusCodes.ServiceUnavailable ->
-                ErrorRepresentation(ErrorCodes.ExternalResolverError, msg))
-          case e => failWith(e)
-        }
+      fileUpload("file") { case (fileInfo, file) =>
+        val storePkgF = storePackage(ns, pid, description, vendor, signature, fileInfo.fileName, file)
+        completeOrRecoverWith(storePkgF) { ex => onComplete(drainStream(file))(_ => handleErrors(ex)) }
       }
     }
   }
 
+  case class PackageInfo(description: String)
+
+  def updatePackageInfo(ns: Namespace, pid: PackageId): Route = {
+    entity(as[PackageInfo]) { pi =>
+      complete(db.run(Packages.updateInfo(ns,pid,pi.description)))
+    }
+  }
   /**
-    * An ota client GET the VIN-s waiting for the given [[Package]] to be installed.
+    * An ota client GET the devices waiting for the given [[Package]] to be installed.
     */
-  def queuedVins(ns: Namespace, pid: PackageId): Route = {
-    complete(db.run(UpdateSpecs.getVinsQueuedForPackage(ns, pid.name, pid.version)))
+  def queuedDevices(ns: Namespace, pid: PackageId): Route = {
+    complete(db.run(UpdateSpecs.getDevicesQueuedForPackage(ns, pid.name, pid.version)))
   }
 
-  val route =
+  val route = ErrorHandler.handleErrors {
     pathPrefix("packages") {
       (get & namespaceExtractor & pathEnd) { ns =>
         searchPackage(ns)
       } ~
-      (namespaceExtractor & extractPackageId) { (ns, pid) =>
-        pathEnd {
-          get {
-            fetch(ns, pid)
+        (namespaceExtractor & extractPackageId) { (ns, pid) =>
+          path("info") {
+            put {
+              updatePackageInfo(ns, pid)
+            }
           } ~
-          put {
-            updatePackage(ns, pid)
-          }
-        } ~
-        path("queued_vins") {
-          queuedVins(ns, pid)
+            pathEnd {
+              get {
+                fetch(ns, pid)
+              } ~
+                put {
+                  updatePackage(ns, pid)
+                }
+            } ~
+            path("queued") {
+              queuedDevices(ns, pid)
+            }
         }
-      }
     }
+  }
 }

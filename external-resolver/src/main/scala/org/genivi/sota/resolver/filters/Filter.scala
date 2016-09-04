@@ -1,11 +1,12 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
 package org.genivi.sota.resolver.filters
 
 import org.genivi.sota.data.Namespace._
-import eu.timepit.refined.api.{Validate, Refined}
+import eu.timepit.refined.api.{Refined, Validate}
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.filters.FilterAST._

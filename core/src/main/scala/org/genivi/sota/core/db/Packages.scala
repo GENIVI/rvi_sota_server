@@ -1,18 +1,18 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, Jaguar Land Rover
  * License: MPL-2.0
  */
 package org.genivi.sota.core.db
 
 import akka.http.scaladsl.model.Uri
+import org.genivi.sota.core.SotaCoreErrors
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.PackageId
-import org.genivi.sota.db.Operators.regex
 import org.genivi.sota.db.SlickExtensions._
 import slick.driver.MySQLDriver.api._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * Database mapping definition for the Package SQL table. This defines all the
@@ -24,6 +24,7 @@ import scala.concurrent.ExecutionContext
 object Packages {
 
   import org.genivi.sota.refined.SlickRefined._
+  import org.genivi.sota.db.Operators._
 
   /**
    * Slick mapping definition for the Package table
@@ -60,7 +61,7 @@ object Packages {
    * List all the packages that are available on the SOTA system
    * @return a list of packages
    */
-  def list: DBIO[Seq[Package]] = packages.result
+  def list(ns: Namespace): DBIO[Seq[Package]] = packages.filter(_.namespace === ns).result
 
   /**
    * Add a new package to the SOTA system. If the package already exists, it is
@@ -71,20 +72,24 @@ object Packages {
   def create(pkg: Package)(implicit ec: ExecutionContext): DBIO[Package] =
     packages.insertOrUpdate(pkg).map(_ => pkg)
 
-  /**
-   * Find a package using a regular expression match on its name or version
-   * @param reg The regular expression to search with
-   */
-  def searchByRegex(ns: Namespace, reg:String): DBIO[Seq[Package]] =
-    packages.filter(p => p.namespace === ns && (regex(p.name, reg) || regex(p.version, reg))).result
+  def searchByRegexWithBlacklist(ns: Namespace, reg: Option[String]): DBIO[Seq[(Package, Boolean)]] =
+    packages
+      .filter(_.namespace === ns)
+      .regexFilter(reg)(_.name, _.version)
+      .joinLeft(BlacklistedPackages.active).on { case (p, b) =>
+      p.name === b.pkgName && p.version === b.pkgVersion &&
+        p.namespace === b.namespace }
+      .map { case (pkg, blacklistO) =>
+        (pkg, blacklistO.map(_.active).getOrElse(false))
+      }
+      .result
 
-  /**
-   * Return the information about a package from its name & version
-   * @param id The name/version of the package to fetch
-   * @return The full package information
-   */
-  def byId(ns: Namespace, id : PackageId) : DBIO[Option[Package]] =
-    packages.filter(p => p.namespace === ns && p.name === id.name && p.version === id.version).result.headOption
+
+  def byId(ns: Namespace, id : PackageId)(implicit ec: ExecutionContext): DBIO[Package] =
+    packages
+      .filter(p => p.namespace === ns && p.name === id.name && p.version === id.version)
+      .result
+      .failIfNone(SotaCoreErrors.MissingPackage)
 
   /**
     * Fetch from DB the [[Package]]s corresponding to the given [[PackageId]]s.
@@ -96,5 +101,26 @@ object Packages {
       x.namespace === ns &&
       (x.name.mappedTo[String] ++ x.version.mappedTo[String] inSet ids.map( id => id.name.get + id.version.get))
     ).result
+  }
+
+  /**
+   * Update the description about a package from its name & version
+   * @param id The name/version of the package to update
+   * @param description the new description
+   */
+  def updateInfo(ns: Namespace, id : PackageId, description: String)
+                (implicit ec: ExecutionContext): DBIO[Unit] = {
+    packages.filter(p => p.namespace === ns && p.name === id.name && p.version === id.version)
+            .map(_.description).update(description).map(_ => ())
+  }
+
+  def find(ns: Namespace, packageId: PackageId)
+          (implicit ec: ExecutionContext): DBIO[Package] = {
+    packages
+      .filter(_.namespace === ns)
+      .filter(_.name === packageId.name)
+      .filter(_.version === packageId.version)
+      .result
+      .failIfNone(SotaCoreErrors.MissingPackage)
   }
 }

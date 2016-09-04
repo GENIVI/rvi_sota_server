@@ -1,14 +1,16 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
 package org.genivi.sota.resolver.filters
 
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.{Regex, regexValidate}
-import org.genivi.sota.data.{PackageId, Vehicle}
+import org.genivi.sota.data.{Device, PackageId}
+import org.genivi.sota.data.Device.showDevice
+import cats.syntax.show._
 import scala.util.parsing.combinator.syntactical.StandardTokenParsers
-import scala.util.parsing.combinator.{PackratParsers, ImplicitConversions}
+import scala.util.parsing.combinator.{ImplicitConversions, PackratParsers}
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.packages.Package
 
@@ -89,10 +91,11 @@ object FilterAST extends StandardTokenParsers with PackratParsers with ImplicitC
       case False            => "FALSE"
     }
 
+  // TODO: We are using device id as a vin here
   // scalastyle:off cyclomatic.complexity
-  def query(f: FilterAST): Function1[(Vehicle, (Seq[PackageId], Seq[Component.PartNumber])), Boolean] =
-  { case a@((v: Vehicle, (ps: Seq[PackageId], cs: Seq[Component.PartNumber]))) => f match {
-      case VinMatches(re)       => re.get.r.findAllIn(v.vin.get).nonEmpty
+  def query(f: FilterAST): ((Device.DeviceId, (Seq[PackageId], Seq[Component.PartNumber]))) => Boolean =
+  { case a@((v: Device.DeviceId, (ps: Seq[PackageId], cs: Seq[Component.PartNumber]))) => f match {
+      case VinMatches(re)       => re.get.r.findAllIn(v.show).nonEmpty
       case HasPackage(re1, re2) => ps.exists(p => re1.get.r.findAllIn(p.name   .get).nonEmpty &&
                                                   re2.get.r.findAllIn(p.version.get).nonEmpty)
       case HasComponent(re)     => cs.exists(part => re.get.r.findAllIn(part.get).nonEmpty)

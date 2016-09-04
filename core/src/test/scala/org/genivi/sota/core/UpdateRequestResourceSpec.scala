@@ -19,8 +19,8 @@ import java.time.temporal.ChronoUnit
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 import akka.http.scaladsl.unmarshalling._
-import org.genivi.sota.data.Interval
-import org.genivi.sota.datatype.NamespaceDirective
+import org.genivi.sota.data.{Interval, Namespaces}
+import org.genivi.sota.http.NamespaceDirectives
 
 import scala.concurrent.Future
 
@@ -30,15 +30,17 @@ class UpdateRequestResourceSpec extends FunSuite
   with UpdateResourcesDatabaseSpec
   with ScalaFutures
   with DatabaseSpec
-  with DefaultPatience {
+  with DefaultPatience
+  with LongRequestTimeout {
 
   import CirceMarshallingSupport._
   import UpdateSpec._
-  import NamespaceDirective._
+  import NamespaceDirectives._
 
   implicit val log = Logging(system, "UpdateRequestResourceSpec")
 
   val resolver = new FakeExternalResolver()
+  val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
 
   implicit val rviClient = new ConnectivityClient {
     override def sendMessage[A](service: String, message: A, expirationDate: Instant)(implicit encoder: Encoder[A]): Future[Int] = ???
@@ -46,7 +48,8 @@ class UpdateRequestResourceSpec extends FunSuite
 
   implicit val connectivity = DefaultConnectivity
 
-  val serve = new UpdateRequestsResource(db, resolver, new UpdateService(DefaultUpdateNotifier), defaultNamespaceExtractor)
+  val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
+  val serve = new UpdateRequestsResource(db, resolver, updateService, defaultNamespaceExtractor)
 
   test("accepts new updates with a Client specific format") {
     val now = Instant.now

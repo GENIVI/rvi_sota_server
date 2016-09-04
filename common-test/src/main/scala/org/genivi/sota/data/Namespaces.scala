@@ -1,5 +1,5 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
 package org.genivi.sota.data
@@ -19,10 +19,10 @@ trait Namespaces {
     */
   val NamespaceGen: Gen[Namespace] = {
     // TODO: for now, just use simple identifiers
-    Gen.identifier.map(Refined.unsafeApply)
+    Gen.identifier.map(Namespace.apply)
   }
 
-  val defaultNs: Namespace = Refined.unsafeApply("default")
+  val defaultNs: Namespace = Namespace("default")
 }
 
 object Namespaces extends Namespaces

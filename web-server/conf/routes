@@ -13,9 +13,6 @@ GET     /login                                  org.genivi.webserver.controllers
 GET     /logout                                 org.genivi.webserver.controllers.Application.logout
 POST    /authenticate                           org.genivi.webserver.controllers.Application.authenticate
 
-PUT     /api/v1/vehicles/:vin                   org.genivi.webserver.controllers.Application.apiProxyBroadcast(vin: String)
-DELETE  /api/v1/vehicles/:vin                   org.genivi.webserver.controllers.Application.apiProxyBroadcast(vin: String)
-
 GET     /api/v1/*path                           org.genivi.webserver.controllers.Application.apiProxy(path: String)
 PUT     /api/v1/*path                           org.genivi.webserver.controllers.Application.apiProxy(path: String)
 POST    /api/v1/*path                           org.genivi.webserver.controllers.Application.apiProxy(path: String)

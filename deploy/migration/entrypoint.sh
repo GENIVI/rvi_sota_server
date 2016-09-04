@@ -14,6 +14,7 @@ MIGRATIONS_WORKDIR=${MIGRATIONS_WORKDIR:-/migrations}
 CLEAN_ALL=${CLEAN_ALL:-false}
 CORE_DB_MIGRATE=${CORE_DB_MIGRATE:-}
 RESOLVER_DB_MIGRATE=${RESOLVER_DB_MIGRATE:-}
+DEVICE_REGISTRY_DB_MIGRATE=${DEVICE_REGISTRY_DB_MIGRATE:-}
 
 MYSQL=$(parse_jdbc_url $CORE_DB_URL)
 
@@ -38,6 +39,13 @@ function resolver_flyway() {
               $*
 }
 
+function device_registry_flyway() {
+    flyway/flyway -url=$DEVICE_REGISTRY_DB_URL \
+                  -user=$DEVICE_REGISTRY_DB_USER -password=$DEVICE_REGISTRY_DB_PASS \
+                  -locations=filesystem:./rvi_sota_server/device-registry/src/main/resources/db/migration \
+                  $*
+}
+
 
 if [[ "$CLEAN_ALL" == "true" ]]; then
     read -p "Are you sure you want to clean the database? [YES/no]" prompt
@@ -49,7 +57,6 @@ if [[ "$CLEAN_ALL" == "true" ]]; then
         echo "clean cancelled"
     fi
 fi
-
 
 
 if [[ "$CORE_DB_MIGRATE" == "true" ]]; then
@@ -65,6 +72,14 @@ else
     echo -e "\e[31;1m\$RESOLVER_DB_MIGRATE false, not migrating\e[0m"
 fi
     
+if [[ "$DEVICE_REGISTRY_DB_MIGRATE" == "true" ]]; then
+    device_registry_flyway migrate
+else
+    echo -e "\e[31;1m\$DEVICE_REGISTRY_DB_MIGRATE false, not migrating\e[0m"
+fi
+
 core_flyway info
 
 resolver_flyway info
+
+device_registry_flyway info

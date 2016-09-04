@@ -1,5 +1,5 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
 package org.genivi.sota.core
@@ -18,8 +18,8 @@ import org.genivi.sota.core.data._
 import org.genivi.sota.core.data.client._
 import org.genivi.sota.core.db.UpdateSpecs
 import org.genivi.sota.core.resolver.ExternalResolverClient
-import org.genivi.sota.data.Namespace._
-import org.genivi.sota.datatype.NamespaceDirective
+import org.genivi.sota.data.Device
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.rest.Validation._
 import slick.driver.MySQLDriver.api.Database
@@ -40,7 +40,7 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
   implicit val _db = db
 
   /**
-    * An ota client GET (VIN, status) for the [[UpdateRequest]] given by the argument.
+    * An ota client GET (device, status) for the [[UpdateRequest]] given by the argument.
     */
   def fetch(updateRequestId: Refined[String, Uuid]): Route = {
     complete(db.run(UpdateSpecs.listUpdatesById(updateRequestId)))
@@ -54,23 +54,19 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
   }
 
   private def clientUpdateRequest(ns: Namespace): Directive1[UpdateRequest] = {
+    import ClientUpdateRequest._
     clientEntity(ns)
   }
 
   /**
     * An ota client POST an [[UpdateRequest]] campaign to locally persist it along with one or more [[UpdateSpec]]
-    * (one per VIN, for dependencies obtained from resolver) thus scheduling an update.
+    * (one per device, for dependencies obtained from resolver) thus scheduling an update.
     */
   def createUpdate(ns: Namespace): Route = {
     clientUpdateRequest(ns) { req: UpdateRequest =>
-      complete(
-        updateService.queueUpdate(
-          req,
-          pkg => resolver.resolve(ns, pkg.id).map {
-            m => m.map { case (v, p) => (v.vin, p) }
-          }
-        ) map (_ => (StatusCodes.Created, req))
-      )
+      val resultF = updateService.queueUpdate(req, pkg => resolver.resolve(ns, pkg.id))
+
+      complete(resultF map (_ => (StatusCodes.Created, req)))
     }
   }
 

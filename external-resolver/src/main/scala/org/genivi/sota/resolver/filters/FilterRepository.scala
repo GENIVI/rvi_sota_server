@@ -1,22 +1,24 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
 package org.genivi.sota.resolver.filters
 
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
-import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.db.Operators._
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.packages.PackageFilterRepository
+
 import scala.concurrent.ExecutionContext
 import scala.util.control.NoStackTrace
 import slick.driver.MySQLDriver.api._
 
 
 object FilterRepository {
+  import org.genivi.sota.db.SlickExtensions._
 
   // scalastyle:off
   class FiltersTable(tag: Tag) extends Table[Filter](tag, "Filter") {
@@ -42,14 +44,14 @@ object FilterRepository {
       .filter(i => i.namespace === namespace && i.name === name)
       .result
       .headOption
-      .failIfNone(Errors.MissingFilterException)
+      .failIfNone(Errors.MissingFilter)
 
   def update(filter: Filter)(implicit ec: ExecutionContext): DBIO[Filter] = {
     val q = for {
       f <- filters if f.name === filter.name
     } yield f.expression
     q.update(filter.expression)
-     .flatMap(i => if (i == 0) DBIO.failed(Errors.MissingFilterException) else DBIO.successful(filter))
+     .flatMap(i => if (i == 0) DBIO.failed(Errors.MissingFilter) else DBIO.successful(filter))
   }
 
   def delete(namespace: Namespace, name: Filter.Name)(implicit ec: ExecutionContext): DBIO[Int] =

@@ -5,14 +5,13 @@ import akka.event.Logging
 import akka.http.scaladsl.model.{HttpResponse, Uri}
 import akka.stream.ActorMaterializer
 import io.circe.Json
-import org.genivi.sota.core.resolver.DefaultExternalResolverClient
-import org.genivi.sota.data.Namespace._
-import org.genivi.sota.data.{PackageId, Vehicle}
+import org.genivi.sota.core.resolver.{DefaultExternalResolverClient, ExternalResolverClient}
+import org.genivi.sota.data.{Device, Namespace, PackageId}
 
 import scala.concurrent.Future
 
 class FakeExternalResolver()(implicit system: ActorSystem, mat: ActorMaterializer)
-  extends DefaultExternalResolverClient(Uri.Empty, Uri.Empty, Uri.Empty, Uri.Empty)
+  extends ExternalResolverClient
 {
   import org.genivi.sota.marshalling.CirceInstances._
 
@@ -20,7 +19,7 @@ class FakeExternalResolver()(implicit system: ActorSystem, mat: ActorMaterialize
 
   val logger = Logging.getLogger(system, this)
 
-  override def setInstalledPackages(vin: Vehicle.Vin, json: Json): Future[Unit] = {
+  override def setInstalledPackages(device: Device.Id, json: Json): Future[Unit] = {
     val ids = json
       .cursor
       .downField("packages")
@@ -32,12 +31,9 @@ class FakeExternalResolver()(implicit system: ActorSystem, mat: ActorMaterialize
     Future.successful(())
   }
 
-  override def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Vehicle, Set[PackageId]]] = {
+  override def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Device.Id, Set[PackageId]]] = {
     Future.successful(Map.empty)
   }
-
-  override def handlePutResponse(futureResponse: Future[HttpResponse]): Future[Unit] =
-    Future.successful(())
 
   override def putPackage(namespace: Namespace,
                           packageId: PackageId,

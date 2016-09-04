@@ -1,5 +1,5 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
 package org.genivi.sota.core.storage
@@ -39,7 +39,7 @@ class LocalPackageStoreSpec extends TestKit(ActorSystem("LocalPackageStoreSpec")
     val storage = new LocalPackageStore()
     val packageId = PackageIdGenerators.genPackageId.sample.get
 
-    val f = storage.store(packageId, fileData)
+    val f = storage.store(packageId, fileData.filename.get, fileData.entity.dataBytes)
 
     whenReady(f) { case (uri, byteSize, digest) =>
       uri.path.toString should endWith("filename.rpm")
@@ -55,7 +55,7 @@ class LocalPackageStoreSpec extends TestKit(ActorSystem("LocalPackageStoreSpec")
     val packageId = PackageIdGenerators.genPackageId.sample.get
 
     val f = for {
-      (uri, _, _) <- storage.store(packageId, fileData)
+      (uri, _, _) <- storage.store(packageId, fileData.filename.get, fileData.entity.dataBytes)
       (_, entity) <- storage.retrieve(packageId, uri)
       contents <- entity.dataBytes.runFold(ByteString(""))(_ ++ _)
     } yield contents

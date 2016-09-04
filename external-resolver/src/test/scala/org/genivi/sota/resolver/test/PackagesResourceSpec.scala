@@ -1,11 +1,12 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, Jaguar Land Rover
  * License: MPL-2.0
  */
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.ValidationRejection
+import akka.http.scaladsl.testkit.RouteTestTimeout
 import eu.timepit.refined.api.Refined
 import io.circe.Json
 import io.circe.generic.auto._
@@ -16,7 +17,7 @@ import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.packages.Package._
 import org.genivi.sota.resolver.test.generators.PackageGenerators
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
-
+import scala.concurrent.duration._
 
 /**
  * Spec for Packages REST actions
@@ -102,7 +103,7 @@ class PackagesResourceWordSpec extends ResourceWordSpec with Namespaces {
       }
       Get(Resource.uri("packages", "bepa", "1.0.0")) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.MissingEntity
       }
     }
   }

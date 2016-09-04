@@ -1,37 +1,41 @@
 package org.genivi.sota.resolver.test
 
+
 import akka.http.scaladsl.model.StatusCodes
-import eu.timepit.refined.refineV
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
-import org.genivi.sota.data.{PackageId, Vehicle}
+import org.genivi.sota.data.Device.{DeviceId, DeviceName}
+import org.genivi.sota.data.{Device, DeviceT, PackageId}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import org.genivi.sota.resolver.common.Errors.Codes
-import org.genivi.sota.resolver.components.Component
-import org.genivi.sota.resolver.packages.{Package, PackageFilter}
-import org.genivi.sota.resolver.test.generators.{FilterGenerators, PackageGenerators}
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
+import org.scalatest.concurrent.ScalaFutures
+import Device._
+import cats.syntax.show._
+
+import scala.concurrent.Future
 
 
 /**
  * Spec for testing Resolver REST actions
  */
-class ResolveResourceWordSpec extends ResourceWordSpec {
+class ResolveResourceSpec extends ResourceWordSpec with ScalaFutures {
 
   val pkgName = "resolvePkg"
 
+  lazy val testDevices: Seq[(DeviceT, Device.Id)] = {
+    Future.sequence {
+      (0 to 4).map { i =>
+        val d = DeviceT(DeviceName(s"Name $i"),
+          Some(DeviceId(s"${i}0RES0LVEV1N12345")))
+
+        deviceRegistry.createDevice(d).map((d, _))
+      }
+    }.futureValue
+  }
+
   "Resolve resource" should {
-
     "return all VINs if the filter is trivially true" in {
-
-      // Add some vehicles.
-      val vins = List(
-        refineV[Vehicle.ValidVin]("00RES0LVEV1N12345").right.get,
-        refineV[Vehicle.ValidVin]("01RES0LVEV1N12345").right.get,
-        refineV[Vehicle.ValidVin]("10RES0LVEV1N12345").right.get,
-        refineV[Vehicle.ValidVin]("11RES0LVEV1N12345").right.get): List[Vehicle.Vin]
-
-      vins map addVehicleOK
+      val deviceIds = testDevices.map(_._2)
 
       // Add a package.
       addPackageOK("resolvePkg", "0.0.1", None, None)
@@ -40,57 +44,66 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
       addFilterOK("truefilter", "TRUE")
       addPackageFilterOK(pkgName, "0.0.1", "truefilter")
 
-      resolveOK(pkgName, "0.0.1", vins)
+      resolveOK(pkgName, "0.0.1", deviceIds)
     }
 
     "support filtering by VIN" in {
-
       // Add another filter.
+      addPackageOK("resolvePkg", "0.0.1", None, None)
       addFilterOK("0xfilter", s"""vin_matches "^00.*" OR vin_matches "^01.*"""")
       addPackageFilterOK(pkgName, "0.0.1", "0xfilter")
 
-      resolveOK(pkgName, "0.0.1",
-        List(
-          refineV[Vehicle.ValidVin]("00RES0LVEV1N12345").right.get,
-          refineV[Vehicle.ValidVin]("01RES0LVEV1N12345").right.get))
+      val deviceIds = testDevices
+        .map(e => (e._1.deviceId.get, e._2))
+        .filter(e => e._1.show.startsWith("00") || e._1.show.startsWith("01"))
+        .map(_._2)
+
+      resolveOK(pkgName, "0.0.1", deviceIds)
     }
 
+    //noinspection ZeroIndexToHead
     "support filtering by installed packages on VIN" in {
-
       // Delete the previous filter and add another one which uses
       // has_package instead.
 
       deletePackageFilterOK(pkgName, "0.0.1", "0xfilter")
       addPackageOK("apa",  "1.0.0", None, None)
       addPackageOK("bepa", "1.0.0", None, None)
-      installPackageOK(refineV[Vehicle.ValidVin]("10RES0LVEV1N12345").right.get, "apa", "1.0.0")
-      installPackageOK(refineV[Vehicle.ValidVin]("11RES0LVEV1N12345").right.get, "apa", "1.0.0")
-      installPackageOK(refineV[Vehicle.ValidVin]("00RES0LVEV1N12345").right.get, "bepa", "1.0.0")
+
+      val (_, id0) = testDevices(0)
+      val (_, id1) = testDevices(1)
+      val (_, id2) = testDevices(2)
+
+      installPackageOK(id0, "apa", "1.0.0")
+      installPackageOK(id1, "apa", "1.0.0")
+      installPackageOK(id2, "bepa", "1.0.0")
+
       addFilterOK("1xfilter", s"""has_package "^a.*" "1.*"""")
       addPackageFilterOK(pkgName, "0.0.1", "1xfilter")
-      resolveOK(pkgName, "0.0.1",
-        List(
-          refineV[Vehicle.ValidVin]("10RES0LVEV1N12345").right.get,
-          refineV[Vehicle.ValidVin]("11RES0LVEV1N12345").right.get))
+
+      resolveOK(pkgName, "0.0.1", List(id0, id1))
     }
 
+    //noinspection ZeroIndexToHead
     "support filtering by hardware components on VIN" in {
 
       // Delete the previous filter and add another one which uses
       // has_component instead.
 
+      val (_, id0) = testDevices(0)
+      val (_, id1) = testDevices(1)
+      val (_, id2) = testDevices(2)
+
       deletePackageFilterOK(pkgName, "0.0.1", "1xfilter")
       addComponentOK(Refined.unsafeApply("jobby0"), "nice")
       addComponentOK(Refined.unsafeApply("jobby1"), "nice")
-      installComponentOK(Refined.unsafeApply("00RES0LVEV1N12345"), Refined.unsafeApply("jobby0"))
-      installComponentOK(Refined.unsafeApply("01RES0LVEV1N12345"), Refined.unsafeApply("jobby0"))
-      installComponentOK(Refined.unsafeApply("11RES0LVEV1N12345"), Refined.unsafeApply("jobby1"))
+      installComponentOK(id0, Refined.unsafeApply("jobby0"))
+      installComponentOK(id1, Refined.unsafeApply("jobby0"))
+      installComponentOK(id2, Refined.unsafeApply("jobby1"))
       addFilterOK("components", s"""has_component "^.*y0"""")
       addPackageFilterOK(pkgName, "0.0.1", "components")
-      resolveOK(pkgName, "0.0.1",
-        List(
-          refineV[Vehicle.ValidVin]("00RES0LVEV1N12345").right.get,
-          refineV[Vehicle.ValidVin]("01RES0LVEV1N12345").right.get))
+
+      resolveOK(pkgName, "0.0.1", List(id0, id1))
     }
 
     "return no VINs if the filter is trivially false" in {
@@ -106,7 +119,7 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
 
       resolve(defaultNs, "resolvePkg2", "0.0.1") ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.MissingEntity
       }
     }
 
@@ -114,95 +127,28 @@ class ResolveResourceWordSpec extends ResourceWordSpec {
 
       resolve(defaultNs, pkgName, "0.0.2") ~> route ~> check {
         status shouldBe StatusCodes.NotFound
-        responseAs[ErrorRepresentation].code shouldBe Codes.PackageNotFound
+        responseAs[ErrorRepresentation].code shouldBe ErrorCodes.MissingEntity
       }
     }
 
+    //noinspection ZeroIndexToHead
     "return a string that the core server can parse" in {
+      val (_, id0) = testDevices(0)
+      val (_, id1) = testDevices(1)
 
       deletePackageFilter(pkgName, "0.0.1", "falseFilter") ~> route ~> check {
         status shouldBe StatusCodes.OK
         resolve(defaultNs, pkgName, "0.0.1") ~> route ~> check {
           status shouldBe StatusCodes.OK
 
-          responseAs[io.circe.Json].noSpaces shouldBe
-            s"""[["00RES0LVEV1N12345",[{"name":"resolvePkg","version":"0.0.1"}]],["01RES0LVEV1N12345",[{"name":"resolvePkg","version":"0.0.1"}]]]"""
-
-          responseAs[Map[Vehicle.Vin, Set[PackageId]]] shouldBe
-            Map(Refined.unsafeApply("00RES0LVEV1N12345") ->
-                  Set(PackageId(Refined.unsafeApply(pkgName), Refined.unsafeApply("0.0.1"))),
-                Refined.unsafeApply("01RES0LVEV1N12345") ->
-                  Set(PackageId(Refined.unsafeApply(pkgName), Refined.unsafeApply("0.0.1"))))
+          responseAs[Map[Device.Id, Set[PackageId]]] shouldBe
+            Map(id0 ->
+              Set(PackageId(Refined.unsafeApply(pkgName), Refined.unsafeApply("0.0.1"))),
+              id1 ->
+                Set(PackageId(Refined.unsafeApply(pkgName), Refined.unsafeApply("0.0.1"))))
 
         }
       }
     }
   }
-}
-
-/**
- * Property spec for Resolver REST actions
- */
-class ResolveResourcePropSpec extends ResourcePropSpec {
-
-  import akka.http.scaladsl.model.StatusCodes
-  import org.genivi.sota.resolver.resolve.ResolveFunctions.makeFakeDependencyMap
-  import org.genivi.sota.resolver.filters._
-  import org.genivi.sota.resolver.filters.FilterAST.{parseValidFilter, query}
-  import org.scalacheck.Prop.{True => _, _}
-  import io.circe.generic.auto._
-  import org.genivi.sota.data.VehicleGenerators._
-  import PackageGenerators._
-  import FilterGenerators._
-
-  ignore("Resolve should give back the same thing as if we filtered with the filters") {
-
-    forAll() { (
-      vs: Seq[Vehicle],   // The available vehicles.
-      p : Package,        // The package we want to install.
-      ps: Seq[Package],   // Other packages in the system.
-      fs: Seq[Filter])    // Filters to be associated to the package we
-                          // want to install.
-        => {
-
-          // Add some new vehicles.
-          vs map (v => addVehicleOK(v.vin))
-
-          // Add some new packages.
-          (p +: ps) map (q => addPackageOK(q.id.name.get, q.id.version.get, q.description, q.vendor))
-
-          // Add some new filters.
-          fs map (f => addFilterOK(f.name.get, f.expression.get))
-
-          // Associate the filters to the package we want to install.
-          fs map (f => addPackageFilterOK(p.id.name.get, p.id.version.get, f.name.get))
-
-          // The resolver should give back the same VINs as if...
-          listVehicles ~> route ~> check {
-            status === StatusCodes.OK
-            val allVehicles = responseAs[Seq[Vehicle]]
-
-            resolve(defaultNs, p.id.name.get, p.id.version.get) ~> route ~> check {
-              status === StatusCodes.OK
-              val result = responseAs[Map[Vehicle.Vin, Seq[PackageId]]]
-              classify(result.toList.length > 0, "more than zero", "zero") {
-                result === makeFakeDependencyMap(PackageId(p.id.name, p.id.version),
-
-                    // ... we filtered the list of all VINs by the boolean
-                    // predicate that arises from the combined filter
-                    // queries.
-
-                    // XXX: Deal with installed packages and components properly.
-                    allVehicles.map(v => (v, (List[PackageId](), List[Component.PartNumber]()))).filter(query
-                      (fs.map(_.expression).map(parseValidFilter)
-                         .foldLeft[FilterAST](True)(And))).map(_._1))
-              }
-            }
-          }
-
-        }
-    }
-
-  }
-
 }

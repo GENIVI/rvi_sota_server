@@ -1,14 +1,15 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
 package org.genivi.sota.resolver.packages
 
 import org.genivi.sota.data.Namespace._
-import org.genivi.sota.data.PackageId
+import org.genivi.sota.data.{Namespace, PackageId}
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.filters.{Filter, FilterRepository}
+
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.db.SlickExtensions._
@@ -48,8 +49,6 @@ object PackageFilterRepository {
    */
   def list: DBIO[Seq[PackageFilter]] = packageFilters.result
 
-  case object MissingPackageFilterException extends Throwable
-
   def exists(pf: PackageFilter)(implicit ec: ExecutionContext): DBIO[PackageFilter] =
     packageFilters
       .filter(r => r.namespace      === pf.namespace
@@ -60,7 +59,7 @@ object PackageFilterRepository {
       .headOption
       .flatMap(_.
         fold[DBIO[PackageFilter]]
-          (DBIO.failed(MissingPackageFilterException))
+          (DBIO.failed(Errors.MissingPackageFilter))
           (DBIO.successful))
 
   /**

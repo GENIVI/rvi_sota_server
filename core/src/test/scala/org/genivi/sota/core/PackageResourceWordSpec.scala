@@ -1,5 +1,5 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, Jaguar Land Rover
  * License: MPL-2.0
  */
 package org.genivi.sota.core
@@ -8,7 +8,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.server.MalformedQueryParamRejection
-import akka.http.scaladsl.testkit.ScalatestRouteTest
+import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.core.data.{Package => DataPackage}
@@ -20,9 +20,14 @@ import org.scalatest.{Matchers, WordSpec}
 import scala.concurrent.Await
 import slick.driver.MySQLDriver.api._
 import DataPackage._
-import org.genivi.sota.core.resolver.DefaultExternalResolverClient
 import org.genivi.sota.data.PackageId
-import org.genivi.sota.datatype.NamespaceDirective
+import org.genivi.sota.http.NamespaceDirectives
+
+import scala.concurrent.duration._
+import org.genivi.sota.data.Namespace
+import org.genivi.sota.messaging.Messages.PackageCreated
+import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
+import org.scalatest.concurrent.PatienceConfiguration
 
 /**
  * WordSpec tests for Package REST actions
@@ -32,27 +37,28 @@ class PackageResourceWordSpec extends WordSpec
   with ScalatestRouteTest
   with ShouldMatchers
   with DatabaseSpec
+  with PatienceConfiguration
+  with DefaultPatience
   with BeforeAndAfterAll {
 
   import io.circe.generic.auto._
   import CirceMarshallingSupport._
-  import NamespaceDirective._
+  import NamespaceDirectives._
 
-  lazy val config =system.settings.config
+  val externalResolverClient = new FakeExternalResolver()
 
-  val externalResolverClient = new DefaultExternalResolverClient(
-    Uri(config.getString("resolver.baseUri")),
-    Uri(config.getString("resolver.resolveUri")),
-    Uri(config.getString("resolver.packagesUri")),
-    Uri(config.getString("resolver.vehiclesUri"))
-  )
-  lazy val service = new PackagesResource(externalResolverClient, db, defaultNamespaceExtractor)
+  implicit val routeTimeout: RouteTestTimeout =
+    RouteTestTimeout(10.second)
+
+  lazy val messageBusPublisher = MessageBusPublisher.ignore
+
+  lazy val service = new PackagesResource(externalResolverClient, db, messageBusPublisher, defaultNamespaceExtractor)
 
   val testPackagesParams = List(
     ("default", "vim", "7.0.1"), ("default", "vim", "7.1.1"),
     ("default", "go", "1.4.0"), ("default", "go", "1.5.0"), ("default", "scala", "2.11.0"))
   val testPackages:List[DataPackage] = testPackagesParams.map { pkg =>
-    DataPackage(Refined.unsafeApply(pkg._1), PackageId(Refined.unsafeApply(pkg._2), Refined.unsafeApply(pkg._3)),
+    DataPackage(Namespace(pkg._1), PackageId(Refined.unsafeApply(pkg._2), Refined.unsafeApply(pkg._3)),
                 Uri("www.example.com"), 123, "123", None, None, None)
   }
 

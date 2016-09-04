@@ -1,5 +1,5 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, Jaguar Land Rover
  * License: MPL-2.0
  */
 
@@ -26,7 +26,7 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
   val testFilterExpression = "vin_matches '.*'"
   val testDeleteFilterName = "TestDeleteFilter"
   val testPackageName = "Testpkg"
-  val userName = "admin@genivi.org"
+  val userName = "genivi"
   val password = "genivirocks!"
 
   override def beforeAll() {
@@ -62,7 +62,6 @@ class ApplicationFunTests extends PlaySpec with OneServerPerSuite with AllBrowse
         }
       }
       coreDb.createStatement().executeQuery("delete from UpdateRequest where package_name = '" + testPackageName + "'")
-      coreDb.createStatement().executeQuery("delete from Vehicle where vin = '" + testVinName + "'")
       coreDb.createStatement().executeQuery("delete from Package where name = '" + testPackageName + "'")
     } catch {
       //Teamcity handles clearing the database for us. Thus, ignoring this exception is generally

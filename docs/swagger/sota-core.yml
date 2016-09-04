@@ -16,54 +16,26 @@ consumes:
 produces:
   - application/json
 paths:
-  /vehicles:
+  /devices:
     get:
-      description: 'Get a list of all the vehicles in the Core database.'
+      description: 'Get a list of all the devices in the Core database.'
+      parameters:
+      - name: deviceId
+        description: Hi
+        in: query
+        required: false
+        type: string
+      - name: deviceName
+        in: query
+        required: false
+        type: string
       responses:
         200:
-          description: A array of VINs
+          description: A array of Device
           schema:
             type: array
             items:
-              $ref: '#/definitions/Vehicle'
-  /vehicles/{vin}:
-    get:
-      description: 'Return a single vehicle object'
-      parameters:
-      - name: vin
-        in: path
-        description: A VIN that exists in the system.
-        required: true
-        type: string
-      responses: 
-        200:
-          description: OK
-          schema:
-            $ref: '#/definitions/Vehicle'
-    put:
-      description: 'Add a vehicle to the database'
-      parameters:
-      - name: vin
-        in: path
-        description: A VIN to be added to the system.
-        required: true
-        type: string
-      responses: 
-        204:
-          description: Success
-    delete:
-      description: Delete a vehicle from the database and remove all its associations.
-      parameters:
-      - name: vin
-        in: path
-        description: A VIN to be deleted from the system.
-        required: true
-        type: string
-      responses:
-        200:
-          description: OK
-        404:
-          description: Not found
+              $ref: '#/definitions/Device'
   /packages:
     get:
       description: 'Get a list of all the software packages and versions in the Core database.'
@@ -129,9 +101,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/Package'
-  /packages/{name}/{version}/queued_vins:
+  /packages/{name}/{version}/queued_devices:
     get:
-      description: Return a list of VINs that have the package queued for install.
+      description: Return a list of device uuids that have the package queued for install.
       parameters:
       - name: name
         in: path
@@ -148,7 +120,7 @@ paths:
           description: OK
           schema:
             type: array
-            items: 
+            items:
               type: string
   /update_requests:
     get:
@@ -162,11 +134,11 @@ paths:
               $ref: '#/definitions/Update'
   /history:
     get:
-      description: Get the package install history of a vehicle.
+      description: Get the package install history of a device.
       parameters:
-      - name: vin
+      - name: uuid
         in: query
-        description: An existing VIN.
+        description: An existing device uuid.
         required: true
         type: string
       responses:
@@ -177,13 +149,13 @@ paths:
             properties:
               todo:
                 type: string
-  /vehicle_updates/{vin}:
+  /device_updates/{uuid}:
     post:
       description: Create an update sending a package to vehicle
       parameters:
-      - name: vin
+      - name: uuid
         in: path
-        description: The VIN to install the package on
+        description: The device uuid to install the package on
         required: true
         type: string
       - name: packageId
@@ -198,12 +170,12 @@ paths:
             $ref: '#/definitions/Update'
     get:
       description: |
-        Get a list of the updates queued for a vin, and update the last seen time for that vin. This is called by the
-        client. To get a list of updates queued for a vin without updating the last seen time, use /vehicle_updates/{vin}/queued
+        Get a list of the updates queued for a DeviceId, and update the last seen time for that DeviceId. This is called by the
+        client. To get a list of updates queued for a DeviceId without updating the last seen time, use /device_updates/{uuid}/queued
       parameters:
-      - name: vin
+      - name: uuid
         in: path
-        description: The VIN to list
+        description: The device to list
         required: true
         type: string
       responses:
@@ -213,13 +185,13 @@ paths:
             type: array
             items:
               $ref: '#/definitions/pendingPackage'
-  /vehicle_updates/{vin}/queued:
+  /device_updates/{uuid}/queued:
     get:
-      description: Get a list of the updates queued for a vin. 
+      description: Get a list of the updates queued for a device.
       parameters:
-      - name: vin
+      - name: uuid
         in: path
-        description: The VIN to list
+        description: The device to list
         required: true
         type: string
       responses:
@@ -229,13 +201,51 @@ paths:
             type: array
             items:
               $ref: '#/definitions/pendingPackage'
-  /vehicle_updates/{vin}/{updateId}/download:
+  /device_updates/{uuid}/blocked:
+    get:
+      description: Get whether the update queue for the given device is blocked.
+      parameters:
+      - name: uuid
+        in: path
+        description: The device to query
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/BlockedInstall'
+    put:
+      description: Put a block on the update queue for the given device.
+      parameters:
+      - name: uuid
+        in: path
+        description: The device to block
+        required: true
+        type: string
+      responses:
+        204:
+          description: No Content
+    delete:
+      description: Delete a block on the update queue for the given device.
+      parameters:
+      - name: uuid
+        in: path
+        description: The device to unblock
+        required: true
+        type: string
+      responses:
+        204:
+          description: No Content
+  /device_updates/{uuid}/{updateId}/download:
     get:
       description: Download a package binary. This is called by the in-vehicle client.
       parameters:
-      - name: vin
+      - name: uuid
         in: path
-        description: The VIN of the vehicle making this call
+        description: The uuid of the vehicle making this call
         required: true
         type: string
       - name: updateId
@@ -248,23 +258,41 @@ paths:
           description: OK
           schema:
             type: file
-  /vehicle_updates/{vin}/sync:
+  /device_updates/{uuid}/system_info:
+    put:
+      description: Update the system info for a device
+      parameters:
+      - name: uuid
+        in: path
+        description: The uuid of the vehicle making this call
+        required: true
+        type: string
+      - name: system
+        description: The json object representing the system info
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/SystemInfo'
+      responses:
+        200:
+          description: OK
+  /device_updates/{uuid}/sync:
     post:
       description: todo
       parameters:
-      - name: vin
+      - name: uuid
         in: path
-        description: The VIN of the vehicle making this call
+        description: The uuid of the vehicle making this call
         required: true
         type: string
       responses:
         204:
           description: No Content
-  /vehicle_updates/{vin}/{updateId}/cancelupdate:
+  /device_updates/{uuid}/{updateId}/cancelupdate:
     put:
       description: Cancel a currently pending update
       parameters:
-      - name: vin
+      - name: uuid
         in: path
         required: true
         type: string
@@ -276,12 +304,13 @@ paths:
       responses:
         204:
           description: No Content
-  /vehicle_updates/{vin}/{updateId}:
+  /device_updates/{uuid}/{updateId}:
     post:
       description: Report on the status of an install. This is used by the client to send the status and/or log files after an install completes.
       parameters:
-      - name: vin
+      - name: uuid
         in: path
+        description: uuid of the device
         required: true
         type: string
       - name: updateId
@@ -297,14 +326,14 @@ paths:
       responses:
         415:
           description: Unsupported Media Type todo
-  /vehicle_updates/{vin}/installed:
+  /device_updates/{uuid}/installed:
     put:
-      description: | 
+      description: |
         Update the list of installed packages on a vehicle. Note that this does not do any communication
-        with the client or install any packages; it simply updates the database with the information that 
+        with the client or install any packages; it simply updates the database with the information that
         the package is installed.
       parameters:
-      - name: vin
+      - name: uuid
         in: path
         required: true
         type: string
@@ -319,12 +348,12 @@ paths:
       responses:
         204:
           description: No Content
-  /vehicle_updates/{vin}/order:
+  /device_updates/{uuid}/order:
     put:
-      description: | 
-        Set the install order for a vehicle's queued packages. 
+      description: |
+        Set the install order for a vehicle's queued packages.
       parameters:
-      - name: vin
+      - name: uuid
         in: path
         required: true
         type: string
@@ -339,13 +368,13 @@ paths:
       responses:
         204:
           description: No Content
-  /vehicle_updates/{vin}/results:
+  /device_updates/{uuid}/results:
     get:
-      description: Get a list of results for all updates for a given vin.
+      description: Get a list of results for all updates for a given DeviceId.
       parameters:
-      - name: vin
+      - name: uuid
         in: path
-        description: The VIN to list
+        description: The uuid to list
         required: true
         type: string
       responses:
@@ -355,13 +384,13 @@ paths:
             type: array
             items:
               $ref: '#/definitions/operationResult'
-  /vehicle_updates/{vin}/{updateId}/results:
+  /device_updates/{uuid}/{updateId}/results:
     get:
       description: Get a list of results for a given update.
       parameters:
-      - name: vin
+      - name: uuid
         in: path
-        description: The VIN to list
+        description: The device to list
         required: true
         type: string
       - name: updateId
@@ -376,25 +405,129 @@ paths:
             type: array
             items:
               $ref: '#/definitions/operationResult'
+  "/blacklist":
+    get:
+      description: Get a list of blacklisted packages
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+             $ref: '#/definitions/BlacklistedPackage'
+    put:
+      consumes:
+        - application/json
+      parameters:
+        - name: BlacklistedPackageRequest
+          in: body
+          description: An object describing the package to blacklist
+          required: true
+          schema:
+            type: object
+            items:
+              $ref: '#definitions/BlacklistedPackageRequest'
+      description: Update a blacklist item
+      responses:
+        200:
+          description: OK
+    post:
+      consumes:
+        - application/json
+      parameters:
+        - name: BlacklistedPackageRequest
+          in: body
+          description: An object describing the package to blacklist
+          required: true
+          schema:
+            type: object
+            items:
+              $ref: '#definitions/BlacklistedPackageRequest'
+      responses:
+        201:
+          description: Created
+      description: Create a blacklist item
+
+  "/blacklist/{package_name}/{package_version}":
+    get:
+      parameters:
+        - name: package_name
+          in: path
+          description: package name
+          required: true
+          type: string
+        - name: package_version
+          in: path
+          description: package version
+          required: true
+          type: string
+      description: Get a blacklist item
+      responses:
+        200:
+          description: OK
+    delete:
+      parameters:
+        - name: package_name
+          in: path
+          description: package name
+          required: true
+          type: string
+        - name: package_version
+          in: path
+          description: package version
+          required: true
+          type: string
+      description: Delete a blacklist item
+      responses:
+        200:
+          description: OK
+
+  "/impact/blacklist":
+    get:
+      description: Current impact analysis for blacklisted packages
+      responses:
+        200:
+          description: An array of tuples (DeviceId -> PackageId)
+          schema:
+            type: array
+            items:
+              type: array
+              items:
+                type: string
 
 definitions:
+  uuid:
+    type: string
+    description: 32 lowercase hexadecimal digits, displayed in five groups separated by hyphens
   namespace:
     type: string
     description: The namespace scope of the request. Default value is 'default'
-  VIN:
+  DeviceId:
     type: string
     description: A 17-digit VIN. May contain only capital letters and digits. Cannot contain the letters I, O, or Q.
-  Vehicle:
+  DeviceName:
+    type: string
+    description: Custom name for a device
+  DeviceType:
+    type: string
+    description: Valid values are "Vehicle" and "Other"
+  Device:
     type: object
     properties:
       namespace:
         $ref: '#/definitions/namespace'
-      VIN:
-        $ref: '#/definitions/VIN'
+      deviceId:
+        $ref: '#/definitions/DeviceId'
+      id:
+        $ref: '#/definitions/uuid'
+      deviceName:
+        $ref: '#/definitions/DeviceName'
+      deviceType:
+        $ref: '#/definitions/DeviceType'
       lastseen:
         type: string
         format: dateTime
-        description: The last time a VIN was seen by the SOTA server.
+        description: The last time a device uuid was seen by the SOTA server.
   Package:
     type: object
     properties:
@@ -423,6 +556,9 @@ definitions:
       signature:
         type: string
         description: A cryptographic signature signing the binary.
+      isBlackListed:
+        type: boolean
+        description: True if the package is currently blacklisted
   packageId:
     type: object
     properties:
@@ -435,22 +571,22 @@ definitions:
   Update:
     type: object
     properties:
-      id: 
+      id:
         type: string
         description: The UUID of the update
       namespace:
         $ref: '#/definitions/namespace'
-      packageId: 
+      packageId:
         $ref: '#/definitions/packageId'
-      creationTime: 
+      creationTime:
         type: string
         format: dateTime
-        description: The date and time the campaign was created  
-      periodOfValidity: 
+        description: The date and time the campaign was created
+      periodOfValidity:
         type: string
         format: dateTime/dateTime
         description: The start and end of the update campaign
-      priority: 
+      priority:
         type: integer
         description: The priority of the campaign
       signature:
@@ -474,7 +610,7 @@ definitions:
         $ref: '#/definitions/packageId'
       installPos:
         type: integer
-      createdAt: 
+      createdAt:
         type: string
         format: dateTime
   installReport:
@@ -493,3 +629,37 @@ definitions:
         format: dateTime
   orderMapping:
     type: object
+  BlockedInstall:
+    type: object
+    properties:
+      id:
+        type: string
+        description: The UUID of the device
+      blockedAt:
+        type: string
+        format: dateTime
+        description: The time the update queue for the device was blocked.
+  BlacklistItem:
+    type: object
+    properties:
+      id:
+        $ref: '#/definitions/uuid'
+      namespace:
+        $ref: '#/definitions/namespace'
+      packageId:
+        $ref: '#/definitions/packageId'
+      comment:
+        type: string
+        description: A free text comment about the item
+      updatedAt:
+        type: string
+        format: dateTime
+        description: The last time this blacklist entry was changed.
+  BlacklistedPackageRequest:
+    type: object
+    properties:
+      packageId:
+        $ref: '#/definitions/packageId'
+      comment:
+        type: string
+        description: A free text comment about the item

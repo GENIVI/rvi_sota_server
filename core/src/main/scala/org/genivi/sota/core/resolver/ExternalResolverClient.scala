@@ -1,5 +1,5 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
 package org.genivi.sota.core.resolver
@@ -15,8 +15,9 @@ import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model.headers.{HttpEncoding, HttpEncodings}
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
-import org.genivi.sota.data.Namespace._
-import org.genivi.sota.data.{PackageId, Vehicle}
+import org.genivi.sota.data.{Device, Namespace, PackageId}
+import Device._
+import cats.syntax.show._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 
 import scala.concurrent.Future
@@ -41,7 +42,7 @@ trait ExternalResolverClient {
     * @param packageId The name and version of the package
     * @return Which packages need to be installed on which vehicles
     */
-  def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Vehicle, Set[PackageId]]]
+  def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Device.Id, Set[PackageId]]]
 
   /**
     * Update the list of packages that are installed on a vehicle.
@@ -52,10 +53,10 @@ trait ExternalResolverClient {
     * The client can query the local package manager for the list of installed
     * packages and report it via this function
     *
-    * @param vin The VIN that is sending the update
+    * @param device The device uuid that is sending the update
     * @param json A JSON encoded list of installed packages
     */
-  def setInstalledPackages(vin: Vehicle.Vin, json: io.circe.Json) : Future[Unit]
+  def setInstalledPackages(device: Device.Id, json: io.circe.Json) : Future[Unit]
 }
 
 /**
@@ -116,10 +117,7 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
 
   private[this] val log = Logging( system, "org.genivi.sota.externalResolverClient" )
 
-  override def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Vehicle, Set[PackageId]]] = {
-    implicit val responseDecoder : Decoder[Map[Vehicle.Vin, Set[PackageId]]] =
-      Decoder[Seq[(Vehicle.Vin, Set[PackageId])]].map(_.toMap)
-
+  override def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Device.Id, Set[PackageId]]] = {
     val resolvePath = resolveUri
       .withPath(resolveUri.path)
       .withQuery(Query(
@@ -134,14 +132,13 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
     val requestF = Http().singleRequest(httpRequest)
 
     requestF flatMap { response =>
-      val e = if(response.encoding == HttpEncodings.gzip)
+      val e = if (response.encoding == HttpEncodings.gzip) {
         response.entity.transformDataBytes(Gzip.decoderFlow)
-      else
+      } else {
         response.entity
-
-      Unmarshal(e).to[Map[Vehicle.Vin, Set[PackageId]]].map { parsed =>
-        parsed.map { case (k, v) => Vehicle(namespace, k) -> v }
       }
+
+      Unmarshal(e).to[Map[Device.Id, Set[PackageId]]]
     } recoverWith { case t =>
       log.error(t, "Request to resolver failed")
       Future.failed(t)
@@ -161,11 +158,11 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
       case e => Future.failed( ExternalResolverRequestFailed(e) )
     }
 
-  override def setInstalledPackages( vin: Vehicle.Vin, json: io.circe.Json) : Future[Unit] = {
+  override def setInstalledPackages(device: Device.Id, json: io.circe.Json) : Future[Unit] = {
     import akka.http.scaladsl.client.RequestBuilding.Put
     import org.genivi.sota.rest.ErrorRepresentation
 
-    val uri = vehiclesUri.withPath( vehiclesUri.path / vin.get / "packages" )
+    val uri = vehiclesUri.withPath( vehiclesUri.path / device.show / "packages" )
     val futureResult = Http().singleRequest( Put(uri, json) ).flatMap {
       case HttpResponse( StatusCodes.NoContent, _, _, _ ) =>
         FastFuture.successful( () )

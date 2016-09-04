@@ -1,5 +1,5 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
 
@@ -52,7 +52,7 @@ object PackageId {
 
     Validate.fromPredicate(
       _.matches(packageFormat),
-      s => s"Invalid version format ($s)",
+      s => s"Invalid version format ($s) valid is: $packageFormat",
       ValidVersion()
     )
   }

@@ -1,5 +1,5 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, Jaguar Land Rover
  * License: MPL-2.0
  */
 
@@ -10,12 +10,10 @@ import javax.inject.Inject
 import jp.t2v.lab.play2.auth.{AuthElement, LoginLogout}
 import org.genivi.webserver.Authentication.{Account, LdapAuth, User}
 import org.slf4j.LoggerFactory
-import play.api.Play.current
 import play.api._
 import play.api.data.Forms._
 import play.api.data._
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.libs.iteratee.Enumerator
 import play.api.libs.ws._
 import play.api.mvc._
 import views.html
@@ -26,14 +24,18 @@ import scala.concurrent.{ExecutionContext, Future}
  * The main application controller. Handles authentication and request proxying.
  *
  */
-class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, ldapAuthN: LdapAuth)
+class Application @Inject() (ws: WSClient,
+                             val messagesApi: MessagesApi,
+                             ldapAuthN: LdapAuth,
+                             configuration: play.api.Configuration)
   extends Controller with LoginLogout with AuthConfigImpl with I18nSupport with AuthElement {
 
   val auditLogger = LoggerFactory.getLogger("audit")
   implicit val context = play.api.libs.concurrent.Execution.Implicits.defaultContext
 
-  val coreApiUri = Play.current.configuration.getString("core.api.uri").get
-  val resolverApiUri = Play.current.configuration.getString("resolver.api.uri").get
+  val coreApiUri = configuration.getString("core.api.uri").get
+  val resolverApiUri = configuration.getString("resolver.api.uri").get
+  val deviceRegistryApiUri = configuration.getString("device_registry.api.uri").get
 
   /**
    * Returns an Option[String] of the uri of the service to proxy to
@@ -42,11 +44,13 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, ldapAut
    * @return The service to proxy to
    */
   def apiByPath(path: String) : String = path.split("/").toList match {
-    case "packages" :: _ :: _ :: "filter" :: _ => resolverApiUri
+    case "resolver" :: "packages" :: _ :: _ :: "filter" :: _ => resolverApiUri
     case "packages" :: _ => coreApiUri
     case "update_requests" :: _ => coreApiUri
+    case "device_updates" :: _ => coreApiUri
     case "vehicle_updates" :: _ => coreApiUri
     case "history" :: _ => coreApiUri
+    case "devices" :: _ => deviceRegistryApiUri
     case _ => resolverApiUri
   }
 
@@ -61,7 +65,7 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, ldapAut
     def toWsHeaders(hdrs: Headers) = hdrs.toMap.map {
       case(name, value) => name -> value.mkString }
 
-    val w = WS.url(apiUri + req.path)
+    val w = ws.url(apiUri + req.path)
       .withFollowRedirects(false)
       .withMethod(req.method)
       .withHeaders(toWsHeaders(req.headers).toSeq :_*)
@@ -71,10 +75,14 @@ class Application @Inject() (ws: WSClient, val messagesApi: MessagesApi, ldapAut
       case Some(b) => w.withBody(b)
       case None => w.withBody(FileBody(req.body.asFile))
     }
-    wreq.execute.map { resp =>
+
+    wreq.stream.map { resp =>
+      val rStatus = resp.headers.status
+      val rHeaders = resp.headers.headers.mapValues(x => x.head)
       Result(
-        header = ResponseHeader(resp.status, resp.allHeaders.mapValues(x => x.head)),
-        body = Enumerator(resp.bodyAsBytes))
+        header = ResponseHeader(rStatus, rHeaders),
+        body = play.api.http.HttpEntity.Streamed(resp.body, contentLength = None, contentType = None)
+      )
     }
   }
 

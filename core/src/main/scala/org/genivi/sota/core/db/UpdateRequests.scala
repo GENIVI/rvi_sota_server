@@ -1,5 +1,5 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, Jaguar Land Rover
  * License: MPL-2.0
  */
 package org.genivi.sota.core.db
@@ -7,19 +7,21 @@ package org.genivi.sota.core.db
 import java.util.UUID
 
 import org.genivi.sota.core.data.UpdateRequest
-import org.genivi.sota.data.Namespace._
-import org.genivi.sota.data.{Interval, PackageId}
+import org.genivi.sota.data.Namespace
+import org.genivi.sota.data.PackageId
 import slick.driver.MySQLDriver.api._
 import java.time.Instant
+
+import org.genivi.sota.data.Interval
 
 import scala.concurrent.ExecutionContext
 
 /**
  * Database mapping definition for the UpdateRequests table.
  * These refer to a single software package that should be installed as part
- * of a install campaign.  There one of these shared among multiple VINs: the
+ * of a install campaign.  There one of these shared among multiple devices: the
  * UpdateSpecs table records the result of the individual install for each
- * vehicle.
+ * device.
  */
 object UpdateRequests {
 

@@ -31,19 +31,19 @@ define(function(require) {
             <ListOfPackages
               Packages={db.packagesForVin}
               PollEventName="poll-packages"
-              DispatchObject={{actionType: 'get-packages-for-vin', vin: params.vin}}
+              DispatchObject={{actionType: 'get-packages-for-vin', vin: params.id}}
               DisplayCampaignLink={false}/>
-            <AddPackageManually Vin={params.vin}/>
+            <AddPackageManually Vin={params.id}/>
             <SyncPackages Vin={params.vin}/>
             <h2>Installed Firmware</h2>
-            <FirmwareOnVin Firmware={db.firmwareOnVin} Vin={params.vin}/>
+            <FirmwareOnVin Firmware={db.firmwareOnVin} Vin={params.id}/>
             <h2>Installed Components</h2>
-            <ComponentsOnVin Components={db.componentsOnVin} Vin={params.vin}/>
+            <ComponentsOnVin Components={db.componentsOnVin} Vin={params.id}/>
             <AddComponent Vin={params.vin}/>
             <ListOperationResultsForVin OperationResultsForVin={db.operationResultsForVin} Vin={params.vin}/>
             <h2>Package Updates</h2>
-            <QueuedPackages Packages={db.packageQueueForVin} Vin={params.vin}/>
-            <PackageHistory Packages={db.packageHistoryForVin} Vin={params.vin}/>
+            <QueuedPackages Packages={db.packageQueueForVin} Id={params.id}/>
+            <PackageHistory Packages={db.packageHistoryForVin} Id={params.id}/>
           </div>
         </div>
       </div>

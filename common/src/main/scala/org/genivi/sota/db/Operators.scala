@@ -1,5 +1,5 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, Jaguar Land Rover
  * License: MPL-2.0
  */
 
@@ -7,6 +7,9 @@ package org.genivi.sota.db
 
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
+
+import scala.collection.TraversableLike
+import scala.util.Success
 
 /**
   * Some database operators are shared between the core and the
@@ -39,4 +42,22 @@ object Operators {
       io.flatMap(_.fold[DBIO[T]](DBIO.failed(t))(DBIO.successful))
   }
 
+  implicit class DBIOSeqOps[+T](io: DBIO[Seq[T]]) {
+    def failIfNone(t: Throwable)
+                  (implicit ec: ExecutionContext): DBIO[T] = {
+      DBIOOps(io.map(_.headOption)).failIfNone(t)
+    }
+  }
+
+  implicit class QueryReg[QTable, Row, S[_]](baseQuery: Query[QTable, Row, S]) {
+    def regexFilter(reg: Option[String])(fieldsFn: (QTable => Rep[_])*): Query[QTable, Row, S] = {
+      reg match {
+        case Some(r) =>
+          baseQuery.filter { table =>
+            fieldsFn.foldLeft(false.bind) { case (acc, rep) => acc || regex(rep(table), r) }
+          }
+        case None => baseQuery
+      }
+    }
+  }
 }

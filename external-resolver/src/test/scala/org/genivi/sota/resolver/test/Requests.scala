@@ -1,5 +1,5 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, Jaguar Land Rover
  * License: MPL-2.0
  */
 package org.genivi.sota.resolver.test
@@ -8,11 +8,10 @@ import akka.http.scaladsl.client.RequestBuilding.{Delete, Get, Post, Put}
 import akka.http.scaladsl.model.Uri.{Path, Query}
 import akka.http.scaladsl.model.{HttpRequest, StatusCodes, Uri}
 import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
-import org.genivi.sota.data.Namespace.Namespace
-import org.genivi.sota.data.{Namespaces, PackageId, Vehicle}
+import org.genivi.sota.data._
+import cats.syntax.show.toShowOps
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.resolver.components.Component
@@ -23,7 +22,6 @@ import org.genivi.sota.resolver.resolve.ResolveFunctions
 import org.scalatest.Matchers
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
 
 /**
  * Generic test resource object
@@ -31,7 +29,7 @@ import scala.concurrent.duration._
  */
 object Resource {
   def uri(pathSuffixes: String*): Uri = {
-    val BasePath = Path("/api") / "v1"
+    val BasePath = Path("/api") / "v1" / "resolver"
     Uri.Empty.withPath(pathSuffixes.foldLeft(BasePath)(_/_))
   }
 }
@@ -40,85 +38,77 @@ object Resource {
  * Testing Trait for building Vehicle requests
  */
 trait VehicleRequestsHttp {
-
-  def addVehicle(vin: Vehicle.Vin): HttpRequest =
-    Put(Resource.uri("vehicles", vin.get))
-
-  def installPackage(veh: Vehicle, pkg: Package): HttpRequest =
-    installPackage(veh.vin, pkg.id.name.get, pkg.id.version.get)
-
-  def installPackage(vin: Vehicle.Vin, pname: String, pversion: String): HttpRequest =
-    Put(Resource.uri("vehicles", vin.get, "package", pname, pversion))
-
-  def uninstallPackage(veh: Vehicle, pkg: Package): HttpRequest =
-    uninstallPackage(veh.vin, pkg.id.name.get, pkg.id.version.get)
-
-  def uninstallPackage(vin: Vehicle.Vin, pname: String, pversion: String): HttpRequest =
-    Delete(Resource.uri("vehicles", vin.get, "package", pname, pversion))
-
   def listVehicles: HttpRequest =
-    Get(Resource.uri("vehicles"))
+    Get(Resource.uri("devices"))
 
   def listVehiclesHaving(cmp: Component): HttpRequest =
     listVehiclesHaving(cmp.partNumber.get)
 
   def listVehiclesHaving(partNumber: String): HttpRequest =
-    Get(Resource.uri("vehicles").withQuery(Query("component" -> partNumber)))
+    Get(Resource.uri("devices").withQuery(Query("component" -> partNumber)))
 
-  def listPackagesOnVehicle(veh: Vehicle): HttpRequest =
-    Get(Resource.uri("vehicles", veh.vin.get, "package"))
+  def addVehicle(device: Device.Id): HttpRequest = {
+    import scala.concurrent.ExecutionContext.Implicits.global
+    Put("/fake_devices", device.show)
+  }
 
-  def listComponentsOnVehicle(veh: Vehicle): HttpRequest =
-    listComponentsOnVehicle(veh.vin.get)
+  def installPackage(device: Device.Id, pkg: Package): HttpRequest =
+    installPackage(device, pkg.id.name.get, pkg.id.version.get)
+
+  def installPackage(device: Device.Id, pname: String, pversion: String): HttpRequest =
+    Put(Resource.uri("devices", device.show, "package", pname, pversion))
+
+  def uninstallPackage(device: Device.Id, pkg: Package): HttpRequest =
+    uninstallPackage(device, pkg.id.name.get, pkg.id.version.get)
+
+  def uninstallPackage(device: Device.Id, pname: String, pversion: String): HttpRequest =
+    Delete(Resource.uri("devices", device.show, "package", pname, pversion))
+
+  def listPackagesOnVehicle(veh: Device.Id): HttpRequest =
+    Get(Resource.uri("devices", veh.show, "package"))
+
+  def listComponentsOnVehicle(veh: Device.Id): HttpRequest =
+    listComponentsOnVehicle(veh.show)
 
   def listComponentsOnVehicle(vin: String): HttpRequest =
-    Get(Resource.uri("vehicles", vin, "component"))
+    Get(Resource.uri("devices", vin, "component"))
 
-  private def path(vin: Vehicle.Vin, part: Component.PartNumber): Uri =
-    Resource.uri("vehicles", vin.get, "component", part.get)
+  private def path(device: Device.Id, part: Component.PartNumber): Uri =
+    Resource.uri("devices", device.show, "component", part.get)
 
-  def installComponent(veh: Vehicle, cmpn: Component): HttpRequest =
-    installComponent(veh.vin, cmpn.partNumber)
+  def installComponent(veh: Device.Id, cmpn: Component): HttpRequest =
+    installComponent(veh, cmpn.partNumber)
 
-  def installComponent(vin: Vehicle.Vin, part: Component.PartNumber): HttpRequest =
-    Put(path(vin, part))
+  def installComponent(device: Device.Id, part: Component.PartNumber): HttpRequest =
+    Put(path(device, part))
 
-  def uninstallComponent(veh: Vehicle, cmpn: Component): HttpRequest =
-    uninstallComponent(veh.vin, cmpn.partNumber)
+  def uninstallComponent(device: Device.Id, cmpn: Component): HttpRequest =
+    uninstallComponent(device, cmpn.partNumber)
 
-  def uninstallComponent(vin: Vehicle.Vin, part: Component.PartNumber): HttpRequest =
-    Delete(path(vin, part))
+  def uninstallComponent(device: Device.Id, part: Component.PartNumber): HttpRequest =
+    Delete(path(device, part))
 
 }
 
 trait VehicleRequests extends
     VehicleRequestsHttp with
     PackageRequestsHttp with
-    Matchers { self: ScalatestRouteTest =>
+    Matchers { self: ResourceSpec =>
 
-  def addVehicleOK(vin: Vehicle.Vin)(implicit route: Route): Unit = {
-
-    implicit val routeTimeout: RouteTestTimeout = RouteTestTimeout(5.second)
-
-    addVehicle(vin) ~> route ~> check {
-      status shouldBe StatusCodes.NoContent
-    }
-  }
-
-  def installPackageOK(vin: Vehicle.Vin, pname: String, pversion: String)(implicit route: Route): Unit =
-    installPackage(vin, pname, pversion) ~> route ~> check {
+  def installPackageOK(device: Device.Id, pname: String, pversion: String)(implicit route: Route): Unit =
+    installPackage(device, pname, pversion) ~> route ~> check {
       status shouldBe StatusCodes.OK
     }
 
-  def installComponentOK(vin: Vehicle.Vin, part: Component.PartNumber)
+  def installComponentOK(device: Device.Id, part: Component.PartNumber)
                         (implicit route: Route): Unit =
-    installComponent(vin, part) ~> route ~> check {
+    installComponent(device, part) ~> route ~> check {
       status shouldBe StatusCodes.OK
     }
 
-  def uninstallComponentOK(vin: Vehicle.Vin, part: Component.PartNumber)
+  def uninstallComponentOK(device: Device.Id, part: Component.PartNumber)
                           (implicit route: Route): Unit =
-    uninstallComponent(vin, part) ~> route ~> check {
+    uninstallComponent(device, part) ~> route ~> check {
       status shouldBe StatusCodes.OK
     }
 
@@ -139,7 +129,7 @@ trait PackageRequestsHttp {
 }
 
 trait PackageRequests extends
-  PackageRequestsHttp with Namespaces with Matchers { self: ScalatestRouteTest =>
+  PackageRequestsHttp with Namespaces with Matchers { self: ResourceSpec =>
 
     def addPackageOK(name: String, version: String, desc: Option[String], vendor: Option[String])
                   (implicit route: Route): Unit =
@@ -151,18 +141,18 @@ trait PackageRequests extends
 /**
  * Testing Trait for building Firmware requests
  */
-trait FirmwareRequests extends Matchers { self: ScalatestRouteTest =>
+trait FirmwareRequests extends Matchers { self: ResourceSpec =>
 
   def installFirmware
-    (vin: Vehicle.Vin, packages: Set[PackageId], firmware: Set[Firmware])
+    (device: Device.Id, packages: Set[PackageId], firmware: Set[Firmware])
       : HttpRequest
-  = Put(Resource.uri("vehicles", vin.get, "packages"), InstalledSoftware(packages, firmware))
+  = Put(Resource.uri("devices", device.show, "packages"), InstalledSoftware(packages, firmware))
 
   def installFirmwareOK
-    (vin: Vehicle.Vin, packages: Set[PackageId], firmware: Set[Firmware])
+    (device: Device.Id, packages: Set[PackageId], firmware: Set[Firmware])
     (implicit route: Route)
       : Unit
-  = installFirmware(vin, packages, firmware) ~> route ~> check {
+  = installFirmware(device, packages, firmware) ~> route ~> check {
       status shouldBe StatusCodes.NoContent
     }
 }
@@ -201,7 +191,7 @@ trait ComponentRequestsHttp {
 
 trait ComponentRequests extends
     ComponentRequestsHttp with
-    Matchers { self: ScalatestRouteTest =>
+    Matchers { self: ResourceSpec =>
 
   def addComponentOK(part: Component.PartNumber, desc: String)
                     (implicit route: Route): Unit =
@@ -250,12 +240,10 @@ trait FilterRequestsHttp extends Namespaces {
 
 }
 
-trait FilterRequests extends FilterRequestsHttp with Matchers { self: ScalatestRouteTest =>
+trait FilterRequests extends FilterRequestsHttp with Matchers {
+  self: ResourceSpec =>
 
   def addFilterOK(name: String, expr: String)(implicit route: Route): Unit = {
-
-    implicit val routeTimeout: RouteTestTimeout = RouteTestTimeout(5.second)
-
     addFilter(name, expr) ~> route ~> check {
       status shouldBe StatusCodes.OK
       responseAs[Filter] shouldBe Filter(defaultNs, Refined.unsafeApply(name), Refined.unsafeApply(expr))
@@ -272,7 +260,6 @@ trait FilterRequests extends FilterRequestsHttp with Matchers { self: ScalatestR
     deleteFilter(name) ~> route ~> check {
       status shouldBe StatusCodes.OK
     }
-
 }
 
 /**
@@ -313,7 +300,7 @@ trait PackageFilterRequestsHttp {
 trait PackageFilterRequests extends
   PackageFilterRequestsHttp with
   Matchers with
-  Namespaces { self: ScalatestRouteTest =>
+  Namespaces { self: ResourceSpec =>
 
   def addPackageFilterOK(pname: String, pversion: String, fname: String)(implicit route: Route): Unit =
     addPackageFilter(pname, pversion, fname) ~> route ~> check {
@@ -347,16 +334,15 @@ trait ResolveRequestsHttp {
 trait ResolveRequests extends
   ResolveRequestsHttp with
   Matchers with
-  Namespaces { self: ScalatestRouteTest =>
+  Namespaces { self: ResourceSpec =>
 
-  def resolveOK(pname: String, pversion: String, vins: Seq[Vehicle.Vin])(implicit route: Route): Unit = {
-
+  def resolveOK(pname: String, pversion: String, vins: Seq[Device.Id])(implicit route: Route): Unit = {
     resolve(defaultNs, pname, pversion) ~> route ~> check {
       status shouldBe StatusCodes.OK
-      responseAs[Map[Vehicle.Vin, List[PackageId]]] shouldBe
-        ResolveFunctions.makeFakeDependencyMap(PackageId(Refined.unsafeApply(pname), Refined.unsafeApply(pversion)),
-          vins.map(Vehicle(defaultNs, _)))
+
+      responseAs[Map[Device.Id, Seq[PackageId]]] shouldBe
+        ResolveFunctions.makeFakeDependencyMap(PackageId(Refined.unsafeApply(pname),
+          Refined.unsafeApply(pversion)), vins)
     }
   }
-
 }

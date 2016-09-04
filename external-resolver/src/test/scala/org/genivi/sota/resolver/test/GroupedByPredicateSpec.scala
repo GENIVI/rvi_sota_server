@@ -1,5 +1,5 @@
 /*
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
 
@@ -10,7 +10,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.stream.testkit.scaladsl.TestSink
 import akka.testkit.TestKit
-import org.genivi.sota.resolver.vehicles.GroupedByPredicate
+import org.genivi.sota.resolver.devices.GroupedByPredicate
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest._

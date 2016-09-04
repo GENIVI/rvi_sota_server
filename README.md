@@ -29,6 +29,7 @@ This can be done with the following:
     CREATE DATABASE sota_core_test;
     GRANT ALL PRIVILEGES ON \`sota\_core%\`.* TO 'sota_test'@'%';
     GRANT ALL PRIVILEGES ON \`sota\_resolver%\`.* TO 'sota_test'@'%';
+    GRANT ALL PRIVILEGES ON \`sota\_device\_registry%\`.* TO 'sota_test'@'%';
     FLUSH PRIVILEGES;
     " > entrypoint.d/db_user.sql
     

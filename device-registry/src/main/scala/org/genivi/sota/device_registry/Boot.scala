@@ -1,66 +1,84 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
 package org.genivi.sota.device_registry
 
 import akka.actor.ActorSystem
-import akka.event.Logging
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.{Directives, Route}
+import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
-import org.genivi.sota.rest.Handlers.{rejectionHandler, exceptionHandler}
+import cats.data.Xor
+import org.genivi.sota.data.Namespace
+import org.genivi.sota.db.BootMigrations
+import org.genivi.sota.http
+import org.genivi.sota.http._
+import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
+import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted}
+import org.genivi.sota.rest.SotaRejectionHandler.rejectionHandler
+import org.slf4j.LoggerFactory
+
 import scala.concurrent.ExecutionContext
 import scala.util.Try
-import slick.jdbc.JdbcBackend.Database
-
+import slick.driver.MySQLDriver.api._
 
 /**
  * Base API routing class.
- * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
+ * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
  */
-class Routing
+class Routing(namespaceExtractor: Directive1[Namespace], messageBus: MessageBusPublisher)
   (implicit db: Database, system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext)
     extends Directives {
 
   val route: Route = pathPrefix("api" / "v1") {
     handleRejections(rejectionHandler) {
-      handleExceptions(exceptionHandler) {
-        new Routes().route
-      }
+      new Routes(namespaceExtractor, messageBus).route
     }
   }
 }
 
-object Boot extends App {
+object Boot extends App with Directives with BootMigrations {
+  import LogDirectives._
+  import VersionDirectives._
 
-  implicit val system       = ActorSystem("sota-device-registry")
+  implicit val system = ActorSystem("device-registry")
   implicit val materializer = ActorMaterializer()
-  implicit val exec         = system.dispatcher
-  implicit val log          = Logging(system, "boot")
-  implicit val db           = Database.forConfig("database")
-  val config = system.settings.config
+  implicit val exec = system.dispatcher
+  implicit val log = LoggerFactory.getLogger(this.getClass)
+  implicit val db = Database.forConfig("database")
+  lazy val config = system.settings.config
 
-  log.info(org.genivi.sota.device_registry.BuildInfo.toString)
-
-  // Database migrations
-  if (config.getBoolean("database.migrate")) {
-    val url = config.getString("database.url")
-    val user = config.getString("database.properties.user")
-    val password = config.getString("database.properties.password")
-
-    import org.flywaydb.core.Flyway
-    val flyway = new Flyway
-    flyway.setDataSource(url, user, password)
-    flyway.migrate()
+  lazy val version = {
+    val bi = org.genivi.sota.device_registry.BuildInfo
+    s"${bi.name}/${bi.version}"
   }
 
-  val route         = new Routing
-  val host          = system.settings.config.getString("server.host")
-  val port          = system.settings.config.getInt("server.port")
-  val bindingFuture = Http().bindAndHandle(route.route, host, port)
+  val authNamespace = NamespaceDirectives.fromConfig()
 
-  log.info(s"Server online at http://${host}:${port}/")
+  lazy val messageBus =
+    MessageBus.publisher(system, config) match {
+      case Xor.Right(v) => v
+      case Xor.Left(error) =>
+        log.error("Could not initialize message bus publisher", error)
+        MessageBusPublisher.ignore
+    }
+
+  val routes: Route =
+    (TraceId.withTraceId &
+      logResponseMetrics("device-registry", TraceId.traceMetrics) &
+      versionHeaders(version)) {
+      handleRejections(rejectionHandler) {
+        pathPrefix("api" / "v1") {
+          new Routes(authNamespace, messageBus).route
+        } ~ new HealthResource(db, org.genivi.sota.device_registry.BuildInfo.toMap).route
+      }
+    }
+
+  val host = config.getString("server.host")
+  val port = config.getInt("server.port")
+  val binding = Http().bindAndHandle(routes, host, port)
+
+  log.info(s"device registry started at http://$host:$port/")
 
   sys.addShutdownHook {
     Try(db.close())

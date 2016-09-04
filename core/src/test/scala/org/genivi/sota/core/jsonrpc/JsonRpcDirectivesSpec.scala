@@ -25,8 +25,9 @@ class JsonRpcDirectivesSpec extends PropSpec
         service( Map.empty[String, MethodFn]) ~>
         check {
           status shouldBe StatusCodes.OK
-          responseAs[ErrorResponse].error.data.get.asString.get should include("expected json value")
-          responseAs[ErrorResponse].error.message shouldBe "Invalid request"
+          val er = responseAs[ErrorResponse].error
+          er.data should be(empty)
+          er.message shouldBe "Parse error"
         }
   }
 

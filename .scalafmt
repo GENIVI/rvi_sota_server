@@ -1,0 +1,4 @@
+--style defaultWithAlign
+--maxColumn 120
+--binPackParentConstructors false
+--alignByArrowEnumeratorGenerator true

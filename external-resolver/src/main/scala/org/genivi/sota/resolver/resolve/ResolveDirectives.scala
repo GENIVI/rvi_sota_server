@@ -1,5 +1,5 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
 package org.genivi.sota.resolver.resolve
@@ -8,43 +8,46 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
 import io.circe.generic.auto._
-import org.genivi.sota.data.PackageId
+import org.genivi.sota.data.{Namespace, PackageId}
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.common.RefinementDirectives._
-import org.genivi.sota.resolver.vehicles.DbDepResolver
+import org.genivi.sota.resolver.devices.DbDepResolver
 
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 import Directives._
+import akka.http.scaladsl.unmarshalling.{FromStringUnmarshaller, Unmarshaller}
+import org.genivi.sota.common.DeviceRegistry
+import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 
 
 /**
  * API routes for package resolution.
  */
-class ResolveDirectives(namespaceExtractor: Directive1[Namespace])
+class ResolveDirectives(namespaceExtractor: Directive1[Namespace],
+                        deviceRegistry: DeviceRegistry)
                        (implicit system: ActorSystem,
                         db: Database,
                         mat: ActorMaterializer,
                         ec: ExecutionContext) {
 
-  def resolvePackage(ns: Namespace, id: PackageId): Route =
-    completeOrRecoverWith(DbDepResolver.resolve(db, ns, id)) {
-      Errors.onMissingPackage
-    }
+  def resolvePackage(ns: Namespace, id: PackageId): Route = {
+    val resultF = DbDepResolver.resolve(ns, deviceRegistry, id)
 
-  /**
-   * API route for resolving a package, i.e. returning the list of VINs it applies to.
-   * @return Route object containing route for package resolution
-   * @throws Errors.MissingPackageException if the package doesn't exist
-   */
-  def route: Route =
+    complete(resultF)
+  }
+
+  implicit val NamespaceUnmarshaller: FromStringUnmarshaller[Namespace] = Unmarshaller.strict(Namespace.apply)
+
+  def route: Route = ErrorHandler.handleErrors {
     (get &
       encodeResponse &
       pathPrefix("resolve") &
       parameter('namespace.as[Namespace]) & refinedPackageIdParams) { (ns, id) =>
       resolvePackage(ns, id)
     }
+  }
 }

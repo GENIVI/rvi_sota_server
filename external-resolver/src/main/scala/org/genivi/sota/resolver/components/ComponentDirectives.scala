@@ -1,5 +1,5 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
 package org.genivi.sota.resolver.components
@@ -15,13 +15,16 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.RefinementDirectives.refinedPartNumber
 import org.genivi.sota.resolver.common.Errors
+
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 import Directives._
+import org.genivi.sota.data.Namespace
+import org.genivi.sota.http.ErrorHandler
 
 /**
  * API routes for creating, deleting, and listing components.
- * @see {@linktourl http://pdxostc.github.io/rvi_sota_server/dev/api.html}
+ * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
  */
 class ComponentDirectives(namespaceExtractor: Directive1[Namespace])
                          (implicit system: ActorSystem,
@@ -43,26 +46,19 @@ class ComponentDirectives(namespaceExtractor: Directive1[Namespace])
 
 
   def deleteComponent(ns: Namespace, part: Component.PartNumber): Route =
-    completeOrRecoverWith(ComponentRepository.removeComponent(ns, part)) {
-      Errors.onComponentInstalled
-    }
+    complete(ComponentRepository.removeComponent(ns, part))
 
-  /**
-   * API route for components.
-   * @return      Route object containing routes for creating, editing, and listing components
-   * @throws      Errors.ComponentIsInstalledException on DELETE call, if component doesn't exist
-   */
-  def route: Route =
+  def route: Route = ErrorHandler.handleErrors {
     (pathPrefix("components") & namespaceExtractor) { ns =>
       (get & pathEnd) {
         searchComponent(ns)
       } ~
-      (put & refinedPartNumber & pathEnd) { part =>
-        addComponent(ns, part)
-      } ~
-      (delete & refinedPartNumber & pathEnd) { part =>
-        deleteComponent(ns, part)
-      }
+        (put & refinedPartNumber & pathEnd) { part =>
+          addComponent(ns, part)
+        } ~
+        (delete & refinedPartNumber & pathEnd) { part =>
+          deleteComponent(ns, part)
+        }
     }
-
+  }
 }

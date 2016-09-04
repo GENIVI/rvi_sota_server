@@ -7,6 +7,7 @@ import Command._
 import Misc._
 import Query._
 import Store._
+import scala.language.existentials
 
 import scala.concurrent.ExecutionContext
 
@@ -184,7 +185,6 @@ object SessionCoverage {
     classOf[AddFilter],
     classOf[AddFilterToPackage],
     classOf[AddPackage],
-    classOf[AddVehicle],
     classOf[EditComponent],
     classOf[EditFilter],
     classOf[InstallComponent],
@@ -200,7 +200,6 @@ object SessionCoverage {
     classOf[AddFilterFail],
     classOf[AddFilterToPackageFail],
     classOf[AddPackageFail],
-    classOf[AddVehicleFail],
     classOf[EditComponentFail],
     classOf[EditFilterFail],
     classOf[InstallComponentFail],

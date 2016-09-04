@@ -18,7 +18,7 @@ define(function(require) {
       this.props.Packages.addWatch("poll-package-history-for-vin", _.bind(this.forceUpdate, this, null));
     },
     refreshData: function() {
-      SotaDispatcher.dispatch({actionType: 'get-package-history-for-vin', vin: this.props.Vin});
+      SotaDispatcher.dispatch({actionType: 'get-package-history-for-vin', id: this.props.Id});
     },
     label: "History",
     panel: function() {

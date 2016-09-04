@@ -1,5 +1,5 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
 package org.genivi.sota.core.rvi
@@ -8,9 +8,8 @@ import akka.event.LoggingAdapter
 import org.genivi.sota.core.data.UpdateSpec
 import org.genivi.sota.core.resolver.Connectivity
 import org.genivi.sota.core.transfer._
-import org.genivi.sota.data.Vehicle
 import java.time.Instant
-
+import org.genivi.sota.data.Device
 import scala.concurrent.{ExecutionContext, Future}
 
 
@@ -22,7 +21,7 @@ class RviUpdateNotifier(services: ServerServices) extends UpdateNotifier {
 
   import io.circe.generic.auto._
 
-  override def notifyVehicle(vin: Vehicle.Vin, update: UpdateSpec)
+  override def notifyDevice(device: Device.Id, update: UpdateSpec)
                             (implicit connectivity: Connectivity, ec: ExecutionContext): Future[Int] = {
     import io.circe.generic.auto._
 
@@ -32,7 +31,7 @@ class RviUpdateNotifier(services: ServerServices) extends UpdateNotifier {
     }
 
     val expirationDate: Instant = update.request.periodOfValidity.end
-    connectivity.client.sendMessage(s"genivi.org/vin/${vin.get}/sota/notify",
+    connectivity.client.sendMessage(s"genivi.org/device/${device.underlying.get}/sota/notify",
                                     UpdateNotification(toPackageUpdate(update), services), expirationDate)
   }
 

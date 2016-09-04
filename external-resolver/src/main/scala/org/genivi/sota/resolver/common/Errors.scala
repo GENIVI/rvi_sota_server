@@ -1,11 +1,16 @@
 /**
- * Copyright: Copyright (C) 2015, Jaguar Land Rover
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
 package org.genivi.sota.resolver.common
 
+import org.genivi.sota.http.Errors.{MissingEntity, RawError}
+import org.genivi.sota.resolver.components.Component
+import org.genivi.sota.resolver.data.Firmware
+import org.genivi.sota.resolver.filters.Filter
+
 /**
-  * The resolver deals with vehicles, packages, filters and components,
+  * The resolver deals with devices, packages, filters and components,
   * sometimes when working with these entities they might not exist, in
   * which case we have to throw an error. This file contains common
   * exceptions and handlers for how to complete requests in which the
@@ -21,57 +26,18 @@ object Errors {
   import org.genivi.sota.marshalling.CirceMarshallingSupport._
 
   object Codes {
-    val FilterNotFound     = ErrorCode("filter_not_found")
-    val PackageNotFound    = ErrorCode("package_not_found")
-    val FirmwareNotFound   = ErrorCode("firmware_not_found")
-    val MissingVehicle     = ErrorCode("missing_vehicle")
-    val MissingComponent   = ErrorCode("missing_component")
     val ComponentInstalled = ErrorCode("component_is_installed")
+    val PackageFilterNotFound = ErrorCode("package_filter_not_found")
   }
 
-  case object MissingPackageException       extends Throwable with NoStackTrace
+  val MissingFilter = MissingEntity(classOf[Filter])
+  val MissingPackage = MissingEntity(classOf[org.genivi.sota.resolver.packages.Package])
+  val MissingFirmware = MissingEntity(classOf[Firmware])
+  val MissingComponent = MissingEntity(classOf[Component])
 
-  case object MissingFirmwareException      extends Throwable with NoStackTrace
+  val ComponentInstalled = RawError(Codes.ComponentInstalled, StatusCodes.BadRequest,
+    "Components that are installed on devices cannot be removed.")
 
-  case object MissingFilterException        extends Throwable with NoStackTrace
-
-  case object MissingVehicle                extends Throwable with NoStackTrace
-
-  case object MissingComponent              extends Throwable with NoStackTrace
-
-  case object ComponentIsInstalledException extends Throwable with NoStackTrace
-
-
-  val onMissingFilter : PF = {
-    case Errors.MissingFilterException =>
-      complete( StatusCodes.NotFound -> ErrorRepresentation( Codes.FilterNotFound, s"Filter not found") )
-  }
-
-  val onMissingPackage : PF = {
-    case Errors.MissingPackageException =>
-      complete( StatusCodes.NotFound -> ErrorRepresentation( Codes.PackageNotFound, "Package not found") )
-  }
-
-  val onMissingFirmware : PF = {
-    case Errors.MissingFirmwareException =>
-      complete(StatusCodes.NotFound -> ErrorRepresentation(Codes.FirmwareNotFound, "Firmware doesn't exist"))
-  }
-
-  val onMissingVehicle : PF = {
-    case Errors.MissingVehicle =>
-      complete(StatusCodes.NotFound -> ErrorRepresentation(Codes.MissingVehicle, "Vehicle doesn't exist"))
-  }
-
-  val onMissingComponent : PF = {
-    case Errors.MissingComponent =>
-      complete(StatusCodes.NotFound -> ErrorRepresentation(Codes.MissingComponent, "Component doesn't exist"))
-  }
-
-  val onComponentInstalled: PF = {
-    case Errors.ComponentIsInstalledException =>
-      complete(StatusCodes.BadRequest ->
-        ErrorRepresentation(Codes.ComponentInstalled,
-          "Components that are installed on vehicles cannot be removed."))
-  }
-
+  val MissingPackageFilter = RawError(Codes.PackageFilterNotFound, StatusCodes.NotFound,
+    "No filter with defined for package")
 }
