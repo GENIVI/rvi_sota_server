@@ -27,6 +27,7 @@ import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
 import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.util.{Success, Try}
 import akka.pattern.pipe
+import org.apache.commons.logging.LogFactory
 
 object KinesisClient {
 
@@ -96,7 +97,7 @@ object KinesisClient {
 
         implicit val ec = system.dispatcher
         implicit val _system = system
-        val log = Logging(system, this)
+        val log = LogFactory.getLog(this.getClass)
 
         log.info(s"Subscribing to $streamName")
 
@@ -116,7 +117,7 @@ object KinesisClient {
         worker
       }.watchTermination() { (worker, doneF) =>
         implicit val _ec = system.dispatcher
-        val log = Logging(system, this)
+        val log = LogFactory.getLog(this.getClass)
         doneF.andThen { case _ =>
           log.info("Shutting down worker after stream done")
           Try(worker.shutdown())
