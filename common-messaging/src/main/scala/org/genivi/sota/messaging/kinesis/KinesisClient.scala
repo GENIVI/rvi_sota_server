@@ -6,6 +6,7 @@ import java.util.UUID
 import akka.NotUsed
 import akka.actor.{ActorSystem, Status}
 import akka.actor.FSM.Failure
+import akka.event.Logging
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{Keep, Source}
 import io.circe.syntax._
@@ -22,6 +23,7 @@ import io.circe.{Decoder, Encoder}
 import org.genivi.sota.messaging.ConfigHelpers._
 import org.genivi.sota.messaging.Messages.MessageLike
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
+
 import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.util.{Success, Try}
 import akka.pattern.pipe
@@ -86,20 +88,27 @@ object KinesisClient {
         appName,
         streamName,
         credentials,
-        UUID.randomUUID().toString).withRegionName(regionName).withCommonClientConfig(clientConfig)
+        s"$streamName-worker-" + UUID.randomUUID().toString)
+        .withRegionName(regionName).withCommonClientConfig(clientConfig)
     } yield {
       Source.actorRef[T](MessageBus.DEFAULT_CLIENT_BUFFER_SIZE,
         OverflowStrategy.dropTail).mapMaterializedValue { ref =>
 
         implicit val ec = system.dispatcher
         implicit val _system = system
+        val log = Logging(system, this)
+
+        log.info(s"Subscribing to $streamName")
 
         val worker = new Worker.Builder()
           .recordProcessorFactory(new RecordProcessorFactory(ref)(decoder, _system))
           .config(kinesisClientConfig)
           .build()
 
-        Future(blocking { worker.run() })
+        Future(blocking {
+          log.info(s"Starting worker for $streamName")
+          worker.run()
+        })
           .map(Status.Success(_))
           .recover { case ex => Status.Failure(ex) }
           .pipeTo(ref)
@@ -107,7 +116,11 @@ object KinesisClient {
         worker
       }.watchTermination() { (worker, doneF) =>
         implicit val _ec = system.dispatcher
-        doneF.andThen { case _ => Try(worker.shutdown()) }
+        val log = Logging(system, this)
+        doneF.andThen { case _ =>
+          log.info("Shutting down worker after stream done")
+          Try(worker.shutdown())
+        }
         NotUsed
       }
     }
