@@ -463,22 +463,6 @@
         }
       }
     },
-    "/packages": {
-      "get": {
-        "description": "Get a list of all the software packages and versions in the Core database.",
-        "responses": {
-          "200": {
-            "description": "A array of packages",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/resolverPackage"
-              }
-            }
-          }
-        }
-      }
-    },
     "/packages/{name}/{version}": {
       "put": {
         "description": "Add a binary package to the system",

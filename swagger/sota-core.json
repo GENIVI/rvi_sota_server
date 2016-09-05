@@ -226,7 +226,7 @@
         }
       }
     },
-    "/vehicle_updates/{uuid}": {
+    "/device_updates/{uuid}": {
       "post": {
         "description": "Create an update sending a package to vehicle",
         "parameters": [
@@ -256,7 +256,7 @@
         }
       },
       "get": {
-        "description": "Get a list of the updates queued for a DeviceId, and update the last seen time for that DeviceId. This is called by the\nclient. To get a list of updates queued for a DeviceId without updating the last seen time, use /vehicle_updates/{uuid}/queued\n",
+        "description": "Get a list of the updates queued for a DeviceId, and update the last seen time for that DeviceId. This is called by the\nclient. To get a list of updates queued for a DeviceId without updating the last seen time, use /device_updates/{uuid}/queued\n",
         "parameters": [
           {
             "name": "uuid",
@@ -279,7 +279,7 @@
         }
       }
     },
-    "/vehicle_updates/{uuid}/queued": {
+    "/device_updates/{uuid}/queued": {
       "get": {
         "description": "Get a list of the updates queued for a device.",
         "parameters": [
@@ -304,7 +304,7 @@
         }
       }
     },
-    "/vehicle_updates/{uuid}/blocked": {
+    "/device_updates/{uuid}/blocked": {
       "get": {
         "description": "Get whether the update queue for the given device is blocked.",
         "parameters": [
@@ -363,7 +363,7 @@
         }
       }
     },
-    "/vehicle_updates/{uuid}/{updateId}/download": {
+    "/device_updates/{uuid}/{updateId}/download": {
       "get": {
         "description": "Download a package binary. This is called by the in-vehicle client.",
         "parameters": [
@@ -392,7 +392,7 @@
         }
       }
     },
-    "/vehicle_updates/{uuid}/system_info": {
+    "/device_updates/{uuid}/system_info": {
       "put": {
         "description": "Update the system info for a device",
         "parameters": [
@@ -420,7 +420,7 @@
         }
       }
     },
-    "/vehicle_updates/{uuid}/sync": {
+    "/device_updates/{uuid}/sync": {
       "post": {
         "description": "todo",
         "parameters": [
@@ -439,7 +439,7 @@
         }
       }
     },
-    "/vehicle_updates/{uuid}/{updateId}/cancelupdate": {
+    "/device_updates/{uuid}/{updateId}/cancelupdate": {
       "put": {
         "description": "Cancel a currently pending update",
         "parameters": [
@@ -464,7 +464,7 @@
         }
       }
     },
-    "/vehicle_updates/{uuid}/{updateId}": {
+    "/device_updates/{uuid}/{updateId}": {
       "post": {
         "description": "Report on the status of an install. This is used by the client to send the status and/or log files after an install completes.",
         "parameters": [
@@ -498,7 +498,7 @@
         }
       }
     },
-    "/vehicle_updates/{uuid}/installed": {
+    "/device_updates/{uuid}/installed": {
       "put": {
         "description": "Update the list of installed packages on a vehicle. Note that this does not do any communication\nwith the client or install any packages; it simply updates the database with the information that\nthe package is installed.\n",
         "parameters": [
@@ -528,7 +528,7 @@
         }
       }
     },
-    "/vehicle_updates/{uuid}/order": {
+    "/device_updates/{uuid}/order": {
       "put": {
         "description": "Set the install order for a vehicle's queued packages.\n",
         "parameters": [
@@ -555,7 +555,7 @@
         }
       }
     },
-    "/vehicle_updates/{uuid}/results": {
+    "/device_updates/{uuid}/results": {
       "get": {
         "description": "Get a list of results for all updates for a given DeviceId.",
         "parameters": [
@@ -580,7 +580,7 @@
         }
       }
     },
-    "/vehicle_updates/{uuid}/{updateId}/results": {
+    "/device_updates/{uuid}/{updateId}/results": {
       "get": {
         "description": "Get a list of results for a given update.",
         "parameters": [
@@ -621,38 +621,64 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/BlacklistItem"
+                "$ref": "#/definitions/BlacklistedPackage"
               }
             }
           }
         }
-      }
-    },
-    "/blacklist/{package_name}/{package_version}": {
+      },
       "put": {
+        "consumes": [
+          "application/json"
+        ],
         "parameters": [
           {
-            "name": "package_name",
-            "in": "path",
-            "description": "package name",
+            "name": "BlacklistedPackageRequest",
+            "in": "body",
+            "description": "An object describing the package to blacklist",
             "required": true,
-            "type": "string"
-          },
-          {
-            "name": "package_version",
-            "in": "path",
-            "description": "package version",
-            "required": true,
-            "type": "string"
+            "schema": {
+              "type": "object",
+              "items": {
+                "$ref": "#definitions/BlacklistedPackageRequest"
+              }
+            }
           }
         ],
         "description": "Update a blacklist item",
         "responses": {
-          "201": {
-            "description": "Created"
+          "200": {
+            "description": "OK"
           }
         }
       },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "BlacklistedPackageRequest",
+            "in": "body",
+            "description": "An object describing the package to blacklist",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "items": {
+                "$ref": "#definitions/BlacklistedPackageRequest"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "description": "Create a blacklist item"
+      }
+    },
+    "/blacklist/{package_name}/{package_version}": {
       "get": {
         "parameters": [
           {
@@ -677,7 +703,7 @@
           }
         }
       },
-      "post": {
+      "delete": {
         "parameters": [
           {
             "name": "package_name",
@@ -694,12 +720,31 @@
             "type": "string"
           }
         ],
+        "description": "Delete a blacklist item",
         "responses": {
-          "201": {
+          "200": {
             "description": "OK"
           }
-        },
-        "description": "Create a blacklist item"
+        }
+      }
+    },
+    "/impact/blacklist": {
+      "get": {
+        "description": "Current impact analysis for blacklisted packages",
+        "responses": {
+          "200": {
+            "description": "An array of tuples (DeviceId -> PackageId)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -908,6 +953,29 @@
       }
     },
     "BlacklistItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "namespace": {
+          "$ref": "#/definitions/namespace"
+        },
+        "packageId": {
+          "$ref": "#/definitions/packageId"
+        },
+        "comment": {
+          "type": "string",
+          "description": "A free text comment about the item"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "dateTime",
+          "description": "The last time this blacklist entry was changed."
+        }
+      }
+    },
+    "BlacklistedPackageRequest": {
       "type": "object",
       "properties": {
         "packageId": {

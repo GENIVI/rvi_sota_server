@@ -16,13 +16,6 @@ consumes:
 produces:
   - application/json
 
-# DONE:
-#   * /components
-#   * /filters
-# TODO:
-      # PUT /vehicles/:vin/packages
-      # GET /vehicles/firmware/:vin
-
 paths:
   /devices:
     get:
@@ -313,16 +306,6 @@ paths:
       responses:
         200:
           description: OK # the actual return schema isn't a valid schema according to the OpenAPI spec, so I'm just leaving it blank.
-  /packages:
-    get:
-      description: 'Get a list of all the software packages and versions in the Core database.'
-      responses:
-        200:
-          description: A array of packages
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/resolverPackage'
   /packages/{name}/{version}:
     put:
       description: Add a binary package to the system
