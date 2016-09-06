@@ -32,8 +32,7 @@ object Messages {
 
   final case class PackageCreated(namespace: Namespace, packageId: PackageId,
                                   description: Option[String], vendor: Option[String],
-                                  signature: Option[String],
-                                  fileName: String) extends Message
+                                  signature: Option[String]) extends Message
 
   final case class PackageBlacklisted(namespace: Namespace, packageId: PackageId) extends Message
 

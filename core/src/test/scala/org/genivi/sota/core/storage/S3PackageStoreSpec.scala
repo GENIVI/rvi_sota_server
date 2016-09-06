@@ -52,7 +52,7 @@ class S3PackageStoreSpec extends TestKit(ActorSystem("LocalPackageStoreSpec"))
     val f = s3.store(packageId, fileData.filename.get, fileData.entity.dataBytes)
 
     whenReady(f) { case (uri, _, _) =>
-      uri.toString should startWith("https://rvi-sota-test.s3.eu-central-1.amazonaws.com/")
+      uri.toString should startWith("https://sota-core-it-tests.s3.eu-central-1.amazonaws.com/")
     }
   }
 
@@ -76,7 +76,7 @@ class S3PackageStoreSpec extends TestKit(ActorSystem("LocalPackageStoreSpec"))
     }
   }
 
-  test("retrieves a file to a temporary file", IntegrationTest) {
+  test("retrieves a file from a temporary file", IntegrationTest) {
     val packageId = PackageIdGenerators.genPackageId.sample.get
     val f = for {
       (uri, _, _) <- s3.store(packageId, fileData.filename.get, fileData.entity.dataBytes)
