@@ -4,6 +4,9 @@
  */
 package org.genivi.sota.core.storage
 
+import java.nio.ByteBuffer
+import java.security.MessageDigest
+
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.event.{Logging, LoggingAdapter}
@@ -18,15 +21,17 @@ import org.genivi.sota.core.storage.PackageStorage.PackageSize
 import org.genivi.sota.data.PackageId
 import org.genivi.sota.core.data.Package
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.server.directives.FileInfo
+import org.apache.commons.codec.binary.{Base32, Hex}
 
 import scala.concurrent.Future
+import scala.util.hashing.MurmurHash3
 import scala.util.{Failure, Success, Try}
 
 class PackageStorage()(implicit system: ActorSystem, mat: ActorMaterializer, config: Config) {
-  def store(packageId: PackageId, fileName: String,
+  def store(packageId: PackageId, filePrefix: String,
             fileData: Source[ByteString, Any]): Future[(Uri, PackageSize, DigestResult)] = {
-    storage.store(packageId, fileName, fileData)
+    val filename = packageFileName(packageId, filePrefix)
+    storage.store(packageId, filename, fileData)
   }
 
   def retrieveResponse(packageModel: Package): Future[HttpResponse] = {
@@ -61,6 +66,23 @@ class PackageStorage()(implicit system: ActorSystem, mat: ActorMaterializer, con
       case None => throw new Exception("Could not get s3 credentials from config")
     }
   }
+
+  private def packageFileName(packageId: PackageId, providedPrefix: String): String = {
+    def prefixHash(): String = {
+      val mHash = MurmurHash3.bytesHash(providedPrefix.getBytes())
+      val sHash = ByteBuffer.allocate(5).putInt(mHash).put(0.toByte).array()
+      new String(new Base32().encode(sHash))
+    }
+
+    def packageIdHash(): String = {
+      val digest = MessageDigest.getInstance("SHA-1")
+      digest.update(providedPrefix.getBytes)
+      digest.update(packageId.mkString.getBytes)
+      Hex.encodeHexString(digest.digest())
+    }
+
+    prefixHash() + "-" + packageIdHash()
+  }
 }
 
 object PackageStorage {
@@ -90,10 +112,6 @@ object PackageStorage {
     } yield (uri, sizeBytes, digest)
 
     writeAsync andThen logResult(log, packageId)
-  }
-
-  protected[storage] def packageFileName(packageId: PackageId, providedFilename: Option[String]) = {
-    packageId.mkString + "-" + providedFilename.getOrElse("")
   }
 
   private def logResult(log: LoggingAdapter, packageId: PackageId)
