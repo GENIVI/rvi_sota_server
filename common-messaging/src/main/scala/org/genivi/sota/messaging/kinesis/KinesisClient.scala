@@ -6,6 +6,7 @@ import java.util.UUID
 import akka.NotUsed
 import akka.actor.{ActorSystem, Status}
 import akka.actor.FSM.Failure
+import akka.event.Logging
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{Keep, Source}
 import io.circe.syntax._
@@ -22,9 +23,11 @@ import io.circe.{Decoder, Encoder}
 import org.genivi.sota.messaging.ConfigHelpers._
 import org.genivi.sota.messaging.Messages.MessageLike
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
+
 import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.util.{Success, Try}
 import akka.pattern.pipe
+import org.apache.commons.logging.LogFactory
 
 object KinesisClient {
 
@@ -72,34 +75,42 @@ object KinesisClient {
       }
     }
 
-  def source[T](system: ActorSystem, config: Config, streamName: String)
-                          (implicit decoder: Decoder[T])
+  def source[T](system: ActorSystem, config: Config, streamNameRoot: String)(implicit decoder: Decoder[T])
                              : ConfigException Xor Source[T, NotUsed] =
     for {
       cfg                 <- config.configAt("messaging.kinesis")
       appName             <- cfg.readString("appName")
       regionName          <- cfg.readString("regionName")
       version             <- cfg.readString("appVersion")
+      streamNameSuffix    <- cfg.readString("streamSuffix")
+      streamName          = streamNameRoot + "-" + streamNameSuffix
       clientConfig        = getClientConfigWithUserAgent(appName, version)
       credentials         <- configureCredentialsProvider(config)
       kinesisClientConfig = new KinesisClientLibConfiguration(
         appName,
         streamName,
         credentials,
-        UUID.randomUUID().toString).withRegionName(regionName).withCommonClientConfig(clientConfig)
+        s"$streamName-worker-" + UUID.randomUUID().toString)
+        .withRegionName(regionName).withCommonClientConfig(clientConfig)
     } yield {
       Source.actorRef[T](MessageBus.DEFAULT_CLIENT_BUFFER_SIZE,
         OverflowStrategy.dropTail).mapMaterializedValue { ref =>
 
         implicit val ec = system.dispatcher
         implicit val _system = system
+        val log = LogFactory.getLog(this.getClass)
+
+        log.info(s"Subscribing to $streamName")
 
         val worker = new Worker.Builder()
           .recordProcessorFactory(new RecordProcessorFactory(ref)(decoder, _system))
           .config(kinesisClientConfig)
           .build()
 
-        Future(blocking { worker.run() })
+        Future(blocking {
+          log.info(s"Starting worker for $streamName")
+          worker.run()
+        })
           .map(Status.Success(_))
           .recover { case ex => Status.Failure(ex) }
           .pipeTo(ref)
@@ -107,7 +118,11 @@ object KinesisClient {
         worker
       }.watchTermination() { (worker, doneF) =>
         implicit val _ec = system.dispatcher
-        doneF.andThen { case _ => Try(worker.shutdown()) }
+        val log = LogFactory.getLog(this.getClass)
+        doneF.andThen { case _ =>
+          log.info("Shutting down worker after stream done")
+          Try(worker.shutdown())
+        }
         NotUsed
       }
     }
