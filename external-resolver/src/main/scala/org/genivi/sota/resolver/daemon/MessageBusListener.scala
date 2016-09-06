@@ -5,33 +5,22 @@
 
 package org.genivi.sota.resolver.daemon
 
-import akka.NotUsed
 import akka.actor.Status.Failure
-import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Kill, PoisonPill, Props, Terminated}
-import akka.stream.ActorMaterializer
+import akka.actor.{ActorLogging, ActorSystem, PoisonPill, Props}
 import akka.stream.actor.ActorSubscriberMessage.{OnComplete, OnError, OnNext}
 import akka.stream.actor.{ActorSubscriber, RequestStrategy, WatermarkRequestStrategy}
-import akka.stream.scaladsl.{Sink, Source}
 import org.genivi.sota.data.PackageId._
-import org.genivi.sota.messaging.MessageBus
 import org.genivi.sota.messaging.Messages.PackageCreated
 import org.genivi.sota.resolver.packages.{Package, PackageRepository}
 import org.slf4j.LoggerFactory
 import slick.driver.MySQLDriver.api._
 import cats.syntax.show.toShowOps
 import akka.pattern.pipe
-import cats.data.Xor
-import com.typesafe.config.ConfigException
 import org.genivi.sota.data.PackageId
 import org.genivi.sota.messaging.daemon.MessageBusListenerActor
 import org.genivi.sota.messaging.daemon.MessageBusListenerActor.Subscribe
 
-import scala.concurrent.duration._
-import org.genivi.sota.messaging.Messages.PackageCreated._
 import org.genivi.sota.messaging.Messages._
-
-import scala.util.Try
-
 
 class PackageCreatedListener(db: Database) extends ActorSubscriber with ActorLogging {
 

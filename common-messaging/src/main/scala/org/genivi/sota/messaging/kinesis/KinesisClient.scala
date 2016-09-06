@@ -44,6 +44,12 @@ object KinesisClient {
       awsSecretKey <- awsConfig.readString("secretAccessKey")
     } yield new StaticCredentialsProvider(new BasicAWSCredentials(awsAccessKey, awsSecretKey))
 
+  private[this] def getStreamNameSuffix(streamNameRoot: String, config: Config): ConfigException Xor String =
+    for {
+      awsConfig    <- config.configAt("aws")
+      streamNameSuffix <- config.readString("streamSuffix")
+    } yield streamNameRoot + "-" + streamNameSuffix
+
   private[this] def getAmazonClient(system: ActorSystem, config: Config): ConfigException Xor AmazonKinesisClient =
     for {
       cfg          <- config.configAt("messaging.kinesis")
@@ -66,23 +72,27 @@ object KinesisClient {
         override def publish[T](msg: T)(implicit ex: ExecutionContext, messageLike: MessageLike[T]): Future[Unit] =
           Future {
             blocking {
-              client.putRecord(
-                messageLike.streamName,
-                ByteBuffer.wrap(msg.asJson(messageLike.encoder).noSpaces.getBytes),
-                messageLike.partitionKey(msg))
+              for {
+                streamName <- getStreamNameSuffix(messageLike.streamName, config)
+                _          = client.putRecord(
+                              streamName,
+                              ByteBuffer.wrap(msg.asJson(messageLike.encoder).noSpaces.getBytes),
+                              messageLike.partitionKey(msg))
+              } yield {}
             }
           }
       }
     }
 
-  def source[T](system: ActorSystem, config: Config, streamName: String)
-                          (implicit decoder: Decoder[T])
+  def source[T](system: ActorSystem, config: Config, streamNameRoot: String)(implicit decoder: Decoder[T])
                              : ConfigException Xor Source[T, NotUsed] =
     for {
       cfg                 <- config.configAt("messaging.kinesis")
       appName             <- cfg.readString("appName")
       regionName          <- cfg.readString("regionName")
       version             <- cfg.readString("appVersion")
+      streamNameSuffix    <- cfg.readString("streamSuffix")
+      streamName          <- getStreamNameSuffix(streamNameRoot, config)
       clientConfig        = getClientConfigWithUserAgent(appName, version)
       credentials         <- configureCredentialsProvider(config)
       kinesisClientConfig = new KinesisClientLibConfiguration(
