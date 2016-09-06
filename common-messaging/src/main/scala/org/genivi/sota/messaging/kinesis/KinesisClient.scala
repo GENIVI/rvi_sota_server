@@ -75,14 +75,15 @@ object KinesisClient {
       }
     }
 
-  def source[T](system: ActorSystem, config: Config, streamName: String)
-                          (implicit decoder: Decoder[T])
+  def source[T](system: ActorSystem, config: Config, streamNameRoot: String)(implicit decoder: Decoder[T])
                              : ConfigException Xor Source[T, NotUsed] =
     for {
       cfg                 <- config.configAt("messaging.kinesis")
       appName             <- cfg.readString("appName")
       regionName          <- cfg.readString("regionName")
       version             <- cfg.readString("appVersion")
+      streamNameSuffix    <- cfg.readString("streamSuffix")
+      streamName          = streamNameRoot + "-" + streamNameSuffix
       clientConfig        = getClientConfigWithUserAgent(appName, version)
       credentials         <- configureCredentialsProvider(config)
       kinesisClientConfig = new KinesisClientLibConfiguration(
