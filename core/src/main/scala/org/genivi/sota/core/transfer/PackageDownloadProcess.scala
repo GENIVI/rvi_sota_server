@@ -10,13 +10,12 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
-import eu.timepit.refined.string.Uuid
 import org.genivi.sota.core.SotaCoreErrors
 import org.genivi.sota.core.data.{Package, UpdateSpec, UpdateStatus}
 import org.genivi.sota.core.db.{BlacklistedPackages, Packages, UpdateSpecs}
 import org.genivi.sota.core.db.UpdateSpecs._
 import org.genivi.sota.core.storage.PackageStorage.PackageRetrievalOp
-import org.genivi.sota.data.Device
+import org.genivi.sota.data.{Device, Uuid}
 import org.genivi.sota.db.SlickExtensions
 import org.genivi.sota.refined.SlickRefined._
 import slick.driver.MySQLDriver.api._
@@ -40,7 +39,7 @@ class PackageDownloadProcess(db: Database, packageRetrieval: PackageRetrievalOp)
     * ie for a ([[UpdateRequest]], device) combination.</li>
     * </ul>
     */
-  def buildClientDownloadResponse(device: Device.Id, updateRequestId: Refined[String, Uuid])
+  def buildClientDownloadResponse(device: Uuid, updateRequestId: Refined[String, Uuid.Valid])
                                  (implicit ec: ExecutionContext): Future[HttpResponse] = {
     val dbIO = for {
       pkg <- findForDownload(updateRequestId)
@@ -54,7 +53,7 @@ class PackageDownloadProcess(db: Database, packageRetrieval: PackageRetrievalOp)
     * Each [[UpdateRequest]] refers to a single package,
     * that this method returns after database lookup.
     */
-  private def findForDownload(updateRequestId: Refined[String, Uuid])
+  private def findForDownload(updateRequestId: Refined[String, Uuid.Valid])
                              (implicit ec: ExecutionContext): DBIO[Package] = {
     updateRequests
       .filter(_.id === updateRequestId)

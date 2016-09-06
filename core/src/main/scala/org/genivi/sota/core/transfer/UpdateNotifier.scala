@@ -7,11 +7,10 @@ package org.genivi.sota.core.transfer
 import akka.event.LoggingAdapter
 import java.util.UUID
 
-import org.genivi.sota.core.data.UpdateSpec
 import org.genivi.sota.core.data.{Package, UpdateSpec}
 import org.genivi.sota.core.resolver.Connectivity
 import org.genivi.sota.core.rvi.ServerServices
-import org.genivi.sota.data.Device
+import org.genivi.sota.data.{Device, Uuid}
 import scala.concurrent.{ExecutionContext, Future}
 
 
@@ -71,16 +70,16 @@ trait UpdateNotifier {
 
   /**
    * Notify a single vehicle that it has updates
-   * @param deviceId The device of the vehicle to notify
-   * @param updates The updates that apply to the vehicle
+   * @param device The device of the vehicle to notify
+   * @param update The updates that apply to the vehicle
    */
-  def notifyDevice(device: Device.Id, update: UpdateSpec)
+  def notifyDevice(device: Uuid, update: UpdateSpec)
                    (implicit connectivity: Connectivity, ec: ExecutionContext): Future[Int]
 }
 
 object DefaultUpdateNotifier extends UpdateNotifier {
 
-  override def notifyDevice(device: Device.Id, update: UpdateSpec)
+  override def notifyDevice(device: Uuid, update: UpdateSpec)
                             (implicit connectivity: Connectivity, ec: ExecutionContext): Future[Int] = {
     // TODO: missing default implementation
     Future.successful(0)

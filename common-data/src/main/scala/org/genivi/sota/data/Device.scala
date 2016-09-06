@@ -5,13 +5,13 @@
 package org.genivi.sota.data
 
 import cats.Show
+import cats.syntax.show._
 import eu.timepit.refined.api.Refined
-import eu.timepit.refined.string._
 import java.time.Instant
 import org.genivi.sota.data.Namespace._
-import slick.driver.MySQLDriver.api._
 
 import Device._
+
 
 /*
  * Device transfer object
@@ -25,10 +25,10 @@ final case class DeviceT(
 
 
 final case class Device(namespace: Namespace,
-                  id: Id,
+                  uuid: Uuid,
                   deviceName: DeviceName,
                   deviceId: Option[DeviceId] = None,
-                  deviceType: Device.DeviceType = DeviceType.Other,
+                  deviceType: DeviceType = DeviceType.Other,
                   lastSeen: Option[Instant] = None) {
 
   // TODO: Use org.genivi.sota.core.data.client.ResponseEncoder
@@ -36,11 +36,6 @@ final case class Device(namespace: Namespace,
 }
 
 object Device {
-  type ValidId = Uuid
-  final case class Id(underlying: String Refined ValidId) extends AnyVal
-  implicit val showId = new Show[Id] {
-    def show(id: Id) = id.underlying.get
-  }
 
   final case class DeviceId(underlying: String) extends AnyVal
   implicit val showDeviceId = new Show[DeviceId] {
@@ -63,25 +58,16 @@ object Device {
 
   implicit val showDevice: Show[Device] = Show.show[Device] {
     case d if d.deviceType == DeviceType.Vehicle =>
-      s"Vehicle: id=${d.id.underlying.get}, VIN=${d.deviceId}, lastSeen=${d.lastSeen}"
-    case d => s"Device: id=${d.id.underlying.get}, lastSeen=${d.lastSeen}"
-  }
-
-  implicit val IdOrdering: Ordering[Id] = new Ordering[Id] {
-    override def compare(id1: Id, id2: Id): Int = id1.underlying.get compare id2.underlying.get
+      s"Vehicle: uuid=${d.uuid.show}, VIN=${d.deviceId}, lastSeen=${d.lastSeen}"
+    case d => s"Device: uuid=${d.uuid.show}, lastSeen=${d.lastSeen}"
   }
 
   implicit val DeviceIdOrdering: Ordering[DeviceId] = new Ordering[DeviceId] {
     override def compare(id1: DeviceId, id2: DeviceId): Int = id1.underlying compare id2.underlying
   }
 
-  implicit def DeviceOrdering(implicit ord: Ordering[Id]): Ordering[Device] = new Ordering[Device] {
-    override def compare(d1: Device, d2: Device): Int = ord.compare(d1.id, d2.id)
+  implicit def DeviceOrdering(implicit ord: Ordering[Uuid]): Ordering[Device] = new Ordering[Device] {
+    override def compare(d1: Device, d2: Device): Int = ord.compare(d1.uuid, d2.uuid)
   }
-
-  // Slick mapping
-
-  implicit val idColumnType =
-    MappedColumnType.base[Id, String](showId.show(_), (s: String) => Id(Refined.unsafeApply(s)))
 
 }

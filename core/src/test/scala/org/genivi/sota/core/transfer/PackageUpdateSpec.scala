@@ -18,14 +18,13 @@ import org.genivi.sota.core.db.Packages
 import org.genivi.sota.core.jsonrpc.HttpTransport
 import org.genivi.sota.core.resolver.DefaultExternalResolverClient
 import org.genivi.sota.core.rvi._
-import org.genivi.sota.data.{Device, Namespaces, PackageId}
-import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data._
 import java.time.{Duration, Instant}
 import java.util.UUID
 
 import cats.data.Xor
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
-import org.scalacheck.Gen
+import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture, whenReady}
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
@@ -42,21 +41,21 @@ object DataGenerators {
 
   val packages = scala.util.Random.shuffle( PackagesReader.read().take(10).map(Generators.generatePackageData ) )
 
-  def dependenciesGen(packageId: PackageId, device: Device.Id) : Gen[UpdateService.DeviceToPackageIds] =
+  def dependenciesGen(packageId: PackageId, device: Uuid) : Gen[UpdateService.DeviceToPackageIds] =
     for {
       n                <- Gen.choose(1, 3)
       requiredPackages <- Gen.containerOfN[Set, PackageId](n, Gen.oneOf(packages ).map( _.id ))
     } yield Map( device -> (requiredPackages + packageId) )
 
 
-  def updateWithDependencies(device: Device.Id) : Gen[(UpdateRequest, UpdateService.DeviceToPackageIds)] =
+  def updateWithDependencies(device: Uuid) : Gen[(UpdateRequest, UpdateService.DeviceToPackageIds)] =
     for {
       packageId    <- Gen.oneOf( packages.map( _.id) )
       request      <- updateRequestGen(Namespaces.defaultNs, packageId)
       dependencies <- dependenciesGen( packageId, device )
     } yield (request, dependencies)
 
-  def requestsGen(device: Device.Id): Gen[Map[UpdateRequest, UpdateService.DeviceToPackageIds]] = for {
+  def requestsGen(device: Uuid): Gen[Map[UpdateRequest, UpdateService.DeviceToPackageIds]] = for {
     n        <- Gen.choose(1, 4)
     requests <- Gen.listOfN(1, updateWithDependencies(device)).map( _.toMap )
   } yield requests
@@ -73,7 +72,10 @@ object SotaClient {
   import io.circe.generic.auto._
   import org.genivi.sota.core.resolver.ConnectivityClient
   import org.genivi.sota.marshalling.CirceInstances._
-  import org.genivi.sota.data.DeviceGenerators._
+
+  import Arbitrary._
+  import DeviceGenerators._
+  import UuidGenerator._
 
   class ClientActor(rviClient: ConnectivityClient, clientServices: ClientServices) extends Actor with ActorLogging {
     def ttl() : Instant = {
@@ -84,7 +86,7 @@ object SotaClient {
       case StartDownloadMessage(id, checkSum, size) => ()
     }
 
-    val device = genId.sample.get
+    val device = arbitrary[Uuid].sample.get
 
     override def receive = {
       case UpdateNotification(update, services ) =>
@@ -205,7 +207,8 @@ class PackageUpdateSpec extends PropSpec
   with Namespaces {
 
   import DataGenerators._
-  import org.genivi.sota.data.DeviceGenerators._
+  import DeviceGenerators._
+  import UuidGenerator._
 
   override def beforeAll() : Unit = {
     super.beforeAll()
@@ -222,8 +225,8 @@ class PackageUpdateSpec extends PropSpec
     val notifier = new RviUpdateNotifier(services)
     val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
     val updateService = new UpdateService(notifier, deviceRegistry)(system, connectivity, exec)
-    val devices: Set[Device.Id] =
-      generatedData.values.map( _.keySet ).fold(Set.empty[Device.Id])( _ union _)
+    val devices: Set[Uuid] =
+      generatedData.values.map( _.keySet ).fold(Set.empty[Uuid])( _ union _)
 
     for {
       specs <- Future.sequence( generatedData.map {
@@ -256,7 +259,7 @@ class PackageUpdateSpec extends PropSpec
   implicit val log = Logging(system, "org.genivi.sota.core.PackageUpload")
 
   property("updates should be transferred to device", RequiresRvi) {
-    forAll( requestsGen(Device.Id(Refined.unsafeApply[String, Device.ValidId](UUID.randomUUID().toString))) ) { (requests) =>
+    forAll( requestsGen(Uuid(Refined.unsafeApply[String, Uuid.Valid](UUID.randomUUID().toString))) ) { (requests) =>
       val probe = TestProbe()
       val serviceUri = Uri.from(scheme="http", host=getLocalHostAddr, port=8088)
       system.eventStream.subscribe(probe.ref, classOf[UpdateEvents.InstallReportReceived])

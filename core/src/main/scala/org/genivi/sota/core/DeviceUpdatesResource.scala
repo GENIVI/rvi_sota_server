@@ -11,7 +11,6 @@ import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
-import eu.timepit.refined.string.Uuid
 import io.circe.generic.auto._
 import io.circe.Json
 import java.util.UUID
@@ -30,8 +29,7 @@ import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec}
 import org.genivi.sota.core.data.client.PendingUpdateRequest
 import org.genivi.sota.core.data.UpdateStatus
 import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, PackageDownloadProcess}
-import org.genivi.sota.data.{Device, PackageId}
-import org.genivi.sota.data.Namespace
+import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
 
 import scala.language.implicitConversions
 import slick.driver.MySQLDriver.api.Database
@@ -65,7 +63,7 @@ class DeviceUpdatesResource(db: Database,
 
   protected lazy val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
 
-  def logDeviceSeen(id: Device.Id): Directive0 = {
+  def logDeviceSeen(id: Uuid): Directive0 = {
     extractRequestContext flatMap { _ =>
       onComplete {
         for {
@@ -76,7 +74,7 @@ class DeviceUpdatesResource(db: Database,
     } flatMap (_ => pass)
   }
 
-  def updateSystemInfo(id: Device.Id): Route = {
+  def updateSystemInfo(id: Uuid): Route = {
     entity(as[Json]) { json =>
       complete(deviceRegistry.updateSystemInfo(id,json))
     }
@@ -85,7 +83,7 @@ class DeviceUpdatesResource(db: Database,
   /**
     * An ota client PUT a list of packages to record they're installed on a device, overwriting any previous such list.
     */
-  def updateInstalledPackages(id: Device.Id): Route = {
+  def updateInstalledPackages(id: Uuid): Route = {
     entity(as[List[PackageId]]) { ids =>
       val f = DeviceUpdates
         .update(id, ids, resolverClient)
@@ -106,7 +104,7 @@ class DeviceUpdatesResource(db: Database,
     *
     * @see [[data.UpdateStatus]] (two of interest: InFlight and Pending)
     */
-  def pendingPackages(device: Device.Id, includeInFlight: Boolean = true): Route = {
+  def pendingPackages(device: Uuid, includeInFlight: Boolean = true): Route = {
     import org.genivi.sota.core.data.client.PendingUpdateRequest._
     import ResponseConversions._
     import UpdateSpec._
@@ -122,7 +120,7 @@ class DeviceUpdatesResource(db: Database,
   /**
     * An ota client GET the binary file for the package that the given [[UpdateRequest]] and [[Device]] refers to.
     */
-  def downloadPackage(device: Device.Id, updateId: Refined[String, Uuid]): Route = {
+  def downloadPackage(device: Uuid, updateId: Refined[String, Uuid.Valid]): Route = {
     withRangeSupport {
       complete(packageDownloadProcess.buildClientDownloadResponse(device, updateId))
     }
@@ -132,7 +130,7 @@ class DeviceUpdatesResource(db: Database,
     * An ota client POST for the given [[UpdateRequest]] an [[InstallReport]]
     * (describing the outcome after installing the package in question).
     */
-  def reportInstall(updateId: Refined[String, Uuid]): Route = {
+  def reportInstall(updateId: Refined[String, Uuid.Valid]): Route = {
     entity(as[InstallReport]) { report =>
       val responseF =
         DeviceUpdates
@@ -144,15 +142,15 @@ class DeviceUpdatesResource(db: Database,
   /**
     * A web app fetches the results of updates to a given [[Device]].
     */
-  def results(device: Device.Id): Route = {
+  def results(device: Uuid): Route = {
     complete(db.run(OperationResults.byDevice(device)))
   }
 
   /**
     * A web app fetches the results of a given (device, [[UpdateRequest]]) combination.
     */
-  def resultsForUpdate(device: Device.Id, uuid: Refined[String, Uuid]): Route = {
-    complete(db.run(OperationResults.byDeviceIdAndId(device, uuid)))
+  def resultsForUpdate(device: Uuid, update: Refined[String, Uuid.Valid]): Route = {
+    complete(db.run(OperationResults.byDeviceIdAndId(device, update)))
   }
 
   /**
@@ -160,14 +158,14 @@ class DeviceUpdatesResource(db: Database,
     * Internally an [[UpdateRequest]] and an [[UpdateSpec]] are persisted for that [[PackageId]].
     * Resolver is not contacted.
     */
-  def queueDeviceUpdate(ns: Namespace, device: Device.Id): Route = {
+  def queueDeviceUpdate(ns: Namespace, device: Uuid): Route = {
     entity(as[PackageId]) { packageId =>
       val result = updateService.queueDeviceUpdate(ns, device, packageId)
       complete(result)
     }
   }
 
-  def sync(device: Device.Id): Route = {
+  def sync(device: Uuid): Route = {
     val ttl = Instant.now.plus(5, ChronoUnit.MINUTES)
     // TODO: Config RVI destination path (or ClientServices.getpackages)
     // TODO: pass namespace
@@ -179,7 +177,7 @@ class DeviceUpdatesResource(db: Database,
   /**
     * The web app PUT the order in which the given [[UpdateRequest]]s are to be installed on the given device.
     */
-  def setInstallOrder(device: Device.Id): Route = {
+  def setInstallOrder(device: Uuid): Route = {
     entity(as[Map[Int, UUID]]) { updateIds =>
       val sorted: List[UUID] = updateIds.toList.sortBy(_._1).map(_._2)
       val resp = DeviceUpdates.buildSetInstallOrderResponse(device, sorted)
@@ -190,15 +188,15 @@ class DeviceUpdatesResource(db: Database,
   /**
     * The web app GET whether the installation queue of the given device is blocked.
     */
-  def getBlockedInstall(deviceId: Device.Id): Route = {
-    complete(db.run(BlockedInstalls.get(deviceId)))
+  def getBlockedInstall(device: Uuid): Route = {
+    complete(db.run(BlockedInstalls.get(device)))
   }
 
   /**
     * The web app PUT to block the installation queue of the given device.
     */
-  def setBlockedInstall(deviceId: Device.Id): Route = {
-    val resp = db.run(BlockedInstalls.persist(deviceId))
+  def setBlockedInstall(device: Uuid): Route = {
+    val resp = db.run(BlockedInstalls.persist(device))
       .map(_ => NoContent)
       complete(resp)
   }
@@ -206,8 +204,8 @@ class DeviceUpdatesResource(db: Database,
   /**
     * The web app DELETE to unblock the installation queue of the given device.
     */
-  def deleteBlockedInstall(deviceId: Device.Id): Route = {
-    val resp = db.run(BlockedInstalls.delete(deviceId))
+  def deleteBlockedInstall(device: Uuid): Route = {
+    val resp = db.run(BlockedInstalls.delete(device))
       .map(_ => NoContent)
       complete(resp)
   }
@@ -215,8 +213,8 @@ class DeviceUpdatesResource(db: Database,
   /**
     * The web app PUT the status of the given ([[UpdateSpec]], device) to [[UpdateStatus.Canceled]]
     */
-  def cancelUpdate(deviceId: Device.Id, updateId: Refined[String, Uuid]): Route = {
-    val response = db.run(UpdateSpecs.cancelUpdate(deviceId, updateId)).map {
+  def cancelUpdate(device: Uuid, updateId: Refined[String, Uuid.Valid]): Route = {
+    val response = db.run(UpdateSpecs.cancelUpdate(device, updateId)).map {
       case 0 => HttpResponse(StatusCodes.BadRequest)
       case _ => HttpResponse(StatusCodes.NoContent)
     }
