@@ -6,7 +6,7 @@ import java.util.UUID
 import akka.NotUsed
 import akka.actor.{ActorSystem, Status}
 import akka.stream.OverflowStrategy
-import akka.stream.scaladsl.{Keep, Source}
+import akka.stream.scaladsl.Source
 import io.circe.syntax._
 import org.genivi.sota.marshalling.CirceInstances._
 import cats.data.Xor
@@ -17,13 +17,13 @@ import com.amazonaws.regions.Regions
 import com.amazonaws.services.kinesis.AmazonKinesisClient
 import com.amazonaws.services.kinesis.clientlibrary.lib.worker.{KinesisClientLibConfiguration, Worker}
 import com.typesafe.config.{Config, ConfigException}
-import io.circe.{Decoder, Encoder}
+import io.circe.Decoder
 import org.genivi.sota.messaging.ConfigHelpers._
 import org.genivi.sota.messaging.Messages.MessageLike
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
 
 import scala.concurrent.{ExecutionContext, Future, blocking}
-import scala.util.{Success, Try}
+import scala.util.Try
 import akka.pattern.pipe
 import org.apache.commons.logging.LogFactory
 
@@ -42,11 +42,11 @@ object KinesisClient {
       awsSecretKey <- awsConfig.readString("secretAccessKey")
     } yield new StaticCredentialsProvider(new BasicAWSCredentials(awsAccessKey, awsSecretKey))
 
-  private[this] def getStreamNameSuffix(streamNameRoot: String, config: Config): ConfigException Xor String =
+  private[this] def streamNameWithSuffix(config: Config): ConfigException Xor (String => String) =
     for {
-      awsConfig <- config.configAt("aws")
-      streamNameSuffix <- config.readString("streamNameSuffix")
-    } yield streamNameRoot + "-" + streamNameSuffix
+      cfg <- config.configAt("messaging.kinesis")
+      suffix <- cfg.readString("streamNameSuffix")
+    } yield (streamName: String) => streamName + "-" + suffix
 
   private[this] def getAmazonClient(system: ActorSystem, config: Config): Throwable Xor AmazonKinesisClient =
     for {
@@ -64,23 +64,27 @@ object KinesisClient {
       client
     }
 
-  def publisher(system: ActorSystem, config: Config): Throwable Xor MessageBusPublisher =
-    getAmazonClient(system, config).map { client =>
+  def publisher(system: ActorSystem, config: Config): Throwable Xor MessageBusPublisher = {
+    for {
+      streamNameFn <- streamNameWithSuffix(config)
+      client <- getAmazonClient(system, config)
+    } yield {
       new MessageBusPublisher {
-        override def publish[T](msg: T)(implicit ex: ExecutionContext, messageLike: MessageLike[T]): Future[Unit] =
+        override def publish[T](msg: T)(implicit ex: ExecutionContext, messageLike: MessageLike[T]): Future[Unit] = {
           Future {
             blocking {
-              for {
-                streamName <- getStreamNameSuffix(messageLike.streamName, config)
-                _ = client.putRecord(
-                  streamName,
-                  ByteBuffer.wrap(msg.asJson(messageLike.encoder).noSpaces.getBytes),
-                  messageLike.partitionKey(msg))
-              } yield {}
+              client.putRecord(
+                streamNameFn(messageLike.streamName),
+                ByteBuffer.wrap(msg.asJson(messageLike.encoder).noSpaces.getBytes),
+                messageLike.partitionKey(msg))
+
+              ()
             }
           }
+        }
       }
     }
+  }
 
   def source[T](system: ActorSystem, config: Config, streamNameRoot: String)(implicit decoder: Decoder[T])
                              : Throwable Xor Source[T, NotUsed] =
@@ -89,7 +93,7 @@ object KinesisClient {
       appName <- cfg.readString("appName")
       regionName <- cfg.readString("regionName")
       version <- cfg.readString("appVersion")
-      streamName <- getStreamNameSuffix(streamNameRoot, config)
+      streamName <- streamNameWithSuffix(config).map(f => f(streamNameRoot))
       clientConfig = getClientConfigWithUserAgent(appName, version)
       credentials <- configureCredentialsProvider(config)
       kinesisClientConfig = new KinesisClientLibConfiguration(
