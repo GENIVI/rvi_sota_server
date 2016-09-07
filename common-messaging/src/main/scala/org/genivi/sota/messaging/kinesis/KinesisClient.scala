@@ -47,7 +47,7 @@ object KinesisClient {
   private[this] def getStreamNameSuffix(streamNameRoot: String, config: Config): ConfigException Xor String =
     for {
       awsConfig    <- config.configAt("aws")
-      streamNameSuffix <- config.readString("streamSuffix")
+      streamNameSuffix <- config.readString("streamNameSuffix")
     } yield streamNameRoot + "-" + streamNameSuffix
 
   private[this] def getAmazonClient(system: ActorSystem, config: Config): ConfigException Xor AmazonKinesisClient =
@@ -91,7 +91,6 @@ object KinesisClient {
       appName             <- cfg.readString("appName")
       regionName          <- cfg.readString("regionName")
       version             <- cfg.readString("appVersion")
-      streamNameSuffix    <- cfg.readString("streamSuffix")
       streamName          <- getStreamNameSuffix(streamNameRoot, config)
       clientConfig        = getClientConfigWithUserAgent(appName, version)
       credentials         <- configureCredentialsProvider(config)
