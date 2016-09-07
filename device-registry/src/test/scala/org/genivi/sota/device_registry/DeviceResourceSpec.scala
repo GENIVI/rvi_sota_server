@@ -9,7 +9,7 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import io.circe.Json
-import org.genivi.sota.data._
+import org.genivi.sota.data.{Device, DeviceT, DeviceGenerators, SimpleJsonGenerator,RegexGenerators}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -27,18 +27,17 @@ class DeviceResourceSpec extends ResourcePropSpec {
   import DeviceGenerators._
   import SimpleJsonGenerator._
   import StatusCodes._
-  import UuidGenerator._
 
 
-  def createDeviceOk(device: DeviceT): Uuid = {
+  def createDeviceOk(device: DeviceT): Id = {
     createDevice(device) ~> route ~> check {
       status shouldBe Created
-      responseAs[Uuid]
+      responseAs[Id]
     }
   }
 
-  def deleteDeviceOk(uuid: Uuid): Unit = {
-    deleteDevice(uuid) ~> route ~> check {
+  def deleteDeviceOk(id: Id): Unit = {
+    deleteDevice(id) ~> route ~> check {
       status shouldBe OK
     }
   }
@@ -49,19 +48,19 @@ class DeviceResourceSpec extends ResourcePropSpec {
   }
 
   property("GET, PUT, DELETE, and POST '/ping' request fails on non-existent device") {
-    forAll { (uuid: Uuid, device: DeviceT, json: Json) =>
-      fetchDevice(uuid)          ~> route ~> check { status shouldBe NotFound }
-      updateDevice(uuid, device) ~> route ~> check { status shouldBe NotFound }
-      deleteDevice(uuid)         ~> route ~> check { status shouldBe NotFound }
-      updateLastSeen(uuid)       ~> route ~> check { status shouldBe NotFound }
+    forAll { (id: Id, device: DeviceT, json: Json) =>
+      fetchDevice(id)          ~> route ~> check { status shouldBe NotFound }
+      updateDevice(id, device) ~> route ~> check { status shouldBe NotFound }
+      deleteDevice(id)         ~> route ~> check { status shouldBe NotFound }
+      updateLastSeen(id)       ~> route ~> check { status shouldBe NotFound }
     }
   }
 
   property("GET /system_info request fails on non-existent device") {
-    forAll { (uuid: Uuid, json: Json) =>
-      fetchSystemInfo(uuid)      ~> route ~> check { status shouldBe NotFound }
-      createSystemInfo(uuid, json) ~> route ~> check { status shouldBe NotFound}
-      updateSystemInfo(uuid, json) ~> route ~> check { status shouldBe NotFound}
+    forAll { (id: Id, json: Json) =>
+      fetchSystemInfo(id)      ~> route ~> check { status shouldBe NotFound }
+      createSystemInfo(id, json) ~> route ~> check { status shouldBe NotFound}
+      updateSystemInfo(id, json) ~> route ~> check { status shouldBe NotFound}
     }
   }
 
@@ -77,9 +76,9 @@ class DeviceResourceSpec extends ResourcePropSpec {
 
   property("GET request (for Id) after POST yields same device") {
     forAll { devicePre: DeviceT =>
-      val uuid: Uuid = createDeviceOk(devicePre)
+      val id: Id = createDeviceOk(devicePre)
 
-      fetchDevice(uuid) ~> route ~> check {
+      fetchDevice(id) ~> route ~> check {
         status shouldBe OK
         val devicePost: Device = responseAs[Device]
         devicePost.deviceId shouldBe devicePre.deviceId
@@ -87,26 +86,30 @@ class DeviceResourceSpec extends ResourcePropSpec {
         devicePost.lastSeen shouldBe None
       }
 
-      deleteDeviceOk(uuid)
+      deleteDeviceOk(id)
     }
   }
 
   property("GET request with ?deviceId after creating yields same device.") {
     forAll { (deviceId: DeviceId, devicePre: DeviceT) =>
 
-      val uuid: Uuid = createDeviceOk(devicePre.copy(deviceId = Some(deviceId)))
+      val id: Id = createDeviceOk(devicePre.copy(deviceId = Some(deviceId)))
       fetchByDeviceId(defaultNs, deviceId) ~> route ~> check {
         status shouldBe OK
         val devicePost1: Device = responseAs[Seq[Device]].head
-        fetchDevice(uuid) ~> route ~> check {
+        fetchDevice(id) ~> route ~> check {
           status shouldBe OK
           val devicePost2: Device = responseAs[Device]
 
           devicePost1 shouldBe devicePost2
         }
       }
-      deleteDeviceOk(uuid)
+      deleteDeviceOk(id)
     }
+  }
+
+  implicit def DeviceTOrdering(implicit ord: Ordering[DeviceName]): Ordering[DeviceT] = new Ordering[DeviceT] {
+    override def compare(d1: DeviceT, d2: DeviceT): Int = ord.compare(d1.deviceName, d2.deviceName)
   }
 
   property("GET request with ?regex yields devices which match the regex.") {
@@ -129,8 +132,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
       val regexInstances: Seq[String] = Range(0, n).map(_ => genStrFromRegex(regex))
       val preparedDevices: Seq[DeviceT] =
         Range(0, n).map { i => {
-          val uniqueName =
-            DeviceName(i.toString + injectSubstr(devices(i).deviceName.underlying, regexInstances(i)))
+          val uniqueName = DeviceName(i.toString + injectSubstr(devices(i).deviceName.underlying, regexInstances(i)))
           devices(i).copy(deviceName = uniqueName)
         }}
       val  unpreparedDevices: Seq[DeviceT] = devices.drop(n)
@@ -139,14 +141,13 @@ class DeviceResourceSpec extends ResourcePropSpec {
 
       val created = devices.map(d => createDeviceOk(d) -> d)
 
-      val expectedIds: Seq[Uuid] = created
-        .filter { case (_, d) =>
-          regex.get.r.findFirstIn(d.deviceName.underlying).isDefined }
+      val expectedIds: Seq[Id] = created
+        .filter { case (_, d) => regex.get.r.findFirstIn(d.deviceName.underlying).isDefined }
         .map(_._1)
 
       searchDevice(defaultNs, regex.get) ~> route ~> check {
         val matchingDevices: Seq[Device] = responseAs[Seq[Device]]
-        matchingDevices.map(_.uuid).toSet shouldBe expectedIds.toSet
+        matchingDevices.map(_.id).toSet shouldBe expectedIds.toSet
       }
 
       created.map(_._1).foreach(deleteDeviceOk(_))
@@ -154,11 +155,13 @@ class DeviceResourceSpec extends ResourcePropSpec {
   }
 
   property("PUT request after POST succeeds with updated device.") {
-    forAll(genConflictFreeDeviceTs(2)) { case Seq(d1, d2) =>
+    forAll { (devicePre1: DeviceT, devicePre2: DeviceT) =>
+      val d1 = devicePre1.copy(deviceName = DeviceName(devicePre1.deviceName.underlying + "#1"))
+      val d2 = devicePre2.copy(deviceName = DeviceName(devicePre2.deviceName.underlying + "#2"))
 
-      val uuid: Uuid = createDeviceOk(d1)
+      val id: Id = createDeviceOk(d1)
 
-      updateDevice(uuid, d2) ~> route ~> check {
+      updateDevice(id, d2) ~> route ~> check {
         val updateStatus = status
         val deviceId = d1.deviceId
 
@@ -171,10 +174,10 @@ class DeviceResourceSpec extends ResourcePropSpec {
                   case None =>
                     updateStatus shouldBe OK
 
-                    fetchDevice(uuid) ~> route ~> check {
+                    fetchDevice(id) ~> route ~> check {
                       status shouldBe OK
                       val devicePost: Device = responseAs[Device]
-                      devicePost.uuid shouldBe uuid
+                      devicePost.id shouldBe id
                       devicePost.deviceId shouldBe d2.deviceId
                       devicePost.deviceType shouldBe d2.deviceType
                       devicePost.lastSeen shouldBe None
@@ -187,52 +190,50 @@ class DeviceResourceSpec extends ResourcePropSpec {
         }
       }
 
-      deleteDeviceOk(uuid)
+      deleteDeviceOk(id)
     }
   }
 
   property("POST request creates a new device.") {
     forAll { devicePre: DeviceT =>
+      val id: Id = createDeviceOk(devicePre)
 
-      val uuid: Uuid = createDeviceOk(devicePre)
-
-      fetchDevice(uuid) ~> route ~> check {
+      fetchDevice(id) ~> route ~> check {
         status shouldBe OK
         val devicePost: Device = responseAs[Device]
-        devicePost.uuid shouldBe uuid
+        devicePost.id shouldBe id
         devicePost.deviceId shouldBe devicePre.deviceId
         devicePost.deviceType shouldBe devicePre.deviceType
       }
 
-      deleteDeviceOk(uuid)
+      deleteDeviceOk(id)
     }
   }
 
   property("DELETE request after POST succeds and deletes device.") {
     forAll { (device: DeviceT) =>
+      val id: Id = createDeviceOk(device)
 
-      val uuid: Uuid = createDeviceOk(device)
-
-      deleteDevice(uuid) ~> route ~> check {
+      deleteDevice(id) ~> route ~> check {
         status shouldBe OK
       }
 
-      fetchDevice(uuid) ~> route ~> check {
+      fetchDevice(id) ~> route ~> check {
         status shouldBe NotFound
       }
     }
   }
 
   property("POST request on 'ping' should update 'lastSeen' field for device.") {
-    forAll { (uuid: Uuid, devicePre: DeviceT) =>
+    forAll { (id: Id, devicePre: DeviceT) =>
 
-      val uuid: Uuid = createDeviceOk(devicePre)
+      val id: Id = createDeviceOk(devicePre)
 
-      updateLastSeen(uuid) ~> route ~> check {
+      updateLastSeen(id) ~> route ~> check {
         status shouldBe OK
       }
 
-      fetchDevice(uuid) ~> route ~> check {
+      fetchDevice(id) ~> route ~> check {
         val devicePost: Device = responseAs[Device]
         val after: Instant = Instant.now()
 
@@ -240,48 +241,53 @@ class DeviceResourceSpec extends ResourcePropSpec {
         isRecent(devicePost.lastSeen) shouldBe true
       }
 
-      deleteDeviceOk(uuid)
+      deleteDeviceOk(id)
     }
   }
 
   property("POST request with same deviceName fails with conflict.") {
-    forAll(genConflictFreeDeviceTs(2)) { case Seq(d1, d2) =>
+    forAll { (device1: DeviceT, device2: DeviceT) =>
 
-      val name = arbitrary[DeviceName].sample.get
-      val uuid: Uuid = createDeviceOk(d1.copy(deviceName = name))
+      val id: Id = createDeviceOk(device1)
 
-      createDevice(d2.copy(deviceName = name)) ~> route ~> check {
+      createDevice(device2.copy(deviceName = device1.deviceName)) ~> route ~> check {
         status shouldBe Conflict
       }
 
-      deleteDeviceOk(uuid)
+      deleteDeviceOk(id)
     }
   }
 
   property("POST request with same deviceId fails with conflict.") {
-    forAll(genConflictFreeDeviceTs(2)) { case Seq(d1, d2) =>
+    forAll { (device1: DeviceT, device2: DeviceT) =>
 
-      val uuid: Uuid = createDeviceOk(d1)
+      val id: Id = createDeviceOk(device1.copy(deviceName = DeviceName(device1.deviceName.underlying + "#1")))
 
-      createDevice(d2.copy(deviceId = d1.deviceId)) ~> route ~> check {
-        d1.deviceId match {
+      createDevice(device2.copy(deviceName = DeviceName(device2.deviceName.underlying + "#2"),
+                                deviceId = device1.deviceId)) ~> route ~> check {
+        device1.deviceId match {
           case Some(deviceId) => status shouldBe Conflict
-          case None => deleteDeviceOk(responseAs[Uuid])
+          case None => deleteDeviceOk(responseAs[Id])
         }
       }
 
-      deleteDeviceOk(uuid)
+      deleteDeviceOk(id)
     }
   }
 
   property("PUT request updates device.") {
-    forAll(genConflictFreeDeviceTs(2)) { case Seq(d1: DeviceT, d2: DeviceT) =>
+    forAll { (device1: DeviceT, device2: DeviceT) =>
 
-      val uuid: Uuid = createDeviceOk(d1)
+      val d1 = device1.copy(deviceName = DeviceName(device1.deviceName.underlying + "#1"),
+        deviceId = device1.deviceId.map(id => DeviceId(id.underlying + "#1")))
+      val d2 = device1.copy(deviceName = DeviceName(device2.deviceName.underlying + "#2"),
+        deviceId = device2.deviceId.map(id => DeviceId(id.underlying + "#2")))
 
-      updateDevice(uuid, d2) ~> route ~> check {
+      val id: Id = createDeviceOk(d1)
+
+      updateDevice(id, d2) ~> route ~> check {
         status shouldBe OK
-        fetchDevice(uuid) ~> route ~> check {
+        fetchDevice(id) ~> route ~> check {
           status shouldBe OK
           val updatedDevice: Device = responseAs[Device]
           updatedDevice.deviceId shouldBe d2.deviceId
@@ -290,100 +296,104 @@ class DeviceResourceSpec extends ResourcePropSpec {
         }
       }
 
-      deleteDeviceOk(uuid)
+      deleteDeviceOk(id)
     }
   }
 
   property("PUT request with same deviceName fails with conflict.") {
-    forAll(genConflictFreeDeviceTs(2)) { case Seq(d1, d2) =>
+    forAll { (device1: DeviceT, device2: DeviceT) =>
 
-      val name = arbitrary[DeviceName].sample.get
-      val uuid1: Uuid = createDeviceOk(d1)
-      val uuid2: Uuid = createDeviceOk(d2.copy(deviceName = name))
+      val d1 = device1.copy(deviceName = DeviceName(device1.deviceName.underlying + "#1"))
+      val d2 = device2.copy(deviceName = DeviceName(device2.deviceName.underlying + "#2"))
 
-      updateDevice(uuid1, d1.copy(deviceName = name)) ~> route ~> check {
+      val id1: Id = createDeviceOk(d1)
+      val id2: Id = createDeviceOk(d2)
+
+      updateDevice(id1, d1.copy(deviceName = d2.deviceName)) ~> route ~> check {
         status shouldBe Conflict
       }
 
-      deleteDeviceOk(uuid1)
-      deleteDeviceOk(uuid2)
+      deleteDeviceOk(id1)
+      deleteDeviceOk(id2)
     }
   }
 
   property("PUT request with same deviceId fails with conflict.") {
-    forAll(genConflictFreeDeviceTs(2)) { case Seq(d1, d2) =>
+    forAll { (device1: DeviceT, device2: DeviceT) =>
 
-      val deviceId = arbitrary[DeviceId].sample
-      val uuid1: Uuid = createDeviceOk(d1)
-      val uuid2: Uuid = createDeviceOk(d2.copy(deviceId = deviceId))
+      val d1 = device1.copy(deviceName = DeviceName(device1.deviceName.underlying + "#1"))
+      val d2 = device2.copy(deviceName = DeviceName(device2.deviceName.underlying + "#2"))
 
-      updateDevice(uuid1, d1.copy(deviceId = deviceId)) ~> route ~> check {
+      val id1: Id = createDeviceOk(d1)
+      val id2: Id = createDeviceOk(d2)
+
+      updateDevice(id1, d1.copy(deviceId = d2.deviceId)) ~> route ~> check {
         d2.deviceId match {
           case Some(deviceId) => status shouldBe Conflict
           case None => ()
         }
       }
 
-      deleteDeviceOk(uuid1)
-      deleteDeviceOk(uuid2)
+      deleteDeviceOk(id1)
+      deleteDeviceOk(id2)
     }
   }
 
   property("GET system_info after POST should return what was posted.") {
     forAll { (device: DeviceT, json1: Json) =>
-      val uuid: Uuid = createDeviceOk(device)
+      val id: Id = createDeviceOk(device)
 
-      createSystemInfo(uuid, json1) ~> route ~> check {
+      createSystemInfo(id, json1) ~> route ~> check {
         status shouldBe Created
       }
 
-      fetchSystemInfo(uuid) ~> route ~> check {
+      fetchSystemInfo(id) ~> route ~> check {
         status shouldBe OK
         val json2: Json = responseAs[Json]
         json1 shouldBe json2
       }
 
-      deleteDeviceOk(uuid)
+      deleteDeviceOk(id)
     }
   }
 
   property("GET system_info after PUT should return what was updated.") {
     forAll { (device: DeviceT, json1: Json, json2: Json) =>
-      val uuid: Uuid = createDeviceOk(device)
+      val id: Id = createDeviceOk(device)
 
-      createSystemInfo(uuid, json1) ~> route ~> check {
+      createSystemInfo(id, json1) ~> route ~> check {
         status shouldBe Created
       }
 
-      updateSystemInfo(uuid, json2) ~> route ~> check {
+      updateSystemInfo(id, json2) ~> route ~> check {
         status shouldBe OK
       }
 
-      fetchSystemInfo(uuid) ~> route ~> check {
+      fetchSystemInfo(id) ~> route ~> check {
         status shouldBe OK
         val json3: Json = responseAs[Json]
         json2 shouldBe json3
       }
 
-      deleteDeviceOk(uuid)
+      deleteDeviceOk(id)
     }
   }
 
   property("PUT system_info if not previously created should create it.") {
     forAll { (device: DeviceT, json: Json) =>
-      val uuid: Uuid = createDeviceOk(device)
+      val id: Id = createDeviceOk(device)
 
-      updateSystemInfo(uuid, json) ~> route ~> check {
+      updateSystemInfo(id, json) ~> route ~> check {
         status shouldBe OK
       }
 
-      fetchSystemInfo(uuid) ~> route ~> check {
+      fetchSystemInfo(id) ~> route ~> check {
         status shouldBe OK
         val json2: Json = responseAs[Json]
         json shouldBe json2
       }
 
-      deleteDeviceOk(uuid)
+      deleteDeviceOk(id)
     }
   }
 

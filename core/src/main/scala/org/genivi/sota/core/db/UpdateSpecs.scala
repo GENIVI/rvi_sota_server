@@ -7,9 +7,11 @@ package org.genivi.sota.core.db
 import java.util.UUID
 
 import eu.timepit.refined.api.Refined
+import eu.timepit.refined.string.Uuid
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.UpdateRequests.UpdateRequestTable
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.data.Namespace
+import org.genivi.sota.data.{Device, PackageId}
 import org.genivi.sota.db.SlickExtensions
 import java.time.Instant
 
@@ -36,7 +38,7 @@ object UpdateSpecs {
 
   implicit val UpdateStatusColumn = MappedColumnType.base[UpdateStatus, String](_.value.toString, UpdateStatus.withName)
 
-  type UpdateSpecTableRowType = (Namespace, UUID, Uuid, UpdateStatus, Int, Instant)
+  type UpdateSpecTableRowType = (Namespace, UUID, Device.Id, UpdateStatus, Int, Instant)
 
   // scalastyle:off
   /**
@@ -47,7 +49,7 @@ object UpdateSpecs {
 
     def namespace = column[Namespace]("namespace")
     def requestId = column[UUID]("update_request_id")
-    def device = column[Uuid]("device_uuid")
+    def device = column[Device.Id]("device_uuid")
     def status = column[UpdateStatus]("status")
     def installPos = column[Int]("install_pos")
     def creationTime = column[Instant]("creation_time")
@@ -66,10 +68,10 @@ object UpdateSpecs {
    * Child table of [[UpdateSpecTable]]. For each row in that table there's one or more rows in this table.
    */
   class RequiredPackageTable(tag: Tag)
-      extends Table[(Namespace, UUID, Uuid, PackageId.Name, PackageId.Version)](tag, "RequiredPackage") {
+      extends Table[(Namespace, UUID, Device.Id, PackageId.Name, PackageId.Version)](tag, "RequiredPackage") {
     def namespace = column[Namespace]("namespace")
     def requestId = column[UUID]("update_request_id")
-    def device = column[Uuid]("device_uuid")
+    def device = column[Device.Id]("device_uuid")
     def packageName = column[PackageId.Name]("package_name")
     def packageVersion = column[PackageId.Version]("package_version")
 
@@ -88,7 +90,7 @@ object UpdateSpecs {
 
   case class MiniUpdateSpec(requestId: UUID,
                             requestSignature: String,
-                            device: Uuid,
+                            device: Device.Id,
                             deps: Queue[Package])
 
   /**
@@ -117,10 +119,10 @@ object UpdateSpecs {
     * Reusable sub-query, PK lookup in [[UpdateSpecTable]] table.
     */
   private def queryBy(namespace: Namespace,
-                      device: Uuid,
+                      deviceId: Device.Id,
                       requestId: UUID): Query[UpdateSpecTable, UpdateSpecTableRowType, Seq] = {
     updateSpecs
-      .filter(row => row.namespace === namespace && row.device === device && row.requestId === requestId)
+      .filter(row => row.namespace === namespace && row.device === deviceId && row.requestId === requestId)
   }
 
   /**
@@ -137,8 +139,8 @@ object UpdateSpecs {
     * Note: A tuple is returned instead of an [[UpdateSpec]] instance because
     * the later would require joining [[RequiredPackageTable]] to populate the `dependencies` of that instance.
     */
-  def findBy(namespace: Namespace, device: Uuid,
-             requestId: Refined[String, Uuid.Valid]): DBIO[UpdateSpecTableRowType] = {
+  def findBy(namespace: Namespace, device: Device.Id,
+             requestId: Refined[String, Uuid]): DBIO[UpdateSpecTableRowType] = {
     queryBy(namespace, device, UUID.fromString(requestId.get)).result.head
   }
 
@@ -148,10 +150,10 @@ object UpdateSpecs {
   /**
     * Fetch from DB zero or one [[UpdateSpec]] for the given combination ([[UpdateRequest]], device)
     *
-    * @param device The device to install on
-    * @param update Id of the [[UpdateRequest]] to install
+    * @param deviceId The device to install on
+    * @param updateId Id of the [[UpdateRequest]] to install
     */
-  def load(device: Uuid, updateId: UUID)
+  def load(device: Device.Id, updateId: UUID)
           (implicit ec: ExecutionContext) : DBIO[Option[MiniUpdateSpec]] = {
     val q = for {
       r  <- updateRequests if (r.id === updateId)
@@ -184,7 +186,7 @@ object UpdateSpecs {
     * @return A list of devices that the package will be installed on
     */
   def getDevicesQueuedForPackage(ns: Namespace, pkgName: PackageId.Name, pkgVer: PackageId.Version) :
-    DBIO[Seq[Uuid]] = {
+    DBIO[Seq[Device.Id]] = {
     val specs = updateSpecs.filter(r => r.namespace === ns && r.status === UpdateStatus.Pending)
     val q = for {
       s <- specs
@@ -203,7 +205,7 @@ object UpdateSpecs {
   /**
     * Rewrite in the DB the status of an [[UpdateSpec]], ie for a ([[UpdateRequest]], device) combination.
     */
-  def setStatus(device: Uuid, updateRequestId: UUID, newStatus: UpdateStatus): DBIO[Int] = {
+  def setStatus(device: Device.Id, updateRequestId: UUID, newStatus: UpdateStatus): DBIO[Int] = {
     updateSpecs
       .filter(row => row.device === device && row.requestId === updateRequestId)
       .map(_.status)
@@ -217,7 +219,7 @@ object UpdateSpecs {
     *
     * @param uuid of the [[UpdateRequest]] being cancelled for the given device
     */
-  def cancelUpdate(device: Uuid, uuid: Refined[String, Uuid.Valid])(implicit ec: ExecutionContext): DBIO[Int] = {
+  def cancelUpdate(device: Device.Id, uuid: Refined[String, Uuid])(implicit ec: ExecutionContext): DBIO[Int] = {
     updateSpecs
       .filter(us => us.device === device && us.requestId === uuid && us.status === UpdateStatus.Pending)
       .map(_.status)
@@ -235,7 +237,7 @@ object UpdateSpecs {
     * The [[UpdateSpec]]-s (excluding dependencies but including status) for the given [[UpdateRequest]].
     * Each element in the result corresponds to a different device.
     */
-  def listUpdatesById(updateRequestId: Refined[String, Uuid.Valid]): DBIO[Seq[UpdateSpecTableRowType]] =
+  def listUpdatesById(updateRequestId: Refined[String, Uuid]): DBIO[Seq[UpdateSpecTableRowType]] =
     updateSpecs.filter(s => s.requestId === UUID.fromString(updateRequestId.get)).result
 
   /**
@@ -244,7 +246,7 @@ object UpdateSpecs {
     *
     * @param device The device to get the device to delete from
     */
-  def deleteUpdateSpecByDevice(ns: Namespace, device: Uuid) : DBIO[Int] =
+  def deleteUpdateSpecByDevice(ns: Namespace, device: Device.Id) : DBIO[Int] =
     updateSpecs.filter(s => s.namespace === ns && s.device === device).delete
 
   /**
@@ -253,6 +255,6 @@ object UpdateSpecs {
     *
     * @param device The device to get the device to delete from
     */
-  def deleteRequiredPackageByDevice(ns: Namespace, device: Uuid) : DBIO[Int] =
+  def deleteRequiredPackageByDevice(ns: Namespace, device: Device.Id) : DBIO[Int] =
     requiredPackages.filter(rp => rp.namespace === ns && rp.device === device).delete
 }

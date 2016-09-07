@@ -10,8 +10,9 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.Json
 import io.circe.jawn._
+import java.util.UUID
 
-import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
+import org.genivi.sota.data.{Device, DeviceT, Namespace}
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.db.Operators.regex
 import org.genivi.sota.db.SlickExtensions._
@@ -44,16 +45,16 @@ object DeviceRepository {
   // scalastyle:off
   class DeviceTable(tag: Tag) extends Table[Device](tag, "Device") {
     def namespace = column[Namespace]("namespace")
-    def uuid = column[Uuid]("uuid")
+    def id = column[Id]("uuid")
     def deviceName = column[DeviceName]("device_name")
     def deviceId = column[Option[DeviceId]]("device_id")
     def deviceType = column[DeviceType]("device_type")
     def lastSeen = column[Option[Instant]]("last_seen")
 
-    def * = (namespace, uuid, deviceName, deviceId, deviceType, lastSeen).shaped <>
+    def * = (namespace, id, deviceName, deviceId, deviceType, lastSeen).shaped <>
       ((Device.apply _).tupled, Device.unapply)
 
-    def pk = primaryKey("uuid", uuid)
+    def pk = primaryKey("id", id)
   }
 
   // scalastyle:on
@@ -62,17 +63,17 @@ object DeviceRepository {
   def list(ns: Namespace): DBIO[Seq[Device]] = devices.filter(_.namespace === ns).result
 
   def create(ns: Namespace, device: DeviceT)
-             (implicit ec: ExecutionContext): DBIO[Uuid] = {
-    val uuid: Uuid = Uuid.generate()
+             (implicit ec: ExecutionContext): DBIO[Id] = {
+    val id: Id = Id(refineV[ValidId](UUID.randomUUID.toString).right.get)
 
     val dbIO = for {
-      _ <- exists(ns, uuid).asTry.flatMap {
+      _ <- exists(ns, id).asTry.flatMap {
         case Success(_) => DBIO.failed(Errors.ConflictingDevice)
         case Failure(_) => DBIO.successful(())
       }
       _ <- notConflicts(ns, device.deviceName, device.deviceId)
-      _ <- devices += Device(ns, uuid, device.deviceName, device.deviceId, device.deviceType)
-    } yield uuid
+      _ <- devices += Device(ns, id, device.deviceName, device.deviceId, device.deviceType)
+    } yield id
 
     dbIO.transactionally
   }
@@ -87,10 +88,10 @@ object DeviceRepository {
       .flatMap(if (_) DBIO.failed(Errors.ConflictingDevice) else DBIO.successful(()))
   }
 
-  def exists(ns: Namespace, uuid: Uuid)
+  def exists(ns: Namespace, id: Id)
             (implicit ec: ExecutionContext): DBIO[Device] =
     devices
-      .filter(d => d.namespace === ns && d.uuid === uuid)
+      .filter(d => d.namespace === ns && d.id === id)
       .result
       .headOption
       .flatMap(_.
@@ -107,39 +108,39 @@ object DeviceRepository {
       .filter(d => d.namespace === ns && regex(d.deviceName, re))
       .result
 
-  def update(ns: Namespace, uuid: Uuid, device: DeviceT)
+  def update(ns: Namespace, id: Id, device: DeviceT)
             (implicit ec: ExecutionContext): DBIO[Unit] = {
 
     val dbIO = for {
-      _ <- exists(ns, uuid)
+      _ <- exists(ns, id)
       _ <- notConflicts(ns, device.deviceName, device.deviceId)
-      _ <- devices.update(Device(ns, uuid, device.deviceName, device.deviceId, device.deviceType))
+      _ <- devices.update(Device(ns, id, device.deviceName, device.deviceId, device.deviceType))
     } yield ()
 
     dbIO.transactionally
   }
 
-  def findByUuid(uuid: Uuid)(implicit ec: ExecutionContext): DBIO[Device] = {
+  def findById(id: Device.Id)(implicit ec: ExecutionContext): DBIO[Device] = {
     devices
-      .filter(_.uuid === uuid)
+      .filter(_.id === id)
       .result
       .headOption
       .flatMap(_.fold[DBIO[Device]](DBIO.failed(Errors.MissingDevice))(DBIO.successful))
   }
 
-  def updateLastSeen(uuid: Uuid)
+  def updateLastSeen(id: Id)
                     (implicit ec: ExecutionContext): DBIO[Unit] = for {
-    device <- findByUuid(uuid)
+    device <- findById(id)
     newDevice = device.copy(lastSeen = Some(Instant.now()))
     _ <- devices.insertOrUpdate(newDevice)
   } yield ()
 
-  def delete(ns: Namespace, uuid: Uuid)
+  def delete(ns: Namespace, id: Id)
             (implicit ec: ExecutionContext): DBIO[Unit] = {
     val dbIO = for {
-      _ <- exists(ns, uuid)
-      _ <- devices.filter(d => d.namespace === ns && d.uuid === uuid).delete
-      _ <- SystemInfo.delete(uuid)
+      _ <- exists(ns, id)
+      _ <- devices.filter(d => d.namespace === ns && d.id === id).delete
+      _ <- SystemInfo.delete(id)
     } yield ()
 
     dbIO.transactionally

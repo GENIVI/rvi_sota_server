@@ -15,7 +15,8 @@ import org.genivi.sota.core.data._
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.resolver.Connectivity
 import org.genivi.sota.core.transfer.UpdateNotifier
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.data.{Device, PackageId}
+import org.genivi.sota.data.Namespace
 import java.time.Instant
 import scala.collection.immutable.ListSet
 import scala.concurrent.{ExecutionContext, Future}
@@ -139,7 +140,7 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
   /**
     * Gather all [[PackageId]]s (dependencies) across all given VINs.
     */
-  def allRequiredPackages(deviceToDeps: Map[Uuid, Set[PackageId]]): Set[PackageId] = {
+  def allRequiredPackages(deviceToDeps: Map[Device.Id, Set[PackageId]]): Set[PackageId] = {
     log.debug(s"Dependencies from resolver: $deviceToDeps")
     deviceToDeps.values.flatten.toSet
   }
@@ -148,7 +149,7 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
     * For the given [[PackageId]] and vehicle, persist a fresh [[UpdateRequest]] and a fresh [[UpdateSpec]].
     * Resolver is not contacted.
     */
-  def queueDeviceUpdate(ns: Namespace, device: Uuid, packageId: PackageId)
+  def queueDeviceUpdate(ns: Namespace, device: Device.Id, packageId: PackageId)
                         (implicit db: Database, ec: ExecutionContext): Future[UpdateRequest] = {
     val newUpdateRequest = UpdateRequest.default(ns, packageId)
 
@@ -166,6 +167,6 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
 }
 
 object UpdateService {
-  type DeviceToPackageIds = Map[Uuid, Set[PackageId]]
+  type DeviceToPackageIds = Map[Device.Id, Set[PackageId]]
   type DependencyResolver = Package => Future[DeviceToPackageIds]
 }

@@ -10,7 +10,7 @@ import org.genivi.sota.core.data.{UpdateSpec, UpdateStatus}
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.rvi.OperationResult
 import org.genivi.sota.core.rvi.UpdateReport
-import org.genivi.sota.data.{Device, DeviceGenerators, Namespaces, Uuid}
+import org.genivi.sota.data.{Device, DeviceGenerators, Namespaces}
 import org.genivi.sota.db.SlickExtensions
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
@@ -42,7 +42,7 @@ class DeviceUpdatesSpec extends FunSuite
   implicit val actorSystem = ActorSystem("InstalledPackagesUpdateSpec-ActorSystem")
   implicit val materializer = ActorMaterializer()
   val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
-  val id = Uuid(Refined.unsafeApply(UUID.randomUUID().toString))
+  val id = Device.Id(Refined.unsafeApply(UUID.randomUUID().toString))
 
   implicit val ec = ExecutionContext.global
   implicit val _db = db
@@ -68,9 +68,9 @@ class DeviceUpdatesSpec extends FunSuite
       (_, device, updateSpec) <- createUpdateSpec()
       result = OperationResult(id, 1, "some result")
       report = UpdateReport(updateSpec.request.id, List(result))
-      _ <- reportInstall(device.uuid, report, MessageBusPublisher.ignore)
-      updatedSpec <- db.run(findUpdateSpecFor(device.uuid, updateSpec.request.id))
-      history <- db.run(InstallHistories.list(device.namespace, device.uuid))
+      _ <- reportInstall(device.id, report, MessageBusPublisher.ignore)
+      updatedSpec <- db.run(findUpdateSpecFor(device.id, updateSpec.request.id))
+      history <- db.run(InstallHistories.list(device.namespace, device.id))
     } yield (updatedSpec.status, history)
 
     whenReady(f) { case (newStatus, history) =>
@@ -82,8 +82,8 @@ class DeviceUpdatesSpec extends FunSuite
   test("when multiple packages are pending sorted by installPos") {
     val dbIO = for {
       (_, device, updateSpec0) <- createUpdateSpecAction()
-      (_, updateSpec1) <- createUpdateSpecFor(device.uuid, installPos = 2)
-      result <- findPendingPackageIdsFor(device.uuid)
+      (_, updateSpec1) <- createUpdateSpecFor(device.id, installPos = 2)
+      result <- findPendingPackageIdsFor(device.id)
     } yield (result.map(_._1), updateSpec0, updateSpec1)
 
     whenReady(db.run(dbIO)) { case (result, updateSpec0, updateSpec1)  =>
@@ -103,9 +103,9 @@ class DeviceUpdatesSpec extends FunSuite
   test("sets install priority for one package") {
     val dbIO = for {
       (pck, device, spec0) <- createUpdateSpecAction()
-      (_, spec1) <- createUpdateSpecFor(device.uuid)
-      _ <- persistInstallOrder(device.uuid, List(spec0.request.id, spec1.request.id))
-      dbSpecs <- findPendingPackageIdsFor(device.uuid)
+      (_, spec1) <- createUpdateSpecFor(device.id)
+      _ <- persistInstallOrder(device.id, List(spec0.request.id, spec1.request.id))
+      dbSpecs <- findPendingPackageIdsFor(device.id)
     } yield (dbSpecs.map(_._1), spec0, spec1)
 
     whenReady(db.run(dbIO)) { case (Seq(dbSpec0, dbSpec1), spec0, spec1) =>
@@ -123,9 +123,9 @@ class DeviceUpdatesSpec extends FunSuite
 
     val dbIO = for {
       (pck, device, spec0) <- createUpdateSpecAction()
-      _ <- updateSpecs.filter(_.device === device.uuid).map(_.status).update(UpdateStatus.InFlight)
-      (_, spec1) <- createUpdateSpecFor(device.uuid)
-      result <- persistInstallOrder(device.uuid, List(spec0.request.id, spec1.request.id))
+      _ <- updateSpecs.filter(_.device === device.id).map(_.status).update(UpdateStatus.InFlight)
+      (_, spec1) <- createUpdateSpecFor(device.id)
+      result <- persistInstallOrder(device.id, List(spec0.request.id, spec1.request.id))
     } yield result
 
     val f = db.run(dbIO)
@@ -139,8 +139,8 @@ class DeviceUpdatesSpec extends FunSuite
   test("fails when not specifying all update request in order") {
     val dbIO = for {
       (pck, d, spec0) <- createUpdateSpecAction()
-      (_, spec1) <- createUpdateSpecFor(d.uuid)
-      result <- persistInstallOrder(d.uuid, List(spec1.request.id))
+      (_, spec1) <- createUpdateSpecFor(d.id)
+      result <- persistInstallOrder(d.id, List(spec1.request.id))
     } yield result
 
     val f = db.run(dbIO)
@@ -164,9 +164,9 @@ class DeviceUpdatesSpec extends FunSuite
     // insert update spec C install pos 2
     val dbIO = for {
       (_, device, updateSpec0) <- createUpdateSpecAction()
-      (_, updateSpec1) <- createUpdateSpecFor(device.uuid, installPos = 1)
-      (_, updateSpec2) <- createUpdateSpecFor(device.uuid, installPos = 2)
-      result <- findPendingPackageIdsFor(device.uuid)
+      (_, updateSpec1) <- createUpdateSpecFor(device.id, installPos = 1)
+      (_, updateSpec2) <- createUpdateSpecFor(device.id, installPos = 2)
+      result <- findPendingPackageIdsFor(device.id)
     } yield (result.map(_._1), updateSpec0, updateSpec1, updateSpec2)
 
     whenReady(db.run(dbIO)) { case (result, updateSpec0, updateSpec1, updateSpec2)  =>
@@ -216,10 +216,10 @@ class DeviceUpdatesSpec extends FunSuite
     val dbIO = for {
       (_, device, updateSpec0) <- createUpdateSpecAction();
       instant1 = updateSpec0.creationTime.toEpochMilli + 1; // if created in quick succession duplicates creationTime
-      (_, updateSpec1) <- createUpdateSpecFor(device.uuid, installPos = 0, withMillis = instant1)
+      (_, updateSpec1) <- createUpdateSpecFor(device.id, installPos = 0, withMillis = instant1)
       instant2 = updateSpec1.creationTime.toEpochMilli + 1; // if created in quick succession duplicates creationTime
-      (_, updateSpec2) <- createUpdateSpecFor(device.uuid, installPos = 0, withMillis = instant2)
-      result <- findPendingPackageIdsFor(device.uuid)
+      (_, updateSpec2) <- createUpdateSpecFor(device.id, installPos = 0, withMillis = instant2)
+      result <- findPendingPackageIdsFor(device.id)
     } yield (result, updateSpec0, updateSpec1, updateSpec2)
 
     whenReady(db.run(dbIO)) { case (result, updateSpec0, updateSpec1, updateSpec2)  =>

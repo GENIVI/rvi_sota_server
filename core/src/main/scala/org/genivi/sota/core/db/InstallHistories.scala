@@ -5,7 +5,8 @@
 package org.genivi.sota.core.db
 
 import org.genivi.sota.core.data.InstallHistory
-import org.genivi.sota.data.{Namespace, PackageId, Uuid}
+import org.genivi.sota.data.Namespace
+import org.genivi.sota.data.PackageId
 import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.core.data.UpdateSpec
 import java.time.Instant
@@ -35,7 +36,7 @@ object InstallHistories {
 
     def id             = column[Long]             ("id", O.AutoInc)
     def namespace      = column[Namespace]        ("namespace")
-    def device         = column[Uuid]        ("device_uuid")
+    def device         = column[Device.Id]        ("device_uuid")
     def updateId       = column[java.util.UUID]   ("update_request_id")
     def packageName    = column[PackageId.Name]   ("packageName")
     def packageVersion = column[PackageId.Version]("packageVersion")
@@ -64,7 +65,7 @@ object InstallHistories {
    * @param device The device to fetch data for
    * @return A list of the install history for that device
    */
-  def list(ns: Namespace, device: Uuid): DBIO[Seq[InstallHistory]] =
+  def list(ns: Namespace, device: Device.Id): DBIO[Seq[InstallHistory]] =
     installHistories.filter(i => i.namespace === ns && i.device === device).result
 
   /**
@@ -76,7 +77,7 @@ object InstallHistories {
    * @param updateId The Id of the [[UpdateRequest]] that was attempted to be installed
    * @param success Whether the install was successful
    */
-  def log(ns: Namespace, device: Uuid, updateId: java.util.UUID,
+  def log(ns: Namespace, device: Device.Id, updateId: java.util.UUID,
           packageId: PackageId, success: Boolean): DBIO[Int] = {
     installHistories += InstallHistory(None, ns, device, updateId, packageId, success, Instant.now)
   }

@@ -9,7 +9,9 @@ import com.typesafe.config.{Config, ConfigFactory}
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateSpec}
 import org.genivi.sota.core.db.{Packages, UpdateRequests, UpdateSpecs}
-import org.genivi.sota.data._
+import org.genivi.sota.data.Device
+import org.genivi.sota.data.{Device, DeviceT}
+import org.genivi.sota.data.DeviceGenerators
 import org.genivi.sota.http.NamespaceDirectives
 
 import scala.concurrent.ExecutionContext
@@ -19,6 +21,7 @@ import slick.driver.MySQLDriver.api._
 object NamespaceSpec {
   import eu.timepit.refined.auto._
   import eu.timepit.refined.string._
+  import org.genivi.sota.data.Namespace
 
   lazy val defaultNamespace: Namespace = {
     val config = ConfigFactory.load()
@@ -33,7 +36,7 @@ trait UpdateResourcesDatabaseSpec {
   import Generators._
   import DeviceGenerators._
 
-  def createUpdateSpecFor(device: Uuid, installPos: Int = 0, withMillis: Long = -1)
+  def createUpdateSpecFor(device: Device.Id, installPos: Int = 0, withMillis: Long = -1)
                          (implicit ec: ExecutionContext): DBIO[(Package, UpdateSpec)] = {
     val (packageModel, updateSpec0) = genUpdateSpecFor(device, withMillis).sample.get
     val updateSpec = updateSpec0.copy(installPos = installPos)
@@ -51,7 +54,7 @@ trait UpdateResourcesDatabaseSpec {
     val device = genDevice.sample.get
 
     for {
-      (packageModel, updateSpec) <- createUpdateSpecFor(device.uuid)
+      (packageModel, updateSpec) <- createUpdateSpecFor(device.id)
     } yield (packageModel, device, updateSpec)
   }
 

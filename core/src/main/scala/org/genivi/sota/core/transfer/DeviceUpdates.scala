@@ -17,7 +17,7 @@ import org.genivi.sota.core.db.UpdateSpecs._
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.resolver.ExternalResolverClient
 import org.genivi.sota.core.rvi.UpdateReport
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.data.{Device, Namespace, PackageId}
 import org.genivi.sota.db.Operators._
 import org.genivi.sota.db.SlickExtensions
 import org.genivi.sota.http.Errors.MissingEntity
@@ -38,7 +38,7 @@ object DeviceUpdates {
   /**
     * Tell resolver to record the given packages as installed on a vehicle, overwriting any previous such list.
     */
-  def update(device: Uuid,
+  def update(device: Device.Id,
              packageIds: List[PackageId],
              resolverClient: ExternalResolverClient)
             (implicit ec: ExecutionContext): Future[Unit] = {
@@ -47,7 +47,7 @@ object DeviceUpdates {
     resolverClient.setInstalledPackages(device, j)
   }
 
-  def buildReportInstallResponse(device: Uuid, updateReport: UpdateReport,
+  def buildReportInstallResponse(device: Device.Id, updateReport: UpdateReport,
                                  messageBus: MessageBusPublisher)
                                 (implicit ec: ExecutionContext, db: Database): Future[HttpResponse] = {
     reportInstall(device, updateReport, messageBus) map { _ =>
@@ -64,7 +64,7 @@ object DeviceUpdates {
     *   <li>Persist the outcome of the [[UpdateSpec]] as a whole in [[InstallHistories.InstallHistoryTable]]</li>
     * </ul>
     */
-  def reportInstall(device: Uuid, updateReport: UpdateReport, messageBus: MessageBusPublisher)
+  def reportInstall(device: Device.Id, updateReport: UpdateReport, messageBus: MessageBusPublisher)
                    (implicit ec: ExecutionContext, db: Database): Future[UpdateSpec] = {
 
     // add a row (with fresh UUID) to OperationResult table for each result of this report
@@ -98,7 +98,7 @@ object DeviceUpdates {
     }
   }
 
-  def findPendingPackageIdsFor(device: Uuid, includeInFlight: Boolean = true)
+  def findPendingPackageIdsFor(device: Device.Id, includeInFlight: Boolean = true)
                               (implicit db: Database,
                                ec: ExecutionContext): DBIO[Seq[(UpdateRequest, UpdateStatus)]] = {
     val statusToInclude =
@@ -129,8 +129,8 @@ object DeviceUpdates {
     * <br>
     * Note: for pending ones see [[findPendingPackageIdsFor()]]
     */
-  def findUpdateSpecFor(device: Uuid, updateRequestId: UUID)
-                       (implicit ec: ExecutionContext, db: Database, s: Show[Uuid]): DBIO[UpdateSpec] = {
+  def findUpdateSpecFor(device: Device.Id, updateRequestId: UUID)
+                       (implicit ec: ExecutionContext, db: Database, s: Show[Device.Id]): DBIO[UpdateSpec] = {
     val updateSpecsIO =
       updateSpecs
       .filter(_.device === device)
@@ -141,8 +141,8 @@ object DeviceUpdates {
 
     val specsWithDepsIO = updateSpecsIO flatMap { specsWithDeps =>
       val dBIOActions = specsWithDeps map { case ((updateSpec, updateReq), requiredPO) =>
-        val (_, _, device, status, installPos, creationTime) = updateSpec
-        (UpdateSpec(updateReq, device, status, Set.empty, installPos, creationTime), requiredPO)
+        val (_, _, deviceId, status, installPos, creationTime) = updateSpec
+        (UpdateSpec(updateReq, deviceId, status, Set.empty, installPos, creationTime), requiredPO)
       } map { case (spec, requiredPO) =>
         val depsIO = requiredPO map {
           case (namespace, _, _, packageName, packageVersion) =>
@@ -169,7 +169,7 @@ object DeviceUpdates {
     *
     * @return All UpdateRequest UUIDs (for the vehicle in question) for which a pending UpdateSpec exists
     */
-  private def findSpecsForSorting(device: Uuid, numUpdateRequests: Int)
+  private def findSpecsForSorting(device: Device.Id, numUpdateRequests: Int)
                                  (implicit ec: ExecutionContext): DBIO[Seq[UUID]] = {
 
     // all UpdateRequest UUIDs (for the vehicle in question) for which a pending UpdateSpec exists
@@ -194,7 +194,7 @@ object DeviceUpdates {
   /**
     * Arguments denote a list of [[UpdateRequest]] to be installed on a vehicle in the order given.
     */
-  def buildSetInstallOrderResponse(device: Uuid, order: List[UUID])
+  def buildSetInstallOrderResponse(device: Device.Id, order: List[UUID])
                                   (implicit db: Database, ec: ExecutionContext): Future[HttpResponse] = {
     db.run(persistInstallOrder(device, order))
       .map(_ => HttpResponse(StatusCodes.NoContent))
@@ -207,7 +207,7 @@ object DeviceUpdates {
   /**
     * Arguments denote a list of [[UpdateRequest]] to be installed on a vehicle in the order given.
     */
-  def persistInstallOrder(device: Uuid, order: List[UUID])
+  def persistInstallOrder(device: Device.Id, order: List[UUID])
                          (implicit ec: ExecutionContext): DBIO[Seq[(UUID, Int)]] = {
     val prios = order.zipWithIndex.toMap
 

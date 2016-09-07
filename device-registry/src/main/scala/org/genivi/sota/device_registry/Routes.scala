@@ -17,7 +17,7 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.Json
 import io.circe.generic.auto._
-import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
+import org.genivi.sota.data.{Device, DeviceT, Namespace}
 import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
@@ -43,7 +43,7 @@ class Routes(namespaceExtractor: Directive1[Namespace],
 
   val logger = LoggerFactory.getLogger(this.getClass)
 
-  val extractUuid: Directive1[Uuid] = refined[Uuid.Valid](Slash ~ Segment).map(Uuid(_))
+  val extractId: Directive1[Id] = refined[ValidId](Slash ~ Segment).map(Id)
   val extractDeviceId: Directive1[DeviceId] = parameter('deviceId.as[String]).map(DeviceId)
 
   def searchDevice(ns: Namespace): Route =
@@ -51,8 +51,8 @@ class Routes(namespaceExtractor: Directive1[Namespace],
                 'deviceId.as[String].?)) { // TODO: Use refined
       case (Some(re), None) =>
         complete(db.run(DeviceRepository.search(ns, re)))
-      case (None, Some(deviceId)) =>
-        complete(db.run(DeviceRepository.findByDeviceId(ns, DeviceId(deviceId))))
+      case (None, Some(id)) =>
+        complete(db.run(DeviceRepository.findByDeviceId(ns, DeviceId(id))))
       case (None, None) => complete(db.run(DeviceRepository.list(ns)))
       case _ =>
         complete((BadRequest, "'regex' and 'deviceId' parameters cannot be used together!"))
@@ -66,21 +66,21 @@ class Routes(namespaceExtractor: Directive1[Namespace],
           messageBus.publish(DeviceCreated(ns, uuid, device.deviceName, device.deviceId, device.deviceType))
       }
 
-   onSuccess(f) { uuid =>
-     respondWithHeaders(List(Location(Uri("/devices/" + uuid.show)))) {
-        complete(Created -> uuid)
+   onSuccess(f) { id =>
+     respondWithHeaders(List(Location(Uri("/devices/" + id.show)))) {
+        complete(Created -> id)
      }
    }
   }
 
-  def fetchSystemInfo(uuid: Uuid): Route =
-    complete(db.run(SystemInfo.findByUuid(uuid)))
+  def fetchSystemInfo(id: Id): Route =
+    complete(db.run(SystemInfo.findById(id)))
 
-  def createSystemInfo(uuid: Uuid, data: Json): Route =
-    complete(Created -> db.run(SystemInfo.create(uuid, data)))
+  def createSystemInfo(id: Id, data: Json): Route =
+    complete(Created -> db.run(SystemInfo.create(id, data)))
 
-  def updateSystemInfo(uuid: Uuid, data: Json): Route =
-    complete(db.run(SystemInfo.update(uuid, data)))
+  def updateSystemInfo(id: Id, data: Json): Route =
+    complete(db.run(SystemInfo.update(id, data)))
 
   def fetchGroupInfo(groupName: String, ns: Namespace): Route =
       complete(db.run(GroupInfo.findByName(groupName, ns)))
@@ -98,24 +98,24 @@ class Routes(namespaceExtractor: Directive1[Namespace],
     complete(db.run(GroupInfo.delete(groupName, namespace)))
   }
 
-  def fetchDevice(uuid: Uuid): Route =
-    complete(db.run(DeviceRepository.findByUuid(uuid)))
+  def fetchDevice(id: Id): Route =
+    complete(db.run(DeviceRepository.findById(id)))
 
-  def updateDevice(ns: Namespace, uuid: Uuid, device: DeviceT): Route =
-    complete(db.run(DeviceRepository.update(ns, uuid, device)))
+  def updateDevice(ns: Namespace, id: Id, device: DeviceT): Route =
+    complete(db.run(DeviceRepository.update(ns, id, device)))
 
-  def deleteDevice(ns: Namespace, uuid: Uuid): Route = {
+  def deleteDevice(ns: Namespace, id: Id): Route = {
     val f = db
-      .run(DeviceRepository.delete(ns, uuid))
+      .run(DeviceRepository.delete(ns, id))
       .andThen {
         case scala.util.Success(_) =>
-          messageBus.publish(DeviceDeleted(ns, uuid))
+          messageBus.publish(DeviceDeleted(ns, id))
       }
     complete(f)
   }
 
-  def updateLastSeen(uuid: Uuid): Route =
-    complete(db.run(DeviceRepository.updateLastSeen(uuid)))
+  def updateLastSeen(id: Id): Route =
+    complete(db.run(DeviceRepository.updateLastSeen(id)))
 
   implicit val NamespaceUnmarshaller: FromStringUnmarshaller[Namespace] = Unmarshaller.strict(Namespace.apply)
 
@@ -124,12 +124,12 @@ class Routes(namespaceExtractor: Directive1[Namespace],
       pathPrefix("devices") {
         namespaceExtractor { ns =>
           (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
-          extractUuid { uuid =>
+          extractId { id =>
               (put & entity(as[DeviceT]) & pathEnd) { device =>
-                updateDevice(ns, uuid, device)
+                updateDevice(ns, id, device)
               } ~
               (delete & pathEnd) {
-                deleteDevice(ns, uuid)
+                deleteDevice(ns, id)
               }
           } ~
           (get & path("group_info") & pathEnd & parameter('groupName.as[String])) {
@@ -145,20 +145,20 @@ class Routes(namespaceExtractor: Directive1[Namespace],
             deleteGroupInfo(groupName, ns)
           }
         } ~
-        (extractUuid & post & path("ping")) { uuid =>
-          updateLastSeen(uuid)
+        (extractId & post & path("ping")) { id =>
+          updateLastSeen(id)
         } ~
-        (extractUuid & get & path("system_info") & pathEnd) { uuid =>
-          fetchSystemInfo(uuid)
+        (extractId & get & path("system_info") & pathEnd) { id =>
+          fetchSystemInfo(id)
         } ~
-        (extractUuid & post & path("system_info") & pathEnd) { uuid =>
-          entity(as[Json]) {body => createSystemInfo(uuid, body)}
+        (extractId & post & path("system_info") & pathEnd) { id =>
+          entity(as[Json]) {body => createSystemInfo(id, body)}
         } ~
-        (extractUuid & put & path("system_info") & pathEnd) { uuid =>
-          entity(as[Json]) {body => updateSystemInfo(uuid, body)}
+        (extractId & put & path("system_info") & pathEnd) { id =>
+          entity(as[Json]) {body => updateSystemInfo(id, body)}
         } ~
-        (extractUuid & get & pathEnd) { uuid =>
-          fetchDevice(uuid)
+        (extractId & get & pathEnd) { id =>
+          fetchDevice(id)
         } ~
         (get & pathEnd & parameter('namespace.as[Namespace])) { ns =>
           searchDevice(ns)

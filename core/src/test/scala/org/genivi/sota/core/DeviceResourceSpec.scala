@@ -17,7 +17,7 @@ import io.circe.generic.auto._
 import org.genivi.sota.core.data.{DeviceStatus, DeviceUpdateStatus}
 import org.genivi.sota.core.jsonrpc.HttpTransport
 import org.genivi.sota.core.rvi._
-import org.genivi.sota.data._
+import org.genivi.sota.data.{Device, DeviceGenerators, Namespaces, PackageIdGenerators}
 import org.genivi.sota.http.NamespaceDirectives
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.scalatest._
@@ -67,20 +67,20 @@ class DeviceResourceSpec extends FunSuite
     Uri.Empty.withPath(BasePath / pathSuffix)
   }
 
-  def deviceUri(device: Uuid)  = Uri.Empty.withPath( BasePath / device.underlying.get )
+  def deviceUri(device: Device.Id)  = Uri.Empty.withPath( BasePath / device.underlying.get )
 
   test("returns vehicle status even if Vin is in device registry but not local db") {
     val device1 = genDeviceT.sample.get.copy(deviceId = Some(genDeviceId.sample.get))
     val device2 = genDeviceT.sample.get.copy(deviceId = Some(genDeviceId.sample.get))
 
     val f = for {
-      uuid1 <- deviceRegistry.createDevice(device1)
-      uuid2 <- deviceRegistry.createDevice(device2)
-      _   <- db.run(createUpdateSpecFor(uuid2))
-      _   <- deviceRegistry.updateLastSeen(uuid2, Instant.now.minus(1, ChronoUnit.HOURS))
-    } yield (uuid1, uuid2)
+      id1 <- deviceRegistry.createDevice(device1)
+      id2 <- deviceRegistry.createDevice(device2)
+      _   <- db.run(createUpdateSpecFor(id2))
+      _   <- deviceRegistry.updateLastSeen(id2, Instant.now.minus(1, ChronoUnit.HOURS))
+    } yield (id1, id2)
 
-    whenReady(f) { case(uuid1, uuid2) =>
+    whenReady(f) { case(id1, id2) =>
       val url = Uri.Empty
         .withPath(BasePath)
         .withQuery(Uri.Query("status" -> "true"))
@@ -91,12 +91,12 @@ class DeviceResourceSpec extends FunSuite
 
         parsedResponse should have size 2
 
-        val foundDevice = parsedResponse.find(_.uuid == uuid1)
+        val foundDevice = parsedResponse.find(_.id == id1)
 
         foundDevice.flatMap(_.lastSeen) shouldNot be(defined)
         foundDevice.flatMap(_.status) should contain(DeviceStatus.NotSeen)
 
-        val foundDevice2 = parsedResponse.find(_.uuid == uuid2)
+        val foundDevice2 = parsedResponse.find(_.id == id2)
 
         foundDevice2.flatMap(_.lastSeen) should be(defined)
         foundDevice2.flatMap(_.status) should contain(DeviceStatus.Outdated)
@@ -107,14 +107,14 @@ class DeviceResourceSpec extends FunSuite
   test("search with status=true returns current status for a device") {
     val device = genDeviceT.sample.get.copy(deviceId = Some(genDeviceId.sample.get))
 
-    whenReady(deviceRegistry.createDevice(device)) { created =>
+    whenReady(deviceRegistry.createDevice(device)) { createdId =>
       val url = Uri.Empty
         .withPath(BasePath)
         .withQuery(Uri.Query("status" -> "true"))
 
       Get(url) ~> service.route ~> check {
         status shouldBe StatusCodes.OK
-        val parsedResponse = responseAs[Seq[DeviceSearchResult]].find(_.uuid == created)
+        val parsedResponse = responseAs[Seq[DeviceSearchResult]].find(_.id == createdId)
 
         parsedResponse.flatMap(_.lastSeen) shouldNot be(defined)
         parsedResponse.flatMap(_.status) should contain(DeviceStatus.NotSeen)

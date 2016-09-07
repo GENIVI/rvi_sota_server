@@ -10,7 +10,7 @@ import org.genivi.sota.core.db.{BlacklistedPackages, Packages, UpdateSpecs}
 import org.genivi.sota.core.resolver.DefaultConnectivity
 import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, DeviceUpdates}
 import org.genivi.sota.data._
-import org.scalacheck.{Arbitrary, Gen}
+import org.scalacheck.Gen
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
@@ -31,9 +31,7 @@ class UpdateServiceSpec extends PropSpec
   with ScalaFutures
   with Namespaces {
 
-  import Arbitrary._
-  import DeviceGenerators._
-  import UuidGenerator._
+  import org.genivi.sota.data.DeviceGenerators._
 
   val packages = PackagesReader.read().take(1000)
 
@@ -74,8 +72,8 @@ class UpdateServiceSpec extends PropSpec
   }
 
   property("decline if some of dependencies not found") {
-    def vinDepGen(missingPackages: Seq[PackageId]) : Gen[(Uuid, Set[PackageId])] = for {
-      deviceId          <- arbitrary[Uuid]
+    def vinDepGen(missingPackages: Seq[PackageId]) : Gen[(Device.Id, Set[PackageId])] = for {
+      deviceId          <- DeviceGenerators.genId
       m                 <- Gen.choose(1, 10)
       availablePackages <- Gen.pick(m, packages).map( _.map(_.id) )
       n                 <- Gen.choose(1, missingPackages.length)
@@ -120,8 +118,8 @@ class UpdateServiceSpec extends PropSpec
 
     val f = for {
       (device, packageM) <- db.run(dbSetup)
-      updateRequest <- service.queueDeviceUpdate(device.namespace, device.uuid, packageM.id)
-      queuedPackages <- db.run(DeviceUpdates.findPendingPackageIdsFor(device.uuid))
+      updateRequest <- service.queueDeviceUpdate(device.namespace, device.id, packageM.id)
+      queuedPackages <- db.run(DeviceUpdates.findPendingPackageIdsFor(device.id))
     } yield (updateRequest, queuedPackages.map(_._1))
 
     whenReady(f) { case (updateRequest, queuedPackages) =>
@@ -152,7 +150,7 @@ class UpdateServiceSpec extends PropSpec
     val packageF = for {
       packageM <- db.run(Packages.create(newPackage))
       _ <- BlacklistedPackages.create(packageM.namespace, packageM.id)
-      _ <- service.queueDeviceUpdate(device.namespace, device.uuid, packageM.id)
+      _ <- service.queueDeviceUpdate(device.namespace, device.id, packageM.id)
     } yield packageM
 
     packageF.failed.futureValue shouldBe SotaCoreErrors.BlacklistedPackage
@@ -161,7 +159,7 @@ class UpdateServiceSpec extends PropSpec
   property("fails if dependencies include blacklisted package") {
     val newPackage = PackageGen.sample.get
     val dependency = PackageGen.sample.get
-    val device = arbitrary[Uuid].sample.get
+    val device = DeviceGenerators.genId.sample.get
     val req = updateRequestGen(defaultNs, PackageIdGen).sample.get.copy(packageId = newPackage.id)
     val fakeDependency = Map(device -> Set(dependency.id))
 

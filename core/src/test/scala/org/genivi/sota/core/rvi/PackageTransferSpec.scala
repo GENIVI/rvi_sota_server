@@ -22,7 +22,7 @@ import org.genivi.sota.core.Generators
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.resolver.ConnectivityClient
 import java.time.Instant
-import org.genivi.sota.data.{Device, Uuid}
+import org.genivi.sota.data.Device
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
@@ -33,7 +33,7 @@ import scala.math.BigDecimal.RoundingMode
 /**
  * Dummy actor to simulate SOTA Client in tests
  */
-class ClientActor(device: Uuid, probe: ActorRef, chunksToConsume: Int)
+class ClientActor(device: Device.Id, probe: ActorRef, chunksToConsume: Int)
     extends Actor with ActorLogging with  Stash {
 
   val chunks = scala.collection.mutable.ListBuffer.empty[PackageChunk]
@@ -73,7 +73,7 @@ object ClientActor {
   final case class SetUploader( ref: ActorRef )
   final case class Report( chunks: List[PackageChunk] )
 
-  def props( device: Uuid, probe: ActorRef, chunksToConsume: Int = Int.MaxValue ) : Props =
+  def props( device: Device.Id, probe: ActorRef, chunksToConsume: Int = Int.MaxValue ) : Props =
     Props( new ClientActor( device, probe, chunksToConsume ) )
 
 }
@@ -130,7 +130,7 @@ class PackageTransferSpec extends PropSpec with Matchers with PropertyChecks wit
       val (device, p, updateId, signature) = testData
       val pckg = Generators.generatePackageData(p)
       val probe = TestProbe()
-      val clientActor = system.actorOf( ClientActor.props(device.uuid, probe.ref), "sota-client" )
+      val clientActor = system.actorOf( ClientActor.props(device.id, probe.ref), "sota-client" )
       val rviClient = new AccRviClient( clientActor )
       val underTest = system.actorOf(PackageTransferActor.props(rviClient)(updateId, signature, pckg, services))
       clientActor ! ClientActor.SetUploader( underTest )
@@ -156,7 +156,7 @@ class PackageTransferSpec extends PropSpec with Matchers with PropertyChecks wit
       val (device, p, updateId, signature, chunksTransferred) = testData
       val pckg = Generators.generatePackageData(p)
       val probe = TestProbe()
-      val clientActor = system.actorOf( ClientActor.props(device.uuid, probe.ref, chunksTransferred), "sota-client" )
+      val clientActor = system.actorOf( ClientActor.props(device.id, probe.ref, chunksTransferred), "sota-client" )
       val rviClient = new AccRviClient( clientActor )
       val proxy = system.actorOf(
         Props(new Actor {

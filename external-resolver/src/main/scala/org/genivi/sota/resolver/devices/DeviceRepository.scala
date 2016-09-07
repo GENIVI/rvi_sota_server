@@ -10,7 +10,7 @@ import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import org.genivi.sota.common.DeviceRegistry
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.data.{Device, Namespace, PackageId}
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.components.{Component, ComponentRepository}
 import org.genivi.sota.resolver.data.Firmware
@@ -26,19 +26,19 @@ object DeviceRepository {
   import org.genivi.sota.db.SlickExtensions._
   import org.genivi.sota.refined.SlickRefined._
 
-  class InstalledFirmwareTable(tag: Tag) extends Table[(Firmware, Uuid)](tag, "Firmware") {
+  class InstalledFirmwareTable(tag: Tag) extends Table[(Firmware, Device.Id)](tag, "Firmware") {
     def namespace     = column[Namespace]           ("namespace")
     def module        = column[Firmware.Module]     ("module")
     def firmware_id   = column[Firmware.FirmwareId] ("firmware_id")
     def last_modified = column[Long]                ("last_modified")
-    def device        = column[Uuid]                ("device_uuid")
+    def device = column[Device.Id]("device_uuid")
 
     // insertOrUpdate buggy for composite-keys, see Slick issue #966.
     def pk = primaryKey("pk_installedFirmware", (namespace, module, firmware_id, device))
 
     def * = (namespace, module, firmware_id, last_modified, device).shaped <>
       (p => (Firmware(p._1, p._2, p._3, p._4), p._5),
-        (fw: (Firmware, Uuid)) =>
+        (fw: (Firmware, Device.Id)) =>
           Some((fw._1.namespace, fw._1.module, fw._1.firmwareId, fw._1.lastModified, fw._2)))
   }
   // scalastyle:on
@@ -56,7 +56,7 @@ object DeviceRepository {
 
   def installFirmware
   (namespace: Namespace, module: Firmware.Module, firmware_id: Firmware.FirmwareId,
-   last_modified: Long, device: Uuid)
+   last_modified: Long, device: Device.Id)
   (implicit ec: ExecutionContext): DBIO[Unit] = {
     for {
       _ <- firmwareExists(namespace, module)
@@ -65,7 +65,7 @@ object DeviceRepository {
   }
 
   def firmwareOnDevice
-  (namespace: Namespace, deviceId: Uuid)
+  (namespace: Namespace, deviceId: Device.Id)
   (implicit ec: ExecutionContext): DBIO[Seq[Firmware]] = {
     installedFirmware
       .filter(_.namespace === namespace)
@@ -77,7 +77,7 @@ object DeviceRepository {
   //This method is only intended to be called when the client reports installed firmware.
   //It therefore clears all installed firmware for the given vin and replaces with the reported
   //state instead.
-  def updateInstalledFirmware(device: Uuid, firmware: Set[Firmware])
+  def updateInstalledFirmware(device: Device.Id, firmware: Set[Firmware])
                              (implicit ec: ExecutionContext): DBIO[Unit] = {
     (for {
       _       <- installedFirmware.filter(_.device === device).delete
@@ -91,8 +91,8 @@ object DeviceRepository {
    */
 
   // scalastyle:off
-  class InstalledPackageTable(tag: Tag) extends Table[(Namespace, Uuid, PackageId)](tag, "InstalledPackage") {
-    def device         = column[Uuid]("device_uuid")
+  class InstalledPackageTable(tag: Tag) extends Table[(Namespace, Device.Id, PackageId)](tag, "InstalledPackage") {
+    def device         = column[Device.Id]("device_uuid")
     def namespace      = column[Namespace]("namespace")
     def packageName    = column[PackageId.Name]("packageName")
     def packageVersion = column[PackageId.Version]("packageVersion")
@@ -102,14 +102,14 @@ object DeviceRepository {
 
     def * = (namespace, device, packageName, packageVersion).shaped <>
       (p => (p._1, p._2, PackageId(p._3, p._4)),
-        (vp: (Namespace, Uuid, PackageId)) => Some((vp._1, vp._2, vp._3.name, vp._3.version)))
+        (vp: (Namespace, Device.Id, PackageId)) => Some((vp._1, vp._2, vp._3.name, vp._3.version)))
   }
   // scalastyle:on
 
   val installedPackages = TableQuery[InstalledPackageTable]
 
   def installPackage
-  (namespace: Namespace, device: Uuid, pkgId: PackageId)
+  (namespace: Namespace, device: Device.Id, pkgId: PackageId)
   (implicit ec: ExecutionContext): DBIO[Unit] =
     for {
       _ <- PackageRepository.exists(namespace, pkgId)
@@ -117,7 +117,7 @@ object DeviceRepository {
     } yield ()
 
   def uninstallPackage
-  (namespace: Namespace, device: Uuid, pkgId: PackageId)
+  (namespace: Namespace, device: Device.Id, pkgId: PackageId)
   (implicit ec: ExecutionContext): DBIO[Unit] =
     for {
       _ <- PackageRepository.exists(namespace, pkgId)
@@ -129,7 +129,7 @@ object DeviceRepository {
       }.delete
     } yield ()
 
-  def updateInstalledPackages(namespace: Namespace, device: Uuid, packages: Set[PackageId] )
+  def updateInstalledPackages(namespace: Namespace, device: Device.Id, packages: Set[PackageId] )
                              (implicit ec: ExecutionContext): DBIO[Unit] = {
     def filterAvailablePackages(ids: Set[PackageId]) : DBIO[Set[PackageId]] =
       PackageRepository.load(namespace, ids).map(_.map(_.id))
@@ -153,7 +153,7 @@ object DeviceRepository {
     } yield ()
   }
 
-  def installedOn(device: Uuid, regexFilter: Option[String] = None)
+  def installedOn(device: Device.Id, regexFilter: Option[String] = None)
                  (implicit ec: ExecutionContext) : DBIO[Set[PackageId]] = {
     installedPackages
       .filter(_.device === device)
@@ -161,11 +161,11 @@ object DeviceRepository {
       .result.map(_.map(_._3).toSet)
   }
 
-  def listInstalledPackages: DBIO[Seq[(Namespace, Uuid, PackageId)]] =
+  def listInstalledPackages: DBIO[Seq[(Namespace, Device.Id, PackageId)]] =
     installedPackages.result
   // TODO: namespaces?
 
-  def deleteInstalledPackageById(namespace: Namespace, device: Uuid): DBIO[Int] =
+  def deleteInstalledPackageById(namespace: Namespace, device: Device.Id): DBIO[Int] =
     installedPackages.filter(i => i.namespace === namespace && i.device === device).delete
 
   /*
@@ -174,10 +174,10 @@ object DeviceRepository {
 
   // scalastyle:off
   class InstalledComponentTable(tag: Tag)
-    extends Table[(Namespace, Uuid, Component.PartNumber)](tag, "InstalledComponent") {
+    extends Table[(Namespace, Device.Id, Component.PartNumber)](tag, "InstalledComponent") {
 
     def namespace = column[Namespace]("namespace")
-    def device = column[Uuid]("device_uuid")
+    def device = column[Device.Id]("device_uuid")
     def partNumber = column[Component.PartNumber]("partNumber")
 
     // insertOrUpdate buggy for composite-keys, see Slick issue #966.
@@ -189,13 +189,13 @@ object DeviceRepository {
 
   val installedComponents = TableQuery[InstalledComponentTable]
 
-  def listInstalledComponents: DBIO[Seq[(Namespace, Uuid, Component.PartNumber)]] =
+  def listInstalledComponents: DBIO[Seq[(Namespace, Device.Id, Component.PartNumber)]] =
     installedComponents.result
 
-  def deleteInstalledComponentById(namespace: Namespace, device: Uuid): DBIO[Int] =
+  def deleteInstalledComponentById(namespace: Namespace, device: Device.Id): DBIO[Int] =
     installedComponents.filter(i => i.namespace === namespace && i.device === device).delete
 
-  def installComponent(namespace: Namespace, device: Uuid, part: Component.PartNumber)
+  def installComponent(namespace: Namespace, device: Device.Id, part: Component.PartNumber)
                       (implicit ec: ExecutionContext): DBIO[Unit] =
     for {
       _ <- ComponentRepository.exists(namespace, part)
@@ -203,7 +203,7 @@ object DeviceRepository {
     } yield ()
 
   def uninstallComponent
-  (namespace: Namespace, device: Uuid, part: Component.PartNumber)
+  (namespace: Namespace, device: Device.Id, part: Component.PartNumber)
   (implicit ec: ExecutionContext): DBIO[Unit] =
     for {
       _ <- ComponentRepository.exists(namespace, part)
@@ -214,7 +214,7 @@ object DeviceRepository {
       }.delete
     } yield ()
 
-  def componentsOnDevice(namespace: Namespace, device: Uuid)
+  def componentsOnDevice(namespace: Namespace, device: Device.Id)
                         (implicit ec: ExecutionContext): DBIO[Seq[Component.PartNumber]] = {
     installedComponents
       .filter(_.namespace === namespace)
@@ -229,7 +229,7 @@ object DeviceRepository {
              pkgVersion: Option[PackageId.Version],
              part      : Option[Component.PartNumber],
              deviceRegistry: DeviceRegistry)
-            (implicit db: Database, ec: ExecutionContext, mat: ActorMaterializer): Future[Seq[Uuid]] = {
+            (implicit db: Database, ec: ExecutionContext, mat: ActorMaterializer): Future[Seq[Device.Id]] = {
     def toRegex[T](r: Refined[String, T]): Refined[String, Regex] =
       refineV[Regex](r.get).right.getOrElse(Refined.unsafeApply(".*"))
 
@@ -246,7 +246,7 @@ object DeviceRepository {
 
     for {
       devices <- deviceRegistry.listNamespace(namespace)
-      searchResult <- DbDepResolver.filterDevices(namespace, devices.map(d => d.uuid -> d.deviceId).toMap, filter)
+      searchResult <- DbDepResolver.filterDevices(namespace, devices.map(d => d.id -> d.deviceId).toMap, filter)
     } yield searchResult
   }
 }

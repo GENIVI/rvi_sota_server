@@ -9,7 +9,7 @@ import org.genivi.sota.core.data.UpdateSpec
 import org.genivi.sota.core.resolver.Connectivity
 import org.genivi.sota.core.transfer._
 import java.time.Instant
-import org.genivi.sota.data.{Device, Uuid}
+import org.genivi.sota.data.Device
 import scala.concurrent.{ExecutionContext, Future}
 
 
@@ -21,7 +21,7 @@ class RviUpdateNotifier(services: ServerServices) extends UpdateNotifier {
 
   import io.circe.generic.auto._
 
-  override def notifyDevice(device: Uuid, update: UpdateSpec)
+  override def notifyDevice(device: Device.Id, update: UpdateSpec)
                             (implicit connectivity: Connectivity, ec: ExecutionContext): Future[Int] = {
     import io.circe.generic.auto._
 

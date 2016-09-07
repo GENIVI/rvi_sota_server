@@ -5,7 +5,7 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.RouteTestTimeout
 import cats.state.State
-import org.genivi.sota.data.{Device, DeviceT, PackageId, Uuid}
+import org.genivi.sota.data.{Device, DeviceT, PackageId}
 import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.test.random.Misc._
 import org.genivi.sota.resolver.test.random._
@@ -49,14 +49,14 @@ class Random extends ResourcePropSpec {
             sem.result match {
               case Failure(c)            => responseAs[ErrorRepresentation].code           shouldBe c
               case Success               => ()
-              case SuccessVehicles(vehs) => responseAs[Set[Uuid]]                       shouldBe vehs
+              case SuccessVehicles(vehs) => responseAs[Set[Device.Id]]                       shouldBe vehs
               case SuccessPackage(pkg)   => responseAs[Package]                            shouldBe pkg
               case SuccessPackages(pkgs) => responseAs[Set[Package]]                       shouldBe pkgs
               case SuccessPackageIds(pids) => responseAs[Set[PackageId]]                   shouldBe pids
               case SuccessFilters(filts) => responseAs[Set[Filter]]                        shouldBe filts
               case SuccessComponents(cs) => responseAs[Set[Component]]                     shouldBe cs
               case SuccessPartNumbers(x) => responseAs[Set[Component.PartNumber]]          shouldBe x
-              case SuccessVehicleMap(m)  => responseAs[Map[Uuid, List[PackageId]]]  shouldBe m
+              case SuccessVehicleMap(m)  => responseAs[Map[Device.Id, List[PackageId]]]  shouldBe m
               case r                     => sys.error(s"runSession: non-exhaustive pattern: $r")
             }
           }

@@ -13,7 +13,7 @@ import java.io.File
 import org.genivi.sota.core.SotaCoreErrors.SotaCoreErrorCodes
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.data.{Device, Namespace, PackageId}
 import org.genivi.sota.http.NamespaceDirectives
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.messaging.Messages.PackageCreated
@@ -52,9 +52,9 @@ class PackageUploadSpec extends PropSpec
     val resolver = new ExternalResolverClient {
       override def putPackage(namespace: Namespace, packageId: PackageId, description: Option[String], vendor: Option[String]): Future[Unit] = resolverResult
 
-      override def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Uuid, Set[PackageId]]] = ???
+      override def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Device.Id, Set[PackageId]]] = ???
 
-      override def setInstalledPackages(device: Uuid, json: io.circe.Json) : Future[Unit] = ???
+      override def setInstalledPackages(device: Device.Id, json: io.circe.Json) : Future[Unit] = ???
     }
 
     lazy val messageBusPublisher = MessageBusPublisher.ignore

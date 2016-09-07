@@ -4,20 +4,22 @@
  */
 package org.genivi.sota.marshalling
 
+import java.util.UUID
+
 import akka.http.scaladsl.model.Uri
-import cats.Show
 import cats.data.Xor
-import cats.syntax.show.toShowOps
-import eu.timepit.refined.api.{Refined, Validate}
 import eu.timepit.refined.refineV
+import eu.timepit.refined.api.{Refined, Validate}
 import io.circe._
-import io.circe.generic.semiauto._
-import io.circe.{Decoder, Encoder}
+import org.genivi.sota.data.{Device, Interval, PackageId}
 import java.time.Instant
 import java.time.format.{DateTimeFormatter, DateTimeParseException}
-import java.util.UUID
-import org.genivi.sota.data.{Device, Interval, PackageId, Uuid}
 
+import cats.Show
+import cats.syntax.show.toShowOps
+import io.circe.generic.semiauto._
+import io.circe.{Decoder, Encoder}
+import org.genivi.sota.data.Device.Id
 
 /**
   * Some datatypes we use don't have predefined JSON encoders and
@@ -28,9 +30,6 @@ import org.genivi.sota.data.{Device, Interval, PackageId, Uuid}
 
 trait CirceInstances {
 
-  implicit def refinedEncoder[T, P](implicit encoder: Encoder[T]): Encoder[Refined[T, P]] =
-    encoder.contramap(_.get)
-
   implicit def refinedDecoder[T, P](implicit decoder: Decoder[T], p: Validate.Plain[T, P]): Decoder[Refined[T, P]] =
     decoder.map(t =>
       refineV[P](t) match {
@@ -39,13 +38,12 @@ trait CirceInstances {
         case Right(r) => r
       })
 
-  implicit def refinedMapEncoder[K <: Refined[_, _], V]
-  (implicit keyEncoder: Encoder[K], valueEncoder: Encoder[V]): Encoder[Map[K, V]] =
-    Encoder[Seq[(K, V)]].contramap((m: Map[K, V]) => m.toSeq)
-
   implicit def refinedMapDecoder[K <: Refined[_, _], V]
   (implicit keyDecoder: Decoder[K], valueDecoder: Decoder[V]): Decoder[Map[K, V]] =
     Decoder[Seq[(K, V)]].map(_.toMap)
+
+  implicit def refinedEncoder[T, P](implicit encoder: Encoder[T]): Encoder[Refined[T, P]] =
+    encoder.contramap(_.get)
 
   implicit val uriEncoder : Encoder[Uri] = Encoder.instance { uri =>
     Json.obj(("uri", Json.fromString(uri.toString())))
@@ -61,19 +59,8 @@ trait CirceInstances {
     }
   }
 
-  implicit val javaUuidEncoder : Encoder[UUID] = Encoder[String].contramap(_.toString)
-  implicit val javaUuidDecoder : Decoder[UUID] = Decoder[String].map(UUID.fromString)
-
-  // PRO-1297: once done we only need one uuid {en|de}coder
-  implicit val customUuidEncoder : Encoder[Uuid] = Encoder[String].contramap(_.show)
-  implicit val customUuidDecoder : Decoder[Uuid] =
-    refinedDecoder[String, Uuid.Valid].map(Uuid(_))
-
-  // TODO AnyVal key decoder, see below
-  implicit val customUuidKeyDecoder: KeyDecoder[Uuid] =
-  KeyDecoder.instance[Uuid] { k =>
-    refineV[Uuid.Valid](k).right.toOption.map(Uuid(_))
-  }
+  implicit val uuidEncoder : Encoder[UUID] = Encoder[String].contramap(_.toString)
+  implicit val uuidDecoder : Decoder[UUID] = Decoder[String].map(UUID.fromString)
 
   implicit val dateTimeEncoder : Encoder[Instant] =
     Encoder.instance[Instant]( x =>  Json.fromString( x.toString) )
@@ -110,6 +97,10 @@ trait CirceInstances {
   implicit val intervalEncoder : Encoder[Interval] = Encoder[String].contramap(_.toString)
   implicit val intervalDecoder : Decoder[Interval] = Decoder[String].map(Interval.parse)
 
+  implicit def mapRefinedEncoder[K <: Refined[_, _], V]
+  (implicit keyEncoder: Encoder[K], valueEncoder: Encoder[V]): Encoder[Map[K, V]] =
+    Encoder[Seq[(K, V)]].contramap((m: Map[K, V]) => m.toSeq)
+
   implicit val packageIdEncoder : Encoder[PackageId] = deriveEncoder[PackageId]
   implicit val packageIdDecoder : Decoder[PackageId] = deriveDecoder[PackageId]
 
@@ -118,12 +109,20 @@ trait CirceInstances {
   import io.circe._
 
   // TODO generalize to refined and showable value class decoder/encoder
+  implicit val idEncoder: Encoder[Device.Id] = Encoder[String].contramap(_.show)
+  implicit val idDecoder: Decoder[Device.Id] = refinedDecoder[String, Device.ValidId].map(Device.Id)
+
   implicit val deviceNameEncoder: Encoder[Device.DeviceName] = Encoder[String].contramap(_.show)
   implicit val deviceNameDecoder: Decoder[Device.DeviceName] = Decoder[String].map(Device.DeviceName)
 
   implicit val deviceIdEncoder: Encoder[Device.DeviceId] =
     Encoder[String].contramap(_.show)
   implicit val deviceIdDecoder: Decoder[Device.DeviceId] = Decoder[String].map(Device.DeviceId)
+
+  implicit val deviceIdKeyDecoder: KeyDecoder[Device.Id] =
+    KeyDecoder.instance[Device.Id] { v =>
+      refineV[Device.ValidId](v).right.toOption.map(Device.Id)
+    }
 
   implicit def showableKeyEncoder[K](implicit show: Show[K]): KeyEncoder[K] =
     KeyEncoder.instance[K](_.show)
