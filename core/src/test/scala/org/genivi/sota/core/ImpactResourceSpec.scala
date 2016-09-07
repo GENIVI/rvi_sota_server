@@ -8,7 +8,7 @@ package org.genivi.sota.core
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.genivi.sota.core.db.BlacklistedPackages
-import org.genivi.sota.data.{Device, PackageId, Uuid}
+import org.genivi.sota.data.{Device, PackageId}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 import org.genivi.sota.http.NamespaceDirectives._
@@ -41,9 +41,9 @@ class ImpactResourceSpec
 
     Get("/impact/blacklist") ~> route ~> check {
       status shouldBe StatusCodes.OK
-      val resp = responseAs[Seq[(Uuid, PackageId)]]
+      val resp = responseAs[Seq[(Device.Id, PackageId)]]
 
-      resp should contain((device.uuid, pkg.id))
+      resp should contain((device.id, pkg.id))
     }
   }
 }

@@ -8,7 +8,7 @@ import java.time.Instant
 import org.genivi.sota.core.data.DeviceStatus.DeviceStatus
 import org.genivi.sota.core.data.UpdateStatus.UpdateStatus
 import org.genivi.sota.core.db.UpdateSpecs
-import org.genivi.sota.data.{CirceEnum, Device, Uuid}
+import org.genivi.sota.data.{CirceEnum, Device}
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.refined.SlickRefined._
 import org.slf4j.LoggerFactory
@@ -23,7 +23,7 @@ object DeviceStatus extends CirceEnum {
   val NotSeen, Error, UpToDate, Outdated = Value
 }
 
-case class DeviceUpdateStatus(device: Uuid, status: DeviceStatus, lastSeen: Option[Instant])
+case class DeviceUpdateStatus(device: Device.Id, status: DeviceStatus, lastSeen: Option[Instant])
 
 object DeviceSearch {
   import UpdateSpecs._
@@ -70,15 +70,15 @@ object DeviceSearch {
     }
   }
 
-  protected def deviceDefaultStatus(device: Uuid, lastSeen: Option[Instant]): DeviceUpdateStatus = {
+  protected def deviceDefaultStatus(device: Device.Id, lastSeen: Option[Instant]): DeviceUpdateStatus = {
     DeviceUpdateStatus(device, currentDeviceStatus(lastSeen, Seq.empty), lastSeen)
   }
 
-  protected def deviceWithLastSeen(devices: Seq[Device]): Map[Uuid, Option[Instant]] = {
-    devices.map { device => (device.uuid, device.lastSeen) }.toMap
+  protected def deviceWithLastSeen(devices: Seq[Device]): Map[Device.Id, Option[Instant]] = {
+    devices.map { device => (device.id, device.lastSeen) }.toMap
   }
 
-  def dbDeviceStatus(devices: Map[Uuid, Option[Instant]])
+  def dbDeviceStatus(devices: Map[Device.Id, Option[Instant]])
                     (implicit db: Database, ec: ExecutionContext): DBIO[Seq[DeviceUpdateStatus]] = {
     import org.genivi.sota.db.SlickExtensions._
 

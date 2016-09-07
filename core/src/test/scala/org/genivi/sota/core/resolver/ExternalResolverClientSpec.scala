@@ -10,7 +10,7 @@ import akka.stream.ActorMaterializer
 import cats.data.Xor
 import eu.timepit.refined.api.Refined
 import io.circe.jawn._
-import org.genivi.sota.data.{Device, PackageId, Uuid}
+import org.genivi.sota.data.{Device, PackageId}
 import io.circe.generic.auto._
 import Device._
 import cats.syntax.show._
@@ -45,21 +45,21 @@ class ExternalResolverClientSpec extends PropSpec with Matchers with BeforeAndAf
     }
   }
 
-  val id0 = Uuid(Refined.unsafeApply(UUID.randomUUID().toString))
+  val id0 = Device.Id(Refined.unsafeApply(UUID.randomUUID().toString))
 
   val s: String = s"""{"${id0.show}": [{"version":"23.5.2","name":"rust"}]}"""
 
-  val m: Map[Uuid, Set[PackageId]] =
+  val m: Map[Device.Id, Set[PackageId]] =
     Map(id0 -> Set(PackageId(Refined.unsafeApply("rust"), Refined.unsafeApply("23.5.2"))))
 
   property("parse the external resolver's response") {
-    decode[Map[Uuid, Set[PackageId]]](s) shouldBe Xor.Right(m)
+    decode[Map[Device.Id, Set[PackageId]]](s) shouldBe Xor.Right(m)
   }
 
   val resp: HttpResponse = HttpResponse(entity = HttpEntity(`application/json`, s))
 
   property("parse from a HttpResponse as a Map") {
-    ScalaFutures.whenReady(Unmarshal(resp.entity).to[Map[Uuid, Set[PackageId]]]) { m2 =>
+    ScalaFutures.whenReady(Unmarshal(resp.entity).to[Map[Device.Id, Set[PackageId]]]) { m2 =>
       m2 shouldBe m
     }
 

@@ -6,7 +6,7 @@ package org.genivi.sota.core.data
 
 import org.genivi.sota.data.Namespace
 import java.time.Instant
-import org.genivi.sota.data.{PackageId, Device, Uuid}
+import org.genivi.sota.data.{PackageId, Device}
 import java.util.UUID
 
 /**
@@ -23,14 +23,14 @@ case class OperationResult(
   updateId   : UUID,
   resultCode : Int,
   resultText : String,
-  device     : Uuid,
+  device     : Device.Id,
   namespace  : Namespace,
   receivedAt : Instant)
 
 object OperationResult {
   def from(rviOpResult: org.genivi.sota.core.rvi.OperationResult,
            updateRequestId: UUID,
-           device    : Uuid,
+           device    : Device.Id,
            namespace : Namespace
           ): OperationResult = {
     OperationResult(
@@ -38,7 +38,7 @@ object OperationResult {
       updateRequestId,
       rviOpResult.result_code,
       rviOpResult.result_text,
-      device    : Uuid,
+      device    : Device.Id,
       namespace : Namespace,
       Instant.now
     )
@@ -58,7 +58,7 @@ object OperationResult {
 case class InstallHistory(
   id             : Option[Long],
   namespace      : Namespace,
-  device         : Uuid,
+  device         : Device.Id,
   updateId       : UUID,
   packageId      : PackageId,
   success        : Boolean,

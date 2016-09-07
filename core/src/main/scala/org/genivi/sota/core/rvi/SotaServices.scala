@@ -17,7 +17,7 @@ import java.util.UUID
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.resolver.{Connectivity, ExternalResolverClient}
 import org.genivi.sota.core.data.UpdateRequest
-import org.genivi.sota.data.{Device, Uuid}
+import org.genivi.sota.data.Device
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -36,14 +36,14 @@ final case class ClientServices( start: String, abort: String, chunk: String, fi
 /**
  * RVI message from client to initiate a package download.
  */
-final case class StartDownload(device: Uuid, update_id: UUID, services: ClientServices)
+final case class StartDownload(device: Device.Id, update_id: UUID, services: ClientServices)
 
 /**
  * RVI parameters of generic type for a specified service name.
  */
 final case class RviParameters[T](parameters: List[T], service_name: String )
 
-final case class OperationResult(id: Uuid, result_code: Int, result_text: String) {
+final case class OperationResult(id: Device.Id, result_code: Int, result_text: String) {
   def isSuccess: Boolean = (result_code == 0) || (result_code == 1)
   def isFail: Boolean = !isSuccess
 }
@@ -59,12 +59,12 @@ final case class UpdateReport(update_id: UUID, operation_results: List[Operation
 /**
  * RVI message from client to report installation of a downloaded package.
  */
-final case class InstallReport(device: Uuid, update_report: UpdateReport)
+final case class InstallReport(device: Device.Id, update_report: UpdateReport)
 
 /**
  * RVI message from client to report all installed packages.
  */
-final case class InstalledPackages(device: Uuid, installed_software: Json )
+final case class InstalledPackages(device: Device.Id, installed_software: Json )
 
 /**
  * HTTP endpoints for receideviceg messages from the RVI node.

@@ -197,7 +197,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     val jsonResponse = decode[List[Device]](response.body)
     jsonResponse.toOption match {
       case Some(resp) => resp.length mustBe 1
-        resp.headOption.map(_.uuid.show) mustEqual testId
+        resp.headOption.map(_.id.show) mustEqual testId
       case None => fail(s"JSON parse error: $jsonResponse body: ${response.body}")
     }
   }

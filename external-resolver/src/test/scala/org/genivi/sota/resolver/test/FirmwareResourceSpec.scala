@@ -7,7 +7,7 @@ package org.genivi.sota.resolver.test
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.core.FakeDeviceRegistry
 import org.genivi.sota.data.Device.DeviceName
-import org.genivi.sota.data.{Device, Namespace, Namespaces, Uuid}
+import org.genivi.sota.data.{Device, Namespace, Namespaces}
 import org.genivi.sota.resolver.data.Firmware
 
 /**
@@ -15,7 +15,7 @@ import org.genivi.sota.resolver.data.Firmware
  */
 class FirmwareResourceSpec extends ResourceWordSpec {
 
-  val device: Uuid = Uuid(Refined.unsafeApply("069ae63b-b43e-423d-a50f-67dbdb2f1581"))
+  val device: Device.Id = Device.Id(Refined.unsafeApply("069ae63b-b43e-423d-a50f-67dbdb2f1581"))
 
   override val deviceRegistry = {
     val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)

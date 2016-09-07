@@ -6,8 +6,8 @@ package org.genivi.sota.device_registry
 
 import io.circe.Json
 import io.circe.jawn._
+import org.genivi.sota.data.Device.Id
 import org.genivi.sota.data.Device
-import org.genivi.sota.data.Uuid
 import org.genivi.sota.device_registry.common.{Errors, SlickJsonHelper}
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.db.SlickExtensions._
@@ -18,11 +18,11 @@ import scala.util.{Failure, Success}
 object SystemInfo extends SlickJsonHelper {
 
   type SystemInfoType = Json
-  case class SystemInfo(uuid: Uuid, systemInfo: SystemInfoType)
+  case class SystemInfo(id: Device.Id, systemInfo: SystemInfoType)
 
   // scalastyle:off
   class SystemInfoTable(tag: Tag) extends Table[SystemInfo] (tag, "DeviceSystem") {
-    def uuid = column[Uuid]("uuid")
+    def id = column[Id]("uuid")
     def systemInfo = column[Json]("system_info")
 
     implicit val jsonColumnType = MappedColumnType.base[Json, String](
@@ -30,49 +30,49 @@ object SystemInfo extends SlickJsonHelper {
       {str  => parse(str).fold(_ => Json.Null, x => x)}
     )
 
-    def * = (uuid, systemInfo).shaped <>
+    def * = (id, systemInfo).shaped <>
       ((SystemInfo.apply _).tupled, SystemInfo.unapply)
 
-    def pk = primaryKey("uuid", uuid)
+    def pk = primaryKey("id", id)
   }
   // scalastyle:on
 
   val systemInfos = TableQuery[SystemInfoTable]
 
-  def exists(uuid: Uuid)
+  def exists(id: Id)
             (implicit ec: ExecutionContext): DBIO[SystemInfo] =
     systemInfos
-      .filter(_.uuid === uuid)
+      .filter(_.id === id)
       .result
       .headOption
       .flatMap(_.
         fold[DBIO[SystemInfo]](DBIO.failed(Errors.MissingSystemInfo))(DBIO.successful))
 
-  def findByUuid(uuid: Uuid)(implicit ec: ExecutionContext): DBIO[SystemInfoType] = {
+  def findById(id: Id)(implicit ec: ExecutionContext): DBIO[SystemInfoType] = {
     import org.genivi.sota.db.Operators._
     systemInfos
-      .filter(_.uuid === uuid)
+      .filter(_.id === id)
       .result
       .headOption
       .failIfNone(Errors.MissingSystemInfo)
       .map(p => p.systemInfo)
   }
 
-  def create(uuid: Uuid, data: SystemInfoType)(implicit ec: ExecutionContext): DBIO[Unit] = for {
-    _ <- DeviceRepository.findByUuid(uuid) // check that the device exists
-    _ <- exists(uuid).asTry.flatMap {
+  def create(id: Id, data: SystemInfoType)(implicit ec: ExecutionContext): DBIO[Unit] = for {
+    _ <- DeviceRepository.findById(id) // check that the device exists
+    _ <- exists(id).asTry.flatMap {
       case Success(_) => DBIO.failed(Errors.ConflictingSystemInfo)
       case Failure(_) => DBIO.successful(())
     }
-    _ <- systemInfos += SystemInfo(uuid, data)
+    _ <- systemInfos += SystemInfo(id,data)
   } yield ()
 
-  def update(uuid: Uuid, data: SystemInfoType)(implicit ec: ExecutionContext): DBIO[Unit] = for {
-    _ <- DeviceRepository.findByUuid(uuid) // check that the device exists
-    _ <- systemInfos.insertOrUpdate(SystemInfo(uuid, data))
+  def update(id: Id, data: SystemInfoType)(implicit ec: ExecutionContext): DBIO[Unit] = for {
+    _ <- DeviceRepository.findById(id) // check that the device exists
+    _ <- systemInfos.insertOrUpdate(SystemInfo(id,data))
   } yield ()
 
-  def delete(uuid: Uuid)(implicit ec: ExecutionContext): DBIO[Int] =
-    systemInfos.filter(_.uuid === uuid).delete
+  def delete(id: Id)(implicit ec: ExecutionContext): DBIO[Int] =
+    systemInfos.filter(_.id === id).delete
 
 }

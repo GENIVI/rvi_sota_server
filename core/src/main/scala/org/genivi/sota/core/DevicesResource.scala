@@ -18,7 +18,8 @@ import io.circe.generic.auto._
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.resolver.{ConnectivityClient, ExternalResolverClient}
-import org.genivi.sota.data.{Device, Namespace, Uuid}
+import org.genivi.sota.data.Device
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 
@@ -32,7 +33,7 @@ import org.genivi.sota.core.data.DeviceStatus.DeviceStatus
 
 case class DeviceSearchResult(
                         namespace: Namespace,
-                        uuid: Uuid,
+                        id: Device.Id,
                         deviceName: DeviceName,
                         deviceId: Option[DeviceId],
                         deviceType: Device.DeviceType,
@@ -82,11 +83,11 @@ class DevicesResource(db: Database, client: ConnectivityClient,
     val statusById = deviceStatus.map(r => (r.device, r)).toMap
 
     devicesF map { _.map { d =>
-      val deviceStatus = statusById.get(d.uuid)
+      val deviceStatus = statusById.get(d.id)
 
       DeviceSearchResult(
         d.namespace,
-        d.uuid,
+        d.id,
         d.deviceName,
         d.deviceId,
         d.deviceType,

@@ -5,7 +5,7 @@ import akka.http.scaladsl.model.StatusCodes
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.data.Device.{DeviceId, DeviceName}
-import org.genivi.sota.data.{Device, DeviceT, PackageId, Uuid}
+import org.genivi.sota.data.{Device, DeviceT, PackageId}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 import org.scalatest.concurrent.ScalaFutures
@@ -22,7 +22,7 @@ class ResolveResourceSpec extends ResourceWordSpec with ScalaFutures {
 
   val pkgName = "resolvePkg"
 
-  lazy val testDevices: Seq[(DeviceT, Uuid)] = {
+  lazy val testDevices: Seq[(DeviceT, Device.Id)] = {
     Future.sequence {
       (0 to 4).map { i =>
         val d = DeviceT(DeviceName(s"Name $i"),
@@ -141,7 +141,7 @@ class ResolveResourceSpec extends ResourceWordSpec with ScalaFutures {
         resolve(defaultNs, pkgName, "0.0.1") ~> route ~> check {
           status shouldBe StatusCodes.OK
 
-          responseAs[Map[Uuid, Set[PackageId]]] shouldBe
+          responseAs[Map[Device.Id, Set[PackageId]]] shouldBe
             Map(id0 ->
               Set(PackageId(Refined.unsafeApply(pkgName), Refined.unsafeApply("0.0.1"))),
               id1 ->

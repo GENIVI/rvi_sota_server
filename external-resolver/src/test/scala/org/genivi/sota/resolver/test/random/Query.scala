@@ -11,7 +11,7 @@ import org.genivi.sota.resolver.test._
 import org.scalacheck.Gen
 import Misc.{function0Instance, lift, monGen}
 import org.genivi.sota.data.Device.DeviceId
-import org.genivi.sota.data.{Device, PackageId, Uuid}
+import org.genivi.sota.data.{Device, PackageId}
 
 import scala.annotation.tailrec
 import scala.collection.immutable.Iterable
@@ -25,7 +25,7 @@ sealed trait Query
 
 final case object ListVehicles                        extends Query
 final case class  ListVehiclesFor(cmp: Component)     extends Query
-final case class  ListPackagesOnVehicle(veh: Uuid) extends Query
+final case class  ListPackagesOnVehicle(veh: Device.Id) extends Query
 final case class  ListPackagesFor(flt: Filter)        extends Query
 
 final case object ListFilters                         extends Query
@@ -34,7 +34,7 @@ final case class  ListFiltersFor(pak: Package)        extends Query
 final case class  Resolve(id: PackageId)              extends Query
 
 final case object ListComponents                      extends Query
-final case class  ListComponentsFor(veh: Uuid)     extends Query
+final case class  ListComponentsFor(veh: Device.Id)     extends Query
 
 object Query extends
     VehicleRequestsHttp with
@@ -110,7 +110,7 @@ object Query extends
 
   }
 
-  private def vehicleMap(s: RawStore, pkgId: PackageId): Map[Uuid, List[PackageId]] = {
+  private def vehicleMap(s: RawStore, pkgId: PackageId): Map[Device.Id, List[PackageId]] = {
 
     // An AST for each filter associated to the given package.
     val filters: Set[FilterAST] =
@@ -123,7 +123,7 @@ object Query extends
       filters.toList.foldLeft[FilterAST](True)(And)
 
     // Apply the resulting filter to select vehicles.
-    val devIds: Iterable[Uuid] = for {
+    val devIds: Iterable[Device.Id] = for {
       (dev, (paks, comps)) <- s.devices
       pakIds = paks.map(_.id).toSeq
       compIds = comps.map(_.partNumber).toSeq

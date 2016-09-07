@@ -29,7 +29,7 @@ import java.time.Instant
 import java.time.Duration
 
 import org.genivi.sota.core.transfer.DeviceUpdates
-import org.genivi.sota.data.{Device, Uuid}
+import org.genivi.sota.data.Device
 import org.genivi.sota.messaging.MessageBusPublisher
 
 import scala.collection.immutable.Queue
@@ -56,7 +56,7 @@ class UpdateController(transferProtocolProps: Props) extends Actor with ActorLog
    *
    * @param currentDownloads the map of device to the actor handling that vehicle
    */
-  def running( currentDownloads: Map[Uuid, ActorRef] ) : Receive = {
+  def running( currentDownloads: Map[Device.Id, ActorRef] ) : Receive = {
     case x @ StartDownload(device, updateId, clientServices) =>
       currentDownloads.get(device) match {
         case None =>
@@ -272,7 +272,7 @@ object StartDownloadMessage {
   *
   * @param update_id of the [[UpdateRequest]]
   */
-case class ChunksReceived(device: Uuid, update_id: UUID, chunks: List[Int])
+case class ChunksReceived(device: Device.Id, update_id: UUID, chunks: List[Int])
 
 /**
   * Sent by [[PackageTransferActor]] to the [[ConnectivityClient]] (step 2 of 3) to transfer a chunk.

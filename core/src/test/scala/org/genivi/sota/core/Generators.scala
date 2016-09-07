@@ -12,6 +12,7 @@ import java.util.UUID
 
 import org.apache.commons.codec.binary.Hex
 import org.genivi.sota.core.data._
+import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data._
 import org.scalacheck.{Arbitrary, Gen}
 import java.time.Instant
@@ -24,10 +25,8 @@ import org.genivi.sota.data.Interval
  */
 trait Generators {
 
-  import Arbitrary._
   import Namespaces._
-  import DeviceGenerators._
-  import UuidGenerator._
+  import org.genivi.sota.data.DeviceGenerators._
 
   val PackageVersionGen: Gen[PackageId.Version] =
     Gen.listOfN(3, Gen.choose(0, 999)).map(_.mkString(".")).map(Refined.unsafeApply)
@@ -59,12 +58,12 @@ trait Generators {
     prio         <- Gen.choose(1, 10)
     sig          <- Gen.alphaStr
     desc         <- Gen.option(Gen.alphaStr)
-    reqConfirm   <- arbitrary[Boolean]
+    reqConfirm   <- Arbitrary.arbitrary[Boolean]
   } yield UpdateRequest(UUID.randomUUID(), ns, packageId, Instant.now, Interval(startAfter, finishBefore),
                         prio, sig, desc, reqConfirm)
 
-  def vinDepGen(packages: Seq[Package]) : Gen[(Uuid, Set[PackageId])] = for {
-    vin               <- arbitrary[Uuid]
+  def vinDepGen(packages: Seq[Package]) : Gen[(Device.Id, Set[PackageId])] = for {
+    vin               <- DeviceGenerators.genId
     m                 <- Gen.choose(1, 10)
     packages          <- Gen.pick(m, packages).map( _.map(_.id) )
   } yield vin -> packages.toSet
@@ -101,7 +100,7 @@ trait Generators {
     template.copy( uri = Uri( path.toUri().toString() ), checkSum = Hex.encodeHexString( digest.digest() ))
   }
 
-  def genUpdateSpecFor(device: Uuid, withMillis: Long = -1): Gen[(Package, UpdateSpec)] = for {
+  def genUpdateSpecFor(device: Device.Id, withMillis: Long = -1): Gen[(Package, UpdateSpec)] = for {
     smallSize <- Gen.chooseNum(1024, 1024 * 10)
     packageModel <- PackageGen.map(_.copy(size = smallSize.toLong))
     packageWithUri = Generators.generatePackageData(packageModel)
