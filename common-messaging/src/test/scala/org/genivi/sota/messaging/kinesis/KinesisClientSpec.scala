@@ -6,14 +6,13 @@
 package org.genivi.sota.messaging.kinesis
 
 import java.time.Instant
-import java.util.UUID
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 import akka.testkit.TestKit
 import cats.data.Xor
-import org.genivi.sota.data.Device
+import org.genivi.sota.data.{Device, Uuid}
 import org.genivi.sota.messaging.Messages.DeviceSeen
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
@@ -29,7 +28,7 @@ class KinesisClientSpec extends TestKit(ActorSystem("KinesisClientSpec"))
   with ScalaFutures
   with PatienceConfiguration  {
 
-  val testMsg = DeviceSeen(Device.ValidId.from(UUID.randomUUID()), Instant.now)
+  val testMsg = DeviceSeen(Uuid.generate(), Instant.now)
 
   implicit val _ec = system.dispatcher
   implicit val _mat = ActorMaterializer()

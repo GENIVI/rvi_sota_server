@@ -9,8 +9,7 @@ import java.util.UUID
 import org.genivi.sota.data.Interval
 import java.time.Instant
 import java.time.Duration
-import org.genivi.sota.data.Namespace
-import org.genivi.sota.data.{PackageId, Device}
+import org.genivi.sota.data.{PackageId, Device, Namespace, Uuid}
 import org.genivi.sota.core.db.InstallHistories.InstallHistoryTable
 
 /**
@@ -94,7 +93,7 @@ import UpdateStatus._
   */
 case class UpdateSpec(
   request: UpdateRequest,
-  device: Device.Id,
+  device: Uuid,
   status: UpdateStatus,
   dependencies: Set[Package],
   installPos: Int,
@@ -114,7 +113,7 @@ object UpdateSpec {
   implicit val updateStatusEncoder : Encoder[UpdateStatus] = Encoder[String].contramap(_.toString)
   implicit val updateStatusDecoder : Decoder[UpdateStatus] = Decoder[String].map(UpdateStatus.withName)
 
-  def default(request: UpdateRequest, device: Device.Id): UpdateSpec = {
+  def default(request: UpdateRequest, device: Uuid): UpdateSpec = {
     UpdateSpec(request, device, UpdateStatus.Pending, Set.empty, 0, Instant.now, Instant.now)
   }
 }

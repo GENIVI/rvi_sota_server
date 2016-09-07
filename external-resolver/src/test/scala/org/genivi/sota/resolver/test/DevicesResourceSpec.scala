@@ -8,16 +8,15 @@ import akka.http.scaladsl.model.{StatusCodes, Uri}
 import eu.timepit.refined.refineV
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
-import org.genivi.sota.data.{Device, Namespaces, PackageId}
+import org.genivi.sota.data._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
 import org.genivi.sota.resolver.components.Component
-import org.genivi.sota.data.Device.DeviceName
+import akka.http.scaladsl.testkit.RouteTestTimeout
 import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.resolver.test.generators.PackageGenerators
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 import org.scalacheck._
-import Device._
 import cats.syntax.show._
 import org.genivi.sota.resolver.db.Package
 import org.scalatest.concurrent.ScalaFutures
@@ -27,7 +26,8 @@ import org.scalatest.concurrent.ScalaFutures
  */
 class DeviceResourcePropSpec extends ResourcePropSpec
     with PackageGenerators with ScalaFutures {
-  import org.genivi.sota.data.DeviceGenerators._
+
+  import DeviceGenerators._
 
   val devices = "devices"
 
@@ -160,29 +160,27 @@ class DeviceResourcePropSpec extends ResourcePropSpec
  */
 class DevicesResourceWordSpec extends ResourceWordSpec with Namespaces {
 
+  import Device._
+
   val devices = "devices"
 
-  val deviceId: Device.Id = refineV[Device.ValidId]("1f22860a-3ea2-491f-9042-37c98c2d51cd").right.map(Device.Id).right.get
-  val device: Device     = Device(defaultNs, deviceId, DeviceName("Somename"))
-
-  val deviceId2: Device.Id = refineV[Device.ValidId]("3fd0282d-79f0-455f-9a32-f221790eca3c").right.map(Device.Id).right.get
-  val device2: Device     = Device(defaultNs, deviceId, DeviceName("Somename 2"))
+  val uuid = Uuid(Refined.unsafeApply("1f22860a-3ea2-491f-9042-37c98c2d51cd"))
 
   "Vin resource" should {
     "install a package on a VIN on PUT request to /vehicles/:vin/package/:packageName/:packageVersion" in {
       addPackageOK("apa", "1.0.1", None, None)
-      installPackageOK(deviceId, "apa", "1.0.1")
+      installPackageOK(uuid, "apa", "1.0.1")
     }
 
     "fail to install a non-existing package on a VIN" in {
-      installPackage(deviceId, "bepa", "1.0.1") ~> route ~> check {
+      installPackage(uuid, "bepa", "1.0.1") ~> route ~> check {
         status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.MissingEntity
       }
     }
 
     "list installed packages on a VIN on GET request to /vehicles/:vin/package" in {
-      Get(Resource.uri(devices, deviceId.show, "package")) ~> route ~> check {
+      Get(Resource.uri(devices, uuid.show, "package")) ~> route ~> check {
         status shouldBe StatusCodes.OK
         val name: PackageId.Name = Refined.unsafeApply("apa")
         val version: PackageId.Version = Refined.unsafeApply("1.0.1")
@@ -191,17 +189,17 @@ class DevicesResourceWordSpec extends ResourceWordSpec with Namespaces {
     }
 
     "uninstall a package on a VIN on DELETE request to /vehicles/:vin/package/:packageName/:packageVersion" in {
-      Delete(Resource.uri(devices, deviceId.show, "package", "apa", "1.0.1")) ~> route ~> check {
+      Delete(Resource.uri(devices, uuid.show, "package", "apa", "1.0.1")) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
-      Get(Resource.uri(devices, deviceId.show, "package")) ~> route ~> check {
+      Get(Resource.uri(devices, uuid.show, "package")) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Seq[PackageId]] shouldBe List()
       }
     }
 
     "fail to uninstall a package that isn't installed on a VIN" in {
-      Delete(Resource.uri(devices, deviceId.show, "package", "bepa", "1.0.1")) ~> route ~> check {
+      Delete(Resource.uri(devices, uuid.show, "package", "bepa", "1.0.1")) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.MissingEntity
       }
@@ -212,13 +210,13 @@ class DevicesResourceWordSpec extends ResourceWordSpec with Namespaces {
    * Tests related to installing components on VINs.
    */
 
-  "install component on Device Id on PUT /devices/:vin/component/:partNumber" in {
+  "install component on Uuid on PUT /devices/:vin/component/:partNumber" in {
     addComponentOK(Refined.unsafeApply("jobby0"), "nice")
-    installComponentOK(deviceId, Refined.unsafeApply("jobby0"))
+    installComponentOK(uuid, Refined.unsafeApply("jobby0"))
   }
 
-  "list components on a Device Id on GET /devices/:vin/component" in {
-    Get(Resource.uri(devices, deviceId.show, "component")) ~> route ~> check {
+  "list components on a Uuid on GET /devices/:vin/component" in {
+    Get(Resource.uri(devices, uuid.show, "component")) ~> route ~> check {
       status shouldBe StatusCodes.OK
       responseAs[Seq[Component.PartNumber]] shouldBe List(Refined.unsafeApply("jobby0"))
     }

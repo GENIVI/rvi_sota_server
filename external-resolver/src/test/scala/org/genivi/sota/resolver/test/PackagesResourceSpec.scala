@@ -10,14 +10,15 @@ import akka.http.scaladsl.testkit.RouteTestTimeout
 import eu.timepit.refined.api.Refined
 import io.circe.Json
 import io.circe.generic.auto._
-import org.genivi.sota.data.{Device, Namespaces, PackageId}
+import org.genivi.sota.data.DeviceGenerators._
+import org.genivi.sota.data.UuidGenerator._
+import org.genivi.sota.data.{Device, Namespaces, PackageId, Uuid}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
 import org.genivi.sota.resolver.db.Package
 import org.genivi.sota.resolver.db.Package._
 import org.genivi.sota.resolver.test.generators.PackageGenerators
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
-import org.genivi.sota.data.DeviceGenerators._
 import scala.concurrent.duration._
 
 /**
@@ -26,7 +27,7 @@ import scala.concurrent.duration._
 class PackagesResourcePropSpec extends ResourcePropSpec with PackageGenerators {
 
   property("create a new resource on PUT request") {
-    forAll { (p : Package) =>
+    forAll { (p: Package) =>
       addPackage(p.namespace, p.id.name.get, p.id.version.get, p.description, p.vendor) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Package] shouldBe p
@@ -76,7 +77,7 @@ class PackagesResourcePropSpec extends ResourcePropSpec with PackageGenerators {
   }
 
   property("Posting to affected packages returns affected devices") {
-    forAll { (device: Device.Id, p: Package) =>
+    forAll { (device: Uuid, p: Package) =>
       addPackage(p.namespace, p.id.name.get, p.id.version.get, p.description, p.vendor) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
@@ -87,13 +88,13 @@ class PackagesResourcePropSpec extends ResourcePropSpec with PackageGenerators {
 
       getAffected(defaultNs, Set(p.id)) ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[Map[Device.Id, Seq[PackageId]]] should contain(device -> Seq(p.id))
+        responseAs[Map[Uuid, Seq[PackageId]]] should contain(device -> Seq(p.id))
       }
     }
   }
 
   property("Posting to affected foreign packages returns affected devices") {
-    forAll { (device: Device.Id, p: Package) =>
+    forAll { (device: Uuid, p: Package) =>
       addVehicle(device) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
@@ -104,7 +105,7 @@ class PackagesResourcePropSpec extends ResourcePropSpec with PackageGenerators {
 
       getAffected(defaultNs, Set(p.id)) ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[Map[Device.Id, Seq[PackageId]]] shouldBe Map(device -> Seq(p.id))
+        responseAs[Map[Uuid, Seq[PackageId]]] shouldBe Map(device -> Seq(p.id))
       }
     }
   }

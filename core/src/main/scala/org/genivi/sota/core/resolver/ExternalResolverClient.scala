@@ -14,7 +14,7 @@ import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
-import org.genivi.sota.data.{Device, Namespace, PackageId}
+import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
 import Device._
 import akka.http.scaladsl.marshalling.Marshal
 import cats.syntax.show._
@@ -44,7 +44,7 @@ trait ExternalResolverClient {
     * @param packageId The name and version of the package
     * @return Which packages need to be installed on which vehicles
     */
-  def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Device.Id, Set[PackageId]]]
+  def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Uuid, Set[PackageId]]]
 
   /**
     * Update the list of packages that are installed on a vehicle.
@@ -58,9 +58,9 @@ trait ExternalResolverClient {
     * @param device The device uuid that is sending the update
     * @param json A JSON encoded list of installed packages
     */
-  def setInstalledPackages(device: Device.Id, json: io.circe.Json) : Future[Unit]
+  def setInstalledPackages(device: Uuid, json: io.circe.Json) : Future[Unit]
 
-  def affectedDevices(namespace: Namespace, packageIds: Set[PackageId]): Future[Map[Device.Id, Seq[PackageId]]]
+  def affectedDevices(namespace: Namespace, packageIds: Set[PackageId]): Future[Map[Uuid, Seq[PackageId]]]
 }
 
 /**
@@ -121,7 +121,7 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
 
   private[this] val log = Logging( system, "org.genivi.sota.externalResolverClient" )
 
-  override def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Device.Id, Set[PackageId]]] = {
+  override def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Uuid, Set[PackageId]]] = {
     val resolvePath = resolveUri
       .withPath(resolveUri.path)
       .withQuery(Query(
@@ -142,7 +142,7 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
         response.entity
       }
 
-      Unmarshal(e).to[Map[Device.Id, Set[PackageId]]]
+      Unmarshal(e).to[Map[Uuid, Set[PackageId]]]
     } recoverWith { case t =>
       log.error(t, "Request to resolver failed")
       Future.failed(t)
@@ -162,7 +162,7 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
       case e => Future.failed( ExternalResolverRequestFailed(e) )
     }
 
-  override def setInstalledPackages(device: Device.Id, json: io.circe.Json) : Future[Unit] = {
+  override def setInstalledPackages(device: Uuid, json: io.circe.Json) : Future[Unit] = {
     import akka.http.scaladsl.client.RequestBuilding.Put
     import org.genivi.sota.rest.ErrorRepresentation
 
@@ -201,7 +201,7 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
     handlePutResponse( Http().singleRequest( request ) )
   }
 
-  override def affectedDevices(namespace: Namespace, packageIds: Set[PackageId]): Future[Map[Id, Seq[PackageId]]] = {
+  override def affectedDevices(namespace: Namespace, packageIds: Set[PackageId]): Future[Map[Uuid, Seq[PackageId]]] = {
     val uri = vehiclesUri.withPath(packagesUri.path / "affected").withQuery(Query("namespace" -> namespace.get))
 
     val responseF = for {
@@ -212,7 +212,7 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
 
     val futureResult = responseF.flatMap {
       case HttpResponse(StatusCodes.OK, _, entity, _) =>
-        Unmarshal(entity).to[Map[Device.Id, Seq[PackageId]]]
+        Unmarshal(entity).to[Map[Uuid, Seq[PackageId]]]
 
       case HttpResponse(StatusCodes.BadRequest, _, entity, _) =>
         Unmarshal(entity).to[ErrorRepresentation].flatMap( x =>

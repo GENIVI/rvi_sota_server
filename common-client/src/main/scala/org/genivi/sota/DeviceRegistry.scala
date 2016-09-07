@@ -4,15 +4,15 @@
  */
 package org.genivi.sota.common
 
-import java.time.Instant
-import io.circe.Json
-
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
-import org.genivi.sota.data.{Device, DeviceT, Namespace}
-
+import io.circe.Json
+import java.time.Instant
+import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
 import scala.concurrent.{ExecutionContext, Future}
+
 import Device._
+
 
 trait DeviceRegistry {
 
@@ -27,33 +27,33 @@ trait DeviceRegistry {
 
   def createDevice
   (device: DeviceT)
-  (implicit ec: ExecutionContext): Future[Id]
+  (implicit ec: ExecutionContext): Future[Uuid]
 
   def fetchDevice
-    (id: Id)
+    (uuid: Uuid)
     (implicit ec: ExecutionContext): Future[Device]
 
   def fetchByDeviceId
-    (ns: Namespace, id: DeviceId)
+    (ns: Namespace, deviceId: DeviceId)
     (implicit ec: ExecutionContext): Future[Device]
 
   def updateDevice
-    (id: Id, device: DeviceT)
+    (uuid: Uuid, device: DeviceT)
     (implicit ec: ExecutionContext): Future[Unit]
 
   def deleteDevice
-    (id: Id)
+    (uuid: Uuid)
     (implicit ec: ExecutionContext): Future[Unit]
 
   def updateLastSeen
-    (id: Id, seenAt: Instant = Instant.now)
+    (uuid: Uuid, seenAt: Instant = Instant.now)
     (implicit ec: ExecutionContext): Future[Unit]
 
   def updateSystemInfo
-    (id: Id, json: Json)
+    (uuid: Uuid, json: Json)
     (implicit ec: ExecutionContext): Future[Unit]
 
   def getSystemInfo
-    (id:Id)
+    (uuid: Uuid)
     (implicit ec: ExecutionContext): Future[Json]
 }

@@ -7,7 +7,7 @@ package org.genivi.sota.resolver.db
 
 import java.time.Instant
 
-import org.genivi.sota.data.{Device, Namespace, PackageId}
+import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
 import org.genivi.sota.db.Operators._
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.resolver.db.PackageIdDatabaseConversions._
@@ -19,9 +19,9 @@ object ForeignPackages {
   import org.genivi.sota.refined.SlickRefined._
   import org.genivi.sota.db.SlickExtensions._
 
-  type InstalledForeignPkgRow = (Device.Id, PackageId.Name, PackageId.Version, Instant)
+  type InstalledForeignPkgRow = (Uuid, PackageId.Name, PackageId.Version, Instant)
 
-  case class InstalledForeignPackage(device: Device.Id, packageId: PackageId,
+  case class InstalledForeignPackage(device: Uuid, packageId: PackageId,
                                      lastModified: Instant)
 
   private def toTuple(fp: InstalledForeignPackage): Option[InstalledForeignPkgRow] =
@@ -34,7 +34,7 @@ object ForeignPackages {
     }
 
   class InstalledForeignPackageTable(tag: Tag) extends Table[InstalledForeignPackage](tag, "InstalledForeignPackage") {
-    def device = column[Device.Id]("device_uuid")
+    def device = column[Uuid]("device_uuid")
     def name = column[PackageId.Name]("name")
     def version = column[PackageId.Version]("version")
     def lastModified = column[Instant]("last_modified")
@@ -46,7 +46,7 @@ object ForeignPackages {
 
   private val foreignPackages = TableQuery[InstalledForeignPackageTable]
 
-  def setInstalled(device: Device.Id, packages: Set[PackageId])
+  def setInstalled(device: Uuid, packages: Set[PackageId])
                   (implicit ec: ExecutionContext): DBIO[Set[InstalledForeignPackage]] = {
     val now = Instant.now()
 
@@ -63,7 +63,7 @@ object ForeignPackages {
     dbIO.transactionally
   }
 
-  def installedOn(device: Device.Id, regexFilter: Option[String] = None)
+  def installedOn(device: Uuid, regexFilter: Option[String] = None)
                  (implicit ec: ExecutionContext): DBIO[Seq[PackageId]] = {
     foreignPackages
       .filter(_.device === device)

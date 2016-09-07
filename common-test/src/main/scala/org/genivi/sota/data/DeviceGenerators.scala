@@ -12,10 +12,7 @@ trait DeviceGenerators {
 
   import Arbitrary._
   import Device._
-
-  val genId: Gen[Id] = for {
-    uuid <- Gen.uuid
-  } yield Id(Refined.unsafeApply(uuid.toString))
+  import UuidGenerator._
 
   val genDeviceName: Gen[DeviceName] = for {
     name <- arbitrary[String]
@@ -34,12 +31,12 @@ trait DeviceGenerators {
   } yield Instant.ofEpochMilli(millis)
 
   def genDeviceWith(deviceNameGen: Gen[DeviceName], deviceIdGen: Gen[DeviceId]): Gen[Device] = for {
-    id <- genId
+    uuid <- arbitrary[Uuid]
     name <- deviceNameGen
     deviceId <- Gen.option(deviceIdGen)
     deviceType <- genDeviceType
     lastSeen <- Gen.option(genLastSeen)
-  } yield Device(Namespaces.defaultNs, id, name, deviceId, deviceType, lastSeen)
+  } yield Device(Namespaces.defaultNs, uuid, name, deviceId, deviceType, lastSeen)
 
   val genDevice: Gen[Device] = genDeviceWith(genDeviceName, genDeviceId)
 
@@ -72,7 +69,6 @@ trait DeviceGenerators {
     }
   }
 
-  implicit lazy val arbId: Arbitrary[Id] = Arbitrary(genId)
   implicit lazy val arbDeviceName: Arbitrary[DeviceName] = Arbitrary(genDeviceName)
   implicit lazy val arbDeviceId: Arbitrary[DeviceId] = Arbitrary(genDeviceId)
   implicit lazy val arbDeviceType: Arbitrary[DeviceType] = Arbitrary(genDeviceType)

@@ -6,8 +6,7 @@ import akka.http.scaladsl.model.{HttpResponse, Uri}
 import akka.stream.ActorMaterializer
 import io.circe.Json
 import org.genivi.sota.core.resolver.{DefaultExternalResolverClient, ExternalResolverClient}
-import org.genivi.sota.data.Device.Id
-import org.genivi.sota.data.{Device, Namespace, PackageId}
+import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
 
 import scala.concurrent.Future
 
@@ -20,7 +19,7 @@ class FakeExternalResolver()(implicit system: ActorSystem, mat: ActorMaterialize
 
   private val logger = Logging.getLogger(system, this)
 
-  override def setInstalledPackages(device: Device.Id, json: Json): Future[Unit] = {
+  override def setInstalledPackages(device: Uuid, json: Json): Future[Unit] = {
     val ids = json
       .cursor
       .downField("packages")
@@ -32,7 +31,7 @@ class FakeExternalResolver()(implicit system: ActorSystem, mat: ActorMaterialize
     Future.successful(())
   }
 
-  override def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Device.Id, Set[PackageId]]] = {
+  override def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Uuid, Set[PackageId]]] = {
     Future.successful(Map.empty)
   }
 
@@ -44,7 +43,7 @@ class FakeExternalResolver()(implicit system: ActorSystem, mat: ActorMaterialize
     Future.successful(())
   }
 
-  override def affectedDevices(namespace: Namespace, packageIds: Set[PackageId]): Future[Map[Id, Seq[PackageId]]] =
+  override def affectedDevices(namespace: Namespace, packageIds: Set[PackageId]): Future[Map[Uuid, Seq[PackageId]]] =
     Future.successful(Map.empty)
 
   def isInstalled(packageId: PackageId): Boolean = installedPackages.contains(packageId)
