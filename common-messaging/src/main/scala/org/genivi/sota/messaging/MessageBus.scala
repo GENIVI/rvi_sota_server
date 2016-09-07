@@ -24,18 +24,25 @@ trait MessageBusPublisher {
 
   def publishSafe[T](msg: T)(implicit ec: ExecutionContext, messageLike: MessageLike[T]): Future[Try[Unit]] = {
     publish(msg)
-      .map(r => Success(r))
+      .map { _ =>
+        logger.info(s"published ${messageLike.streamName} - ${messageLike.id(msg)}")
+        Success(())
+      }
       .recover { case t =>
         logger.error(s"Could not publish $msg msg to bus", t)
         Failure(t)
-      }
+    }
   }
 }
 
 object MessageBusPublisher {
   def ignore = new MessageBusPublisher {
-    override def publish[T](msg: T)(implicit ex: ExecutionContext, messageLike: MessageLike[T]): Future[Unit] =
+    lazy private val _logger = LoggerFactory.getLogger(this.getClass)
+
+    override def publish[T](msg: T)(implicit ex: ExecutionContext, messageLike: MessageLike[T]): Future[Unit] = {
+      _logger.info(s"Ignoring message publish to bus")
       Future.successful(())
+    }
   }
 
   implicit class FuturePipeToBus[T](v: Future[T]) {
