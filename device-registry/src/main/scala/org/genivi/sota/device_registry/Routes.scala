@@ -122,47 +122,48 @@ class Routes(namespaceExtractor: Directive1[Namespace],
   def api: Route =
     ErrorHandler.handleErrors {
       pathPrefix("devices") {
-        namespaceExtractor { ns =>
-          (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
-          extractId { id =>
-              (put & entity(as[DeviceT]) & pathEnd) { device =>
-                updateDevice(ns, id, device)
-              } ~
-              (delete & pathEnd) {
-                deleteDevice(ns, id)
-              }
+          (extractId & post & path("ping")) { id =>
+            updateLastSeen(id)
           } ~
-          (get & path("group_info") & pathEnd & parameter('groupName.as[String])) {
-            groupName => fetchGroupInfo(groupName, ns)
+          (extractId & get & path("system_info") & pathEnd) { id =>
+            fetchSystemInfo(id)
           } ~
-          (post & path("group_info") & pathEnd & parameter('groupName.as[String])) { groupName =>
-            entity(as[Json]) {body => createGroupInfo(groupName, ns, body)}
+          (extractId & post & path("system_info") & pathEnd) { id =>
+            entity(as[Json]) {body => createSystemInfo(id, body)}
           } ~
-          (put & path("group_info") & pathEnd & parameter('groupName.as[String])) { groupName =>
-            entity(as[Json]) {body => updateGroupInfo(groupName, ns, body)}
+          (extractId & put & path("system_info") & pathEnd) { id =>
+            entity(as[Json]) {body => updateSystemInfo(id, body)}
           } ~
-          (delete & path("group_info") & pathEnd & parameter('groupName.as[String])) { groupName =>
-            deleteGroupInfo(groupName, ns)
+          (extractId & get & pathEnd) { id =>
+            fetchDevice(id)
+          } ~
+          (get & pathEnd & parameter('namespace.as[Namespace])) { ns =>
+            searchDevice(ns)
+          } ~ {
+            namespaceExtractor { ns =>
+              (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
+                extractId { id =>
+                  (put & entity(as[DeviceT]) & pathEnd) { device =>
+                    updateDevice(ns, id, device)
+                  } ~
+                    (delete & pathEnd) {
+                      deleteDevice(ns, id)
+                    }
+                } ~
+                (get & path("group_info") & pathEnd & parameter('groupName.as[String])) {
+                  groupName => fetchGroupInfo(groupName, ns)
+                } ~
+                (post & path("group_info") & pathEnd & parameter('groupName.as[String])) { groupName =>
+                  entity(as[Json]) { body => createGroupInfo(groupName, ns, body) }
+                } ~
+                (put & path("group_info") & pathEnd & parameter('groupName.as[String])) { groupName =>
+                  entity(as[Json]) { body => updateGroupInfo(groupName, ns, body) }
+                } ~
+                (delete & path("group_info") & pathEnd & parameter('groupName.as[String])) { groupName =>
+                  deleteGroupInfo(groupName, ns)
+                }
+            }
           }
-        } ~
-        (extractId & post & path("ping")) { id =>
-          updateLastSeen(id)
-        } ~
-        (extractId & get & path("system_info") & pathEnd) { id =>
-          fetchSystemInfo(id)
-        } ~
-        (extractId & post & path("system_info") & pathEnd) { id =>
-          entity(as[Json]) {body => createSystemInfo(id, body)}
-        } ~
-        (extractId & put & path("system_info") & pathEnd) { id =>
-          entity(as[Json]) {body => updateSystemInfo(id, body)}
-        } ~
-        (extractId & get & pathEnd) { id =>
-          fetchDevice(id)
-        } ~
-        (get & pathEnd & parameter('namespace.as[Namespace])) { ns =>
-          searchDevice(ns)
-        }
       }
     }
 
