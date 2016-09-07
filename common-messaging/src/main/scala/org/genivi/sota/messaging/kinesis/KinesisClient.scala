@@ -5,8 +5,6 @@ import java.util.UUID
 
 import akka.NotUsed
 import akka.actor.{ActorSystem, Status}
-import akka.actor.FSM.Failure
-import akka.event.Logging
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{Keep, Source}
 import io.circe.syntax._
@@ -39,26 +37,26 @@ object KinesisClient {
 
   private[this] def configureCredentialsProvider(config: Config): ConfigException Xor AWSCredentialsProvider =
     for {
-      awsConfig    <- config.configAt("aws")
+      awsConfig <- config.configAt("aws")
       awsAccessKey <- awsConfig.readString("accessKeyId")
       awsSecretKey <- awsConfig.readString("secretAccessKey")
     } yield new StaticCredentialsProvider(new BasicAWSCredentials(awsAccessKey, awsSecretKey))
 
   private[this] def getStreamNameSuffix(streamNameRoot: String, config: Config): ConfigException Xor String =
     for {
-      awsConfig    <- config.configAt("aws")
+      awsConfig <- config.configAt("aws")
       streamNameSuffix <- config.readString("streamNameSuffix")
     } yield streamNameRoot + "-" + streamNameSuffix
 
   private[this] def getAmazonClient(system: ActorSystem, config: Config): Throwable Xor AmazonKinesisClient =
     for {
-      cfg          <- config.configAt("messaging.kinesis")
-      appName      <- cfg.readString("appName")
-      regionName   <- cfg.readString("regionName")
-      region       =  Regions.fromName(regionName)
-      version      <- cfg.readString("appVersion")
+      cfg <- config.configAt("messaging.kinesis")
+      appName <- cfg.readString("appName")
+      regionName <- cfg.readString("regionName")
+      region = Regions.fromName(regionName)
+      version <- cfg.readString("appVersion")
       clientConfig = getClientConfigWithUserAgent(appName, version)
-      credentials  <- configureCredentialsProvider(config)
+      credentials <- configureCredentialsProvider(config)
       client = new AmazonKinesisClient(credentials, clientConfig)
       _ <- Xor.fromTry(Try(client.configureRegion(region)))
     } yield {
@@ -74,10 +72,10 @@ object KinesisClient {
             blocking {
               for {
                 streamName <- getStreamNameSuffix(messageLike.streamName, config)
-                _          = client.putRecord(
-                              streamName,
-                              ByteBuffer.wrap(msg.asJson(messageLike.encoder).noSpaces.getBytes),
-                              messageLike.partitionKey(msg))
+                _ = client.putRecord(
+                  streamName,
+                  ByteBuffer.wrap(msg.asJson(messageLike.encoder).noSpaces.getBytes),
+                  messageLike.partitionKey(msg))
               } yield {}
             }
           }
@@ -87,13 +85,13 @@ object KinesisClient {
   def source[T](system: ActorSystem, config: Config, streamNameRoot: String)(implicit decoder: Decoder[T])
                              : Throwable Xor Source[T, NotUsed] =
     for {
-      cfg                 <- config.configAt("messaging.kinesis")
-      appName             <- cfg.readString("appName")
-      regionName          <- cfg.readString("regionName")
-      version             <- cfg.readString("appVersion")
-      streamName          <- getStreamNameSuffix(streamNameRoot, config)
-      clientConfig        = getClientConfigWithUserAgent(appName, version)
-      credentials         <- configureCredentialsProvider(config)
+      cfg <- config.configAt("messaging.kinesis")
+      appName <- cfg.readString("appName")
+      regionName <- cfg.readString("regionName")
+      version <- cfg.readString("appVersion")
+      streamName <- getStreamNameSuffix(streamNameRoot, config)
+      clientConfig = getClientConfigWithUserAgent(appName, version)
+      credentials <- configureCredentialsProvider(config)
       kinesisClientConfig = new KinesisClientLibConfiguration(
         appName,
         streamName,
