@@ -26,22 +26,23 @@ import scala.util.Try
 object NatsClient {
   val log = LoggerFactory.getLogger(this.getClass)
 
-  private[this] def fromConfig(system: ActorSystem, config: Config): ConfigException Xor Conn =
+  private[this] def fromConfig(system: ActorSystem, config: Config): Throwable Xor Conn = {
     for {
       natsConfig <- config.configAt("messaging.nats")
-      userName   <- natsConfig.readString("user")
-      password   <- natsConfig.readString("password")
-      host       <- natsConfig.readString("host")
-      port       <- natsConfig.readInt("port")
+      userName <- natsConfig.readString("user")
+      password <- natsConfig.readString("password")
+      host <- natsConfig.readString("host")
+      port <- natsConfig.readInt("port")
+      props = new Properties()
+      _ = props.put("servers", "nats://" + userName + ":" + password + "@" + host + ":" + port)
+      client <- Xor.fromTry(Try(Conn.connect(props)))
     } yield {
-      val props = new Properties()
-      props.put("servers", "nats://" + userName + ":" + password + "@" + host + ":" + port)
-      val client = Conn.connect(props)
       system.registerOnTermination { client.close() }
       client
     }
+  }
 
-  def publisher(system: ActorSystem, config: Config): ConfigException Xor MessageBusPublisher = {
+  def publisher(system: ActorSystem, config: Config): Throwable Xor MessageBusPublisher = {
     fromConfig(system, config) map { c =>
       new MessageBusPublisher {
         override def publish[T](msg: T)(implicit ex: ExecutionContext, messageLike: MessageLike[T]): Future[Unit] =
@@ -55,7 +56,7 @@ object NatsClient {
   }
 
   def source[T](system: ActorSystem, config: Config, subjectName: String)
-                          (implicit decoder: Decoder[T]): ConfigException Xor Source[T, NotUsed] =
+                          (implicit decoder: Decoder[T]): Throwable Xor Source[T, NotUsed] =
     fromConfig(system, config).map { conn =>
 
       Source.actorRef[T](MessageBus.DEFAULT_CLIENT_BUFFER_SIZE,

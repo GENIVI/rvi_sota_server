@@ -50,7 +50,7 @@ object KinesisClient {
       streamNameSuffix <- config.readString("streamNameSuffix")
     } yield streamNameRoot + "-" + streamNameSuffix
 
-  private[this] def getAmazonClient(system: ActorSystem, config: Config): ConfigException Xor AmazonKinesisClient =
+  private[this] def getAmazonClient(system: ActorSystem, config: Config): Throwable Xor AmazonKinesisClient =
     for {
       cfg          <- config.configAt("messaging.kinesis")
       appName      <- cfg.readString("appName")
@@ -59,14 +59,14 @@ object KinesisClient {
       version      <- cfg.readString("appVersion")
       clientConfig = getClientConfigWithUserAgent(appName, version)
       credentials  <- configureCredentialsProvider(config)
+      client = new AmazonKinesisClient(credentials, clientConfig)
+      _ <- Xor.fromTry(Try(client.configureRegion(region)))
     } yield {
-      val client = new AmazonKinesisClient(credentials, clientConfig)
-      client.configureRegion(region)
       system.registerOnTermination(client.shutdown())
       client
     }
 
-  def publisher(system: ActorSystem, config: Config): ConfigException Xor MessageBusPublisher =
+  def publisher(system: ActorSystem, config: Config): Throwable Xor MessageBusPublisher =
     getAmazonClient(system, config).map { client =>
       new MessageBusPublisher {
         override def publish[T](msg: T)(implicit ex: ExecutionContext, messageLike: MessageLike[T]): Future[Unit] =
@@ -85,7 +85,7 @@ object KinesisClient {
     }
 
   def source[T](system: ActorSystem, config: Config, streamNameRoot: String)(implicit decoder: Decoder[T])
-                             : ConfigException Xor Source[T, NotUsed] =
+                             : Throwable Xor Source[T, NotUsed] =
     for {
       cfg                 <- config.configAt("messaging.kinesis")
       appName             <- cfg.readString("appName")
