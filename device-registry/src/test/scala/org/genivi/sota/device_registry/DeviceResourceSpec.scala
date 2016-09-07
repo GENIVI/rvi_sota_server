@@ -303,8 +303,10 @@ class DeviceResourceSpec extends ResourcePropSpec {
   property("PUT request with same deviceName fails with conflict.") {
     forAll { (device1: DeviceT, device2: DeviceT) =>
 
-      val d1 = device1.copy(deviceName = DeviceName(device1.deviceName.underlying + "#1"))
-      val d2 = device2.copy(deviceName = DeviceName(device2.deviceName.underlying + "#2"))
+      val d1 = device1.copy(deviceName = DeviceName(device1.deviceName.underlying + "#1"),
+                            deviceId = device1.deviceId.map(id => DeviceId(id.underlying + "#1")))
+      val d2 = device2.copy(deviceName = DeviceName(device2.deviceName.underlying + "#2"),
+                            deviceId = device2.deviceId.map(id => DeviceId(id.underlying + "#2")))
 
       val id1: Id = createDeviceOk(d1)
       val id2: Id = createDeviceOk(d2)
@@ -321,8 +323,10 @@ class DeviceResourceSpec extends ResourcePropSpec {
   property("PUT request with same deviceId fails with conflict.") {
     forAll { (device1: DeviceT, device2: DeviceT) =>
 
-      val d1 = device1.copy(deviceName = DeviceName(device1.deviceName.underlying + "#1"))
-      val d2 = device2.copy(deviceName = DeviceName(device2.deviceName.underlying + "#2"))
+      val d1 = device1.copy(deviceName = DeviceName(device1.deviceName.underlying + "#1"),
+                            deviceId = device1.deviceId.map(id => DeviceId(id.underlying + "#1")))
+      val d2 = device2.copy(deviceName = DeviceName(device2.deviceName.underlying + "#2"),
+                            deviceId = device2.deviceId.map(id => DeviceId(id.underlying + "#2")))
 
       val id1: Id = createDeviceOk(d1)
       val id2: Id = createDeviceOk(d2)
