@@ -56,7 +56,7 @@ object MessageBus {
   import org.genivi.sota.marshalling.CirceInstances._
 
   def subscribe[T](system: ActorSystem, config: Config)
-                  (implicit messageLike: MessageLike[T]): ConfigException Xor Source[T, NotUsed] = {
+                  (implicit messageLike: MessageLike[T]): Throwable Xor Source[T, NotUsed] = {
     config.getString("messaging.mode").toLowerCase().trim match {
       case "nats" =>
         log.info("Starting messaging mode: NATS")
@@ -74,7 +74,7 @@ object MessageBus {
     }
   }
 
-  def publisher(system: ActorSystem, config: Config): ConfigException Xor MessageBusPublisher = {
+  def publisher(system: ActorSystem, config: Config): Throwable Xor MessageBusPublisher = {
     config.getString("messaging.mode").toLowerCase().trim match {
       case "nats" =>
         log.info("Starting messaging mode: NATS")

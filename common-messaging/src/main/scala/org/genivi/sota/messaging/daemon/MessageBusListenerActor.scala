@@ -58,7 +58,7 @@ class MessageBusListenerActor[Msg <: Message](props: Props,
     context.system.scheduler.scheduleOnce(delay, self, Subscribe)
   }
 
-  protected def subscribeFn(): ConfigException Xor Source[Msg, NotUsed] =
+  protected def subscribeFn(): Throwable Xor Source[Msg, NotUsed] =
     MessageBus.subscribe[Msg](context.system, context.system.settings.config)
 }
 
