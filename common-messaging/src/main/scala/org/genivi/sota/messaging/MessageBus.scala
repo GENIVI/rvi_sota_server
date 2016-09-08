@@ -72,7 +72,7 @@ object MessageBus {
       case "kinesis" =>
         log.info("Starting messaging mode: Kinesis")
         log.info(s"Using stream name: ${messageLike.streamName}")
-        KinesisClient.source(system, config, messageLike.streamName)(messageLike.decoder)
+        KinesisClient.source(system, config)(messageLike)
       case "local" | "test" =>
         log.info("Using local event bus")
         Xor.right(LocalMessageBus.subscribe(system)(messageLike))

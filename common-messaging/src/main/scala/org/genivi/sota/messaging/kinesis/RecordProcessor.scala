@@ -17,15 +17,15 @@ class RecordProcessor[T](subscriber: ActorRef)(implicit val decoder: Decoder[T],
   private val log = LoggerFactory.getLogger(this.getClass)
 
   override def shutdown(shutdownInput: ShutdownInput): Unit = {
-    log.debug("Shutting down worker due to reason:" + shutdownInput.getShutdownReason.toString)
+    log.info("Shutting down worker due to reason:" + shutdownInput.getShutdownReason.toString)
   }
 
   override def initialize(initializationInput: InitializationInput): Unit = {
-    log.debug(s"Initializing kinesis worker on shard ${initializationInput.getShardId}")
+    log.info(s"Initializing kinesis worker on shard ${initializationInput.getShardId}")
   }
 
   override def processRecords(processRecordsInput: ProcessRecordsInput): Unit = {
-    log.trace("Received record(s) from kinesis")
+    log.debug("Received record(s) from kinesis")
     for {
       record <- processRecordsInput.getRecords
       json   <- jawn.parseByteBuffer(record.getData).toOption

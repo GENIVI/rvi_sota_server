@@ -8,9 +8,10 @@ import cats.Show
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string._
 import java.time.Instant
+import java.util.UUID
+import eu.timepit.refined.refineV
 import org.genivi.sota.data.Namespace._
 import slick.driver.MySQLDriver.api._
-
 import Device._
 
 /*
@@ -37,7 +38,12 @@ final case class Device(namespace: Namespace,
 
 object Device {
   type ValidId = Uuid
-  final case class Id(underlying: String Refined ValidId) extends AnyVal
+  case class Id(underlying: String Refined ValidId) extends AnyVal
+
+  object ValidId {
+    def from(uuid: UUID): Id = Id(Refined.unsafeApply(uuid.toString))
+  }
+
   implicit val showId = new Show[Id] {
     def show(id: Id) = id.underlying.get
   }
@@ -82,6 +88,6 @@ object Device {
   // Slick mapping
 
   implicit val idColumnType =
-    MappedColumnType.base[Id, String](showId.show(_), (s: String) => Id(Refined.unsafeApply(s)))
+    MappedColumnType.base[Id, String](showId.show, (s: String) => Id(Refined.unsafeApply(s)))
 
 }

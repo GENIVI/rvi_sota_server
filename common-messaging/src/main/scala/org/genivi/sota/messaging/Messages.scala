@@ -9,8 +9,6 @@ import io.circe.generic.semiauto._
 import org.genivi.sota.marshalling.CirceInstances._
 import org.genivi.sota.data.Device.{DeviceName, Id}
 import org.genivi.sota.data.{Device, Namespace, PackageId}
-
-import scala.concurrent.Future
 import scala.reflect.ClassTag
 
 object Messages {
