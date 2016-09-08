@@ -27,9 +27,6 @@ services:
      - 8083:8083
     expose:
      - 8083
-    links:
-     - mysql
-     - nats
     environment:
      HOST: 0.0.0.0
      DEVICE_REGISTRY_DB_URL: "jdbc:mariadb://mysql:3306/sota_device_registry"
