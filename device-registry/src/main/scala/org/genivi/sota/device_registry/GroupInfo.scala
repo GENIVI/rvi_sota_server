@@ -39,8 +39,7 @@ object GroupInfo extends SlickJsonHelper {
     import org.genivi.sota.db.Operators._
     getGroup(groupName, namespace)
       .result
-      .headOption
-      .failIfNone(Errors.MissingGroupInfo)
+      .failIfNotSingle(Errors.MissingGroupInfo)
       .map(_.groupInfo)
   }
 

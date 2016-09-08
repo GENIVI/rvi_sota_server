@@ -5,11 +5,10 @@
 
 package org.genivi.sota.db
 
+import org.genivi.sota.http.Errors
+
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
-
-import scala.collection.TraversableLike
-import scala.util.Success
 
 /**
   * Some database operators are shared between the core and the
@@ -43,9 +42,16 @@ object Operators {
   }
 
   implicit class DBIOSeqOps[+T](io: DBIO[Seq[T]]) {
-    def failIfNone(t: Throwable)
-                  (implicit ec: ExecutionContext): DBIO[T] = {
-      DBIOOps(io.map(_.headOption)).failIfNone(t)
+    def failIfNotSingle(t: Throwable)
+                       (implicit ec: ExecutionContext): DBIO[T] = {
+      val dbio = io.flatMap { result =>
+        if(result.size > 1)
+          DBIO.failed(Errors.TooManyElements)
+        else
+          DBIO.successful(result.headOption)
+      }
+
+      DBIOOps(dbio).failIfNone(t)
     }
   }
 
