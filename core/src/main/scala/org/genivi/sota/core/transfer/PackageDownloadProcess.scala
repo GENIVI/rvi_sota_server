@@ -64,8 +64,7 @@ class PackageDownloadProcess(db: Database, packageRetrieval: PackageRetrievalOp)
           packageM.namespace === updateRequest.namespace)
       .map { case (_, packageM) => packageM }
       .result
-      .headOption
-      .failIfNone(SotaCoreErrors.MissingPackage)
+      .failIfNotSingle(SotaCoreErrors.MissingPackage)
       .flatMap(BlacklistedPackages.ensureNotBlacklisted)
   }
 }
