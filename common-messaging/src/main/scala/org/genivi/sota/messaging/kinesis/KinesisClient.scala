@@ -1,7 +1,6 @@
 package org.genivi.sota.messaging.kinesis
 
 import java.nio.ByteBuffer
-import java.util.UUID
 
 import akka.NotUsed
 import akka.actor.{ActorSystem, Status}
@@ -15,9 +14,9 @@ import com.amazonaws.auth.{AWSCredentialsProvider, BasicAWSCredentials}
 import com.amazonaws.internal.StaticCredentialsProvider
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.kinesis.AmazonKinesisClient
-import com.amazonaws.services.kinesis.clientlibrary.lib.worker.{KinesisClientLibConfiguration, Worker}
+import com.amazonaws.services.kinesis.clientlibrary.lib.worker.Worker
+import com.amazonaws.services.kinesis.clientlibrary.lib.worker.{InitialPositionInStream, KinesisClientLibConfiguration}
 import com.typesafe.config.{Config, ConfigException}
-import io.circe.Decoder
 import org.genivi.sota.messaging.ConfigHelpers._
 import org.genivi.sota.messaging.Messages.MessageLike
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
@@ -25,7 +24,6 @@ import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
 import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.util.Try
 import akka.pattern.pipe
-import org.apache.commons.logging.LogFactory
 
 object KinesisClient {
 
@@ -42,7 +40,7 @@ object KinesisClient {
       awsSecretKey <- awsConfig.readString("secretAccessKey")
     } yield new StaticCredentialsProvider(new BasicAWSCredentials(awsAccessKey, awsSecretKey))
 
-  private[this] def streamNameWithSuffix(config: Config): ConfigException Xor (String => String) =
+  private[this] def streamSuffix(config: Config): ConfigException Xor (String => String) =
     for {
       cfg <- config.configAt("messaging.kinesis")
       suffix <- cfg.readString("streamNameSuffix")
@@ -66,7 +64,7 @@ object KinesisClient {
 
   def publisher(system: ActorSystem, config: Config): Throwable Xor MessageBusPublisher = {
     for {
-      streamNameFn <- streamNameWithSuffix(config)
+      streamNameFn <- streamSuffix(config)
       client <- getAmazonClient(system, config)
     } yield {
       new MessageBusPublisher {
@@ -86,51 +84,46 @@ object KinesisClient {
     }
   }
 
-  def source[T](system: ActorSystem, config: Config, streamNameRoot: String)(implicit decoder: Decoder[T])
+  def source[T](system: ActorSystem, config: Config)(implicit ml: MessageLike[T])
                              : Throwable Xor Source[T, NotUsed] =
     for {
       cfg <- config.configAt("messaging.kinesis")
-      appName <- cfg.readString("appName")
+      streamName <- streamSuffix(config).map(f => f(ml.streamName))
+      appName <- cfg.readString("appName").map(_ + "-" + streamName)
       regionName <- cfg.readString("regionName")
       version <- cfg.readString("appVersion")
-      streamName <- streamNameWithSuffix(config).map(f => f(streamNameRoot))
       clientConfig = getClientConfigWithUserAgent(appName, version)
       credentials <- configureCredentialsProvider(config)
-      kinesisClientConfig = new KinesisClientLibConfiguration(
-        appName,
-        streamName,
-        credentials,
-        s"$streamName-worker-" + UUID.randomUUID().toString)
-        .withRegionName(regionName).withCommonClientConfig(clientConfig)
     } yield {
+      val kinesisClientConfig = new KinesisClientLibConfiguration(
+        appName, streamName, credentials, s"$streamName-worker")
+        .withRegionName(regionName)
+        .withCommonClientConfig(clientConfig)
+        .withInitialPositionInStream(InitialPositionInStream.LATEST)
+
+      implicit val ec = system.dispatcher
+      implicit val _system = system
+      val log = system.log
+
       Source.actorRef[T](MessageBus.DEFAULT_CLIENT_BUFFER_SIZE,
-        OverflowStrategy.dropTail).mapMaterializedValue { ref =>
-
-        implicit val ec = system.dispatcher
-        implicit val _system = system
-        val log = LogFactory.getLog(this.getClass)
-
-        log.info(s"Subscribing to $streamName")
+        OverflowStrategy.dropHead).mapMaterializedValue { ref =>
 
         val worker = new Worker.Builder()
-          .recordProcessorFactory(new RecordProcessorFactory(ref)(decoder, _system))
+          .recordProcessorFactory(new RecordProcessorFactory(ref)(ml.decoder, _system))
           .config(kinesisClientConfig)
           .build()
 
-        Future(blocking {
-          log.info(s"Starting worker for $streamName")
-          worker.run()
-        })
+        log.info(s"Starting worker for $streamName")
+
+        Future { blocking { worker.run() } }
           .map(Status.Success(_))
           .recover { case ex => Status.Failure(ex) }
           .pipeTo(ref)
 
         worker
       }.watchTermination() { (worker, doneF) =>
-        implicit val _ec = system.dispatcher
-        val log = LogFactory.getLog(this.getClass)
         doneF.andThen { case _ =>
-          log.info("Shutting down worker after stream done")
+          log.info(s"Shutting down worker after stream done ($streamName)")
           Try(worker.shutdown())
         }
         NotUsed
