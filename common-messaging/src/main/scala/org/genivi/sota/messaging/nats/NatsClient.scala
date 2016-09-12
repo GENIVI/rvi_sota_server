@@ -2,14 +2,14 @@ package org.genivi.sota.messaging.nats
 
 import java.util.Properties
 
-
 import akka.NotUsed
 import akka.actor.ActorSystem
+import akka.actor.Status.Failure
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.Source
 import cats.data.Xor
-import com.typesafe.config.{Config, ConfigException}
-import io.circe.{Decoder, Encoder}
+import com.typesafe.config.Config
+import io.circe.Decoder
 import io.circe.syntax._
 import io.circe.parser._
 import org.genivi.sota.marshalling.CirceInstances._
@@ -20,13 +20,15 @@ import org.nats.{Conn, Msg}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future, blocking}
-import scala.reflect.ClassTag
 import scala.util.Try
+import scala.util.control.NoStackTrace
 
 object NatsClient {
   val log = LoggerFactory.getLogger(this.getClass)
 
-  private[this] def fromConfig(system: ActorSystem, config: Config): Throwable Xor Conn = {
+  case object NatsDisconnectedError extends Exception("Nats disconnected, unknown reason") with NoStackTrace
+
+  private[this] def natsConfig(system: ActorSystem, config: Config): Throwable Xor Properties = {
     for {
       natsConfig <- config.configAt("messaging.nats")
       userName <- natsConfig.readString("user")
@@ -35,46 +37,63 @@ object NatsClient {
       port <- natsConfig.readInt("port")
       props = new Properties()
       _ = props.put("servers", "nats://" + userName + ":" + password + "@" + host + ":" + port)
-      client <- Xor.fromTry(Try(Conn.connect(props)))
-    } yield {
-      system.registerOnTermination { client.close() }
+    } yield props
+  }
+
+  private[this] def connect(system: ActorSystem, props: Properties,
+                            disconnectHandler: () => Any): Throwable Xor Conn = {
+    Xor.catchNonFatal(Conn.connect(props, disconnHandler = _ => disconnectHandler.apply())).map { client =>
+      system.registerOnTermination {
+        client.close()
+      }
       client
     }
   }
 
   def publisher(system: ActorSystem, config: Config): Throwable Xor MessageBusPublisher = {
-    fromConfig(system, config) map { c =>
+    for {
+      connProps <- natsConfig(system, config)
+      conn <- connect(system, connProps, () => throw NatsDisconnectedError)
+    } yield
       new MessageBusPublisher {
         override def publish[T](msg: T)(implicit ex: ExecutionContext, messageLike: MessageLike[T]): Future[Unit] =
-          Future  {
+          Future {
             blocking {
-              c.publish(messageLike.streamName, msg.asJson(messageLike.encoder).noSpaces)
+              conn.publish(messageLike.streamName, msg.asJson(messageLike.encoder).noSpaces)
             }
           }
       }
-    }
   }
 
   def source[T](system: ActorSystem, config: Config, subjectName: String)
-                          (implicit decoder: Decoder[T]): Throwable Xor Source[T, NotUsed] =
-    fromConfig(system, config).map { conn =>
+               (implicit decoder: Decoder[T]): Throwable Xor Source[T, NotUsed] =
+    natsConfig(system, config) map { connProps =>
+      Source
+        .actorRef[T] (MessageBus.DEFAULT_CLIENT_BUFFER_SIZE, OverflowStrategy.dropHead)
+        .mapMaterializedValue { ref =>
+          val disconnectHandler = { () => ref ! Failure(NatsDisconnectedError) }
 
-      Source.actorRef[T](MessageBus.DEFAULT_CLIENT_BUFFER_SIZE,
-        OverflowStrategy.dropHead).mapMaterializedValue { ref =>
-        val subId = conn.subscribe(subjectName, (msg: Msg) => {
-          decode[T](msg.body) match {
-            case Xor.Right(m) =>
-              ref ! m
-            case Xor.Left(ex) => log.error(s"invalid message received from message bus: ${msg.body}\n"
-              + s"Got this parse error: ${ex.toString}")
+          connect(system, connProps, disconnectHandler) match {
+            case Xor.Right(conn) =>
+              val subId = conn.subscribe(subjectName, (msg: Msg) => {
+                decode[T](msg.body) match {
+                  case Xor.Right(m) =>
+                    ref ! m
+                  case Xor.Left(ex) => log.error(s"invalid message received from message bus: ${msg.body}\n"
+                    + s"Got this parse error: ${ex.toString}")
+                }
+              })
+
+              (conn, subId)
+
+            case Xor.Left(ex) =>
+              throw ex
           }
-        })
-
-        (conn, subId)
-      }.watchTermination() { case ((c, subId), doneF) =>
-        implicit val _ec = system.dispatcher
-        doneF.andThen { case _ => Try { c.unsubscribe(subId); conn.close() }}
-        NotUsed
-      }
-  }
+        }
+        .watchTermination() { case ((conn, subId), doneF) =>
+          implicit val _ec = system.dispatcher
+          doneF.andThen { case _ => Try { conn.unsubscribe(subId); conn.close() } }
+          NotUsed
+        }
+    }
 }
