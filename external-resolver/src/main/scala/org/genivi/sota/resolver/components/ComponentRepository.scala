@@ -4,7 +4,6 @@
  */
 package org.genivi.sota.resolver.components
 
-import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import org.genivi.sota.data.Namespace
@@ -15,7 +14,6 @@ import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.devices.DeviceRepository
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.control.NoStackTrace
 import slick.driver.MySQLDriver.api._
 
 
