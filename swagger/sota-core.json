@@ -911,6 +911,15 @@
         "createdAt": {
           "type": "string",
           "format": "dateTime"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "InFlight",
+            "Pending",
+            "Canceled",
+            "Failed"
+          ]
         }
       }
     },
