@@ -16,6 +16,7 @@ import eu.timepit.refined.string.Regex
 import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.data.{Device, DeviceT, Namespace}
+import org.genivi.sota.device_registry.GroupInfo.Name
 import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
