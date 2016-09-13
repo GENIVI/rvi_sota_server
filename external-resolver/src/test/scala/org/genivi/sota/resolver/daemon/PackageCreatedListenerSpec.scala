@@ -36,7 +36,7 @@ with DefaultPatience {
   implicit val ec = system.dispatcher
 
   implicit val genPkgCreated = genPackage.flatMap { p =>
-    PackageCreated(p.namespace, p.id, p.description, p.vendor, None, "somefilename.deb")
+    PackageCreated(p.namespace, p.id, p.description, p.vendor, None)
   }
 
   implicit val aGenPkgCreated = Arbitrary(genPkgCreated)

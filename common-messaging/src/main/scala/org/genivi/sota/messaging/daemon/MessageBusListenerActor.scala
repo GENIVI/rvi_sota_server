@@ -2,6 +2,7 @@ package org.genivi.sota.messaging.daemon
 
 import akka.NotUsed
 import akka.actor.{Actor, ActorLogging, ActorRef, Props, Terminated}
+import akka.event.LoggingAdapter
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
 import cats.data.Xor
@@ -9,6 +10,7 @@ import com.typesafe.config.ConfigException
 import org.genivi.sota.messaging.MessageBus
 import org.genivi.sota.messaging.Messages.{Message, MessageLike}
 import org.genivi.sota.messaging.daemon.MessageBusListenerActor.Subscribe
+
 import scala.concurrent.duration._
 import scala.util.Try
 
@@ -23,6 +25,8 @@ class MessageBusListenerActor[Msg <: Message](props: Props,
 
   private def subscribed(listener: ActorRef): Receive = {
     context watch listener
+
+    log.info(s"Subscribed to ${ml.streamName}")
 
     {
       case Terminated(_) =>
@@ -58,7 +62,7 @@ class MessageBusListenerActor[Msg <: Message](props: Props,
     context.system.scheduler.scheduleOnce(delay, self, Subscribe)
   }
 
-  protected def subscribeFn(): ConfigException Xor Source[Msg, NotUsed] =
+  protected def subscribeFn(): Throwable Xor Source[Msg, NotUsed] =
     MessageBus.subscribe[Msg](context.system, context.system.settings.config)
 }
 

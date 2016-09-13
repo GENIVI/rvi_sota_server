@@ -9,15 +9,13 @@ import io.circe.generic.semiauto._
 import org.genivi.sota.marshalling.CirceInstances._
 import org.genivi.sota.data.Device.{DeviceName, Id}
 import org.genivi.sota.data.{Device, Namespace, PackageId}
-
-import scala.concurrent.Future
 import scala.reflect.ClassTag
 
 object Messages {
 
   sealed trait Message
 
-  val PartitionPrefix = 1
+  val partitionPrefixSize = 256
 
   final case class DeviceSeen(uuid: Id,
                               lastSeen: Instant) extends Message
@@ -32,8 +30,7 @@ object Messages {
 
   final case class PackageCreated(namespace: Namespace, packageId: PackageId,
                                   description: Option[String], vendor: Option[String],
-                                  signature: Option[String],
-                                  fileName: String) extends Message
+                                  signature: Option[String]) extends Message
 
   final case class PackageBlacklisted(namespace: Namespace, packageId: PackageId) extends Message
 
@@ -57,7 +54,9 @@ object Messages {
   abstract class MessageLike[T]()(implicit val tag: ClassTag[T]) {
     def streamName: String = tag.runtimeClass.streamName
 
-    def partitionKey(v: T): String
+    def id(v: T): String
+
+    def partitionKey(v: T): String = id(v).take(partitionPrefixSize)
 
     def parse(json: String): io.circe.Error Xor T = decode[T](json)
 
@@ -68,24 +67,21 @@ object Messages {
 
 
   implicit val deviceSeenMessageLike = new MessageLike[DeviceSeen] {
-    override def partitionKey(v: DeviceSeen): String =
-      v.uuid.underlying.get.take(PartitionPrefix)
+    override def id(v: DeviceSeen): String = v.uuid.underlying.get
 
     implicit val encoder: Encoder[DeviceSeen] = deriveEncoder
     implicit val decoder: Decoder[DeviceSeen] = deriveDecoder
   }
 
   implicit val deviceCreatedMessageLike = new MessageLike[DeviceCreated] {
-    override def partitionKey(v: DeviceCreated): String =
-      v.uuid.underlying.get.take(PartitionPrefix)
+    override def id(v: DeviceCreated): String = v.uuid.underlying.get
 
     implicit val encoder: Encoder[DeviceCreated] = deriveEncoder
     implicit val decoder: Decoder[DeviceCreated] = deriveDecoder
   }
 
   implicit val deviceDeletedMessageLike = new MessageLike[DeviceDeleted] {
-    override def partitionKey(v: DeviceDeleted): String =
-      v.uuid.underlying.get.take(PartitionPrefix)
+    override def id(v: DeviceDeleted): String = v.uuid.underlying.get
 
     implicit val encoder: Encoder[DeviceDeleted] = deriveEncoder
     implicit val decoder: Decoder[DeviceDeleted] = deriveDecoder
@@ -93,21 +89,21 @@ object Messages {
 
 
   implicit val packageCreatedMessageLike = new MessageLike[PackageCreated] {
-    override def partitionKey(v: PackageCreated): String = v.packageId.mkString
+    override def id(v: PackageCreated): String = v.packageId.mkString
 
     implicit val encoder: Encoder[PackageCreated] = deriveEncoder
     implicit val decoder: Decoder[PackageCreated] = deriveDecoder
   }
 
   implicit val updateSpecMessageLike = new MessageLike[UpdateSpec] {
-    override def partitionKey(v: UpdateSpec): String = v.deviceId.underlying.get
+    override def id(v: UpdateSpec): String = v.deviceId.underlying.get
 
     implicit val encoder: Encoder[UpdateSpec] = deriveEncoder
     implicit val decoder: Decoder[UpdateSpec] = deriveDecoder
   }
 
   implicit val blacklistedPackageMessageLike = new MessageLike[PackageBlacklisted]() {
-    override def partitionKey(v: PackageBlacklisted): String = v.packageId.mkString
+    override def id(v: PackageBlacklisted): String = v.packageId.mkString
 
     override implicit val encoder: Encoder[PackageBlacklisted] = deriveEncoder
     override implicit val decoder: Decoder[PackageBlacklisted] = deriveDecoder

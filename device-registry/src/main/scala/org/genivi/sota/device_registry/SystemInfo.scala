@@ -53,8 +53,7 @@ object SystemInfo extends SlickJsonHelper {
     systemInfos
       .filter(_.id === id)
       .result
-      .headOption
-      .failIfNone(Errors.MissingSystemInfo)
+      .failIfNotSingle(Errors.MissingSystemInfo)
       .map(p => p.systemInfo)
   }
 

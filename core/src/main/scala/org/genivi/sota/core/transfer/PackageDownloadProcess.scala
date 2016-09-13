@@ -60,11 +60,11 @@ class PackageDownloadProcess(db: Database, packageRetrieval: PackageRetrievalOp)
       .filter(_.id === updateRequestId)
       .join(Packages.packages)
       .on((updateRequest, packageM) =>
-        packageM.name === updateRequest.packageName && packageM.version === updateRequest.packageVersion)
+        packageM.name === updateRequest.packageName && packageM.version === updateRequest.packageVersion &&
+          packageM.namespace === updateRequest.namespace)
       .map { case (_, packageM) => packageM }
       .result
-      .headOption
-      .failIfNone(SotaCoreErrors.MissingPackage)
+      .failIfNotSingle(SotaCoreErrors.MissingPackage)
       .flatMap(BlacklistedPackages.ensureNotBlacklisted)
   }
 }

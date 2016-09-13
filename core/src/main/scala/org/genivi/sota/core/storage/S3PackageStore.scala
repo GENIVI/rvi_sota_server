@@ -47,9 +47,7 @@ class S3PackageStore(credentials: S3Credentials)
   }
 
   override def store(packageId: PackageId,
-                     fileName: String, fileData: Source[ByteString, Any]): Future[(Uri, PackageSize, DigestResult)] = {
-    val filename = packageFileName(packageId, Option(fileName))
-
+                     filename: String, fileData: Source[ByteString, Any]): Future[(Uri, PackageSize, DigestResult)] = {
     val tempFile = File.createTempFile(filename, ".tmp")
 
     // The s3 sdk requires us to specify the file size if using a stream

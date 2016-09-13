@@ -59,6 +59,7 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
 
   import system.dispatcher
   import PackagesResource._
+  import MessageBusPublisher._
 
   implicit val _config = system.settings.config
   implicit val _db = db
@@ -111,17 +112,14 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
     def storePackage(ns: Namespace, pid: PackageId,
                      description: Option[String], vendor: Option[String],
                      signature: Option[String],
-                     fileName: String, file: Source[ByteString, Any]): Future[StatusCode] = {
+                     file: Source[ByteString, Any]): Future[StatusCode] = {
       val resultF = for {
         _ <- resolver.putPackage(ns, pid, description, vendor)
-        (uri, size, digest) <- packageStorageOp(pid, fileName, file)
+        (uri, size, digest) <- packageStorageOp(pid, ns.get, file)
         pkg <- db.run(Packages.create(Package(ns, pid, uri, size, digest, description, vendor, signature)))
       } yield StatusCodes.NoContent
 
-      resultF.andThen {
-        case scala.util.Success(_) =>
-          messageBusPublisher.publish(PackageCreated(ns, pid, description, vendor, signature, fileName))
-      }
+      resultF.pipeToBus(messageBusPublisher)(_ => PackageCreated(ns, pid, description, vendor, signature))
     }
 
     def handleErrors(throwable: Throwable): Route = throwable match {
@@ -142,8 +140,8 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
 
     // TODO: Fix form fields metadata causing error for large upload
     parameters('description.?, 'vendor.?, 'signature.?) { (description, vendor, signature) =>
-      fileUpload("file") { case (fileInfo, file) =>
-        val storePkgF = storePackage(ns, pid, description, vendor, signature, fileInfo.fileName, file)
+      fileUpload("file") { case (_, file) =>
+        val storePkgF = storePackage(ns, pid, description, vendor, signature, file)
         completeOrRecoverWith(storePkgF) { ex => onComplete(drainStream(file))(_ => handleErrors(ex)) }
       }
     }
