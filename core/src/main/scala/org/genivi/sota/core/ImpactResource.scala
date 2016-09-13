@@ -21,7 +21,7 @@ class ImpactResource(namespaceExtractor: Directive1[Namespace])
   import system.dispatcher
 
   def runImpactAnalysis(namespace: Namespace): Route = {
-    val f = BlacklistedPackages.impact(namespace).map { _.map { case (k, v) ⇒ Map(k → v) } }
+    val f = BlacklistedPackages.impact(namespace).map { _.map { case (k, v) => Map(k → v) } }
     complete(f)
   }
 

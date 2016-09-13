@@ -4,11 +4,13 @@
  */
 package org.genivi.sota.core.data.client
 
-import akka.http.scaladsl.server.Directive1
+import akka.http.scaladsl.server.{Directive, Directive1}
 import akka.http.scaladsl.unmarshalling.FromRequestUnmarshaller
 import akka.http.scaladsl.server.Directives._
 import shapeless.ops.function.FnToProduct
 import shapeless._
+
+import scala.concurrent.Future
 import scala.language.implicitConversions
 
 trait RequestDecoder[C, S, A] {
@@ -42,9 +44,23 @@ object RequestConversions {
       override def fromResponse(args: A): S = decoder(v, args)
     }
 
+
   def clientEntity[C, S, A](args: A)
                            (implicit decoder: RequestDecoder[C, S, A],
                             um: FromRequestUnmarshaller[C]): Directive1[S] = {
+
+
     entity(as[C]) map { c => decoder(c, args) }
+  }
+
+  def fromRequest[C, S, A](argsFn: C => Future[A])
+                          (implicit decoder: RequestDecoder[C, S, A],
+                           um: FromRequestUnmarshaller[C]): Directive[(C, S)] = {
+    entity(as[C]).flatMap { c =>
+      extractExecutionContext.flatMap { implicit ec =>
+        val f = argsFn(c).map { args => (c, decoder(c, args)) }
+        onSuccess(f)
+      }
+    }
   }
 }

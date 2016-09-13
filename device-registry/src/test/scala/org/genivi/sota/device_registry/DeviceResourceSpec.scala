@@ -125,32 +125,35 @@ class DeviceResourceSpec extends ResourcePropSpec {
     val numDevices = 10
 
     forAll(genConflictFreeDeviceTs(numDevices),
-           arbitrary[String Refined Regex]) { case (devices: Seq[DeviceT],
-                                                    regex: (String Refined Regex)) =>
+      arbitrary[String Refined Regex]) { case (devices: Seq[DeviceT],
+    regex: (String Refined Regex)) =>
+      whenever(devices.nonEmpty) {
 
-      val n: Int = Random.nextInt(devices.length + 1)
-      val regexInstances: Seq[String] = Range(0, n).map(_ => genStrFromRegex(regex))
-      val preparedDevices: Seq[DeviceT] =
-        Range(0, n).map { i => {
-          val uniqueName = DeviceName(i.toString + injectSubstr(devices(i).deviceName.underlying, regexInstances(i)))
-          devices(i).copy(deviceName = uniqueName)
-        }}
-      val  unpreparedDevices: Seq[DeviceT] = devices.drop(n)
+        val n: Int = Random.nextInt(devices.length + 1)
+        val regexInstances: Seq[String] = Range(0, n).map(_ => genStrFromRegex(regex))
+        val preparedDevices: Seq[DeviceT] =
+          Range(0, n).map { i => {
+            val uniqueName = DeviceName(i.toString + injectSubstr(devices(i).deviceName.underlying, regexInstances(i)))
+            devices(i).copy(deviceName = uniqueName)
+          }
+          }
+        val unpreparedDevices: Seq[DeviceT] = devices.drop(n)
 
-      preparedDevices.length + unpreparedDevices.length shouldBe devices.length
+        preparedDevices.length + unpreparedDevices.length shouldBe devices.length
 
-      val created = devices.map(d => createDeviceOk(d) -> d)
+        val created = devices.map(d => createDeviceOk(d) -> d)
 
-      val expectedIds: Seq[Id] = created
-        .filter { case (_, d) => regex.get.r.findFirstIn(d.deviceName.underlying).isDefined }
-        .map(_._1)
+        val expectedIds: Seq[Id] = created
+          .filter { case (_, d) => regex.get.r.findFirstIn(d.deviceName.underlying).isDefined }
+          .map(_._1)
 
-      searchDevice(defaultNs, regex.get) ~> route ~> check {
-        val matchingDevices: Seq[Device] = responseAs[Seq[Device]]
-        matchingDevices.map(_.id).toSet shouldBe expectedIds.toSet
+        searchDevice(defaultNs, regex.get) ~> route ~> check {
+          val matchingDevices: Seq[Device] = responseAs[Seq[Device]]
+          matchingDevices.map(_.id).toSet shouldBe expectedIds.toSet
+        }
+
+        created.map(_._1).foreach(deleteDeviceOk(_))
       }
-
-      created.map(_._1).foreach(deleteDeviceOk(_))
     }
   }
 

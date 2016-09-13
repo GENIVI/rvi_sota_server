@@ -58,10 +58,7 @@ class PackageDownloadProcess(db: Database, packageRetrieval: PackageRetrievalOp)
                              (implicit ec: ExecutionContext): DBIO[Package] = {
     updateRequests
       .filter(_.id === updateRequestId)
-      .join(Packages.packages)
-      .on((updateRequest, packageM) =>
-        packageM.name === updateRequest.packageName && packageM.version === updateRequest.packageVersion &&
-          packageM.namespace === updateRequest.namespace)
+      .join(Packages.packages).on(_.packageUuid === _.uuid)
       .map { case (_, packageM) => packageM }
       .result
       .failIfNotSingle(SotaCoreErrors.MissingPackage)

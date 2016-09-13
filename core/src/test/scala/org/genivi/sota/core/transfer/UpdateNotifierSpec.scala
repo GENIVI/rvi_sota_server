@@ -24,7 +24,7 @@ object UpdateNotifierSpec {
 
   def updateSpecGen(namespaceGen: Gen[Namespace], deviceGen: Gen[Device.Id]) : Gen[UpdateSpec] = for {
     ns            <- namespaceGen
-    updateRequest <- updateRequestGen(ns, Gen.oneOf(packages).map( _.id) )
+    updateRequest <- updateRequestGen(Gen.oneOf(packages).map( _.uuid) )
     device        <- deviceGen
     m             <- Gen.choose(1, 10)
     packages      <- Gen.pick(m, packages).map( _.toSet )

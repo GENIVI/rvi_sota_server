@@ -51,9 +51,9 @@ object DataGenerators {
 
   def updateWithDependencies(device: Device.Id) : Gen[(UpdateRequest, UpdateService.DeviceToPackageIds)] =
     for {
-      packageId    <- Gen.oneOf( packages.map( _.id) )
-      request      <- updateRequestGen(Namespaces.defaultNs, packageId)
-      dependencies <- dependenciesGen( packageId, device )
+      pkg    <- Gen.oneOf(packages)
+      request      <- updateRequestGen(pkg.uuid)
+      dependencies <- dependenciesGen(pkg.id, device)
     } yield (request, dependencies)
 
   def requestsGen(device: Device.Id): Gen[Map[UpdateRequest, UpdateService.DeviceToPackageIds]] = for {
@@ -228,7 +228,7 @@ class PackageUpdateSpec extends PropSpec
     for {
       specs <- Future.sequence( generatedData.map {
                                  case (request, deps) =>
-                                   updateService.queueUpdate(request, _ => FastFuture.successful(deps))
+                                   updateService.queueUpdate(defaultNs, request, _ => FastFuture.successful(deps))
                                })
     } yield specs.foldLeft(Set.empty[UpdateSpec])(_ union _)
 

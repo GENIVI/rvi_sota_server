@@ -4,6 +4,8 @@
  */
 package org.genivi.sota.core.data
 
+import java.util.UUID
+
 import akka.http.scaladsl.model.Uri
 import io.circe.Json
 import org.genivi.sota.core.data.client.GenericResponseEncoder
@@ -27,6 +29,7 @@ import org.genivi.sota.marshalling.CirceInstances._
  */
 case class Package(
   namespace: Namespace,
+  uuid: UUID,
   id: PackageId,
   uri: Uri,
   size: Long,

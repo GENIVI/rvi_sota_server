@@ -38,16 +38,18 @@ object UpdateSpecs {
 
   implicit val UpdateStatusColumn = MappedColumnType.base[UpdateStatus, String](_.value.toString, UpdateStatus.withName)
 
-  type UpdateSpecTableRowType = (Namespace, UUID, Device.Id, UpdateStatus, Int, Instant, Instant)
+  case class UpdateSpecRow(requestId: UUID, device: Device.Id, status: UpdateStatus, installPos: Int,
+                                createdAt: Instant, updatedAt: Instant) {
+    def toUpdateSpec(request: UpdateRequest, dependencies: Set[Package]) =
+      UpdateSpec(request, device, status, dependencies, installPos, createdAt, updatedAt)
+  }
 
   // scalastyle:off
   /**
    * Each row corresponds to an [[UpdateSpec]] instance except that `dependencies` are kept in [[RequiredPackageTable]]
    */
-  class UpdateSpecTable(tag: Tag)
-      extends Table[UpdateSpecTableRowType](tag, "UpdateSpec") {
+  class UpdateSpecTable(tag: Tag) extends Table[UpdateSpecRow](tag, "UpdateSpec") {
 
-    def namespace = column[Namespace]("namespace")
     def requestId = column[UUID]("update_request_id")
     def device = column[Device.Id]("device_uuid")
     def status = column[UpdateStatus]("status")
@@ -59,7 +61,7 @@ object UpdateSpecs {
     // given `id` is already unique across namespaces, no need to include namespace.
     def pk = primaryKey("pk_update_specs", (requestId, device))
 
-    def * = (namespace, requestId, device, status, installPos, creationTime, updateTime)
+    def * = (requestId, device, status, installPos, creationTime, updateTime) <> (UpdateSpecRow.tupled, UpdateSpecRow.unapply)
   }
   // scalastyle:on
 
@@ -68,17 +70,15 @@ object UpdateSpecs {
    * Child table of [[UpdateSpecTable]]. For each row in that table there's one or more rows in this table.
    */
   class RequiredPackageTable(tag: Tag)
-      extends Table[(Namespace, UUID, Device.Id, PackageId.Name, PackageId.Version)](tag, "RequiredPackage") {
-    def namespace = column[Namespace]("namespace")
+      extends Table[(UUID, Device.Id, UUID)](tag, "RequiredPackage") {
     def requestId = column[UUID]("update_request_id")
     def device = column[Device.Id]("device_uuid")
-    def packageName = column[PackageId.Name]("package_name")
-    def packageVersion = column[PackageId.Version]("package_version")
+    def packageUuid = column[UUID]("package_uuid")
 
     // insertOrUpdate buggy for composite-keys, see Slick issue #966.
-    def pk = primaryKey("pk_downloads", (namespace, requestId, device, packageName, packageVersion))
+    def pk = primaryKey("pk_downloads", (requestId, device, packageUuid))
 
-    def * = (namespace, requestId, device, packageName, packageVersion)
+    def * = (requestId, device, packageUuid)
   }
   // scalastyle:on
 
@@ -101,16 +101,13 @@ object UpdateSpecs {
     * @param updateSpec The list of packages that should be installed
     */
   def persist(updateSpec: UpdateSpec) : DBIO[Unit] = {
-    val specProjection = (
-      updateSpec.namespace, updateSpec.request.id, updateSpec.device,
+    val updateSpecRow = UpdateSpecRow(updateSpec.request.id, updateSpec.device,
       updateSpec.status, updateSpec.installPos, updateSpec.creationTime, updateSpec.updateTime)
 
-    def dependencyProjection(p: Package) =
-      // TODO: we're taking the namespace of the update spec, not necessarily the namespace of the package!
-      (updateSpec.namespace, updateSpec.request.id, updateSpec.device, p.id.name, p.id.version)
+    def dependencyProjection(p: Package) = (updateSpec.request.id, updateSpec.device, p.uuid)
 
     DBIO.seq(
-      updateSpecs += specProjection,
+      updateSpecs += updateSpecRow,
       requiredPackages ++= updateSpec.dependencies.map( dependencyProjection )
     )
   }
@@ -118,11 +115,16 @@ object UpdateSpecs {
   /**
     * Reusable sub-query, PK lookup in [[UpdateSpecTable]] table.
     */
-  private def queryBy(namespace: Namespace,
-                      deviceId: Device.Id,
-                      requestId: UUID): Query[UpdateSpecTable, UpdateSpecTableRowType, Seq] = {
-    updateSpecs
-      .filter(row => row.namespace === namespace && row.device === deviceId && row.requestId === requestId)
+  private def queryBy(deviceId: Device.Id, requestId: UUID): Query[UpdateSpecTable, UpdateSpecRow, Seq] =
+  updateSpecs.filter(row => row.device === deviceId && row.requestId === requestId)
+
+  /**
+    * Lookup by PK in [[UpdateSpecTable]] table.
+    * Note: A tuple is returned instead of an [[UpdateSpec]] instance because
+    * the later would require joining [[RequiredPackageTable]] to populate the `dependencies` of that instance.
+    */
+  def findBy(arg: UpdateSpec): DBIO[UpdateSpecRow] = {
+    queryBy(arg.device, arg.request.id).result.head
   }
 
   /**
@@ -130,18 +132,8 @@ object UpdateSpecs {
     * Note: A tuple is returned instead of an [[UpdateSpec]] instance because
     * the later would require joining [[RequiredPackageTable]] to populate the `dependencies` of that instance.
     */
-  def findBy(arg: UpdateSpec): DBIO[UpdateSpecTableRowType] = {
-    queryBy(arg.namespace, arg.device, arg.request.id).result.head
-  }
-
-  /**
-    * Lookup by PK in [[UpdateSpecTable]] table.
-    * Note: A tuple is returned instead of an [[UpdateSpec]] instance because
-    * the later would require joining [[RequiredPackageTable]] to populate the `dependencies` of that instance.
-    */
-  def findBy(namespace: Namespace, device: Device.Id,
-             requestId: Refined[String, Uuid]): DBIO[UpdateSpecTableRowType] = {
-    queryBy(namespace, device, UUID.fromString(requestId.get)).result.head
+  def findBy(device: Device.Id, requestId: Refined[String, Uuid]): DBIO[UpdateSpecRow] = {
+    queryBy(device, UUID.fromString(requestId.get)).result.head
   }
 
   case class UpdateSpecPackages(miniUpdateSpec: MiniUpdateSpec, packages: Queue[Package])
@@ -156,15 +148,10 @@ object UpdateSpecs {
   def load(device: Device.Id, updateId: UUID)
           (implicit ec: ExecutionContext) : DBIO[Option[MiniUpdateSpec]] = {
     val q = for {
-      r  <- updateRequests if (r.id === updateId)
-      ns  = r.namespace
-      us <- updateSpecs if(us.device === device && us.requestId === r.id && us.namespace === r.namespace)
-      rp <- requiredPackages if (rp.device === device &&
-                                 rp.namespace === ns &&
-                                 rp.requestId === updateId)
-      p  <- Packages.packages if (p.namespace === ns &&
-                                  p.name === rp.packageName &&
-                                  p.version === rp.packageVersion)
+      r  <- updateRequests if r.id === updateId
+      us <- updateSpecs if us.device === device && us.requestId === r.id
+      rp <- requiredPackages if rp.device === device && rp.requestId === updateId
+      p  <- Packages.packages if p.uuid === rp.packageUuid
     } yield (r.signature, p)
 
     q.result map { rows =>
@@ -187,10 +174,11 @@ object UpdateSpecs {
     */
   def getDevicesQueuedForPackage(ns: Namespace, pkgName: PackageId.Name, pkgVer: PackageId.Version) :
     DBIO[Seq[Device.Id]] = {
-    val specs = updateSpecs.filter(r => r.namespace === ns && r.status === UpdateStatus.Pending)
     val q = for {
-      s <- specs
-      u <- updateRequests if (s.requestId === u.id) && (u.packageName === pkgName) && (u.packageVersion === pkgVer)
+      s <- updateSpecs if s.status === UpdateStatus.Pending
+      u <- updateRequests if s.requestId === u.id
+      pkg <- Packages.packages if pkg.namespace === ns && pkg.name === pkgName && pkg.version === pkg.version &&
+      u.packageUuid === pkg.uuid
     } yield s.device
     q.result
   }
@@ -231,24 +219,6 @@ object UpdateSpecs {
     * The [[UpdateSpec]]-s (excluding dependencies but including status) for the given [[UpdateRequest]].
     * Each element in the result corresponds to a different device.
     */
-  def listUpdatesById(updateRequestId: Refined[String, Uuid]): DBIO[Seq[UpdateSpecTableRowType]] =
+  def listUpdatesById(updateRequestId: Refined[String, Uuid]): DBIO[Seq[UpdateSpecRow]] =
     updateSpecs.filter(s => s.requestId === UUID.fromString(updateRequestId.get)).result
-
-  /**
-    * Delete all the updates for a specific device
-    * This is part of the process for deleting a device from the system
-    *
-    * @param device The device to get the device to delete from
-    */
-  def deleteUpdateSpecByDevice(ns: Namespace, device: Device.Id) : DBIO[Int] =
-    updateSpecs.filter(s => s.namespace === ns && s.device === device).delete
-
-  /**
-    * Delete all the required packages that are needed for a device.
-    * This is part of the process for deleting a device from the system
-    *
-    * @param device The device to get the device to delete from
-    */
-  def deleteRequiredPackageByDevice(ns: Namespace, device: Device.Id) : DBIO[Int] =
-    requiredPackages.filter(rp => rp.namespace === ns && rp.device === device).delete
 }

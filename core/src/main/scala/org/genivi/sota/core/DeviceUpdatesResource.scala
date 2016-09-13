@@ -39,7 +39,10 @@ import cats.syntax.show.toShowOps
 import org.genivi.sota.http.AuthDirectives.AuthScope
 import org.genivi.sota.messaging.Messages.DeviceSeen
 import org.genivi.sota.messaging.MessageBusPublisher
-import shapeless.HNil
+import shapeless._
+import org.genivi.sota.core.data.client.PendingUpdateRequest._
+import ResponseConversions._
+import UpdateSpec._
 
 class DeviceUpdatesResource(db: Database,
                             resolverClient: ExternalResolverClient,
@@ -108,14 +111,9 @@ class DeviceUpdatesResource(db: Database,
     * @see [[data.UpdateStatus]] (two of interest: InFlight and Pending)
     */
   def pendingPackages(device: Device.Id, includeInFlight: Boolean = true): Route = {
-    import org.genivi.sota.core.data.client.PendingUpdateRequest._
-    import ResponseConversions._
-    import UpdateSpec._
-
     val vehiclePackages =
       DeviceUpdates
         .findPendingPackageIdsFor(device, includeInFlight)
-        .map { _.map { case (ur, us, updatedAt) ⇒ (ur, us :: updatedAt :: HNil) } }
         .map(_.toResponse)
 
     complete(db.run(vehiclePackages))
@@ -164,7 +162,9 @@ class DeviceUpdatesResource(db: Database,
     */
   def queueDeviceUpdate(ns: Namespace, device: Device.Id): Route = {
     entity(as[PackageId]) { packageId =>
-      val result = updateService.queueDeviceUpdate(ns, device, packageId)
+      val result = updateService.queueDeviceUpdate(ns, device, packageId).map { case (ur, us, updateTime) =>
+        ur.toResponse((us.status, packageId, updateTime))
+      }
       complete(result)
     }
   }
@@ -218,7 +218,7 @@ class DeviceUpdatesResource(db: Database,
     * The web app PUT the status of the given ([[UpdateSpec]], device) to [[UpdateStatus.Canceled]]
     */
   def cancelUpdate(deviceId: Device.Id, updateId: Refined[String, Uuid]): Route = {
-    val response = db.run(UpdateSpecs.cancelUpdate(deviceId, updateId)).map(_ ⇒ StatusCodes.NoContent)
+    val response = db.run(UpdateSpecs.cancelUpdate(deviceId, updateId)).map(_ => StatusCodes.NoContent)
     complete(response)
   }
 

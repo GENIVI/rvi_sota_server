@@ -19,25 +19,28 @@ import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import slick.driver.MySQLDriver.api._
 
 
-class HistoryResource(db: Database, namespaceExtractor: Directive1[Namespace])
+class HistoryResource(db: Database)
                      (implicit system: ActorSystem) extends Directives {
 
   import Device.{Id, ValidId}
   import CirceMarshallingSupport._
+  import org.genivi.sota.core.data.client.ResponseConversions._
+  import org.genivi.sota.core.data.ClientInstallHistory._
 
   /**
     * A web app GET all install attempts, a Seq of [[InstallHistory]], for the given device
     */
-  def history(ns: Namespace, device: Id): Route = {
-    complete(db.run(InstallHistories.list(ns, device)))
+  def history(device: Id): Route = {
+    extractExecutionContext { implicit ec =>
+      val f = db.run(InstallHistories.list(device)).map(_.toResponse)
+      complete(f)
+    }
   }
 
   val route =
     (pathPrefix("history") & parameter('uuid.as[String Refined Device.ValidId])) { uuid =>
-      namespaceExtractor { ns =>
-        (get & pathEnd) {
-          history(ns, Device.Id(uuid))
-        }
+      (get & pathEnd) {
+        history(Device.Id(uuid))
       }
     }
 }

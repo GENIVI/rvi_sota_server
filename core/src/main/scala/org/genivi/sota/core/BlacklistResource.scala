@@ -26,6 +26,8 @@ class BlacklistResource(namespaceExtractor: Directive1[Namespace],
 
   import akka.http.scaladsl.server.Directives._
   import PackagesResource.extractPackageId
+  import org.genivi.sota.core.data.client.ResponseConversions._
+  import org.genivi.sota.core.db.BlacklistedPackageResponse._
 
   implicit val _ec = system.dispatcher
 
@@ -46,10 +48,10 @@ class BlacklistResource(namespaceExtractor: Directive1[Namespace],
     }
 
   def getNamespaceBlacklist(namespace: Namespace): Route =
-    complete(BlacklistedPackages.findFor(namespace))
+    complete(BlacklistedPackages.findFor(namespace).map(_.toResponse))
 
   def getPackageBlacklist(namespace: Namespace, packageId: PackageId): Route =
-    complete(BlacklistedPackages.findFor(namespace))
+    complete(BlacklistedPackages.findFor(namespace).map(_.toResponse))
 
   def deletePackageBlacklist(namespace: Namespace, packageId: PackageId): Route =
     complete(BlacklistedPackages.remove(namespace, packageId).map(_ => StatusCodes.OK))

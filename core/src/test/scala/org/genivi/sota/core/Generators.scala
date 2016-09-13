@@ -40,27 +40,28 @@ trait Generators {
   } yield PackageId( name, version )
 
   val PackageGen: Gen[Package] = for {
+    uuid    <- Gen.uuid
     id      <- PackageIdGen
     size    <- Gen.choose(1000L, 999999999L)
     cs      <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaChar)
     desc    <- Gen.option(Gen.alphaStr)
     vendor  <- Gen.option(Gen.alphaStr)
-  } yield Package(defaultNs, id, Uri(path = Uri.Path / "tmp" / s"${id.name.get}-${id.version.get}.rpm"),
+  } yield Package(defaultNs, uuid, id, Uri(path = Uri.Path / "tmp" / s"${id.name.get}-${id.version.get}.rpm"),
                   size, cs.mkString, desc, vendor, None)
 
   implicit val arbitrayPackage: Arbitrary[Package] = Arbitrary( PackageGen )
 
-  def updateRequestGen(namespaceGen: Gen[Namespace], packageIdGen : Gen[PackageId]) : Gen[UpdateRequest] = for {
-    ns           <- namespaceGen
-    packageId    <- packageIdGen
+  def updateRequestGen(packageUuidGen : Gen[UUID]) : Gen[UpdateRequest] = for {
+    id           <- Gen.uuid
+    packageUuid  <-  packageUuidGen
     startAfter   <- Gen.choose(10, 100).map( d => Instant.now.plus(Duration.ofDays(d)) )
     finishBefore <- Gen.choose(10, 100).map( x => startAfter.plus(Duration.ofDays(x)) )
     prio         <- Gen.choose(1, 10)
     sig          <- Gen.alphaStr
     desc         <- Gen.option(Gen.alphaStr)
     reqConfirm   <- Arbitrary.arbitrary[Boolean]
-  } yield UpdateRequest(UUID.randomUUID(), ns, packageId, Instant.now, Interval(startAfter, finishBefore),
-                        prio, sig, desc, reqConfirm)
+  } yield UpdateRequest(id, packageUuid, Instant.now, Interval(startAfter, finishBefore),
+      prio, sig, desc, reqConfirm)
 
   def vinDepGen(packages: Seq[Package]) : Gen[(Device.Id, Set[PackageId])] = for {
     vin               <- DeviceGenerators.genId
@@ -104,7 +105,7 @@ trait Generators {
     smallSize <- Gen.chooseNum(1024, 1024 * 10)
     packageModel <- PackageGen.map(_.copy(size = smallSize.toLong))
     packageWithUri = Generators.generatePackageData(packageModel)
-    updateRequest <- updateRequestGen(defaultNs, PackageIdGen).map(_.copy(packageId = packageWithUri.id))
+    updateRequest <- updateRequestGen(Gen.uuid).map(_.copy(packageUuid = packageWithUri.uuid))
   } yield {
     val dt =
       if (withMillis >= 0) { Instant.ofEpochMilli(withMillis) }

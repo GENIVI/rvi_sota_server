@@ -4,6 +4,8 @@
  */
 package org.genivi.sota.core
 
+import java.util.UUID
+
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.Path
@@ -55,10 +57,13 @@ class PackageResourceWordSpec extends WordSpec
   lazy val service = new PackagesResource(externalResolverClient, db, messageBusPublisher, defaultNamespaceExtractor)
 
   val testPackagesParams = List(
-    ("default", "vim", "7.0.1"), ("default", "vim", "7.1.1"),
-    ("default", "go", "1.4.0"), ("default", "go", "1.5.0"), ("default", "scala", "2.11.0"))
+    ("default", "vim", "7.0.1", UUID.randomUUID()),
+    ("default", "vim", "7.1.1", UUID.randomUUID()),
+    ("default", "go", "1.4.0", UUID.randomUUID()),
+    ("default", "go", "1.5.0", UUID.randomUUID()),
+    ("default", "scala", "2.11.0", UUID.randomUUID()))
   val testPackages:List[DataPackage] = testPackagesParams.map { pkg =>
-    DataPackage(Namespace(pkg._1), PackageId(Refined.unsafeApply(pkg._2), Refined.unsafeApply(pkg._3)),
+    DataPackage(Namespace(pkg._1), pkg._4, PackageId(Refined.unsafeApply(pkg._2), Refined.unsafeApply(pkg._3)),
                 Uri("www.example.com"), 123, "123", None, None, None)
   }
 

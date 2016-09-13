@@ -4,6 +4,8 @@
  */
 package org.genivi.sota.core
 
+import java.util.UUID
+
 import akka.Done
 import akka.actor.ActorSystem
 import akka.event.Logging
@@ -114,7 +116,8 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
       val resultF = for {
         _ <- resolver.putPackage(ns, pid, description, vendor)
         (uri, size, digest) <- packageStorageOp(pid, ns.get, file)
-        pkg <- db.run(Packages.create(Package(ns, pid, uri, size, digest, description, vendor, signature)))
+        newPkg = Package(ns, UUID.randomUUID(), pid, uri, size, digest, description, vendor, signature)
+        pkg <- db.run(Packages.create(newPkg))
       } yield StatusCodes.NoContent
 
       resultF.pipeToBus(messageBusPublisher)(_ => PackageCreated(ns, pid, description, vendor, signature))
