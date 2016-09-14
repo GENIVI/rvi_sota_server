@@ -100,7 +100,7 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
                     idsToPackages: Map[PackageId, Package]): Set[UpdateSpec] = {
     vinsToPackageIds.map {
       case (device, requiredPackageIds) =>
-        UpdateSpec(request, device, UpdateStatus.Pending, requiredPackageIds map idsToPackages, 0, Instant.now)
+        UpdateSpec.default(request, device).copy(dependencies = requiredPackageIds.map(idsToPackages))
     }.toSet
   }
 

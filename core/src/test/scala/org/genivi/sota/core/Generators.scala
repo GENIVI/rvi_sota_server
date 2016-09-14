@@ -109,8 +109,7 @@ trait Generators {
     val dt =
       if (withMillis >= 0) { Instant.ofEpochMilli(withMillis) }
       else { Instant.now }
-    val updateSpec = UpdateSpec(updateRequest, device,
-      UpdateStatus.Pending, List(packageWithUri ).toSet, 0, dt)
+    val updateSpec = UpdateSpec(updateRequest, device, UpdateStatus.Pending, List(packageWithUri ).toSet, 0, dt, dt)
 
     (packageWithUri, updateSpec)
   }

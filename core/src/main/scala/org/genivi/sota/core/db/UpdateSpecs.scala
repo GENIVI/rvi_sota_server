@@ -38,7 +38,7 @@ object UpdateSpecs {
 
   implicit val UpdateStatusColumn = MappedColumnType.base[UpdateStatus, String](_.value.toString, UpdateStatus.withName)
 
-  type UpdateSpecTableRowType = (Namespace, UUID, Device.Id, UpdateStatus, Int, Instant)
+  type UpdateSpecTableRowType = (Namespace, UUID, Device.Id, UpdateStatus, Int, Instant, Instant)
 
   // scalastyle:off
   /**
@@ -53,13 +53,13 @@ object UpdateSpecs {
     def status = column[UpdateStatus]("status")
     def installPos = column[Int]("install_pos")
     def creationTime = column[Instant]("creation_time")
-
+    def updateTime = column[Instant]("update_time")
 
     // insertOrUpdate buggy for composite-keys, see Slick issue #966.
     // given `id` is already unique across namespaces, no need to include namespace.
     def pk = primaryKey("pk_update_specs", (requestId, device))
 
-    def * = (namespace, requestId, device, status, installPos, creationTime)
+    def * = (namespace, requestId, device, status, installPos, creationTime, updateTime)
   }
   // scalastyle:on
 
@@ -103,7 +103,7 @@ object UpdateSpecs {
   def persist(updateSpec: UpdateSpec) : DBIO[Unit] = {
     val specProjection = (
       updateSpec.namespace, updateSpec.request.id, updateSpec.device,
-      updateSpec.status, updateSpec.installPos, updateSpec.creationTime)
+      updateSpec.status, updateSpec.installPos, updateSpec.creationTime, updateSpec.updateTime)
 
     def dependencyProjection(p: Package) =
       // TODO: we're taking the namespace of the update spec, not necessarily the namespace of the package!
@@ -208,8 +208,8 @@ object UpdateSpecs {
   def setStatus(device: Device.Id, updateRequestId: UUID, newStatus: UpdateStatus): DBIO[Int] = {
     updateSpecs
       .filter(row => row.device === device && row.requestId === updateRequestId)
-      .map(_.status)
-      .update(newStatus)
+      .map(u ⇒ (u.status, u.updateTime))
+      .update(newStatus, Instant.now)
       .transactionally
   }
 
@@ -219,18 +219,12 @@ object UpdateSpecs {
     *
     * @param uuid of the [[UpdateRequest]] being cancelled for the given device
     */
-  def cancelUpdate(device: Device.Id, uuid: Refined[String, Uuid])(implicit ec: ExecutionContext): DBIO[Int] = {
+  def cancelUpdate(device: Device.Id, uuid: Refined[String, Uuid])(implicit ec: ExecutionContext): DBIO[Unit] = {
     updateSpecs
       .filter(us => us.device === device && us.requestId === uuid && us.status === UpdateStatus.Pending)
-      .map(_.status)
-      .update(UpdateStatus.Canceled)
-      .flatMap { rowsAffected =>
-        if (rowsAffected == 1) {
-          DBIO.successful(rowsAffected)
-        } else {
-          DBIO.failed(MissingEntity(classOf[UpdateSpec]))
-        }
-      }
+      .map(u ⇒ (u.status, u.updateTime))
+      .update(UpdateStatus.Canceled, Instant.now)
+      .handleSingleUpdateError(MissingEntity(classOf[UpdateSpec]))
   }
 
   /**

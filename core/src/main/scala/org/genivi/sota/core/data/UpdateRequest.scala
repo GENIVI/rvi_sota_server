@@ -99,7 +99,8 @@ case class UpdateSpec(
   status: UpdateStatus,
   dependencies: Set[Package],
   installPos: Int,
-  creationTime: Instant
+  creationTime: Instant,
+  updateTime: Instant
 ) {
 
   def namespace: Namespace = request.namespace
@@ -119,7 +120,7 @@ object UpdateSpec {
   implicit val updateStatusDecoder : Decoder[UpdateStatus] = Decoder[String].map(UpdateStatus.withName)
 
   def default(request: UpdateRequest, device: Device.Id): UpdateSpec = {
-    UpdateSpec(request, device, UpdateStatus.Pending, Set.empty, 0, Instant.now)
+    UpdateSpec(request, device, UpdateStatus.Pending, Set.empty, 0, Instant.now, Instant.now)
   }
 }
 
