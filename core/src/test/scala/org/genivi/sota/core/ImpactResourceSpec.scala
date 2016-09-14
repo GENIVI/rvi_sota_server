@@ -13,7 +13,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 import org.genivi.sota.http.NamespaceDirectives._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import org.genivi.sota.marshalling.CirceInstances._
+import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import io.circe.generic.auto._
 
 class ImpactResourceSpec
@@ -41,9 +41,9 @@ class ImpactResourceSpec
 
     Get("/impact/blacklist") ~> route ~> check {
       status shouldBe StatusCodes.OK
-      val resp = responseAs[Seq[(Device.Id, PackageId)]]
+      val resp = responseAs[Seq[Map[Device.Id, PackageId]]]
 
-      resp should contain((device.id, pkg.id))
+      resp should contain(Map(device.id → pkg.id))
     }
   }
 }

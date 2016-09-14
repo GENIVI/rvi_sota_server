@@ -115,14 +115,15 @@ trait CirceInstances {
   implicit val deviceNameEncoder: Encoder[Device.DeviceName] = Encoder[String].contramap(_.show)
   implicit val deviceNameDecoder: Decoder[Device.DeviceName] = Decoder[String].map(Device.DeviceName)
 
-  implicit val deviceIdEncoder: Encoder[Device.DeviceId] =
-    Encoder[String].contramap(_.show)
+  implicit val deviceIdEncoder: Encoder[Device.DeviceId] = Encoder[String].contramap(_.show)
   implicit val deviceIdDecoder: Decoder[Device.DeviceId] = Decoder[String].map(Device.DeviceId)
 
   implicit val deviceIdKeyDecoder: KeyDecoder[Device.Id] =
     KeyDecoder.instance[Device.Id] { v =>
       refineV[Device.ValidId](v).right.toOption.map(Device.Id)
     }
+
+  implicit val deviceIdKeyEncoder: KeyEncoder[Device.Id] = KeyEncoder.instance[Device.Id](_.show)
 
   implicit def showableKeyEncoder[K](implicit show: Show[K]): KeyEncoder[K] =
     KeyEncoder.instance[K](_.show)
