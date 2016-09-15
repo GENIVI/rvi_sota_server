@@ -83,9 +83,11 @@ class Routes(namespaceExtractor: Directive1[Namespace],
   def updateSystemInfo(id: Id, data: Json): Route =
     complete(db.run(SystemInfo.update(id, data)))
 
-  def fetchGroupInfo(groupName: Name, ns: Namespace): Route = {
+  def listGroups(ns: Namespace): Route =
+    complete(db.run(GroupInfo.list(ns)))
+
+  def fetchGroupInfo(groupName: Name, ns: Namespace): Route =
     complete(db.run(GroupInfo.findByName(groupName, ns)))
-  }
 
   def createGroupInfo(groupName: Name, namespace: Namespace, data: Json): Route =
     complete(Created -> db.run(GroupInfo.create(groupName, namespace, data)))
@@ -121,17 +123,24 @@ class Routes(namespaceExtractor: Directive1[Namespace],
     ErrorHandler.handleErrors {
       pathPrefix("devices") {
         namespaceExtractor { ns =>
-          (get & extractGroupName & path("group_info") & pathEnd) { groupName =>
-            fetchGroupInfo(groupName, ns)
+          (get & path("group_info") & pathEnd) {
+            listGroups(ns)
           } ~
-          (post & extractGroupName & path("group_info") & pathEnd) { groupName =>
-            entity(as[Json]) { body => createGroupInfo(groupName, ns, body) }
-          } ~
-          (put & extractGroupName & path("group_info") & pathEnd) { groupName =>
-            entity(as[Json]) { body => updateGroupInfo(groupName, ns, body) }
-          } ~
-          (delete & extractGroupName & path("group_info") & pathEnd) { groupName =>
-            deleteGroupInfo(groupName, ns)
+          (extractGroupName & path("group_info") & pathEnd) { groupName =>
+             {
+              get {
+                fetchGroupInfo(groupName, ns)
+              } ~
+              post {
+                entity(as[Json]) { body => createGroupInfo(groupName, ns, body) }
+              } ~
+              put {
+                entity(as[Json]) { body => updateGroupInfo(groupName, ns, body) }
+              } ~
+              delete {
+                deleteGroupInfo(groupName, ns)
+              }
+            }
           } ~
           (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
           (extractId & put & entity(as[DeviceT]) & pathEnd) { (id, device) =>

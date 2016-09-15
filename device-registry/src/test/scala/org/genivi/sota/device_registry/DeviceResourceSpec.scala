@@ -13,7 +13,6 @@ import org.genivi.sota.data.{Device, DeviceGenerators, DeviceT, RegexGenerators,
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import SimpleJsonGenerator.simpleJsonGen
 
 import org.scalacheck._
 
@@ -399,6 +398,30 @@ class DeviceResourceSpec extends ResourcePropSpec {
       }
 
       deleteDeviceOk(id)
+    }
+  }
+
+  property("GET all groups lists all groups") {
+    forAll(genGroupInfoList) { groups =>
+      groups.foreach { case GroupInfo.GroupInfo(groupName, namespace, groupInfoJson) =>
+        createGroupInfo(groupName, namespace, groupInfoJson) ~> route ~> check {
+          status shouldBe Created
+        }
+      }
+
+      listGroups(defaultNs) ~> route ~> check {
+        //need to sort lists so shouldEqual works
+        val resp = responseAs[Seq[GroupInfo.GroupInfo]].sortBy(_.groupName.toString)
+        val sortedGroups = groups.sortBy(_.groupName.toString)
+        resp shouldEqual sortedGroups
+        status shouldBe OK
+      }
+
+      groups.foreach { case GroupInfo.GroupInfo(groupName, _, _) =>
+        deleteGroupInfo(groupName, defaultNs) ~> route ~> check {
+          status shouldBe OK
+        }
+      }
     }
   }
 
