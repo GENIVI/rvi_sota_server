@@ -208,8 +208,8 @@ object UpdateSpecs {
   def setStatus(device: Device.Id, updateRequestId: UUID, newStatus: UpdateStatus): DBIO[Int] = {
     updateSpecs
       .filter(row => row.device === device && row.requestId === updateRequestId)
-      .map(u ⇒ (u.status, u.updateTime))
-      .update(newStatus, Instant.now)
+      .map(_.status)
+      .update(newStatus)
       .transactionally
   }
 
@@ -222,8 +222,8 @@ object UpdateSpecs {
   def cancelUpdate(device: Device.Id, uuid: Refined[String, Uuid])(implicit ec: ExecutionContext): DBIO[Unit] = {
     updateSpecs
       .filter(us => us.device === device && us.requestId === uuid && us.status === UpdateStatus.Pending)
-      .map(u ⇒ (u.status, u.updateTime))
-      .update(UpdateStatus.Canceled, Instant.now)
+      .map(_.status)
+      .update(UpdateStatus.Canceled)
       .handleSingleUpdateError(MissingEntity(classOf[UpdateSpec]))
   }
 
