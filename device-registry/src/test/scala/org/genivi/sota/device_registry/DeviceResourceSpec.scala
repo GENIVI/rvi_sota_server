@@ -2,20 +2,20 @@
  * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
-package org.genivi.sota.device_registry.test
+package org.genivi.sota.device_registry
 
 import akka.http.scaladsl.model.StatusCodes
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import io.circe.Json
-import org.genivi.sota.data.{Device, DeviceT, DeviceGenerators, SimpleJsonGenerator,RegexGenerators}
+import org.genivi.sota.data.{Device, DeviceGenerators, DeviceT, RegexGenerators, SimpleJsonGenerator}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import SimpleJsonGenerator.simpleJsonGen
 
 import org.scalacheck._
-
 
 /**
  * Spec for DeviceRepository REST actions
@@ -65,11 +65,9 @@ class DeviceResourceSpec extends ResourcePropSpec {
   }
 
   property("GET /group_info request fails on non-existent device") {
-    forAll { (json: Json, groupName: String) =>
-      whenever (! groupName.isEmpty && ! json.isNull) {
-        fetchGroupInfo (groupName, defaultNs) ~> route ~> check {
-          status shouldBe NotFound
-        }
+    forAll(genGroupName) { groupName =>
+      fetchGroupInfo (groupName, defaultNs) ~> route ~> check {
+        status shouldBe NotFound
       }
     }
   }
@@ -79,6 +77,9 @@ class DeviceResourceSpec extends ResourcePropSpec {
       val id: Id = createDeviceOk(devicePre)
 
       fetchDevice(id) ~> route ~> check {
+        if(status.equals(BadRequest)) {
+          println(s"OUTPUT2: ${response.entity.toString}")
+        }
         status shouldBe OK
         val devicePost: Device = responseAs[Device]
         devicePost.deviceId shouldBe devicePre.deviceId
@@ -402,24 +403,22 @@ class DeviceResourceSpec extends ResourcePropSpec {
   }
 
   property("GET group_info after POST should return what was posted.") {
-    forAll { (groupName: String, json1: Json) =>
-      whenever(!groupName.isEmpty && !json1.isNull) {
-        createGroupInfo(groupName, defaultNs, json1) ~> route ~> check {
-          status shouldBe Created
-        }
+    forAll(genGroupName, simpleJsonGen) { (groupName, json1) =>
+      createGroupInfo(groupName, defaultNs, json1) ~> route ~> check {
+        status shouldBe Created
+      }
 
-        fetchGroupInfo(groupName, defaultNs) ~> route ~> check {
-          status shouldBe OK
-          val json2: Json = responseAs[Json]
-          json1 shouldBe json2
-        }
+      fetchGroupInfo(groupName, defaultNs) ~> route ~> check {
+        status shouldBe OK
+        val json2: Json = responseAs[Json]
+        json1 shouldBe json2
       }
     }
   }
 
   property("GET group_info after PUT should return what was updated.") {
-    forAll { (groupName: String, json1: Json, json2: Json) =>
-      whenever(!groupName.isEmpty && !json1.isNull && !json2.isNull) {
+    forAll(genGroupName, simpleJsonGen, simpleJsonGen) { (groupName, json1, json2) =>
+      whenever(!json1.isNull && !json2.isNull) {
         createGroupInfo(groupName, defaultNs, json1) ~> route ~> check {
           status shouldBe Created
         }
@@ -438,37 +437,31 @@ class DeviceResourceSpec extends ResourcePropSpec {
   }
 
   property("PUT group_info if not previously created should create it.") {
-    forAll { (groupName: String, json: Json) =>
+    forAll(genGroupName, simpleJsonGen) { (groupName, json) =>
+      updateGroupInfo(groupName, defaultNs, json) ~> route ~> check {
+        status shouldBe OK
+      }
 
-      whenever(!groupName.isEmpty && !json.isNull) {
-        updateGroupInfo(groupName, defaultNs, json) ~> route ~> check {
-          status shouldBe OK
-        }
-
-        fetchGroupInfo(groupName, defaultNs) ~> route ~> check {
-          status shouldBe OK
-          val json2: Json = responseAs[Json]
-          json shouldBe json2
-        }
+      fetchGroupInfo(groupName, defaultNs) ~> route ~> check {
+        status shouldBe OK
+        val json2: Json = responseAs[Json]
+        json shouldBe json2
       }
     }
   }
 
   property("DELETE group_info should delete group.") {
-    forAll { (groupName: String, json: Json) =>
+    forAll(genGroupName, simpleJsonGen) { (groupName, json) =>
+      createGroupInfo(groupName, defaultNs, json) ~> route ~> check {
+        status shouldBe Created
+      }
 
-      whenever(!groupName.isEmpty && !json.isNull) {
-        createGroupInfo(groupName, defaultNs, json) ~> route ~> check {
-          status shouldBe Created
-        }
+      deleteGroupInfo(groupName, defaultNs) ~> route ~> check {
+        status shouldBe OK
+      }
 
-        deleteGroupInfo(groupName, defaultNs) ~> route ~> check {
-          status shouldBe OK
-        }
-
-        fetchGroupInfo(groupName, defaultNs) ~> route ~> check {
-          status shouldBe NotFound
-        }
+      fetchGroupInfo(groupName, defaultNs) ~> route ~> check {
+        status shouldBe NotFound
       }
     }
   }

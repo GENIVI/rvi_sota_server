@@ -8,8 +8,6 @@ import eu.timepit.refined.api.Refined
 import org.scalacheck.{Arbitrary, Gen}
 import java.time.Instant
 
-import org.genivi.sota.data.Device.DeviceId
-
 trait DeviceGenerators {
 
   import Arbitrary._

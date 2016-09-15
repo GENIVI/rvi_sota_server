@@ -13,7 +13,6 @@ import akka.http.scaladsl.server.{Directive1, Route}
 import akka.stream._
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.ByteString
-import cats.data.OptionT
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import org.genivi.sota.core.data.Package
@@ -26,7 +25,6 @@ import org.genivi.sota.data.PackageId
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.messaging.Messages.PackageCreated
 import org.genivi.sota.messaging.MessageBusPublisher
-import org.genivi.sota.rest.ErrorRepresentation
 import org.genivi.sota.rest.Validation._
 import slick.driver.MySQLDriver.api.Database
 import org.genivi.sota.core.data.client.ResponseConversions._

@@ -6,18 +6,17 @@ package org.genivi.sota.device_registry
 
 import cats.syntax.show._
 import akka.actor.ActorSystem
-import akka.http.scaladsl.marshalling.Marshal
-import akka.http.scaladsl.model.{HttpResponse, ResponseEntity, StatusCodes, Uri}
+import akka.http.scaladsl.model.{StatusCodes, Uri}
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.unmarshalling.{FromStringUnmarshaller, Unmarshaller}
 import akka.stream.ActorMaterializer
-import eu.timepit.refined._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.data.{Device, DeviceT, Namespace}
+import org.genivi.sota.device_registry.GroupInfo.Name
 import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
@@ -45,6 +44,8 @@ class Routes(namespaceExtractor: Directive1[Namespace],
 
   val extractId: Directive1[Id] = refined[ValidId](Slash ~ Segment).map(Id)
   val extractDeviceId: Directive1[DeviceId] = parameter('deviceId.as[String]).map(DeviceId)
+  val extractGroupName: Directive1[GroupInfo.Name] =
+    refined[GroupInfo.ValidName](Slash ~ Segment)
 
   def searchDevice(ns: Namespace): Route =
     parameters(('regex.as[String Refined Regex].?,
@@ -82,21 +83,18 @@ class Routes(namespaceExtractor: Directive1[Namespace],
   def updateSystemInfo(id: Id, data: Json): Route =
     complete(db.run(SystemInfo.update(id, data)))
 
-  def fetchGroupInfo(groupName: String, ns: Namespace): Route =
-      complete(db.run(GroupInfo.findByName(groupName, ns)))
-
-  def createGroupInfo(groupName: String, namespace: Namespace, data: Json): Route = {
-    if (groupName.isEmpty) { complete(BadRequest -> "Group name cannot be empty") }
-    else { complete(Created -> db.run(GroupInfo.create(groupName, namespace, data))) }
+  def fetchGroupInfo(groupName: Name, ns: Namespace): Route = {
+    complete(db.run(GroupInfo.findByName(groupName, ns)))
   }
 
-  def updateGroupInfo(groupName: String, namespace: Namespace, data: Json): Route = {
-    if (groupName.isEmpty) { complete(BadRequest -> "Group name cannot be empty") }
-    else { complete(db.run(GroupInfo.update(groupName, namespace, data))) }
-  }
-  def deleteGroupInfo(groupName: String, namespace: Namespace): Route = {
+  def createGroupInfo(groupName: Name, namespace: Namespace, data: Json): Route =
+    complete(Created -> db.run(GroupInfo.create(groupName, namespace, data)))
+
+  def updateGroupInfo(groupName: Name, namespace: Namespace, data: Json): Route =
+    complete(db.run(GroupInfo.update(groupName, namespace, data)))
+
+  def deleteGroupInfo(groupName: Name, namespace: Namespace): Route =
     complete(db.run(GroupInfo.delete(groupName, namespace)))
-  }
 
   def fetchDevice(id: Id): Route =
     complete(db.run(DeviceRepository.findById(id)))
@@ -122,48 +120,45 @@ class Routes(namespaceExtractor: Directive1[Namespace],
   def api: Route =
     ErrorHandler.handleErrors {
       pathPrefix("devices") {
-          (extractId & post & path("ping")) { id =>
-            updateLastSeen(id)
+        namespaceExtractor { ns =>
+          (get & extractGroupName & path("group_info") & pathEnd) { groupName =>
+            fetchGroupInfo(groupName, ns)
           } ~
-          (extractId & get & path("system_info") & pathEnd) { id =>
-            fetchSystemInfo(id)
+          (post & extractGroupName & path("group_info") & pathEnd) { groupName =>
+            entity(as[Json]) { body => createGroupInfo(groupName, ns, body) }
           } ~
-          (extractId & post & path("system_info") & pathEnd) { id =>
-            entity(as[Json]) {body => createSystemInfo(id, body)}
+          (put & extractGroupName & path("group_info") & pathEnd) { groupName =>
+            entity(as[Json]) { body => updateGroupInfo(groupName, ns, body) }
           } ~
-          (extractId & put & path("system_info") & pathEnd) { id =>
-            entity(as[Json]) {body => updateSystemInfo(id, body)}
+          (delete & extractGroupName & path("group_info") & pathEnd) { groupName =>
+            deleteGroupInfo(groupName, ns)
           } ~
-          (extractId & get & pathEnd) { id =>
-            fetchDevice(id)
+          (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
+          (extractId & put & entity(as[DeviceT]) & pathEnd) { (id, device) =>
+            updateDevice(ns, id, device)
           } ~
-          (get & pathEnd & parameter('namespace.as[Namespace])) { ns =>
-            searchDevice(ns)
-          } ~ {
-            namespaceExtractor { ns =>
-              (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
-                extractId { id =>
-                  (put & entity(as[DeviceT]) & pathEnd) { device =>
-                    updateDevice(ns, id, device)
-                  } ~
-                    (delete & pathEnd) {
-                      deleteDevice(ns, id)
-                    }
-                } ~
-                (get & path("group_info") & pathEnd & parameter('groupName.as[String])) {
-                  groupName => fetchGroupInfo(groupName, ns)
-                } ~
-                (post & path("group_info") & pathEnd & parameter('groupName.as[String])) { groupName =>
-                  entity(as[Json]) { body => createGroupInfo(groupName, ns, body) }
-                } ~
-                (put & path("group_info") & pathEnd & parameter('groupName.as[String])) { groupName =>
-                  entity(as[Json]) { body => updateGroupInfo(groupName, ns, body) }
-                } ~
-                (delete & path("group_info") & pathEnd & parameter('groupName.as[String])) { groupName =>
-                  deleteGroupInfo(groupName, ns)
-                }
-            }
+          (extractId & delete & pathEnd) { id =>
+            deleteDevice(ns, id)
           }
+        } ~
+        (extractId & post & path("ping")) { id =>
+          updateLastSeen(id)
+        } ~
+        (extractId & get & path("system_info") & pathEnd) { id =>
+          fetchSystemInfo(id)
+        } ~
+        (extractId & post & path("system_info") & pathEnd) { id =>
+          entity(as[Json]) {body => createSystemInfo(id, body)}
+        } ~
+        (extractId & put & path("system_info") & pathEnd) { id =>
+          entity(as[Json]) {body => updateSystemInfo(id, body)}
+        } ~
+        (extractId & get & pathEnd) { id =>
+          fetchDevice(id)
+        } ~
+        (get & pathEnd & parameter('namespace.as[Namespace])) { ns =>
+          searchDevice(ns)
+        }
       }
     }
 

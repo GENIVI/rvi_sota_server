@@ -2,7 +2,7 @@
  * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
-package org.genivi.sota.device_registry.test
+package org.genivi.sota.device_registry
 
 import akka.http.scaladsl.client.RequestBuilding.{Delete, Get, Post, Put}
 import akka.http.scaladsl.model.Uri.{Path, Query}
@@ -11,6 +11,7 @@ import cats.Show
 import io.circe.generic.auto._
 import io.circe.Json
 import org.genivi.sota.data.{Device, DeviceT, Namespace}
+import org.genivi.sota.device_registry.GroupInfo.Name
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 
 import scala.concurrent.ExecutionContext
@@ -76,18 +77,18 @@ trait DeviceRequests {
                       (implicit s: Show[Id], ec: ExecutionContext): HttpRequest =
     Put(Resource.uri(api, s.show(id),"system_info"), json)
 
-  def fetchGroupInfo(groupName: String, namespace: Namespace): HttpRequest =
-    Get(Resource.uri(api, "group_info").withQuery(Query("namespace" -> namespace.get, "groupName" -> groupName)))
+  def fetchGroupInfo(groupName: Name, namespace: Namespace): HttpRequest =
+    Get(Resource.uri(api, groupName.get, "group_info").withQuery(Query("namespace" -> namespace.get)))
 
-  def createGroupInfo(groupName: String, namespace: Namespace, json: Json)
+  def createGroupInfo(groupName: Name, namespace: Namespace, json: Json)
                       (implicit ec: ExecutionContext): HttpRequest =
-    Post(Resource.uri(api, "group_info").withQuery(Query("namespace" -> namespace.get, "groupName" -> groupName)), json)
+    Post(Resource.uri(api, groupName.get, "group_info").withQuery(Query("namespace" -> namespace.get)), json)
 
-  def updateGroupInfo(groupName: String, namespace: Namespace, json: Json)
+  def updateGroupInfo(groupName: Name, namespace: Namespace, json: Json)
                       (implicit ec: ExecutionContext): HttpRequest =
-    Put(Resource.uri(api, "group_info").withQuery(Query("namespace" -> namespace.get, "groupName" -> groupName)), json)
+    Put(Resource.uri(api, groupName.get, "group_info").withQuery(Query("namespace" -> namespace.get)), json)
 
-  def deleteGroupInfo(groupName: String, namespace: Namespace)
+  def deleteGroupInfo(groupName: Name, namespace: Namespace)
                      (implicit ec: ExecutionContext): HttpRequest =
-    Delete(Resource.uri(api, "group_info").withQuery(Query("namespace" -> namespace.get, "groupName" -> groupName)))
+    Delete(Resource.uri(api, groupName.get, "group_info").withQuery(Query("namespace" -> namespace.get)))
 }
