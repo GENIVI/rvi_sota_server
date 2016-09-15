@@ -77,6 +77,9 @@ trait DeviceRequests {
                       (implicit s: Show[Id], ec: ExecutionContext): HttpRequest =
     Put(Resource.uri(api, s.show(id),"system_info"), json)
 
+  def listGroups(namespace: Namespace): HttpRequest =
+    Get(Resource.uri(api, "group_info").withQuery(Query("namespace" -> namespace.get)))
+
   def fetchGroupInfo(groupName: Name, namespace: Namespace): HttpRequest =
     Get(Resource.uri(api, groupName.get, "group_info").withQuery(Query("namespace" -> namespace.get)))
 

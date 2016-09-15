@@ -9,7 +9,7 @@ import akka.http.scaladsl.testkit.RouteTestTimeout
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import cats.data.Xor
 import org.genivi.sota.core.DatabaseSpec
-import org.genivi.sota.data.Namespace
+import org.genivi.sota.data.{Namespace, SimpleJsonGenerator}
 import org.genivi.sota.messaging.MessageBus
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
@@ -48,6 +48,19 @@ trait ResourceSpec extends
     strLen <- Gen.choose(2, 100)
     name   <- Gen.listOfN[Char](strLen, Gen.alphaNumChar)
   } yield Refined.unsafeApply(name.mkString)
+
+  val genGroupInfo: Gen[GroupInfo.GroupInfo] =
+    for {
+      name <- genGroupName
+      json <- SimpleJsonGenerator.simpleJsonGen
+    } yield GroupInfo.GroupInfo(name, defaultNs, json)
+
+  val genGroupInfoList: Gen[Seq[GroupInfo.GroupInfo]] = {
+    for {
+      len   <- Gen.chooseNum(2, 5)
+      infos <- Gen.listOfN(len, genGroupInfo).suchThat(l => l.length == l.distinct.length)
+    } yield infos
+  }
 
 }
 

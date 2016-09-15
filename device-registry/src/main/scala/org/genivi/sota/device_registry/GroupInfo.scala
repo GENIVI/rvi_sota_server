@@ -46,6 +46,9 @@ object GroupInfo extends SlickJsonHelper {
       ValidName()
     )
 
+  def list(namespace: Namespace)(implicit ec: ExecutionContext): DBIO[Seq[GroupInfo]] =
+    groupInfos.filter(g => g.namespace === namespace).result
+
   protected def getGroup(groupName: Name, namespace: Namespace) =
     groupInfos.filter(r => r.groupName === groupName && r.namespace === namespace)
 
