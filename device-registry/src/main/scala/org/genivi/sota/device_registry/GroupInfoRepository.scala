@@ -1,13 +1,13 @@
 /**
-  * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
-  * License: MPL-2.0
-  */
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
+ * License: MPL-2.0
+ */
 package org.genivi.sota.device_registry
 
 
 import eu.timepit.refined.api.{Refined, Validate}
 import io.circe.Json
-import org.genivi.sota.data.Namespace
+import org.genivi.sota.data.{GroupInfo, Namespace}
 import org.genivi.sota.device_registry.common.{Errors, SlickJsonHelper}
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.db.SlickExtensions._
@@ -15,10 +15,8 @@ import org.genivi.sota.refined.SlickRefined._
 
 import scala.concurrent.ExecutionContext
 
-object GroupInfo extends SlickJsonHelper {
-
-  type GroupInfoType = Json
-  case class GroupInfo(groupName: Name, namespace: Namespace, groupInfo: GroupInfoType)
+object GroupInfoRepository extends SlickJsonHelper {
+  import GroupInfo._
 
   // scalastyle:off
   class GroupInfoTable(tag: Tag) extends Table[GroupInfo] (tag, "DeviceGroup") {
@@ -33,18 +31,6 @@ object GroupInfo extends SlickJsonHelper {
 
   val groupInfos = TableQuery[GroupInfoTable]
 
-  case class ValidName()
-
-  type Name = Refined[String, ValidName]
-
-  implicit val validGroupName: Validate.Plain[String, ValidName] =
-    Validate.fromPredicate(
-      name => name.length > 1
-        && name.length <= 100
-        && name.forall(c => c.isLetter || c.isDigit),
-      name => s"($name should be between two and a hundred alphanumeric characters long.)",
-      ValidName()
-    )
 
   def list(namespace: Namespace)(implicit ec: ExecutionContext): DBIO[Seq[GroupInfo]] =
     groupInfos.filter(g => g.namespace === namespace).result

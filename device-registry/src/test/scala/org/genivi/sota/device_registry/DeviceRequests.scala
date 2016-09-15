@@ -10,8 +10,7 @@ import akka.http.scaladsl.model.{HttpRequest, Uri}
 import cats.Show
 import io.circe.generic.auto._
 import io.circe.Json
-import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
-import org.genivi.sota.device_registry.GroupInfo.Name
+import org.genivi.sota.data.{Device, DeviceT, GroupInfo, Namespace, Uuid}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 
 import scala.concurrent.ExecutionContext
@@ -34,6 +33,7 @@ object Resource {
 trait DeviceRequests {
 
   import Device._
+  import GroupInfo.Name
 
   val api = "devices"
 

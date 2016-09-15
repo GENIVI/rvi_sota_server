@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.device_registry.common
 
-import org.genivi.sota.device_registry.GroupInfo.GroupInfo
+import org.genivi.sota.data.GroupInfo
 import org.genivi.sota.device_registry.SystemInfo.SystemInfo
 import org.genivi.sota.http.Errors.{EntityAlreadyExists, MissingEntity, RawError}
 
