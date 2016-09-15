@@ -28,7 +28,8 @@ object UpdateNotifierSpec {
     device        <- deviceGen
     m             <- Gen.choose(1, 10)
     packages      <- Gen.pick(m, packages).map( _.toSet )
-  } yield UpdateSpec(updateRequest, device, UpdateStatus.Pending, packages, 0, Instant.now)
+    now = Instant.now
+  } yield UpdateSpec(updateRequest, device, UpdateStatus.Pending, packages, 0, now, now)
 
   def updateSpecsGen(namespaceGen: Gen[Namespace], deviceGen: Gen[Device.Id] ) : Gen[Seq[UpdateSpec]] =
     Gen.containerOf[Seq, UpdateSpec](updateSpecGen(namespaceGen, deviceGen))

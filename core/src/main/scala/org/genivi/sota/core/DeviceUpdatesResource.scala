@@ -39,6 +39,7 @@ import cats.syntax.show.toShowOps
 import org.genivi.sota.http.AuthDirectives.AuthScope
 import org.genivi.sota.messaging.Messages.DeviceSeen
 import org.genivi.sota.messaging.MessageBusPublisher
+import shapeless.HNil
 
 class DeviceUpdatesResource(db: Database,
                             resolverClient: ExternalResolverClient,
@@ -114,6 +115,7 @@ class DeviceUpdatesResource(db: Database,
     val vehiclePackages =
       DeviceUpdates
         .findPendingPackageIdsFor(device, includeInFlight)
+        .map { _.map { case (ur, us, updatedAt) ⇒ (ur, us :: updatedAt :: HNil) } }
         .map(_.toResponse)
 
     complete(db.run(vehiclePackages))
@@ -216,10 +218,7 @@ class DeviceUpdatesResource(db: Database,
     * The web app PUT the status of the given ([[UpdateSpec]], device) to [[UpdateStatus.Canceled]]
     */
   def cancelUpdate(deviceId: Device.Id, updateId: Refined[String, Uuid]): Route = {
-    val response = db.run(UpdateSpecs.cancelUpdate(deviceId, updateId)).map {
-      case 0 => HttpResponse(StatusCodes.BadRequest)
-      case _ => HttpResponse(StatusCodes.NoContent)
-    }
+    val response = db.run(UpdateSpecs.cancelUpdate(deviceId, updateId)).map(_ ⇒ StatusCodes.NoContent)
     complete(response)
   }
 

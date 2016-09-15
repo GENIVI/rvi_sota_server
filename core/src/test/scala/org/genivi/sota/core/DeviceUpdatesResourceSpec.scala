@@ -291,6 +291,31 @@ class DeviceUpdatesResourceSpec extends FunSuite
     }
   }
 
+  test("updates updated_time field is returned to client") {
+    val device = genDevice.sample.get
+    val now = Instant.now.minusSeconds(3600)
+
+    val f = for {
+      (pkg, us) <- createUpdateSpecFor(device.id, installPos = 0, withMillis = now.toEpochMilli)
+      _ <- UpdateSpecs.setStatus(us, UpdateStatus.InFlight)
+    } yield (pkg, us)
+
+    whenReady(db.run(f)) { case (pkg, us) =>
+      val url = baseUri.withPath(baseUri.path / device.id.underlying.get / "queued")
+
+      Get(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+
+        val resp = responseAs[List[PendingUpdateRequest]]
+        resp.map(_.requestId) should contain(us.request.id)
+
+        val pendingUpdate = resp.find(_.requestId == us.request.id)
+
+        pendingUpdate.map(_.updatedAt.isAfter(now)) should contain(true)
+      }
+    }
+  }
+
   test("downloading an update with a blacklisted package returns bad request") {
     val f = for {
       (p, d, us) <- createUpdateSpec()

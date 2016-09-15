@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.core.transfer
 
+import java.time.Instant
 import java.util.UUID
 
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
@@ -100,7 +101,7 @@ object DeviceUpdates {
 
   def findPendingPackageIdsFor(device: Device.Id, includeInFlight: Boolean = true)
                               (implicit db: Database,
-                               ec: ExecutionContext): DBIO[Seq[(UpdateRequest, UpdateStatus)]] = {
+                               ec: ExecutionContext): DBIO[Seq[(UpdateRequest, UpdateStatus, Instant)]] = {
     val statusToInclude =
       if(includeInFlight)
         List(UpdateStatus.InFlight, UpdateStatus.Pending)
@@ -112,14 +113,14 @@ object DeviceUpdates {
       .filter(_.status.inSet(statusToInclude))
       .join(updateRequests).on(_.requestId === _.id)
       .sortBy { case (sp, _) => (sp.installPos.asc, sp.creationTime.asc) }
-      .map(r => (r._2, r._1.status))
+      .map(r => (r._2, r._1.status, r._1.updateTime))
       .result
       .flatMap {
-        BlacklistedPackages.filterBlacklisted[(UpdateRequest, UpdateStatus)] {
-          case (ur, _) => (ur.namespace, ur.packageId)
+        BlacklistedPackages.filterBlacklisted[(UpdateRequest, UpdateStatus, Instant)] {
+          case (ur, _, _) => (ur.namespace, ur.packageId)
         }
       }
-      .map { _.zipWithIndex.map { case ((ur, us), idx) => (ur.copy(installPos = idx), us) } }
+      .map { _.zipWithIndex.map { case ((ur, us, updateAt), idx) => (ur.copy(installPos = idx), us, updateAt) } }
   }
 
 
@@ -141,8 +142,8 @@ object DeviceUpdates {
 
     val specsWithDepsIO = updateSpecsIO flatMap { specsWithDeps =>
       val dBIOActions = specsWithDeps map { case ((updateSpec, updateReq), requiredPO) =>
-        val (_, _, deviceId, status, installPos, creationTime) = updateSpec
-        (UpdateSpec(updateReq, deviceId, status, Set.empty, installPos, creationTime), requiredPO)
+        val (_, _, deviceId, status, installPos, creationTime, updateTime) = updateSpec
+        (UpdateSpec(updateReq, deviceId, status, Set.empty, installPos, creationTime, updateTime), requiredPO)
       } map { case (spec, requiredPO) =>
         val depsIO = requiredPO map {
           case (namespace, _, _, packageName, packageVersion) =>

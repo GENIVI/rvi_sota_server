@@ -18,12 +18,13 @@ import org.genivi.sota.data.Interval
 
 case class PendingUpdateRequest(requestId: UUID, packageId: PackageId, installPos: Int,
                                 status: UpdateStatus,
-                                createdAt: Instant)
+                                createdAt: Instant,
+                                updatedAt: Instant)
 
 object PendingUpdateRequest {
   implicit val toResponseEncoder = GenericResponseEncoder {
-    (u: UpdateRequest, updateStatus: UpdateStatus) =>
-      PendingUpdateRequest(u.id, u.packageId, u.installPos, updateStatus, u.creationTime)
+    (u: UpdateRequest, updateStatus: UpdateStatus, updatedAt: Instant) =>
+      PendingUpdateRequest(u.id, u.packageId, u.installPos, updateStatus, u.creationTime, updatedAt)
   }
 }
 
