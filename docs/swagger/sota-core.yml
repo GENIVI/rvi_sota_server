@@ -520,7 +520,7 @@ paths:
             type: array
             items:
               $ref: '#/definitions/operationResult'
-  "/blacklist":
+  /blacklist:
     get:
       description: Get a list of blacklisted packages
       responses:
@@ -529,7 +529,7 @@ paths:
           schema:
             type: array
             items:
-             $ref: '#/definitions/BlacklistedPackage'
+             $ref: '#/definitions/BlacklistItem'
     put:
       consumes:
         - application/json
@@ -539,9 +539,7 @@ paths:
           description: An object describing the package to blacklist
           required: true
           schema:
-            type: object
-            items:
-              $ref: '#definitions/BlacklistedPackageRequest'
+            $ref: '#/definitions/BlacklistedPackageRequest'
       description: Update a blacklist item
       responses:
         200:
@@ -557,13 +555,13 @@ paths:
           schema:
             type: object
             items:
-              $ref: '#definitions/BlacklistedPackageRequest'
+              $ref: '#/definitions/BlacklistedPackageRequest'
       responses:
         201:
           description: Created
       description: Create a blacklist item
 
-  "/blacklist/{package_name}/{package_version}":
+  /blacklist/{package_name}/{package_version}:
     get:
       parameters:
         - name: package_name
@@ -597,7 +595,7 @@ paths:
         200:
           description: OK
 
-  "/blacklist/{package_name}/{package_version}/preview":
+  /blacklist/{package_name}/{package_version}/preview:
     get:
       parameters:
         - name: package_name
@@ -621,7 +619,7 @@ paths:
               description: Count of affected devices
           description: OK
 
-  "/impact/blacklist":
+  /impact/blacklist:
     get:
       description: Current impact analysis for blacklisted packages
       responses:
