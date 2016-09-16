@@ -13,10 +13,11 @@ import io.circe.generic.auto._
 import org.genivi.sota.data.{Namespaces, PackageId}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
-import org.genivi.sota.resolver.packages.Package
-import org.genivi.sota.resolver.packages.Package._
+import org.genivi.sota.resolver.db.Package
+import org.genivi.sota.resolver.db.Package._
 import org.genivi.sota.resolver.test.generators.PackageGenerators
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
+
 import scala.concurrent.duration._
 
 /**

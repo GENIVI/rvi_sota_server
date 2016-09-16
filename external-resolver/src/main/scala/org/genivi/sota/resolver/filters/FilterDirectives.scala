@@ -16,10 +16,10 @@ import org.genivi.sota.data.Namespace._
 import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
-import org.genivi.sota.resolver.packages.PackageFilterRepository
+import org.genivi.sota.resolver.db.PackageFilterRepository
 import org.genivi.sota.rest.Validation._
 
-import scala.concurrent.{ExecutionContext}
+import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
 

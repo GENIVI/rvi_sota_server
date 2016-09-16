@@ -11,7 +11,7 @@ import akka.stream.actor.ActorSubscriberMessage.{OnComplete, OnError, OnNext}
 import akka.stream.actor.{ActorSubscriber, RequestStrategy, WatermarkRequestStrategy}
 import org.genivi.sota.data.PackageId._
 import org.genivi.sota.messaging.Messages.PackageCreated
-import org.genivi.sota.resolver.packages.{Package, PackageRepository}
+import org.genivi.sota.resolver.db.PackageRepository
 import org.slf4j.LoggerFactory
 import slick.driver.MySQLDriver.api._
 import cats.syntax.show.toShowOps
@@ -19,8 +19,8 @@ import akka.pattern.pipe
 import org.genivi.sota.data.PackageId
 import org.genivi.sota.messaging.daemon.MessageBusListenerActor
 import org.genivi.sota.messaging.daemon.MessageBusListenerActor.Subscribe
-
 import org.genivi.sota.messaging.Messages._
+import org.genivi.sota.resolver.db.{Package, PackageRepository}
 
 class PackageCreatedListener(db: Database) extends ActorSubscriber with ActorLogging {
 

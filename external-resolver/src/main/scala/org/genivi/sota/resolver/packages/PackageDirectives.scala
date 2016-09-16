@@ -17,6 +17,7 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.common.RefinementDirectives._
+import org.genivi.sota.resolver.db.{Package, PackageFilter, PackageFilterRepository, PackageRepository}
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 

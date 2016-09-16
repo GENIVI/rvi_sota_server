@@ -3,9 +3,9 @@ package org.genivi.sota.resolver.test.generators
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.data.{InvalidIdentGenerators, Namespaces, SemanticVin}
 import org.genivi.sota.resolver.components.Component
+import org.genivi.sota.resolver.db.Package
 import org.genivi.sota.resolver.filters.FilterAST._
 import org.genivi.sota.resolver.filters._
-import org.genivi.sota.resolver.packages.Package
 import org.scalacheck.{Arbitrary, Gen}
 
 trait FilterGenerators {

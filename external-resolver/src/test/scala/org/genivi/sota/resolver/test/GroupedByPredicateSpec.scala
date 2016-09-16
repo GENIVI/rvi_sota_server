@@ -10,7 +10,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import akka.stream.testkit.scaladsl.TestSink
 import akka.testkit.TestKit
-import org.genivi.sota.resolver.devices.GroupedByPredicate
+import org.genivi.sota.resolver.db.GroupedByPredicate
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest._

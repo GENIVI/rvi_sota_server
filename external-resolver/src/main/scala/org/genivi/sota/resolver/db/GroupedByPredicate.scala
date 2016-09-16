@@ -3,10 +3,11 @@
  * License: MPL-2.0
  */
 
-package org.genivi.sota.resolver.devices
-import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
+package org.genivi.sota.resolver.db
+
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
-import cats.data.{NonEmptyList, OneAnd}
+import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
+import cats.data.NonEmptyList
 
 import scala.collection.immutable.VectorBuilder
 

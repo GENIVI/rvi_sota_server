@@ -15,10 +15,11 @@ import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.components.{Component, ComponentRepository}
 import org.genivi.sota.resolver.data.Firmware
 import org.genivi.sota.resolver.filters._
-import org.genivi.sota.resolver.packages.PackageRepository
 import slick.driver.MySQLDriver.api._
 import eu.timepit.refined.refineV
 import org.genivi.sota.db.Operators._
+import org.genivi.sota.resolver.db.{DbDepResolver, PackageRepository}
+
 import scala.concurrent.{ExecutionContext, Future}
 
 

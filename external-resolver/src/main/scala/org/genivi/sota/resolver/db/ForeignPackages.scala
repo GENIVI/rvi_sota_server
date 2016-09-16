@@ -3,19 +3,21 @@
  * License: MPL-2.0
  */
 
-package org.genivi.sota.resolver.devices
+package org.genivi.sota.resolver.db
 
 import java.time.Instant
 
-import org.genivi.sota.data.{Device, Namespace, PackageId}
-import slick.driver.MySQLDriver.api._
+import org.genivi.sota.data.{Device, PackageId}
 import org.genivi.sota.db.Operators._
+import org.genivi.sota.resolver.devices.DeviceRepository
+import slick.driver.MySQLDriver.api._
+
 import scala.concurrent.ExecutionContext
 
 object ForeignPackages {
 
-  import org.genivi.sota.db.SlickExtensions._
   import org.genivi.sota.refined.SlickRefined._
+  import org.genivi.sota.db.SlickExtensions._
 
   type InstalledForeignPkgRow = (Device.Id, PackageId.Name, PackageId.Version, Instant)
 

@@ -11,7 +11,7 @@ import io.circe.generic.auto._
 import org.genivi.sota.data.{Device, Namespaces, PackageId}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
-import org.genivi.sota.resolver.packages.{Package, PackageRepository}
+import org.genivi.sota.resolver.db.PackageRepository
 import org.genivi.sota.resolver.components.Component
 import akka.http.scaladsl.testkit.RouteTestTimeout
 import org.genivi.sota.data.Device.DeviceName
@@ -21,6 +21,8 @@ import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 import org.scalacheck._
 import Device._
 import cats.syntax.show._
+import org.genivi.sota.resolver.db.Package
+import org.genivi.sota.resolver.db.Package._
 import org.scalatest.concurrent.ScalaFutures
 import slick.driver.MySQLDriver.api._
 

@@ -86,8 +86,8 @@ class FilterParserSpec extends FlatSpec {
  */
 class FilterQuerySpec extends ResourceWordSpec with Namespaces {
 
-  import org.genivi.sota.resolver.packages.Package
   import org.genivi.sota.resolver.components.Component
+  import org.genivi.sota.resolver.db.Package
 
   val vin1: DeviceId = DeviceId("APABEPA1234567890")
   val vin2: DeviceId = DeviceId("APACEPA1234567890")

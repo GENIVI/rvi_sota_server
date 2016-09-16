@@ -12,7 +12,7 @@ import akka.stream.testkit.scaladsl.TestSource
 import akka.testkit.TestKit
 import org.genivi.sota.core.DatabaseSpec
 import org.genivi.sota.messaging.Messages.PackageCreated
-import org.genivi.sota.resolver.packages.PackageRepository
+import org.genivi.sota.resolver.db.PackageRepository
 import org.genivi.sota.resolver.test.DefaultPatience
 import org.genivi.sota.resolver.test.generators.PackageGenerators
 import org.scalacheck.Arbitrary
