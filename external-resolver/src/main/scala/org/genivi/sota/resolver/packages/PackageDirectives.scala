@@ -69,12 +69,21 @@ class PackageDirectives(namespaceExtractor: Directive1[Namespace])
         deletePackageFilter(ns, id, fname)
     }
 
+  def findInstalled(ns: Namespace): Route = {
+    entity(as[Seq[PackageId]]) { packageIds ⇒
+      ???
+    }
+  }
+
   /**
    * API route for packages.
    *
    * @return      Route object containing route for adding packages
    */
   def route: Route = ErrorHandler.handleErrors {
+    pathPrefix("installed") {
+      (post & namespaceExtractor) { (ns) ⇒ findInstalled(ns) }
+    } ~
     pathPrefix("packages") {
       (get & path("filter")) {
         getFilters
