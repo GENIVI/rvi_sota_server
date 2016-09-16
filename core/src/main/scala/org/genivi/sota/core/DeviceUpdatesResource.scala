@@ -219,37 +219,76 @@ class DeviceUpdatesResource(db: Database,
     complete(response)
   }
 
+  private[this] def failNamespaceRejection(msg: String): Rejection = AuthorizationFailedRejection
+
+  def authDeviceNamespace(deviceId: Uuid) : Directive1[Namespace] =
+    authNamespace flatMap { ns =>
+      import scala.util.{Success, Failure}
+      val f = deviceRegistry.fetchDevice(deviceId)
+      onComplete(f) flatMap {
+        case Success(device) =>
+          if (device.namespace == ns) {
+            provide(ns)
+          } else {
+            reject(AuthorizationFailedRejection)
+          }
+        case Failure(t) => reject(failNamespaceRejection("Cannot validate namespace"))
+      }
+    }
+
   val route = handleErrors {
     // vehicle_updates is deprecated and will be removed sometime in the future
     (pathPrefix("api" / "v1") & ( pathPrefix("vehicle_updates") | pathPrefix("device_updates"))
                               & extractDeviceUuid) { device =>
       get {
-        pathEnd { logDeviceSeen(device) { pendingPackages(device, includeInFlight = false) } } ~
-        path("queued") { pendingPackages(device) } ~
-        path("blocked") { getBlockedInstall(device) } ~
-        path("results") { results(device) } ~
-        (extractUuid & path("results")) { updateId => resultsForUpdate(device, updateId) } ~
-        (extractUuid & path("download")) { updateId => downloadPackage(device, updateId) }
-      } ~
-        put {
-          path("installed") {
-            authDirective(s"ota-core.${device.show}.write") {
-              updateInstalledPackages(device)
+        pathEnd {
+          authDirective(s"ota-core.${device.show}.read") {
+            logDeviceSeen(device) {
+              pendingPackages(device, includeInFlight = false)
             }
-          } ~
-            path("system_info"){ updateSystemInfo(device) } ~
-            path("order") { setInstallOrder(device) } ~
-            (extractUuid & path("cancelupdate") & authNamespace) { (updateId, _) => cancelUpdate(device, updateId) } ~
-            path("blocked") { setBlockedInstall(device) }
+          }
         } ~
-        post {
-          path("sync") { sync(device) } ~
-            (authNamespace & pathEnd) { ns => queueDeviceUpdate(ns, device) } ~
-            (extractUuid & pathEnd) { reportInstall }
+        (extractUuid & path("download")) { updateId =>
+          authDirective(s"ota-core.${device.show}.read") {
+            downloadPackage(device, updateId)
+          }
         } ~
-        delete {
+        authDeviceNamespace(device) { ns =>
+          path("queued") { pendingPackages(device, true) } ~
+          path("blocked") { getBlockedInstall(device) } ~
+          path("results") { results(device) } ~
+          (extractUuid & path("results")) { updateId => resultsForUpdate(device, updateId) }
+        }
+      } ~
+      put {
+        path("installed") {
+          authDirective(s"ota-core.${device.show}.write") {
+            updateInstalledPackages(device)
+          }
+        } ~
+        path("system_info") {
+          authDirective(s"ota-core.${device.show}.write") {
+            updateSystemInfo(device)
+          }
+        } ~
+        authDeviceNamespace(device) { ns =>
+          (extractUuid & path("cancelupdate")) { updateId => cancelUpdate(device, updateId) } ~
+          path("order") { setInstallOrder(device) } ~
+          path("blocked") { setBlockedInstall(device) }
+        }
+      } ~
+      post {
+        (extractUuid & pathEnd & authDirective(s"ota-core.${device.show}.write")) { reportInstall } ~
+        authDeviceNamespace(device) { ns =>
+          pathEnd { queueDeviceUpdate(ns, device) } ~
+          path("sync") { sync(device) }
+        }
+      } ~
+      delete {
+        authDeviceNamespace(device) { ns =>
           path("blocked") { deleteBlockedInstall(device) }
         }
+      }
     }
   }
 }
