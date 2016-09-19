@@ -4,6 +4,9 @@
   */
 package org.genivi.sota.device_registry
 
+import cats.data.State
+import cats.std.list._
+import cats.syntax.traverse._
 import io.circe.Json
 import io.circe.jawn._
 import org.genivi.sota.data.Device.Id
@@ -39,6 +42,19 @@ object SystemInfo extends SlickJsonHelper {
 
   val systemInfos = TableQuery[SystemInfoTable]
 
+  private def addUniqueIdsSIM(j: Json): State[Int, Json] = j.arrayOrObject(
+    State.pure(j),
+    _.traverseU(addUniqueIdsSIM).map(Json.fromValues),
+    _.toList.traverseU {
+      case ("id", value) => State { (nr: Int) =>
+        (nr+1, Seq("id" -> value, "id-nr" -> Json.fromString(s"$nr")))
+      }
+      case (other, value) => addUniqueIdsSIM(value).map (x => Seq[(String, Json)](other -> x))
+    }.map(_.flatten).map(Json.fromFields)
+  )
+
+  private def addUniqueIdsSI(j: Json): Json = addUniqueIdsSIM(j).run(0).value._2
+
   def exists(id: Id)
             (implicit ec: ExecutionContext): DBIO[SystemInfo] =
     systemInfos
@@ -63,12 +79,14 @@ object SystemInfo extends SlickJsonHelper {
       case Success(_) => DBIO.failed(Errors.ConflictingSystemInfo)
       case Failure(_) => DBIO.successful(())
     }
-    _ <- systemInfos += SystemInfo(id,data)
+    newData = addUniqueIdsSI(data)
+    _ <- systemInfos += SystemInfo(id,newData)
   } yield ()
 
   def update(id: Id, data: SystemInfoType)(implicit ec: ExecutionContext): DBIO[Unit] = for {
     _ <- DeviceRepository.findById(id) // check that the device exists
-    _ <- systemInfos.insertOrUpdate(SystemInfo(id,data))
+    newData = addUniqueIdsSI(data)
+    _ <- systemInfos.insertOrUpdate(SystemInfo(id,newData))
   } yield ()
 
   def delete(id: Id)(implicit ec: ExecutionContext): DBIO[Int] =

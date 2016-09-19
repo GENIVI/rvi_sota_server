@@ -27,6 +27,11 @@ class DeviceResourceSpec extends ResourcePropSpec {
   import SimpleJsonGenerator._
   import StatusCodes._
 
+  def removeIdNr(json: Json): Json = json.arrayOrObject(
+    json,
+    x => Json.fromValues(x.map(removeIdNr)),
+    x => Json.fromFields(x.toList.map{case (i,v) => (i, removeIdNr(v))}.filter{case (i,_) => i != "id-nr"})
+  )
 
   def createDeviceOk(device: DeviceT): Id = {
     createDevice(device) ~> route ~> check {
@@ -357,7 +362,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
       fetchSystemInfo(id) ~> route ~> check {
         status shouldBe OK
         val json2: Json = responseAs[Json]
-        json1 shouldBe json2
+        json1 shouldBe removeIdNr(json2)
       }
 
       deleteDeviceOk(id)
@@ -379,7 +384,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
       fetchSystemInfo(id) ~> route ~> check {
         status shouldBe OK
         val json3: Json = responseAs[Json]
-        json2 shouldBe json3
+        json2 shouldBe removeIdNr(json3)
       }
 
       deleteDeviceOk(id)
@@ -397,7 +402,49 @@ class DeviceResourceSpec extends ResourcePropSpec {
       fetchSystemInfo(id) ~> route ~> check {
         status shouldBe OK
         val json2: Json = responseAs[Json]
-        json shouldBe json2
+        json shouldBe removeIdNr(json2)
+      }
+
+      deleteDeviceOk(id)
+    }
+  }
+
+  property("system_info adds unique numbers for each id-field") {
+    def addId(json: Json): Json = json.arrayOrObject(
+      json,
+      x => Json.fromValues(x.map(addId)),
+      x => Json.fromFields(("id" -> Json.fromString("id")) :: x.toList.map{case (i,v) => (i, addId(v))})
+    )
+
+    def getField(field: String)(json: Json): Seq[Json] = json.arrayOrObject(
+      List(),
+      _.flatMap(getField(field)),
+      x => x.toList.flatMap {
+        case (i, v) if i == field => List(v)
+        case (_, v) => getField(field)(v)
+      })
+
+    forAll{ (device: DeviceT, json: Json) =>
+      val id: Id = createDeviceOk(device)
+
+      val jsonWithId: Json = addId(json)
+
+      updateSystemInfo(id, jsonWithId) ~> route ~> check {
+        status shouldBe OK
+      }
+
+      fetchSystemInfo(id) ~> route ~> check {
+        status shouldBe OK
+        val retJson = responseAs[Json]
+        jsonWithId shouldBe removeIdNr(retJson)
+
+        val ids = getField("id")(retJson)
+        val idNrs = getField("id-nr")(retJson)
+        //unique
+        idNrs.size shouldBe idNrs.toSet.size
+
+        //same count
+        ids.size shouldBe idNrs.size
       }
 
       deleteDeviceOk(id)
