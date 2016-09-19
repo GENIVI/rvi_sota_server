@@ -22,7 +22,7 @@ import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.common.RefinementDirectives.{refinedPackageId, refinedPartNumber}
 import org.genivi.sota.resolver.components.Component
-import org.genivi.sota.resolver.db.{ForeignPackages, Package}
+import org.genivi.sota.resolver.db.{DeviceRepository, ForeignPackages, Package}
 import org.genivi.sota.rest.Validation._
 
 import scala.concurrent.{ExecutionContext, Future}

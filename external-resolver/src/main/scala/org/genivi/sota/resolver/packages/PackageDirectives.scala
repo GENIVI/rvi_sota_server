@@ -15,11 +15,10 @@ import org.genivi.sota.data.{Namespace, PackageId}
 import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
-import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.common.RefinementDirectives._
-import org.genivi.sota.resolver.db.{Package, PackageFilter, PackageFilterRepository, PackageRepository}
+import org.genivi.sota.resolver.db.{DeviceRepository, Package, PackageFilter, PackageFilterRepository,
+PackageRepository}
 import org.genivi.sota.resolver.filters.Filter
-import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
@@ -69,9 +68,9 @@ class PackageDirectives(namespaceExtractor: Directive1[Namespace])
         deletePackageFilter(ns, id, fname)
     }
 
-  def findInstalled(ns: Namespace): Route = {
-    entity(as[Seq[PackageId]]) { packageIds ⇒
-      ???
+  def findAffected(ns: Namespace): Route = {
+    entity(as[Set[PackageId]]) { packageIds ⇒
+      complete(db.run(DeviceRepository.allInstalledPackagesById(ns, packageIds)))
     }
   }
 
@@ -81,10 +80,10 @@ class PackageDirectives(namespaceExtractor: Directive1[Namespace])
    * @return      Route object containing route for adding packages
    */
   def route: Route = ErrorHandler.handleErrors {
-    pathPrefix("installed") {
-      (post & namespaceExtractor) { (ns) ⇒ findInstalled(ns) }
-    } ~
     pathPrefix("packages") {
+      path("affected") {
+        (post & namespaceExtractor) { findAffected }
+      } ~
       (get & path("filter")) {
         getFilters
       } ~

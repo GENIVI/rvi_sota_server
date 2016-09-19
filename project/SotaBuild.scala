@@ -44,7 +44,6 @@ object SotaBuild extends Build {
       "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
       "com.google.guava"  % "guava" % "18.0"
     ),
-
     shellPrompt in ThisBuild := { state => Project.extract(state).currentRef.project + "> " }
   )
 

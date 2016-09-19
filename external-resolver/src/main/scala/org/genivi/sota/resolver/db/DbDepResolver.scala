@@ -16,7 +16,6 @@ import org.genivi.sota.data.Device.DeviceId
 import org.genivi.sota.data.{Device, Namespace, PackageId}
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.components.Component.PartNumber
-import org.genivi.sota.resolver.devices.DeviceRepository
 import org.genivi.sota.resolver.filters.{And, Filter, FilterAST, True}
 import org.genivi.sota.resolver.resolve.ResolveFunctions
 import slick.backend.DatabasePublisher

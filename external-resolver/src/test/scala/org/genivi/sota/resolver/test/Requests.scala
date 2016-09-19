@@ -128,6 +128,10 @@ trait PackageRequestsHttp {
   def addPackage(namespace: Namespace, name: String, version: String, desc: Option[String], vendor: Option[String])
                 (implicit ec: ExecutionContext): HttpRequest =
     Put(Resource.uri("packages", name, version), db.Package.Metadata(namespace, desc, vendor))
+
+  def getAffected(ids: Set[PackageId])
+                 (implicit ec: ExecutionContext): HttpRequest =
+    Post(Resource.uri("packages", "affected"), ids)
 }
 
 trait PackageRequests extends

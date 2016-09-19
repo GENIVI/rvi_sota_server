@@ -14,6 +14,15 @@ import slick.driver.MySQLDriver.api._
 import scala.concurrent.ExecutionContext
 
 
+object PackageIdDatabaseConversions {
+
+  case class LiftedPackageId(name: Rep[PackageId.Name], version: Rep[PackageId.Version])
+
+  implicit object LiftedPackageShape extends CaseClassShape(LiftedPackageId.tupled,
+    (p: (PackageId.Name, PackageId.Version)) => PackageId(p._1, p._2))
+
+}
+
 /**
  * Data access object for Packages
  */
@@ -40,7 +49,7 @@ object PackageRepository {
   }
   // scalastyle:on
 
-  val packages = TableQuery[PackageTable]
+  protected[db] val packages = TableQuery[PackageTable]
 
   /**
    * Adds a package to the Package table. Updates an existing package if already present.
@@ -88,5 +97,4 @@ object PackageRepository {
       (x.name.mappedTo[String] ++ x.version.mappedTo[String] inSet ids.map(id => id.name.get + id.version.get))
     ).result.map( _.toSet )
   }
-
 }

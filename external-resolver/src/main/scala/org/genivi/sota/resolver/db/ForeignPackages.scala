@@ -7,10 +7,10 @@ package org.genivi.sota.resolver.db
 
 import java.time.Instant
 
-import org.genivi.sota.data.{Device, PackageId}
+import org.genivi.sota.data.{Device, Namespace, PackageId}
 import org.genivi.sota.db.Operators._
-import org.genivi.sota.resolver.devices.DeviceRepository
 import slick.driver.MySQLDriver.api._
+import org.genivi.sota.resolver.db.PackageIdDatabaseConversions._
 
 import scala.concurrent.ExecutionContext
 
@@ -69,5 +69,15 @@ object ForeignPackages {
       .filter(_.device === device)
       .regexFilter(regexFilter)(_.name, _.version)
       .result.map(_.map(_.packageId))
+  }
+
+  private def inSetQuery(ids: Set[PackageId]): Query[InstalledForeignPackageTable, InstalledForeignPackage, Seq] = {
+    foreignPackages.filter { pkg =>
+      (pkg.name.mappedTo[String] ++ pkg.version.mappedTo[String]) inSet ids.map(id => id.name.get + id.version.get)
+    }
+  }
+
+  protected [db] def installedQuery(ids: Set[PackageId]) = {
+    inSetQuery(ids).map(row => (row.device, LiftedPackageId(row.name, row.version)))
   }
 }
