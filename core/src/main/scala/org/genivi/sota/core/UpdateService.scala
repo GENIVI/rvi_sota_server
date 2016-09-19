@@ -18,6 +18,8 @@ import org.genivi.sota.core.transfer.UpdateNotifier
 import org.genivi.sota.data.{Device, PackageId}
 import org.genivi.sota.data.Namespace
 import java.time.Instant
+import java.util.UUID
+
 import scala.collection.immutable.ListSet
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
@@ -75,11 +77,9 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
 
   }
 
-  def loadPackage(ns: Namespace, id : PackageId)
+  def loadPackage(id: UUID)
                  (implicit db: Database, ec: ExecutionContext): Future[Package] = {
-    val dbIO = Packages.byId(ns, id)
-      .flatMap(BlacklistedPackages.ensureNotBlacklisted)
-
+    val dbIO = Packages.byUuid(id).flatMap(BlacklistedPackages.ensureNotBlacklisted)
     db.run(dbIO)
   }
 
@@ -94,8 +94,7 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
     * @param vinsToPackageIds several VIN-s and the dependencies for each of them
     * @param idsToPackages lookup a [[Package]] by its [[PackageId]]
     */
-  def mkUpdateSpecs(ns: Namespace,
-                    request: UpdateRequest,
+  def mkUpdateSpecs(request: UpdateRequest,
                     vinsToPackageIds: DeviceToPackageIds,
                     idsToPackages: Map[PackageId, Package]): Set[UpdateSpec] = {
     vinsToPackageIds.map {
@@ -121,25 +120,21 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
     *   <li>Persist in DB all of the above</li>
     * </ul>
     */
-  def queueUpdate(request: UpdateRequest, resolver: DependencyResolver )
+  def queueUpdate(namespace: Namespace, request: UpdateRequest, resolver: DependencyResolver )
                  (implicit db: Database, ec: ExecutionContext): Future[Set[UpdateSpec]] = {
-    val ns = request.namespace
     for {
-      pckg           <- loadPackage(ns, request.packageId)
+      pckg           <- loadPackage(request.packageUuid)
       vinsToDeps     <- resolver(pckg)
       requirements    = allRequiredPackages(vinsToDeps)
-      _ <- db.run(BlacklistedPackages.ensureNotBlacklistedIds(pckg.namespace)(requirements.toSeq))
-      packages       <- fetchPackages(ns, requirements)
+      packages       <- fetchPackages(namespace, requirements)
+      _ <- db.run(BlacklistedPackages.ensureNotBlacklistedIds(namespace)(packages.map(_.id)))
       idsToPackages   = packages.map( x => x.id -> x ).toMap
-      updateSpecs     = mkUpdateSpecs(ns, request, vinsToDeps, idsToPackages)
+      updateSpecs     = mkUpdateSpecs(request, vinsToDeps, idsToPackages)
       _              <- persistRequest(request, updateSpecs)
       _              <- Future.successful(notifier.notify(updateSpecs.toSeq))
     } yield updateSpecs
   }
 
-  /**
-    * Gather all [[PackageId]]s (dependencies) across all given VINs.
-    */
   def allRequiredPackages(deviceToDeps: Map[Device.Id, Set[PackageId]]): Set[PackageId] = {
     log.debug(s"Dependencies from resolver: $deviceToDeps")
     deviceToDeps.values.flatten.toSet
@@ -150,16 +145,15 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
     * Resolver is not contacted.
     */
   def queueDeviceUpdate(ns: Namespace, device: Device.Id, packageId: PackageId)
-                        (implicit db: Database, ec: ExecutionContext): Future[UpdateRequest] = {
-    val newUpdateRequest = UpdateRequest.default(ns, packageId)
-
+                        (implicit db: Database, ec: ExecutionContext): Future[(UpdateRequest, UpdateSpec, Instant)] = {
     for {
-      p <- loadPackage(ns, packageId)
+      p <- db.run(Packages.byId(ns, packageId).flatMap(BlacklistedPackages.ensureNotBlacklisted))
+      newUpdateRequest = UpdateRequest.default(p.uuid)
       updateRequest = newUpdateRequest.copy(signature = p.signature.getOrElse(newUpdateRequest.signature),
         description = p.description)
       spec = UpdateSpec.default(updateRequest, device)
-      dbSpec <- persistRequest(updateRequest, ListSet(spec))
-    } yield updateRequest
+      _ <- persistRequest(updateRequest, ListSet(spec))
+    } yield (updateRequest, spec, spec.updateTime)
   }
 
   def all(implicit db: Database, ec: ExecutionContext): Future[Set[UpdateRequest]] =

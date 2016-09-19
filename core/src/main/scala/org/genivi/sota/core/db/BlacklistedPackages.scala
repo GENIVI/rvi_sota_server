@@ -9,7 +9,8 @@ import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.core.db.Packages.PackageTable
+import org.genivi.sota.core.data.client.GenericResponseEncoder
+import org.genivi.sota.core.db.Packages.{LiftedPackageId, PackageTable}
 import org.genivi.sota.http.Errors
 import org.genivi.sota.http.Errors.MissingEntity
 
@@ -17,6 +18,15 @@ case class BlacklistedPackage(id: UUID, namespace: Namespace,
                               packageId: PackageId, comment: String, updatedAt: Instant)
 
 case class BlacklistedPackageRequest(packageId: PackageId, comment: Option[String])
+
+case class BlacklistedPackageResponse(packageId: PackageId, comment: String, updatedAt: Instant)
+
+object BlacklistedPackageResponse {
+  implicit val toResponse = GenericResponseEncoder { (blackList: BlacklistedPackage) =>
+    BlacklistedPackageResponse(blackList.packageId, blackList.comment, blackList.updatedAt)
+  }
+}
+
 
 object BlacklistedPackages {
 
@@ -58,9 +68,6 @@ object BlacklistedPackages {
     def pk = primaryKey("id", id)
 
     def uniquePackageId = index("BlacklistedPackage_unique_package_id", (namespace, pkgName, pkgVersion), unique = true)
-
-    def packagesFk = foreignKey("BlacklistedPackage_pkg_fk", (namespace, pkgName, pkgVersion),
-      TableQuery[PackageTable])(r => (r.namespace, r.name, r.version))
   }
 
   // scalastyle:on
@@ -196,25 +203,14 @@ object BlacklistedPackages {
 
   def impact(namespace: Namespace)
             (implicit db: Database, ec: ExecutionContext): Future[Seq[(Device.Id, PackageId)]] = {
-    val query = active
-      .filter(_.namespace === namespace)
-      .join(UpdateRequests.all).on { case (blacklist, requests) =>
-      blacklist.namespace === requests.namespace &&
-        blacklist.pkgName === requests.packageName &&
-        blacklist.pkgVersion === requests.packageVersion
-    }.join(UpdateSpecs.updateSpecs).on { case ((blacklist, requests), specs) =>
-      requests.id === specs.requestId
-    }.map { case ((blacklist, requests), specs) =>
-      (specs.device, blacklist.pkgName, blacklist.pkgVersion)
-    }
+    val query = for {
+      blacklist <- active
+      pkg <- Packages.packages if pkg.name === blacklist.pkgName && pkg.version === blacklist.pkgVersion &&
+      pkg.namespace === namespace
+      updateReq <- UpdateRequests.all if pkg.uuid === updateReq.packageUuid
+      updateSpec <- UpdateSpecs.updateSpecs if updateReq.id === updateSpec.requestId
+    } yield (updateSpec.device, LiftedPackageId(pkg.name, pkg.version))
 
-    val dbIO = query.result.map {
-      _.map { case (deviceId, pkgName, pkgVersion) =>
-        deviceId -> PackageId(pkgName, pkgVersion)
-      }
-    }
-
-    db.run(dbIO)
+    db.run(query.result)
   }
 }
-

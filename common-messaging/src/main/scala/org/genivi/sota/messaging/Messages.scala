@@ -1,6 +1,7 @@
 package org.genivi.sota.messaging
 
 import java.time.Instant
+import java.util.UUID
 
 import cats.data.Xor
 import io.circe.{Decoder, Encoder}
@@ -9,6 +10,7 @@ import io.circe.generic.semiauto._
 import org.genivi.sota.marshalling.CirceInstances._
 import org.genivi.sota.data.Device.{DeviceName, Id}
 import org.genivi.sota.data.{Device, Namespace, PackageId}
+
 import scala.reflect.ClassTag
 
 object Messages {
@@ -38,7 +40,7 @@ object Messages {
   //Create custom UpdateSpec here instead of using org.genivi.sota.core.data.UpdateSpec as that would require moving
   //multiple RVI messages into SotaCommon. Furthermore, for now this class contains just the info required by the
   //front end.
-  final case class UpdateSpec(namespace: Namespace, deviceId: Device.Id, packageId: PackageId,
+  final case class UpdateSpec(namespace: Namespace, deviceId: Device.Id, packageUuid: UUID,
                               status: String) extends Message
 
   implicit class StreamNameOp[T <: Class[_]](v: T) {

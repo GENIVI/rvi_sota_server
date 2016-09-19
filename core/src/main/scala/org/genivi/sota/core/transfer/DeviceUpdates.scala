@@ -21,10 +21,14 @@ import org.genivi.sota.core.rvi.UpdateReport
 import org.genivi.sota.data.{Device, Namespace, PackageId}
 import org.genivi.sota.db.Operators._
 import org.genivi.sota.db.SlickExtensions
+import org.genivi.sota.http.Errors
 import org.genivi.sota.http.Errors.MissingEntity
 import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
 import slick.dbio.DBIO
 import slick.driver.MySQLDriver.api._
+import Packages.{LiftedPackageId, LiftedPackageShape}
+import org.genivi.sota.core.db.UpdateRequests.UpdateRequestTable
+import shapeless.{HList, ::, HNil}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
@@ -33,6 +37,8 @@ import scala.util.control.NoStackTrace
 object DeviceUpdates {
   import SlickExtensions._
   import org.genivi.sota.marshalling.CirceInstances._
+  import org.genivi.sota.db.Operators._
+  import org.genivi.sota.refined.SlickRefined._
 
   case class SetOrderFailed(msg: String) extends Exception(msg) with NoStackTrace
 
@@ -69,20 +75,19 @@ object DeviceUpdates {
                    (implicit ec: ExecutionContext, db: Database): Future[UpdateSpec] = {
 
     // add a row (with fresh UUID) to OperationResult table for each result of this report
-    val writeResultsIO = (ns: Namespace) => for {
+    val writeResultsIO = for {
       rviOpResult <- updateReport.operation_results
       dbOpResult   = OperationResult.from(
         rviOpResult,
         updateReport.update_id,
-        device,
-        ns)
+        device)
     } yield OperationResults.persist(dbOpResult)
 
     // look up the UpdateSpec to rewrite its status and to use it as FK in InstallHistory
     val newStatus = if (updateReport.isSuccess) UpdateStatus.Finished else UpdateStatus.Failed
     val dbIO = for {
       spec <- findUpdateSpecFor(device, updateReport.update_id)
-      _    <- DBIO.sequence(writeResultsIO(spec.namespace))
+      _    <- DBIO.sequence(writeResultsIO)
       _    <- UpdateSpecs.setStatus(spec, newStatus)
       _    <- InstallHistories.log(spec, updateReport.isSuccess)
       _    <- if (updateReport.isFail) {
@@ -90,37 +95,54 @@ object DeviceUpdates {
               } else {
                 DBIO.successful(true)
               }
-    } yield spec.copy(status = newStatus)
+      pkg <- findUpdateRequestPackage(updateReport.update_id)
+    } yield (spec.copy(status = newStatus), pkg.namespace)
 
     db.run(dbIO.transactionally).andThen {
-      case scala.util.Success(spec) =>
-        messageBus.publish(Messages.UpdateSpec(spec.namespace, device, spec.request.packageId,
+      case scala.util.Success((spec, namespace)) =>
+        messageBus.publish(Messages.UpdateSpec(namespace, device, spec.request.packageUuid,
         spec.status.toString))
-    }
+    }.map(_._1)
   }
+
+  private def findUpdateRequestPackage(updateRequestId: UUID)(implicit ec: ExecutionContext): DBIO[Package] = {
+    UpdateRequests
+      .byId(updateRequestId)
+      .failIfNone(Errors.MissingEntity(classOf[UpdateRequest]))
+      .flatMap(ur => Packages.byUuid(ur.packageUuid))
+  }
+
 
   def findPendingPackageIdsFor(device: Device.Id, includeInFlight: Boolean = true)
                               (implicit db: Database,
-                               ec: ExecutionContext): DBIO[Seq[(UpdateRequest, UpdateStatus, Instant)]] = {
+                               ec: ExecutionContext)
+  : DBIO[Seq[(UpdateRequest, UpdateStatus :: PackageId :: Instant :: HNil)]] = {
     val statusToInclude =
       if(includeInFlight)
         List(UpdateStatus.InFlight, UpdateStatus.Pending)
       else
         List(UpdateStatus.Pending)
 
-    updateSpecs
+    val updateSpecsQ =
+      updateSpecs
       .filter(_.device === device)
       .filter(_.status.inSet(statusToInclude))
-      .join(updateRequests).on(_.requestId === _.id)
-      .sortBy { case (sp, _) => (sp.installPos.asc, sp.creationTime.asc) }
-      .map(r => (r._2, r._1.status, r._1.updateTime))
+
+    val updateRequestStatusQ = for {
+        us <- updateSpecsQ
+        ur <- updateRequests if ur.id === us.requestId
+        pkg <- Packages.packages if ur.packageUuid === pkg.uuid
+      } yield (pkg.namespace, ur, us, LiftedPackageId(pkg.name, pkg.version))
+
+    val updateReqStatusPkgIdIO = updateRequestStatusQ
+      .sortBy { case (ns, ur, us, pid) => (us.installPos.asc, us.creationTime.asc) }
       .result
-      .flatMap {
-        BlacklistedPackages.filterBlacklisted[(UpdateRequest, UpdateStatus, Instant)] {
-          case (ur, _, _) => (ur.namespace, ur.packageId)
-        }
-      }
-      .map { _.zipWithIndex.map { case ((ur, us, updateAt), idx) => (ur.copy(installPos = idx), us, updateAt) } }
+
+    updateReqStatusPkgIdIO.flatMap {
+      BlacklistedPackages.filterBlacklisted(p => (p._1, p._4))
+    }.map { _.zipWithIndex.map {
+      case ((ns, ur, us, pid), idx) => (ur.copy(installPos = idx), us.status :: pid :: us.updatedAt :: HNil) }
+    }
   }
 
 
@@ -142,14 +164,11 @@ object DeviceUpdates {
 
     val specsWithDepsIO = updateSpecsIO flatMap { specsWithDeps =>
       val dBIOActions = specsWithDeps map { case ((updateSpec, updateReq), requiredPO) =>
-        val (_, _, deviceId, status, installPos, creationTime, updateTime) = updateSpec
-        (UpdateSpec(updateReq, deviceId, status, Set.empty, installPos, creationTime, updateTime), requiredPO)
+        (updateSpec.toUpdateSpec(updateReq, Set.empty), requiredPO)
       } map { case (spec, requiredPO) =>
         val depsIO = requiredPO map {
-          case (namespace, _, _, packageName, packageVersion) =>
-            Packages
-              .byId(namespace, PackageId(packageName, packageVersion))
-              .map(Some(_))
+          case (_, _, packageUuid) =>
+            Packages.byUuid(packageUuid).map(Some(_))
         } getOrElse DBIO.successful(None)
 
         depsIO map { p => spec.copy(dependencies = p.toSet) }

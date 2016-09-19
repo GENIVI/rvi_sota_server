@@ -19,7 +19,7 @@ import org.genivi.sota.core.db.InstallHistories.InstallHistoryTable
  * devices. It describes a single package, with a period of validity and priority
  * for the update.
  * @param id A generated unique ID for this update request
- * @param packageId The name and version of the package
+ * @param packageUUid The uuid the package
  * @param creationTime When this update request was entered into SOTA
  * @param periodOfValidity The start and end times when this update may be
  *                         installed. The install won't be attempted before
@@ -34,8 +34,7 @@ import org.genivi.sota.core.db.InstallHistories.InstallHistoryTable
  */
 case class UpdateRequest(
   id: UUID,
-  namespace: Namespace,
-  packageId: PackageId,
+  packageUuid: UUID,
   creationTime: Instant,
   periodOfValidity: Interval,
   priority: Int,
@@ -48,14 +47,14 @@ object UpdateRequest {
 
   import eu.timepit.refined.auto._
 
-  def default(namespace: Namespace, packageId: PackageId): UpdateRequest = {
+  def default(packageUuid: UUID): UpdateRequest = {
     val updateRequestId = UUID.randomUUID()
     val now = Instant.now
     val defaultPeriod = Duration.ofDays(1)
     val defaultInterval = Interval(now, now.plus(defaultPeriod))
     val defaultPriority = 10
 
-    UpdateRequest(updateRequestId, namespace, packageId,
+    UpdateRequest(updateRequestId, packageUuid,
       Instant.now, defaultInterval, defaultPriority, "", Some(""),
       requestConfirmation = false)
   }
@@ -100,11 +99,7 @@ case class UpdateSpec(
   dependencies: Set[Package],
   installPos: Int,
   creationTime: Instant,
-  updateTime: Instant
-) {
-
-  def namespace: Namespace = request.namespace
-
+  updateTime: Instant) {
   /**
    * The combined size (in bytes) of all the software updates in this package
    */

@@ -4,10 +4,12 @@
  */
 package org.genivi.sota.core
 
+import java.util.UUID
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.{Directive1, Directives, Route}
+import akka.http.scaladsl.server.{Directive, Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
 import eu.timepit.refined._
 import eu.timepit.refined.api.Refined
@@ -16,12 +18,13 @@ import io.circe.generic.auto._
 import io.circe.syntax._
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.data.client._
-import org.genivi.sota.core.db.UpdateSpecs
+import org.genivi.sota.core.db.{Packages, UpdateSpecs}
 import org.genivi.sota.core.resolver.ExternalResolverClient
 import org.genivi.sota.data.Device
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.rest.Validation._
+import shapeless.HNil
 import slick.driver.MySQLDriver.api.Database
 
 class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, updateService: UpdateService,
@@ -53,9 +56,15 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
     complete(updateService.all(db, system.dispatcher))
   }
 
-  private def clientUpdateRequest(ns: Namespace): Directive1[UpdateRequest] = {
+  private def clientUpdateRequest(ns: Namespace): Directive[(ClientUpdateRequest, UpdateRequest)] = {
     import ClientUpdateRequest._
-    clientEntity(ns)
+    import shapeless.HNil
+
+    val f = (entity: ClientUpdateRequest) => db.run(Packages.byId(ns, entity.packageId)).map { p =>
+      p.uuid :: HNil
+    }
+
+    fromRequest(f)
   }
 
   /**
@@ -63,10 +72,12 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
     * (one per device, for dependencies obtained from resolver) thus scheduling an update.
     */
   def createUpdate(ns: Namespace): Route = {
-    clientUpdateRequest(ns) { req: UpdateRequest =>
-      val resultF = updateService.queueUpdate(req, pkg => resolver.resolve(ns, pkg.id))
+    import ClientUpdateRequest._
+    import ResponseConversions._
 
-      complete(resultF map (_ => (StatusCodes.Created, req)))
+    clientUpdateRequest(ns) { case (creq: ClientUpdateRequest, req: UpdateRequest) =>
+      val resultF = updateService.queueUpdate(ns, req, pkg => resolver.resolve(ns, pkg.id))
+      complete(resultF.map (_ => (StatusCodes.Created, req.toResponse(creq.packageId))))
     }
   }
 

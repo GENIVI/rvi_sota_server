@@ -119,7 +119,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
   }
 
   test("GET update requests for a device returns a list of PendingUpdateResponse") {
-    whenReady(createUpdateSpec()) { case (_, device, updateSpec) =>
+    whenReady(createUpdateSpec()) { case (pkg, device, updateSpec) =>
       val uri = Uri.Empty.withPath(baseUri.path / device.id.underlying.get)
 
       Get(uri) ~> service.route ~> check {
@@ -127,7 +127,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
         val parsedResponse = responseAs[List[PendingUpdateRequest]]
         parsedResponse shouldNot be(empty)
         parsedResponse.map(_.requestId) should be(List(updateSpec.request.id))
-        parsedResponse.map(_.packageId) should be(List(updateSpec.request.packageId))
+        parsedResponse.map(_.packageId) should be(List(pkg.id))
       }
     }
   }
@@ -146,7 +146,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
   }
 
   test("POST an update report updates an UpdateSpec status") {
-    whenReady(createUpdateSpec()) { case (_, device, updateSpec) =>
+    whenReady(createUpdateSpec()) { case (packageModel, device, updateSpec) =>
       val url = Uri.Empty.withPath(baseUri.path / device.id.underlying.get / updateSpec.request.id.toString)
       val result = OperationResult(id, 1, "some result")
       val updateReport = UpdateReport(updateSpec.request.id, List(result))
@@ -157,12 +157,13 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
         val dbIO = for {
           updateSpec <- DeviceUpdates.findUpdateSpecFor(device.id, updateSpec.request.id)
-          histories <- InstallHistories.list(device.namespace, device.id)
+          histories <- InstallHistories.list(device.id)
         } yield (updateSpec, histories.last)
 
         whenReady(db.run(dbIO)) { case (updatedSpec, lastHistory) =>
           updatedSpec.status shouldBe UpdateStatus.Finished
-          lastHistory.success shouldBe true
+          lastHistory._1.success shouldBe true
+          lastHistory._2 shouldBe packageModel.id
         }
       }
     }
@@ -216,9 +217,9 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
       Post(url, packageModel.id) ~> service.route ~> check {
         status shouldBe StatusCodes.OK
-        val updateRequest = responseAs[UpdateRequest]
-        updateRequest.packageId should be (packageModel.id)
-        updateRequest.creationTime.isAfter(now) shouldBe true
+        val updateRequest = responseAs[PendingUpdateRequest]
+        updateRequest.packageId shouldBe packageModel.id
+        updateRequest.createdAt.isAfter(now) shouldBe true
       }
     }
   }
@@ -375,7 +376,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
       Put(url) ~> service.route ~> check {
         status shouldBe StatusCodes.NoContent
 
-        whenReady(db.run(DeviceUpdates.findUpdateSpecFor(device.id, updateSpec.request.id))) { case updateSpec =>
+        whenReady(db.run(DeviceUpdates.findUpdateSpecFor(device.id, updateSpec.request.id))) { updateSpec =>
           updateSpec.status shouldBe UpdateStatus.Canceled
         }
       }
@@ -459,7 +460,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
         val parsedResponse = responseAs[List[PendingUpdateRequest]]
         parsedResponse.size shouldBe 1
         val pendingReq = parsedResponse.head
-        (updateSpec.request.packageId) shouldBe (pendingReq.packageId)
+        packageModel.id shouldBe pendingReq.packageId
       }
     }
   }

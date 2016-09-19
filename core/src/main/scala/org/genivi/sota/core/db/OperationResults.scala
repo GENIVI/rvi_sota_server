@@ -43,12 +43,11 @@ object OperationResults {
 
     import shapeless._
 
-    // given `id` is already unique across namespaces, no need to include namespace. Also avoids Slick issue #966.
-    def pk = primaryKey("pk_OperationResultTable", (id))
+    def pk = primaryKey("pk_OperationResultTable", id)
 
-    def * = (id, updateId, resultCode, resultText, device, namespace, receivedAt).shaped <>
-      (x => OperationResult(x._1, x._2, x._3, x._4, x._5, x._6, x._7),
-      (x: OperationResult) => Some((x.id, x.updateId, x.resultCode, x.resultText, x.device, x.namespace, x.receivedAt)))
+    def * = (id, updateId, resultCode, resultText, device, receivedAt).shaped <>
+      (x => OperationResult(x._1, x._2, x._3, x._4, x._5, x._6),
+      (x: OperationResult) => Some((x.id, x.updateId, x.resultCode, x.resultText, x.device, x.receivedAt)))
   }
   // scalastyle:on
 

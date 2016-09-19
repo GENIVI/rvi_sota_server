@@ -70,8 +70,8 @@ class DeviceUpdatesSpec extends FunSuite
       report = UpdateReport(updateSpec.request.id, List(result))
       _ <- reportInstall(device.id, report, MessageBusPublisher.ignore)
       updatedSpec <- db.run(findUpdateSpecFor(device.id, updateSpec.request.id))
-      history <- db.run(InstallHistories.list(device.namespace, device.id))
-    } yield (updatedSpec.status, history)
+      history <- db.run(InstallHistories.list(device.id))
+    } yield (updatedSpec.status, history.map(_._1))
 
     whenReady(f) { case (newStatus, history) =>
       newStatus should be(UpdateStatus.Finished)
@@ -195,13 +195,9 @@ class DeviceUpdatesSpec extends FunSuite
         // check update spec 0 status finished
         // check update spec 1 status failed
         // check update spec 2 status canceled
-        val (_, _, vin0, status0, installPos0, _, _) = usRow0
-        val (_, _, vin1, status1, installPos1, _, _) = usRow1
-        val (_, _, vin2, status2, installPos2, _, _) = usRow2
-
-        status0 shouldBe UpdateStatus.Finished
-        status1 shouldBe UpdateStatus.Failed
-        status2 shouldBe UpdateStatus.Pending
+        usRow0.status shouldBe UpdateStatus.Finished
+        usRow1.status shouldBe UpdateStatus.Failed
+        usRow2.status shouldBe UpdateStatus.Pending
       }
 
     }
@@ -238,13 +234,9 @@ class DeviceUpdatesSpec extends FunSuite
         // check update spec 0 status finished
         // check update spec 1 status failed
         // check update spec 2 status canceled
-        val (_, _, device0, status0, installPos0, _, _) = usRow0
-        val (_, _, device1, status1, installPos1, _, _) = usRow1
-        val (_, _, device2, status2, installPos2, _, _) = usRow2
-
-        status0 shouldBe UpdateStatus.Finished
-        status1 shouldBe UpdateStatus.Failed
-        status2 shouldBe UpdateStatus.Pending
+        usRow0.status shouldBe UpdateStatus.Finished
+        usRow1.status shouldBe UpdateStatus.Failed
+        usRow2.status shouldBe UpdateStatus.Pending
       }
 
     }
