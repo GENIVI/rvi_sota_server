@@ -8,7 +8,7 @@ package org.genivi.sota.core
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.genivi.sota.core.db.BlacklistedPackages
-import org.genivi.sota.data.{Device, PackageId}
+import org.genivi.sota.data.{Device, Namespace, PackageId}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 import org.genivi.sota.http.NamespaceDirectives._
@@ -33,7 +33,7 @@ class ImpactResourceSpec
   implicit val _ec = system.dispatcher
 
   def fakeExternalResolver(affected: Map[Id, Seq[PackageId]] = Map.empty) = new FakeExternalResolver() {
-    override def affectedDevices(packageIds: Set[PackageId]): Future[Map[Id, Seq[PackageId]]] =
+    override def affectedDevices(namespace: Namespace, packageIds: Set[PackageId]): Future[Map[Id, Seq[PackageId]]] =
       Future.successful(affected)
   }
 

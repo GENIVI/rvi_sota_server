@@ -20,8 +20,10 @@ class ImpactResource(namespaceExtractor: Directive1[Namespace],
                     (implicit db: Database, system: ActorSystem) {
   import system.dispatcher
 
+  val affectedDevicesFn = (resolverClient.affectedDevices _).curried
+
   def runImpactAnalysis(namespace: Namespace): Route = {
-    val f = BlacklistedPackages.impact(namespace, resolverClient.affectedDevices)
+    val f = BlacklistedPackages.impact(namespace, affectedDevicesFn(namespace))
     complete(f)
   }
 

@@ -60,7 +60,7 @@ trait ExternalResolverClient {
     */
   def setInstalledPackages(device: Device.Id, json: io.circe.Json) : Future[Unit]
 
-  def affectedDevices(packageIds: Set[PackageId]): Future[Map[Device.Id, Seq[PackageId]]]
+  def affectedDevices(namespace: Namespace, packageIds: Set[PackageId]): Future[Map[Device.Id, Seq[PackageId]]]
 }
 
 /**
@@ -201,8 +201,8 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
     handlePutResponse( Http().singleRequest( request ) )
   }
 
-  override def affectedDevices(packageIds: Set[PackageId]): Future[Map[Id, Seq[PackageId]]] = {
-    val uri = vehiclesUri.withPath(packagesUri.path / "affected")
+  override def affectedDevices(namespace: Namespace, packageIds: Set[PackageId]): Future[Map[Id, Seq[PackageId]]] = {
+    val uri = vehiclesUri.withPath(packagesUri.path / "affected").withQuery(Query("namespace" -> namespace.get))
 
     val responseF = for {
       entity <- Marshal(packageIds).to[MessageEntity]
@@ -222,6 +222,6 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
         FastFuture.failed(ExternalResolverRequestFailed(status))
     }
 
-    futureResult.andThen { case Failure(t) => log.error( t, "Request to external resolver failed." ) }
+    futureResult.andThen { case Failure(t) => log.error(t, "Request to external resolver failed." ) }
   }
 }

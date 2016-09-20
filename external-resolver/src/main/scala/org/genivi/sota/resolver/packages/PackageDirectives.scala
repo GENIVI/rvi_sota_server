@@ -11,6 +11,7 @@ import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{Namespace, PackageId}
 import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
@@ -19,6 +20,7 @@ import org.genivi.sota.resolver.common.RefinementDirectives._
 import org.genivi.sota.resolver.db.{DeviceRepository, Package, PackageFilter, PackageFilterRepository,
 PackageRepository}
 import org.genivi.sota.resolver.filters.Filter
+import akka.http.scaladsl.unmarshalling.{FromStringUnmarshaller, Unmarshaller}
 
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
@@ -30,6 +32,9 @@ class PackageDirectives(namespaceExtractor: Directive1[Namespace])
                         ActorMaterializer,
                         ec: ExecutionContext) {
   import Directives._
+
+  implicit val NamespaceUnmarshaller: FromStringUnmarshaller[Namespace] = Unmarshaller.strict(Namespace.apply)
+
 
   def ok: StandardRoute =
     complete {
@@ -81,8 +86,8 @@ class PackageDirectives(namespaceExtractor: Directive1[Namespace])
    */
   def route: Route = ErrorHandler.handleErrors {
     pathPrefix("packages") {
-      path("affected") {
-        (post & namespaceExtractor) { findAffected }
+      (path("affected") & parameter("namespace".as[Namespace])) { ns =>
+        post { findAffected(ns) }
       } ~
       (get & path("filter")) {
         getFilters

@@ -57,7 +57,8 @@ class PackageUploadSpec extends PropSpec
 
       override def setInstalledPackages(device: Device.Id, json: io.circe.Json) : Future[Unit] = ???
 
-      override def affectedDevices(packageIds: Set[PackageId]): Future[Map[Id, Seq[PackageId]]] = ???
+      override def affectedDevices(namespace: Namespace, packageIds: Set[PackageId])
+      : Future[Map[Id, Seq[PackageId]]] = ???
     }
 
     lazy val messageBusPublisher = MessageBusPublisher.ignore
