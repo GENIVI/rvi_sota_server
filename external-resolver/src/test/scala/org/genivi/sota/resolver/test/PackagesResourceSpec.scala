@@ -85,7 +85,7 @@ class PackagesResourcePropSpec extends ResourcePropSpec with PackageGenerators {
         status shouldBe StatusCodes.OK
       }
 
-      getAffected(Set(p.id)) ~> route ~> check {
+      getAffected(defaultNs, Set(p.id)) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Map[Device.Id, Seq[PackageId]]] should contain(device -> Seq(p.id))
       }
@@ -102,7 +102,7 @@ class PackagesResourcePropSpec extends ResourcePropSpec with PackageGenerators {
         status shouldBe StatusCodes.NoContent
       }
 
-      getAffected(Set(p.id)) ~> route ~> check {
+      getAffected(defaultNs, Set(p.id)) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Map[Device.Id, Seq[PackageId]]] shouldBe Map(device -> Seq(p.id))
       }
