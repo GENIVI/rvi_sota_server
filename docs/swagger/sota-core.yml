@@ -487,13 +487,9 @@ paths:
       description: Current impact analysis for blacklisted packages
       responses:
         200:
-          description: An array of tuples (DeviceId -> PackageId)
+          description: A Map of (DeviceId -> Seq[PackageId])
           schema:
-            type: array
-            items:
-              type: array
-              items:
-                type: string
+            type: object
 
 definitions:
   uuid:

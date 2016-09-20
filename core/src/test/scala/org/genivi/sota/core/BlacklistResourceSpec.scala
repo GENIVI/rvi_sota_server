@@ -52,13 +52,13 @@ class BlacklistResourceSpec extends FunSuite
     createBlacklist()
   }
 
-  test("cannot create blacklist for non existent package") {
+  test("can create blacklist for a non existent package (foreign package)") {
     val pkg = PackageGen.sample.get
 
     val blacklistReq = BlacklistedPackageRequest(pkg.id, Some("Some comment"))
 
     Post(blacklistPath, blacklistReq) ~> serviceRoute ~> check {
-      status shouldBe StatusCodes.NotFound
+      status shouldBe StatusCodes.Created
     }
   }
 

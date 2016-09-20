@@ -14,8 +14,8 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.filters.Filter
 import Filter._
 import org.genivi.sota.data.Namespaces
+import org.genivi.sota.resolver.db.PackageFilter
 import org.genivi.sota.resolver.filters.FilterAST._
-import org.genivi.sota.resolver.packages.PackageFilter
 import org.genivi.sota.resolver.test.generators.FilterGenerators
 import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
 

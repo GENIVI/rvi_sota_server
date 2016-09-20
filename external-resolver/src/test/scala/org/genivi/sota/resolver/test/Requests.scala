@@ -16,8 +16,10 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.data.Firmware
+import org.genivi.sota.resolver.db
+import org.genivi.sota.resolver.db.PackageFilter
 import org.genivi.sota.resolver.filters.Filter
-import org.genivi.sota.resolver.packages.{Package, PackageFilter}
+import org.genivi.sota.resolver.db.PackageFilter
 import org.genivi.sota.resolver.resolve.ResolveFunctions
 import org.scalatest.Matchers
 
@@ -52,13 +54,13 @@ trait VehicleRequestsHttp {
     Put("/fake_devices", device.show)
   }
 
-  def installPackage(device: Device.Id, pkg: Package): HttpRequest =
+  def installPackage(device: Device.Id, pkg: db.Package): HttpRequest =
     installPackage(device, pkg.id.name.get, pkg.id.version.get)
 
   def installPackage(device: Device.Id, pname: String, pversion: String): HttpRequest =
     Put(Resource.uri("devices", device.show, "package", pname, pversion))
 
-  def uninstallPackage(device: Device.Id, pkg: Package): HttpRequest =
+  def uninstallPackage(device: Device.Id, pkg: db.Package): HttpRequest =
     uninstallPackage(device, pkg.id.name.get, pkg.id.version.get)
 
   def uninstallPackage(device: Device.Id, pname: String, pversion: String): HttpRequest =
@@ -119,13 +121,17 @@ trait VehicleRequests extends
   */
 trait PackageRequestsHttp {
 
-  def addPackage(pkg: Package)
+  def addPackage(pkg: db.Package)
                 (implicit ec: ExecutionContext): HttpRequest =
     addPackage(pkg.namespace, pkg.id.name.get, pkg.id.version.get, pkg.description, pkg.vendor)
 
   def addPackage(namespace: Namespace, name: String, version: String, desc: Option[String], vendor: Option[String])
                 (implicit ec: ExecutionContext): HttpRequest =
-    Put(Resource.uri("packages", name, version), Package.Metadata(namespace, desc, vendor))
+    Put(Resource.uri("packages", name, version), db.Package.Metadata(namespace, desc, vendor))
+
+  def getAffected(ids: Set[PackageId])
+                 (implicit ec: ExecutionContext): HttpRequest =
+    Post(Resource.uri("packages", "affected"), ids)
 }
 
 trait PackageRequests extends
@@ -283,13 +289,13 @@ trait PackageFilterRequestsHttp {
   def listPackagesForFilter(fname: String): HttpRequest =
     Get(Resource.uri("filters", fname, "package"))
 
-  def listFiltersForPackage(pak: Package): HttpRequest =
+  def listFiltersForPackage(pak: db.Package): HttpRequest =
     listFiltersForPackage(pak.id.name.get, pak.id.version.get)
 
   def listFiltersForPackage(pname: String, pversion: String): HttpRequest =
     Get(Resource.uri("packages", pname, pversion, "filter"))
 
-  def deletePackageFilter(pkg: Package, filt: Filter): HttpRequest =
+  def deletePackageFilter(pkg: db.Package, filt: Filter): HttpRequest =
     deletePackageFilter(pkg.id.name.get, pkg.id.version.get, filt.name.get)
 
   def deletePackageFilter(pname: String, pversion: String, fname: String): HttpRequest =

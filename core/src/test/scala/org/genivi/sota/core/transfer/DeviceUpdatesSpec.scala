@@ -57,7 +57,7 @@ class DeviceUpdatesSpec extends FunSuite
 
       whenReady(f) { _ =>
         forAll(packageIds) { id =>
-          resolverClient.installedPackages should contain(id)
+          resolverClient.isInstalled(id) shouldBe true
         }
       }
     }

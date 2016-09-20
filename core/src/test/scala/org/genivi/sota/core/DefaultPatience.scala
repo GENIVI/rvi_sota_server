@@ -10,5 +10,5 @@ import org.scalatest.time.{Millis, Seconds, Span}
 trait DefaultPatience {
   self: PatienceConfiguration =>
 
-  override implicit def patienceConfig = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
+  override implicit def patienceConfig = PatienceConfig(timeout = Span(10, Seconds), interval = Span(500, Millis))
 }

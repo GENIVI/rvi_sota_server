@@ -11,9 +11,7 @@ import io.circe.generic.auto._
 import org.genivi.sota.data.{Device, Namespaces, PackageId}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
-import org.genivi.sota.resolver.packages.{Package, PackageRepository}
 import org.genivi.sota.resolver.components.Component
-import akka.http.scaladsl.testkit.RouteTestTimeout
 import org.genivi.sota.data.Device.DeviceName
 import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.resolver.test.generators.PackageGenerators
@@ -21,16 +19,13 @@ import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 import org.scalacheck._
 import Device._
 import cats.syntax.show._
+import org.genivi.sota.resolver.db.Package
 import org.scalatest.concurrent.ScalaFutures
-import slick.driver.MySQLDriver.api._
-
-import scala.concurrent.duration._
-
 
 /**
  * Spec for Vehicle REST actions
  */
-class VehiclesResourcePropSpec extends ResourcePropSpec
+class DeviceResourcePropSpec extends ResourcePropSpec
     with PackageGenerators with ScalaFutures {
   import org.genivi.sota.data.DeviceGenerators._
 
@@ -163,7 +158,7 @@ class VehiclesResourcePropSpec extends ResourcePropSpec
 /**
  * Word Spec for Vehicle REST actions
  */
-class VehiclesResourceWordSpec extends ResourceWordSpec with Namespaces {
+class DevicesResourceWordSpec extends ResourceWordSpec with Namespaces {
 
   val devices = "devices"
 

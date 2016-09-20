@@ -49,8 +49,7 @@ class PackageResourceWordSpec extends WordSpec
 
   val externalResolverClient = new FakeExternalResolver()
 
-  implicit val routeTimeout: RouteTestTimeout =
-    RouteTestTimeout(10.second)
+  implicit val routeTimeout: RouteTestTimeout = RouteTestTimeout(20.second)
 
   lazy val messageBusPublisher = MessageBusPublisher.ignore
 

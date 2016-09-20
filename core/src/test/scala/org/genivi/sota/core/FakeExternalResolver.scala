@@ -6,6 +6,7 @@ import akka.http.scaladsl.model.{HttpResponse, Uri}
 import akka.stream.ActorMaterializer
 import io.circe.Json
 import org.genivi.sota.core.resolver.{DefaultExternalResolverClient, ExternalResolverClient}
+import org.genivi.sota.data.Device.Id
 import org.genivi.sota.data.{Device, Namespace, PackageId}
 
 import scala.concurrent.Future
@@ -15,9 +16,9 @@ class FakeExternalResolver()(implicit system: ActorSystem, mat: ActorMaterialize
 {
   import org.genivi.sota.marshalling.CirceInstances._
 
-  val installedPackages = scala.collection.mutable.Queue.empty[PackageId]
+  private val installedPackages = scala.collection.mutable.Queue.empty[PackageId]
 
-  val logger = Logging.getLogger(system, this)
+  private val logger = Logging.getLogger(system, this)
 
   override def setInstalledPackages(device: Device.Id, json: Json): Future[Unit] = {
     val ids = json
@@ -42,4 +43,9 @@ class FakeExternalResolver()(implicit system: ActorSystem, mat: ActorMaterialize
     logger.info(s"Fake resolver called. namespace=$namespace, packageId=${packageId.mkString}")
     Future.successful(())
   }
+
+  override def affectedDevices(packageIds: Set[PackageId]): Future[Map[Id, Seq[PackageId]]] =
+    Future.successful(Map.empty)
+
+  def isInstalled(packageId: PackageId): Boolean = installedPackages.contains(packageId)
 }

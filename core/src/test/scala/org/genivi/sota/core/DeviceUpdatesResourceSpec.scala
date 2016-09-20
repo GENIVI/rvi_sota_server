@@ -75,7 +75,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
       status shouldBe StatusCodes.OK
 
       packageIds.foreach { p =>
-        fakeResolver.installedPackages.toList should contain(p)
+        fakeResolver.isInstalled(p) shouldBe true
       }
     }
   }
@@ -294,7 +294,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
   test("updates updated_time field is returned to client") {
     val device = genDevice.sample.get
-    val now = Instant.now.minusSeconds(3600)
+    val now = Instant.now.minusSeconds(12 * 3600)
 
     val f = for {
       (pkg, us) <- createUpdateSpecFor(device.id, installPos = 0, withMillis = now.toEpochMilli)

@@ -16,13 +16,13 @@ import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{Device, Namespace, PackageId}
 import org.genivi.sota.http.ErrorHandler
-import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.common.RefinementDirectives.{refinedPackageId, refinedPartNumber}
 import org.genivi.sota.resolver.components.Component
+import org.genivi.sota.resolver.db.{DeviceRepository, ForeignPackages, Package}
 import org.genivi.sota.rest.Validation._
 
 import scala.concurrent.{ExecutionContext, Future}

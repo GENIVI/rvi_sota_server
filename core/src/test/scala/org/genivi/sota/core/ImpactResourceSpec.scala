@@ -15,6 +15,9 @@ import org.genivi.sota.http.NamespaceDirectives._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import io.circe.generic.auto._
+import org.genivi.sota.data.Device.Id
+
+import scala.concurrent.Future
 
 class ImpactResourceSpec
   extends FunSuite
@@ -29,7 +32,10 @@ class ImpactResourceSpec
   implicit val _db = db
   implicit val _ec = system.dispatcher
 
-  val route = new ImpactResource(defaultNamespaceExtractor).route
+  def fakeExternalResolver(affected: Map[Id, Seq[PackageId]] = Map.empty) = new FakeExternalResolver() {
+    override def affectedDevices(packageIds: Set[PackageId]): Future[Map[Id, Seq[PackageId]]] =
+      Future.successful(affected)
+  }
 
   test("calculates impact for a blacklist item") {
     val f = for {
@@ -39,11 +45,15 @@ class ImpactResourceSpec
 
     val (pkg, device) = f.futureValue
 
+    val affected = Map(device.id -> Seq(pkg.id))
+
+    val route = new ImpactResource(defaultNamespaceExtractor, fakeExternalResolver(affected)).route
+
     Get("/impact/blacklist") ~> route ~> check {
       status shouldBe StatusCodes.OK
-      val resp = responseAs[Seq[Map[Device.Id, PackageId]]]
+      val resp = responseAs[Map[Device.Id, Seq[PackageId]]]
 
-      resp should contain(Map(device.id → pkg.id))
+      resp shouldBe Map(device.id -> Seq(pkg.id))
     }
   }
 }

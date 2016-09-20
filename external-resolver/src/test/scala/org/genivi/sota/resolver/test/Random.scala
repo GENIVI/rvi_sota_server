@@ -6,12 +6,12 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.RouteTestTimeout
 import cats.state.State
 import org.genivi.sota.data.{Device, DeviceT, PackageId}
-import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.test.random.Misc._
 import org.genivi.sota.resolver.test.random._
 import Session._
 import org.genivi.sota.data.Device.DeviceName
 import org.genivi.sota.resolver.components.Component
+import org.genivi.sota.resolver.db.Package
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.rest.ErrorRepresentation
 import org.scalatest.Tag

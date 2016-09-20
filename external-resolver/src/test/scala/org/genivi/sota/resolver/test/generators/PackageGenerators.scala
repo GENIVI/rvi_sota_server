@@ -1,7 +1,7 @@
 package org.genivi.sota.resolver.test.generators
 
 import org.genivi.sota.data.{InvalidPackageIdGenerators, Namespaces, PackageIdGenerators}
-import org.genivi.sota.resolver.packages.Package
+import org.genivi.sota.resolver.db.Package
 import org.scalacheck.{Arbitrary, Gen}
 
 trait PackageGenerators

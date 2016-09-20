@@ -4,7 +4,6 @@ import akka.http.scaladsl.model.StatusCodes
 import cats.state.{State, StateT}
 import org.genivi.sota.resolver.resolve.ResolveFunctions
 import org.genivi.sota.resolver.filters.{And, FilterAST, True}
-import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.filters.Filter
 import FilterAST._
 import org.genivi.sota.resolver.test._
@@ -19,6 +18,7 @@ import scala.concurrent.ExecutionContext
 import cats.syntax.show._
 import Device._
 import org.genivi.sota.resolver.components.Component
+import org.genivi.sota.resolver.db.Package
 
 sealed trait Query
 

@@ -11,7 +11,7 @@ import org.genivi.sota.data.Namespace._
 import org.genivi.sota.db.Operators._
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
-import org.genivi.sota.resolver.devices.DeviceRepository
+import org.genivi.sota.resolver.db.DeviceRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 import slick.driver.MySQLDriver.api._

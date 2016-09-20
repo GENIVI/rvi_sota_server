@@ -12,15 +12,17 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.model.Uri.Query
-import akka.http.scaladsl.model.headers.{HttpEncoding, HttpEncodings}
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import org.genivi.sota.data.{Device, Namespace, PackageId}
 import Device._
+import akka.http.scaladsl.marshalling.Marshal
 import cats.syntax.show._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
+import org.genivi.sota.rest.ErrorRepresentation
 
 import scala.concurrent.Future
+import scala.util.Failure
 
 trait ExternalResolverClient {
 
@@ -57,6 +59,8 @@ trait ExternalResolverClient {
     * @param json A JSON encoded list of installed packages
     */
   def setInstalledPackages(device: Device.Id, json: io.circe.Json) : Future[Unit]
+
+  def affectedDevices(packageIds: Set[PackageId]): Future[Map[Device.Id, Seq[PackageId]]]
 }
 
 /**
@@ -197,4 +201,27 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
     handlePutResponse( Http().singleRequest( request ) )
   }
 
+  override def affectedDevices(packageIds: Set[PackageId]): Future[Map[Id, Seq[PackageId]]] = {
+    val uri = vehiclesUri.withPath(packagesUri.path / "affected")
+
+    val responseF = for {
+      entity <- Marshal(packageIds).to[MessageEntity]
+      req = HttpRequest(method = HttpMethods.POST, uri = baseUri.withPath(uri.path), entity = entity)
+      response <- Http().singleRequest(req)
+    } yield response
+
+    val futureResult = responseF.flatMap {
+      case HttpResponse(StatusCodes.OK, _, entity, _) =>
+        Unmarshal(entity).to[Map[Device.Id, Seq[PackageId]]]
+
+      case HttpResponse(StatusCodes.BadRequest, _, entity, _) =>
+        Unmarshal(entity).to[ErrorRepresentation].flatMap( x =>
+          FastFuture.failed(ExternalResolverRequestFailed(s"Error returned from external resolver: $x")))
+
+      case HttpResponse(status, _, _, _) =>
+        FastFuture.failed(ExternalResolverRequestFailed(status))
+    }
+
+    futureResult.andThen { case Failure(t) => log.error( t, "Request to external resolver failed." ) }
+  }
 }

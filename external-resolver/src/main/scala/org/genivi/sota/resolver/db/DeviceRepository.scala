@@ -1,24 +1,24 @@
-/**
- * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
+/*
+ * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.resolver.devices
-
-import java.time.Instant
+package org.genivi.sota.resolver.db
 
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
+import eu.timepit.refined.refineV
 import eu.timepit.refined.string.Regex
 import org.genivi.sota.common.DeviceRegistry
+import org.genivi.sota.data.Device.Id
 import org.genivi.sota.data.{Device, Namespace, PackageId}
+import org.genivi.sota.db.Operators._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.components.{Component, ComponentRepository}
 import org.genivi.sota.resolver.data.Firmware
+import org.genivi.sota.resolver.db.PackageIdDatabaseConversions._
 import org.genivi.sota.resolver.filters._
-import org.genivi.sota.resolver.packages.PackageRepository
 import slick.driver.MySQLDriver.api._
-import eu.timepit.refined.refineV
-import org.genivi.sota.db.Operators._
+
 import scala.concurrent.{ExecutionContext, Future}
 
 
@@ -248,5 +248,27 @@ object DeviceRepository {
       devices <- deviceRegistry.listNamespace(namespace)
       searchResult <- DbDepResolver.filterDevices(namespace, devices.map(d => d.id -> d.deviceId).toMap, filter)
     } yield searchResult
+  }
+
+  private def inSetQuery(ids: Set[PackageId]): Query[InstalledPackageTable, (Namespace, Id, PackageId), Seq] = {
+    installedPackages.filter { pid =>
+      (pid.packageName.mappedTo[String] ++ pid.packageVersion.mappedTo[String])
+        .inSet(ids.map(id => id.name.get + id.version.get))
+    }
+  }
+
+  def allInstalledPackagesById(namespace: Namespace, ids: Set[PackageId])
+                              (implicit ec: ExecutionContext): DBIO[Map[Device.Id, Seq[PackageId]]] = {
+    inSetQuery(ids)
+      .filter(_.namespace === namespace)
+      .map(row => (row.device, LiftedPackageId(row.packageName, row.packageVersion)))
+      .union(ForeignPackages.installedQuery(ids))
+      .result
+      .map {
+        _.foldLeft(Map.empty[Device.Id, Seq[PackageId]]) { case (acc, (device, pid)) =>
+          val all = pid +: acc.getOrElse(device, Seq.empty[PackageId])
+          acc + (device -> all)
+        }
+      }
   }
 }

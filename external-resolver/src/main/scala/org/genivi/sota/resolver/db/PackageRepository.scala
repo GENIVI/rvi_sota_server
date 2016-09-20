@@ -2,18 +2,26 @@
  * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
-package org.genivi.sota.resolver.packages
+package org.genivi.sota.resolver.db
 
 import org.genivi.sota.data.{Namespace, PackageId}
 import org.genivi.sota.db.Operators._
 import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
-import org.genivi.sota.resolver.filters.{Filter, FilterRepository}
-
-import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
+import scala.concurrent.ExecutionContext
+
+
+object PackageIdDatabaseConversions {
+
+  case class LiftedPackageId(name: Rep[PackageId.Name], version: Rep[PackageId.Version])
+
+  implicit object LiftedPackageShape extends CaseClassShape(LiftedPackageId.tupled,
+    (p: (PackageId.Name, PackageId.Version)) => PackageId(p._1, p._2))
+
+}
 
 /**
  * Data access object for Packages
@@ -24,7 +32,7 @@ object PackageRepository {
    * DAO Mapping Class for the Package table in the database
    */
   // scalastyle:off
-  private[packages] class PackageTable(tag: Tag) extends Table[Package](tag, "Package") {
+  private[db] class PackageTable(tag: Tag) extends Table[Package](tag, "Package") {
 
     def namespace   = column[Namespace]("namespace")
     def name        = column[PackageId.Name]("name")
@@ -41,7 +49,7 @@ object PackageRepository {
   }
   // scalastyle:on
 
-  val packages = TableQuery[PackageTable]
+  protected[db] val packages = TableQuery[PackageTable]
 
   /**
    * Adds a package to the Package table. Updates an existing package if already present.
@@ -89,5 +97,4 @@ object PackageRepository {
       (x.name.mappedTo[String] ++ x.version.mappedTo[String] inSet ids.map(id => id.name.get + id.version.get))
     ).result.map( _.toSet )
   }
-
 }

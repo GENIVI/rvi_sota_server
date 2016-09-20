@@ -108,10 +108,7 @@ object BlacklistedPackages {
       }
     }
 
-    val dbIO = for {
-      _ <- Packages.find(namespace, pkgId)
-      _ <- insertOrUpdate()
-    } yield newBlacklist
+    val dbIO = insertOrUpdate().map(_ => newBlacklist)
 
     db.run(dbIO.transactionally)
   }
@@ -186,31 +183,21 @@ object BlacklistedPackages {
       .map(_ => ())
 
   private def findActiveQuery(namespace: Namespace,
-                        packageId: PackageId): Query[BlacklistedPackagesTable, BlacklistedPackage, Seq] =
+                              packageId: PackageId): Query[BlacklistedPackagesTable, BlacklistedPackage, Seq] =
     active
       .filter(_.namespace === namespace)
       .filter(_.pkgName === packageId.name)
       .filter(_.pkgVersion === packageId.version)
 
-  def findActivePkg(namespace: Namespace, packageId: PackageId)(implicit db: Database): Future[BlacklistedPackage] =
-    db.run(findActiveQuery(namespace, packageId).result.head)
-
-  def findAction(namespace: Namespace): DBIO[Seq[BlacklistedPackage]] =
+  private def findAction(namespace: Namespace): DBIO[Seq[BlacklistedPackage]] =
     active.filter(_.namespace === namespace).result
 
   def findFor(namespace: Namespace)(implicit db: Database): Future[Seq[BlacklistedPackage]] =
     db.run(findAction(namespace))
 
-  def impact(namespace: Namespace)
-            (implicit db: Database, ec: ExecutionContext): Future[Seq[(Device.Id, PackageId)]] = {
-    val query = for {
-      blacklist <- active
-      pkg <- Packages.packages if pkg.name === blacklist.pkgName && pkg.version === blacklist.pkgVersion &&
-      pkg.namespace === namespace
-      updateReq <- UpdateRequests.all if pkg.uuid === updateReq.packageUuid
-      updateSpec <- UpdateSpecs.updateSpecs if updateReq.id === updateSpec.requestId
-    } yield (updateSpec.device, LiftedPackageId(pkg.name, pkg.version))
-
-    db.run(query.result)
+  def impact(namespace: Namespace, impactedDevicesFn: Set[PackageId] => Future[Map[Device.Id, Seq[PackageId]]])
+            (implicit db: Database, ec: ExecutionContext): Future[Map[Device.Id, Seq[PackageId]]] = {
+    val query =  active.filter(_.namespace === namespace).map(r => LiftedPackageId(r.pkgName, r.pkgVersion)).result
+    db.run(query).map(_.toSet).flatMap(impactedDevicesFn)
   }
 }

@@ -10,7 +10,7 @@ import org.genivi.sota.data.Namespace
 import org.genivi.sota.db.Operators._
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
-import org.genivi.sota.resolver.packages.PackageFilterRepository
+import org.genivi.sota.resolver.db.PackageFilterRepository
 
 import scala.concurrent.ExecutionContext
 import scala.util.control.NoStackTrace

@@ -3,25 +3,23 @@
  * License: MPL-2.0
  */
 
-package org.genivi.sota.resolver.devices
+package org.genivi.sota.resolver.db
 
 import java.util.UUID
 
 import akka.NotUsed
-import eu.timepit.refined._
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Source}
+import eu.timepit.refined._
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.data.Device.DeviceId
 import org.genivi.sota.data.{Device, Namespace, PackageId}
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.components.Component.PartNumber
-import org.genivi.sota.resolver.filters.{And, Filter, True}
-import org.genivi.sota.resolver.packages.PackageFilterRepository
+import org.genivi.sota.resolver.filters.{And, Filter, FilterAST, True}
 import org.genivi.sota.resolver.resolve.ResolveFunctions
 import slick.backend.DatabasePublisher
 import slick.driver.MySQLDriver.api._
-import org.genivi.sota.resolver.filters.FilterAST
 import slick.jdbc.GetResult
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -36,7 +34,6 @@ case class DeviceIdPackages(device: Device.Id, vin: Option[DeviceId],
 }
 
 object DbDepResolver {
-  import org.genivi.sota.refined.SlickRefined._
   import Device._
   import cats.syntax.show._
 
