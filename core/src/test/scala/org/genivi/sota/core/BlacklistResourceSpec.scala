@@ -10,7 +10,7 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model.{StatusCodes, Uri}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import org.genivi.sota.core.db.{BlacklistedPackageRequest, BlacklistedPackageResponse, Packages}
+import org.genivi.sota.core.db.{BlacklistedPackageRequest, BlacklistedPackageResponse, Packages, UpdateSpecs}
 import org.genivi.sota.data.PackageId
 import org.scalatest.{FunSuite, ShouldMatchers}
 import org.scalatest.concurrent.ScalaFutures
@@ -24,6 +24,7 @@ class BlacklistResourceSpec extends FunSuite
   with ScalaFutures
   with DefaultPatience
   with LongRequestTimeout
+  with UpdateResourcesDatabaseSpec
   with Generators {
 
   implicit val _db = db
@@ -145,7 +146,7 @@ class BlacklistResourceSpec extends FunSuite
 
     val blacklistReq = BlacklistedPackageRequest(pkg.id, Some("Some comment"))
 
-    Post(url, blacklistReq) ~> serviceRoute ~> check {
+    Post(blacklistPath, blacklistReq) ~> serviceRoute ~> check {
       status shouldBe StatusCodes.Created
     }
 
@@ -157,11 +158,9 @@ class BlacklistResourceSpec extends FunSuite
 
   test("creating the same blacklist twice fails") {
     val pkg = createBlacklist()
-    val url = blacklistUrl(pkg.id)
-
     val blacklistReq = BlacklistedPackageRequest(pkg.id, Some("Some comment"))
 
-    Post(url, blacklistReq) ~> serviceRoute ~> check {
+    Post(blacklistPath, blacklistReq) ~> serviceRoute ~> check {
       status shouldBe StatusCodes.Conflict
     }
   }
@@ -177,6 +176,39 @@ class BlacklistResourceSpec extends FunSuite
 
     Delete(url) ~> serviceRoute ~> check {
       status shouldBe StatusCodes.NotFound
+    }
+  }
+
+  test("blacklisting a queued package cancels queued item") {
+    val (pkg, device, _) = createUpdateSpec().futureValue
+    val blacklistReq = BlacklistedPackageRequest(pkg.id, Some("Some comment"))
+
+    Post(blacklistPath, blacklistReq) ~> serviceRoute ~> check {
+      status shouldBe StatusCodes.Created
+    }
+
+    val pendingDevices = db.run(UpdateSpecs.getDevicesQueuedForPackage(pkg.namespace, pkg.id)).futureValue
+
+    pendingDevices shouldBe empty
+  }
+
+  test("/preview returns a count of devices affected by a new blacklist item") {
+    val (pkg, _, _) = createUpdateSpec().futureValue
+    val previewUrl = blacklistUrl(pkg.id) + "/preview"
+
+    Get(previewUrl) ~> serviceRoute ~> check {
+      status shouldBe StatusCodes.OK
+      responseAs[PreviewResponse].affected_device_count shouldBe 1
+    }
+  }
+
+  test("/preview returns 0 if there are no affected devices") {
+    val pkg = PackageGen.sample.get
+    val previewUrl = blacklistUrl(pkg.id) + "/preview"
+
+    Get(previewUrl) ~> serviceRoute ~> check {
+      status shouldBe StatusCodes.OK
+      responseAs[PreviewResponse].affected_device_count shouldBe 0
     }
   }
 }

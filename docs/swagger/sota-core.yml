@@ -482,6 +482,30 @@ paths:
         200:
           description: OK
 
+  "/blacklist/{package_name}/{package_version}/preview":
+    get:
+      parameters:
+        - name: package_name
+          in: path
+          description: package name
+          required: true
+          type: string
+        - name: package_version
+          in: path
+          description: package version
+          required: true
+          type: string
+      description: Get the count of affected devices if a blacklist item was created for this package
+      responses:
+        200:
+          schema:
+            type: object
+            properties:
+              affected_devices:
+              type: int
+              description: Count of affected devices
+          description: OK
+
   "/impact/blacklist":
     get:
       description: Current impact analysis for blacklisted packages
