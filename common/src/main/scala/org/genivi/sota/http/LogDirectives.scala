@@ -42,6 +42,7 @@ object LogDirectives {
     Map(
       "method" -> request.method.name,
       "path" -> request.uri.path.toString,
+      "query" -> s"'${request.uri.rawQueryString.getOrElse("").toString}'",
       "stime" -> serviceTime.toString,
       "status" -> response.status.intValue.toString
     )
