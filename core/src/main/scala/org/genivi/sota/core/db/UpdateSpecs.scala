@@ -7,11 +7,9 @@ package org.genivi.sota.core.db
 import java.util.UUID
 
 import eu.timepit.refined.api.Refined
-import eu.timepit.refined.string.Uuid
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.UpdateRequests.UpdateRequestTable
-import org.genivi.sota.data.Namespace
-import org.genivi.sota.data.{Device, PackageId}
+import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
 import org.genivi.sota.db.SlickExtensions
 import java.time.Instant
 
@@ -39,8 +37,8 @@ object UpdateSpecs {
 
   implicit val UpdateStatusColumn = MappedColumnType.base[UpdateStatus, String](_.value.toString, UpdateStatus.withName)
 
-  case class UpdateSpecRow(requestId: UUID, device: Device.Id, status: UpdateStatus, installPos: Int,
-                                createdAt: Instant, updatedAt: Instant) {
+  case class UpdateSpecRow(requestId: UUID, device: Uuid, status: UpdateStatus, installPos: Int,
+                           createdAt: Instant, updatedAt: Instant) {
     def toUpdateSpec(request: UpdateRequest, dependencies: Set[Package]) =
       UpdateSpec(request, device, status, dependencies, installPos, createdAt, updatedAt)
   }
@@ -52,7 +50,7 @@ object UpdateSpecs {
   class UpdateSpecTable(tag: Tag) extends Table[UpdateSpecRow](tag, "UpdateSpec") {
 
     def requestId = column[UUID]("update_request_id")
-    def device = column[Device.Id]("device_uuid")
+    def device = column[Uuid]("device_uuid")
     def status = column[UpdateStatus]("status")
     def installPos = column[Int]("install_pos")
     def creationTime = column[Instant]("creation_time")
@@ -71,9 +69,9 @@ object UpdateSpecs {
    * Child table of [[UpdateSpecTable]]. For each row in that table there's one or more rows in this table.
    */
   class RequiredPackageTable(tag: Tag)
-      extends Table[(UUID, Device.Id, UUID)](tag, "RequiredPackage") {
+      extends Table[(UUID, Uuid, UUID)](tag, "RequiredPackage") {
     def requestId = column[UUID]("update_request_id")
-    def device = column[Device.Id]("device_uuid")
+    def device = column[Uuid]("device_uuid")
     def packageUuid = column[UUID]("package_uuid")
 
     // insertOrUpdate buggy for composite-keys, see Slick issue #966.
@@ -91,7 +89,7 @@ object UpdateSpecs {
 
   case class MiniUpdateSpec(requestId: UUID,
                             requestSignature: String,
-                            device: Device.Id,
+                            device: Uuid,
                             deps: Queue[Package])
 
   /**
@@ -116,8 +114,8 @@ object UpdateSpecs {
   /**
     * Reusable sub-query, PK lookup in [[UpdateSpecTable]] table.
     */
-  private def queryBy(deviceId: Device.Id, requestId: UUID): Query[UpdateSpecTable, UpdateSpecRow, Seq] =
-  updateSpecs.filter(row => row.device === deviceId && row.requestId === requestId)
+  private def queryBy(device: Uuid, requestId: UUID): Query[UpdateSpecTable, UpdateSpecRow, Seq] =
+  updateSpecs.filter(row => row.device === device && row.requestId === requestId)
 
   /**
     * Lookup by PK in [[UpdateSpecTable]] table.
@@ -133,7 +131,7 @@ object UpdateSpecs {
     * Note: A tuple is returned instead of an [[UpdateSpec]] instance because
     * the later would require joining [[RequiredPackageTable]] to populate the `dependencies` of that instance.
     */
-  def findBy(device: Device.Id, requestId: Refined[String, Uuid]): DBIO[UpdateSpecRow] = {
+  def findBy(device: Uuid, requestId: Refined[String, Uuid.Valid]): DBIO[UpdateSpecRow] = {
     queryBy(device, UUID.fromString(requestId.get)).result.head
   }
 
@@ -141,7 +139,7 @@ object UpdateSpecs {
 
   // scalastyle:off cyclomatic.complexity
 
-  def load(device: Device.Id, updateId: UUID)
+  def load(device: Uuid, updateId: UUID)
           (implicit ec: ExecutionContext) : DBIO[Option[MiniUpdateSpec]] = {
     val q = for {
       r  <- updateRequests if r.id === updateId
@@ -168,7 +166,7 @@ object UpdateSpecs {
     * @return A list of devices that the package will be installed on
     */
   def getDevicesQueuedForPackage(ns: Namespace, pkgId: PackageId) :
-    DBIO[Seq[Device.Id]] = {
+    DBIO[Seq[Uuid]] = {
     val q = for {
       s <- updateSpecs if s.status === UpdateStatus.Pending
       u <- updateRequests if s.requestId === u.id
@@ -188,7 +186,7 @@ object UpdateSpecs {
   /**
     * Rewrite in the DB the status of an [[UpdateSpec]], ie for a ([[UpdateRequest]], device) combination.
     */
-  def setStatus(device: Device.Id, updateRequestId: UUID, newStatus: UpdateStatus): DBIO[Int] = {
+  def setStatus(device: Uuid, updateRequestId: UUID, newStatus: UpdateStatus): DBIO[Int] = {
     updateSpecs
       .filter(row => row.device === device && row.requestId === updateRequestId)
       .map(_.status)
@@ -202,7 +200,7 @@ object UpdateSpecs {
     *
     * @param uuid of the [[UpdateRequest]] being cancelled for the given device
     */
-  def cancelUpdate(device: Device.Id, uuid: Refined[String, Uuid])(implicit ec: ExecutionContext): DBIO[Unit] = {
+  def cancelUpdate(device: Uuid, uuid: Refined[String, Uuid.Valid])(implicit ec: ExecutionContext): DBIO[Unit] = {
     updateSpecs
       .filter(us => us.device === device && us.requestId === uuid && us.status === UpdateStatus.Pending)
       .map(_.status)
@@ -232,6 +230,6 @@ object UpdateSpecs {
     * The [[UpdateSpec]]-s (excluding dependencies but including status) for the given [[UpdateRequest]].
     * Each element in the result corresponds to a different device.
     */
-  def listUpdatesById(updateRequestId: Refined[String, Uuid]): DBIO[Seq[UpdateSpecRow]] =
+  def listUpdatesById(updateRequestId: Refined[String, Uuid.Valid]): DBIO[Seq[UpdateSpecRow]] =
     updateSpecs.filter(s => s.requestId === UUID.fromString(updateRequestId.get)).result
 }

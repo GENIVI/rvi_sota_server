@@ -10,13 +10,10 @@ import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
 import eu.timepit.refined._
-import eu.timepit.refined.string.Uuid
-import eu.timepit.refined.string._
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.resolver.{Connectivity, ExternalResolverClient}
 import org.genivi.sota.core.transfer.UpdateNotifier
-import org.genivi.sota.data.Device
-import org.genivi.sota.data.Namespace
+import org.genivi.sota.data.{Device, Namespace, Uuid}
 import org.genivi.sota.rest.Validation.refined
 
 import scala.concurrent.ExecutionContext
@@ -28,8 +25,8 @@ import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.Messages.PackageCreated
 
 object WebService {
-  val extractDeviceUuid : Directive1[Device.Id] = refined[Uuid](Slash ~ Segment).map(Device.Id)
-  val extractUuid = refined[Uuid](Slash ~ Segment)
+  val extractUuid = refined[Uuid.Valid](Slash ~ Segment)
+  val extractDeviceUuid = refined[Uuid.Valid](Slash ~ Segment).map(Uuid(_))
 }
 
 class WebService(notifier: UpdateNotifier,

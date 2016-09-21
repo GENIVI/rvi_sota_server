@@ -12,7 +12,7 @@ import java.util.UUID
 
 import org.genivi.sota.core.db.Packages.{LiftedPackageId, LiftedPackageShape}
 import slick.driver.MySQLDriver.api._
-import org.genivi.sota.data.{Device, PackageId}
+import org.genivi.sota.data.{Device, PackageId, Uuid}
 import slick.driver.MySQLDriver.api._
 
 
@@ -36,7 +36,7 @@ object InstallHistories {
   class InstallHistoryTable(tag: Tag) extends Table[InstallHistory](tag, "InstallHistory") {
 
     def id             = column[Long]             ("id", O.AutoInc)
-    def device         = column[Device.Id]        ("device_uuid")
+    def device         = column[Uuid]             ("device_uuid")
     def updateId       = column[java.util.UUID]   ("update_request_id")
     def packageUuid    = column[UUID]             ("package_uuid")
     def success        = column[Boolean]          ("success")
@@ -64,14 +64,14 @@ object InstallHistories {
    * @param device The device to fetch data for
    * @return A list of the install history for that device
    */
-  def list(device: Device.Id): DBIO[Seq[(InstallHistory, PackageId)]] =
+  def list(device: Uuid): DBIO[Seq[(InstallHistory, PackageId)]] =
     installHistories
       .filter(_.device === device)
       .join(Packages.packages).on(_.packageUuid === _.uuid)
       .map { case (ih, pkg) => (ih, LiftedPackageId(pkg.name, pkg.version)) }
       .result
 
-  def log(device: Device.Id, updateId: java.util.UUID,
+  def log(device: Uuid, updateId: java.util.UUID,
           packageUUid: UUID, success: Boolean): DBIO[Int] = {
     installHistories += InstallHistory(None, device, updateId, packageUUid, success, Instant.now)
   }
