@@ -206,7 +206,7 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
 
     val responseF = for {
       entity <- Marshal(packageIds).to[MessageEntity]
-      req = HttpRequest(method = HttpMethods.POST, uri = baseUri.withPath(uri.path), entity = entity)
+      req = HttpRequest(method = HttpMethods.POST, uri = uri, entity = entity)
       response <- Http().singleRequest(req)
     } yield response
 
