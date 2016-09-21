@@ -15,6 +15,7 @@ import org.genivi.sota.data.{Device, PackageId}
 import org.genivi.sota.db.SlickExtensions
 import java.time.Instant
 
+import akka.http.scaladsl.marshalling.ToResponseMarshallable
 import org.genivi.sota.core.SotaCoreErrors
 import org.genivi.sota.http.Errors.MissingEntity
 import slick.driver.MySQLDriver.api._
@@ -139,12 +140,7 @@ object UpdateSpecs {
   case class UpdateSpecPackages(miniUpdateSpec: MiniUpdateSpec, packages: Queue[Package])
 
   // scalastyle:off cyclomatic.complexity
-  /**
-    * Fetch from DB zero or one [[UpdateSpec]] for the given combination ([[UpdateRequest]], device)
-    *
-    * @param deviceId The device to install on
-    * @param updateId Id of the [[UpdateRequest]] to install
-    */
+
   def load(device: Device.Id, updateId: UUID)
           (implicit ec: ExecutionContext) : DBIO[Option[MiniUpdateSpec]] = {
     val q = for {
@@ -168,16 +164,15 @@ object UpdateSpecs {
     * installed on.  Note that devices where the package has started installation,
     * or has either been installed or where the install failed are not included.
     *
-    * @param pkgName The package name to search for
-    * @param pkgVer The version of the package to search for
+    * @param pkgId The package to search for
     * @return A list of devices that the package will be installed on
     */
-  def getDevicesQueuedForPackage(ns: Namespace, pkgName: PackageId.Name, pkgVer: PackageId.Version) :
+  def getDevicesQueuedForPackage(ns: Namespace, pkgId: PackageId) :
     DBIO[Seq[Device.Id]] = {
     val q = for {
       s <- updateSpecs if s.status === UpdateStatus.Pending
       u <- updateRequests if s.requestId === u.id
-      pkg <- Packages.packages if pkg.namespace === ns && pkg.name === pkgName && pkg.version === pkg.version &&
+      pkg <- Packages.packages if pkg.namespace === ns && pkg.name === pkgId.name && pkg.version === pkgId.version &&
       u.packageUuid === pkg.uuid
     } yield s.device
     q.result
@@ -214,6 +209,24 @@ object UpdateSpecs {
       .update(UpdateStatus.Canceled)
       .handleSingleUpdateError(MissingEntity(classOf[UpdateSpec]))
   }
+
+  def cancelAllUpdatesBy(status: UpdateStatus, namespace: Namespace, packageId: PackageId)
+                        (implicit ec: ExecutionContext): DBIO[Int] = {
+    val query = for {
+      us <- updateSpecs if us.status === status
+      ur <- updateRequests if ur.id === us.requestId
+      pkg <- Packages.packages if pkg.uuid === ur.packageUuid &&
+      pkg.namespace === namespace && pkg.name === packageId.name && pkg.version === packageId.version
+    } yield ur.id
+
+    // Slick does not allow us to use `in` insteaad of `inSet`, so we need to use DBIO instead of query
+    val dbIO = query.result.flatMap { ids =>
+      updateSpecs.filter(_.requestId.inSet(ids)).map(_.status).update(UpdateStatus.Canceled)
+    }
+
+    dbIO.transactionally
+  }
+
 
   /**
     * The [[UpdateSpec]]-s (excluding dependencies but including status) for the given [[UpdateRequest]].

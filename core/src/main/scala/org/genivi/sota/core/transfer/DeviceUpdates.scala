@@ -183,6 +183,17 @@ object DeviceUpdates {
     specsWithDepsIO.failIfNone(MissingEntity(classOf[UpdateSpec]))
   }
 
+  def countQueuedBy(packageId: PackageId, namespace: Namespace): DBIO[Int] = {
+    val query = for {
+      us <- updateSpecs if us.status === UpdateStatus.Pending
+      ur <- updateRequests if ur.id === us.requestId
+      pkg <- Packages.packages if pkg.uuid === ur.packageUuid &&
+      pkg.namespace === namespace && pkg.name === packageId.name && pkg.version === packageId.version
+    } yield us.device
+
+    query.countDistinct.result
+  }
+
   /**
     * Arguments denote the number of [[UpdateRequest]] to be installed on a vehicle.
     * Each [[UpdateRequest]] may depend on a group of dependencies collected in an [[UpdateSpec]].
