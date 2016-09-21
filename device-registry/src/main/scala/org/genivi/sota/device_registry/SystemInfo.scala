@@ -9,7 +9,6 @@ import cats.std.list._
 import cats.syntax.traverse._
 import io.circe.Json
 import io.circe.jawn._
-import org.genivi.sota.data.Device
 import org.genivi.sota.data.Uuid
 import org.genivi.sota.device_registry.common.{Errors, SlickJsonHelper}
 import slick.driver.MySQLDriver.api._
