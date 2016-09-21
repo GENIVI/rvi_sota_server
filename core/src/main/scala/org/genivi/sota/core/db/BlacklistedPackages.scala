@@ -9,10 +9,10 @@ import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.core.data.client.GenericResponseEncoder
 import org.genivi.sota.core.db.Packages.{LiftedPackageId, PackageTable}
 import org.genivi.sota.http.Errors
 import org.genivi.sota.http.Errors.MissingEntity
+import org.genivi.sota.rest.GenericResponseEncoder
 
 case class BlacklistedPackage(id: UUID, namespace: Namespace,
                               packageId: PackageId, comment: String, updatedAt: Instant)

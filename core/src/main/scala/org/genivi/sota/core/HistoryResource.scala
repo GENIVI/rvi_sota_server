@@ -21,7 +21,7 @@ class HistoryResource(db: Database)
                      (implicit system: ActorSystem) extends Directives {
 
   import CirceMarshallingSupport._
-  import org.genivi.sota.core.data.client.ResponseConversions._
+  import org.genivi.sota.rest.ResponseConversions._
   import org.genivi.sota.core.data.ClientInstallHistory._
 
   /**

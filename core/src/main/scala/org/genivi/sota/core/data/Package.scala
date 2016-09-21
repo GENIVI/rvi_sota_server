@@ -8,12 +8,12 @@ import java.util.UUID
 
 import akka.http.scaladsl.model.Uri
 import io.circe.Json
-import org.genivi.sota.core.data.client.GenericResponseEncoder
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.PackageId
 import io.circe.syntax._
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceInstances._
+import org.genivi.sota.rest.GenericResponseEncoder
 
 /**
  * Domain object for a software package.

@@ -29,7 +29,7 @@ import org.genivi.sota.messaging.Messages.PackageCreated
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.rest.Validation._
 import slick.driver.MySQLDriver.api.Database
-import org.genivi.sota.core.data.client.ResponseConversions._
+import org.genivi.sota.rest.ResponseConversions._
 import org.genivi.sota.core.data.PackageResponse._
 import cats.std.future._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._

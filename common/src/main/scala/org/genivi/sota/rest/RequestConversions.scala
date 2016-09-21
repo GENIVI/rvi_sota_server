@@ -1,14 +1,14 @@
-/**
- * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
+/*
+ * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.core.data.client
+package org.genivi.sota.rest
 
+import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive, Directive1}
 import akka.http.scaladsl.unmarshalling.FromRequestUnmarshaller
-import akka.http.scaladsl.server.Directives._
-import shapeless.ops.function.FnToProduct
 import shapeless._
+import shapeless.ops.function.FnToProduct
 
 import scala.concurrent.Future
 import scala.language.implicitConversions
