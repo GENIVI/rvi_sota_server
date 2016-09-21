@@ -30,6 +30,7 @@ class DeviceUpdatesSpec extends FunSuite
   with Inspectors
   with ScalaFutures
   with DatabaseSpec
+  with DefaultPatience
   with UpdateResourcesDatabaseSpec {
 
   import DeviceGenerators._
@@ -46,7 +47,6 @@ class DeviceUpdatesSpec extends FunSuite
 
   implicit val ec = ExecutionContext.global
   implicit val _db = db
-  implicit val patience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
 
   test("forwards request to resolver client") {
     val device = genDeviceT.sample.get.copy(deviceId = Some(genDeviceId.sample.get))

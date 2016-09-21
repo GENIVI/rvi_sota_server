@@ -152,7 +152,7 @@ trait CommandUtils extends
         _       <- State.set(s.associating(pkg, filt))
         success =  !s.packages(pkg).contains(filt)
       } yield {
-        val req = addPackageFilter2(PackageFilter(pkg.namespace, pkg.id.name, pkg.id.version, filt.name))
+        val req = addPackageFilter2(pkg.id, filt.name)
         if (success) { Semantics(req, StatusCodes.OK, Success) }
         else         { Semantics(req, StatusCodes.Conflict, Failure(ErrorCodes.ConflictingEntity)) }
       }
@@ -334,8 +334,7 @@ trait InvalidCommandUtils { _: CommandUtils =>
 
   def getBadReqAddFilterToPackage(pkg: db.Package, flt: Filter)
                                  (implicit ec: ExecutionContext): Semantics = {
-    val pkf = PackageFilter(pkg.namespace, pkg.id.name, pkg.id.version, flt.name)
-    val req = addPackageFilter2(pkf)
+    val req = addPackageFilter2(pkg.id, flt.name)
     Semantics(req, StatusCodes.BadRequest, Success)
   }
 

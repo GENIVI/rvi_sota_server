@@ -26,6 +26,7 @@ class ImpactResourceSpec
     with ScalaFutures
     with DefaultPatience
     with Generators
+    with LongRequestTimeout
     with UpdateResourcesDatabaseSpec {
 
   implicit val _db = db

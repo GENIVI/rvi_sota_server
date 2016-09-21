@@ -5,7 +5,7 @@
 package org.genivi.sota.rest
 
 import shapeless.ops.function.FnToProduct
-import shapeless.{HList, _}
+import shapeless._
 
 import scala.language.implicitConversions
 

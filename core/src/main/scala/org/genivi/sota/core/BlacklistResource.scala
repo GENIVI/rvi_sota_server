@@ -19,8 +19,8 @@ import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.Messages.PackageBlacklisted
 import org.genivi.sota.messaging.Messages._
 import org.genivi.sota.core.data.UpdateStatus
-import org.genivi.sota.core.data.client.ToResponse
 import org.genivi.sota.core.transfer.DeviceUpdates
+import org.genivi.sota.rest.ToResponse
 
 case class PreviewResponse(affected_device_count: Int)
 

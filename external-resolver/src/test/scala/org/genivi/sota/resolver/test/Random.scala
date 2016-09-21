@@ -10,14 +10,16 @@ import org.genivi.sota.resolver.test.random.Misc._
 import org.genivi.sota.resolver.test.random._
 import Session._
 import org.genivi.sota.resolver.components.Component
-import org.genivi.sota.resolver.db.Package
+import org.genivi.sota.resolver.db.{Package, PackageResponse}
 import org.genivi.sota.resolver.filters.Filter
-import org.genivi.sota.rest.ErrorRepresentation
+import org.genivi.sota.rest.{ErrorRepresentation, ToResponse}
 import org.scalatest.Tag
 
 import scala.annotation.tailrec
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import org.genivi.sota.resolver.db.PackageResponse._
+import org.genivi.sota.rest.ResponseConversions._
 
 object RandomTest extends Tag("RandomTest")
 
@@ -49,8 +51,8 @@ class Random extends ResourcePropSpec {
               case Failure(c)            => responseAs[ErrorRepresentation].code           shouldBe c
               case Success               => ()
               case SuccessVehicles(vehs) => responseAs[Set[Uuid]]                       shouldBe vehs
-              case SuccessPackage(pkg)   => responseAs[Package]                            shouldBe pkg
-              case SuccessPackages(pkgs) => responseAs[Set[Package]]                       shouldBe pkgs
+              case SuccessPackage(pkg)   => responseAs[PackageResponse] shouldBe ToResponse(pkg)
+              case SuccessPackages(pkgs) => responseAs[Seq[PackageResponse]] shouldBe pkgs.toSeq.toResponse
               case SuccessPackageIds(pids) => responseAs[Set[PackageId]]                   shouldBe pids
               case SuccessFilters(filts) => responseAs[Set[Filter]]                        shouldBe filts
               case SuccessComponents(cs) => responseAs[Set[Component]]                     shouldBe cs

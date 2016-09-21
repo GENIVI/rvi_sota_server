@@ -7,7 +7,7 @@ package org.genivi.sota.resolver.db
 
 import java.time.Instant
 
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.data.{PackageId, Uuid}
 import org.genivi.sota.db.Operators._
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.resolver.db.PackageIdDatabaseConversions._
@@ -53,9 +53,12 @@ object ForeignPackages {
     def installedNow(nonForeign: Set[PackageId]): Set[InstalledForeignPackage] =
       (packages -- nonForeign).map(p => InstalledForeignPackage(device, p, now))
 
+    def installedKnown(device: Uuid): DBIO[Set[PackageId]] =
+      DeviceRepository.installedOn(device).map(_.map(_.id).toSet)
+
     val dbIO = for {
       deleteExisting <- foreignPackages.filter(_.device === device).delete
-      nonForeignInstalled <- DeviceRepository.installedOn(device)
+      nonForeignInstalled <- installedKnown(device)
       installNow = installedNow(nonForeignInstalled)
       insertCount <- foreignPackages ++= installNow
     } yield installNow

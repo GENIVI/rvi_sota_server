@@ -11,7 +11,6 @@ import akka.stream.actor.ActorSubscriberMessage.{OnComplete, OnError, OnNext}
 import akka.stream.actor.{ActorSubscriber, RequestStrategy, WatermarkRequestStrategy}
 import org.genivi.sota.data.PackageId._
 import org.genivi.sota.messaging.Messages.PackageCreated
-import org.genivi.sota.resolver.db.PackageRepository
 import org.slf4j.LoggerFactory
 import slick.driver.MySQLDriver.api._
 import cats.syntax.show.toShowOps
@@ -20,6 +19,7 @@ import org.genivi.sota.data.PackageId
 import org.genivi.sota.messaging.daemon.MessageBusListenerActor
 import org.genivi.sota.messaging.daemon.MessageBusListenerActor.Subscribe
 import org.genivi.sota.messaging.Messages._
+import org.genivi.sota.resolver.db.Package.Metadata
 import org.genivi.sota.resolver.db.{Package, PackageRepository}
 
 class PackageCreatedListener(db: Database) extends ActorSubscriber with ActorLogging {
@@ -36,9 +36,8 @@ class PackageCreatedListener(db: Database) extends ActorSubscriber with ActorLog
       log.info(s"Saved package from bus (id: ${pId.show})")
 
     case OnNext(e: PackageCreated) =>
-      val p = Package(e.namespace, e.packageId, e.description, e.vendor)
-      val dbIO = PackageRepository.add(p)
-      db.run(dbIO).map(_ => p.id).pipeTo(self)
+      val dbIO = PackageRepository.add(e.packageId, Metadata(e.namespace, e.description, e.vendor))
+      db.run(dbIO).map(_.id).pipeTo(self)
 
     case OnComplete =>
       log.info("PackageCreated Upstream completed")

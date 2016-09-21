@@ -10,9 +10,8 @@ import io.circe.generic.auto._
 import org.genivi.sota.data.{Namespaces, PackageId}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
-import org.genivi.sota.resolver.db.{Package, PackageFilter}
+import org.genivi.sota.resolver.db.{Package, PackageFilter, PackageFilterResponse, PackageResponse}
 import org.genivi.sota.resolver.filters.Filter
-import org.genivi.sota.resolver.db.PackageFilter
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 
 /**
@@ -26,12 +25,10 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec with Namespaces {
     val pkgVersion = "1.0.0"
     val filterName = "filter"
     val filterExpr = s"""vin_matches "^X.*""""
-    val pkgFilter  =
-      PackageFilter(
-        defaultNs,
-        Refined.unsafeApply(pkgName),
-        Refined.unsafeApply(pkgVersion),
-        Refined.unsafeApply(filterName))
+    val pkgFilter  = PackageFilterResponse(
+      Refined.unsafeApply(pkgName),
+      Refined.unsafeApply(pkgVersion),
+      Refined.unsafeApply(filterName))
 
     "be able to assign exisiting filters to existing packages" in {
       addPackageOK(pkgName, pkgVersion, None, None)
@@ -63,15 +60,15 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec with Namespaces {
     "list existing package filters on GET requests" in {
       listPackageFilters ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[Seq[PackageFilter]] shouldBe List(pkgFilter)
+        responseAs[Seq[PackageFilterResponse]] shouldBe List(pkgFilter)
       }
     }
 
     "list packages associated to a filter on GET requests to /filters/:filterName/package" in {
       listPackagesForFilter(filterName) ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[List[Package]] shouldBe List(
-          Package(defaultNs, PackageId(Refined.unsafeApply(pkgName), Refined.unsafeApply(pkgVersion)), None, None))
+        responseAs[List[PackageResponse]] shouldBe List(
+          PackageResponse(PackageId(Refined.unsafeApply(pkgName), Refined.unsafeApply(pkgVersion)), None, None))
       }
     }
 
@@ -141,7 +138,7 @@ class PackageFilterResourceWordSpec extends ResourceWordSpec with Namespaces {
       deleteFilterOK(filterName)
       listPackageFilters ~> route ~> check {
         status shouldBe StatusCodes.OK
-        responseAs[Seq[PackageFilter]] shouldBe List()
+        responseAs[Seq[PackageFilterResponse]] shouldBe List()
       }
     }
 

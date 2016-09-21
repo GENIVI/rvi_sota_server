@@ -17,7 +17,7 @@ import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.data.Firmware
 import org.genivi.sota.resolver.db.Package
-import org.genivi.sota.resolver.db.PackageFilter
+import org.genivi.sota.resolver.db.{PackageFilter, PackageFilterResponse}
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.resolver.resolve.ResolveFunctions
 import org.scalatest.Matchers
@@ -272,8 +272,8 @@ trait FilterRequests extends FilterRequestsHttp with Matchers {
  */
 trait PackageFilterRequestsHttp {
 
-  def addPackageFilter2(pf: PackageFilter): HttpRequest = {
-    Put(Resource.uri("packages", pf.packageName.get, pf.packageVersion.get, "filter", pf.filterName.get))
+  def addPackageFilter2(pid: PackageId, fname: Filter.Name): HttpRequest = {
+    Put(Resource.uri("packages", pid.name.get, pid.version.get, "filter", fname.get))
   }
 
   def addPackageFilter(pname: String, pversion: String, fname: String): HttpRequest =
@@ -310,8 +310,8 @@ trait PackageFilterRequests extends
   def addPackageFilterOK(pname: String, pversion: String, fname: String)(implicit route: Route): Unit =
     addPackageFilter(pname, pversion, fname) ~> route ~> check {
       status shouldBe StatusCodes.OK
-      responseAs[PackageFilter] shouldBe
-        PackageFilter(defaultNs, Refined.unsafeApply(pname), Refined.unsafeApply(pversion), Refined.unsafeApply(fname))
+      responseAs[PackageFilterResponse] shouldBe
+        PackageFilterResponse(Refined.unsafeApply(pname), Refined.unsafeApply(pversion), Refined.unsafeApply(fname))
     }
 
   def deletePackageFilterOK(pname: String, pversion: String, fname: String)(implicit route: Route): Unit =
