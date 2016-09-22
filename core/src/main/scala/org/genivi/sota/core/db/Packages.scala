@@ -79,8 +79,23 @@ object Packages {
    * @param pkg The definition of the package to add to SOTA
    * @return The package that was added
    */
-  def create(pkg: Package)(implicit ec: ExecutionContext): DBIO[Package] =
-    packages.insertOrUpdate(pkg).map(_ => pkg)
+  def create(pkg: Package)(implicit ec: ExecutionContext): DBIO[Package] = {
+    def findById(packageId: PackageId): DBIO[Option[Package]] =
+      packages
+        .filter(_.namespace === pkg.namespace).filter(_.name === pkg.id.name).filter(_.version === pkg.id.version)
+        .result.headOption
+
+    val dbio = for {
+      maybeExisting <- findById(pkg.id)
+      newPkg = maybeExisting match {
+        case Some(existing) => pkg.copy(uuid = existing.uuid)
+        case None => pkg
+      }
+      _ <- packages.insertOrUpdate(newPkg)
+    } yield pkg
+
+    dbio.transactionally
+  }
 
   def searchByRegexWithBlacklist(ns: Namespace, reg: Option[String]): DBIO[Seq[(Package, Boolean)]] =
     packages
