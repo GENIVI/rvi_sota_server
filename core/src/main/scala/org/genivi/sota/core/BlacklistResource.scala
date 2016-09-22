@@ -39,7 +39,7 @@ class BlacklistResource(namespaceExtractor: Directive1[Namespace],
     entity(as[BlacklistedPackageRequest]) { req =>
       val f = for {
         bl <- BlacklistedPackages.create(namespace, req.packageId, req.comment)
-        _ <- messageBus.publish(PackageBlacklisted(namespace, req.packageId))
+        _ <- messageBus.publishSafe(PackageBlacklisted(namespace, req.packageId))
         _ <- db.run(UpdateSpecs.cancelAllUpdatesBy(UpdateStatus.Pending, namespace, req.packageId))
       } yield StatusCodes.Created
 
