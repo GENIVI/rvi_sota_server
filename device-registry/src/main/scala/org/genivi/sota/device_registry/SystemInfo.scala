@@ -86,7 +86,7 @@ object SystemInfo extends SlickJsonHelper {
   def update(uuid: Uuid, data: SystemInfoType)(implicit ec: ExecutionContext): DBIO[Unit] = for {
     _ <- DeviceRepository.findByUuid(uuid) // check that the device exists
     newData = addUniqueIdsSI(data)
-    _ <- systemInfos.insertOrUpdate(SystemInfo(uuid, data))
+    _ <- systemInfos.insertOrUpdate(SystemInfo(uuid, newData))
   } yield ()
 
   def delete(uuid: Uuid)(implicit ec: ExecutionContext): DBIO[Int] =
