@@ -37,7 +37,6 @@ import cats.syntax.show.toShowOps
 import org.genivi.sota.http.AuthDirectives.AuthScope
 import org.genivi.sota.messaging.Messages.DeviceSeen
 import org.genivi.sota.messaging.MessageBusPublisher
-import shapeless._
 import org.genivi.sota.core.data.client.PendingUpdateRequest._
 import ResponseConversions._
 import UpdateSpec._
@@ -51,6 +50,7 @@ class DeviceUpdatesResource(db: Database,
                            (implicit system: ActorSystem, mat: ActorMaterializer,
                             connectivity: Connectivity = DefaultConnectivity) {
 
+  import shapeless._
   import Directives._
   import WebService._
   import org.genivi.sota.marshalling.CirceMarshallingSupport._

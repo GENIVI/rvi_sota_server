@@ -32,6 +32,7 @@ object BlacklistedPackages {
 
   import org.genivi.sota.refined.SlickRefined._
   import org.genivi.sota.db.SlickExtensions._
+  import Packages._
 
   type BlacklistedPkgRow = (UUID, Namespace, PackageId.Name, PackageId.Version, String, Instant)
 
@@ -194,6 +195,17 @@ object BlacklistedPackages {
 
   def findFor(namespace: Namespace)(implicit db: Database): Future[Seq[BlacklistedPackage]] =
     db.run(findAction(namespace))
+
+  def findByPackageId(namespace: Namespace, packageId: PackageId)
+                     (implicit db: Database, ec: ExecutionContext): Future[BlacklistedPackage] = {
+    for {
+      blacklist <- BlacklistedPackages.findFor(namespace)
+      found <- blacklist.find(_.packageId == packageId) match {
+        case Some(bl) => Future.successful(bl)
+        case None => Future.failed(MissingBlacklistError)
+      }
+    } yield found
+  }
 
   def impact(namespace: Namespace, impactedDevicesFn: Set[PackageId] => Future[Map[Uuid, Seq[PackageId]]])
             (implicit db: Database, ec: ExecutionContext): Future[Map[Uuid, Seq[PackageId]]] = {
