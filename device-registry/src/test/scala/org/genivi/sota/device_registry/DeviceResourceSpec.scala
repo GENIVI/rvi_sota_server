@@ -110,52 +110,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
       deleteDeviceOk(uuid)
     }
   }
-
-  property("GET request with ?regex yields devices which match the regex.") {
-
-    import RegexGenerators._
-    import scala.util.Random
-
-    def injectSubstr(s: String, substr: String): String = {
-      val pos = Random.nextInt(s.length)
-      s.take(pos) ++ substr ++ s.drop(pos)
-    }
-
-    val numDevices = 10
-
-    forAll(genConflictFreeDeviceTs(numDevices),
-           arbitrary[String Refined Regex]) { case (devices: Seq[DeviceT],
-                                                    regex: (String Refined Regex)) =>
-      whenever(devices.nonEmpty) {
-
-        val n: Int = Random.nextInt(devices.length + 1)
-        val regexInstances: Seq[String] = Range(0, n).map(_ => genStrFromRegex(regex))
-        val preparedDevices: Seq[DeviceT] =
-          Range(0, n).map { i => {
-            val uniqueName =
-              DeviceName(i.toString + injectSubstr(devices(i).deviceName.underlying, regexInstances(i)))
-            devices(i).copy(deviceName = uniqueName)
-          }}
-        val unpreparedDevices: Seq[DeviceT] = devices.drop(n)
-
-        preparedDevices.length + unpreparedDevices.length shouldBe devices.length
-
-        val created = devices.map(d => createDeviceOk(d) -> d)
-
-        val expectedUuids: Seq[Uuid] = created
-          .filter { case (_, d) => regex.get.r.findFirstIn(d.deviceName.underlying).isDefined }
-          .map(_._1)
-
-        searchDevice(defaultNs, regex.get) ~> route ~> check {
-          val matchingDevices: Seq[Device] = responseAs[Seq[Device]]
-          matchingDevices.map(_.uuid).toSet shouldBe expectedUuids.toSet
-        }
-
-        created.map(_._1).foreach(deleteDeviceOk(_))
-      }
-    }
-  }
-
+  
   property("PUT request after POST succeeds with updated device.") {
     forAll(genConflictFreeDeviceTs(2)) { case Seq(d1, d2) =>
 
