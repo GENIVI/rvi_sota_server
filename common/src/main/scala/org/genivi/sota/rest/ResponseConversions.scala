@@ -1,10 +1,9 @@
-/**
- * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
+/*
+ * Copyright: Copyright (C) 2015, Jaguar Land Rover
  * License: MPL-2.0
  */
-package org.genivi.sota.core.data.client
+package org.genivi.sota.rest
 
-import shapeless.HList
 import shapeless.ops.function.FnToProduct
 import shapeless._
 

@@ -101,10 +101,12 @@ object DbDepResolver {
 
     val queryIO =
       sql"""
-            SELECT tmp.device_id, ip.packageName, ip.packageVersion, ic.partNumber
+            SELECT tmp.device_id, p.name, p.version, ic.partNumber
              from #$tmptable tmp
               left join #${DeviceRepository.installedPackages.baseTableRow.tableName} ip
               ON ip.device_uuid = tmp.device_id
+              left join #${PackageRepository.packages.baseTableRow.tableName} p
+              ON p.uuid = ip.package_uuid
               left join #${DeviceRepository.installedComponents.baseTableRow.tableName} ic
               ON ic.device_uuid = tmp.device_id
               order by tmp.device_id asc

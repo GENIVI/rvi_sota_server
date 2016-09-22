@@ -37,7 +37,7 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
   import eu.timepit.refined.string.uuidValidate
   import system.dispatcher
   import ClientUpdateRequest._
-  import RequestConversions._
+  import org.genivi.sota.rest.RequestConversions._
 
   implicit val _db = db
 
@@ -72,7 +72,7 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
     */
   def createUpdate(ns: Namespace): Route = {
     import ClientUpdateRequest._
-    import ResponseConversions._
+    import org.genivi.sota.rest.ResponseConversions._
 
     clientUpdateRequest(ns) { case (creq: ClientUpdateRequest, req: UpdateRequest) =>
       val resultF = updateService.queueUpdate(ns, req, pkg => resolver.resolve(ns, pkg.id))

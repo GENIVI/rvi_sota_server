@@ -53,7 +53,7 @@ class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
 
   def getPackages(device: Uuid, regexFilter: Option[Refined[String, Regex]]): Route = {
     val result = for {
-      native <- DeviceRepository.installedOn(device, regexFilter.map(_.get))
+      native <- DeviceRepository.installedOn(device, regexFilter.map(_.get)).map(_.map(_.id))
       foreign <- ForeignPackages.installedOn(device, regexFilter.map(_.get))
     } yield native ++ foreign
 

@@ -9,10 +9,11 @@ import java.time.Instant
 import org.genivi.sota.data.{Device, PackageId, Uuid}
 import java.util.UUID
 
-import org.genivi.sota.core.data.client.GenericResponseEncoder
+import org.genivi.sota.rest.GenericResponseEncoder
 
 /**
  * Domain object for the update operation result
+ *
  * @param id The unique id of operation.
  * @param updateId Id of update this operation belongs to.
  * @param resultCode The status of operation.

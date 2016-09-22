@@ -4,6 +4,8 @@
  */
 package org.genivi.sota.resolver.db
 
+import java.util.UUID
+
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.refineV
@@ -90,82 +92,75 @@ object DeviceRepository {
    */
 
   // scalastyle:off
-  class InstalledPackageTable(tag: Tag) extends Table[(Namespace, Uuid, PackageId)](tag, "InstalledPackage") {
-    def device         = column[Uuid]("device_uuid")
-    def namespace      = column[Namespace]("namespace")
-    def packageName    = column[PackageId.Name]("packageName")
-    def packageVersion = column[PackageId.Version]("packageVersion")
+  class InstalledPackageTable(tag: Tag) extends Table[(Uuid, UUID)](tag, "InstalledPackage") {
+    def device = column[Uuid]("device_uuid")
+    def packageUuid = column[UUID]("package_uuid")
 
     // insertOrUpdate buggy for composite-keys, see Slick issue #966.
-    def pk = primaryKey("pk_installedPackage", (namespace, device, packageName, packageVersion))
+    def pk = primaryKey("pk_installedPackage", (device, packageUuid))
 
-    def * = (namespace, device, packageName, packageVersion).shaped <>
-      (p => (p._1, p._2, PackageId(p._3, p._4)),
-        (vp: (Namespace, Uuid, PackageId)) => Some((vp._1, vp._2, vp._3.name, vp._3.version)))
+    def * = (device, packageUuid).shaped <> (identity, (vp: (Uuid, UUID)) => Some(vp))
   }
   // scalastyle:on
 
   val installedPackages = TableQuery[InstalledPackageTable]
 
-  def installPackage
-  (namespace: Namespace, device: Uuid, pkgId: PackageId)
-  (implicit ec: ExecutionContext): DBIO[Unit] =
+  def installPackage(namespace: Namespace, device: Uuid, pkgId: PackageId)
+                    (implicit ec: ExecutionContext): DBIO[Unit] =
     for {
-      _ <- PackageRepository.exists(namespace, pkgId)
-      _ <- installedPackages.insertOrUpdate((namespace, device, pkgId))
+      pkg <- PackageRepository.exists(namespace, pkgId)
+      _ <- installedPackages.insertOrUpdate((device, pkg.uuid))
     } yield ()
 
-  def uninstallPackage
-  (namespace: Namespace, device: Uuid, pkgId: PackageId)
-  (implicit ec: ExecutionContext): DBIO[Unit] =
+  def uninstallPackage(namespace: Namespace, device: Uuid, pkgId: PackageId)
+                      (implicit ec: ExecutionContext): DBIO[Unit] =
     for {
-      _ <- PackageRepository.exists(namespace, pkgId)
-      _ <- installedPackages.filter {ip =>
-        ip.namespace === namespace &&
-          ip.device === device &&
-          ip.packageName === pkgId.name &&
-          ip.packageVersion === pkgId.version
-      }.delete
+      pkg <- PackageRepository.exists(namespace, pkgId)
+      _ <- installedPackages.filter { ip => ip.device === device && ip.packageUuid === pkg.uuid }.delete
     } yield ()
 
   def updateInstalledPackages(namespace: Namespace, device: Uuid, packages: Set[PackageId] )
                              (implicit ec: ExecutionContext): DBIO[Unit] = {
-    def filterAvailablePackages(ids: Set[PackageId]) : DBIO[Set[PackageId]] =
-      PackageRepository.load(namespace, ids).map(_.map(_.id))
+    def filterAvailablePackages(ids: Set[UUID]) : DBIO[Set[UUID]] =
+      PackageRepository.loadByUuids(ids).map(_.map(_.uuid).toSet)
 
-    def helper(newPackages: Set[PackageId], deletedPackages: Set[PackageId] )
-              (implicit ec: ExecutionContext) : DBIO[Unit] = DBIO.seq(
-      installedPackages.filter( ip =>
-        ip.device === device &&
-          (ip.packageName.mappedTo[String] ++ ip.packageVersion.mappedTo[String])
-            .inSet( deletedPackages.map( id => id.name.get + id.version.get ))
-      ).delete,
-      installedPackages ++= newPackages.map((namespace, device, _))
-    ).transactionally
+    def deleteOld(deletedPackages: Set[UUID]) =
+      installedPackages
+        .filter(_.device === device)
+        .filter(_.packageUuid.inSet(deletedPackages))
+        .delete
 
-    for {
-      installedPackages <- DeviceRepository.installedOn(device)
-      newPackages       =  packages -- installedPackages
-      deletedPackages   =  installedPackages -- packages
+    def insertNew(newPackages: Set[UUID]) = installedPackages ++= newPackages.map((device, _))
+
+    val dbio = for {
+      packageUuids <- PackageRepository.toPackageUuids(namespace, packages)
+      installedPackages <- DeviceRepository.installedOn(device).map(_.map(_.uuid))
+      newPackages = packageUuids -- installedPackages
+      deletedPackages = installedPackages -- packageUuids
       newAvailablePackages <- filterAvailablePackages(newPackages)
-      _ <- helper(newAvailablePackages, deletedPackages)
+      _ <- insertNew(newAvailablePackages)
+      _ <- deleteOld(deletedPackages)
     } yield ()
+
+    dbio.transactionally
   }
 
   def installedOn(device: Uuid, regexFilter: Option[String] = None)
-                 (implicit ec: ExecutionContext) : DBIO[Set[PackageId]] = {
+                 (implicit ec: ExecutionContext) : DBIO[Set[Package]] = {
     installedPackages
-      .filter(_.device === device)
-      .regexFilter(regexFilter)(_.packageName, _.packageVersion)
-      .result.map(_.map(_._3).toSet)
+      .join(PackageRepository.packages).on(_.packageUuid === _.uuid)
+      .regexFilter(regexFilter)(_._2.name, _._2.version)
+      .filter(_._1.device === device)
+      .map { case (_, pkg) => pkg }
+      .result
+      .map(_.toSet)
   }
 
   def listInstalledPackages: DBIO[Seq[(Namespace, Uuid, PackageId)]] =
-    installedPackages.result
-  // TODO: namespaces?
-
-  def deleteInstalledPackageById(namespace: Namespace, device: Uuid): DBIO[Int] =
-    installedPackages.filter(i => i.namespace === namespace && i.device === device).delete
+    installedPackages
+      .join(PackageRepository.packages).on(_.packageUuid === _.uuid)
+      .map { case (ip, p) => (p.namespace, ip.device, LiftedPackageId(p.name, p.version))}
+      .result
 
   /*
    * Installed components.
@@ -249,18 +244,11 @@ object DeviceRepository {
     } yield searchResult
   }
 
-  private def inSetQuery(ids: Set[PackageId]): Query[InstalledPackageTable, (Namespace, Uuid, PackageId), Seq] = {
-    installedPackages.filter { pid =>
-      (pid.packageName.mappedTo[String] ++ pid.packageVersion.mappedTo[String])
-        .inSet(ids.map(id => id.name.get + id.version.get))
-    }
-  }
-
   def allInstalledPackagesById(namespace: Namespace, ids: Set[PackageId])
                               (implicit ec: ExecutionContext): DBIO[Map[Uuid, Seq[PackageId]]] = {
-    inSetQuery(ids)
-      .filter(_.namespace === namespace)
-      .map(row => (row.device, LiftedPackageId(row.packageName, row.packageVersion)))
+    installedPackages.join(PackageRepository.inSetQuery(ids)).on(_.packageUuid === _.uuid)
+      .filter(_._2.namespace === namespace)
+      .map { case (ip, pkg) => (ip.device, LiftedPackageId(pkg.name, pkg.version)) }
       .union(ForeignPackages.installedQuery(ids))
       .result
       .map {
@@ -269,5 +257,5 @@ object DeviceRepository {
           acc + (device -> all)
         }
       }
-  }
+    }
 }

@@ -4,10 +4,12 @@
  */
 package org.genivi.sota.resolver.db
 
+import java.util.UUID
+
 import org.genivi.sota.data.{Namespace, PackageId}
-import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
+import org.genivi.sota.resolver.db.PackageIdDatabaseConversions.LiftedPackageId
 import org.genivi.sota.resolver.filters.{Filter, FilterRepository}
 import slick.driver.MySQLDriver.api._
 
@@ -19,23 +21,25 @@ import scala.concurrent.ExecutionContext
  */
 object PackageFilterRepository {
 
-  /**
-   * DAO Mapping Class for the PackageFilters table in the database
-   */
+  import org.genivi.sota.db.SlickExtensions._
+  import org.genivi.sota.db.Operators._
+
   // scalastyle:off
   class PackageFilterTable(tag: Tag) extends Table[PackageFilter](tag, "PackageFilter") {
 
-    def namespace      = column[Namespace]("namespace")
-    def packageName    = column[PackageId.Name]("packageName")
-    def packageVersion = column[PackageId.Version]("packageVersion")
-    def filterName     = column[Filter.Name]("filterName")
+    def namespace = column[Namespace]("namespace")
+    def packageUuid = column[UUID]("package_uuid")
+    def filterName = column[Filter.Name]("filterName")
 
     // insertOrUpdate buggy for composite-keys, see Slick issue #966.
-    def pk = primaryKey("pk_packageFilter", (namespace, packageName, packageVersion, filterName))
+    def pk = primaryKey("pk_packageFilter", (packageUuid, filterName))
 
-    def * = (namespace, packageName, packageVersion, filterName).shaped <>
-      (p => PackageFilter(p._1, p._2, p._3, p._4),
-        (pf: PackageFilter) => Some((pf.namespace, pf.packageName, pf.packageVersion, pf.filterName)))
+    def pkg_filter_fk = foreignKey("filter_fk", (namespace, filterName),
+      FilterRepository.filters)(r => (r.namespace, r.name))
+
+    def * = (namespace, packageUuid, filterName).shaped <>
+      (p => PackageFilter(p._1, p._2, p._3),
+        (pf: PackageFilter) => Some((pf.namespace, pf.packageUuid, pf.filterName)))
   }
   // scalastyle:on
 
@@ -46,69 +50,42 @@ object PackageFilterRepository {
     *
     * @return     A DBIO[Seq[PackageFilter]] for the package filters in the table
    */
-  def list: DBIO[Seq[PackageFilter]] = packageFilters.result
+  def list: DBIO[Seq[(PackageFilter, PackageId)]] =
+  packageFilters.join(PackageRepository.packages).on(_.packageUuid === _.uuid)
+    .map { case (filter, pkg) => (filter, LiftedPackageId(pkg.name, pkg.version)) }
+    .result
 
-  def exists(pf: PackageFilter)(implicit ec: ExecutionContext): DBIO[PackageFilter] =
-    packageFilters
-      .filter(r => r.namespace      === pf.namespace
-                && r.packageName    === pf.packageName
-                && r.packageVersion === pf.packageVersion
-                && r.filterName     === pf.filterName)
-      .result
-      .headOption
-      .flatMap(_.
-        fold[DBIO[PackageFilter]]
-          (DBIO.failed(Errors.MissingPackageFilter))
-          (DBIO.successful))
-
-  /**
-   * Adds a package filter to the resolver
-    *
-    * @param pf   The filter to add
-   * @return     A DBIO[PackageFilter] for the added PackageFilter
-   * @throws     Errors.MissingPackageException if the named package does not exist
-   * @throws     Errors.MissingFilterException if the named filter does not exist
-   */
-  def addPackageFilter(pf: PackageFilter)
-                      (implicit db: Database, ec: ExecutionContext): DBIO[PackageFilter] =
+  def addPackageFilter(namespace: Namespace, packageId: PackageId, name: Filter.Name)
+                      (implicit db: Database, ec: ExecutionContext): DBIO[PackageFilter] = {
     for {
-      _ <- PackageRepository.exists(pf.namespace, PackageId(pf.packageName, pf.packageVersion))
-      _ <- FilterRepository.exists(pf.namespace, pf.filterName)
-      _ <- packageFilters += pf
-    } yield pf
+      pkg <- PackageRepository.exists(namespace, packageId)
+      filter = PackageFilter(namespace, pkg.uuid, name)
+      _ <- FilterRepository.exists(namespace, name)
+      _ <- packageFilters += filter
+    } yield filter
+  }
 
-  /**
-   * Lists the packages for a filter
-    *
-    * @param fname  The name of the filter for which to list the packages
-   * @return       A DBIO[Seq[Package]] of associated packages
-   * @throws       Errors.MissingFilterException if the named filter does not exist
-   */
   def listPackagesForFilter(namespace: Namespace, fname: Filter.Name)
                            (implicit db: Database, ec: ExecutionContext): DBIO[Seq[Package]] =
 
     FilterRepository.exists(namespace, fname) andThen {
       val q = for {
-        pf <- packageFilters.filter(i => i.namespace === namespace && i.filterName === fname)
-        ps <- PackageRepository.packages
-                .filter(pkg => pkg.name    === pf.packageName
-                            && pkg.version === pf.packageVersion)
+        ps <- PackageRepository.packages if ps.namespace === namespace
+        pf <- packageFilters if pf.filterName === fname && pf.packageUuid === ps.uuid
       } yield ps
       q.result
     }
 
   def listFiltersForPackage(namespace: Namespace, pkgId: PackageId)
                            (implicit ec: ExecutionContext): DBIO[Seq[Filter]] = {
-    PackageRepository.exists(namespace, pkgId) andThen {
-      val q = for {
-        pf <- packageFilters.filter(pf => pf.namespace      === namespace
-                                       && pf.packageName    === pkgId.name
-                                       && pf.packageVersion === pkgId.version)
-        fs <- FilterRepository.filters
-          .filter(i => i.namespace === namespace && i.name === pf.filterName)
-      } yield fs
-      q.result
-    }
+    val q = for {
+      pkg <- PackageRepository.packages if pkg.namespace === namespace && pkg.name === pkgId.name &&
+      pkg.version === pkgId.version
+      pf <- packageFilters if pf.packageUuid === pkg.uuid
+      fs <- FilterRepository.filters.filter(i => i.namespace === namespace && i.name === pf.filterName)
+    } yield fs
+
+    PackageRepository.exists(namespace, pkgId).andThen(q.result).transactionally
   }
 
 
@@ -118,22 +95,34 @@ object PackageFilterRepository {
     * @param fname   The name of the filter to delete
    * @return        A DBIO[Int] number of filters deleted
    */
-  def deletePackageFilterByFilterName(namespace: Namespace, fname: Filter.Name): DBIO[Int] =
-    packageFilters.filter(i => i.namespace === namespace && i.filterName === fname).delete
+  def deletePackageFilterByFilterName(namespace: Namespace, fname: Filter.Name)
+                                     (implicit ec: ExecutionContext): DBIO[Int] = {
+    PackageRepository.packages
+      .filter(_.namespace === namespace)
+      .map(_.uuid)
+      .result
+      .flatMap { packageUuids =>
+        packageFilters
+          .filter(_.packageUuid.inSet(packageUuids))
+          .filter(_.filterName === fname)
+          .delete
+      }
+      .transactionally
+  }
 
-  /**
-   * Deletes a package filter
-    *
-    * @param pf    The name of the package filter to be deleted
-   * @return      A DBIO[Int] number of filters deleted
-   */
-  def deletePackageFilter(pf: PackageFilter)(implicit ec: ExecutionContext): DBIO[Int] =
-    PackageFilterRepository.exists(pf) andThen
-    packageFilters
-      .filter(r => r.namespace      === pf.namespace
-                && r.packageName    === pf.packageName
-                && r.packageVersion === pf.packageVersion
-                && r.filterName     === pf.filterName)
-      .delete
-
+  def deletePackageFilter(namespace: Namespace, packageId: PackageId, fname: Filter.Name)
+                         (implicit ec: ExecutionContext): DBIO[Unit] =
+    PackageRepository.packages
+      .filter(_.namespace === namespace)
+      .filter(_.name === packageId.name)
+      .filter(_.version === packageId.version)
+      .map(_.uuid)
+      .result
+      .flatMap { packageUuids =>
+        packageFilters
+          .filter(_.filterName === fname)
+          .delete
+          .handleSingleUpdateError(Errors.MissingPackageFilter)
+      }
+      .transactionally
 }

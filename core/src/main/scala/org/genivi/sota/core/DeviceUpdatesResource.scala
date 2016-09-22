@@ -16,7 +16,6 @@ import io.circe.Json
 import java.util.UUID
 
 import org.genivi.sota.common.DeviceRegistry
-import org.genivi.sota.core.data.client.ResponseConversions
 import org.genivi.sota.core.db.{BlockedInstalls, OperationResults, UpdateSpecs}
 import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, ExternalResolverClient}
 import org.genivi.sota.core.rvi.InstallReport
@@ -38,8 +37,8 @@ import org.genivi.sota.http.AuthDirectives.AuthScope
 import org.genivi.sota.messaging.Messages.DeviceSeen
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.core.data.client.PendingUpdateRequest._
-import ResponseConversions._
 import UpdateSpec._
+import org.genivi.sota.rest.ResponseConversions._
 
 class DeviceUpdatesResource(db: Database,
                             resolverClient: ExternalResolverClient,

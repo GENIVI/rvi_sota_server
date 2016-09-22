@@ -4,11 +4,13 @@
  */
 package org.genivi.sota.resolver.db
 
+import java.util.UUID
+
 import org.genivi.sota.data.{Namespace, PackageId}
 import org.genivi.sota.db.Operators._
-import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
+import org.genivi.sota.resolver.db.Package.Metadata
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
@@ -28,12 +30,15 @@ object PackageIdDatabaseConversions {
  */
 object PackageRepository {
 
+  import org.genivi.sota.db.SlickExtensions._
+
   /**
    * DAO Mapping Class for the Package table in the database
    */
   // scalastyle:off
   private[db] class PackageTable(tag: Tag) extends Table[Package](tag, "Package") {
 
+    def uuid        = column[UUID]("uuid")
     def namespace   = column[Namespace]("namespace")
     def name        = column[PackageId.Name]("name")
     def version     = column[PackageId.Version]("version")
@@ -41,24 +46,35 @@ object PackageRepository {
     def vendor      = column[String]("vendor")
 
     // insertOrUpdate buggy for composite-keys, see Slick issue #966.
-    def pk = primaryKey("pk_package", (namespace, name, version))
+    def pk = primaryKey("pk_package", uuid)
 
-    def * = (namespace, name, version, description.?, vendor.?).shaped <>
-      (pkg => Package(pkg._1, PackageId(pkg._2, pkg._3), pkg._4, pkg._5),
-        (pkg: Package) => Some((pkg.namespace, pkg.id.name, pkg.id.version, pkg.description, pkg.vendor)))
+    def * = (uuid, namespace, name, version, description.?, vendor.?).shaped <>
+      (pkg => Package(pkg._1, pkg._2, PackageId(pkg._3, pkg._4), pkg._5, pkg._6),
+        (pkg: Package) => Some((pkg.uuid, pkg.namespace, pkg.id.name, pkg.id.version, pkg.description, pkg.vendor)))
   }
   // scalastyle:on
 
   protected[db] val packages = TableQuery[PackageTable]
 
-  /**
-   * Adds a package to the Package table. Updates an existing package if already present.
- *
-   * @param pkg   The package to add
-   * @return      A DBIO[Int] for the number of rows inserted
-   */
-  def add(pkg: Package): DBIO[Int] =
-    packages.insertOrUpdate(pkg)
+  def add(id: PackageId, metadata: Metadata)(implicit ec: ExecutionContext): DBIO[Package] = {
+    def findById(packageId: PackageId): DBIO[Option[Package]] =
+      packages
+        .filter(_.namespace === metadata.namespace).filter(_.name === id.name).filter(_.version === id.version)
+        .result.headOption
+
+    val pkg = Package(UUID.randomUUID(), metadata.namespace, id, metadata.description, metadata.vendor)
+
+    val dbio = for {
+      maybeExisting <- findById(id)
+      newPkg = maybeExisting match {
+        case Some(existing) => pkg.copy(uuid = existing.uuid)
+        case None => pkg
+      }
+      _ <- packages.insertOrUpdate(newPkg)
+    } yield pkg
+
+    dbio.transactionally
+  }
 
   /**
    * Lists the packages in the Package table
@@ -73,7 +89,6 @@ object PackageRepository {
  *
    * @param pkgId   The Id of the package to check for
    * @return        The DBIO[Package] if the package exists
-   * @throws        Errors.MissingPackageException if thepackage does not exist
    */
   def exists(namespace: Namespace, pkgId: PackageId)(implicit ec: ExecutionContext): DBIO[Package] =
     packages
@@ -96,5 +111,24 @@ object PackageRepository {
       x.namespace === namespace &&
       (x.name.mappedTo[String] ++ x.version.mappedTo[String] inSet ids.map(id => id.name.get + id.version.get))
     ).result.map( _.toSet )
+  }
+
+  def loadByUuids(uuids: Set[UUID]): DBIO[Seq[Package]] = {
+    packages.filter(_.uuid.inSet(uuids)).result
+  }
+
+  protected[db] def toPackageUuids(namespace: Namespace, ids: Set[PackageId])
+                                  (implicit ec: ExecutionContext): DBIO[Set[UUID]] = {
+    inSetQuery(ids)
+      .filter(_.namespace === namespace)
+      .map(_.uuid)
+      .result
+      .map(_.toSet)
+  }
+
+  protected[db] def inSetQuery(ids: Set[PackageId]): Query[PackageTable, Package, Seq] = {
+    packages.filter { pkg =>
+      (pkg.name.mappedTo[String] ++ pkg.version.mappedTo[String]).inSet(ids.map(id => id.name.get + id.version.get))
+    }
   }
 }
