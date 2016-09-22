@@ -15,7 +15,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
-
+import slick.driver.MySQLDriver.api._
 import scala.concurrent.{Await, Future}
 import scala.util.Random
 
@@ -46,7 +46,8 @@ class UpdateServiceSpec extends PropSpec
   override def beforeAll() : Unit = {
     super.beforeAll()
     import scala.concurrent.duration.DurationInt
-    Await.ready( Future.sequence( packages.map( p => db.run( Packages.create(p) ) )), 50.seconds)
+    val dbio = DBIO.sequence(packages.map(Packages.create)).transactionally
+    Await.ready(db.run(dbio), 50.seconds)
   }
 
   import Generators._

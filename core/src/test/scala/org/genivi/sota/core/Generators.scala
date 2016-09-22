@@ -61,7 +61,7 @@ trait Generators {
     sig          <- Gen.alphaStr
     desc         <- Gen.option(Gen.alphaStr)
     reqConfirm   <- arbitrary[Boolean]
-  } yield UpdateRequest(id, packageUuid, Instant.now, Interval(startAfter, finishBefore),
+  } yield UpdateRequest(UUID.randomUUID(), packageUuid, Instant.now, Interval(startAfter, finishBefore),
       prio, sig, desc, reqConfirm)
 
   def vinDepGen(packages: Seq[Package]) : Gen[(Uuid, Set[PackageId])] = for {
