@@ -19,6 +19,7 @@ import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.Messages.PackageBlacklisted
 import org.genivi.sota.messaging.Messages._
 import org.genivi.sota.core.data.UpdateStatus
+import org.genivi.sota.core.data.client.ToResponse
 import org.genivi.sota.core.transfer.DeviceUpdates
 
 case class PreviewResponse(affected_device_count: Int)
@@ -53,8 +54,9 @@ class BlacklistResource(namespaceExtractor: Directive1[Namespace],
   def getNamespaceBlacklist(namespace: Namespace): Route =
     complete(BlacklistedPackages.findFor(namespace).map(_.toResponse))
 
-  def getPackageBlacklist(namespace: Namespace, packageId: PackageId): Route =
-    complete(BlacklistedPackages.findFor(namespace).map(_.toResponse))
+  def getPackageBlacklist(namespace: Namespace, packageId: PackageId): Route = {
+    complete(BlacklistedPackages.findByPackageId(namespace, packageId).map(ToResponse(_)))
+  }
 
   def deletePackageBlacklist(namespace: Namespace, packageId: PackageId): Route =
     complete(BlacklistedPackages.remove(namespace, packageId).map(_ => StatusCodes.OK))
@@ -71,8 +73,10 @@ class BlacklistResource(namespaceExtractor: Directive1[Namespace],
       } ~
       extractPackageId { pkgId =>
         (path("preview") & get) { preview(ns, pkgId) } ~
-        get { getPackageBlacklist(ns, pkgId) } ~
-        delete { deletePackageBlacklist(ns, pkgId) }
+        pathEnd {
+          get { getPackageBlacklist(ns, pkgId) } ~
+          delete { deletePackageBlacklist(ns, pkgId) }
+        }
       }
     }
 }

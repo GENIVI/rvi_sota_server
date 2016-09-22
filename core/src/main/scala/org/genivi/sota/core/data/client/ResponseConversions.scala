@@ -27,15 +27,15 @@ object GenericResponseEncoder {
     }
 }
 
+object ToResponse {
+  def apply[C, S](v: S)(implicit encoder: ResponseEncoder[S, C, HNil]): C = encoder(v, HNil)
+}
+
 trait ResponseEncoder[S, C, A] {
   def apply(v: S, args: A): C
 }
 
 object ResponseConversions {
-  trait ToResponse[C] {
-    def toResponse: C
-  }
-
   trait ToResponseSeq[C] {
     def toResponse: Seq[C]
   }

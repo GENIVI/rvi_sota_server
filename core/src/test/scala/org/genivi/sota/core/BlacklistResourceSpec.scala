@@ -91,6 +91,16 @@ class BlacklistResourceSpec extends FunSuite
     }
   }
 
+  test("blacklist for a specific package can be retrieved") {
+    val pkg = createBlacklist()
+
+    Get(s"/blacklist/${pkg.id.name.get}/${pkg.id.version.get}") ~> serviceRoute ~> check {
+      val r = responseAs[BlacklistedPackageResponse]
+      r.packageId shouldBe pkg.id
+      r.comment shouldBe "Some comment"
+    }
+  }
+
   test("updating a missing package returns NotFound") {
     val pkg = PackageGen.sample.get
     db.run(Packages.create(pkg)).futureValue
