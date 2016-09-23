@@ -102,7 +102,7 @@ object Packages {
       .filter(_.namespace === ns)
       .regexFilter(reg)(_.name, _.version)
       .joinLeft(BlacklistedPackages.active)
-      .on { case (pkg, bl) => pkg.name === bl.pkgName && pkg.version === bl.pkgVersion }
+      .on { case (p, bl) => p.namespace === bl.namespace && p.name === bl.pkgName && p.version === bl.pkgVersion }
       .map { case (pkg, blacklistO) =>  (pkg, blacklistO.map(_.active).getOrElse(false)) }
       .result
 
