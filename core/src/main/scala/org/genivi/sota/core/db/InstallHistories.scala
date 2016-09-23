@@ -4,16 +4,16 @@
  */
 package org.genivi.sota.core.db
 
-import org.genivi.sota.core.data.InstallHistory
-import org.genivi.sota.core.data.UpdateRequest
-import org.genivi.sota.core.data.UpdateSpec
+import org.genivi.sota.core.data.{InstallHistory, UpdateRequest, UpdateSpec, UpdateStatus}
 import java.time.Instant
 import java.util.UUID
 
 import org.genivi.sota.core.db.Packages.{LiftedPackageId, LiftedPackageShape}
+import org.genivi.sota.data.{PackageId, Uuid}
+import shapeless._
 import slick.driver.MySQLDriver.api._
-import org.genivi.sota.data.{Device, PackageId, Uuid}
-import slick.driver.MySQLDriver.api._
+
+import scala.concurrent.ExecutionContext
 
 
 /**
@@ -26,6 +26,9 @@ object InstallHistories {
 
   import org.genivi.sota.db.SlickExtensions._
   import org.genivi.sota.refined.SlickRefined._
+  import UpdateStatus._
+  import org.genivi.sota.db.Operators._
+  import UpdateSpecs.UpdateStatusColumn
 
   /**
     * A log of update installs attempted on a device.
@@ -45,7 +48,9 @@ object InstallHistories {
     // given `id` is already unique across namespaces, no need to include namespace. Also avoids Slick issue #966.
     def pk = primaryKey("pk_InstallHistoryTable", id)
 
-    def * = (id.?, device, updateId, packageUuid, success, completionTime).shaped <>
+    def tuple = (id.?, device, updateId, packageUuid, success, completionTime)
+
+    def * = tuple.shaped <>
       (r => InstallHistory(r._1, r._2, r._3, r._4, r._5, r._6),
         (h: InstallHistory) =>
           Some((h.id, h.device, h.updateId, h.packageUuid, h.success, h.completionTime)))
@@ -64,12 +69,16 @@ object InstallHistories {
    * @param device The device to fetch data for
    * @return A list of the install history for that device
    */
-  def list(device: Uuid): DBIO[Seq[(InstallHistory, PackageId)]] =
+  def list(device: Uuid)
+          (implicit ec: ExecutionContext): DBIO[Seq[(InstallHistory, PackageId :: Boolean :: HNil)]] = {
     installHistories
       .filter(_.device === device)
       .join(Packages.packages).on(_.packageUuid === _.uuid)
-      .map { case (ih, pkg) => (ih, LiftedPackageId(pkg.name, pkg.version)) }
+      .joinLeft(UpdateSpecs.updateSpecs).on(_._1.updateId === _.requestId)
+      .map { case ((ih, pkg), us) => (ih, LiftedPackageId(pkg.name, pkg.version), us.map(_.status)) }
       .result
+      .map { _.map { case (ih, pkgId, status) => (ih, pkgId :: status.contains(UpdateStatus.Canceled) :: HNil) } }
+  }
 
   def log(device: Uuid, updateId: java.util.UUID,
           packageUUid: UUID, success: Boolean): DBIO[Int] = {
@@ -86,5 +95,14 @@ object InstallHistories {
     */
   def log(spec: UpdateSpec, success: Boolean): DBIO[Int] = {
     log(spec.device, spec.request.id, spec.request.packageUuid, success)
+  }
+
+  protected [db] def logAll(updateRequests: Query[Rep[UUID], UUID, Seq], success: Boolean): DBIO[Int] = {
+    val query = for {
+      us <- UpdateSpecs.updateSpecs if us.requestId.in(updateRequests)
+      ur <- UpdateRequests.all if ur.id === us.requestId
+    } yield (Option.empty[Long], us.device, us.requestId, ur.packageUuid, success, Instant.now)
+
+    installHistories.map(_.tuple).forceInsertQuery(query)
   }
 }
