@@ -45,6 +45,7 @@ class WebService(notifier: UpdateNotifier,
   import eu.timepit.refined._
   import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 
+  val campaignResource = new CampaignResource(db, authNamespace)
   val devicesResource = new DevicesResource(db, connectivity.client, resolver, deviceRegistry, authNamespace)
   val packagesResource = new PackagesResource(resolver, db, messageBusPublisher, authNamespace)
   val updateService = new UpdateService(notifier, deviceRegistry)
@@ -54,11 +55,12 @@ class WebService(notifier: UpdateNotifier,
   val impactResource = new ImpactResource(authNamespace, resolver)(db, system)
 
   val route = (handleErrors & pathPrefix("api" / "v1")) {
+    campaignResource.route ~
     devicesResource.route ~
-      packagesResource.route ~
-      updateRequestsResource.route ~
-      historyResource.route ~
-      blacklistResource.route ~
-      impactResource.route
+    packagesResource.route ~
+    updateRequestsResource.route ~
+    historyResource.route ~
+    blacklistResource.route ~
+    impactResource.route
   }
 }

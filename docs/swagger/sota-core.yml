@@ -122,6 +122,121 @@ paths:
             type: array
             items:
               type: string
+  /campaign:
+    get:
+      description: 'List all campaigns'
+      responses:
+        200:
+          description: A list of campaign objects
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CampaignMeta'
+    post:
+      description: 'Create a new campaign'
+      parameters:
+      - name: body
+        in: body
+        description: The name of the new campaign
+        required: true
+        schema:
+          $ref: '#/definitions/CampaignCreate'
+      responses:
+        201:
+          description: The new uuid of the created campaign
+          schema:
+            $ref: '#/definitions/uuid'
+  /campaigns/{uuid}:
+    get:
+      description: 'Get a campaign from uuid'
+      parameters:
+      - name: uuid
+        in: path
+        description: The campaign uuid to get
+        required: true
+        type: string
+      responses:
+        200:
+          description: The campaign
+          schema:
+            $ref: '#/definitions/Campaign'
+    delete:
+      description: 'Delete the campaign'
+      parameters:
+      - name: uuid
+        in: path
+        description: The campaign uuid to delete
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+  /campaigns/{uuid}/package:
+    put:
+      description: 'Set the package for the campaign'
+      parameters:
+      - name: uuid
+        in: path
+        description: The campaign uuid to add package to
+        required: true
+        type: string
+      - name: body
+        in: body
+        description: The package to add
+        required: true
+        schema:
+          $ref: '#/definitions/packageId'
+      responses:
+        200:
+          description: OK
+  /campaigns/{uuid}/name:
+    put:
+      description: 'Set the name for the campaign'
+      parameters:
+      - name: uuid
+        in: path
+        description: The campaign uuid to add package to
+        required: true
+        type: string
+      - name: body
+        in: body
+        description: The name for the campaign
+        required: true
+        schema:
+          $ref: '#/definitions/CampaignCreate'
+      responses:
+        200:
+          description: OK
+  /campaigns/{uuid}/groups:
+    put:
+      description: 'Set the groups for the campaign'
+      parameters:
+      - name: uuid
+        in: path
+        description: The campaign uuid to add groups to
+        required: true
+        type: string
+      - name: body
+        in: body
+        description: The groups to add to campaign
+        required: true
+        schema: 
+          $ref: '#/definitions/CampaignGroups'
+      responses:
+        200:
+          description: OK
+  /campaigns/{uuid}/launch:
+    post:
+      description: 'Launch the campaign'
+      parameters:
+      - name: uuid
+        in: path
+        description: The campaign uuid to launch
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
   /update_requests:
     get:
       description: 'List all update campaigns'
@@ -690,3 +805,46 @@ definitions:
       comment:
         type: string
         description: A free text comment about the item
+  Campaign:
+    type: object
+    properties:
+      groups:
+        type: array
+        items:
+          type: string
+        description: An array of group names
+      meta:
+        $ref: '#/definitions/CampaignMeta'
+      packageId:
+        $ref: '#/definitions/packageId'
+  CampaignMeta:
+    type: object
+    properties:
+      id:
+        $ref: '#/definitions/uuid'
+      launched:
+        type: boolean
+        description: Is this campaign launched
+      name:
+        type: string
+        description: The name of the campaign
+      namespace:
+        type: string
+        description: The namespace the campaign belongs to
+      packageUuid:
+        description: The package uuid for this campaign, can be null if none have been set yet
+        $ref: '#/definitions/uuid'
+  CampaignCreate:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The name to give to the campaign
+  CampaignGroups:
+    type: object
+    properties:
+      groups:
+        type: array
+        items:
+          type: string
+        description: The groups for the campaign

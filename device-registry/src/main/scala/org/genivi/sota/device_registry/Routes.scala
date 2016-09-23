@@ -15,8 +15,7 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.Json
 import io.circe.generic.auto._
-import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
-import org.genivi.sota.device_registry.GroupInfo.Name
+import org.genivi.sota.data.{Device, DeviceT, GroupInfo, Namespace, Uuid}
 import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
@@ -38,6 +37,7 @@ class Routes(namespaceExtractor: Directive1[Namespace],
 
   import Device._
   import Directives._
+  import GroupInfo.Name
   import StatusCodes._
 
   val logger = LoggerFactory.getLogger(this.getClass)
@@ -84,19 +84,19 @@ class Routes(namespaceExtractor: Directive1[Namespace],
     complete(db.run(SystemInfo.update(uuid, data)))
 
   def listGroups(ns: Namespace): Route =
-    complete(db.run(GroupInfo.list(ns)))
+    complete(db.run(GroupInfoRepository.list(ns)))
 
   def fetchGroupInfo(groupName: Name, ns: Namespace): Route =
-    complete(db.run(GroupInfo.findByName(groupName, ns)))
+    complete(db.run(GroupInfoRepository.findByName(groupName, ns)))
 
   def createGroupInfo(groupName: Name, namespace: Namespace, data: Json): Route =
-    complete(Created -> db.run(GroupInfo.create(groupName, namespace, data)))
+    complete(Created -> db.run(GroupInfoRepository.create(groupName, namespace, data)))
 
   def updateGroupInfo(groupName: Name, namespace: Namespace, data: Json): Route =
-    complete(db.run(GroupInfo.update(groupName, namespace, data)))
+    complete(db.run(GroupInfoRepository.update(groupName, namespace, data)))
 
   def deleteGroupInfo(groupName: Name, namespace: Namespace): Route =
-    complete(db.run(GroupInfo.delete(groupName, namespace)))
+    complete(db.run(GroupInfoRepository.delete(groupName, namespace)))
 
   def fetchDevice(uuid: Uuid): Route =
     complete(db.run(DeviceRepository.findByUuid(uuid)))

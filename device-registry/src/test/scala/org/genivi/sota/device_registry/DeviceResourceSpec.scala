@@ -24,6 +24,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
   import Arbitrary._
   import Device._
   import DeviceGenerators._
+  import GroupInfoGenerators._
   import SimpleJsonGenerator._
   import StatusCodes._
   import UuidGenerator._
@@ -388,7 +389,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
 
   property("GET all groups lists all groups") {
     forAll(genGroupInfoList) { groups =>
-      groups.foreach { case GroupInfo.GroupInfo(groupName, namespace, groupInfoJson) =>
+      groups.foreach { case GroupInfo(groupName, namespace, groupInfoJson) =>
         createGroupInfo(groupName, namespace, groupInfoJson) ~> route ~> check {
           status shouldBe Created
         }
@@ -396,13 +397,13 @@ class DeviceResourceSpec extends ResourcePropSpec {
 
       listGroups(defaultNs) ~> route ~> check {
         //need to sort lists so shouldEqual works
-        val resp = responseAs[Seq[GroupInfo.GroupInfo]].sortBy(_.groupName.toString)
+        val resp = responseAs[Seq[GroupInfo]].sortBy(_.groupName.toString)
         val sortedGroups = groups.sortBy(_.groupName.toString)
         resp shouldEqual sortedGroups
         status shouldBe OK
       }
 
-      groups.foreach { case GroupInfo.GroupInfo(groupName, _, _) =>
+      groups.foreach { case GroupInfo(groupName, _, _) =>
         deleteGroupInfo(groupName, defaultNs) ~> route ~> check {
           status shouldBe OK
         }

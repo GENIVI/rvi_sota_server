@@ -25,8 +25,9 @@ import org.genivi.sota.data.Interval
 trait Generators {
 
   import Arbitrary._
-  import Namespaces._
+  import Campaign._
   import DeviceGenerators._
+  import Namespaces._
   import UuidGenerator._
 
   val PackageVersionGen: Gen[PackageId.Version] =
@@ -115,6 +116,14 @@ trait Generators {
 
     (packageWithUri, updateSpec)
   }
+
+  val CreateCampaignGen: Gen[CreateCampaign] = for {
+    name <- Gen.identifier
+  } yield CreateCampaign(name)
+
+  val CampaignGroupsGen: Gen[CampaignGroups] = for {
+    groups <- Gen.nonEmptyContainerOf[List, GroupInfo.Name](GroupInfoGenerators.genGroupName)
+  } yield CampaignGroups(groups)
 }
 
 object Generators extends Generators
