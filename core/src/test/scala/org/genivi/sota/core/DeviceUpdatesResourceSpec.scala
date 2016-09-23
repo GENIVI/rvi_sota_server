@@ -174,7 +174,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
         whenReady(db.run(dbIO)) { case (updatedSpec, lastHistory) =>
           updatedSpec.status shouldBe UpdateStatus.Finished
           lastHistory._1.success shouldBe true
-          lastHistory._2 shouldBe packageModel.id
+          lastHistory._2.head shouldBe packageModel.id
         }
       }
     }

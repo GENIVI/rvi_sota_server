@@ -59,18 +59,20 @@ case class ClientInstallHistory(
   updateId       : UUID,
   packageId      : PackageId,
   success        : Boolean,
+  cancelled      : Boolean,
   completionTime : Instant
 )
 
 object ClientInstallHistory {
   implicit val toResponseEncoder = GenericResponseEncoder {
-    (ih: InstallHistory, packageId: PackageId) =>
+    (ih: InstallHistory, packageId: PackageId, wasCancelled: Boolean) =>
       ClientInstallHistory(
         ih.id,
         ih.device,
         ih.updateId,
         packageId,
         ih.success,
+        wasCancelled,
         ih.completionTime
       )
   }

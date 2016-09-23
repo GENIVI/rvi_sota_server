@@ -18,6 +18,7 @@ import org.genivi.sota.core.SotaCoreErrors
 import org.genivi.sota.http.Errors.MissingEntity
 import slick.driver.MySQLDriver.api._
 
+
 import scala.collection.immutable.Queue
 import scala.concurrent.ExecutionContext
 
@@ -210,19 +211,21 @@ object UpdateSpecs {
 
   def cancelAllUpdatesBy(status: UpdateStatus, namespace: Namespace, packageId: PackageId)
                         (implicit ec: ExecutionContext): DBIO[Int] = {
-    val query = for {
+    val updateRequestIdsQuery = for {
       us <- updateSpecs if us.status === status
       ur <- updateRequests if ur.id === us.requestId
       pkg <- Packages.packages if pkg.uuid === ur.packageUuid &&
       pkg.namespace === namespace && pkg.name === packageId.name && pkg.version === packageId.version
     } yield ur.id
 
-    // Slick does not allow us to use `in` insteaad of `inSet`, so we need to use DBIO instead of query
-    val dbIO = query.result.flatMap { ids =>
+    val createHistoriesIO = InstallHistories.logAll(updateRequestIdsQuery, success = false)
+
+    // Slick does not allow us to use `in` instead of `inSet`, so we need to use DBIO instead of updateRequestIdsQuery
+    val dbIO = updateRequestIdsQuery.result.flatMap { ids =>
       updateSpecs.filter(_.requestId.inSet(ids)).map(_.status).update(UpdateStatus.Canceled)
     }
 
-    dbIO.transactionally
+    createHistoriesIO.andThen(dbIO).transactionally
   }
 
 

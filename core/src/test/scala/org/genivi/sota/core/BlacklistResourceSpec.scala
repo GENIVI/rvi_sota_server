@@ -10,7 +10,7 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model.{StatusCodes, Uri}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import org.genivi.sota.core.db.{BlacklistedPackageRequest, BlacklistedPackageResponse, Packages, UpdateSpecs}
+import org.genivi.sota.core.db._
 import org.genivi.sota.data.PackageId
 import org.scalatest.{FunSuite, ShouldMatchers}
 import org.scalatest.concurrent.ScalaFutures
@@ -200,6 +200,23 @@ class BlacklistResourceSpec extends FunSuite
     val pendingDevices = db.run(UpdateSpecs.getDevicesQueuedForPackage(pkg.namespace, pkg.id)).futureValue
 
     pendingDevices shouldBe empty
+  }
+
+  test("blacklisting a queued package creates failed history item") {
+    val (pkg, device, _) = createUpdateSpec().futureValue
+    val blacklistReq = BlacklistedPackageRequest(pkg.id, Some("Some comment"))
+
+    Post(blacklistPath, blacklistReq) ~> serviceRoute ~> check {
+      status shouldBe StatusCodes.Created
+    }
+
+    val history = db.run(InstallHistories.list(device.uuid)).futureValue
+
+    history shouldNot be(empty)
+    history.head._1.device shouldBe device.uuid
+    history.head._1.success shouldBe false
+    history.head._2.head shouldBe pkg.id
+    history.head._2.apply(1) shouldBe true
   }
 
   test("/preview returns a count of devices affected by a new blacklist item") {
