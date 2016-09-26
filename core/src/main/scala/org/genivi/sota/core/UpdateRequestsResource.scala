@@ -51,7 +51,7 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
     import shapeless.HNil
 
     val f = (entity: ClientUpdateRequest) => db.run(Packages.byId(ns, entity.packageId)).map { p =>
-      p.uuid :: HNil
+      p.uuid :: p.namespace :: HNil
     }
 
     fromRequest(f)

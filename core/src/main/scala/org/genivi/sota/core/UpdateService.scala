@@ -147,7 +147,7 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
                         (implicit db: Database, ec: ExecutionContext): Future[(UpdateRequest, UpdateSpec, Instant)] = {
     for {
       p <- db.run(Packages.byId(ns, packageId).flatMap(BlacklistedPackages.ensureNotBlacklisted))
-      newUpdateRequest = UpdateRequest.default(p.uuid)
+      newUpdateRequest = UpdateRequest.default(ns, p.uuid)
       updateRequest = newUpdateRequest.copy(signature = p.signature.getOrElse(newUpdateRequest.signature),
         description = p.description)
       spec = UpdateSpec.default(updateRequest, device)

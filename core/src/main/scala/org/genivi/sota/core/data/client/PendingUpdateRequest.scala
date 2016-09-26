@@ -46,8 +46,9 @@ object ClientUpdateRequest {
   }
 
   implicit val fromRequestDecoder =
-    GenericArgsDecoder { (req: ClientUpdateRequest, packageUuid: UUID) =>
+    GenericArgsDecoder { (req: ClientUpdateRequest, packageUuid: UUID, namespace: Namespace) =>
       UpdateRequest(req.id,
+        namespace,
         packageUuid,
         req.creationTime,
         req.periodOfValidity,

@@ -33,6 +33,7 @@ import org.genivi.sota.core.db.InstallHistories.InstallHistoryTable
  */
 case class UpdateRequest(
   id: UUID,
+  namespace: Namespace,
   packageUuid: UUID,
   creationTime: Instant,
   periodOfValidity: Interval,
@@ -46,14 +47,14 @@ object UpdateRequest {
 
   import eu.timepit.refined.auto._
 
-  def default(packageUuid: UUID): UpdateRequest = {
+  def default(namespace: Namespace, packageUuid: UUID): UpdateRequest = {
     val updateRequestId = UUID.randomUUID()
     val now = Instant.now
     val defaultPeriod = Duration.ofDays(1)
     val defaultInterval = Interval(now, now.plus(defaultPeriod))
     val defaultPriority = 10
 
-    UpdateRequest(updateRequestId, packageUuid,
+    UpdateRequest(updateRequestId, namespace, packageUuid,
       Instant.now, defaultInterval, defaultPriority, "", Some(""),
       requestConfirmation = false)
   }
