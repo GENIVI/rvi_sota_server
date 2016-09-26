@@ -223,7 +223,7 @@ paths:
         description: The groups to add to campaign
         required: true
         schema: 
-          $ref: '#/definitions/CampaignGroups'
+          $ref: '#/definitions/SetCampaignGroups'
       responses:
         200:
           description: OK
@@ -811,7 +811,7 @@ definitions:
       groups:
         type: array
         items:
-          type: string
+          $ref: '#/definitions/CampaignGroup'
         description: An array of group names
       meta:
         $ref: '#/definitions/CampaignMeta'
@@ -840,14 +840,21 @@ definitions:
       name:
         type: string
         description: The name to give to the campaign
-  CampaignGroups:
+  CampaignGroup:
+    type: object
+    properties:
+      group:
+        $ref: '#/definitions/uuid'
+      updateRequest:
+        $ref: '#/definitions/uuid'
+  SetCampaignGroups:
     type: object
     properties:
       groups:
         type: array
         items:
-          type: string
-        description: The groups for the campaign
+          $ref: '#/definitions/uuid'
+        description: The uuids of the groups for the campaign
   SystemInfo:
     type: object
     description: |

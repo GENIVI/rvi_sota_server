@@ -139,6 +139,14 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
     deviceToDeps.values.flatten.toSet
   }
 
+  def updateRequest(ns: Namespace, packageId: PackageId)
+                   (implicit db: Database, ec: ExecutionContext): Future[UpdateRequest] =
+    db.run(Packages.byId(ns, packageId).flatMap(BlacklistedPackages.ensureNotBlacklisted)).map { p =>
+      val newUpdateRequest = UpdateRequest.default(ns, p.uuid)
+      newUpdateRequest.copy(signature = p.signature.getOrElse(newUpdateRequest.signature),
+                            description = p.description)
+    }
+
   /**
     * For the given [[PackageId]] and vehicle, persist a fresh [[UpdateRequest]] and a fresh [[UpdateSpec]].
     * Resolver is not contacted.
@@ -146,10 +154,7 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
   def queueDeviceUpdate(ns: Namespace, device: Uuid, packageId: PackageId)
                         (implicit db: Database, ec: ExecutionContext): Future[(UpdateRequest, UpdateSpec, Instant)] = {
     for {
-      p <- db.run(Packages.byId(ns, packageId).flatMap(BlacklistedPackages.ensureNotBlacklisted))
-      newUpdateRequest = UpdateRequest.default(ns, p.uuid)
-      updateRequest = newUpdateRequest.copy(signature = p.signature.getOrElse(newUpdateRequest.signature),
-        description = p.description)
+      updateRequest <- updateRequest(ns, packageId)
       spec = UpdateSpec.default(updateRequest, device)
       _ <- persistRequest(updateRequest, ListSet(spec))
     } yield (updateRequest, spec, spec.updateTime)

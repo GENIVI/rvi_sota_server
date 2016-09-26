@@ -121,9 +121,9 @@ trait Generators {
     name <- Gen.identifier
   } yield CreateCampaign(name)
 
-  val CampaignGroupsGen: Gen[CampaignGroups] = for {
-    groups <- Gen.nonEmptyContainerOf[List, GroupInfo.Name](GroupInfoGenerators.genGroupName)
-  } yield CampaignGroups(groups)
+  val SetCampaignGroupsGen: Gen[SetCampaignGroups] = for {
+    groups <- Gen.nonEmptyContainerOf[List, Uuid](Uuid.generate())
+  } yield SetCampaignGroups(groups)
 }
 
 object Generators extends Generators

@@ -26,7 +26,7 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport
 import scala.concurrent.{ExecutionContext, Future}
 
 
-class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri)
+class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri)
                           (implicit system: ActorSystem, mat: ActorMaterializer)
     extends DeviceRegistry {
 
@@ -60,6 +60,10 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri)
   override def fetchDevice(uuid: Uuid)
                           (implicit ec: ExecutionContext): Future[Device] =
     execHttp[Device](HttpRequest(uri = baseUri.withPath(devicesUri.path / uuid.show)))
+
+  override def fetchGroup(uuid: Uuid)
+                         (implicit ec: ExecutionContext): Future[Seq[Uuid]] =
+    execHttp[Seq[Uuid]](HttpRequest(uri = baseUri.withPath(deviceGroupsUri.path / uuid.show / "devices")))
 
   override def fetchByDeviceId(ns: Namespace, deviceId: DeviceId)
                               (implicit ec: ExecutionContext): Future[Device] =
