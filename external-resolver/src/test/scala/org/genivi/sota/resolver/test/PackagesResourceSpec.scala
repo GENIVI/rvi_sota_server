@@ -79,6 +79,10 @@ class PackagesResourcePropSpec extends ResourcePropSpec with PackageGenerators {
 
   property("Posting to affected packages returns affected devices") {
     forAll { (device: Uuid, p: Package) =>
+      addVehicle(device) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+      }
+
       addPackage(p.namespace, p.id.name.get, p.id.version.get, p.description, p.vendor) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }

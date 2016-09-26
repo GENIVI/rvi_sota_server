@@ -244,18 +244,22 @@ object DeviceRepository {
     } yield searchResult
   }
 
-  def allInstalledPackagesById(namespace: Namespace, ids: Set[PackageId])
-                              (implicit ec: ExecutionContext): DBIO[Map[Uuid, Seq[PackageId]]] = {
-    installedPackages.join(PackageRepository.inSetQuery(ids)).on(_.packageUuid === _.uuid)
-      .filter(_._2.namespace === namespace)
-      .map { case (ip, pkg) => (ip.device, LiftedPackageId(pkg.name, pkg.version)) }
-      .union(ForeignPackages.installedQuery(ids))
-      .result
-      .map {
-        _.foldLeft(Map.empty[Uuid, Seq[PackageId]]) { case (acc, (device, pid)) =>
-          val all = pid +: acc.getOrElse(device, Seq.empty[PackageId])
-          acc + (device -> all)
+  def allInstalledPackagesById(namespace: Namespace, ids: Set[PackageId], devices: Set[Uuid])
+                              (implicit db: Database, ec: ExecutionContext): Future[Map[Uuid, Seq[PackageId]]] = {
+    val dbDevicesIO =
+      installedPackages.join(PackageRepository.inSetQuery(ids)).on(_.packageUuid === _.uuid)
+        .filter(_._2.namespace === namespace)
+        .map { case (ip, pkg) => (ip.device, LiftedPackageId(pkg.name, pkg.version)) }
+        .union(ForeignPackages.installedQuery(ids))
+        .filter(_._1.inSet(devices))
+        .result
+        .map {
+          _.foldLeft(Map.empty[Uuid, Seq[PackageId]]) { case (acc, (device, pid)) =>
+            val all = pid +: acc.getOrElse(device, Seq.empty[PackageId])
+            acc + (device -> all)
+          }
         }
-      }
-    }
+
+    db.run(dbDevicesIO)
+  }
 }
