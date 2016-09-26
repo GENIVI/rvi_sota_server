@@ -6,12 +6,12 @@ package org.genivi.sota.core
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshaller._
-import akka.http.scaladsl.server.{Directive1, Directives, Route}
+import akka.http.scaladsl.server.{Directives, Route}
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.core.data.InstallHistory
 import org.genivi.sota.core.db.InstallHistories
-import org.genivi.sota.data.{Device, Namespace, Uuid}
+import org.genivi.sota.data.Uuid
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import slick.driver.MySQLDriver.api._

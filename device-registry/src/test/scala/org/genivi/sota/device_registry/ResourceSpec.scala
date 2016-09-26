@@ -9,12 +9,10 @@ import akka.http.scaladsl.testkit.RouteTestTimeout
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import cats.data.Xor
 import org.genivi.sota.core.DatabaseSpec
-import org.genivi.sota.data.{Namespace, GroupInfo, SimpleJsonGenerator}
+import org.genivi.sota.data.Namespace
 import org.genivi.sota.messaging.MessageBus
-import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec, Suite}
-import eu.timepit.refined.api.Refined
 
 import scala.concurrent.duration._
 

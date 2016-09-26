@@ -111,7 +111,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
       deleteDeviceOk(uuid)
     }
   }
-  
+
   property("PUT request after POST succeeds with updated device.") {
     forAll(genConflictFreeDeviceTs(2)) { case Seq(d1, d2) =>
 

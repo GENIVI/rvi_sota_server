@@ -44,8 +44,7 @@ class Routes(namespaceExtractor: Directive1[Namespace],
 
   val extractUuid: Directive1[Uuid] = refined[Uuid.Valid](Slash ~ Segment).map(Uuid(_))
   val extractDeviceId: Directive1[DeviceId] = parameter('deviceId.as[String]).map(DeviceId)
-  val extractGroupName: Directive1[GroupInfo.Name] =
-    refined[GroupInfo.ValidName](Slash ~ Segment)
+  val extractGroupName: Directive1[GroupInfo.Name] = refined[GroupInfo.ValidName](Slash ~ Segment)
 
   def searchDevice(ns: Namespace): Route =
     parameters(('regex.as[String Refined Regex].?,
@@ -120,54 +119,50 @@ class Routes(namespaceExtractor: Directive1[Namespace],
   implicit val NamespaceUnmarshaller: FromStringUnmarshaller[Namespace] = Unmarshaller.strict(Namespace.apply)
 
   def api: Route =
-    ErrorHandler.handleErrors {
-      pathPrefix("devices") {
-        namespaceExtractor { ns =>
-          (get & path("group_info") & pathEnd) {
-            listGroups(ns)
+    pathPrefix("devices") {
+      namespaceExtractor { ns =>
+        (get & path("group_info") & pathEnd) {
+          listGroups(ns)
+        } ~
+        (extractGroupName & path("group_info") & pathEnd) { groupName =>
+          get {
+            fetchGroupInfo(groupName, ns)
           } ~
-          (extractGroupName & path("group_info") & pathEnd) { groupName =>
-             {
-              get {
-                fetchGroupInfo(groupName, ns)
-              } ~
-              post {
-                entity(as[Json]) { body => createGroupInfo(groupName, ns, body) }
-              } ~
-              put {
-                entity(as[Json]) { body => updateGroupInfo(groupName, ns, body) }
-              } ~
-              delete {
-                deleteGroupInfo(groupName, ns)
-              }
-            }
+          post {
+            entity(as[Json]) { body => createGroupInfo(groupName, ns, body) }
           } ~
-          (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
-          (extractUuid & put & entity(as[DeviceT]) & pathEnd) { (uuid, device) =>
-            updateDevice(ns, uuid, device)
+          put {
+            entity(as[Json]) { body => updateGroupInfo(groupName, ns, body) }
           } ~
-          (extractUuid & delete & pathEnd) { uuid =>
-            deleteDevice(ns, uuid)
+          delete {
+            deleteGroupInfo(groupName, ns)
           }
         } ~
-        (extractUuid & post & path("ping")) { uuid =>
-          updateLastSeen(uuid)
+        (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
+        (extractUuid & put & entity(as[DeviceT]) & pathEnd) { (uuid, device) =>
+          updateDevice(ns, uuid, device)
         } ~
-        (extractUuid & get & path("system_info") & pathEnd) { uuid =>
-          fetchSystemInfo(uuid)
-        } ~
-        (extractUuid & post & path("system_info") & pathEnd) { uuid =>
-          entity(as[Json]) {body => createSystemInfo(uuid, body)}
-        } ~
-        (extractUuid & put & path("system_info") & pathEnd) { uuid =>
-          entity(as[Json]) {body => updateSystemInfo(uuid, body)}
-        } ~
-        (extractUuid & get & pathEnd) { uuid =>
-          fetchDevice(uuid)
-        } ~
-        (get & pathEnd & parameter('namespace.as[Namespace])) { ns =>
-          searchDevice(ns)
+        (extractUuid & delete & pathEnd) { uuid =>
+          deleteDevice(ns, uuid)
         }
+      } ~
+      (extractUuid & post & path("ping")) { uuid =>
+        updateLastSeen(uuid)
+      } ~
+      (extractUuid & get & path("system_info") & pathEnd) { uuid =>
+        fetchSystemInfo(uuid)
+      } ~
+      (extractUuid & post & path("system_info") & pathEnd) { uuid =>
+        entity(as[Json]) {body => createSystemInfo(uuid, body)}
+      } ~
+      (extractUuid & put & path("system_info") & pathEnd) { uuid =>
+        entity(as[Json]) {body => updateSystemInfo(uuid, body)}
+      } ~
+      (extractUuid & get & pathEnd) { uuid =>
+        fetchDevice(uuid)
+      } ~
+      (get & pathEnd & parameter('namespace.as[Namespace])) { ns =>
+        searchDevice(ns)
       }
     }
 
