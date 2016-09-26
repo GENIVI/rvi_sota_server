@@ -107,11 +107,9 @@ class DeviceUpdatesResource(db: Database,
     *
     * @see [[data.UpdateStatus]] (two of interest: InFlight and Pending)
     */
-  def pendingPackages(device: Uuid, includeInFlight: Boolean = true): Route = {
+  def pendingPackages(device: Uuid): Route = {
     val vehiclePackages =
-      DeviceUpdates
-        .findPendingPackageIdsFor(device, includeInFlight)
-        .map(_.toResponse)
+      DeviceUpdates.findPendingPackageIdsFor(device).map(_.toResponse)
 
     complete(db.run(vehiclePackages))
   }
@@ -243,9 +241,7 @@ class DeviceUpdatesResource(db: Database,
       get {
         pathEnd {
           authDirective(s"ota-core.${device.show}.read") {
-            logDeviceSeen(device) {
-              pendingPackages(device, includeInFlight = false)
-            }
+            logDeviceSeen(device) { pendingPackages(device) }
           }
         } ~
         (extractUuid & path("download")) { updateId =>
@@ -254,7 +250,7 @@ class DeviceUpdatesResource(db: Database,
           }
         } ~
         authDeviceNamespace(device) { ns =>
-          path("queued") { pendingPackages(device, true) } ~
+          path("queued") { pendingPackages(device) } ~
           path("blocked") { getBlockedInstall(device) } ~
           path("results") { results(device) } ~
           (extractUuid & path("results")) { updateId => resultsForUpdate(device, updateId) }
