@@ -16,10 +16,10 @@ import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.RefinementDirectives._
-import org.genivi.sota.resolver.db.{DeviceRepository, Package, PackageFilter, PackageFilterRepository,
-PackageRepository}
+import org.genivi.sota.resolver.db.{DeviceRepository, Package, PackageFilterRepository, PackageRepository}
 import org.genivi.sota.resolver.filters.Filter
 import akka.http.scaladsl.unmarshalling.{FromStringUnmarshaller, Unmarshaller}
+import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.rest.ResponseConversions._
 import org.genivi.sota.resolver.db.PackageFilterResponse._
 
@@ -27,7 +27,7 @@ import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
 
-class PackageDirectives(namespaceExtractor: Directive1[Namespace])
+class PackageDirectives(namespaceExtractor: Directive1[Namespace], deviceRegistryClient: DeviceRegistry)
                        (implicit system: ActorSystem,
                         db: Database, mat:
                         ActorMaterializer,
@@ -74,8 +74,13 @@ class PackageDirectives(namespaceExtractor: Directive1[Namespace])
     }
 
   def findAffected(ns: Namespace): Route = {
-    entity(as[Set[PackageId]]) { packageIds ⇒
-      complete(db.run(DeviceRepository.allInstalledPackagesById(ns, packageIds)))
+    entity(as[Set[PackageId]]) { packageIds =>
+      val f = deviceRegistryClient.listNamespace(ns).flatMap { nsDevices =>
+        val uuids = nsDevices.map(_.uuid).toSet
+        DeviceRepository.allInstalledPackagesById(ns, packageIds, uuids)
+      }
+
+      complete(f)
     }
   }
 

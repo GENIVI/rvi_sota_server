@@ -45,11 +45,11 @@ class Routing(namespaceDirective: Directive1[Namespace], deviceRegistry: DeviceR
    val route: Route = pathPrefix("api" / "v1" / "resolver") {
      handleRejections(rejectionHandler) {
        new DeviceDirectives(namespaceDirective, deviceRegistry).route ~
-         new PackageDirectives(namespaceDirective).route ~
+         new PackageDirectives(namespaceDirective, deviceRegistry).route ~
          new FilterDirectives(namespaceDirective).route ~
          new ResolveDirectives(namespaceDirective, deviceRegistry).route ~
          new ComponentDirectives(namespaceDirective).route ~
-         new PackageFiltersResource(namespaceDirective).routes
+         new PackageFiltersResource(namespaceDirective, deviceRegistry).routes
      }
    }
 }
