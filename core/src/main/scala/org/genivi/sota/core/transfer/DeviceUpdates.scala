@@ -113,15 +113,11 @@ object DeviceUpdates {
   }
 
 
-  def findPendingPackageIdsFor(device: Uuid, includeInFlight: Boolean = true)
+  def findPendingPackageIdsFor(device: Uuid)
                               (implicit db: Database,
                                ec: ExecutionContext)
   : DBIO[Seq[(UpdateRequest, UpdateStatus :: PackageId :: Instant :: HNil)]] = {
-    val statusToInclude =
-      if(includeInFlight)
-        List(UpdateStatus.InFlight, UpdateStatus.Pending)
-      else
-        List(UpdateStatus.Pending)
+    val statusToInclude = List(UpdateStatus.InFlight, UpdateStatus.Pending)
 
     val updateSpecsQ =
       updateSpecs

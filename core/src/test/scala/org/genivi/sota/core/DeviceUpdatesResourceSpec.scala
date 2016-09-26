@@ -265,24 +265,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
       }
     }
   }
-
-  test("does not return in flight updates for for / endpoint") {
-    val f = for {
-      (_, d, us) <- createUpdateSpec()
-      _ <- db.run(UpdateSpecs.setStatus(us, UpdateStatus.InFlight))
-    } yield d
-
-    whenReady(f) { device =>
-      val url = baseUri.withPath(baseUri.path / device.uuid.underlying.get)
-
-      Get(url) ~> service.route ~> check {
-        status shouldBe StatusCodes.OK
-
-        responseAs[List[PendingUpdateRequest]] shouldBe empty
-      }
-    }
-  }
-
+  
   test("returns in flight updates for /queued endpoint") {
     val f = for {
       (_, d, us) <- db.run(createDeviceAndUpdateSpec())
