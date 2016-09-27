@@ -9,11 +9,12 @@ import java.time.Instant
 import java.util.UUID
 
 import org.genivi.sota.core.db.Packages.{LiftedPackageId, LiftedPackageShape}
-import org.genivi.sota.data.{PackageId, Uuid}
+import org.genivi.sota.data.{Namespace, PackageId, Uuid}
+import org.genivi.sota.http.Errors
 import shapeless._
 import slick.driver.MySQLDriver.api._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 
 /**
@@ -61,6 +62,17 @@ object InstallHistories {
    * Internal helper definition to access the SQL table
    */
   private val installHistories = TableQuery[InstallHistoryTable]
+
+  def deviceNamespace(device: Uuid)(implicit ec: ExecutionContext): DBIO[Namespace] = {
+    installHistories
+      .filter(_.device === device)
+      .join(Packages.packages).on(_.packageUuid === _.uuid)
+      .map(_._2)
+      .map(_.namespace)
+      .take(1)
+      .result
+      .failIfNotSingle(Errors.MissingEntity(classOf[InstallHistory]))
+  }
 
   /**
    * List the install attempts that have been made on a specific device

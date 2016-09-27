@@ -30,4 +30,5 @@ object SotaCoreErrors {
   val MissingCampaign = MissingEntity(classOf[Campaign])
   val MissingPackage = RawError(SotaCoreErrorCodes.MissingPackage, StatusCodes.NotFound, "package not found")
   val MissingUpdateSpec = RawError(ErrorCodes.MissingEntity, StatusCodes.NotFound, "update spec not found")
+  val MissingUpdateRequest = RawError(ErrorCodes.MissingEntity, StatusCodes.NotFound, "update request not found")
 }

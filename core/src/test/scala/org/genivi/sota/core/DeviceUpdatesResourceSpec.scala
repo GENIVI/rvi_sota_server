@@ -265,7 +265,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
       }
     }
   }
-  
+
   test("returns in flight updates for /queued endpoint") {
     val f = for {
       (_, d, us) <- db.run(createDeviceAndUpdateSpec())

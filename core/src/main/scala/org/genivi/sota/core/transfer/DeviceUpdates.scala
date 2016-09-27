@@ -106,10 +106,7 @@ object DeviceUpdates {
   }
 
   private def findUpdateRequestPackage(updateRequestId: UUID)(implicit ec: ExecutionContext): DBIO[Package] = {
-    UpdateRequests
-      .byId(updateRequestId)
-      .failIfNone(Errors.MissingEntity(classOf[UpdateRequest]))
-      .flatMap(ur => Packages.byUuid(ur.packageUuid))
+    UpdateRequests.byId(updateRequestId).flatMap(ur => Packages.byUuid(ur.packageUuid))
   }
 
 

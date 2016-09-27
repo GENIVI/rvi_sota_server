@@ -8,7 +8,9 @@ import java.util.UUID
 import slick.driver.MySQLDriver.api._
 
 
-final case class Uuid(underlying: String Refined Uuid.Valid) extends AnyVal
+final case class Uuid(underlying: String Refined Uuid.Valid) extends AnyVal {
+  def toJava = UUID.fromString(underlying.get)
+}
 
 object Uuid {
   type Valid = eu.timepit.refined.string.Uuid
@@ -22,12 +24,11 @@ object Uuid {
       uuid1.underlying.get compare uuid2.underlying.get
   }
 
-  def generate(): Uuid =
-    Uuid(refineV[Valid](UUID.randomUUID.toString).right.get)
+  def generate(): Uuid = Uuid(refineV[Valid](UUID.randomUUID.toString).right.get)
+
+  def fromJava(uuid: UUID): Uuid = Uuid(refineV[Uuid.Valid](uuid.toString).right.get)
 
   // Slick mapping
-
   implicit val uuidColumnType =
     MappedColumnType.base[Uuid, String](_.show, (s: String) => Uuid(Refined.unsafeApply(s)))
-
 }

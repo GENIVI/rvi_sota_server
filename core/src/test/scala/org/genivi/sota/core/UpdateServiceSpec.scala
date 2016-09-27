@@ -102,7 +102,7 @@ class UpdateServiceSpec extends PropSpec
     forAll(updateRequestGen(availablePackageIdGen), dependenciesGen(packages)) { (req, deps) =>
       val queueF = for {
         specs <- service.queueUpdate(defaultNs, req, _ => Future.successful(deps))
-        _ <- db.run(UpdateSpecs.listUpdatesById(Refined.unsafeApply(req.id.toString)))
+        _ <- db.run(UpdateSpecs.listUpdatesById(Uuid.fromJava(req.id)))
       } yield specs
 
       whenReady(queueF) { specs =>

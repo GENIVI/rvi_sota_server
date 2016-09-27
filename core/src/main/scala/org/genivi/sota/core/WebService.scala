@@ -6,27 +6,36 @@ package org.genivi.sota.core
 
 import akka.actor.ActorSystem
 import akka.event.Logging
-import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.server.{Directive1, Directives, Route}
+import akka.http.scaladsl.server.{AuthorizationFailedRejection, Directive1, Directives}
 import akka.stream.ActorMaterializer
 import eu.timepit.refined._
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.resolver.{Connectivity, ExternalResolverClient}
 import org.genivi.sota.core.transfer.UpdateNotifier
-import org.genivi.sota.data.{Device, Namespace, Uuid}
+import org.genivi.sota.data.{Namespace, Uuid}
 import org.genivi.sota.rest.Validation.refined
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import slick.driver.MySQLDriver.api.Database
 import Directives._
-import cats.data.Xor
-import eu.timepit.refined.api.Refined
 import org.genivi.sota.messaging.MessageBusPublisher
-import org.genivi.sota.messaging.Messages.PackageCreated
 
 object WebService {
   val extractUuid = refined[Uuid.Valid](Slash ~ Segment)
   val extractDeviceUuid = refined[Uuid.Valid](Slash ~ Segment).map(Uuid(_))
+
+  def allowExtractor[T](namespaceExtractor: Directive1[Namespace],
+                          extractor: Directive1[T],
+                          allowFn: (T => Future[Namespace])): Directive1[T] = {
+    (extractor & namespaceExtractor).tflatMap { case (value, ns) =>
+      onSuccess(allowFn(value)).flatMap {
+        case namespace if namespace == ns =>
+          provide(value)
+        case _ =>
+          reject(AuthorizationFailedRejection)
+      }
+    }
+  }
 }
 
 class WebService(notifier: UpdateNotifier,
@@ -50,7 +59,7 @@ class WebService(notifier: UpdateNotifier,
   val packagesResource = new PackagesResource(resolver, db, messageBusPublisher, authNamespace)
   val updateService = new UpdateService(notifier, deviceRegistry)
   val updateRequestsResource = new UpdateRequestsResource(db, resolver, updateService, authNamespace)
-  val historyResource = new HistoryResource(db)
+  val historyResource = new HistoryResource(authNamespace)(db, system)
   val blacklistResource = new BlacklistResource(authNamespace, messageBusPublisher)(db, system)
   val impactResource = new ImpactResource(authNamespace, resolver)(db, system)
 

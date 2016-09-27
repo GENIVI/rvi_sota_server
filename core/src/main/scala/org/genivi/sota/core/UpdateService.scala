@@ -147,7 +147,7 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
                         (implicit db: Database, ec: ExecutionContext): Future[(UpdateRequest, UpdateSpec, Instant)] = {
     for {
       p <- db.run(Packages.byId(ns, packageId).flatMap(BlacklistedPackages.ensureNotBlacklisted))
-      newUpdateRequest = UpdateRequest.default(p.uuid)
+      newUpdateRequest = UpdateRequest.default(ns, p.uuid)
       updateRequest = newUpdateRequest.copy(signature = p.signature.getOrElse(newUpdateRequest.signature),
         description = p.description)
       spec = UpdateSpec.default(updateRequest, device)
@@ -155,8 +155,8 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
     } yield (updateRequest, spec, spec.updateTime)
   }
 
-  def all(implicit db: Database, ec: ExecutionContext): Future[Set[UpdateRequest]] =
-    db.run(UpdateRequests.list).map(_.toSet)
+  def all(namespace: Namespace)(implicit db: Database, ec: ExecutionContext): Future[Seq[UpdateRequest]] =
+    db.run(UpdateRequests.list(namespace))
 }
 
 object UpdateService {

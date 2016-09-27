@@ -4,20 +4,24 @@
  */
 package org.genivi.sota.core
 
+import java.util.UUID
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.{Directive, Directive1, Directives, Route}
+import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.data.client._
-import org.genivi.sota.core.db.{Packages, UpdateSpecs}
+import org.genivi.sota.core.db.{Packages, UpdateRequests, UpdateSpecs}
 import org.genivi.sota.core.resolver.ExternalResolverClient
 import org.genivi.sota.data.{Namespace, Uuid}
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import slick.driver.MySQLDriver.api.Database
+
+import scala.concurrent.Future
 
 class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, updateService: UpdateService,
                              namespaceExtractor: Directive1[Namespace])
@@ -36,22 +40,22 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
   /**
     * An ota client GET (device, status) for the [[UpdateRequest]] given by the argument.
     */
-  def fetch(updateRequestId: Refined[String, Uuid.Valid]): Route = {
+  def fetch(updateRequestId: Uuid): Route = {
     complete(db.run(UpdateSpecs.listUpdatesById(updateRequestId)))
   }
 
   /**
     * An ota client GET all rows in the [[UpdateRequest]] table.
     */
-  def fetchUpdates: Route = {
-    complete(updateService.all(db, system.dispatcher))
+  def fetchUpdates(namespace: Namespace): Route = {
+    complete(updateService.all(namespace))
   }
 
   private def clientUpdateRequest(ns: Namespace): Directive[(ClientUpdateRequest, UpdateRequest)] = {
     import shapeless.HNil
 
     val f = (entity: ClientUpdateRequest) => db.run(Packages.byId(ns, entity.packageId)).map { p =>
-      p.uuid :: HNil
+      p.uuid :: p.namespace :: HNil
     }
 
     fromRequest(f)
@@ -71,17 +75,23 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
     }
   }
 
+  def updateRequestAllowed(uuid: Uuid): Future[Namespace] = {
+    db.run(UpdateRequests.byId(uuid.toJava).map(_.namespace))
+  }
+
+  val uuidExtractor = allowExtractor(namespaceExtractor, extractUuid.map(Uuid(_)), updateRequestAllowed)
+
   val route = pathPrefix("update_requests") {
-    (get & extractUuid & pathEnd) {
+    (get & uuidExtractor & pathEnd) {
       fetch
     } ~
-    pathEnd {
-      get {
-        fetchUpdates
-      } ~
-      (post & namespaceExtractor) { ns =>
-        createUpdate(ns)
+      (namespaceExtractor & pathEnd) { ns =>
+        get {
+          fetchUpdates(ns)
+        } ~
+        post {
+          createUpdate(ns)
+        }
       }
-    }
   }
 }

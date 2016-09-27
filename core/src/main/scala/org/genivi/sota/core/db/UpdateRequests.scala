@@ -8,10 +8,10 @@ import java.util.UUID
 
 import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.data.Namespace
-import org.genivi.sota.data.PackageId
 import slick.driver.MySQLDriver.api._
 import java.time.Instant
 
+import org.genivi.sota.core.SotaCoreErrors
 import org.genivi.sota.data.Interval
 
 import scala.concurrent.ExecutionContext
@@ -28,6 +28,7 @@ object UpdateRequests {
   import org.genivi.sota.db._
   import SlickExtensions._
   import org.genivi.sota.refined.SlickRefined._
+  import Operators._
 
   // scalastyle:off
   /**
@@ -36,6 +37,7 @@ object UpdateRequests {
    */
   class UpdateRequestTable(tag: Tag) extends Table[UpdateRequest](tag, "UpdateRequest") {
     def id = column[UUID]("update_request_id")
+    def namespace = column[Namespace]("namespace")
     def packageUuid = column[UUID]("package_uuid")
     def creationTime = column[Instant]("creation_time")
     def startAfter = column[Instant]("start_after")
@@ -60,10 +62,10 @@ object UpdateRequests {
     // given `id` is already unique across namespaces, no need to include namespace. Also avoids Slick issue #966.
     def pk = primaryKey("pk_UpdateRequest", id)
 
-    def * = (id, packageUuid, creationTime, startAfter, finishBefore,
+    def * = (id, namespace, packageUuid, creationTime, startAfter, finishBefore,
              priority, signature, description.?, requestConfirmation).shaped <>
-      (x => UpdateRequest(x._1, x._2, x._3, Interval(x._4, x._5), x._6, x._7, x._8, x._9),
-      (x: UpdateRequest) => Some((x.id, x.packageUuid, x.creationTime,
+      (x => UpdateRequest(x._1, x._2, x._3, x._4, Interval(x._5, x._6), x._7, x._8, x._9, x._10),
+      (x: UpdateRequest) => Some((x.id, x.namespace, x.packageUuid, x.creationTime,
                                   x.periodOfValidity.start, x.periodOfValidity.end, x.priority,
                                   x.signature, x.description, x.requestConfirmation)))
   }
@@ -78,13 +80,17 @@ object UpdateRequests {
    * List all the package updates that have been ever created
    * @return A list of update requests
    */
-  def list: DBIO[Seq[UpdateRequest]] = all.result
+  def list(namespace: Namespace): DBIO[Seq[UpdateRequest]] = all.filter(_.namespace === namespace).result
 
   /**
    * List all the update requests for a give update ID
    */
-  def byId(updateId: UUID) : DBIO[Option[UpdateRequest]] =
-    all.filter {_.id === updateId}.result.headOption
+  def byId(updateId: UUID)(implicit ec: ExecutionContext): DBIO[UpdateRequest] =
+    all
+      .filter(_.id === updateId)
+      .result
+      .headOption
+      .failIfNone(SotaCoreErrors.MissingUpdateRequest)
 
   /**
    * Add a new package update. Package updated specify a specific package at a
