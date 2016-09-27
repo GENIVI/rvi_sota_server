@@ -8,10 +8,10 @@ import java.util.UUID
 
 import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.data.Namespace
-import org.genivi.sota.data.PackageId
 import slick.driver.MySQLDriver.api._
 import java.time.Instant
 
+import org.genivi.sota.core.SotaCoreErrors
 import org.genivi.sota.data.Interval
 
 import scala.concurrent.ExecutionContext
@@ -28,6 +28,7 @@ object UpdateRequests {
   import org.genivi.sota.db._
   import SlickExtensions._
   import org.genivi.sota.refined.SlickRefined._
+  import Operators._
 
   // scalastyle:off
   /**
@@ -79,13 +80,17 @@ object UpdateRequests {
    * List all the package updates that have been ever created
    * @return A list of update requests
    */
-  def list: DBIO[Seq[UpdateRequest]] = all.result
+  def list(namespace: Namespace): DBIO[Seq[UpdateRequest]] = all.filter(_.namespace === namespace).result
 
   /**
    * List all the update requests for a give update ID
    */
-  def byId(updateId: UUID) : DBIO[Option[UpdateRequest]] =
-    all.filter {_.id === updateId}.result.headOption
+  def byId(updateId: UUID)(implicit ec: ExecutionContext): DBIO[UpdateRequest] =
+    all
+      .filter(_.id === updateId)
+      .result
+      .headOption
+      .failIfNone(SotaCoreErrors.MissingUpdateRequest)
 
   /**
    * Add a new package update. Package updated specify a specific package at a

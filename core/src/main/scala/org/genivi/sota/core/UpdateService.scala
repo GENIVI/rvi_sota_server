@@ -155,8 +155,8 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
     } yield (updateRequest, spec, spec.updateTime)
   }
 
-  def all(implicit db: Database, ec: ExecutionContext): Future[Set[UpdateRequest]] =
-    db.run(UpdateRequests.list).map(_.toSet)
+  def all(namespace: Namespace)(implicit db: Database, ec: ExecutionContext): Future[Seq[UpdateRequest]] =
+    db.run(UpdateRequests.list(namespace))
 }
 
 object UpdateService {

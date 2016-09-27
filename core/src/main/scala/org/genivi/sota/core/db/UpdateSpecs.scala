@@ -233,6 +233,6 @@ object UpdateSpecs {
     * The [[UpdateSpec]]-s (excluding dependencies but including status) for the given [[UpdateRequest]].
     * Each element in the result corresponds to a different device.
     */
-  def listUpdatesById(updateRequestId: Refined[String, Uuid.Valid]): DBIO[Seq[UpdateSpecRow]] =
-    updateSpecs.filter(s => s.requestId === UUID.fromString(updateRequestId.get)).result
+  def listUpdatesById(updateRequestId: Uuid): DBIO[Seq[UpdateSpecRow]] =
+    updateSpecs.filter(s => s.requestId === updateRequestId.toJava).result
 }
