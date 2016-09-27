@@ -244,6 +244,10 @@ class DeviceUpdatesResource(db: Database,
             logDeviceSeen(device) { pendingPackages(device) }
           }
         } ~
+        (path("queued") & authDirective(s"ota-core.${device.show}.read")) {
+          // Backward compatible with sota_client v0.2.17
+          logDeviceSeen(device) { pendingPackages(device) }
+        } ~
         (extractUuid & path("download")) { updateId =>
           authDirective(s"ota-core.${device.show}.read") {
             downloadPackage(device, updateId)
