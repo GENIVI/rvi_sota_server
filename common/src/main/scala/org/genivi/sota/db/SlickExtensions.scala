@@ -13,6 +13,7 @@ import java.time.Instant
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Uuid
 import org.genivi.sota.data.Namespace
+import org.genivi.sota.http.Errors
 import slick.ast.{Node, TypedType}
 import slick.driver.MySQLDriver.api._
 import slick.lifted.Rep
@@ -75,8 +76,10 @@ object SlickExtensions {
       action.flatMap {
         case c if c == 1 =>
           DBIO.successful(())
-        case _ =>
+        case c if c == 0 =>
           DBIO.failed(result)
+        case _ =>
+          DBIO.failed(Errors.TooManyElements)
       }
     }
   }
