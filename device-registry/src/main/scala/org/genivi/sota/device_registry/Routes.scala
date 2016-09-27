@@ -17,13 +17,13 @@ import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.data.{Device, DeviceT, GroupInfo, Namespace, Uuid}
 import org.genivi.sota.device_registry.common.Errors
-import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted}
 import org.genivi.sota.rest.Validation._
 import org.slf4j.LoggerFactory
+import org.genivi.sota.http.UuidDirectives.extractUuid
 
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
@@ -42,7 +42,6 @@ class Routes(namespaceExtractor: Directive1[Namespace],
 
   val logger = LoggerFactory.getLogger(this.getClass)
 
-  val extractUuid: Directive1[Uuid] = refined[Uuid.Valid](Slash ~ Segment).map(Uuid(_))
   val extractDeviceId: Directive1[DeviceId] = parameter('deviceId.as[String]).map(DeviceId)
   val extractGroupName: Directive1[GroupInfo.Name] = refined[GroupInfo.ValidName](Slash ~ Segment)
 

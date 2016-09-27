@@ -1,6 +1,7 @@
 package org.genivi.sota.device_registry
 
 import akka.http.scaladsl.model.HttpRequest
+import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import eu.timepit.refined.api.Refined
 import io.circe.Json
@@ -9,6 +10,9 @@ import org.genivi.sota.data.GroupInfo.Name
 import org.genivi.sota.data.{DeviceT, Uuid}
 import org.genivi.sota.device_registry.common.CreateGroupRequest
 import org.scalatest.{FunSuite, Matchers}
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import io.circe.generic.auto._
+import io.circe.syntax._
 
 import scala.concurrent.ExecutionContext
 
@@ -22,7 +26,6 @@ class GroupsResourceSpec extends FunSuite
   import akka.http.scaladsl.model.StatusCodes._
 
   def createDeviceOk(device: DeviceT): Uuid = {
-    import org.genivi.sota.marshalling.CirceMarshallingSupport._
     createDevice(device) ~> route ~> check {
       status shouldBe Created
       responseAs[Uuid]
@@ -37,16 +40,17 @@ class GroupsResourceSpec extends FunSuite
 
   def createGroupFromDevices(device1: Uuid, device2: Uuid, groupName: Name)
                             (implicit ec: ExecutionContext): HttpRequest = {
-    import org.genivi.sota.marshalling.CirceMarshallingSupport._
-    import io.circe.generic.auto._
-    import io.circe.syntax._
     Post(Resource.uri("device_groups", "from_attributes"), CreateGroupRequest(device1, device2, groupName).asJson)
   }
+
+  def listDevicesInGroup(groupId: Uuid)(implicit ec: ExecutionContext): HttpRequest =
+    Get(Resource.uri("device_groups", groupId.underlying.get, "devices"))
 
   val complexJsonArray =
     Json.arr(Json.fromFields(List(("key", Json.fromString("value")), ("type", Json.fromString("fish")))))
   val complexNumericJsonArray =
     Json.arr(Json.fromFields(List(("key", Json.fromString("value")), ("type", Json.fromInt(5)))))
+  val groupName: Name = Refined.unsafeApply("testGroup")
 
   test("creating groups is possible") {
 
@@ -61,8 +65,15 @@ class GroupsResourceSpec extends FunSuite
     createSystemInfoOk(device1, complexJsonObj)
     createSystemInfoOk(device2, complexNumericJsonObj)
 
-    createGroupFromDevices(device1, device2, Refined.unsafeApply("testGroup")) ~> route ~> check {
+    createGroupFromDevices(device1, device2, groupName) ~> route ~> check {
       status shouldBe OK
+      val groupId = responseAs[Uuid]
+      listDevicesInGroup(groupId) ~> route ~> check {
+        status shouldBe OK
+        val expectedResult: Set[Uuid] = Set(device1, device2)
+        responseAs[Set[Uuid]] shouldEqual expectedResult
+      }
     }
+
   }
 }

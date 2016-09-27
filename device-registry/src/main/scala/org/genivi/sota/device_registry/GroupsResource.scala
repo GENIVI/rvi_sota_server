@@ -9,6 +9,7 @@ import io.circe.generic.auto._
 import org.genivi.sota.data.{Namespace, Uuid}
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.device_registry.common.CreateGroupRequest
+import org.genivi.sota.http.UuidDirectives.extractUuid
 
 import scala.concurrent.ExecutionContext
 
@@ -35,15 +36,22 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace])
             _       <- GroupMember.createGroup(groupId, namespace, request.device1)
             _       <- GroupMember.createGroup(groupId, namespace, request.device2)
                  //PRO-1378 Add logic to find devices which should be in this group
-          } yield ()
+          } yield groupId
           complete(db.run(dbIO.transactionally))
     }
+  }
+
+  def getDevicesInGroup(groupId: Uuid): Route = {
+    complete(db.run(GroupMember.listDevicesInGroup(groupId)))
   }
 
   val route: Route =
     (pathPrefix("device_groups") & namespaceExtractor) { ns =>
       (post & pathPrefix("from_attributes") & pathEnd) {
         entity(as[CreateGroupRequest]) { groupInfo => createGroupFromDevices(groupInfo, ns) }
+      } ~
+      (get & extractUuid & pathPrefix("devices") & pathEnd) { groupId =>
+        getDevicesInGroup(groupId)
       }
     }
 
