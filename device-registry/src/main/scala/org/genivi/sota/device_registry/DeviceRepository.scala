@@ -65,26 +65,12 @@ object DeviceRepository {
              (implicit ec: ExecutionContext): DBIO[Uuid] = {
     val uuid: Uuid = Uuid.generate()
 
-    val dbIO = for {
-      _ <- exists(ns, uuid).asTry.flatMap {
-        case Success(_) => DBIO.failed(Errors.ConflictingDevice)
-        case Failure(_) => DBIO.successful(())
-      }
-      _ <- notConflicts(ns, device.deviceName, device.deviceId)
-      _ <- devices += Device(ns, uuid, device.deviceName, device.deviceId, device.deviceType)
-    } yield uuid
+    val dbIO = devices += Device(ns, uuid, device.deviceName, device.deviceId, device.deviceType)
 
-    dbIO.transactionally
-  }
-
-  def notConflicts(ns: Namespace, deviceName: DeviceName, deviceId: Option[DeviceId])
-                  (implicit ec: ExecutionContext): DBIO[Unit] = {
-    devices
-      .filter(_.namespace === ns)
-      .filter(d => d.deviceName === deviceName || d.deviceId === deviceId)
-      .exists
-      .result
-      .flatMap(if (_) DBIO.failed(Errors.ConflictingDevice) else DBIO.successful(()))
+    dbIO
+      .map(_ => uuid)
+      .handleIntegrityErrors(Errors.ConflictingDevice)
+      .transactionally
   }
 
   def exists(ns: Namespace, uuid: Uuid)
@@ -108,13 +94,11 @@ object DeviceRepository {
       .result
 
   def update(ns: Namespace, uuid: Uuid, device: DeviceT)(implicit ec: ExecutionContext): DBIO[Unit] = {
-    def updateAction(device: Device): DBIO[Unit] =
-      devices.filter(_.uuid === uuid).update(device).handleSingleUpdateError(Errors.MissingDevice)
-
-    val dbIO = for {
-      _ <- notConflicts(ns, device.deviceName, device.deviceId)
-      _ <- updateAction(Device(ns, uuid, device.deviceName, device.deviceId, device.deviceType))
-    } yield ()
+    val dbIO = devices
+      .filter(_.uuid === uuid)
+      .update(Device(ns, uuid, device.deviceName, device.deviceId, device.deviceType))
+      .handleIntegrityErrors(Errors.ConflictingDevice)
+      .handleSingleUpdateError(Errors.MissingDevice)
 
     dbIO.transactionally
   }
