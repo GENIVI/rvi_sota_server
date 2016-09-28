@@ -85,17 +85,17 @@ class Routes(namespaceExtractor: Directive1[Namespace],
   def listGroups(ns: Namespace): Route =
     complete(db.run(GroupInfoRepository.list(ns)))
 
-  def fetchGroupInfo(groupName: Name, ns: Namespace): Route =
-    complete(db.run(GroupInfoRepository.findByName(groupName, ns)))
+  def fetchGroupInfo(groupId: Uuid, ns: Namespace): Route =
+    complete(db.run(GroupInfoRepository.getGroupInfoById(groupId)))
 
-  def createGroupInfo(groupName: Name, namespace: Namespace, data: Json): Route =
-    complete(Created -> db.run(GroupInfoRepository.create(groupName, namespace, data)))
+  def createGroupInfo(id: Uuid, groupName: Name, namespace: Namespace, data: Json): Route =
+    complete(Created -> db.run(GroupInfoRepository.create(id, groupName, namespace, data)))
 
-  def updateGroupInfo(groupName: Name, namespace: Namespace, data: Json): Route =
-    complete(db.run(GroupInfoRepository.update(groupName, namespace, data)))
+  def updateGroupInfo(groupId: Uuid, groupName: Name, namespace: Namespace, data: Json): Route =
+    complete(db.run(GroupInfoRepository.updateGroupInfo(groupId, data)))
 
-  def deleteGroupInfo(groupName: Name, namespace: Namespace): Route =
-    complete(db.run(GroupInfoRepository.delete(groupName, namespace)))
+  def deleteGroupInfo(groupId: Uuid, namespace: Namespace): Route =
+    complete(db.run(GroupInfoRepository.delete(groupId)))
 
   def fetchDevice(uuid: Uuid): Route =
     complete(db.run(DeviceRepository.findByUuid(uuid)))
@@ -124,18 +124,18 @@ class Routes(namespaceExtractor: Directive1[Namespace],
         (get & path("group_info") & pathEnd) {
           listGroups(ns)
         } ~
-        (extractGroupName & path("group_info") & pathEnd) { groupName =>
+        (extractUuid & path("group_info") & pathEnd) { groupId =>
           get {
-            fetchGroupInfo(groupName, ns)
+            fetchGroupInfo(groupId, ns)
           } ~
-          post {
-            entity(as[Json]) { body => createGroupInfo(groupName, ns, body) }
+          (post & parameter('groupName.as[Name])) { groupName =>
+            entity(as[Json]) { body => createGroupInfo(groupId, groupName, ns, body) }
           } ~
-          put {
-            entity(as[Json]) { body => updateGroupInfo(groupName, ns, body) }
+          (put & parameter('groupName.as[Name])) { groupName =>
+            entity(as[Json]) { body => updateGroupInfo(groupId, groupName, ns, body) }
           } ~
           delete {
-            deleteGroupInfo(groupName, ns)
+            deleteGroupInfo(groupId, ns)
           }
         } ~
         (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~

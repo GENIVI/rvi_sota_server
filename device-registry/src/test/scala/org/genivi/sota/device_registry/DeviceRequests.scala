@@ -80,18 +80,20 @@ trait DeviceRequests {
   def listGroups(namespace: Namespace): HttpRequest =
     Get(Resource.uri(api, "group_info").withQuery(Query("namespace" -> namespace.get)))
 
-  def fetchGroupInfo(groupName: Name, namespace: Namespace): HttpRequest =
-    Get(Resource.uri(api, groupName.get, "group_info").withQuery(Query("namespace" -> namespace.get)))
+  def fetchGroupInfo(id: Uuid, namespace: Namespace): HttpRequest =
+    Get(Resource.uri(api, id.underlying.get, "group_info").withQuery(Query("namespace" -> namespace.get)))
 
-  def createGroupInfo(groupName: Name, namespace: Namespace, json: Json)
+  def createGroupInfo(id: Uuid, groupName: Name, namespace: Namespace, json: Json)
                       (implicit ec: ExecutionContext): HttpRequest =
-    Post(Resource.uri(api, groupName.get, "group_info").withQuery(Query("namespace" -> namespace.get)), json)
+    Post(Resource.uri(api, id.underlying.get, "group_info")
+      .withQuery(Query("namespace" -> namespace.get, "groupName" -> groupName.get)), json)
 
-  def updateGroupInfo(groupName: Name, namespace: Namespace, json: Json)
+  def updateGroupInfo(id: Uuid, groupName: Name, namespace: Namespace, json: Json)
                       (implicit ec: ExecutionContext): HttpRequest =
-    Put(Resource.uri(api, groupName.get, "group_info").withQuery(Query("namespace" -> namespace.get)), json)
+    Put(Resource.uri(api, id.underlying.get, "group_info")
+      .withQuery(Query("namespace" -> namespace.get, "groupName" -> groupName.get)), json)
 
-  def deleteGroupInfo(groupName: Name, namespace: Namespace)
+  def deleteGroupInfo(id: Uuid, namespace: Namespace)
                      (implicit ec: ExecutionContext): HttpRequest =
-    Delete(Resource.uri(api, groupName.get, "group_info").withQuery(Query("namespace" -> namespace.get)))
+    Delete(Resource.uri(api, id.underlying.get, "group_info").withQuery(Query("namespace" -> namespace.get)))
 }

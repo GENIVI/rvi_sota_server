@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import io.circe.Json
 import io.circe.generic.auto._
-import org.genivi.sota.data.Namespace
+import org.genivi.sota.data.{Namespace, Uuid}
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.device_registry.common.CreateGroupRequest
 
@@ -29,9 +29,11 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace])
         case Json.Null =>
           complete(StatusCodes.BadRequest -> "Devices have no common attributes to form a group")
         case json =>
+          val groupId = Uuid.generate()
           val dbIO = for {
-            _ <- GroupInfoRepository.create(request.groupName, namespace, json)
-            _ <- GroupMember.createGroup(request, namespace)
+            _       <- GroupInfoRepository.create(groupId, request.groupName, namespace, json)
+            _       <- GroupMember.createGroup(groupId, namespace, request.device1)
+            _       <- GroupMember.createGroup(groupId, namespace, request.device2)
                  //PRO-1378 Add logic to find devices which should be in this group
           } yield ()
           complete(db.run(dbIO.transactionally))

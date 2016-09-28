@@ -62,7 +62,6 @@ class GroupsResourceSpec extends FunSuite
     createSystemInfoOk(device2, complexNumericJsonObj)
 
     createGroupFromDevices(device1, device2, Refined.unsafeApply("testGroup")) ~> route ~> check {
-      println(responseAs[String])
       status shouldBe OK
     }
   }
