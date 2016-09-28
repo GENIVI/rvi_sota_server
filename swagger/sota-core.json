@@ -183,6 +183,186 @@
         }
       }
     },
+    "/campaign": {
+      "get": {
+        "description": "List all campaigns",
+        "responses": {
+          "200": {
+            "description": "A list of campaign objects",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/CampaignMeta"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Create a new campaign",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The name of the new campaign",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CampaignCreate"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "The new uuid of the created campaign",
+            "schema": {
+              "$ref": "#/definitions/uuid"
+            }
+          }
+        }
+      }
+    },
+    "/campaigns/{uuid}": {
+      "get": {
+        "description": "Get a campaign from uuid",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The campaign uuid to get",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The campaign",
+            "schema": {
+              "$ref": "#/definitions/Campaign"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete the campaign",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The campaign uuid to delete",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/campaigns/{uuid}/package": {
+      "put": {
+        "description": "Set the package for the campaign",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The campaign uuid to add package to",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The package to add",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/packageId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/campaigns/{uuid}/name": {
+      "put": {
+        "description": "Set the name for the campaign",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The campaign uuid to add package to",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The name for the campaign",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CampaignCreate"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/campaigns/{uuid}/groups": {
+      "put": {
+        "description": "Set the groups for the campaign",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The campaign uuid to add groups to",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The groups to add to campaign",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CampaignGroups"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/campaigns/{uuid}/launch": {
+      "post": {
+        "description": "Launch the campaign",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The campaign uuid to launch",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/update_requests": {
       "get": {
         "description": "List all update campaigns",
@@ -621,7 +801,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/BlacklistedPackage"
+                "$ref": "#/definitions/BlacklistItem"
               }
             }
           }
@@ -638,10 +818,7 @@
             "description": "An object describing the package to blacklist",
             "required": true,
             "schema": {
-              "type": "object",
-              "items": {
-                "$ref": "#definitions/BlacklistedPackageRequest"
-              }
+              "$ref": "#/definitions/BlacklistedPackageRequest"
             }
           }
         ],
@@ -665,7 +842,7 @@
             "schema": {
               "type": "object",
               "items": {
-                "$ref": "#definitions/BlacklistedPackageRequest"
+                "$ref": "#/definitions/BlacklistedPackageRequest"
               }
             }
           }
@@ -728,20 +905,48 @@
         }
       }
     },
+    "/blacklist/{package_name}/{package_version}/preview": {
+      "get": {
+        "parameters": [
+          {
+            "name": "package_name",
+            "in": "path",
+            "description": "package name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "package_version",
+            "in": "path",
+            "description": "package version",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "description": "Get the count of affected devices if a blacklist item was created for this package",
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "affected_devices": null,
+                "type": "int",
+                "description": "Count of affected devices"
+              }
+            },
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/impact/blacklist": {
       "get": {
         "description": "Current impact analysis for blacklisted packages",
         "responses": {
           "200": {
-            "description": "An array of tuples (DeviceId -> PackageId)",
+            "description": "A Map of (DeviceId -> Seq[PackageId])",
             "schema": {
-              "type": "array",
-              "items": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              }
+              "type": "object"
             }
           }
         }
@@ -993,6 +1198,69 @@
         "comment": {
           "type": "string",
           "description": "A free text comment about the item"
+        }
+      }
+    },
+    "Campaign": {
+      "type": "object",
+      "properties": {
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "An array of group names"
+        },
+        "meta": {
+          "$ref": "#/definitions/CampaignMeta"
+        },
+        "packageId": {
+          "$ref": "#/definitions/packageId"
+        }
+      }
+    },
+    "CampaignMeta": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "launched": {
+          "type": "boolean",
+          "description": "Is this campaign launched"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the campaign"
+        },
+        "namespace": {
+          "type": "string",
+          "description": "The namespace the campaign belongs to"
+        },
+        "packageUuid": {
+          "description": "The package uuid for this campaign, can be null if none have been set yet",
+          "$ref": "#/definitions/uuid"
+        }
+      }
+    },
+    "CampaignCreate": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name to give to the campaign"
+        }
+      }
+    },
+    "CampaignGroups": {
+      "type": "object",
+      "properties": {
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The groups for the campaign"
         }
       }
     }
