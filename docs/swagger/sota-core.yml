@@ -615,8 +615,8 @@ paths:
             type: object
             properties:
               affected_devices:
-              type: int
-              description: Count of affected devices
+                type: integer
+                description: Count of affected devices
           description: OK
 
   /impact/blacklist:
@@ -831,7 +831,7 @@ definitions:
         description: The namespace the campaign belongs to
       packageUuid:
         description: The package uuid for this campaign, can be null if none have been set yet
-        $ref: '#/definitions/uuid'
+        type: string
   CampaignCreate:
     type: object
     properties:
@@ -846,3 +846,8 @@ definitions:
         items:
           type: string
         description: The groups for the campaign
+  SystemInfo:
+    type: object
+    description: |
+      This is a free-form JSON blob describing the hardware components of the client system. 
+      The format expected by the server is the output of `lshw -json -sanitize`.

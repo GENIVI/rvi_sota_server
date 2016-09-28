@@ -136,6 +136,11 @@ paths:
     post:
       description: Create a group info entry for a namespace/groupName entry
       parameters:
+      - name: uuid
+        description: The uuid of an existing device object
+        in: path
+        required: true
+        type: string
       - name: groupName
         description: The name of the group of devices
         in: query
@@ -157,6 +162,11 @@ paths:
     put:
       description: Update the group info entry for a namespace/groupName entry
       parameters:
+      - name: uuid
+        description: The uuid of an existing device object
+        in: path
+        required: true
+        type: string
       - name: groupName
         description: The name of the group of devices
         in: query
@@ -178,6 +188,11 @@ paths:
     get:
       description: Retrieve the group info for a namespace/groupName entry
       parameters:
+      - name: uuid
+        description: The uuid of an existing device object
+        in: path
+        required: true
+        type: string
       - name: groupName
         description: The name of the group of devices
         in: query
@@ -192,7 +207,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/GroupInfo'
-
 definitions:
   uuid:
     type: string
