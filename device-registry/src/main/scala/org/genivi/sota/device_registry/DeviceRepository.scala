@@ -107,13 +107,13 @@ object DeviceRepository {
       .filter(d => d.namespace === ns && regex(d.deviceName, re))
       .result
 
-  def update(ns: Namespace, uuid: Uuid, device: DeviceT)
-            (implicit ec: ExecutionContext): DBIO[Unit] = {
+  def update(ns: Namespace, uuid: Uuid, device: DeviceT)(implicit ec: ExecutionContext): DBIO[Unit] = {
+    def updateAction(device: Device): DBIO[Unit] =
+      devices.filter(_.uuid === uuid).update(device).handleSingleUpdateError(Errors.MissingDevice)
 
     val dbIO = for {
-      _ <- exists(ns, uuid)
       _ <- notConflicts(ns, device.deviceName, device.deviceId)
-      _ <- devices.update(Device(ns, uuid, device.deviceName, device.deviceId, device.deviceType))
+      _ <- updateAction(Device(ns, uuid, device.deviceName, device.deviceId, device.deviceType))
     } yield ()
 
     dbIO.transactionally
@@ -144,5 +144,4 @@ object DeviceRepository {
 
     dbIO.transactionally
   }
-
 }
