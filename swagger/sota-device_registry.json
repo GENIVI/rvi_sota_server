@@ -208,6 +208,13 @@
         "description": "Create a group info entry for a namespace/groupName entry",
         "parameters": [
           {
+            "name": "uuid",
+            "description": "The uuid of an existing device object",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
             "name": "groupName",
             "description": "The name of the group of devices",
             "in": "query",
@@ -240,6 +247,13 @@
         "description": "Update the group info entry for a namespace/groupName entry",
         "parameters": [
           {
+            "name": "uuid",
+            "description": "The uuid of an existing device object",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
             "name": "groupName",
             "description": "The name of the group of devices",
             "in": "query",
@@ -271,6 +285,13 @@
       "get": {
         "description": "Retrieve the group info for a namespace/groupName entry",
         "parameters": [
+          {
+            "name": "uuid",
+            "description": "The uuid of an existing device object",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
           {
             "name": "groupName",
             "description": "The name of the group of devices",

@@ -929,9 +929,10 @@
             "schema": {
               "type": "object",
               "properties": {
-                "affected_devices": null,
-                "type": "int",
-                "description": "Count of affected devices"
+                "affected_devices": {
+                  "type": "integer",
+                  "description": "Count of affected devices"
+                }
               }
             },
             "description": "OK"
@@ -1239,7 +1240,7 @@
         },
         "packageUuid": {
           "description": "The package uuid for this campaign, can be null if none have been set yet",
-          "$ref": "#/definitions/uuid"
+          "type": "string"
         }
       }
     },
@@ -1263,6 +1264,10 @@
           "description": "The groups for the campaign"
         }
       }
+    },
+    "SystemInfo": {
+      "type": "object",
+      "description": "This is a free-form JSON blob describing the hardware components of the client system. \nThe format expected by the server is the output of `lshw -json -sanitize`.\n"
     }
   }
 }
