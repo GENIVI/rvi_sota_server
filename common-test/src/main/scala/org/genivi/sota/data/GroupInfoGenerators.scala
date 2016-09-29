@@ -20,7 +20,7 @@ trait GroupInfoGenerators {
     for {
       name <- genGroupName
       json <- SimpleJsonGenerator.simpleJsonGen
-    } yield GroupInfo(name, defaultNs, json)
+    } yield GroupInfo(Uuid.generate(), name, defaultNs, json)
 
   val genGroupInfoList: Gen[Seq[GroupInfo]] = {
     for {

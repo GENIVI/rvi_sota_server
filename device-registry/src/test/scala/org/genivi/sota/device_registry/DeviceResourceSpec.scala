@@ -71,8 +71,8 @@ class DeviceResourceSpec extends ResourcePropSpec {
   }
 
   property("GET /group_info request fails on non-existent device") {
-    forAll(genGroupName) { groupName =>
-      fetchGroupInfo (groupName, defaultNs) ~> route ~> check {
+    forAll(genUuid) { id =>
+      fetchGroupInfo (id, defaultNs) ~> route ~> check {
         status shouldBe NotFound
       }
     }
@@ -387,10 +387,26 @@ class DeviceResourceSpec extends ResourcePropSpec {
     }
   }
 
+  property("DELETE group_info should delete group.") {
+    forAll(genUuid, genGroupName, simpleJsonGen) { (id, groupName, json) =>
+      createGroupInfo(id, groupName, defaultNs, json) ~> route ~> check {
+        status shouldBe Created
+      }
+
+      deleteGroupInfo(id, defaultNs) ~> route ~> check {
+        status shouldBe OK
+      }
+
+      fetchGroupInfo(id, defaultNs) ~> route ~> check {
+        status shouldBe NotFound
+      }
+    }
+  }
+
   property("GET all groups lists all groups") {
     forAll(genGroupInfoList) { groups =>
-      groups.foreach { case GroupInfo(groupName, namespace, groupInfoJson) =>
-        createGroupInfo(groupName, namespace, groupInfoJson) ~> route ~> check {
+      groups.foreach { case GroupInfo(id, groupName, namespace, groupInfoJson) =>
+        createGroupInfo(id, groupName, namespace, groupInfoJson) ~> route ~> check {
           status shouldBe Created
         }
       }
@@ -403,8 +419,8 @@ class DeviceResourceSpec extends ResourcePropSpec {
         status shouldBe OK
       }
 
-      groups.foreach { case GroupInfo(groupName, _, _) =>
-        deleteGroupInfo(groupName, defaultNs) ~> route ~> check {
+      groups.foreach { case GroupInfo(id, _, _, _) =>
+        deleteGroupInfo(id, defaultNs) ~> route ~> check {
           status shouldBe OK
         }
       }
@@ -412,65 +428,35 @@ class DeviceResourceSpec extends ResourcePropSpec {
   }
 
   property("GET group_info after POST should return what was posted.") {
-    forAll(genGroupName, simpleJsonGen) { (groupName, json1) =>
-      createGroupInfo(groupName, defaultNs, json1) ~> route ~> check {
+    forAll(genGroupInfo) { group =>
+      createGroupInfo(group.id, group.groupName, defaultNs, group.groupInfo) ~> route ~> check {
         status shouldBe Created
       }
 
-      fetchGroupInfo(groupName, defaultNs) ~> route ~> check {
+      fetchGroupInfo(group.id, defaultNs) ~> route ~> check {
         status shouldBe OK
         val json2: Json = responseAs[Json]
-        json1 shouldBe json2
+        group.groupInfo shouldEqual json2
       }
     }
   }
 
   property("GET group_info after PUT should return what was updated.") {
-    forAll(genGroupName, simpleJsonGen, simpleJsonGen) { (groupName, json1, json2) =>
+    forAll(genUuid, genGroupName, simpleJsonGen, simpleJsonGen) { (id, groupName, json1, json2) =>
       whenever(!json1.isNull && !json2.isNull) {
-        createGroupInfo(groupName, defaultNs, json1) ~> route ~> check {
+        createGroupInfo(id, groupName, defaultNs, json1) ~> route ~> check {
           status shouldBe Created
         }
 
-        updateGroupInfo(groupName, defaultNs, json2) ~> route ~> check {
+        updateGroupInfo(id, groupName, defaultNs, json2) ~> route ~> check {
           status shouldBe OK
         }
 
-        fetchGroupInfo(groupName, defaultNs) ~> route ~> check {
+        fetchGroupInfo(id, defaultNs) ~> route ~> check {
           status shouldBe OK
           val json3: Json = responseAs[Json]
           json2 shouldBe json3
         }
-      }
-    }
-  }
-
-  property("PUT group_info if not previously created should create it.") {
-    forAll(genGroupName, simpleJsonGen) { (groupName, json) =>
-      updateGroupInfo(groupName, defaultNs, json) ~> route ~> check {
-        status shouldBe OK
-      }
-
-      fetchGroupInfo(groupName, defaultNs) ~> route ~> check {
-        status shouldBe OK
-        val json2: Json = responseAs[Json]
-        json shouldBe json2
-      }
-    }
-  }
-
-  property("DELETE group_info should delete group.") {
-    forAll(genGroupName, simpleJsonGen) { (groupName, json) =>
-      createGroupInfo(groupName, defaultNs, json) ~> route ~> check {
-        status shouldBe Created
-      }
-
-      deleteGroupInfo(groupName, defaultNs) ~> route ~> check {
-        status shouldBe OK
-      }
-
-      fetchGroupInfo(groupName, defaultNs) ~> route ~> check {
-        status shouldBe NotFound
       }
     }
   }

@@ -4,30 +4,28 @@
   */
 package org.genivi.sota.device_registry
 
-import org.genivi.sota.data.GroupInfo.Name
 import org.genivi.sota.data.{Namespace, Uuid}
 import slick.lifted.Tag
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.db.SlickExtensions._
-import org.genivi.sota.device_registry.common.CreateGroupRequest
-import org.genivi.sota.refined.SlickRefined._
 
 import scala.concurrent.ExecutionContext
 
 object GroupMember {
 
-  final case class GroupMember(groupName: Name, namespace: Namespace, deviceUuid: Uuid)
+  final case class GroupMember(groupId: Uuid, namespace: Namespace, deviceUuid: Uuid)
 
   // scalastyle:off
   class GroupMembersTable(tag: Tag) extends Table[GroupMember] (tag, "GroupMembers") {
-    def groupName   = column[Name]("group_name")
+    def groupId     = column[Uuid]("group_id")
     def namespace   = column[Namespace]("namespace")
     def deviceUuid  = column[Uuid]("device_uuid")
-    def device      = foreignKey("fk_group_members_uuid", deviceUuid, DeviceRepository.devices)(_.uuid)
+    def deviceFk    = foreignKey("fk_group_members_uuid", deviceUuid, DeviceRepository.devices)(_.uuid)
+    def groupFk     = foreignKey("fk_group_members_group_id", groupId, GroupInfoRepository.groupInfos)(_.id)
 
-    def pk = primaryKey("pk_group_members", (groupName, namespace, deviceUuid))
+    def pk = primaryKey("pk_group_members", (groupId, deviceUuid))
 
-    def * = (groupName, namespace, deviceUuid).shaped <>
+    def * = (groupId, namespace, deviceUuid).shaped <>
       ((GroupMember.apply _).tupled, GroupMember.unapply)
   }
   // scalastyle:on
@@ -35,9 +33,8 @@ object GroupMember {
   val groupMembers = TableQuery[GroupMembersTable]
 
   //This method should only be called from methods which use `transactionally`, so it purposely doesn't call this itself
-  def createGroup(groupInfo: CreateGroupRequest, namespace: Namespace)(implicit ec: ExecutionContext)
-      : DBIO[Option[Int]] =
-    groupMembers ++= Seq(GroupMember(groupInfo.groupName, namespace, groupInfo.device1),
-                         GroupMember(groupInfo.groupName, namespace, groupInfo.device2))
+  def createGroup(groupId: Uuid, namespace: Namespace, deviceId: Uuid)(implicit ec: ExecutionContext)
+      : DBIO[Int] =
+    groupMembers += GroupMember(groupId, namespace, deviceId)
 
 }
