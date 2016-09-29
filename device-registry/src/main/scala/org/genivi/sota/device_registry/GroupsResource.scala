@@ -47,7 +47,7 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace])
 
   val route: Route =
     (pathPrefix("device_groups") & namespaceExtractor) { ns =>
-      (post & pathPrefix("from_attributes") & pathEnd) {
+      (post & path("from_attributes")) {
         entity(as[CreateGroupRequest]) { groupInfo => createGroupFromDevices(groupInfo, ns) }
       } ~
       (get & extractUuid & pathPrefix("devices") & pathEnd) { groupId =>

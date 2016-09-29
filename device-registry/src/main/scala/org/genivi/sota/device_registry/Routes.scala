@@ -93,8 +93,8 @@ class Routes(namespaceExtractor: Directive1[Namespace],
   def updateGroupInfo(groupId: Uuid, groupName: Name, namespace: Namespace, data: Json): Route =
     complete(db.run(GroupInfoRepository.updateGroupInfo(groupId, data)))
 
-  def deleteGroupInfo(groupId: Uuid, namespace: Namespace): Route =
-    complete(db.run(GroupInfoRepository.delete(groupId)))
+  def renameGroup(groupId: Uuid, newGroupName: Name): Route =
+    complete(db.run(GroupInfoRepository.renameGroup(groupId, newGroupName)))
 
   def fetchDevice(uuid: Uuid): Route =
     complete(db.run(DeviceRepository.findByUuid(uuid)))
@@ -123,6 +123,10 @@ class Routes(namespaceExtractor: Directive1[Namespace],
         (get & path("group_info") & pathEnd) {
           listGroups(ns)
         } ~
+        (put & extractUuid & pathPrefix("group_info") & path("rename") & parameter('groupName.as[Name])) {
+          (groupId, groupName) =>
+            renameGroup(groupId, groupName)
+        } ~
         (extractUuid & path("group_info") & pathEnd) { groupId =>
           get {
             fetchGroupInfo(groupId, ns)
@@ -132,9 +136,6 @@ class Routes(namespaceExtractor: Directive1[Namespace],
           } ~
           (put & parameter('groupName.as[Name])) { groupName =>
             entity(as[Json]) { body => updateGroupInfo(groupId, groupName, ns, body) }
-          } ~
-          delete {
-            deleteGroupInfo(groupId, ns)
           }
         } ~
         (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~

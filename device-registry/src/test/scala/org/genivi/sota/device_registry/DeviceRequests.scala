@@ -39,7 +39,7 @@ trait DeviceRequests {
 
   def fetchDevice(uuid: Uuid)
                  (implicit s: Show[Uuid]): HttpRequest =
-    Get(Resource.uri(api, s.show(uuid)).withQuery(Query("namespace" -> "default")))
+    Get(Resource.uri(api, s.show(uuid)))
 
   def searchDevice(namespace: Namespace, regex: String): HttpRequest =
     Get(Resource.uri(api).withQuery(Query("namespace" -> namespace.get, "regex" -> regex)))
@@ -77,23 +77,19 @@ trait DeviceRequests {
                       (implicit s: Show[Uuid], ec: ExecutionContext): HttpRequest =
     Put(Resource.uri(api, s.show(uuid),"system_info"), json)
 
-  def listGroups(namespace: Namespace): HttpRequest =
-    Get(Resource.uri(api, "group_info").withQuery(Query("namespace" -> namespace.get)))
+  def listGroups(): HttpRequest = Get(Resource.uri(api, "group_info"))
 
-  def fetchGroupInfo(id: Uuid, namespace: Namespace): HttpRequest =
-    Get(Resource.uri(api, id.underlying.get, "group_info").withQuery(Query("namespace" -> namespace.get)))
+  def fetchGroupInfo(id: Uuid): HttpRequest = Get(Resource.uri(api, id.underlying.get, "group_info"))
 
-  def createGroupInfo(id: Uuid, groupName: Name, namespace: Namespace, json: Json)
+  def createGroupInfo(id: Uuid, groupName: Name, json: Json)
                       (implicit ec: ExecutionContext): HttpRequest =
-    Post(Resource.uri(api, id.underlying.get, "group_info")
-      .withQuery(Query("namespace" -> namespace.get, "groupName" -> groupName.get)), json)
+    Post(Resource.uri(api, id.underlying.get, "group_info").withQuery(Query("groupName" -> groupName.get)), json)
 
-  def updateGroupInfo(id: Uuid, groupName: Name, namespace: Namespace, json: Json)
+  def updateGroupInfo(id: Uuid, groupName: Name, json: Json)
                       (implicit ec: ExecutionContext): HttpRequest =
-    Put(Resource.uri(api, id.underlying.get, "group_info")
-      .withQuery(Query("namespace" -> namespace.get, "groupName" -> groupName.get)), json)
+    Put(Resource.uri(api, id.underlying.get, "group_info").withQuery(Query("groupName" -> groupName.get)), json)
 
-  def deleteGroupInfo(id: Uuid, namespace: Namespace)
-                     (implicit ec: ExecutionContext): HttpRequest =
-    Delete(Resource.uri(api, id.underlying.get, "group_info").withQuery(Query("namespace" -> namespace.get)))
+  def renameGroup(id: Uuid, newGroupName: Name)(implicit ec: ExecutionContext): HttpRequest = {
+    Put(Resource.uri(api, id.underlying.get, "group_info", "rename").withQuery(Query("groupName" -> newGroupName.get)))
+  }
 }

@@ -5,8 +5,6 @@
 package org.genivi.sota.device_registry
 
 import akka.http.scaladsl.model.StatusCodes
-import eu.timepit.refined.api.Refined
-import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import io.circe.Json
 import org.genivi.sota.data._
@@ -72,7 +70,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
 
   property("GET /group_info request fails on non-existent device") {
     forAll(genUuid) { id =>
-      fetchGroupInfo (id, defaultNs) ~> route ~> check {
+      fetchGroupInfo (id) ~> route ~> check {
         status shouldBe NotFound
       }
     }
@@ -119,9 +117,8 @@ class DeviceResourceSpec extends ResourcePropSpec {
 
       updateDevice(uuid, d2) ~> route ~> check {
         val updateStatus = status
-        val deviceId = d1.deviceId
 
-        deviceId match {
+        d1.deviceId match {
           case Some(deviceId) =>
             fetchByDeviceId(defaultNs, deviceId) ~> route ~> check {
               status match {
@@ -387,53 +384,31 @@ class DeviceResourceSpec extends ResourcePropSpec {
     }
   }
 
-  property("DELETE group_info should delete group.") {
-    forAll(genUuid, genGroupName, simpleJsonGen) { (id, groupName, json) =>
-      createGroupInfo(id, groupName, defaultNs, json) ~> route ~> check {
+  property("GET all groups lists all groups") {
+    //TODO: PRO-1182 turn this back into a property when we can delete groups
+    val groups = genGroupInfoList.sample.get
+    groups.foreach { case GroupInfo(id, groupName, namespace, groupInfoJson) =>
+      createGroupInfo(id, groupName, groupInfoJson) ~> route ~> check {
         status shouldBe Created
       }
-
-      deleteGroupInfo(id, defaultNs) ~> route ~> check {
-        status shouldBe OK
-      }
-
-      fetchGroupInfo(id, defaultNs) ~> route ~> check {
-        status shouldBe NotFound
-      }
     }
-  }
 
-  property("GET all groups lists all groups") {
-    forAll(genGroupInfoList) { groups =>
-      groups.foreach { case GroupInfo(id, groupName, namespace, groupInfoJson) =>
-        createGroupInfo(id, groupName, namespace, groupInfoJson) ~> route ~> check {
-          status shouldBe Created
-        }
-      }
-
-      listGroups(defaultNs) ~> route ~> check {
-        //need to sort lists so shouldEqual works
-        val resp = responseAs[Seq[GroupInfo]].sortBy(_.groupName.toString)
-        val sortedGroups = groups.sortBy(_.groupName.toString)
-        resp shouldEqual sortedGroups
-        status shouldBe OK
-      }
-
-      groups.foreach { case GroupInfo(id, _, _, _) =>
-        deleteGroupInfo(id, defaultNs) ~> route ~> check {
-          status shouldBe OK
-        }
-      }
+    listGroups() ~> route ~> check {
+      //need to sort lists so shouldEqual works
+      val resp = responseAs[Seq[GroupInfo]].sortBy(_.groupName.toString)
+      val sortedGroups = groups.sortBy(_.groupName.toString)
+      resp shouldEqual sortedGroups
+      status shouldBe OK
     }
   }
 
   property("GET group_info after POST should return what was posted.") {
     forAll(genGroupInfo) { group =>
-      createGroupInfo(group.id, group.groupName, defaultNs, group.groupInfo) ~> route ~> check {
+      createGroupInfo(group.id, group.groupName, group.groupInfo) ~> route ~> check {
         status shouldBe Created
       }
 
-      fetchGroupInfo(group.id, defaultNs) ~> route ~> check {
+      fetchGroupInfo(group.id) ~> route ~> check {
         status shouldBe OK
         val json2: Json = responseAs[Json]
         group.groupInfo shouldEqual json2
@@ -444,19 +419,37 @@ class DeviceResourceSpec extends ResourcePropSpec {
   property("GET group_info after PUT should return what was updated.") {
     forAll(genUuid, genGroupName, simpleJsonGen, simpleJsonGen) { (id, groupName, json1, json2) =>
       whenever(!json1.isNull && !json2.isNull) {
-        createGroupInfo(id, groupName, defaultNs, json1) ~> route ~> check {
+        createGroupInfo(id, groupName, json1) ~> route ~> check {
           status shouldBe Created
         }
 
-        updateGroupInfo(id, groupName, defaultNs, json2) ~> route ~> check {
+        updateGroupInfo(id, groupName, json2) ~> route ~> check {
           status shouldBe OK
         }
 
-        fetchGroupInfo(id, defaultNs) ~> route ~> check {
+        fetchGroupInfo(id) ~> route ~> check {
           status shouldBe OK
           val json3: Json = responseAs[Json]
           json2 shouldBe json3
         }
+      }
+    }
+  }
+
+  property("Renaming groups") {
+    forAll(genGroupInfo, genGroupName) { (group, newGroupName) =>
+      createGroupInfo(group.id, group.groupName, group.groupInfo) ~> route ~> check {
+        status shouldBe Created
+      }
+
+      renameGroup(group.id, newGroupName) ~> route ~> check {
+        status shouldBe OK
+      }
+
+      listGroups() ~> route ~> check {
+        status shouldBe OK
+        val groups = responseAs[Seq[GroupInfo]]
+        groups.count(e => e.id.equals(group.id) && e.groupName.equals(newGroupName)) shouldBe 1
       }
     }
   }
