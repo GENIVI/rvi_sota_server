@@ -1,6 +1,5 @@
 package org.genivi.sota.device_registry
 
-import slick.driver.MySQLDriver.api._
 import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
@@ -8,13 +7,12 @@ import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.data.GroupInfo.Name
 import org.genivi.sota.data.{Namespace, Uuid}
-import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.device_registry.common.CreateGroupRequest
 import org.genivi.sota.http.UuidDirectives.{extractUuid, allowExtractor}
-import StatusCodes.Created
-import eu.timepit.refined.api.Refined
-
+import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import scala.concurrent.{ExecutionContext, Future}
+import slick.driver.MySQLDriver.api._
+
 
 class GroupsResource(namespaceExtractor: Directive1[Namespace])
                     (implicit ec: ExecutionContext,
@@ -22,6 +20,7 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace])
   extends Directives {
 
   import org.genivi.sota.marshalling.CirceMarshallingSupport._
+  import StatusCodes.Created
 
   private val extractGroupId = allowExtractor(namespaceExtractor, extractUuid, deviceAllowed)
 
@@ -69,6 +68,9 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace])
   def renameGroup(groupId: Uuid, newGroupName: Name): Route =
     complete(db.run(GroupInfoRepository.renameGroup(groupId, newGroupName)))
 
+  def countDevices(groupId: Uuid): Route =
+    complete(db.run(GroupMember.countDevicesInGroup(groupId)))
+
   val route: Route =
     pathPrefix("device_groups") {
       namespaceExtractor { ns =>
@@ -94,6 +96,9 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace])
         } ~
         (put & parameter('groupName.as[Name])) { groupName =>
           entity(as[Json]) { body => updateGroupInfo(groupId, groupName, body) }
+        } ~
+        (get & path("count") & pathEnd) {
+          countDevices(groupId)
         }
       }
     }
