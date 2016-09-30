@@ -68,9 +68,10 @@ object GroupInfoRepository extends SlickJsonHelper {
       .update(data)
       .handleSingleUpdateError(Errors.MissingGroupInfo)
 
-  def delete(id: Uuid)(implicit ec: ExecutionContext): DBIO[Unit] =
+  def renameGroup(id: Uuid, newGroupName: Name)(implicit ec: ExecutionContext): DBIO[Unit] =
     groupInfos
       .filter(r => r.id === id)
-      .delete
+      .map(_.groupName)
+      .update(newGroupName)
       .handleSingleUpdateError(Errors.MissingGroupInfo)
 }

@@ -132,6 +132,16 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/SystemInfo'
+  /devices/group_info:
+    get:
+      description: Returns a list of all groups
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/GroupInfo'
   /devices/{uuid}/group_info:
     post:
       description: Create a group info entry for a namespace/groupName entry
@@ -143,10 +153,6 @@ paths:
         type: string
       - name: groupName
         description: The name of the group of devices
-        in: query
-        required: true
-        type: string
-      - name: namespace
         in: query
         required: true
         type: string
@@ -172,10 +178,6 @@ paths:
         in: query
         required: true
         type: string
-      - name: namespace
-        in: query
-        required: true
-        type: string
       - name: groupInfo
         description: The json object representing the group info
         in: body
@@ -198,15 +200,42 @@ paths:
         in: query
         required: true
         type: string
-      - name: namespace
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/GroupInfo'
+  /devices/{uuid}/group_info/rename:
+    put:
+      description: Rename a group
+      parameters:
+      - name: uuid
+        description: The uuid of an existing group
+        in: path
+        required: true
+        type: string
+      - name: groupName
+        description: The new name of the group
         in: query
         required: true
         type: string
       responses:
         200:
           description: OK
-          schema:
-            $ref: '#/definitions/GroupInfo'
+  /device_groups/from_attributes:
+    post:
+      description: Create a group from two devices' common attributes
+      parameters:
+      - name: CreateGroupRequest
+        description: The group name and devices to compare
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/CreateGroupRequest'
+      responses:
+        200:
+          description: OK
+
 definitions:
   uuid:
     type: string
@@ -255,3 +284,13 @@ definitions:
   GroupInfo:
     type: object
     description: A json object representing device group info. No schema yet defined.
+  CreateGroupRequest:
+    type: object
+    properties:
+      device1:
+        $ref: '#/definitions/uuid'
+      device2:
+        $ref: '#/definitions/uuid'
+      groupName:
+        type: string
+        description: a group name between 1 and 100 characters long

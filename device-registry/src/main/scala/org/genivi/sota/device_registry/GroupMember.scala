@@ -7,7 +7,6 @@ package org.genivi.sota.device_registry
 import org.genivi.sota.data.{Namespace, Uuid}
 import slick.lifted.Tag
 import slick.driver.MySQLDriver.api._
-import org.genivi.sota.db.Operators._
 import org.genivi.sota.db.SlickExtensions._
 
 import scala.concurrent.ExecutionContext
@@ -33,9 +32,7 @@ object GroupMember {
 
   val groupMembers = TableQuery[GroupMembersTable]
 
-  //This method should only be called from methods which use `transactionally`, so it purposely doesn't call this itself
-  def createGroup(groupId: Uuid, namespace: Namespace, deviceId: Uuid)(implicit ec: ExecutionContext)
-      : DBIO[Int] =
+  def createGroup(groupId: Uuid, namespace: Namespace, deviceId: Uuid)(implicit ec: ExecutionContext): DBIO[Int] =
     groupMembers += GroupMember(groupId, namespace, deviceId)
 
   def listDevicesInGroup(groupId: Uuid)(implicit ec: ExecutionContext): DBIO[Seq[Uuid]] =
@@ -43,5 +40,4 @@ object GroupMember {
       .filter(r => r.groupId === groupId)
       .map(r => r.deviceUuid)
       .result
-
 }

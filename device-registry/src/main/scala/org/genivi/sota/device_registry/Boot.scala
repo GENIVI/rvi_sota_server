@@ -11,10 +11,8 @@ import akka.stream.ActorMaterializer
 import cats.data.Xor
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.db.BootMigrations
-import org.genivi.sota.http
 import org.genivi.sota.http._
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
-import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted}
 import org.genivi.sota.rest.SotaRejectionHandler.rejectionHandler
 import org.slf4j.LoggerFactory
 
