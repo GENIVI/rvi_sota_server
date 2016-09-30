@@ -6,12 +6,15 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import io.circe.Json
 import io.circe.generic.auto._
+import org.genivi.sota.data.GroupInfo.Name
 import org.genivi.sota.data.{Namespace, Uuid}
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.device_registry.common.CreateGroupRequest
-import org.genivi.sota.http.UuidDirectives.extractUuid
+import org.genivi.sota.http.UuidDirectives.{extractUuid, allowExtractor}
+import StatusCodes.Created
+import eu.timepit.refined.api.Refined
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class GroupsResource(namespaceExtractor: Directive1[Namespace])
                     (implicit ec: ExecutionContext,
@@ -19,6 +22,12 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace])
   extends Directives {
 
   import org.genivi.sota.marshalling.CirceMarshallingSupport._
+
+  private val extractGroupId = allowExtractor(namespaceExtractor, extractUuid, deviceAllowed)
+
+  private def deviceAllowed(groupId: Uuid): Future[Namespace] = {
+    db.run(GroupInfoRepository.groupInfoNamespace(groupId))
+  }
 
   def createGroupFromDevices(request: CreateGroupRequest, namespace: Namespace): Route = {
     val dbIo = for {
@@ -45,13 +54,47 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace])
     complete(db.run(GroupMember.listDevicesInGroup(groupId)))
   }
 
+  def listGroups(ns: Namespace): Route =
+    complete(db.run(GroupInfoRepository.list(ns)))
+
+  def fetchGroupInfo(groupId: Uuid): Route =
+    complete(db.run(GroupInfoRepository.getGroupInfoById(groupId)))
+
+  def createGroupInfo(id: Uuid, groupName: Name, namespace: Namespace, data: Json): Route =
+    complete(Created -> db.run(GroupInfoRepository.create(id, groupName, namespace, data)))
+
+  def updateGroupInfo(groupId: Uuid, groupName: Name, data: Json): Route =
+    complete(db.run(GroupInfoRepository.updateGroupInfo(groupId, data)))
+
+  def renameGroup(groupId: Uuid, newGroupName: Name): Route =
+    complete(db.run(GroupInfoRepository.renameGroup(groupId, newGroupName)))
+
   val route: Route =
-    (pathPrefix("device_groups") & namespaceExtractor) { ns =>
-      (post & path("from_attributes")) {
-        entity(as[CreateGroupRequest]) { groupInfo => createGroupFromDevices(groupInfo, ns) }
+    pathPrefix("device_groups") {
+      namespaceExtractor { ns =>
+        (post & path("from_attributes")) {
+          entity(as[CreateGroupRequest]) { groupInfo => createGroupFromDevices(groupInfo, ns) }
+        } ~
+        (post & extractUuid & pathEnd & parameter('groupName.as[Name])) { (groupId, groupName) =>
+          entity(as[Json]) { body => createGroupInfo(groupId, groupName, ns, body) }
+        } ~
+        (get & pathEnd) {
+          listGroups(ns)
+        }
       } ~
-      (get & extractUuid & pathPrefix("devices") & pathEnd) { groupId =>
-        getDevicesInGroup(groupId)
+      extractGroupId { groupId =>
+        (get & path("devices")) {
+          getDevicesInGroup(groupId)
+        } ~
+        (put & path("rename") & parameter('groupName.as[Name])) { groupName =>
+          renameGroup(groupId, groupName)
+        } ~
+        (get & pathEnd) {
+          fetchGroupInfo(groupId)
+        } ~
+        (put & parameter('groupName.as[Name])) { groupName =>
+          entity(as[Json]) { body => updateGroupInfo(groupId, groupName, body) }
+        }
       }
     }
 

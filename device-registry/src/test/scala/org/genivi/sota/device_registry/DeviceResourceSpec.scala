@@ -22,7 +22,6 @@ class DeviceResourceSpec extends ResourcePropSpec {
   import Arbitrary._
   import Device._
   import DeviceGenerators._
-  import GroupInfoGenerators._
   import SimpleJsonGenerator._
   import StatusCodes._
   import UuidGenerator._
@@ -47,7 +46,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
   }
 
   def isRecent(time: Option[Instant]): Boolean = time match {
-    case Some(time) => time.isAfter(Instant.now.minus(3, ChronoUnit.MINUTES))
+    case Some(t) => t.isAfter(Instant.now.minus(3, ChronoUnit.MINUTES))
     case None => false
   }
 
@@ -65,14 +64,6 @@ class DeviceResourceSpec extends ResourcePropSpec {
       fetchSystemInfo(uuid)      ~> route ~> check { status shouldBe NotFound }
       createSystemInfo(uuid, json) ~> route ~> check { status shouldBe NotFound}
       updateSystemInfo(uuid, json) ~> route ~> check { status shouldBe NotFound}
-    }
-  }
-
-  property("GET /group_info request fails on non-existent device") {
-    forAll(genUuid) { id =>
-      fetchGroupInfo (id) ~> route ~> check {
-        status shouldBe NotFound
-      }
     }
   }
 
@@ -190,9 +181,8 @@ class DeviceResourceSpec extends ResourcePropSpec {
 
       fetchDevice(uuid) ~> route ~> check {
         val devicePost: Device = responseAs[Device]
-        val after: Instant = Instant.now()
 
-        devicePost.lastSeen should not be (None)
+        devicePost.lastSeen should not be None
         isRecent(devicePost.lastSeen) shouldBe true
       }
 
@@ -274,7 +264,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
 
       updateDevice(uuid1, d1.copy(deviceId = Some(deviceId))) ~> route ~> check {
         d2.deviceId match {
-          case Some(deviceId) => status shouldBe Conflict
+          case Some(_) => status shouldBe Conflict
           case None => ()
         }
       }
@@ -384,73 +374,4 @@ class DeviceResourceSpec extends ResourcePropSpec {
     }
   }
 
-  property("GET all groups lists all groups") {
-    //TODO: PRO-1182 turn this back into a property when we can delete groups
-    val groups = genGroupInfoList.sample.get
-    groups.foreach { case GroupInfo(id, groupName, namespace, groupInfoJson) =>
-      createGroupInfo(id, groupName, groupInfoJson) ~> route ~> check {
-        status shouldBe Created
-      }
-    }
-
-    listGroups() ~> route ~> check {
-      //need to sort lists so shouldEqual works
-      val resp = responseAs[Seq[GroupInfo]].sortBy(_.groupName.toString)
-      val sortedGroups = groups.sortBy(_.groupName.toString)
-      resp shouldEqual sortedGroups
-      status shouldBe OK
-    }
-  }
-
-  property("GET group_info after POST should return what was posted.") {
-    forAll(genGroupInfo) { group =>
-      createGroupInfo(group.id, group.groupName, group.groupInfo) ~> route ~> check {
-        status shouldBe Created
-      }
-
-      fetchGroupInfo(group.id) ~> route ~> check {
-        status shouldBe OK
-        val json2: Json = responseAs[Json]
-        group.groupInfo shouldEqual json2
-      }
-    }
-  }
-
-  property("GET group_info after PUT should return what was updated.") {
-    forAll(genUuid, genGroupName, simpleJsonGen, simpleJsonGen) { (id, groupName, json1, json2) =>
-      whenever(!json1.isNull && !json2.isNull) {
-        createGroupInfo(id, groupName, json1) ~> route ~> check {
-          status shouldBe Created
-        }
-
-        updateGroupInfo(id, groupName, json2) ~> route ~> check {
-          status shouldBe OK
-        }
-
-        fetchGroupInfo(id) ~> route ~> check {
-          status shouldBe OK
-          val json3: Json = responseAs[Json]
-          json2 shouldBe json3
-        }
-      }
-    }
-  }
-
-  property("Renaming groups") {
-    forAll(genGroupInfo, genGroupName) { (group, newGroupName) =>
-      createGroupInfo(group.id, group.groupName, group.groupInfo) ~> route ~> check {
-        status shouldBe Created
-      }
-
-      renameGroup(group.id, newGroupName) ~> route ~> check {
-        status shouldBe OK
-      }
-
-      listGroups() ~> route ~> check {
-        status shouldBe OK
-        val groups = responseAs[Seq[GroupInfo]]
-        groups.count(e => e.id.equals(group.id) && e.groupName.equals(newGroupName)) shouldBe 1
-      }
-    }
-  }
 }

@@ -48,7 +48,7 @@ class DevicesResource(db: Database, client: ConnectivityClient,
 
   import CirceMarshallingSupport._
   import Directives._
-  import WebService._
+  import org.genivi.sota.http.UuidDirectives._
   import system.dispatcher
 
   implicit val _db = db

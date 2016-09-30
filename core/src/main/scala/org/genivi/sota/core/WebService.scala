@@ -6,37 +6,16 @@ package org.genivi.sota.core
 
 import akka.actor.ActorSystem
 import akka.event.Logging
-import akka.http.scaladsl.server.{AuthorizationFailedRejection, Directive1, Directives}
+import akka.http.scaladsl.server.{Directive1, Directives}
 import akka.stream.ActorMaterializer
-import eu.timepit.refined._
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.resolver.{Connectivity, ExternalResolverClient}
 import org.genivi.sota.core.transfer.UpdateNotifier
-import org.genivi.sota.data.{Namespace, Uuid}
-import org.genivi.sota.rest.Validation.refined
+import org.genivi.sota.data.Namespace
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api.Database
-import Directives._
 import org.genivi.sota.messaging.MessageBusPublisher
-
-object WebService {
-  val extractUuid = refined[Uuid.Valid](Slash ~ Segment)
-  val extractDeviceUuid = refined[Uuid.Valid](Slash ~ Segment).map(Uuid(_))
-
-  def allowExtractor[T](namespaceExtractor: Directive1[Namespace],
-                          extractor: Directive1[T],
-                          allowFn: (T => Future[Namespace])): Directive1[T] = {
-    (extractor & namespaceExtractor).tflatMap { case (value, ns) =>
-      onSuccess(allowFn(value)).flatMap {
-        case namespace if namespace == ns =>
-          provide(value)
-        case _ =>
-          reject(AuthorizationFailedRejection)
-      }
-    }
-  }
-}
 
 class WebService(notifier: UpdateNotifier,
                  resolver: ExternalResolverClient,
@@ -49,10 +28,6 @@ class WebService(notifier: UpdateNotifier,
   implicit val log = Logging(system, "webservice")
 
   import org.genivi.sota.http.ErrorHandler._
-  import PackagesResource._
-  import WebService._
-  import eu.timepit.refined._
-  import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 
   val campaignResource = new CampaignResource(db, authNamespace)
   val devicesResource = new DevicesResource(db, connectivity.client, resolver, deviceRegistry, authNamespace)

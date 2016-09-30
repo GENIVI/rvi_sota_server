@@ -74,4 +74,12 @@ object GroupInfoRepository extends SlickJsonHelper {
       .map(_.groupName)
       .update(newGroupName)
       .handleSingleUpdateError(Errors.MissingGroupInfo)
+
+  def groupInfoNamespace(groupId: Uuid)(implicit ec: ExecutionContext): DBIO[Namespace] =
+    groupInfos
+      .filter(r => r.id === groupId)
+      .map(_.namespace)
+      .result
+      .failIfNotSingle(Errors.MissingGroupInfo)
+
 }
