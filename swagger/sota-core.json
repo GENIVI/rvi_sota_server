@@ -72,6 +72,9 @@
     },
     "/packages/{name}/{version}": {
       "put": {
+        "consumes": [
+          "multipart/form-data"
+        ],
         "description": "Add a binary package to the system",
         "parameters": [
           {
