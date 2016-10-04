@@ -41,8 +41,6 @@ trait ResourceSpec extends
   // Route
   lazy implicit val route: Route =
     new Routing(namespaceExtractor, messageBus).route
-
-
 }
 
 trait ResourcePropSpec extends PropSpec with ResourceSpec with PropertyChecks

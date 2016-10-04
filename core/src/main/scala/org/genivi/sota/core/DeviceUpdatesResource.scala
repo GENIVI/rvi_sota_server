@@ -51,7 +51,7 @@ class DeviceUpdatesResource(db: Database,
 
   import shapeless._
   import Directives._
-  import WebService._
+  import org.genivi.sota.http.UuidDirectives._
   import org.genivi.sota.marshalling.CirceMarshallingSupport._
   import Device._
   import org.genivi.sota.http.ErrorHandler._
@@ -237,7 +237,7 @@ class DeviceUpdatesResource(db: Database,
   val route = handleErrors {
     // vehicle_updates is deprecated and will be removed sometime in the future
     (pathPrefix("api" / "v1") & ( pathPrefix("vehicle_updates") | pathPrefix("device_updates"))
-                              & extractDeviceUuid) { device =>
+                              & extractUuid) { device =>
       get {
         pathEnd {
           authDirective(s"ota-core.${device.show}.read") {
@@ -248,7 +248,7 @@ class DeviceUpdatesResource(db: Database,
           // Backward compatible with sota_client v0.2.17
           logDeviceSeen(device) { pendingPackages(device) }
         } ~
-        (extractUuid & path("download")) { updateId =>
+        (extractRefinedUuid & path("download")) { updateId =>
           authDirective(s"ota-core.${device.show}.read") {
             downloadPackage(device, updateId)
           }
@@ -257,7 +257,7 @@ class DeviceUpdatesResource(db: Database,
           path("queued") { pendingPackages(device) } ~
           path("blocked") { getBlockedInstall(device) } ~
           path("results") { results(device) } ~
-          (extractUuid & path("results")) { updateId => resultsForUpdate(device, updateId) }
+          (extractRefinedUuid & path("results")) { updateId => resultsForUpdate(device, updateId) }
         }
       } ~
       put {
@@ -272,13 +272,13 @@ class DeviceUpdatesResource(db: Database,
           }
         } ~
         authDeviceNamespace(device) { ns =>
-          (extractUuid & path("cancelupdate")) { updateId => cancelUpdate(device, updateId) } ~
+          (extractRefinedUuid & path("cancelupdate")) { updateId => cancelUpdate(device, updateId) } ~
           path("order") { setInstallOrder(device) } ~
           path("blocked") { setBlockedInstall(device) }
         }
       } ~
       post {
-        (extractUuid & pathEnd & authDirective(s"ota-core.${device.show}.write")) { reportInstall } ~
+        (extractRefinedUuid & pathEnd & authDirective(s"ota-core.${device.show}.write")) { reportInstall } ~
         authDeviceNamespace(device) { ns =>
           pathEnd { queueDeviceUpdate(ns, device) } ~
           path("sync") { sync(device) }

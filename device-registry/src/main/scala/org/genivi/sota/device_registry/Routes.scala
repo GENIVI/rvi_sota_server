@@ -81,21 +81,6 @@ class Routes(namespaceExtractor: Directive1[Namespace],
   def updateSystemInfo(uuid: Uuid, data: Json): Route =
     complete(db.run(SystemInfo.update(uuid, data)))
 
-  def listGroups(ns: Namespace): Route =
-    complete(db.run(GroupInfoRepository.list(ns)))
-
-  def fetchGroupInfo(groupId: Uuid, ns: Namespace): Route =
-    complete(db.run(GroupInfoRepository.getGroupInfoById(groupId)))
-
-  def createGroupInfo(id: Uuid, groupName: Name, namespace: Namespace, data: Json): Route =
-    complete(Created -> db.run(GroupInfoRepository.create(id, groupName, namespace, data)))
-
-  def updateGroupInfo(groupId: Uuid, groupName: Name, namespace: Namespace, data: Json): Route =
-    complete(db.run(GroupInfoRepository.updateGroupInfo(groupId, data)))
-
-  def renameGroup(groupId: Uuid, newGroupName: Name): Route =
-    complete(db.run(GroupInfoRepository.renameGroup(groupId, newGroupName)))
-
   def fetchDevice(uuid: Uuid): Route =
     complete(db.run(DeviceRepository.findByUuid(uuid)))
 
@@ -120,24 +105,6 @@ class Routes(namespaceExtractor: Directive1[Namespace],
   def api: Route =
     pathPrefix("devices") {
       namespaceExtractor { ns =>
-        (get & path("group_info") & pathEnd) {
-          listGroups(ns)
-        } ~
-        (put & extractUuid & pathPrefix("group_info") & path("rename") & parameter('groupName.as[Name])) {
-          (groupId, groupName) =>
-            renameGroup(groupId, groupName)
-        } ~
-        (extractUuid & path("group_info") & pathEnd) { groupId =>
-          get {
-            fetchGroupInfo(groupId, ns)
-          } ~
-          (post & parameter('groupName.as[Name])) { groupName =>
-            entity(as[Json]) { body => createGroupInfo(groupId, groupName, ns, body) }
-          } ~
-          (put & parameter('groupName.as[Name])) { groupName =>
-            entity(as[Json]) { body => updateGroupInfo(groupId, groupName, ns, body) }
-          }
-        } ~
         (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
         (extractUuid & put & entity(as[DeviceT]) & pathEnd) { (uuid, device) =>
           updateDevice(ns, uuid, device)

@@ -10,7 +10,7 @@ import akka.http.scaladsl.model.{HttpRequest, Uri}
 import cats.Show
 import io.circe.generic.auto._
 import io.circe.Json
-import org.genivi.sota.data.{Device, DeviceT, GroupInfo, Namespace, Uuid}
+import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 
 import scala.concurrent.ExecutionContext
@@ -33,7 +33,6 @@ object Resource {
 trait DeviceRequests {
 
   import Device._
-  import GroupInfo.Name
 
   val api = "devices"
 
@@ -76,20 +75,4 @@ trait DeviceRequests {
   def updateSystemInfo(uuid: Uuid, json: Json)
                       (implicit s: Show[Uuid], ec: ExecutionContext): HttpRequest =
     Put(Resource.uri(api, s.show(uuid),"system_info"), json)
-
-  def listGroups(): HttpRequest = Get(Resource.uri(api, "group_info"))
-
-  def fetchGroupInfo(id: Uuid): HttpRequest = Get(Resource.uri(api, id.underlying.get, "group_info"))
-
-  def createGroupInfo(id: Uuid, groupName: Name, json: Json)
-                      (implicit ec: ExecutionContext): HttpRequest =
-    Post(Resource.uri(api, id.underlying.get, "group_info").withQuery(Query("groupName" -> groupName.get)), json)
-
-  def updateGroupInfo(id: Uuid, groupName: Name, json: Json)
-                      (implicit ec: ExecutionContext): HttpRequest =
-    Put(Resource.uri(api, id.underlying.get, "group_info").withQuery(Query("groupName" -> groupName.get)), json)
-
-  def renameGroup(id: Uuid, newGroupName: Name)(implicit ec: ExecutionContext): HttpRequest = {
-    Put(Resource.uri(api, id.underlying.get, "group_info", "rename").withQuery(Query("groupName" -> newGroupName.get)))
-  }
 }

@@ -30,7 +30,7 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
   import CirceMarshallingSupport._
   import Directives._
   import UpdateSpec._
-  import WebService._
+  import org.genivi.sota.http.UuidDirectives._
   import system.dispatcher
   import ClientUpdateRequest._
   import org.genivi.sota.rest.RequestConversions._
@@ -79,7 +79,7 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
     db.run(UpdateRequests.byId(uuid.toJava).map(_.namespace))
   }
 
-  val uuidExtractor = allowExtractor(namespaceExtractor, extractUuid.map(Uuid(_)), updateRequestAllowed)
+  val uuidExtractor = allowExtractor(namespaceExtractor, extractUuid, updateRequestAllowed)
 
   val route = pathPrefix("update_requests") {
     (get & uuidExtractor & pathEnd) {
