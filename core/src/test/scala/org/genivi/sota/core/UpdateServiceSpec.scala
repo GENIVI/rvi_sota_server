@@ -3,7 +3,6 @@ package org.genivi.sota.core
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import akka.testkit.TestKit
-import eu.timepit.refined.api.Refined
 
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db.{BlacklistedPackages, Packages, UpdateSpecs}

@@ -4,30 +4,31 @@
  */
 package org.genivi.sota.device_registry
 
-import cats.syntax.show._
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.{StatusCodes, Uri}
 import akka.http.scaladsl.model.headers.Location
+import akka.http.scaladsl.model.{StatusCodes, Uri}
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.unmarshalling.{FromStringUnmarshaller, Unmarshaller}
 import akka.stream.ActorMaterializer
+import cats.syntax.show._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.Json
 import io.circe.generic.auto._
-import org.genivi.sota.data.{Device, DeviceT, GroupInfo, Namespace, Uuid}
+import org.genivi.sota.data._
 import org.genivi.sota.device_registry.common.Errors
+import org.genivi.sota.device_registry.db._
+import org.genivi.sota.http.UuidDirectives.extractUuid
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
+import org.genivi.sota.messaging.MessageBusPublisher._
 import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted, DeviceSeen}
 import org.genivi.sota.rest.Validation._
 import org.slf4j.LoggerFactory
-import org.genivi.sota.http.UuidDirectives.extractUuid
-
-import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
-import MessageBusPublisher._
+
+import scala.concurrent.{ExecutionContext, Future}
 
 class Routes(namespaceExtractor: Directive1[Namespace],
              messageBus: MessageBusPublisher)
@@ -38,13 +39,32 @@ class Routes(namespaceExtractor: Directive1[Namespace],
 
   import Device._
   import Directives._
-  import GroupInfo.Name
   import StatusCodes._
 
   val logger = LoggerFactory.getLogger(this.getClass)
 
   val extractDeviceId: Directive1[DeviceId] = parameter('deviceId.as[String]).map(DeviceId)
   val extractGroupName: Directive1[GroupInfo.Name] = refined[GroupInfo.ValidName](Slash ~ Segment)
+
+  def updateGroupMembershipsForDevice(deviceUuid: Uuid, data: Json): Future[Int] = {
+    val dbIO = for {
+      _          <- GroupMemberRepository.removeDeviceFromAllGroups(deviceUuid)
+      ns         <- DeviceRepository.deviceNamespace(deviceUuid)
+      groupInfos <- GroupInfoRepository.list(ns)
+      groups     =  groupInfos
+                      .filter(r => JsonComparison.getCommonJson(data, r.groupInfo).equals(r.groupInfo))
+                      .map(_.id)
+      res        <- DBIO.sequence(groups.map { groupId =>
+                      GroupMemberRepository.addGroupMember(groupId, deviceUuid)
+                    })
+    } yield res
+
+    val f = db.run(dbIO.transactionally).map(_.sum)
+    f.onFailure { case e =>
+      logger.error(s"Got error whilst updating group id $deviceUuid: ${e.toString}")
+    }
+    f
+  }
 
   def searchDevice(ns: Namespace): Route =
     parameters(('regex.as[String Refined Regex].?,
@@ -66,21 +86,31 @@ class Routes(namespaceExtractor: Directive1[Namespace],
           messageBus.publish(DeviceCreated(ns, uuid, device.deviceName, device.deviceId, device.deviceType))
       }
 
-   onSuccess(f) { uuid =>
-     respondWithHeaders(List(Location(Uri("/devices/" + uuid.show)))) {
-        complete(Created -> uuid)
-     }
-   }
+    onSuccess(f) { uuid =>
+      respondWithHeaders(List(Location(Uri("/devices/" + uuid.show)))) {
+         complete(Created -> uuid)
+      }
+    }
   }
 
   def fetchSystemInfo(uuid: Uuid): Route =
-    complete(db.run(SystemInfo.findByUuid(uuid)))
+    complete(db.run(SystemInfoRepository.findByUuid(uuid)))
 
-  def createSystemInfo(uuid: Uuid, data: Json): Route =
-    complete(Created -> db.run(SystemInfo.create(uuid, data)))
+  def createSystemInfo(uuid: Uuid, data: Json): Route = {
+    val f = db.run(SystemInfoRepository.create(uuid, data))
+    f.onSuccess { case _ =>
+      updateGroupMembershipsForDevice(uuid, data)
+    }
+    complete(Created -> f)
+  }
 
-  def updateSystemInfo(uuid: Uuid, data: Json): Route =
-    complete(db.run(SystemInfo.update(uuid, data)))
+  def updateSystemInfo(uuid: Uuid, data: Json): Route = {
+    val f = db.run(SystemInfoRepository.update(uuid, data))
+    f.onSuccess { case _ =>
+      updateGroupMembershipsForDevice(uuid, data)
+    }
+    complete(f)
+  }
 
   def fetchDevice(uuid: Uuid): Route =
     complete(db.run(DeviceRepository.findByUuid(uuid)))
@@ -99,7 +129,7 @@ class Routes(namespaceExtractor: Directive1[Namespace],
   }
 
   def getGroupsForDevice(uuid: Uuid): Route =
-    complete(db.run(GroupMember.listGroupsForDevice(uuid)))
+    complete(db.run(GroupMemberRepository.listGroupsForDevice(uuid)))
 
 
   def updateLastSeen(uuid: Uuid): Route = {

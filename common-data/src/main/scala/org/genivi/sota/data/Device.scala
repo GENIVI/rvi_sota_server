@@ -4,15 +4,11 @@
  */
 package org.genivi.sota.data
 
+import java.time.Instant
+
 import cats.Show
 import cats.syntax.show._
-import eu.timepit.refined.api.Refined
-import java.time.Instant
-import java.util.UUID
-import eu.timepit.refined.refineV
-import org.genivi.sota.data.Namespace._
-
-import Device._
+import org.genivi.sota.data.Device._
 
 
 /*

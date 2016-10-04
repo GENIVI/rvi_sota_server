@@ -5,22 +5,22 @@
 
 package org.genivi.sota.messaging.kafka
 
-import akka.{Done, NotUsed}
+import akka.NotUsed
 import akka.actor.ActorSystem
+import akka.kafka.ConsumerMessage.CommittableMessage
 import akka.kafka.scaladsl.Consumer
+import akka.kafka.scaladsl.Consumer.Control
 import akka.kafka.{ConsumerSettings, ProducerSettings, Subscription, Subscriptions}
-import akka.stream.scaladsl.{Flow, Keep, Source}
+import akka.stream.scaladsl.Source
 import cats.data.Xor
 import com.typesafe.config.{Config, ConfigException}
-import org.apache.kafka.clients.producer.{Callback, KafkaProducer, ProducerRecord, RecordMetadata}
-import org.apache.kafka.common.serialization._
-import org.genivi.sota.messaging.MessageBusPublisher
-import org.genivi.sota.messaging.Messages.MessageLike
 import io.circe.syntax._
 import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.kafka.clients.producer.{Callback, KafkaProducer, ProducerRecord, RecordMetadata}
+import org.apache.kafka.common.serialization._
 import org.genivi.sota.messaging.ConfigHelpers._
-import akka.kafka.ConsumerMessage.CommittableMessage
-import akka.kafka.scaladsl.Consumer.Control
+import org.genivi.sota.messaging.MessageBusPublisher
+import org.genivi.sota.messaging.Messages.MessageLike
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
 

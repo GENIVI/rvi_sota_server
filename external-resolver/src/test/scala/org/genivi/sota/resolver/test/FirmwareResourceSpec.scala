@@ -8,7 +8,7 @@ import eu.timepit.refined.api.Refined
 import org.genivi.sota.core.FakeDeviceRegistry
 import org.genivi.sota.data.Device.DeviceName
 import org.genivi.sota.data.{Device, Namespace, Namespaces, Uuid}
-import org.genivi.sota.resolver.data.Firmware
+import org.genivi.sota.resolver.firmware.Firmware
 
 /**
  * Spec for Firmware REST actions

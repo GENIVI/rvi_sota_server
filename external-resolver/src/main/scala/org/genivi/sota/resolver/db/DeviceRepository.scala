@@ -15,7 +15,7 @@ import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
 import org.genivi.sota.db.Operators._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.components.{Component, ComponentRepository}
-import org.genivi.sota.resolver.data.Firmware
+import org.genivi.sota.resolver.firmware.Firmware
 import org.genivi.sota.resolver.db.PackageIdDatabaseConversions._
 import org.genivi.sota.resolver.filters._
 import slick.driver.MySQLDriver.api._
