@@ -67,14 +67,8 @@ class DeviceUpdatesResource(db: Database,
   protected lazy val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
 
   def logDeviceSeen(id: Uuid): Directive0 = {
-    extractRequestContext flatMap { _ =>
-      onComplete {
-        for {
-          _ <- messageBus.publishSafe(DeviceSeen(id, Instant.now()))
-          _ <- deviceRegistry.updateLastSeen(id)
-        } yield ()
-      }
-    } flatMap (_ => pass)
+    val f = deviceRegistry.updateLastSeen(id)
+    onComplete(f).flatMap(_ => pass)
   }
 
   def updateSystemInfo(id: Uuid): Route = {

@@ -17,33 +17,33 @@ object Messages {
 
   import Device._
 
-  sealed trait Message
+  sealed trait BusMessage
 
   val partitionPrefixSize = 256
 
   final case class DeviceSeen(uuid: Uuid,
-                              lastSeen: Instant) extends Message
+                              lastSeen: Instant) extends BusMessage
 
   final case class DeviceCreated(namespace: Namespace,
                                  uuid: Uuid,
                                  deviceName: DeviceName,
                                  deviceId: Option[DeviceId],
-                                 deviceType: DeviceType) extends Message
+                                 deviceType: DeviceType) extends BusMessage
 
-  final case class DeviceDeleted(namespace: Namespace, uuid: Uuid) extends Message
+  final case class DeviceDeleted(namespace: Namespace, uuid: Uuid) extends BusMessage
 
   final case class PackageCreated(namespace: Namespace, packageId: PackageId,
                                   description: Option[String], vendor: Option[String],
-                                  signature: Option[String]) extends Message
+                                  signature: Option[String]) extends BusMessage
 
-  final case class PackageBlacklisted(namespace: Namespace, packageId: PackageId) extends Message
+  final case class PackageBlacklisted(namespace: Namespace, packageId: PackageId) extends BusMessage
 
 
   //Create custom UpdateSpec here instead of using org.genivi.sota.core.data.UpdateSpec as that would require moving
   //multiple RVI messages into SotaCommon. Furthermore, for now this class contains just the info required by the
   //front end.
   final case class UpdateSpec(namespace: Namespace, device: Uuid, packageUuid: UUID,
-                              status: String) extends Message
+                              status: String) extends BusMessage
 
   implicit class StreamNameOp[T <: Class[_]](v: T) {
     def streamName: String = {
@@ -51,7 +51,7 @@ object Messages {
     }
   }
 
-  implicit class StreamNameInstanceOp[T <: Message](v: T) {
+  implicit class StreamNameInstanceOp[T <: BusMessage](v: T) {
     def streamName: String = v.getClass.streamName
   }
 

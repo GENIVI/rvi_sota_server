@@ -1,7 +1,8 @@
 package org.genivi.sota.messaging
 
-import akka.NotUsed
+import akka.{Done, NotUsed}
 import akka.actor.ActorSystem
+import akka.kafka.ConsumerMessage.CommittableMessage
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.Source
 import cats.data.Xor
@@ -9,12 +10,11 @@ import com.typesafe.config.ConfigException.Missing
 import com.typesafe.config.{Config, ConfigException}
 import io.circe.{Decoder, Encoder}
 import org.genivi.sota.messaging.Messages._
-import org.genivi.sota.messaging.kinesis.KinesisClient
+import org.genivi.sota.messaging.kafka.KafkaClient
 import org.genivi.sota.messaging.nats.NatsClient
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
 
 trait MessageBusPublisher {
@@ -69,10 +69,10 @@ object MessageBus {
         log.info("Starting messaging mode: NATS")
         log.info(s"Using subject name: ${messageLike.streamName}")
         NatsClient.source(system, config, messageLike.streamName)(messageLike.decoder)
-      case "kinesis" =>
-        log.info("Starting messaging mode: Kinesis")
+      case "kafka" =>
+        log.info("Starting messaging mode: Kafka")
         log.info(s"Using stream name: ${messageLike.streamName}")
-        KinesisClient.source(system, config)(messageLike)
+        KafkaClient.source(system, config)(messageLike)
       case "local" | "test" =>
         log.info("Using local event bus")
         Xor.right(LocalMessageBus.subscribe(system)(messageLike))
@@ -86,9 +86,9 @@ object MessageBus {
       case "nats" =>
         log.info("Starting messaging mode: NATS")
         NatsClient.publisher(system, config)
-      case "kinesis" =>
-        log.info("Starting messaging mode: Kinesis")
-        KinesisClient.publisher(system, config)
+      case "kafka" =>
+        log.info("Starting messaging mode: Kafka")
+        KafkaClient.publisher(system, config)
       case "local" | "test" =>
         log.info("Using local message bus")
         Xor.right(LocalMessageBus.publisher(system))

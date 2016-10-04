@@ -20,13 +20,14 @@ import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
-import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted}
+import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted, DeviceSeen}
 import org.genivi.sota.rest.Validation._
 import org.slf4j.LoggerFactory
 import org.genivi.sota.http.UuidDirectives.extractUuid
 
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
+import MessageBusPublisher._
 
 class Routes(namespaceExtractor: Directive1[Namespace],
              messageBus: MessageBusPublisher)
@@ -100,8 +101,11 @@ class Routes(namespaceExtractor: Directive1[Namespace],
   def getGroupsForDevice(uuid: Uuid): Route =
     complete(db.run(GroupMember.listGroupsForDevice(uuid)))
 
-  def updateLastSeen(uuid: Uuid): Route =
-    complete(db.run(DeviceRepository.updateLastSeen(uuid)))
+
+  def updateLastSeen(uuid: Uuid): Route = {
+    val f = db.run(DeviceRepository.updateLastSeen(uuid)).pipeToBus(messageBus)(ts => DeviceSeen(uuid, ts))
+    complete(f)
+  }
 
   implicit val NamespaceUnmarshaller: FromStringUnmarshaller[Namespace] = Unmarshaller.strict(Namespace.apply)
 

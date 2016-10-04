@@ -112,11 +112,13 @@ object DeviceRepository {
   }
 
   def updateLastSeen(uuid: Uuid)
-                    (implicit ec: ExecutionContext): DBIO[Unit] = for {
-    device <- findByUuid(uuid)
-    newDevice = device.copy(lastSeen = Some(Instant.now()))
-    _ <- devices.insertOrUpdate(newDevice)
-  } yield ()
+                    (implicit ec: ExecutionContext): DBIO[Instant] =
+    for {
+      device <- findByUuid(uuid)
+      now = Instant.now()
+      newDevice = device.copy(lastSeen = Some(now))
+      _ <- devices.insertOrUpdate(newDevice)
+    } yield now
 
   def delete(ns: Namespace, uuid: Uuid)
             (implicit ec: ExecutionContext): DBIO[Unit] = {
