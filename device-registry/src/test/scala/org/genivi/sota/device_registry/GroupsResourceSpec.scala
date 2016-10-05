@@ -1,55 +1,27 @@
 package org.genivi.sota.device_registry
 
-import akka.http.scaladsl.model.HttpRequest
+import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import eu.timepit.refined.api.Refined
 import io.circe.Json
-import org.genivi.sota.core.DatabaseSpec
-import org.genivi.sota.data.GroupInfo.Name
-import org.genivi.sota.data.{DeviceT, GroupInfo, Uuid}
-import org.genivi.sota.device_registry.common.CreateGroupRequest
-import org.scalatest.{FunSuite, Matchers}
-import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.generic.auto._
-import io.circe.syntax._
-import org.genivi.sota.data.UuidGenerator._
+import org.genivi.sota.core.DatabaseSpec
 import org.genivi.sota.data.GroupInfoGenerators._
 import org.genivi.sota.data.SimpleJsonGenerator._
-
+import org.genivi.sota.data.UuidGenerator._
+import org.genivi.sota.data.{DeviceT, GroupInfo, Uuid}
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.scalacheck._
+import org.scalatest.{FunSuite, Matchers}
 import scala.concurrent.ExecutionContext
 
-class GroupsResourceSpec extends FunSuite
-    with ScalatestRouteTest
-    with Matchers
-    with GroupRequests
-    with ResourceSpec
-    with DatabaseSpec {
 
-  import akka.http.scaladsl.model.StatusCodes._
-
-  def createDeviceOk(device: DeviceT): Uuid = {
-    createDevice(device) ~> route ~> check {
-      status shouldBe Created
-      responseAs[Uuid]
-    }
-  }
+class GroupsResourceSpec extends FunSuite with ResourceSpec {
 
   private def createSystemInfoOk(uuid: Uuid, systemInfo: Json) = {
     createSystemInfo(uuid, systemInfo) ~> route ~> check {
       status shouldBe Created
     }
   }
-
-  def createGroupFromDevices(device1: Uuid, device2: Uuid, groupName: Name)
-                            (implicit ec: ExecutionContext): HttpRequest = {
-    Post(Resource.uri("device_groups", "from_attributes"), CreateGroupRequest(device1, device2, groupName).asJson)
-  }
-
-  def listDevicesInGroup(groupId: Uuid)(implicit ec: ExecutionContext): HttpRequest =
-    Get(Resource.uri("device_groups", groupId.underlying.get, "devices"))
-
-  def countDevicesInGroup(groupId: Uuid)(implicit ec: ExecutionContext): HttpRequest =
-    Get(Resource.uri("device_groups", groupId.underlying.get, "count"))
 
   val complexJsonArray =
     Json.arr(Json.fromFields(List(("key", Json.fromString("value")), ("type", Json.fromString("fish")))))
@@ -60,9 +32,7 @@ class GroupsResourceSpec extends FunSuite
     //TODO: PRO-1182 turn this back into a property when we can delete groups
     val groups = genGroupInfoList.sample.get
     groups.foreach { case GroupInfo(id, groupName, namespace, groupInfoJson) =>
-      createGroupInfo(id, groupName, groupInfoJson) ~> route ~> check {
-        status shouldBe Created
-      }
+      createGroupInfoOk(id, groupName, groupInfoJson)
     }
 
     listGroups() ~> route ~> check {
@@ -94,8 +64,15 @@ class GroupsResourceSpec extends FunSuite
       val groupId = responseAs[Uuid]
       listDevicesInGroup(groupId) ~> route ~> check {
         status shouldBe OK
-        val expectedResult: Set[Uuid] = Set(device1, device2)
-        responseAs[Set[Uuid]] shouldEqual expectedResult
+        responseAs[Set[Uuid]] should contain allOf (device1, device2)
+      }
+      listGroupsForDevice(device1) ~> route ~> check {
+        status shouldBe OK
+        responseAs[Set[Uuid]] should contain (groupId)
+      }
+      listGroupsForDevice(device2) ~> route ~> check {
+        status shouldBe OK
+        responseAs[Set[Uuid]] should contain (groupId)
       }
       countDevicesInGroup(groupId) ~> route ~> check {
         status shouldBe OK
@@ -114,9 +91,7 @@ class GroupsResourceSpec extends FunSuite
 
   test("GET group_info after POST should return what was posted.") {
     val group = genGroupInfo.sample.get
-    createGroupInfo(group.id, group.groupName, group.groupInfo) ~> route ~> check {
-      status shouldBe Created
-    }
+    createGroupInfoOk(group.id, group.groupName, group.groupInfo)
 
     fetchGroupInfo(group.id) ~> route ~> check {
       status shouldBe OK
@@ -130,9 +105,8 @@ class GroupsResourceSpec extends FunSuite
     val groupName = genGroupName.sample.get
     val json1 = simpleJsonGen.sample.get
     val json2 = simpleJsonGen.sample.get
-    createGroupInfo(id, groupName, json1) ~> route ~> check {
-      status shouldBe Created
-    }
+
+    createGroupInfoOk(id, groupName, json1)
 
     updateGroupInfo(id, groupName, json2) ~> route ~> check {
       status shouldBe OK
@@ -148,9 +122,7 @@ class GroupsResourceSpec extends FunSuite
   test("Renaming groups") {
     val group = genGroupInfo.sample.get
     val newGroupName = genGroupName.sample.get
-    createGroupInfo(group.id, group.groupName, group.groupInfo) ~> route ~> check {
-      status shouldBe Created
-    }
+    createGroupInfoOk(group.id, group.groupName, group.groupInfo)
 
     renameGroup(group.id, newGroupName) ~> route ~> check {
       status shouldBe OK

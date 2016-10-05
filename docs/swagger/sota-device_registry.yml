@@ -132,6 +132,22 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/SystemInfo'
+  /devices/{uuid}/groups:
+    get:
+      description: Retrieve the group memberships for a device
+      parameters:
+      - name: uuid
+        description: The uuid of an existing device
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/uuid'
   /device_groups:
     get:
       description: Returns a list of all groups

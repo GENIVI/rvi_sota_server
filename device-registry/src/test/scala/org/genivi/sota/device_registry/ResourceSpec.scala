@@ -18,6 +18,7 @@ import scala.concurrent.duration._
 
 trait ResourceSpec extends
          DeviceRequests
+    with GroupRequests
     with Matchers
     with ScalatestRouteTest
     with DatabaseSpec
