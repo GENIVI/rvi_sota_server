@@ -40,4 +40,10 @@ object GroupMember {
       .filter(r => r.groupId === groupId)
       .map(r => r.deviceUuid)
       .result
+
+  def countDevicesInGroup(groupId: Uuid)(implicit ec: ExecutionContext): DBIO[Int] =
+    GroupInfoRepository
+      .getGroupInfoById(groupId)
+      .flatMap(_ => listDevicesInGroup(groupId))
+      .map(_.size)
 }

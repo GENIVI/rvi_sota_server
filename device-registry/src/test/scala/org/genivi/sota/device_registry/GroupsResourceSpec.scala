@@ -48,6 +48,9 @@ class GroupsResourceSpec extends FunSuite
   def listDevicesInGroup(groupId: Uuid)(implicit ec: ExecutionContext): HttpRequest =
     Get(Resource.uri("device_groups", groupId.underlying.get, "devices"))
 
+  def countDevicesInGroup(groupId: Uuid)(implicit ec: ExecutionContext): HttpRequest =
+    Get(Resource.uri("device_groups", groupId.underlying.get, "count"))
+
   val complexJsonArray =
     Json.arr(Json.fromFields(List(("key", Json.fromString("value")), ("type", Json.fromString("fish")))))
   val complexNumericJsonArray =
@@ -93,6 +96,10 @@ class GroupsResourceSpec extends FunSuite
         status shouldBe OK
         val expectedResult: Set[Uuid] = Set(device1, device2)
         responseAs[Set[Uuid]] shouldEqual expectedResult
+      }
+      countDevicesInGroup(groupId) ~> route ~> check {
+        status shouldBe OK
+        responseAs[Int] shouldEqual 2
       }
     }
 
@@ -153,6 +160,12 @@ class GroupsResourceSpec extends FunSuite
       status shouldBe OK
       val groups = responseAs[Seq[GroupInfo]]
       groups.count(e => e.id.equals(group.id) && e.groupName.equals(newGroupName)) shouldBe 1
+    }
+  }
+
+  test("counting devices should fail for non-existent groups") {
+    countDevicesInGroup(genUuid.sample.get) ~> route ~> check {
+      status shouldBe NotFound
     }
   }
 }
