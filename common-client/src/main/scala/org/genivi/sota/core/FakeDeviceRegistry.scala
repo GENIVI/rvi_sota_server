@@ -69,6 +69,9 @@ class FakeDeviceRegistry(namespace: Namespace)
     }
   }
 
+  override def fetchGroup(uuid: Uuid)
+                         (implicit ec: ExecutionContext): Future[Seq[Uuid]] = FastFuture.successful(Seq())
+
   override def fetchByDeviceId
   (ns: Namespace, deviceId: DeviceId)
   (implicit ec: ExecutionContext): Future[Device] =
@@ -97,6 +100,7 @@ class FakeDeviceRegistry(namespace: Namespace)
   (uuid: Uuid)
   (implicit ec: ExecutionContext): Future[Unit] = {
     devices.remove(uuid)
+    systemInfo.remove(uuid)
     FastFuture.successful(())
   }
 

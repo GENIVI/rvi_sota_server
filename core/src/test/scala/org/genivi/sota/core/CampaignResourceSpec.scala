@@ -15,7 +15,9 @@ import io.circe.generic.auto._
 import java.io.File
 import org.genivi.sota.core.data.Campaign
 import org.genivi.sota.core.db.Packages
-import org.genivi.sota.data.PackageId
+import org.genivi.sota.core.resolver.DefaultConnectivity
+import org.genivi.sota.core.transfer.DefaultUpdateNotifier
+import org.genivi.sota.data.{Namespaces, PackageId, Uuid}
 import org.genivi.sota.http.NamespaceDirectives.defaultNamespaceExtractor
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalacheck.Arbitrary
@@ -33,7 +35,12 @@ class CampaignResourceSpec extends FunSuite
 {
   import Campaign._
 
-  val service = new CampaignResource(db, defaultNamespaceExtractor)
+  implicit val connectivity = DefaultConnectivity
+
+  val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
+
+  val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
+  val service = new CampaignResource(defaultNamespaceExtractor, deviceRegistry, updateService)(db, system)
 
   object Resource {
     def uri(pathSuffixes: String*): Uri = {
@@ -47,10 +54,10 @@ class CampaignResourceSpec extends FunSuite
       status shouldBe expectedCode
     }
 
-  def createCampaignOk(name: CreateCampaign): Id =
+  def createCampaignOk(name: CreateCampaign): Campaign.Id =
     Post(Resource.uri(), name) ~> service.route ~> check {
       status shouldBe StatusCodes.Created
-      responseAs[Id]
+      responseAs[Campaign.Id]
     }
 
   def createRandomPackage(): PackageId = {
@@ -61,45 +68,63 @@ class CampaignResourceSpec extends FunSuite
     }
   }
 
+  def fetchCampaignOk(id: Campaign.Id): Campaign =
+    Get(Resource.uri(id.show)) ~> service.route ~> check {
+      status shouldBe StatusCodes.OK
+      responseAs[Campaign]
+    }
+
   def getCampaignsOk(): Seq[CampaignMeta] =
     Get(Resource.uri()) ~> service.route ~> check {
       status shouldBe StatusCodes.OK
       responseAs[Seq[CampaignMeta]]
     }
 
-  def launch(id: Id, expectedCode: StatusCode): Unit =
+  def launch(id: Campaign.Id, expectedCode: StatusCode): Unit =
     Post(Resource.uri(id.show, "launch")) ~> service.route ~> check {
       status shouldBe expectedCode
     }
 
-  def removeCampaign(id: Id, expectedCode: StatusCode): Unit =
+  def removeCampaign(id: Campaign.Id, expectedCode: StatusCode): Unit =
     Delete(Resource.uri(id.show)) ~> service.route ~> check {
       status shouldBe expectedCode
     }
 
-  def renameCampaign(id: Id, newName: CreateCampaign, expectedCode: StatusCode): Unit =
+  def renameCampaign(id: Campaign.Id, newName: CreateCampaign, expectedCode: StatusCode): Unit =
     Put(Resource.uri(id.show, "name"), newName) ~> service.route ~> check {
       status shouldBe expectedCode
     }
 
-  def setGroups(id: Id, groups: CampaignGroups, expectedCode: StatusCode): Unit =
+  def setGroups(id: Campaign.Id, groups: SetCampaignGroups, expectedCode: StatusCode): Unit =
     Put(Resource.uri(id.show, "groups"),groups) ~> service.route ~> check {
       status shouldBe expectedCode
     }
 
-  def setPackage(id: Id, pkg: PackageId, expectedCode: StatusCode): Unit =
+  def setPackage(id: Campaign.Id, pkg: PackageId, expectedCode: StatusCode): Unit =
     Put(Resource.uri(id.show, "package"), pkg) ~> service.route ~> check {
       status shouldBe expectedCode
     }
 
-  def launchCampaign(id: Id): Unit = {
+  def launchCampaign(id: Campaign.Id): Campaign = {
     val pkgId = createRandomPackage()
     setPackage(id, pkgId, StatusCodes.OK)
 
-    val groups = CampaignGroupsGen.sample.get
-    setGroups(id, groups, StatusCodes.OK)
+    val setgroups = SetCampaignGroupsGen.sample.get
+    setGroups(id, setgroups, StatusCodes.OK)
 
     launch(id, StatusCodes.OK)
+
+    val camp = fetchCampaignOk(id)
+
+    camp.packageId should not be None
+
+    camp.groups.map(_.group).toSet shouldBe setgroups.groups.toSet
+
+    camp.groups.foreach { campGrp =>
+      campGrp.updateRequest should not be None
+    }
+
+    camp
   }
 
   test("launch a campaign") {
@@ -109,7 +134,8 @@ class CampaignResourceSpec extends FunSuite
 
     camps.map(_.id) should contain(id)
 
-    launchCampaign(id)
+    val camp = launchCampaign(id)
+
   }
 
   test("can't create two campaigns with the same name") {
