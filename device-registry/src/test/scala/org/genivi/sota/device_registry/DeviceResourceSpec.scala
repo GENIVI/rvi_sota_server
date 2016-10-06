@@ -4,14 +4,14 @@
  */
 package org.genivi.sota.device_registry
 
-import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.StatusCodes._
 import io.circe.Json
 import io.circe.generic.auto._
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import org.genivi.sota.data._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import org.scalacheck._
+import org.scalacheck.Arbitrary._
 
 
 /**
@@ -19,12 +19,7 @@ import org.scalacheck._
  */
 class DeviceResourceSpec extends ResourcePropSpec {
 
-  import Arbitrary._
   import Device._
-  import DeviceGenerators._
-  import SimpleJsonGenerator._
-  import StatusCodes._
-  import UuidGenerator._
 
   def removeIdNr(json: Json): Json = json.arrayOrObject(
     json,
