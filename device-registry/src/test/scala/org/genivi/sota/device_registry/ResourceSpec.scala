@@ -9,20 +9,26 @@ import akka.http.scaladsl.testkit.RouteTestTimeout
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import cats.data.Xor
 import org.genivi.sota.core.DatabaseSpec
-import org.genivi.sota.data.Namespace
+import org.genivi.sota.data._
 import org.genivi.sota.messaging.MessageBus
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec, Suite}
-
 import scala.concurrent.duration._
 
+
 trait ResourceSpec extends
-         DeviceRequests
+         ScalatestRouteTest
+    with BeforeAndAfterAll
+    with DatabaseSpec
+    with DeviceGenerators
+    with DeviceRequests
+    with GroupInfoGenerators
     with GroupRequests
     with Matchers
-    with ScalatestRouteTest
-    with DatabaseSpec
-    with BeforeAndAfterAll { self: Suite =>
+    with SimpleJsonGenerator
+    with UuidGenerator {
+
+  self: Suite =>
 
   implicit val _db = db
 

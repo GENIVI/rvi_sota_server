@@ -37,8 +37,8 @@ object GroupMember {
 
   def listDevicesInGroup(groupId: Uuid)(implicit ec: ExecutionContext): DBIO[Seq[Uuid]] =
     groupMembers
-      .filter(r => r.groupId === groupId)
-      .map(r => r.deviceUuid)
+      .filter(_.groupId === groupId)
+      .map(_.deviceUuid)
       .result
 
   def countDevicesInGroup(groupId: Uuid)(implicit ec: ExecutionContext): DBIO[Int] =

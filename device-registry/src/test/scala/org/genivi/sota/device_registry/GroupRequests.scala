@@ -1,21 +1,22 @@
 package org.genivi.sota.device_registry
 
-import cats.syntax.show._
-import akka.http.scaladsl.client.RequestBuilding.{Get, Post, Put}
+import akka.http.scaladsl.client.RequestBuilding._
 import akka.http.scaladsl.model.HttpRequest
+import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model.Uri.Query
+import cats.syntax.show._
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
 import org.genivi.sota.data.GroupInfo.Name
-import org.genivi.sota.data.{Namespace, Uuid}
+import org.genivi.sota.data.Uuid
 import org.genivi.sota.device_registry.common.CreateGroupRequest
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import scala.concurrent.ExecutionContext
-import akka.http.scaladsl.model.StatusCodes._
 
 
-trait GroupRequests { self: ResourceSpec =>
+trait GroupRequests {
+  self: ResourceSpec =>
 
   val groupsApi = "device_groups"
 

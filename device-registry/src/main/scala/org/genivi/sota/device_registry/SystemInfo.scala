@@ -9,7 +9,7 @@ import cats.std.list._
 import cats.syntax.traverse._
 import io.circe.Json
 import io.circe.jawn._
-import org.genivi.sota.data.Uuid
+import org.genivi.sota.data.{Uuid, Namespace}
 import org.genivi.sota.device_registry.common.{Errors, SlickJsonHelper}
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.db.SlickExtensions._
@@ -53,6 +53,14 @@ object SystemInfo extends SlickJsonHelper {
   )
 
   private def addUniqueIdsSI(j: Json): Json = addUniqueIdsSIM(j).run(0).value._2
+
+  def list(ns: Namespace)(implicit ec: ExecutionContext): DBIO[Seq[SystemInfo]] =
+    DeviceRepository.devices
+      .filter(_.namespace === ns)
+      .join(systemInfos)
+      .on(_.uuid === _.uuid)
+      .map(_._2)
+      .result
 
   def exists(uuid: Uuid)
             (implicit ec: ExecutionContext): DBIO[SystemInfo] =

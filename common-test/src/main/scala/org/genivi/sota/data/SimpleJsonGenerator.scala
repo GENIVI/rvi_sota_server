@@ -9,7 +9,7 @@ import org.scalacheck.{Arbitrary, Gen}
 import scala.language.implicitConversions
 
 
-object SimpleJsonGenerator {
+trait SimpleJsonGenerator {
 
   import Arbitrary._
 
@@ -24,3 +24,5 @@ object SimpleJsonGenerator {
 
   implicit lazy val arbSimpleJson: Arbitrary[Json] = Arbitrary(simpleJsonGen)
 }
+
+object SimpleJsonGenerator extends SimpleJsonGenerator

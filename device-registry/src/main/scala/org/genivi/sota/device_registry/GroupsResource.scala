@@ -1,26 +1,26 @@
 package org.genivi.sota.device_registry
 
 import akka.http.scaladsl.marshalling.Marshaller._
-import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
+import akka.http.scaladsl.util.FastFuture
 import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.data.GroupInfo.Name
 import org.genivi.sota.data.{Namespace, Uuid}
 import org.genivi.sota.device_registry.common.CreateGroupRequest
 import org.genivi.sota.http.UuidDirectives.{extractUuid, allowExtractor}
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import scala.concurrent.{ExecutionContext, Future}
 import slick.driver.MySQLDriver.api._
 
 
 class GroupsResource(namespaceExtractor: Directive1[Namespace])
-                    (implicit ec: ExecutionContext,
-                    db: Database)
+                    (implicit ec: ExecutionContext, db: Database)
   extends Directives {
 
-  import org.genivi.sota.marshalling.CirceMarshallingSupport._
-  import StatusCodes.Created
+  import SystemInfo._
 
   private val extractGroupId = allowExtractor(namespaceExtractor, extractUuid, deviceAllowed)
 
@@ -28,24 +28,40 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace])
     db.run(GroupInfoRepository.groupInfoNamespace(groupId))
   }
 
+  def matchDevices(ns: Namespace, groupId: Uuid, groupInfo: Json): Future[Int] =
+    db.run(list(ns)).flatMap { infos =>
+      val fs = infos.map { info =>
+        JsonComparison.getCommonJson(info.systemInfo, groupInfo) match {
+          case Json.Null => Future.successful(0)
+          case json if json == groupInfo =>
+            db.run(GroupMember.createGroup(groupId, ns, info.uuid))
+          case _ => Future.successful(0)
+        }
+      }
+      Future.sequence(fs).map(_.sum)
+    }
+
   def createGroupFromDevices(request: CreateGroupRequest, namespace: Namespace): Route = {
     val dbIo = for {
-      info1 <- SystemInfo.findByUuid(request.device1)
-      info2 <- SystemInfo.findByUuid(request.device2)
+      info1 <- findByUuid(request.device1)
+      info2 <- findByUuid(request.device2)
     } yield JsonComparison.getCommonJson(info1, info2)
 
-    onSuccess(db.run(dbIo)){
-        case Json.Null =>
-          complete(StatusCodes.BadRequest -> "Devices have no common attributes to form a group")
-        case json =>
-          val groupId = Uuid.generate()
-          val dbIO = for {
-            _       <- GroupInfoRepository.create(groupId, request.groupName, namespace, json)
-            _       <- GroupMember.createGroup(groupId, namespace, request.device1)
-            _       <- GroupMember.createGroup(groupId, namespace, request.device2)
-                 //PRO-1378 Add logic to find devices which should be in this group
-          } yield groupId
-          complete(db.run(dbIO.transactionally))
+    onSuccess(db.run(dbIo)) {
+      case Json.Null =>
+        complete(BadRequest -> "Devices have no common attributes to form a group")
+      case json =>
+        val groupId = Uuid.generate()
+        val dbIO = for {
+          _ <- GroupInfoRepository.create(groupId, request.groupName, namespace, json)
+          _ <- GroupMember.createGroup(groupId, namespace, request.device1)
+          _ <- GroupMember.createGroup(groupId, namespace, request.device2)
+        } yield groupId
+        val f = db.run(dbIO.transactionally)
+        f.onSuccess { case gid =>
+          matchDevices(namespace, gid, json)
+        }
+        complete(f)
     }
   }
 
