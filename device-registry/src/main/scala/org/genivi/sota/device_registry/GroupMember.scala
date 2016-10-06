@@ -46,4 +46,12 @@ object GroupMember {
       .getGroupInfoById(groupId)
       .flatMap(_ => listDevicesInGroup(groupId))
       .map(_.size)
+
+  def listGroupsForDevice(device: Uuid)(implicit ec: ExecutionContext): DBIO[Seq[Uuid]] =
+    DeviceRepository.findByUuid(device).flatMap { _ =>
+      groupMembers
+        .filter(_.deviceUuid === device)
+        .map(_.groupId)
+        .result
+    }
 }

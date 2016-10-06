@@ -97,6 +97,9 @@ class Routes(namespaceExtractor: Directive1[Namespace],
     complete(f)
   }
 
+  def getGroupsForDevice(uuid: Uuid): Route =
+    complete(db.run(GroupMember.listGroupsForDevice(uuid)))
+
   def updateLastSeen(uuid: Uuid): Route =
     complete(db.run(DeviceRepository.updateLastSeen(uuid)))
 
@@ -124,6 +127,9 @@ class Routes(namespaceExtractor: Directive1[Namespace],
       } ~
       (extractUuid & put & path("system_info") & pathEnd) { uuid =>
         entity(as[Json]) {body => updateSystemInfo(uuid, body)}
+      } ~
+      (extractUuid & get & path("groups") & pathEnd) { uuid =>
+        getGroupsForDevice(uuid)
       } ~
       (extractUuid & get & pathEnd) { uuid =>
         fetchDevice(uuid)

@@ -5,14 +5,14 @@
 package org.genivi.sota.device_registry
 
 import akka.http.scaladsl.model.StatusCodes
-import io.circe.generic.auto._
 import io.circe.Json
-import org.genivi.sota.data._
-import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import io.circe.generic.auto._
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-
+import org.genivi.sota.data._
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalacheck._
+
 
 /**
  * Spec for DeviceRepository REST actions
@@ -31,19 +31,6 @@ class DeviceResourceSpec extends ResourcePropSpec {
     x => Json.fromValues(x.map(removeIdNr)),
     x => Json.fromFields(x.toList.map{case (i,v) => (i, removeIdNr(v))}.filter{case (i,_) => i != "id-nr"})
   )
-
-  def createDeviceOk(device: DeviceT): Uuid = {
-    createDevice(device) ~> route ~> check {
-      status shouldBe Created
-      responseAs[Uuid]
-    }
-  }
-
-  def deleteDeviceOk(uuid: Uuid): Unit = {
-    deleteDevice(uuid) ~> route ~> check {
-      status shouldBe OK
-    }
-  }
 
   def isRecent(time: Option[Instant]): Boolean = time match {
     case Some(t) => t.isAfter(Instant.now.minus(3, ChronoUnit.MINUTES))
