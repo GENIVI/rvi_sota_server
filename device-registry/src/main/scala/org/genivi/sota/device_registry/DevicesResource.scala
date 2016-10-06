@@ -13,26 +13,24 @@ import akka.stream.ActorMaterializer
 import cats.syntax.show._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
-import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.data._
 import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.device_registry.db._
-import org.genivi.sota.http.UuidDirectives.extractUuid
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.MessageBusPublisher._
 import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted, DeviceSeen}
 import org.genivi.sota.rest.Validation._
-import org.slf4j.LoggerFactory
 import slick.driver.MySQLDriver.api._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
-class Routes(namespaceExtractor: Directive1[Namespace],
-             messageBus: MessageBusPublisher)
-            (implicit system: ActorSystem,
+class DevicesResource(namespaceExtractor: Directive1[Namespace],
+                      messageBus: MessageBusPublisher,
+                      deviceNamespaceAuthorizer: Directive1[Uuid])
+                     (implicit system: ActorSystem,
              db: Database,
              mat: ActorMaterializer,
              ec: ExecutionContext) {
@@ -40,31 +38,6 @@ class Routes(namespaceExtractor: Directive1[Namespace],
   import Device._
   import Directives._
   import StatusCodes._
-
-  val logger = LoggerFactory.getLogger(this.getClass)
-
-  val extractDeviceId: Directive1[DeviceId] = parameter('deviceId.as[String]).map(DeviceId)
-  val extractGroupName: Directive1[GroupInfo.Name] = refined[GroupInfo.ValidName](Slash ~ Segment)
-
-  def updateGroupMembershipsForDevice(deviceUuid: Uuid, groupInfo: Json): Future[Int] = {
-    val dbIO = for {
-      _          <- GroupMemberRepository.removeDeviceFromAllGroups(deviceUuid)
-      ns         <- DeviceRepository.deviceNamespace(deviceUuid)
-      groupInfos <- GroupInfoRepository.list(ns)
-      groups     =  groupInfos
-                      .filter(r => JsonMatcher.compare(groupInfo, r.groupInfo)._1.equals(r.groupInfo))
-                      .map(_.id)
-      res        <- DBIO.sequence(groups.map { groupId =>
-                      GroupMemberRepository.addGroupMember(groupId, deviceUuid)
-                    })
-    } yield res
-
-    val f = db.run(dbIO.transactionally).map(_.sum)
-    f.onFailure { case e =>
-      logger.error(s"Got error whilst updating group id $deviceUuid: ${e.toString}")
-    }
-    f
-  }
 
   def searchDevice(ns: Namespace): Route =
     parameters(('regex.as[String Refined Regex].?,
@@ -91,25 +64,6 @@ class Routes(namespaceExtractor: Directive1[Namespace],
          complete(Created -> uuid)
       }
     }
-  }
-
-  def fetchSystemInfo(uuid: Uuid): Route =
-    complete(db.run(SystemInfoRepository.findByUuid(uuid)))
-
-  def createSystemInfo(uuid: Uuid, data: Json): Route = {
-    val f = db.run(SystemInfoRepository.create(uuid, data))
-    f.onSuccess { case _ =>
-      updateGroupMembershipsForDevice(uuid, data)
-    }
-    complete(Created -> f)
-  }
-
-  def updateSystemInfo(uuid: Uuid, data: Json): Route = {
-    val f = db.run(SystemInfoRepository.update(uuid, data))
-    f.onSuccess { case _ =>
-      updateGroupMembershipsForDevice(uuid, data)
-    }
-    complete(f)
   }
 
   def fetchDevice(uuid: Uuid): Route =
@@ -143,30 +97,25 @@ class Routes(namespaceExtractor: Directive1[Namespace],
     pathPrefix("devices") {
       namespaceExtractor { ns =>
         (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
-        (extractUuid & put & entity(as[DeviceT]) & pathEnd) { (uuid, device) =>
-          updateDevice(ns, uuid, device)
-        } ~
-        (extractUuid & delete & pathEnd) { uuid =>
-          deleteDevice(ns, uuid)
+        deviceNamespaceAuthorizer { uuid =>
+          (put & entity(as[DeviceT]) & pathEnd) { device =>
+            updateDevice(ns, uuid, device)
+          } ~
+          (delete & pathEnd) {
+            deleteDevice(ns, uuid)
+          }
         }
       } ~
-      (extractUuid & post & path("ping")) { uuid =>
-        updateLastSeen(uuid)
-      } ~
-      (extractUuid & get & path("system_info") & pathEnd) { uuid =>
-        fetchSystemInfo(uuid)
-      } ~
-      (extractUuid & post & path("system_info") & pathEnd) { uuid =>
-        entity(as[Json]) {body => createSystemInfo(uuid, body)}
-      } ~
-      (extractUuid & put & path("system_info") & pathEnd) { uuid =>
-        entity(as[Json]) {body => updateSystemInfo(uuid, body)}
-      } ~
-      (extractUuid & get & path("groups") & pathEnd) { uuid =>
-        getGroupsForDevice(uuid)
-      } ~
-      (extractUuid & get & pathEnd) { uuid =>
-        fetchDevice(uuid)
+      deviceNamespaceAuthorizer { uuid =>
+        (post & path("ping")) {
+          updateLastSeen(uuid)
+        } ~
+        (get & path("groups") & pathEnd) {
+          getGroupsForDevice(uuid)
+        } ~
+        (get & pathEnd) {
+          fetchDevice(uuid)
+        }
       } ~
       (get & pathEnd & parameter('namespace.as[Namespace])) { ns =>
         searchDevice(ns)

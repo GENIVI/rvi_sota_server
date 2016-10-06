@@ -9,30 +9,34 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
 import cats.data.Xor
-import org.genivi.sota.data.Namespace
+import org.genivi.sota.data.{Namespace, Uuid}
 import org.genivi.sota.db.BootMigrations
+import org.genivi.sota.device_registry.db.DeviceRepository
+import org.genivi.sota.http.UuidDirectives.{allowExtractor, extractUuid}
 import org.genivi.sota.http._
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
 import org.genivi.sota.rest.SotaRejectionHandler.rejectionHandler
 import org.slf4j.LoggerFactory
-
-import scala.concurrent.ExecutionContext
-import scala.util.Try
 import slick.driver.MySQLDriver.api._
+
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 /**
  * Base API routing class.
  * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
  */
-class Routing(namespaceExtractor: Directive1[Namespace], messageBus: MessageBusPublisher)
-  (implicit db: Database, system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext)
+class DeviceRegistryRoutes(namespaceExtractor: Directive1[Namespace], deviceNamespaceAuthorizer: Directive1[Uuid],
+                           messageBus: MessageBusPublisher)
+                          (implicit db: Database, system: ActorSystem, mat: ActorMaterializer, exec: ExecutionContext)
     extends Directives {
 
   val route: Route = pathPrefix("api" / "v1") {
     handleRejections(rejectionHandler) {
       ErrorHandler.handleErrors {
-        new Routes(namespaceExtractor, messageBus).route ~
-        new GroupsResource(namespaceExtractor).route
+        new DevicesResource(namespaceExtractor, messageBus, deviceNamespaceAuthorizer).route ~
+        new SystemInfoResource(deviceNamespaceAuthorizer).route ~
+        new GroupsResource(namespaceExtractor, deviceNamespaceAuthorizer).route
       }
     }
   }
@@ -56,6 +60,12 @@ object Boot extends App with Directives with BootMigrations {
 
   val authNamespace = NamespaceDirectives.fromConfig()
 
+  private val namespaceAuthorizer = allowExtractor(authNamespace, extractUuid, deviceAllowed)
+
+  private def deviceAllowed(deviceId: Uuid): Future[Namespace] = {
+    db.run(DeviceRepository.deviceNamespace(deviceId))
+  }
+
   lazy val messageBus =
     MessageBus.publisher(system, config) match {
       case Xor.Right(v) => v
@@ -68,14 +78,8 @@ object Boot extends App with Directives with BootMigrations {
     (TraceId.withTraceId &
       logResponseMetrics("device-registry", TraceId.traceMetrics) &
       versionHeaders(version)) {
-      handleRejections(rejectionHandler) {
-        pathPrefix("api" / "v1") {
-          ErrorHandler.handleErrors {
-            new Routes(authNamespace, messageBus).route ~
-            new GroupsResource(authNamespace).route
-          }
-        } ~ new HealthResource(db, org.genivi.sota.device_registry.BuildInfo.toMap).route
-      }
+      new DeviceRegistryRoutes(authNamespace, namespaceAuthorizer, messageBus).route ~
+      new HealthResource(db, org.genivi.sota.device_registry.BuildInfo.toMap).route
     }
 
   val host = config.getString("server.host")

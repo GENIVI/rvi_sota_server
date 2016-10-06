@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-class GroupsResource(namespaceExtractor: Directive1[Namespace])
+class GroupsResource(namespaceExtractor: Directive1[Namespace], deviceNamespaceAuthorizer: Directive1[Uuid])
                     (implicit ec: ExecutionContext, db: Database)
   extends Directives {
 
@@ -26,8 +26,6 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace])
   import JsonMatcher._
 
   private val extractGroupId = allowExtractor(namespaceExtractor, extractUuid, groupAllowed)
-
-  private val extractDeviceUuid = allowExtractor(namespaceExtractor, extractUuid, deviceAllowed)
 
   private val extractCreateGroupRequest: Directive1[CreateGroupRequest] =
     (namespaceExtractor & entity(as[CreateGroupRequest])).tflatMap { case (ns, request) =>
@@ -145,10 +143,10 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace])
         (get & path("devices")) {
           getDevicesInGroup(groupId)
         } ~
-        (post & pathPrefix("devices") & extractDeviceUuid) { deviceId =>
+        (post & pathPrefix("devices") & deviceNamespaceAuthorizer) { deviceId =>
           addDeviceToGroup(groupId, deviceId)
         } ~
-        (delete & pathPrefix("devices") & extractDeviceUuid) { deviceId =>
+        (delete & pathPrefix("devices") & deviceNamespaceAuthorizer) { deviceId =>
           removeDeviceFromGroup(groupId, deviceId)
         } ~
         (put & path("rename") & parameter('groupName.as[Name])) { groupName =>

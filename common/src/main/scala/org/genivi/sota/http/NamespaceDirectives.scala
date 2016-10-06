@@ -3,7 +3,6 @@ package org.genivi.sota.http
 import akka.http.scaladsl.model.HttpHeader
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Directive1
-import akka.http.scaladsl.server.directives.BasicDirectives
 import com.advancedtelematic.jwt.JsonWebToken
 import com.typesafe.config.{Config, ConfigFactory}
 import org.genivi.sota.data.Namespace
@@ -15,8 +14,6 @@ object NamespaceDirectives {
   import akka.http.scaladsl.server.Directives._
 
   lazy val logger = LoggerFactory.getLogger(this.getClass)
-
-  import eu.timepit.refined.refineV
 
   val NAMESPACE = "x-ats-namespace"
 
@@ -36,9 +33,7 @@ object NamespaceDirectives {
   }
 
   def fromConfig(): Directive1[Namespace] = {
-    val config = ConfigFactory.load().getString("auth.protocol")
-
-    config match {
+    ConfigFactory.load().getString("auth.protocol") match {
       case "oauth.idtoken" =>
         logger.info("Using namespace from id token")
         AuthNamespaceDirectives.authNamespace[IdToken]
