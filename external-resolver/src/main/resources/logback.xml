@@ -8,7 +8,6 @@
     <logger name="com.zaxxer.hikari" level="info" />
     <logger name="org.genivi.sota" level="info" />
     <logger name="slick.backend.DatabaseComponent.action" level="info" />
-    <logger name="com.amazonaws.services.kinesis" level="warn" />
 
     <root level="${rootLevel:-info}">
         <appender-ref ref="STDOUT" />

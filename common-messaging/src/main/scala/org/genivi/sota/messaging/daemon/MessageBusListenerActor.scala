@@ -1,51 +1,50 @@
 package org.genivi.sota.messaging.daemon
 
-import akka.NotUsed
-import akka.actor.{Actor, ActorLogging, ActorRef, Props, Terminated}
-import akka.event.LoggingAdapter
+import akka.{Done, NotUsed}
+import akka.actor.Status.Failure
+import akka.actor.{Actor, ActorLogging, Props}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
-import cats.data.Xor
-import com.typesafe.config.ConfigException
-import org.genivi.sota.messaging.MessageBus
-import org.genivi.sota.messaging.Messages.{Message, MessageLike}
+import org.genivi.sota.messaging.Messages.MessageLike
 import org.genivi.sota.messaging.daemon.MessageBusListenerActor.Subscribe
 
 import scala.concurrent.duration._
 import scala.util.Try
+import akka.pattern.pipe
 
-class MessageBusListenerActor[Msg <: Message](props: Props,
-                                              mlArg: MessageLike[Msg]) extends Actor with ActorLogging {
+class MessageBusListenerActor[M](source: Source[M, NotUsed])(implicit messageLike: MessageLike[M])
+  extends Actor with ActorLogging {
 
   implicit val materializer = ActorMaterializer()
   implicit val ec = context.dispatcher
-  implicit val ml = mlArg
 
   override def postRestart(reason: Throwable): Unit = trySubscribeDelayed()
 
-  private def subscribed(listener: ActorRef): Receive = {
-    context watch listener
-
-    log.info(s"Subscribed to ${ml.streamName}")
+  private def subscribed: Receive = {
+    log.info(s"Subscribed to ${messageLike.streamName}")
 
     {
-      case Terminated(_) =>
-        log.error("Source/Listener died, subscribing again")
+      case Failure(ex) =>
+        log.error(ex, "Source/Listener died, subscribing again")
+        trySubscribeDelayed()
+        context become idle
+      case Done =>
+        log.info("Source finished, subscribing again")
         trySubscribeDelayed()
         context become idle
     }
   }
 
-
   private def subscribe(): Unit = {
-    log.info(s"Subscribing to ${ml.streamName}")
-    subscribeFn() match {
-      case Xor.Right(source) =>
-        val ref = source.runWith(Sink.actorSubscriber(props))
-        context become subscribed(ref)
-      case Xor.Left(err) =>
-        throw err
+    log.info(s"Subscribing to ${messageLike.streamName}")
+
+    val sink = Sink.foreach[M] { msg =>
+      log.info(s"Processed ${messageLike.streamName} - ${messageLike.id(msg)}")
     }
+
+    source.runWith(sink).pipeTo(self)
+
+    context become subscribed
   }
 
   private def idle: Receive = {
@@ -61,14 +60,11 @@ class MessageBusListenerActor[Msg <: Message](props: Props,
   private def trySubscribeDelayed(delay: FiniteDuration = 5.seconds): Unit = {
     context.system.scheduler.scheduleOnce(delay, self, Subscribe)
   }
-
-  protected def subscribeFn(): Throwable Xor Source[Msg, NotUsed] =
-    MessageBus.subscribe[Msg](context.system, context.system.settings.config)
 }
 
 object MessageBusListenerActor {
   case object Subscribe
 
-  def props[Msg <: Message](props: Props)(implicit ml: MessageLike[Msg]): Props
-    = Props(classOf[MessageBusListenerActor[Msg]],props,ml)
+  def props[M](source: Source[M, NotUsed])(implicit ml: MessageLike[M]): Props
+    = Props(new MessageBusListenerActor[M](source))
 }
