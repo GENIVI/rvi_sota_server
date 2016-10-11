@@ -12,4 +12,5 @@ services:
       - 8901:8901
     command: device
     environment:
+      DEVICE_ID: aaaaaaaa-1111-bbbb-2222-ccccccccccc
       RVI_BACKEND: "rvi_backend"
