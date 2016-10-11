@@ -124,7 +124,7 @@ paths:
             type: array
             items:
               type: string
-  /campaign:
+  /campaigns:
     get:
       description: 'List all campaigns'
       responses:
