@@ -14,7 +14,7 @@ case class Component(
   description: String
 ) {
   def samePK(that: Component): Boolean = { (namespace == that.namespace) && (partNumber == that.partNumber) }
-  override def toString(): String = { s"Component(${partNumber.get}, $description)" }
+  override def toString: String = { s"Component(${partNumber.get}, $description)" }
 }
 
 object Component {
@@ -27,7 +27,7 @@ object Component {
 
   implicit val validPartNumber: Validate.Plain[String, ValidPartNumber] =
     Validate.fromPredicate(
-      part => part.length > 0 && part.length <= 30 && part.forall(c => c.isLetter || c.isDigit),
+      part => part.length > 0 && part.length <= 30 && part.forall(_.isLetterOrDigit),
       part => s"($part isn't a 30 character or shorter alpha numeric non-empty string)",
       ValidPartNumber()
     )
