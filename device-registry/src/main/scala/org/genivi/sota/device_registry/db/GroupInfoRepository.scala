@@ -19,12 +19,13 @@ object GroupInfoRepository extends SlickJsonHelper {
 
   // scalastyle:off
   class GroupInfoTable(tag: Tag) extends Table[GroupInfo] (tag, "DeviceGroup") {
-    def id        = column[Uuid]("id", O.PrimaryKey)
-    def groupName = column[Name]("group_name")
-    def namespace = column[Namespace]("namespace")
-    def groupInfo = column[Json]("group_info")
+    def id             = column[Uuid]("id", O.PrimaryKey)
+    def groupName      = column[Name]("group_name")
+    def namespace      = column[Namespace]("namespace")
+    def groupInfo      = column[Json]("group_info")
+    def discardedAttrs = column[Json]("discarded_attrs")
 
-    def * = (id, groupName, namespace, groupInfo).shaped <>
+    def * = (id, groupName, namespace, groupInfo, discardedAttrs).shaped <>
       ((GroupInfo.apply _).tupled, GroupInfo.unapply)
   }
   // scalastyle:on
@@ -55,19 +56,23 @@ object GroupInfoRepository extends SlickJsonHelper {
       .result
       .failIfNotSingle(Errors.MissingGroupInfo)
 
-  def create(id: Uuid, groupName: Name, namespace: Namespace, data: GroupInfoType)(implicit ec: ExecutionContext)
-      : DBIO[Uuid] =
-    (groupInfos += GroupInfo(id, groupName, namespace, data))
-      .handleIntegrityErrors(Errors.ConflictingGroupInfo)
-      .map(_ => id)
+  def create(id: Uuid,
+             groupName: Name,
+             namespace: Namespace,
+             groupInfo: GroupInfoType,
+             discardedAttrs: GroupInfoType)
+            (implicit ec: ExecutionContext): DBIO[Uuid] =
+      (groupInfos += GroupInfo(id, groupName, namespace, groupInfo, discardedAttrs))
+        .handleIntegrityErrors(Errors.ConflictingGroupInfo)
+        .map(_ => id)
 
-  def updateGroupInfo(id: Uuid, data: GroupInfoType)
+  def updateGroupInfo(id: Uuid, groupInfo: GroupInfoType)
                      (implicit ec: ExecutionContext)
       :DBIO[Unit] =
     groupInfos
-      .filter(r => r.id === id)
+      .filter(_.id === id)
       .map(_.groupInfo)
-      .update(data)
+      .update(groupInfo)
       .handleSingleUpdateError(Errors.MissingGroupInfo)
 
   def renameGroup(id: Uuid, newGroupName: Name)(implicit ec: ExecutionContext): DBIO[Unit] =

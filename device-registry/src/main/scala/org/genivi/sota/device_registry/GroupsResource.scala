@@ -23,6 +23,7 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace])
   extends Directives {
 
   import SystemInfoRepository._
+  import JsonMatcher._
 
   private val extractGroupId = allowExtractor(namespaceExtractor, extractUuid, groupAllowed)
 
@@ -50,13 +51,17 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace])
     db.run(DeviceRepository.deviceNamespace(deviceId))
   }
 
-  def updateMembershipsForGroup(ns: Namespace, groupId: Uuid, groupInfo: Json): Future[Int] = {
+  def updateMembershipsForGroup(ns: Namespace,
+                                groupId: Uuid,
+                                matching: Json,
+                                discarded: Json): Future[Int] = {
     val dbIO = for {
       matchingGroups <- list(ns).map(
-                          _.filter(r => JsonMatcher.compare(groupInfo, r.systemInfo)._1.equals(groupInfo))
-                          .map(_.uuid))
-      res            <- DBIO.sequence(matchingGroups.map { deviceId =>
-                          GroupMemberRepository.addOrUpdateGroupMember(groupId, deviceId)
+                          _.filter{ info =>
+                            compare(disregard(info.systemInfo, discarded), matching).equals((matching, Json.Null))
+                          }.map(_.uuid))
+      res            <- DBIO.sequence(matchingGroups.map { device =>
+                          GroupMemberRepository.addOrUpdateGroupMember(groupId, device)
                         })
     } yield res
 
@@ -71,17 +76,17 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace])
     val commonJsonDbIo = for {
       info1 <- findByUuid(request.device1)
       info2 <- findByUuid(request.device2)
-    } yield JsonMatcher.compare(info1, info2)._1
+    } yield compare(info1, info2)
 
     onComplete(db.run(commonJsonDbIo)) {
       case Success(json) => json match {
-        case Json.Null =>
+        case (Json.Null, _) =>
           complete(StatusCodes.BadRequest -> "Devices have no common attributes to form a group")
-        case commonJson =>
+        case (matching, discarded) =>
           val groupId = Uuid.generate()
-          val f = db.run(GroupInfoRepository.create(groupId, request.groupName, namespace, commonJson))
+          val f = db.run(GroupInfoRepository.create(groupId, request.groupName, namespace, matching, discarded))
           f.onSuccess { case _ =>
-            updateMembershipsForGroup(namespace, groupId, commonJson)
+            updateMembershipsForGroup(namespace, groupId, matching, discarded)
           }
           complete(f)
       }
@@ -99,11 +104,14 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace])
   def fetchGroupInfo(groupId: Uuid): Route =
     complete(db.run(GroupInfoRepository.getGroupInfoById(groupId)))
 
-  def createGroupInfo(id: Uuid, groupName: Name, namespace: Namespace, data: Json): Route =
-    complete(StatusCodes.Created -> db.run(GroupInfoRepository.create(id, groupName, namespace, data)))
+  def createGroupInfo(id: Uuid,
+                      groupName: Name,
+                      namespace: Namespace,
+                      groupInfo: Json): Route =
+    complete(StatusCodes.Created -> db.run(GroupInfoRepository.create(id, groupName, namespace, groupInfo, Json.Null)))
 
-  def updateGroupInfo(groupId: Uuid, groupName: Name, data: Json): Route =
-    complete(db.run(GroupInfoRepository.updateGroupInfo(groupId, data)))
+  def updateGroupInfo(groupId: Uuid, groupName: Name, groupInfo: Json): Route =
+    complete(db.run(GroupInfoRepository.updateGroupInfo(groupId, groupInfo)))
 
   def renameGroup(groupId: Uuid, newGroupName: Name): Route =
     complete(db.run(GroupInfoRepository.renameGroup(groupId, newGroupName)))

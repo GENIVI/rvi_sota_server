@@ -5,11 +5,43 @@ import io.circe.{Json, JsonObject}
 
 object JsonMatcher {
 
+  /* disregards discarded attribusets
+   *
+   * @return cleansed json
+   */
+  def disregard(json: Json, discarded: Json): Json =
+    json.fold(
+      Json.Null,
+      b => json,
+      n => json,
+      s => json,
+      a => json,
+      o => if (discarded.isObject) disregardObjects(o, discarded.asObject.get)
+           else json
+    )
+
+
+  def disregardObjects(json: JsonObject, discarded: JsonObject): Json = {
+    val discardedKeys =
+      discarded
+        .toList
+        .filter { case (k, v) => v.isNull }
+        .map(_._1)
+
+    Json.fromFields(json
+      .toList
+      .filter { case (k, v) => !(discardedKeys contains k) }
+      .map { case (k, v) => discarded(k) match {
+        case None    => k -> v
+        case Some(j) => k -> disregard(v, j)
+      }})
+  }
+
   /* Compares two JSON values and returns a tuple consisting of the common part
    *
    * @return a tuple consisting of the common component and the diverging part
    */
-  def compare(lhs: Json, rhs: Json): (Json, Json) = {
+  def compare(lhs: Json, rhs: Json): (Json, Json) =
     lhs.fold(
       (Json.Null, Json.Null),
       b => if (lhs equals rhs) (lhs, Json.Null)
@@ -23,7 +55,7 @@ object JsonMatcher {
       o => if (rhs.isObject) compareObjects(o, rhs.asObject.get)
            else (Json.Null, Json.Null)
     )
-  }
+
 
   def compareArrays(lhs: Seq[Json], rhs: Seq[Json]): (Json, Json) = {
     val common =

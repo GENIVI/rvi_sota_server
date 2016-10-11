@@ -13,14 +13,14 @@ trait SimpleJsonGenerator {
 
   import Arbitrary._
 
-  val simpleJsonPairGen: Gen[(String, Json)] = for
-  { k <- arbitrary[String]
+  val simpleJsonPairGen: Gen[(String, Json)] = for {
+    k <- Gen.identifier
     v <- arbitrary[String]
   } yield (k, Json.fromString(v))
 
-  val simpleJsonGen: Gen[Json] = for
-  { vs <- Gen.nonEmptyContainerOf[List,(String,Json)](simpleJsonPairGen)
-  } yield (Json.fromJsonObject(JsonObject.fromMap(vs.toMap)))
+  val simpleJsonGen: Gen[Json] = for {
+    vs <- Gen.nonEmptyContainerOf[List, (String, Json)](simpleJsonPairGen)
+  } yield Json.fromJsonObject(JsonObject.fromMap(vs.toMap))
 
   implicit lazy val arbSimpleJson: Arbitrary[Json] = Arbitrary(simpleJsonGen)
 }
