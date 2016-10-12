@@ -125,6 +125,9 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace])
   def removeDeviceFromGroup(groupId: Uuid, deviceId: Uuid): Route =
     complete(db.run(GroupMemberRepository.removeGroupMember(groupId, deviceId)))
 
+  def getDiscardedAttrs(groupId: Uuid): Route =
+    complete(db.run(GroupInfoRepository.discardedAttrs(groupId)))
+
   val route: Route =
     pathPrefix("device_groups") {
       namespaceExtractor { ns =>
@@ -159,6 +162,9 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace])
         } ~
         (get & path("count") & pathEnd) {
           countDevices(groupId)
+        } ~
+        (get & path("discarded_attrs") & pathEnd) {
+          getDiscardedAttrs(groupId)
         }
       }
     }

@@ -84,7 +84,7 @@ object GroupInfoRepository extends SlickJsonHelper {
 
   def groupInfoNamespace(groupId: Uuid)(implicit ec: ExecutionContext): DBIO[Namespace] =
     groupInfos
-      .filter(r => r.id === groupId)
+      .filter(_.id === groupId)
       .map(_.namespace)
       .result
       .failIfNotSingle(Errors.MissingGroupInfo)
@@ -95,4 +95,9 @@ object GroupInfoRepository extends SlickJsonHelper {
       .result
       .headOption
       .flatMap(_.fold[DBIO[GroupInfo]](DBIO.failed(Errors.MissingGroupInfo))(DBIO.successful))
+
+  def discardedAttrs(groupId: Uuid)(implicit ec: ExecutionContext): DBIO[GroupInfoType] =
+    findById(groupId)
+      .map(_.discardedAttrs)
+
 }
