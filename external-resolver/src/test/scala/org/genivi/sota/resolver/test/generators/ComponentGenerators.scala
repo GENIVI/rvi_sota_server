@@ -13,7 +13,7 @@ trait ComponentGenerators extends Namespaces {
       c <- Gen.alphaLowerChar
       n  <- Gen.choose(20, 25) // scalastyle:ignore magic.number
       cs <- Gen.listOfN(n, Gen.alphaNumChar)
-    } yield (c::cs).mkString).suchThat(_.forall(c => c.isLetter || c.isDigit))
+    } yield (c::cs).mkString).suchThat(_.forall(_.isLetterOrDigit))
 
   val genPartNumber: Gen[Component.PartNumber] = {
     for (

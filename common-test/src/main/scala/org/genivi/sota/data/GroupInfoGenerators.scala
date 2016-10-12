@@ -13,7 +13,7 @@ trait GroupInfoGenerators {
 
   val genGroupName: Gen[GroupInfo.Name] = for {
     strLen <- Gen.choose(2, 100)
-    name   <- Gen.listOfN[Char](strLen, Gen.alphaNumChar)
+    name   <- Gen.listOfN[Char](strLen, Arbitrary.arbChar.arbitrary)
   } yield Refined.unsafeApply(name.mkString)
 
   val genGroupInfo: Gen[GroupInfo] =

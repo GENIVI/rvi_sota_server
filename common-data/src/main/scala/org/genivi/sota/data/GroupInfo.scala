@@ -20,9 +20,7 @@ object GroupInfo {
 
   implicit val validGroupName: Validate.Plain[String, ValidName] =
     Validate.fromPredicate(
-      name => name.length > 1
-        && name.length <= 100
-        && name.forall(c => c.isLetter || c.isDigit),
+      name => name.length > 1 && name.length <= 100,
       name => s"($name should be between two and a hundred alphanumeric characters long.)",
       ValidName()
     )

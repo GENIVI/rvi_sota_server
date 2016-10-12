@@ -38,7 +38,7 @@ object Filter {
     Validate.fromPredicate(
       name => name.length > 1
            && name.length <= 100
-           && name.forall(c => c.isLetter || c.isDigit),
+           && name.forall(_.isLetterOrDigit),
       name => s"($name should be between two and a hundred alphanumeric characters long.)",
       ValidName()
     )

@@ -17,7 +17,7 @@ trait FirmwareCommon {
   implicit val validModuleName: Validate.Plain[String, ValidName] =
     Validate.fromPredicate(
       s => s.length > 0 && s.length <= 100
-        && s.forall(c => c.isLetter || c.isDigit),
+        && s.forall(_.isLetterOrDigit),
       s => s"$s: isn't a valid module name (between 1 and 100 character long alpha numeric string)",
       ValidName()
     )
