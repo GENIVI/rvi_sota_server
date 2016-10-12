@@ -2,7 +2,7 @@
   * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
   * License: MPL-2.0
   */
-package org.genivi.sota.device_registry
+package org.genivi.sota.device_registry.db
 
 import cats.data.State
 import cats.std.list._
@@ -11,13 +11,13 @@ import io.circe.Json
 import io.circe.jawn._
 import org.genivi.sota.data.{Uuid, Namespace}
 import org.genivi.sota.device_registry.common.{Errors, SlickJsonHelper}
-import slick.driver.MySQLDriver.api._
 import org.genivi.sota.db.SlickExtensions._
+import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-object SystemInfo extends SlickJsonHelper {
+object SystemInfoRepository extends SlickJsonHelper {
 
   type SystemInfoType = Json
   case class SystemInfo(uuid: Uuid, systemInfo: SystemInfoType)

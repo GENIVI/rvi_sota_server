@@ -2,26 +2,21 @@
  * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
-package org.genivi.sota.device_registry
+package org.genivi.sota.device_registry.db
 
-import cats.Show
-import eu.timepit.refined._
+import java.time.Instant
+
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
-import io.circe.Json
-import io.circe.jawn._
-
 import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
-import org.genivi.sota.data.Namespace._
 import org.genivi.sota.db.Operators.regex
 import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.refined.SlickRefined._
-import java.time.Instant
+import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
-import scala.util.{Failure, Success}
-import slick.driver.MySQLDriver.api._
+import org.genivi.sota.db.Operators._
 
 
 object DeviceRepository {
@@ -32,13 +27,13 @@ object DeviceRepository {
   implicit val deviceNameColumnType =
     MappedColumnType.base[DeviceName, String](
       { case DeviceName(value) => value.toString },
-      DeviceName(_)
+      DeviceName
     )
 
   implicit val deviceIdColumnType =
     MappedColumnType.base[DeviceId, String](
       { case DeviceId(value) => value.toString },
-      DeviceId(_)
+      DeviceId
     )
 
   // scalastyle:off
@@ -125,9 +120,16 @@ object DeviceRepository {
     val dbIO = for {
       _ <- exists(ns, uuid)
       _ <- devices.filter(d => d.namespace === ns && d.uuid === uuid).delete
-      _ <- SystemInfo.delete(uuid)
+      _ <- SystemInfoRepository.delete(uuid)
     } yield ()
 
     dbIO.transactionally
   }
+
+  def deviceNamespace(uuid: Uuid)(implicit ec: ExecutionContext): DBIO[Namespace] =
+    devices
+      .filter(_.uuid === uuid)
+      .map(_.namespace)
+      .result
+      .failIfNotSingle(Errors.MissingDevice)
 }

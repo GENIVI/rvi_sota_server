@@ -6,7 +6,7 @@
 package org.genivi.sota.resolver.common
 
 import org.genivi.sota.data.PackageId
-import org.genivi.sota.resolver.data.Firmware
+import org.genivi.sota.resolver.firmware.Firmware
 
 case class InstalledSoftware(
   packages: Set[PackageId],

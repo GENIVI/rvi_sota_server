@@ -4,10 +4,9 @@
  */
 package org.genivi.sota.data
 
-import eu.timepit.refined.api.Refined
-import org.scalacheck.{Arbitrary, Gen}
 import cats.syntax.show._
 import org.genivi.sota.data.Device.DeviceId
+import org.scalacheck.{Arbitrary, Gen}
 
 /**
   * Created by vladimir on 16/03/16.

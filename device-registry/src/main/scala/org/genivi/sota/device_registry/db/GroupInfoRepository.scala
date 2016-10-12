@@ -2,16 +2,17 @@
  * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
-package org.genivi.sota.device_registry
+package org.genivi.sota.device_registry.db
 
 import io.circe.Json
+import org.genivi.sota.data.GroupInfo._
 import org.genivi.sota.data.{GroupInfo, Namespace, Uuid}
-import org.genivi.sota.device_registry.common.{Errors, SlickJsonHelper}
-import slick.driver.MySQLDriver.api._
-import org.genivi.sota.db.SlickExtensions._
-import org.genivi.sota.refined.SlickRefined._
-import GroupInfo._
 import org.genivi.sota.db.Operators._
+import org.genivi.sota.db.SlickExtensions._
+import org.genivi.sota.device_registry.common.{Errors, SlickJsonHelper}
+import org.genivi.sota.refined.SlickRefined._
+import slick.driver.MySQLDriver.api._
+
 import scala.concurrent.ExecutionContext
 
 object GroupInfoRepository extends SlickJsonHelper {
@@ -55,9 +56,10 @@ object GroupInfoRepository extends SlickJsonHelper {
       .failIfNotSingle(Errors.MissingGroupInfo)
 
   def create(id: Uuid, groupName: Name, namespace: Namespace, data: GroupInfoType)(implicit ec: ExecutionContext)
-      : DBIO[Int] =
-      (groupInfos += GroupInfo(id, groupName, namespace, data))
-        .handleIntegrityErrors(Errors.ConflictingGroupInfo)
+      : DBIO[Uuid] =
+    (groupInfos += GroupInfo(id, groupName, namespace, data))
+      .handleIntegrityErrors(Errors.ConflictingGroupInfo)
+      .map(_ => id)
 
   def updateGroupInfo(id: Uuid, data: GroupInfoType)
                      (implicit ec: ExecutionContext)
@@ -82,4 +84,10 @@ object GroupInfoRepository extends SlickJsonHelper {
       .result
       .failIfNotSingle(Errors.MissingGroupInfo)
 
+  def exists(id: Uuid, namespace: Namespace)(implicit ec: ExecutionContext): DBIO[GroupInfo] =
+    groupInfos
+      .filter(d => d.namespace === namespace && d.id === id)
+      .result
+      .headOption
+      .flatMap(_.fold[DBIO[GroupInfo]](DBIO.failed(Errors.MissingGroupInfo))(DBIO.successful))
 }
