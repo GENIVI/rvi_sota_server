@@ -7,6 +7,7 @@ import io.circe.parser._
 import org.genivi.sota.data.{GroupInfo, Uuid}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalacheck.Arbitrary._
+import org.scalacheck.Gen
 import org.scalatest.FunSuite
 import org.scalatest.concurrent.Eventually.eventually
 
@@ -24,31 +25,29 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
   val complexNumericJsonArray =
     Json.arr(Json.fromFields(List(("key", Json.fromString("value")), ("type", Json.fromInt(5)))))
 
-  val groupInfo = parse("""{"cat":"dog","fish":{"cow":1}}""").getOrElse(Json.Null)
+  val groupInfo = parse("""{"cat":"dog","fish":{"cow":1}}""").toOption.get
   val systemInfos = Seq(
-    parse("""{"cat":"dog","fish":{"cow":1,"sheep":[42,"penguin",23]}}""")
-      .getOrElse(Json.Null),
-    parse("""{"cat":"dog","fish":{"cow":1,"sloth":true},"antilope":"bison"}""")
-      .getOrElse(Json.Null),
-    parse("""{"cat":"dog","owl":{"emu":false},"fish":{"cow":1,"pig":"chicken"}}""")
-      .getOrElse(Json.Null),
-    parse("""{"cat":"liger","fish":{"cow":1}}""")
-      .getOrElse(Json.Null)
-  )
+    parse("""{"cat":"dog","fish":{"cow":1,"sheep":[42,"penguin",23]}}"""), // device #1
+    parse("""{"cat":"dog","fish":{"cow":1,"sloth":true},"antilope":"bison"}"""), // device #2
+    parse("""{"fish":{"cow":1},"cat":"dog"}"""), // matches without discarding
+    parse("""{"fish":{"cow":1,"sloth":false},"antilope":"emu","cat":"dog"}"""), // matches with discarding
+    parse("""{"cat":"liger","fish":{"cow":1}}"""), // doesn't match without discarding
+    parse("""{"cat":"dog","fish":{"cow":1},"bison":17}"""), // doesn't match without discarding
+    parse("""{"cat":"dog","fish":{"cow":2,"sheep":false},"antilope":"emu"}""") // doesn't match with discarding
+    ).map(_.toOption.get)
 
   test("GET all groups lists all groups") {
     //TODO: PRO-1182 turn this back into a property when we can delete groups
-    val groups = genGroupInfoList.sample.get
-    groups.foreach { case GroupInfo(id, groupName, namespace, groupInfoJson) =>
-      createGroupInfoOk(id, groupName, groupInfoJson)
+    val groups = Gen.resize(10, arbitrary[Set[GroupInfo]]).sample.get
+    groups.foreach { case GroupInfo(id, groupName, namespace, groupInfo, discardedAttrs) =>
+      createGroupInfoOk(id, groupName, groupInfo)
     }
 
     listGroups() ~> route ~> check {
-      //need to sort lists so shouldEqual works
-      val resp = responseAs[Seq[GroupInfo]].sortBy(_.groupName.toString)
-      val sortedGroups = groups.sortBy(_.groupName.toString)
-      resp shouldEqual sortedGroups
       status shouldBe OK
+      // invoking createGroupInfo routes directly disregards discarded attributes
+      responseAs[Set[GroupInfo]].map(_.copy(discardedAttrs = Json.Null)) shouldBe
+        groups.map(_.copy(discardedAttrs = Json.Null))
     }
   }
 
@@ -149,7 +148,8 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
   }
 
   test("match devices to an existing group") {
-    val devices@Seq(d1, d2, d3, d4) = genConflictFreeDeviceTs(4).sample.get.map(createDeviceOk)
+    val devices@Seq(d1, d2, d3, d4, d5, d6, d7) =
+      genConflictFreeDeviceTs(7).sample.get.map(createDeviceOk(_))
     devices.zip(systemInfos).foreach { case (d, si) => createSystemInfoOk(d, si) }
 
     createGroupFromDevices(d1, d2, arbitrary[GroupInfo.Name].sample.get) ~> route ~> check {
@@ -163,15 +163,19 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
         listDevicesInGroup(groupId) ~> route ~> check {
           status shouldBe OK
           val r = responseAs[Seq[Uuid]]
-          r should contain(d3)
-          r should not contain d4
+          r should contain (d3)
+          r should contain (d4)
+          r should not contain (d5)
+          r should not contain (d6)
+          r should not contain (d7)
         }
       }
     }
   }
 
   test("updating system info for device updates group membership") {
-    val devices@Seq(d1, d2, d3, d4) = genConflictFreeDeviceTs(4).sample.get.map(createDeviceOk)
+    val devices@Seq(d1, d2, _, _, d5) =
+      genConflictFreeDeviceTs(5).sample.get.map(createDeviceOk(_))
     devices.zip(systemInfos).foreach { case (d, si) => createSystemInfoOk(d, si) }
 
     createGroupFromDevices(d1, d2, arbitrary[GroupInfo.Name].sample.get) ~> route ~> check {
@@ -181,15 +185,13 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
         status shouldBe OK
         responseAs[Json] shouldBe groupInfo
       }
-      updateSystemInfo(d4, groupInfo) ~> route ~> check {
+      updateSystemInfo(d5, groupInfo) ~> route ~> check {
         status shouldBe OK
       }
       eventually {
         listDevicesInGroup(groupId) ~> route ~> check {
           status shouldBe OK
-          val r = responseAs[Seq[Uuid]]
-          r should contain(d3)
-          r should contain(d4)
+          responseAs[Seq[Uuid]] should contain (d5)
         }
       }
     }

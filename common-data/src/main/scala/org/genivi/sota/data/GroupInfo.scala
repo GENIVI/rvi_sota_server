@@ -9,7 +9,11 @@ import io.circe.Json
 
 import GroupInfo._
 
-case class GroupInfo(id: Uuid, groupName: Name, namespace: Namespace, groupInfo: GroupInfoType)
+case class GroupInfo(id: Uuid,
+                     groupName: Name,
+                     namespace: Namespace,
+                     groupInfo: GroupInfoType,
+                     discardedAttrs: GroupInfoType)
 
 object GroupInfo {
   type GroupInfoType = Json
