@@ -93,7 +93,7 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri)
     execHttp[Unit](HttpRequest(method = POST, uri = baseUri.withPath(devicesUri.path / uuid.show / "ping")))
 
   override def updateSystemInfo(uuid: Uuid, json: Json)
-                              (implicit ec: ExecutionContext): Future[Unit] =
+                               (implicit ec: ExecutionContext): Future[Unit] =
     execHttp[Unit](HttpRequest(method = PUT, uri = baseUri.withPath(devicesUri.path / uuid.show / "system_info"),
       entity = HttpEntity(ContentTypes.`application/json`, json.noSpaces)))
 

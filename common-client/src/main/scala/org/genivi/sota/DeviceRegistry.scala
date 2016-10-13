@@ -26,8 +26,8 @@ trait DeviceRegistry {
     searchDevice(ns, Refined.unsafeApply(".*"))
 
   def createDevice
-  (device: DeviceT)
-  (implicit ec: ExecutionContext): Future[Uuid]
+    (device: DeviceT)
+    (implicit ec: ExecutionContext): Future[Uuid]
 
   def fetchDevice
     (uuid: Uuid)

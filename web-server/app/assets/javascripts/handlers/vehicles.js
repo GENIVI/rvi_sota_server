@@ -31,16 +31,16 @@ define(function(require) {
             createVehicle(payload);
           break;
           case 'search-vehicles-by-regex':
-            var query = payload.regex ? '&regex=' + payload.regex : '';
+            var query = payload.regex ? '?regex=' + payload.regex : '';
 
-            sendRequest.doGet('/api/v1/devices?namespace=default' + query)
+            sendRequest.doGet('/api/v1/devices' + query)
               .success(function(vehicles) {
                 db.searchableVehicles.reset(vehicles);
               });
           break;
           case 'fetch-affected-vins':
-            var affectedVinsUrl = '/api/v1/resolver/resolve?namespace=default' +
-            '&package_name=' + payload.name + '&package_version=' + payload.version;
+            var affectedVinsUrl = '/api/v1/resolver/resolve' +
+            '?package_name=' + payload.name + '&package_version=' + payload.version;
 
             sendRequest.doGet(affectedVinsUrl)
               .success(function(vehicles) {

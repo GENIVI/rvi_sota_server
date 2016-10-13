@@ -12,6 +12,8 @@ GET     /webjars/*file                          controllers.WebJarAssets.at(file
 GET     /login                                  org.genivi.webserver.controllers.Application.login
 GET     /logout                                 org.genivi.webserver.controllers.Application.logout
 POST    /authenticate                           org.genivi.webserver.controllers.Application.authenticate
+GET     /api/v1/devices                         org.genivi.webserver.controllers.Application.listDeviceAttributes
+GET     /api/v1/resolver/resolve                org.genivi.webserver.controllers.Application.resolver
 
 GET     /api/v1/*path                           org.genivi.webserver.controllers.Application.apiProxy(path: String)
 PUT     /api/v1/*path                           org.genivi.webserver.controllers.Application.apiProxy(path: String)

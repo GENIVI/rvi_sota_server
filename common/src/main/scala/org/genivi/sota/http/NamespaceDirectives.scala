@@ -1,5 +1,7 @@
 package org.genivi.sota.http
 
+import akka.http.scaladsl.model.HttpHeader
+import akka.http.scaladsl.model.headers.RawHeader
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.directives.BasicDirectives
 import com.advancedtelematic.jwt.JsonWebToken
@@ -10,16 +12,28 @@ import org.slf4j.LoggerFactory
 import scala.util.Try
 
 object NamespaceDirectives {
+  import akka.http.scaladsl.server.Directives._
+
   lazy val logger = LoggerFactory.getLogger(this.getClass)
 
   import eu.timepit.refined.refineV
+
+  val NAMESPACE = "x-ats-namespace"
+
+  def nsHeader(ns: Namespace): HttpHeader = RawHeader(NAMESPACE, ns.get)
 
   def configNamespace(config: Config): Namespace = {
     Namespace( Try(config.getString("core.defaultNs")).getOrElse("default"))
   }
 
-  lazy val defaultNamespaceExtractor: Directive1[Namespace] =
-    BasicDirectives.provide(configNamespace(ConfigFactory.load()))
+  lazy val defaultNamespaceExtractor: Directive1[Namespace] = {
+    extractRequest.flatMap { req =>
+      req.headers.find(_.is(NAMESPACE)).map(_.value()) match {
+        case Some(ns) => provide(Namespace(ns))
+        case None => provide(configNamespace(ConfigFactory.load()))
+      }
+    }
+  }
 
   def fromConfig(): Directive1[Namespace] = {
     val config = ConfigFactory.load().getString("auth.protocol")
