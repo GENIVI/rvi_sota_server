@@ -2,68 +2,59 @@ package org.genivi.sota.device_registry
 
 import io.circe.{Json, JsonObject}
 
-import scala.collection.mutable
 
-object JsonComparison {
+object JsonMatcher {
 
-  def compareJsonObjects(json1: JsonObject, json2: JsonObject): Json = {
-    val commonJson = json1.fields.foldLeft(List.empty[(String, Json)]) { (commonJson, key) =>
-      json2(key)
-        .fold(commonJson) { element =>
-          getCommonJson(json1(key).get, element) match {
-            case Json.Null => commonJson
-            case json      => (key, json) :: commonJson
-          }
-        }
-    }
-
-    commonJson.isEmpty match {
-      case true  => Json.Null
-      case false => Json.fromFields(commonJson)
-    }
+  /* Compares two JSON values and returns a tuple consisting of the common part
+   *
+   * @return a tuple consisting of the common component and the diverging part
+   */
+  def compare(lhs: Json, rhs: Json): (Json, Json) = {
+    lhs.fold(
+      (Json.Null, Json.Null),
+      b => if (lhs equals rhs) (lhs, Json.Null)
+           else (Json.Null, Json.Null),
+      n => if (lhs equals rhs)  (lhs, Json.Null)
+           else (Json.Null, Json.Null),
+      s => if (lhs equals rhs)  (lhs, Json.Null)
+           else (Json.Null, Json.Null),
+      a => if (rhs.isArray)  compareArrays(a, rhs.asArray.get)
+           else (Json.Null, Json.Null),
+      o => if (rhs.isObject) compareObjects(o, rhs.asObject.get)
+           else (Json.Null, Json.Null)
+    )
   }
 
-  def compareJsonArrays(json1: List[Json], json2: List[Json]): Json = {
-    val commonJson = mutable.MutableList.empty[Json]
-    val json2Objs = json2.filter(e => e.isObject)
-    val json2Arrs = json2.filter(e => e.isArray)
-    json1.foreach { json:Json =>
-      if(json.isObject) {
-        json2Objs.map { e =>
-          compareJsonObjects(json.asObject.get, e.asObject.get) match {
-            case Json.Null => //ignore null values
-            case res       => commonJson += res
-          }
-        }
-      } else if(json.isArray) {
-          json2Arrs.map { e =>
-            compareJsonArrays(json.asArray.get, e.asArray.get) match {
-              case Json.Null => //ignore null values
-              case res       => commonJson += res
-            }
-          }
-      }
-    }
+  def compareArrays(lhs: Seq[Json], rhs: Seq[Json]): (Json, Json) = {
+    val common =
+      Json.fromValues(
+        lhs.zip(rhs)
+          .map { case (l, r) => compare(l, r)._1 }
+          .filter(!_.isNull))
 
-    commonJson.isEmpty match {
-      case true  => Json.Null
-      case false => Json.fromValues(commonJson)
-    }
+    (common, Json.Null)
   }
 
-  def getCommonJson(json1: Json, json2: Json): Json = {
-    if(json1.equals(json2)) {
-      json1
-    }
-    else if(json1.isArray && json2.isArray) {
-      compareJsonArrays(json1.asArray.get, json2.asArray.get)
-    }
-    else if(json1.isObject && json2.isObject) {
-      compareJsonObjects(json1.asObject.get, json2.asObject.get)
-    }
-    else {
-      Json.Null
-    }
+  def compareObjects(lhs: JsonObject, rhs: JsonObject): (Json, Json) = {
+    val common =
+      (lhs.fieldSet & rhs.fieldSet)
+        .map(k => k -> compare(lhs(k).get, rhs(k).get)._1)
+        .filter { case (k, v) => !v.isNull }
+
+    val uncommon =
+      (lhs.fieldSet & rhs.fieldSet) // common objects and arrays result in a child
+        .map(k => k -> compare(lhs(k).get, rhs(k).get)._2)
+        .filter { case (k, v) => !v.isNull } ++
+      ((lhs.fieldSet | rhs.fieldSet) &~ (lhs.fieldSet & rhs.fieldSet)) // different attrs result in null
+        .map(k => k -> Json.Null) ++
+      (lhs.fieldSet & rhs.fieldSet) // different literals result in null
+        .filter(k => !lhs(k).get.isObject && !lhs(k).get.isArray &&
+                     !rhs(k).get.isObject && !rhs(k).get.isArray &&
+                     lhs(k) != rhs(k))
+        .map(k => k -> Json.Null)
+
+    (if (common.isEmpty)   Json.Null else Json.fromFields(common),
+     if (uncommon.isEmpty) Json.Null else Json.fromFields(uncommon))
   }
 
 }

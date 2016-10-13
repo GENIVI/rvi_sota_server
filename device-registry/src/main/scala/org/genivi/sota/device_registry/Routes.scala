@@ -46,13 +46,13 @@ class Routes(namespaceExtractor: Directive1[Namespace],
   val extractDeviceId: Directive1[DeviceId] = parameter('deviceId.as[String]).map(DeviceId)
   val extractGroupName: Directive1[GroupInfo.Name] = refined[GroupInfo.ValidName](Slash ~ Segment)
 
-  def updateGroupMembershipsForDevice(deviceUuid: Uuid, data: Json): Future[Int] = {
+  def updateGroupMembershipsForDevice(deviceUuid: Uuid, groupInfo: Json): Future[Int] = {
     val dbIO = for {
       _          <- GroupMemberRepository.removeDeviceFromAllGroups(deviceUuid)
       ns         <- DeviceRepository.deviceNamespace(deviceUuid)
       groupInfos <- GroupInfoRepository.list(ns)
       groups     =  groupInfos
-                      .filter(r => JsonComparison.getCommonJson(data, r.groupInfo).equals(r.groupInfo))
+                      .filter(r => JsonMatcher.compare(groupInfo, r.groupInfo)._1.equals(r.groupInfo))
                       .map(_.id)
       res        <- DBIO.sequence(groups.map { groupId =>
                       GroupMemberRepository.addGroupMember(groupId, deviceUuid)

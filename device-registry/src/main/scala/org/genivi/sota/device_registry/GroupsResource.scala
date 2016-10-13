@@ -53,7 +53,7 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace])
   def updateMembershipsForGroup(ns: Namespace, groupId: Uuid, groupInfo: Json): Future[Int] = {
     val dbIO = for {
       matchingGroups <- list(ns).map(
-                          _.filter(r => JsonComparison.getCommonJson(groupInfo, r.systemInfo).equals(groupInfo))
+                          _.filter(r => JsonMatcher.compare(groupInfo, r.systemInfo)._1.equals(groupInfo))
                           .map(_.uuid))
       res            <- DBIO.sequence(matchingGroups.map { deviceId =>
                           GroupMemberRepository.addOrUpdateGroupMember(groupId, deviceId)
@@ -71,7 +71,7 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace])
     val commonJsonDbIo = for {
       info1 <- findByUuid(request.device1)
       info2 <- findByUuid(request.device2)
-    } yield JsonComparison.getCommonJson(info1, info2)
+    } yield JsonMatcher.compare(info1, info2)._1
 
     onComplete(db.run(commonJsonDbIo)) {
       case Success(json) => json match {
