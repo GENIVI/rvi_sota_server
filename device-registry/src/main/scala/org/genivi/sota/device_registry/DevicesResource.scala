@@ -87,7 +87,7 @@ class DevicesResource(namespaceExtractor: Directive1[Namespace],
 
 
   def updateLastSeen(uuid: Uuid): Route = {
-    val f = db.run(DeviceRepository.updateLastSeen(uuid)).pipeToBus(messageBus)(ts => DeviceSeen(uuid, ts))
+    val f = db.run(DeviceRepository.updateLastSeen(uuid)).pipeToBus(messageBus)(identity)
     complete(f)
   }
 

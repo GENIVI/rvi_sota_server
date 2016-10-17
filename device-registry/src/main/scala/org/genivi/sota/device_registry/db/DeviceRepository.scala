@@ -12,6 +12,7 @@ import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
 import org.genivi.sota.db.Operators.regex
 import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.device_registry.common.Errors
+import org.genivi.sota.messaging.Messages.DeviceSeen
 import org.genivi.sota.refined.SlickRefined._
 import slick.driver.MySQLDriver.api._
 
@@ -107,13 +108,13 @@ object DeviceRepository {
   }
 
   def updateLastSeen(uuid: Uuid)
-                    (implicit ec: ExecutionContext): DBIO[Instant] =
+                    (implicit ec: ExecutionContext): DBIO[DeviceSeen] =
     for {
       device <- findByUuid(uuid)
       now = Instant.now()
       newDevice = device.copy(lastSeen = Some(now))
       _ <- devices.insertOrUpdate(newDevice)
-    } yield now
+    } yield DeviceSeen(device.namespace, uuid, now)
 
   def delete(ns: Namespace, uuid: Uuid)
             (implicit ec: ExecutionContext): DBIO[Unit] = {
