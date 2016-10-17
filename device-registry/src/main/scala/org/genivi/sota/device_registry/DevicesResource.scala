@@ -23,6 +23,7 @@ import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.MessageBusPublisher._
 import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted, DeviceSeen}
 import org.genivi.sota.rest.Validation._
+import org.genivi.sota.http.UuidDirectives.extractUuid
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
@@ -97,7 +98,9 @@ class DevicesResource(namespaceExtractor: Directive1[Namespace],
     pathPrefix("devices") {
       namespaceExtractor { ns =>
         (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
-        deviceNamespaceAuthorizer { uuid =>
+        extractUuid { uuid =>
+          //TODO: PRO-1666, use deviceNamespaceAuthorizer for this block, instead of extractUuid, once support has been
+          // added into core
           (put & entity(as[DeviceT]) & pathEnd) { device =>
             updateDevice(ns, uuid, device)
           } ~
@@ -106,15 +109,16 @@ class DevicesResource(namespaceExtractor: Directive1[Namespace],
           }
         }
       } ~
-      deviceNamespaceAuthorizer { uuid =>
+      extractUuid { uuid =>
+        //TODO: PRO-1666, use deviceNamespaceAuthorizer once support has been added into core
         (post & path("ping")) {
           updateLastSeen(uuid)
         } ~
-        (get & path("groups") & pathEnd) {
-          getGroupsForDevice(uuid)
-        } ~
         (get & pathEnd) {
           fetchDevice(uuid)
+        } ~
+        (get & path("groups") & pathEnd) {
+          getGroupsForDevice(uuid)
         }
       } ~
       (get & pathEnd & parameter('namespace.as[Namespace])) { ns =>
