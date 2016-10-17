@@ -20,6 +20,9 @@ case class Campaign (meta: CampaignMeta, packageId: Option[PackageId], groups: S
   def canLaunch(): Boolean = meta.packageUuid.isDefined && groups.size > 0
 }
 
+sealed case class CampaignStatistics(groupId: Uuid, updateId: Uuid, deviceCount: Int, updatedDevices: Int,
+                                     successfulUpdates: Int, failedUpdates: Int)
+
 object Campaign {
   case class CampaignMeta(
     id: Id,

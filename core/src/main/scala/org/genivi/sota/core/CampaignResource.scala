@@ -5,32 +5,28 @@
 package org.genivi.sota.core
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{AuthorizationFailedRejection, Directive1, Route}
-import akka.http.scaladsl.unmarshalling._
-import akka.http.scaladsl.util.FastFuture
+import akka.http.scaladsl.server.{Directive1, Route}
 import io.circe.generic.auto._
-import org.genivi.sota.core.data.{Campaign, UpdateRequest}
-import org.genivi.sota.core.db.Campaigns
 import org.genivi.sota.common.DeviceRegistry
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.core.campaigns.{CampaignLauncher, CampaignStats}
+import org.genivi.sota.core.data.Campaign
+import org.genivi.sota.core.db.Campaigns
+import org.genivi.sota.data.{Namespace, PackageId}
 import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.http.UuidDirectives._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import org.genivi.sota.rest.Validation.refined
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
 import slick.driver.MySQLDriver.api.Database
+
+import scala.concurrent.Future
 
 class CampaignResource(namespaceExtractor: Directive1[Namespace],
                        deviceRegistry: DeviceRegistry, updateService: UpdateService)
                       (implicit db: Database, system: ActorSystem) {
-  import system.dispatcher
-
-  import StatusCodes.{Success => _, _}
   import Campaign._
+  import StatusCodes.{Success => _, _}
+  import system.dispatcher
 
   def createCampaign(ns: Namespace, name: CreateCampaign): Route = {
     complete(Created -> db.run(Campaigns.create(ns, name.name)))
@@ -72,6 +68,10 @@ class CampaignResource(namespaceExtractor: Directive1[Namespace],
     db.run(Campaigns.fetchMeta(id).map(_.namespace))
   }
 
+  def getCampaignStats(id: Campaign.Id): Route = {
+    complete(CampaignStats.get(id, deviceRegistry, updateService))
+  }
+
   val extractId: Directive1[Campaign.Id] =
     allowExtractor(namespaceExtractor, extractUuid.map(Campaign.Id(_)), campaignAllowed)
 
@@ -109,6 +109,9 @@ class CampaignResource(namespaceExtractor: Directive1[Namespace],
           } ~
           (path("package") & put & entity(as[PackageId])) { pkgId =>
             setCampaignPackage(id, pkgId)
+          } ~
+          (path("statistics") & get) {
+            getCampaignStats(id)
           }
         }
       }

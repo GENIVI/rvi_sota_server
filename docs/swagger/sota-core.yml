@@ -239,6 +239,22 @@ paths:
       responses:
         200:
           description: OK
+  /campaigns/{uuid}/statistics:
+    get:
+      description: 'Get statistics on the progress of the campaign'
+      parameters:
+      - name: uuid
+        in: path
+        description: The campaign uuid for which statistics should be returned
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CampaignStatistics'
   /update_requests:
     get:
       description: 'List all update campaigns'
@@ -855,6 +871,28 @@ definitions:
         items:
           $ref: '#/definitions/uuid'
         description: The uuids of the groups for the campaign
+  CampaignStatistics:
+    type: object
+    properties:
+      groupId:
+        $ref: '#/definitions/uuid'
+      updateId:
+        $ref: '#/definitions/uuid'
+      deviceCount:
+        type: integer
+        description: Number of devices in group
+      successfulUpdates:
+        type: integer
+        description: Number of devices successfully updated during this update request, not including devices already
+         updated
+      failedUpdates:
+        type: integer
+        description: Number of devices which failed to update during this update request
+      updatedDevices:
+        type: integer
+        description: Number of updated devices, includes all successful updates as well as devices which were already
+         up to date before the update was launched
+
   SystemInfo:
     type: object
     description: |

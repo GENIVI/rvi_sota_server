@@ -168,5 +168,4 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace], deviceNamespaceA
         }
       }
     }
-
 }

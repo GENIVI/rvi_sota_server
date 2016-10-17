@@ -19,6 +19,8 @@ import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
 import java.time.Instant
 import java.util.UUID
 
+import org.genivi.sota.core.db.UpdateSpecs.UpdateSpecRow
+
 import scala.collection.immutable.ListSet
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
@@ -75,6 +77,10 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
     } yield mapping
 
   }
+
+  def fetchUpdateSpecRows(id: Uuid)(implicit db: Database, ec: ExecutionContext): Future[Seq[UpdateSpecRow]] =
+    db.run(UpdateSpecs.listUpdatesById(id))
+
 
   def loadPackage(id: UUID)
                  (implicit db: Database, ec: ExecutionContext): Future[Package] = {

@@ -5,6 +5,9 @@
 
 package org.genivi.sota.core
 
+import java.time.Instant
+import java.util.concurrent.ConcurrentHashMap
+
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.util.FastFuture
@@ -13,16 +16,12 @@ import cats.syntax.show._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.Json
-import java.time.Instant
-import java.util.UUID._
-import java.util.concurrent.ConcurrentHashMap
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.data.Device._
 import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
 import org.genivi.sota.device_registry.common.Errors._
-import scala.collection.JavaConversions._
+
 import scala.collection.JavaConverters._
-import scala.concurrent.JavaConversions._
 import scala.concurrent.{ExecutionContext, Future}
 
 
@@ -67,6 +66,11 @@ class FakeDeviceRegistry(namespace: Namespace)
       case Some(d) => FastFuture.successful(d)
       case None => FastFuture.failed(MissingDevice)
     }
+  }
+
+  override def fetchDevicesInGroup(uuid: Uuid)
+                                  (implicit ec: ExecutionContext): Future[Seq[Uuid]] = {
+    FastFuture.successful(Seq())
   }
 
   override def fetchGroup(uuid: Uuid)
