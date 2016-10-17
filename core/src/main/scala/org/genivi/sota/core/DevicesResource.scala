@@ -19,6 +19,8 @@ import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.resolver.{ConnectivityClient, ExternalResolverClient}
 import org.genivi.sota.data.{Device, Namespace, Uuid}
+import org.genivi.sota.http.Errors.MissingEntity
+import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 
@@ -107,8 +109,36 @@ class DevicesResource(db: Database, client: ConnectivityClient,
     }
   }
 
+  def getDeviceWithStatus(ns: Namespace, uuid: Uuid): Route = {
+    parameters(('status.?(false))) { (includeStatus: Boolean) =>
+      val devices = deviceRegistry.fetchDevice(uuid).flatMap { device =>
+        if (device.namespace == ns) {
+          Future.successful(Seq(device))
+        } else {
+          Future.failed(MissingEntity(classOf[DeviceSearchResult]))
+        }
+      }.recoverWith {
+        case e => Future.failed(MissingEntity(classOf[DeviceSearchResult]))
+      }
+      val devicesWithStatus = if (includeStatus) {
+        DeviceSearch.fetchDeviceStatus(devices) flatMap buildSearchResponse(devices)
+      } else {
+        buildSearchResponse(devices)(Seq.empty)
+      }
+      complete(devicesWithStatus.map(_.headOption))
+    }
+  }
+
+
+  // Use "devices_info" path
+  // Deprecate "devices" path (which is used in device-registry)
   val route =
-    (pathPrefix("devices") & namespaceExtractor) { ns =>
-      (pathEnd & get) { search(ns) }
+    ((pathPrefix("devices_info") | pathPrefix("devices")) & namespaceExtractor) { ns =>
+      (pathEnd & get) { search(ns) } ~
+      (get & extractUuid) { uuid =>
+        ErrorHandler.handleErrors {
+          getDeviceWithStatus(ns, uuid)
+        }
+      }
     }
 }
