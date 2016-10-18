@@ -57,7 +57,7 @@ class DeviceResourceSpec extends FunSuite
 
   lazy val service = new DevicesResource(db, rviClient, fakeResolver, deviceRegistry, defaultNamespaceExtractor)
 
-  val BasePath = Path("/devices")
+  val BasePath = Path("/devices_info")
 
   implicit val patience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
 
@@ -118,6 +118,35 @@ class DeviceResourceSpec extends FunSuite
 
         parsedResponse.flatMap(_.lastSeen) shouldNot be(defined)
         parsedResponse.flatMap(_.status) should contain(DeviceStatus.NotSeen)
+      }
+    }
+  }
+
+  test("get device with status=true returns current status for a device") {
+    val device = genDeviceT.sample.get.copy(deviceId = Some(genDeviceId.sample.get))
+
+    whenReady(deviceRegistry.createDevice(device)) { created =>
+      val url = deviceUri(created)
+        .withQuery(Uri.Query("status" -> "true"))
+
+      Get(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+        val parsedResponse = responseAs[DeviceSearchResult]
+        parsedResponse.lastSeen shouldNot be(defined)
+        parsedResponse.status should contain(DeviceStatus.NotSeen)
+      }
+    }
+  }
+
+  test("get device with status=true returns 404 for a missing device") {
+    val device = genDeviceT.sample.get.copy(deviceId = Some(genDeviceId.sample.get))
+
+    whenReady(deviceRegistry.createDevice(device)) { created =>
+      val url = deviceUri(Uuid.generate())
+        .withQuery(Uri.Query("status" -> "true"))
+
+      Get(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.NotFound
       }
     }
   }
