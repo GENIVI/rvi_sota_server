@@ -3,7 +3,6 @@ package org.genivi.sota.core
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import akka.testkit.TestKit
-
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db.{BlacklistedPackages, Packages, UpdateSpecs}
 import org.genivi.sota.core.resolver.DefaultConnectivity
@@ -12,9 +11,10 @@ import org.genivi.sota.data._
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.PropertyChecks
-import org.scalatest.time.{Millis, Seconds, Span}
+import org.scalatest.time.SpanSugar._
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
 import slick.driver.MySQLDriver.api._
+
 import scala.concurrent.{Await, Future}
 import scala.util.Random
 
@@ -36,6 +36,8 @@ class UpdateServiceSpec extends PropSpec
 
   val packages = PackagesReader.read().take(1000)
 
+  implicit val defaultPatience = PatienceConfig(5.seconds, 500.millis)
+
   implicit val _db = db
 
   implicit val system = akka.actor.ActorSystem("UpdateServiceSpec")
@@ -44,7 +46,6 @@ class UpdateServiceSpec extends PropSpec
 
   override def beforeAll() : Unit = {
     super.beforeAll()
-    import scala.concurrent.duration.DurationInt
     val dbio = DBIO.sequence(packages.map(Packages.create)).transactionally
     Await.ready(db.run(dbio), 50.seconds)
   }
@@ -60,8 +61,6 @@ class UpdateServiceSpec extends PropSpec
   import org.genivi.sota.core.data.UpdateRequest
 
   val availablePackageIdGen = Gen.oneOf(packages).map(_.uuid)
-
-  implicit val defaultPatience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
 
   implicit override val generatorDrivenConfig = PropertyCheckConfig(minSuccessful = 20)
 

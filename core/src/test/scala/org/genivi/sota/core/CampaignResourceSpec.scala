@@ -6,21 +6,17 @@
 package org.genivi.sota.core
 
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.Multipart.FormData.BodyPart
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import cats.syntax.show._
-import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
-import java.io.File
 import org.genivi.sota.core.data.Campaign
 import org.genivi.sota.core.db.Packages
 import org.genivi.sota.core.resolver.DefaultConnectivity
 import org.genivi.sota.core.transfer.DefaultUpdateNotifier
-import org.genivi.sota.data.{Namespaces, PackageId, Uuid}
+import org.genivi.sota.data.{Namespaces, PackageId}
 import org.genivi.sota.http.NamespaceDirectives.defaultNamespaceExtractor
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import org.scalacheck.Arbitrary
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 

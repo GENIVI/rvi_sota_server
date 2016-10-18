@@ -33,6 +33,10 @@ trait DeviceRegistry {
     (uuid: Uuid)
     (implicit ec: ExecutionContext): Future[Device]
 
+  def fetchDevicesInGroup
+    (uuid: Uuid)
+    (implicit ec: ExecutionContext): Future[Seq[Uuid]]
+
   def fetchGroup
     (uuid: Uuid)
     (implicit ec: ExecutionContext): Future[Seq[Uuid]]

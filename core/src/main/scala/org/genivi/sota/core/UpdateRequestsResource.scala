@@ -4,14 +4,11 @@
  */
 package org.genivi.sota.core
 
-import java.util.UUID
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
-import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.data.client._
@@ -85,13 +82,13 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
     (get & uuidExtractor & pathEnd) {
       fetch
     } ~
-      (namespaceExtractor & pathEnd) { ns =>
-        get {
-          fetchUpdates(ns)
-        } ~
-        post {
-          createUpdate(ns)
-        }
+    (namespaceExtractor & pathEnd) { ns =>
+      get {
+        fetchUpdates(ns)
+      } ~
+      post {
+        createUpdate(ns)
       }
+    }
   }
 }
