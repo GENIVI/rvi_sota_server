@@ -8,9 +8,9 @@ import akka.actor.ActorSystem
 import cats.implicits._
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.UpdateService
-import org.genivi.sota.core.data.Campaign
+import org.genivi.sota.core.data.{Campaign, UpdateRequest}
 import org.genivi.sota.core.db.Campaigns
-import org.genivi.sota.data.{Namespace, PackageId, Uuid}
+import org.genivi.sota.data.{Interval, Namespace, PackageId, Uuid}
 import slick.driver.MySQLDriver.api.Database
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -23,12 +23,21 @@ object CampaignLauncher {
     Future.successful(devices.map(_ -> Set(pkg.id)).toMap)
   }
 
-  def launch (deviceRegistry: DeviceRegistry, updateService: UpdateService, id: Campaign.Id)
+  def launch (deviceRegistry: DeviceRegistry, updateService: UpdateService, id: Campaign.Id, lc: LaunchCampaign)
              (implicit db: Database, system: ActorSystem, ec: ExecutionContext): Future[List[Uuid]] = {
+    def updateUpdateRequest(ur: UpdateRequest): UpdateRequest = {
+      ur.copy(periodOfValidity = Interval(lc.startDate, lc.endDate),
+              priority = lc.priority.getOrElse(ur.priority),
+              signature = lc.signature.getOrElse(ur.signature),
+              description = lc.description,
+              requestConfirmation = lc.requestConfirmation.getOrElse(ur.requestConfirmation)
+      )
+    }
+
     def launchGroup (ns: Namespace, pkgId: PackageId, campGrp: CampaignGroup): Future[Uuid] = {
       val groupId = campGrp.group
       for {
-        updateRequest <- updateService.updateRequest(ns, pkgId)
+        updateRequest <- updateService.updateRequest(ns, pkgId).map(updateUpdateRequest)
         devices       <- deviceRegistry.fetchGroup(groupId)
         _             <- updateService.queueUpdate(ns, updateRequest, resolve(devices))
 

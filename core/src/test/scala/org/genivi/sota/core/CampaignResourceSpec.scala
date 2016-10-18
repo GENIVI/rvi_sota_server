@@ -10,11 +10,12 @@ import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import cats.syntax.show._
 import io.circe.generic.auto._
-import org.genivi.sota.core.data.Campaign
-import org.genivi.sota.core.db.Packages
+import java.util.UUID
+import org.genivi.sota.core.data.{Campaign, UpdateRequest}
+import org.genivi.sota.core.db.{Packages, UpdateRequests}
 import org.genivi.sota.core.resolver.DefaultConnectivity
 import org.genivi.sota.core.transfer.DefaultUpdateNotifier
-import org.genivi.sota.data.{Namespaces, PackageId}
+import org.genivi.sota.data.{Interval, Namespaces, PackageId}
 import org.genivi.sota.http.NamespaceDirectives.defaultNamespaceExtractor
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalatest.concurrent.ScalaFutures
@@ -43,6 +44,17 @@ class CampaignResourceSpec extends FunSuite
       val BasePath = Path / "campaigns"
       Uri.Empty.withPath(pathSuffixes.foldLeft(BasePath)(_/_))
     }
+  }
+
+  def updateRequestMatch(urId: UUID, lc: LaunchCampaign): Unit = {
+    whenReady(db.run(UpdateRequests.byId(urId))) { ur =>
+      ur.periodOfValidity shouldBe Interval(lc.startDate, lc.endDate)
+      lc.priority.foreach(ur.priority shouldBe _)
+      lc.signature.foreach(ur.signature shouldBe _)
+      ur.description shouldBe lc.description
+      lc.requestConfirmation.foreach(ur.requestConfirmation shouldBe _)
+    }
+
   }
 
   def createCampaign(name: CreateCampaign, expectedCode: StatusCode): Unit =
@@ -76,8 +88,8 @@ class CampaignResourceSpec extends FunSuite
       responseAs[Seq[CampaignMeta]]
     }
 
-  def launch(id: Campaign.Id, expectedCode: StatusCode): Unit =
-    Post(Resource.uri(id.show, "launch")) ~> service.route ~> check {
+  def launch(id: Campaign.Id, lc: LaunchCampaign, expectedCode: StatusCode): Unit =
+    Post(Resource.uri(id.show, "launch"), lc) ~> service.route ~> check {
       status shouldBe expectedCode
     }
 
@@ -108,7 +120,8 @@ class CampaignResourceSpec extends FunSuite
     val setgroups = SetCampaignGroupsGen.sample.get
     setGroups(id, setgroups, StatusCodes.OK)
 
-    launch(id, StatusCodes.OK)
+    val lc = LaunchCampaignGen.sample.get
+    launch(id, lc, StatusCodes.OK)
 
     val camp = fetchCampaignOk(id)
 
@@ -118,6 +131,7 @@ class CampaignResourceSpec extends FunSuite
 
     camp.groups.foreach { campGrp =>
       campGrp.updateRequest should not be None
+      updateRequestMatch(campGrp.updateRequest.get.toJava, lc)
     }
 
     camp
@@ -176,5 +190,19 @@ class CampaignResourceSpec extends FunSuite
 
     val pkg = createRandomPackage()
     setPackage(id, pkg, StatusCodes.Locked)
+  }
+
+  test("can't launch campaign with inconsitent dates") {
+    val campName = CreateCampaignGen.sample.get
+    val id = createCampaignOk(campName)
+
+    val pkgId = createRandomPackage()
+    setPackage(id, pkgId, StatusCodes.OK)
+
+    val setgroups = SetCampaignGroupsGen.sample.get
+    setGroups(id, setgroups, StatusCodes.OK)
+
+    val lc = LaunchCampaignGen.sample.get
+    launch(id, lc.copy(startDate = lc.endDate, endDate = lc.startDate), StatusCodes.Conflict)
   }
 }
