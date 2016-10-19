@@ -78,6 +78,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
   val id = Uuid(Refined.unsafeApply(UUID.randomUUID().toString))
 
+  // Deprecated, see newer 'mydevice' test below
   test("install updates are forwarded to external resolver") {
     val packageIds = Gen.listOf(genPackageId).sample.get
     val uri = Uri.Empty.withPath(deviceUri.path / "installed")
@@ -91,6 +92,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
     }
   }
 
+  // Deprecated, see newer 'mydevice' test below
   test("system_info updates are forwarded to device registry") {
     import SimpleJsonGenerator._
 
@@ -106,6 +108,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
   }
 
+  // Deprecated, see newer 'mydevice' test below
   test("GET to download file returns the file contents") {
     whenReady(createUpdateSpec()) { case (packageModel, device, updateSpec) =>
       val url =
@@ -119,6 +122,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
     }
   }
 
+  // Deprecated, see newer 'mydevice' test below
   test("GET returns 404 if there is no package with the given id") {
     val uuid = arbitrary[Uuid].sample.get
     val url = Uri.Empty.withPath(deviceUri.path / uuid.underlying.get / "download")
@@ -129,6 +133,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
     }
   }
 
+  // Deprecated, see newer 'mydevice' test below
   test("GET update requests for a device returns a list of PendingUpdateResponse") {
     whenReady(createUpdateSpec()) { case (pkg, device, updateSpec) =>
       val uri = Uri.Empty.withPath(baseUri.path / device.uuid.show)
@@ -143,6 +148,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
     }
   }
 
+  // Deprecated, see newer 'mydevice' test below
   test("sets device last seen when device asks for updates") {
     val now = Instant.now().minusSeconds(10)
 
@@ -156,6 +162,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
     }
   }
 
+  // Deprecated, see newer 'mydevice' test below
   test("POST an update report updates an UpdateSpec status") {
     whenReady(createUpdateSpec()) { case (packageModel, device, updateSpec) =>
       val url = Uri.Empty.withPath(baseUri.path / device.uuid.show / updateSpec.request.id.toString)
@@ -180,6 +187,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
     }
   }
 
+  // Deprecated, see newer 'mydevice' test below
   test("Returns 404 if package does not exist") {
     val fakeUpdateRequestUuid = UUID.randomUUID()
     val url = Uri.Empty.withPath(deviceUri.path / fakeUpdateRequestUuid.toString)
@@ -193,6 +201,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
     }
   }
 
+  // Deprecated, see newer 'mydevice' test below
   test("GET to download a file returns 3xx if the package URL is an s3 URI") {
     val service = new DeviceUpdatesResource(db, fakeResolver, fakeDeviceRegistry, defaultNamespaceExtractor,
       AuthDirectives.allowAll, MessageBusPublisher.ignore) {
@@ -308,6 +317,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
     }
   }
 
+  // Deprecated, see newer 'mydevice' test below
   test("downloading an update with a blacklisted package returns bad request") {
     val f = for {
       (p, d, us) <- createUpdateSpec()
@@ -455,6 +465,166 @@ class DeviceUpdatesResourceSpec extends FunSuite
       }
     }
   }
+
+  val mydeviceUri = Uri.Empty.withPath(Path("/api/v1/mydevice"))
+
+  test("Device PUT installed packages are forwarded to external resolver") {
+    val packageIds = Gen.listOf(genPackageId).sample.get
+    val uri = Uri.Empty.withPath(mydeviceUri.path / deviceUuid.underlying.get / "installed")
+
+    Put(uri, packageIds) ~> service.route ~> check {
+      status shouldBe StatusCodes.OK
+
+      packageIds.foreach { p =>
+        fakeResolver.isInstalled(p) shouldBe true
+      }
+    }
+  }
+
+  test("Device PUT system_info are forwarded to device registry") {
+    import SimpleJsonGenerator._
+
+    val newSystemInfo = simpleJsonGen.sample.get
+    val uri = Uri.Empty.withPath(mydeviceUri.path / deviceUuid.underlying.get / "system_info")
+
+    Put(uri, newSystemInfo) ~> service.route ~> check {
+      status shouldBe StatusCodes.OK
+
+      val systemInfo = fakeDeviceRegistry.getSystemInfo(deviceUuid).futureValue
+      newSystemInfo shouldBe systemInfo
+    }
+  }
+
+  test("Device GET download returns the file contents") {
+    whenReady(createUpdateSpec()) { case (packageModel, device, updateSpec) =>
+      val url =
+        Uri.Empty.withPath(mydeviceUri.path / device.uuid.underlying.get / "updates" / updateSpec.request.id.toString / "download")
+
+      Get(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+
+        responseEntity.contentLengthOption should contain(packageModel.size)
+      }
+    }
+  }
+
+  test("Device GET download returns 404 if there is no update with the given id") {
+    val uuid = arbitrary[Uuid].sample.get
+    val url = Uri.Empty.withPath(mydeviceUri.path / deviceUuid.underlying.get / "updates" / uuid.underlying.get / "download")
+
+    Get(url) ~> service.route ~> check {
+      status shouldBe StatusCodes.NotFound
+      responseAs[String] should include("package not found")
+    }
+  }
+
+  test("Device GET updates returns a list of PendingUpdateResponse") {
+    whenReady(createUpdateSpec()) { case (pkg, device, updateSpec) =>
+      val uri = Uri.Empty.withPath(mydeviceUri.path / device.uuid.underlying.get / "updates")
+
+      Get(uri) ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+        val parsedResponse = responseAs[List[PendingUpdateRequest]]
+        parsedResponse shouldNot be(empty)
+        parsedResponse.map(_.requestId) should be(List(updateSpec.request.id))
+        parsedResponse.map(_.packageId) should be(List(pkg.id))
+      }
+    }
+  }
+
+  test("Device GET updates sets last-seen") {
+    val now = Instant.now().minusSeconds(10)
+
+    val uri = Uri.Empty.withPath(mydeviceUri.path / deviceUuid.underlying.get / "updates")
+    Get(uri) ~> service.route ~> check {
+      status shouldBe StatusCodes.OK
+      responseAs[List[UUID]] should be(empty)
+
+      val device = fakeDeviceRegistry.fetchDevice(deviceUuid).futureValue
+      device.lastSeen shouldBe defined
+      device.lastSeen.get.isAfter(now) shouldBe true
+    }
+  }
+
+  test("Device POST update report set an UpdateSpec status") {
+    whenReady(createUpdateSpec()) { case (packageModel, device, updateSpec) =>
+      val url = Uri.Empty.withPath(mydeviceUri.path / device.uuid.show / "updates" / updateSpec.request.id.toString)
+      val result = OperationResult(id, 1, "some result")
+      val updateReport = UpdateReport(updateSpec.request.id, List(result))
+      val installReport = InstallReport(device.uuid, updateReport)
+
+      Post(url, installReport) ~> service.route ~> check {
+        status shouldBe StatusCodes.NoContent
+
+        val dbIO = for {
+          updateSpec <- DeviceUpdates.findUpdateSpecFor(device.uuid, updateSpec.request.id)
+          histories <- InstallHistories.list(device.uuid)
+        } yield (updateSpec, histories.last)
+
+        whenReady(db.run(dbIO)) { case (updatedSpec, lastHistory) =>
+          updatedSpec.status shouldBe UpdateStatus.Finished
+          lastHistory._1.success shouldBe true
+          lastHistory._2.head shouldBe packageModel.id
+        }
+      }
+    }
+  }
+
+  test("Device GET an update returns 404 if update does not exist") {
+    val fakeUpdateRequestUuid = UUID.randomUUID()
+    val url = Uri.Empty.withPath(mydeviceUri.path / deviceUuid.underlying.get / "updates" / fakeUpdateRequestUuid.toString)
+    val result = OperationResult(id, 1, "some result")
+    val updateReport = UpdateReport(fakeUpdateRequestUuid, List(result))
+    val installReport = InstallReport(deviceUuid, updateReport)
+
+    Post(url, installReport) ~> service.route ~> check {
+      status shouldBe StatusCodes.NotFound
+      responseAs[String] should include("UpdateSpec not found")
+    }
+  }
+
+  test("Device GET download returns 3xx if the package URL is an s3 URI") {
+    val service = new DeviceUpdatesResource(db, fakeResolver, fakeDeviceRegistry, defaultNamespaceExtractor,
+      AuthDirectives.allowAll, MessageBusPublisher.ignore) {
+      override lazy val packageRetrievalOp: (Package) => Future[HttpResponse] = {
+        _ => Future.successful {
+          HttpResponse(StatusCodes.Found, Location("https://some-fake-place") :: Nil)
+        }
+      }
+    }
+
+    val f = for {
+      (packageModel, device, updateSpec) <- createUpdateSpec()
+      _ <- db.run(Packages.create(packageModel.copy(uri = "https://amazonaws.com/file.rpm")))
+    } yield (packageModel, device, updateSpec)
+
+    whenReady(f) { case (packageModel, device, updateSpec) =>
+      val url =
+        Uri.Empty.withPath(mydeviceUri.path / device.uuid.underlying.get / "updates" / updateSpec.request.id.toString / "download")
+      Get(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.Found
+        header("Location").map(_.value()) should contain("https://some-fake-place")
+      }
+    }
+  }
+
+  test("Device GET download an update with a blacklisted package returns bad request") {
+    val f = for {
+      (p, d, us) <- createUpdateSpec()
+      _ <- BlacklistedPackages.create(p.namespace, p.id, None)
+    } yield (p, d, us)
+
+    whenReady(f) { case (packageModel, device, updateSpec) =>
+      val url =
+        baseUri
+          .withPath(mydeviceUri.path / device.uuid.show / "updates" / updateSpec.request.id.toString / "download" )
+
+      Get(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.BadRequest
+      }
+    }
+  }
+
 }
 
 class FakeConnectivity extends Connectivity {
