@@ -91,7 +91,8 @@ object DeviceRepository {
   def update(ns: Namespace, uuid: Uuid, device: DeviceT)(implicit ec: ExecutionContext): DBIO[Unit] = {
     val dbIO = devices
       .filter(_.uuid === uuid)
-      .update(Device(ns, uuid, device.deviceName, device.deviceId, device.deviceType))
+      .map(r => (r.deviceName, r.deviceId, r.deviceType))
+      .update((device.deviceName, device.deviceId, device.deviceType))
       .handleIntegrityErrors(Errors.ConflictingDevice)
       .handleSingleUpdateError(Errors.MissingDevice)
 
