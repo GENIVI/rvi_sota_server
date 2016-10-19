@@ -11,6 +11,7 @@ import akka.http.scaladsl.server.{Directive1, Route}
 import io.circe.Json
 import org.genivi.sota.data.{Namespace, Uuid}
 import org.genivi.sota.device_registry.db._
+import org.genivi.sota.device_registry.common.Errors.MissingSystemInfo
 import org.genivi.sota.http.UuidDirectives.extractUuid
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.slf4j.LoggerFactory
@@ -45,8 +46,12 @@ class SystemInfoResource(deviceNamespaceAuthorizer: Directive1[Uuid])
     f
   }
 
-  def fetchSystemInfo(uuid: Uuid): Route =
-    complete(db.run(SystemInfoRepository.findByUuid(uuid)))
+  def fetchSystemInfo(uuid: Uuid): Route = {
+    val comp = db.run(SystemInfoRepository.findByUuid(uuid)).recover{
+      case MissingSystemInfo => Json.obj()
+    }
+    complete(comp)
+  }
 
   def createSystemInfo(uuid: Uuid, data: Json): Route = {
     val f = db.run(SystemInfoRepository.create(uuid, data))

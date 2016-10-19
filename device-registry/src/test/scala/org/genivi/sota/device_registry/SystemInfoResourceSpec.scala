@@ -21,11 +21,27 @@ class SystemInfoResourceSpec extends ResourcePropSpec {
     x => Json.fromFields(x.toList.map{case (i,v) => (i, removeIdNr(v))}.filter{case (i,_) => i != "id-nr"})
   )
 
+
   property("GET /system_info request fails on non-existent device") {
     forAll { (uuid: Uuid, json: Json) =>
-      fetchSystemInfo(uuid)      ~> route ~> check { status shouldBe NotFound }
+      fetchSystemInfo(uuid)        ~> route ~> check { status shouldBe NotFound }
       createSystemInfo(uuid, json) ~> route ~> check { status shouldBe NotFound}
       updateSystemInfo(uuid, json) ~> route ~> check { status shouldBe NotFound}
+    }
+  }
+
+  property("GET /system_info return empty if device have not set system_info") {
+    forAll { device: DeviceT =>
+      val uuid: Uuid = createDeviceOk(device)
+
+      fetchSystemInfo(uuid) ~> route ~> check {
+        status shouldBe OK
+        val json = responseAs[Json]
+
+        json shouldBe Json.obj()
+      }
+
+      deleteDeviceOk(uuid)
     }
   }
 

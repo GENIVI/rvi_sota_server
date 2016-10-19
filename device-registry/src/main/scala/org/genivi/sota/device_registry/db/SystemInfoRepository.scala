@@ -73,11 +73,15 @@ object SystemInfoRepository extends SlickJsonHelper {
 
   def findByUuid(uuid: Uuid)(implicit ec: ExecutionContext): DBIO[SystemInfoType] = {
     import org.genivi.sota.db.Operators._
-    systemInfos
-      .filter(_.uuid === uuid)
-      .result
-      .failIfNotSingle(Errors.MissingSystemInfo)
-      .map(p => p.systemInfo)
+    val dbIO = for {
+      _ <- DeviceRepository.findByUuid(uuid)
+      p <- systemInfos
+        .filter(_.uuid === uuid)
+        .result
+        .failIfNotSingle(Errors.MissingSystemInfo)
+    } yield p.systemInfo
+
+    dbIO.transactionally
   }
 
   def create(uuid: Uuid, data: SystemInfoType)(implicit ec: ExecutionContext): DBIO[Unit] = for {
