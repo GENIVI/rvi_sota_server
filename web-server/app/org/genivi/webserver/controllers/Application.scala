@@ -62,13 +62,15 @@ class Application @Inject() (ws: WSClient,
    * @return The proxied request
    */
   def proxyTo(apiUri: String, ns: String, req: Request[RawBuffer]) : Future[Result] = {
-    def toWsHeaders(hdrs: Headers) = hdrs.toMap.map {
-      case(name, value) => name -> value.mkString } + ("x-ats-namespace" -> ns)
+
+    val allowedHeaders = Seq("content-type")
+    def passHeaders(hdrs: Headers) = hdrs.toSimpleMap.filter(h => allowedHeaders.contains(h._1.toLowerCase)) +
+      ("x-ats-namespace" -> ns)
 
     val w = ws.url(apiUri + req.path)
       .withFollowRedirects(false)
       .withMethod(req.method)
-      .withHeaders(toWsHeaders(req.headers).toSeq :_*)
+      .withHeaders(passHeaders(req.headers).toSeq :_*)
       .withQueryString(req.queryString.mapValues(_.head).toSeq :_*)
 
     val wreq = req.body.asBytes() match {
