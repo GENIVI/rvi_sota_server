@@ -208,6 +208,28 @@ class DeviceResourceSpec extends ResourcePropSpec {
     }
   }
 
+  property("PUT request does not update last seen") {
+    forAll(genConflictFreeDeviceTs(2)) { case Seq(d1: DeviceT, d2: DeviceT) =>
+
+      val uuid: Uuid = createDeviceOk(d1)
+
+      updateLastSeen(uuid) ~> route ~> check {
+        status shouldBe OK
+      }
+
+      updateDevice(uuid, d2) ~> route ~> check {
+        status shouldBe OK
+        fetchDevice(uuid) ~> route ~> check {
+          status shouldBe OK
+          val updatedDevice: Device = responseAs[Device]
+          updatedDevice.lastSeen shouldBe defined
+        }
+      }
+
+      deleteDeviceOk(uuid)
+    }
+  }
+
   property("PUT request with same deviceName fails with conflict.") {
     forAll(genConflictFreeDeviceTs(2)) { case Seq(d1, d2) =>
 
