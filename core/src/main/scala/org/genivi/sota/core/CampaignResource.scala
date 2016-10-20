@@ -8,6 +8,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive1, Route}
+import cats.data.Xor
 import io.circe.generic.auto._
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.campaigns.{CampaignLauncher, CampaignStats}
@@ -40,8 +41,11 @@ class CampaignResource(namespaceExtractor: Directive1[Namespace],
     complete(db.run(Campaigns.fetch(id)))
   }
 
-  def launch(id: Campaign.Id): Route = {
-    complete(CampaignLauncher.launch(deviceRegistry, updateService, id))
+  def launch(id: Campaign.Id, lc: LaunchCampaign): Route = {
+    lc.isValid match {
+      case Xor.Right(()) => complete(CampaignLauncher.launch(deviceRegistry, updateService, id, lc))
+      case Xor.Left(err) => complete(Conflict -> err)
+    }
   }
 
   def listCampaigns(ns: Namespace): Route = {
@@ -98,8 +102,8 @@ class CampaignResource(namespaceExtractor: Directive1[Namespace],
           (path("draft") & post) {
             setAsDraft(id)
           } ~
-          (path("launch") & post) {
-            launch(id)
+          (path("launch") & post & entity(as[LaunchCampaign])) { launchCampaign =>
+            launch(id, launchCampaign)
           } ~
           (path("groups") & put & entity(as[SetCampaignGroups])) { groups =>
             setCampaignGroups(id, groups)

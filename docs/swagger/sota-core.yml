@@ -236,6 +236,11 @@ paths:
         description: The campaign uuid to launch
         required: true
         type: string
+      - name: body
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/LaunchCampaign'
       responses:
         200:
           description: OK
@@ -863,6 +868,29 @@ definitions:
         $ref: '#/definitions/uuid'
       updateRequest:
         $ref: '#/definitions/uuid'
+  LaunchCampaign:
+    type: object
+    properties:
+      startDate:
+        type: string
+        format: dateTime
+        description: The time for the start of the campaign
+      endDate:
+        type: string
+        format: dateTime
+        description: The time for the end of the campaign
+      priority:
+        type: integer
+        description: Optional pritority for the launch.
+      signature:
+        type: string
+        description: Optional signature for the launch.
+      description:
+        type: string
+        description: Optional description of the launch.
+      requestConfirmation:
+        type: boolean
+        description: True if client should wait for user confirmation before installing, defaults to false.
   SetCampaignGroups:
     type: object
     properties:

@@ -5,6 +5,7 @@
 package org.genivi.sota.core.data
 
 import cats.Show
+import cats.data.Xor
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string._
 import io.circe._
@@ -34,6 +35,23 @@ object Campaign {
   case class CreateCampaign(name: String)
   case class SetCampaignGroups(groups: Seq[Uuid])
   case class CampaignGroup(group: Uuid, updateRequest: Option[Uuid])
+
+  case class LaunchCampaign(
+    startDate: Instant,
+    endDate: Instant,
+    priority: Option[Int],
+    signature: Option[String],
+    description: Option[String],
+    requestConfirmation: Option[Boolean]
+  ) {
+    def isValid(): String Xor Unit = {
+      if(startDate.isBefore(endDate)) {
+        Xor.Right(())
+      } else {
+        Xor.Left("The LaunchCampaign object is not valid because the start date is not before end date.")
+      }
+    }
+  }
 
   final case class Id(underlying: Uuid)
 
