@@ -49,47 +49,8 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace], deviceNamespaceA
     db.run(DeviceRepository.deviceNamespace(deviceId))
   }
 
-  def updateMembershipsForGroup(ns: Namespace,
-                                groupId: Uuid,
-                                matching: Json,
-                                discarded: Json): Future[Int] = {
-    val dbIO = for {
-      matchingGroups <- list(ns).map(
-                          _.filter{ info =>
-                            compare(disregard(info.systemInfo, discarded), matching).equals((matching, Json.Null))
-                          }.map(_.uuid))
-      res            <- DBIO.sequence(matchingGroups.map { device =>
-                          GroupMemberRepository.addOrUpdateGroupMember(groupId, device)
-                        })
-    } yield res
-
-    val f = db.run(dbIO.transactionally).map(_.sum)
-    f.onFailure { case e =>
-      logger.error(s"Got error whilst updating group id $groupId: ${e.toString}")
-    }
-    f
-  }
-
   def createGroupFromDevices(request: CreateGroupRequest, namespace: Namespace): Route = {
-    val commonJsonDbIo = for {
-      info1 <- findByUuid(request.device1)
-      info2 <- findByUuid(request.device2)
-    } yield compare(info1, info2)
-
-    onComplete(db.run(commonJsonDbIo)) {
-      case Success(json) => json match {
-        case (Json.Null, _) =>
-          complete(StatusCodes.BadRequest -> "Devices have no common attributes to form a group")
-        case (matching, discarded) =>
-          val groupId = Uuid.generate()
-          val f = db.run(GroupInfoRepository.create(groupId, request.groupName, namespace, matching, discarded))
-          f.onSuccess { case _ =>
-            updateMembershipsForGroup(namespace, groupId, matching, discarded)
-          }
-          complete(f)
-      }
-      case Failure(_) => complete(StatusCodes.BadRequest -> "System info not found for device")
-    }
+    complete(UpdateMemberships.createGroupFromDevices(request, namespace))
   }
 
   def getDevicesInGroup(groupId: Uuid): Route = {
