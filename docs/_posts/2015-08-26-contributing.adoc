@@ -1,9 +1,9 @@
 ---
 layout: page
 title: "Contributing"
-category: doc
+category: dev
 date: 2015-08-26 10:41:08
-order: 6
+order: 1
 ---
 :icons: font
 

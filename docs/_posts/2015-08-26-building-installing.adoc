@@ -156,7 +156,7 @@ Try `sbt flywayRepair`, then `sbt flywayMigrate` again. If that doesn't fix the 
 
 == Building rvi_sota_client Locally
 
-To see the link:https://github.com/PDXostc/rvi_sota_client[SOTA client] in action, you will need some supporting components running. The general steps are:
+To see the link:https://github.com/advancedtelematic/rvi_sota_client[SOTA client] in action, you will need some supporting components running. The general steps are:
 
 1.  Build and run RVI server and client nodes
 2.  Build and run rvi_sota_client

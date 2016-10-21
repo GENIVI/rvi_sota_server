@@ -1,14 +1,14 @@
 ---
 layout: page
-title: "Client Implementation Reference"
-category: dev
+title: "RVI Client Implementation Reference"
+category: cli
 date: 2015-08-26 14:14:23
 order: 7
 ---
 :icons: font
 :toc: macro
 
-The GENIVI SOTA project includes a link:https://github.com/pdxostc/rvi_sota_client[client implementation] in link:http://rust-lang.org[Rust] for the GENIVI platform, but any client that implements the necessary JSON-RPC calls may be used. This document is a reference doc for those calls. You can also take a look at a detailed breakdown of a complete session, from registration through to completed package installation, link:/rvi_sota_server/dev/client-implementation-example-session.html[here].
+The GENIVI SOTA project includes a link:https://github.com/advancedtelematic/rvi_sota_client[client implementation] in link:http://rust-lang.org[Rust] for the GENIVI platform, but any client that implements the necessary JSON-RPC calls may be used. This document is a reference doc for those calls. You can also take a look at a detailed breakdown of a complete session, from registration through to completed package installation, link:/rvi_sota_server/dev/client-implementation-example-session.html[here].
 
 All client-server communication in SOTA is done over link:https://github.com/pdxostc/rvi_core[RVI], so we will assume that you've already got an RVI client node running on the client device, set up to communicate with the SOTA server node. All of the client's communication with the server is intermediated by the RVI client node, so both in this doc and in the link:/rvi_sota_server/dev/client-implementation-example-session.html[example session], "server" and "RVI client node" are used interchangeably.
 

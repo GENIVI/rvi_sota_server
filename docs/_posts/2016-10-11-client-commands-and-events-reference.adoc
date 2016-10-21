@@ -1,0 +1,149 @@
+---
+layout: page
+title: "Client commands and events API reference"
+category: cli
+date: 2016-10-11 15:40:52
+order: 3
+---
+:icons: font
+
+
+The SOTA Client communicates with the host system over a command and event API. This API can function over a number of different gateways; see link:../cli/client-startup-and-configuration.html[Client Startup and Configuration] for details on gateway configuration.
+
+The client receives *commands*, and broadcasts *events*. Any interested parties on the system can subscribe to events, and send commands to the client. A quick overview of the commands and events is given here; if you want more detailed information on the exact structure of the command and event bodies, check out the RustDocs for link:../gen_docs/client/sota/datatype/command/enum.Command.html[commands] and link:../gen_docs/client/sota/datatype/event/enum.Event.html[events], respectively.
+
+== Events
+
+`Error(String)` — General error event with a printable representation for debugging.
+
+`Authenticated` — Authentication with SOTA Core was successful.
+
+`NotAuthenticated` — An operation failed because we are not currently authenticated.
+
+`UpdatesReceived(Vec<UpdateRequest>)` — Client has received a notification from Core of pending or in-flight updates. It includes a vector of one or more update UUIDs received from Core.
+
+`UpdateAvailable(UpdateAvailable)` — Used only when using RVI: a notification from RVI of a pending update.
+
+`NoUpdateRequests` — The client has no more outstanding update requests.
+
+`FoundInstalledPackages(Vec<Package>)` — The following packages are installed on the device.
+
+`FoundSystemInfo(String)` — An update on the system information was received.
+
+`DownloadingUpdate(UpdateRequestId)` — Downloading an update.
+
+`DownloadComplete(DownloadComplete)` — An update was downloaded.
+
+`DownloadFailed(UpdateRequestId, String)` — Downloading an update failed.
+
+`InstallingUpdate(UpdateRequestId)` — Installing an update.
+
+`InstallComplete(UpdateReport)` — An update was installed.
+
+`InstallFailed(UpdateReport)` — The installation of an update failed.
+
+`UpdateReportSent` — An update report was sent to the Core server.
+
+`InstalledPackagesSent` — A list of installed packages was sent to the Core server.
+
+`InstalledSoftwareSent` — A list of installed software was sent to the Core server.
+
+`SystemInfoSent` — The system information was sent to the Core server.
+
+`InstalledSoftwareNeeded` — A broadcast event requesting an update on externally installed software.
+
+
+== Commands
+
+`Authenticate(Option<ClientCredentials>)` — Authenticate with the auth server.
+
+`Shutdown` — Shutdown the client immediately.
+
+`GetUpdateRequests` — Check for any pending or in-flight updates.
+
+TIP: Assuming a polling interval is set, the client will periodically check for updates. If the polling interval is set to 0, this command can be sent to force the client to check for updates. This would be useful, for example, in a system with SMS shoulder-tap notifications.
+
+`ListInstalledPackages` — List the installed packages on the system.
+
+`ListSystemInfo` — List the system information.
+
+TIP: This tells the client to invoke the command set for `system_info` in the client configuration file.
+
+`StartDownload(UpdateRequestId)` — Start downloading an update.
+
+`StartInstall(UpdateRequestId)` — Start installing an update.
+
+TIP: This only applies if the package_manager is set to `deb` or `rpm` in the config file. If it's set to `off`, the software loading manager would start the install after it sees a DownloadComplete event.
+
+`SendInstalledPackages(Vec<Package>)` — Send a list of packages to the Core server.
+
+TIP: SendInstalledPackages is intended to send a complete list of all packages on the device. Each time you send the command, the complete list of packages on Core will be *overwritten* with the info you send—not updated or appended.
+
+`SendInstalledSoftware(InstalledSoftware)` — Send a list of all packages and firmware to the Core server.
+
+`SendSystemInfo` — Send the system information to the Core server.
+
+`SendUpdateReport(UpdateReport)` — Send a package update report to the Core server.
+
+== Gateways
+
+The commands and events, in general, are the same regardless of the gateway used. The exact invocation method may differ, however, and certain gateways may not support all commands/events.
+
+=== D-Bus
+
+=== Unix domain socket
+
+==== SendUpdateReport
+
+The Unix domain socket gateway supports a limited version of the SendUpdateReport command. The form of the command over unix domain sockets is `SendUpdateReport update_id result_code`.
+
+* The update ID is the one received from the `DownloadComplete` message.
+* The result of the update attempt, either in numberical or verbal form. The possible update codes are enumerated here:
+
+[cols="1,2,5",options="header"]
+|===
+| Numerical | Verbal | Description
+|0  | OK | Operation executed successfully
+|1  | ALREADY_PROCESSED | Operation has already been processed
+|2  | DEPENDENCY_FAILURE | Dependency failure during package install, upgrade, or removal
+|3  | VALIDATION_FAILED | Update image integrity has been compromised
+|4  | INSTALL_FAILED | Package installation failed
+|5  | UPGRADE_FAILED | Package upgrade failed
+|6  | REMOVAL_FAILED | Package removal failed
+|7  | FLASH_FAILED | The module loader could not flash its managed module
+|8  | CREATE_PARTITION_FAILED | Partition creation failed
+|9  | DELETE_PARTITION_FAILED | Partition deletion failed
+|10 | RESIZE_PARTITION_FAILED | Partition resize failed
+|11 | WRITE_PARTITION_FAILED | Partition write failed
+|12 | PATCH_PARTITION_FAILED | Partition patching failed
+|13 | USER_DECLINED | User declined the update
+|14 | SOFTWARE_BLACKLISTED | Software was blacklisted
+|15 | DISK_FULL | Ran out of disk space
+|16 | NOT_FOUND | Software package not found
+|17 | OLD_VERSION | Tried to downgrade to older version
+|18 | INTERNAL_ERROR | SWM Internal integrity error
+|19 | GENERAL_ERROR | Other error
+|===
+
+==== SendInstalledPackages
+
+The syntax for SendInstalledPackages is:
+
+----
+SendInstalledPackages package1_name package1_version package2_name package2_version [...] packageN_name packageN_version
+----
+
+Package names and versions can't contain spaces, but there are no other character restrictions. For example, all of the package/versions listed here are valid:
+
+----
+SendInstalledPackages gcc 7.63 Movie&MusicPlayer rc2-beta3 ECU9274927BF82-firmware gitID-2fab572
+----
+
+Note, however, that all packages must have a version.
+
+
+=== Websocket
+
+=== Console
+
+=== HTTP
