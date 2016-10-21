@@ -21,7 +21,8 @@ object Messages {
 
   val partitionPrefixSize = 256
 
-  final case class DeviceSeen(uuid: Uuid,
+  final case class DeviceSeen(namespace: Namespace,
+                              uuid: Uuid,
                               lastSeen: Instant) extends BusMessage
 
   final case class DeviceCreated(namespace: Namespace,
