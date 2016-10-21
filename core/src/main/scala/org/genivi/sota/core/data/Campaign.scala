@@ -12,13 +12,22 @@ import io.circe._
 import io.circe.generic.auto._
 import java.time.Instant
 import java.util.UUID
+import org.genivi.sota.core.SotaCoreErrors
 import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 import slick.driver.MySQLDriver.api._
 
 import Campaign._
 
 case class Campaign (meta: CampaignMeta, packageId: Option[PackageId], groups: Seq[CampaignGroup]) {
-  def canLaunch(): Boolean = meta.packageUuid.isDefined && groups.size > 0
+  def canLaunch(): Throwable Xor Unit = {
+    if (!meta.packageUuid.isDefined || groups.size < 1) {
+      Xor.Left(SotaCoreErrors.CantLaunchCampaign)
+    } else if (meta.launched) {
+      Xor.Left(SotaCoreErrors.CampaignLaunched)
+    } else {
+      Xor.Right(())
+    }
+  }
 }
 
 sealed case class CampaignStatistics(groupId: Uuid, updateId: Uuid, deviceCount: Int, updatedDevices: Int,

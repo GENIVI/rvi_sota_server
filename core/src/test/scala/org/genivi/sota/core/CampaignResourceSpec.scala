@@ -205,4 +205,19 @@ class CampaignResourceSpec extends FunSuite
     val lc = LaunchCampaignGen.sample.get
     launch(id, lc.copy(startDate = lc.endDate, endDate = lc.startDate), StatusCodes.Conflict)
   }
+
+  test("can't launch a campaign twice") {
+    val campName = CreateCampaignGen.sample.get
+    val id = createCampaignOk(campName)
+
+    val pkgId = createRandomPackage()
+    setPackage(id, pkgId, StatusCodes.OK)
+
+    val setgroups = SetCampaignGroupsGen.sample.get
+    setGroups(id, setgroups, StatusCodes.OK)
+
+    val lc = LaunchCampaignGen.sample.get
+    launch(id, lc, StatusCodes.OK)
+    launch(id, lc, StatusCodes.Locked)
+  }
 }

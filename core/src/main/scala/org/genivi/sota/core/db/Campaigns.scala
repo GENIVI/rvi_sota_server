@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.core.db
 
+import cats.data.Xor
 import eu.timepit.refined.refineV
 import java.util.UUID
 import org.genivi.sota.core.data.Campaign
@@ -128,9 +129,10 @@ object Campaigns {
                  (implicit ec: ExecutionContext): DBIO[Campaign] = {
     val dbIO = for {
       camp <- fetch(id)
-      newMeta <- if (camp.canLaunch()) {
-          DBIO.successful(camp.meta.copy(launched = true))
-        } else { DBIO.failed(SotaCoreErrors.CantLaunchCampaign) }
+      newMeta <- camp.canLaunch() match {
+        case Xor.Right(()) => DBIO.successful(camp.meta.copy(launched = true))
+        case Xor.Left(err) => DBIO.failed(err)
+      }
       _ <- campaignsMeta.insertOrUpdate(newMeta)
     } yield (camp.copy(meta = newMeta))
 
