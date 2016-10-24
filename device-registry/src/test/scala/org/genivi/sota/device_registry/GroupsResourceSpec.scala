@@ -86,6 +86,9 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
         }
       }
     }
+
+    deleteDeviceOk(device1)
+    deleteDeviceOk(device2)
   }
 
   test("GET /group_info request fails on non-existent device") {
@@ -171,6 +174,8 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
         }
       }
     }
+
+    devices.foreach(deleteDeviceOk(_))
   }
 
   test("updating system info for device updates group membership") {
@@ -195,6 +200,8 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
         }
       }
     }
+
+    devices.foreach(deleteDeviceOk(_))
   }
 
   test("adding devices to groups") {
@@ -213,6 +220,8 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
       val devices = responseAs[Seq[Uuid]]
       devices.contains(deviceId) shouldBe true
     }
+
+    deleteDeviceOk(deviceId)
   }
 
   test("removing devices from groups") {
@@ -241,5 +250,7 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
       val devices = responseAs[Seq[Uuid]]
       devices.contains(deviceId) shouldBe false
     }
+
+    deleteDeviceOk(deviceId)
   }
 }

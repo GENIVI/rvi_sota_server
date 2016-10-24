@@ -19,7 +19,6 @@ object Errors {
   object Codes {
     val MissingDevice = ErrorCode("missing_device")
     val ConflictingDevice = ErrorCode("conflicting_device")
-    val MissingSystemInfo = ErrorCode("missing_system_info")
     val SystemInfoAlreadyExists = ErrorCode("system_info_already_exists")
     val MissingGroupInfo = ErrorCode("missing_group_info")
     val GroupInfoAlreadyExists = ErrorCode("group_info_already_exists")
@@ -28,8 +27,7 @@ object Errors {
   val MissingDevice = RawError(Codes.MissingDevice, StatusCodes.NotFound, "device doesn't exist")
   val ConflictingDevice = RawError(Codes.ConflictingDevice, StatusCodes.Conflict,
     "deviceId or deviceName is already in use")
-  val MissingSystemInfo = RawError(Codes.MissingSystemInfo, StatusCodes.NotFound,
-    "system info doesn't exist for this uuid")
+  val MissingSystemInfo = MissingEntity(classOf[SystemInfo])
   val ConflictingSystemInfo = EntityAlreadyExists(classOf[SystemInfo])
 
   val MissingGroupInfo = MissingEntity(classOf[GroupInfo])
