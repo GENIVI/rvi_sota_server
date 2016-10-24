@@ -26,7 +26,8 @@ object CampaignLauncher {
   def launch (deviceRegistry: DeviceRegistry, updateService: UpdateService, id: Campaign.Id, lc: LaunchCampaign)
              (implicit db: Database, system: ActorSystem, ec: ExecutionContext): Future[List[Uuid]] = {
     def updateUpdateRequest(ur: UpdateRequest): UpdateRequest = {
-      ur.copy(periodOfValidity = Interval(lc.startDate, lc.endDate),
+      ur.copy(periodOfValidity = Interval(lc.startDate.getOrElse(ur.periodOfValidity.start),
+                                          lc.endDate.getOrElse(ur.periodOfValidity.end)),
               priority = lc.priority.getOrElse(ur.priority),
               signature = lc.signature.getOrElse(ur.signature),
               description = lc.description,

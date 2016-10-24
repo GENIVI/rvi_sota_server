@@ -102,8 +102,12 @@ class CampaignResource(namespaceExtractor: Directive1[Namespace],
           (path("draft") & post) {
             setAsDraft(id)
           } ~
-          (path("launch") & post & entity(as[LaunchCampaign])) { launchCampaign =>
-            launch(id, launchCampaign)
+          (path("launch") & post) {
+            entity(as[LaunchCampaign]) { launchCampaign =>
+              launch(id, launchCampaign)
+            } ~ {
+              launch(id, LaunchCampaign())
+            }
           } ~
           (path("groups") & put & entity(as[SetCampaignGroups])) { groups =>
             setCampaignGroups(id, groups)
