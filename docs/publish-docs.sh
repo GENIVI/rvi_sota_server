@@ -20,6 +20,7 @@ cd rvi_sota_server/swagger/
 docker run -v $(pwd):/site --entrypoint=/bin/bash advancedtelematic/jekyll-asciidoc ./mkjson.sh
 
 # commit and push
-git commit -am "doc updates for commit $(git -C ../../ describe --tags)"
+git add -A
+git commit -m "doc updates for commit $(git -C ../../ describe --tags)"
 git show --numstat
 git push origin gh-pages
