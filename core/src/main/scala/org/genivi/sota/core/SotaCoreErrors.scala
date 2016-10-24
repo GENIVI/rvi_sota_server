@@ -23,9 +23,9 @@ object SotaCoreErrors {
   val BlacklistedPackage = RawError(SotaCoreErrorCodes.BlacklistedPackage, StatusCodes.BadRequest,
     "package is blacklisted")
   val CantLaunchCampaign = RawError(SotaCoreErrorCodes.CantLaunchCampaign, StatusCodes.BadRequest,
-                                    "campaign is not readly to be launched")
+                                    "campaign is not ready to be launched")
   val CampaignLaunched = RawError(SotaCoreErrorCodes.CampaignLaunched, StatusCodes.Locked,
-                                  "campaign is already launched, can't edit")
+                                  "campaign is already launched")
   val ConflictingCampaign = EntityAlreadyExists(classOf[Campaign])
   val MissingCampaign = MissingEntity(classOf[Campaign])
   val MissingPackage = RawError(SotaCoreErrorCodes.MissingPackage, StatusCodes.NotFound, "package not found")
