@@ -46,19 +46,21 @@ object Campaign {
   case class CampaignGroup(group: Uuid, updateRequest: Option[Uuid])
 
   case class LaunchCampaign(
-    startDate: Instant,
-    endDate: Instant,
-    priority: Option[Int],
-    signature: Option[String],
-    description: Option[String],
-    requestConfirmation: Option[Boolean]
+    startDate: Option[Instant] = None,
+    endDate: Option[Instant] = None,
+    priority: Option[Int] = None,
+    signature: Option[String] = None,
+    description: Option[String] = None,
+    requestConfirmation: Option[Boolean] = None
   ) {
-    def isValid(): String Xor Unit = {
-      if(startDate.isBefore(endDate)) {
-        Xor.Right(())
-      } else {
-        Xor.Left("The LaunchCampaign object is not valid because the start date is not before end date.")
-      }
+    def isValid(): String Xor Unit = (startDate, endDate) match {
+      case (Some(sd), Some(ed)) =>
+        if(sd.isBefore(ed)) {
+          Xor.Right(())
+        } else {
+          Xor.Left("The LaunchCampaign object is not valid because the start date is not before end date.")
+        }
+      case _ => Xor.Right(())
     }
   }
 

@@ -238,7 +238,7 @@ paths:
         type: string
       - name: body
         in: body
-        required: true
+        required: false
         schema:
           $ref: '#/definitions/LaunchCampaign'
       responses:
@@ -874,20 +874,20 @@ definitions:
       startDate:
         type: string
         format: dateTime
-        description: The time for the start of the campaign
+        description: Optional, the time for the start of the campaign
       endDate:
         type: string
         format: dateTime
-        description: The time for the end of the campaign
+        description: Optional, the time for the end of the campaign
       priority:
         type: integer
-        description: Optional pritority for the launch.
+        description: Optional, pritority for the launch.
       signature:
         type: string
-        description: Optional signature for the launch.
+        description: Optional, signature for the launch.
       description:
         type: string
-        description: Optional description of the launch.
+        description: Optional, description of the launch.
       requestConfirmation:
         type: boolean
         description: True if client should wait for user confirmation before installing, defaults to false.

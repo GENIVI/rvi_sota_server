@@ -48,7 +48,8 @@ class CampaignResourceSpec extends FunSuite
 
   def updateRequestMatch(urId: UUID, lc: LaunchCampaign): Unit = {
     whenReady(db.run(UpdateRequests.byId(urId))) { ur =>
-      ur.periodOfValidity shouldBe Interval(lc.startDate, lc.endDate)
+      lc.startDate.foreach(ur.periodOfValidity.start shouldBe _)
+      lc.endDate.foreach(ur.periodOfValidity.end shouldBe _)
       lc.priority.foreach(ur.priority shouldBe _)
       lc.signature.foreach(ur.signature shouldBe _)
       ur.description shouldBe lc.description
@@ -203,7 +204,8 @@ class CampaignResourceSpec extends FunSuite
     setGroups(id, setgroups, StatusCodes.OK)
 
     val lc = LaunchCampaignGen.sample.get
-    launch(id, lc.copy(startDate = lc.endDate, endDate = lc.startDate), StatusCodes.Conflict)
+    val inter = IntervalGen.sample.get
+    launch(id, lc.copy(startDate = Some(inter.end), endDate = Some(inter.start)), StatusCodes.Conflict)
   }
 
   test("can't launch a campaign twice") {

@@ -53,16 +53,20 @@ trait Generators {
 
   implicit val arbitrayPackage: Arbitrary[Package] = Arbitrary( PackageGen )
 
+  implicit val IntervalGen: Gen[Interval] = for {
+    startAfter   <- Gen.choose(10, 100).map( d => Instant.now.plus(Duration.ofDays(d)) )
+    finishBefore <- Gen.choose(10, 100).map( x => startAfter.plus(Duration.ofDays(x)) )
+  } yield Interval(startAfter, finishBefore)
+
   def updateRequestGen(packageUuidGen : Gen[UUID]) : Gen[UpdateRequest] = for {
     id           <- Gen.uuid
     packageUuid  <-  packageUuidGen
-    startAfter   <- Gen.choose(10, 100).map( d => Instant.now.plus(Duration.ofDays(d)) )
-    finishBefore <- Gen.choose(10, 100).map( x => startAfter.plus(Duration.ofDays(x)) )
+    inter        <- IntervalGen
     prio         <- Gen.choose(1, 10)
     sig          <- Gen.alphaStr
     desc         <- Gen.option(Gen.alphaStr)
     reqConfirm   <- arbitrary[Boolean]
-  } yield UpdateRequest(UUID.randomUUID(), defaultNs, packageUuid, Instant.now, Interval(startAfter, finishBefore),
+  } yield UpdateRequest(UUID.randomUUID(), defaultNs, packageUuid, Instant.now, inter,
       prio, sig, desc, reqConfirm)
 
   def vinDepGen(packages: Seq[Package]) : Gen[(Uuid, Set[PackageId])] = for {
@@ -126,12 +130,13 @@ trait Generators {
   } yield SetCampaignGroups(groups)
 
   val LaunchCampaignGen: Gen[LaunchCampaign] = for {
-    startDate   <- Gen.choose(10, 100).map( d => Instant.now.plus(Duration.ofDays(d)) )
-    endDate <- Gen.choose(10, 100).map( x => startDate.plus(Duration.ofDays(x)) )
-    prio         <- Gen.option(Gen.choose(1, 10))
-    sig          <- Gen.option(Gen.alphaStr)
-    desc         <- Gen.option(Gen.alphaStr)
-    reqConfirm   <- Gen.option(arbitrary[Boolean])
+    inter      <- IntervalGen
+    startDate  <- Gen.option(inter.start)
+    endDate    <- Gen.option(inter.end)
+    prio       <- Gen.option(Gen.choose(1, 10))
+    sig        <- Gen.option(Gen.alphaStr)
+    desc       <- Gen.option(Gen.alphaStr)
+    reqConfirm <- Gen.option(arbitrary[Boolean])
   } yield LaunchCampaign(startDate, endDate, prio, sig, desc, reqConfirm)
 }
 
