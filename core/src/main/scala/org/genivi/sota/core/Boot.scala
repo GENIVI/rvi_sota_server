@@ -81,6 +81,7 @@ trait HttpBoot {
   def messageBusPublisher: MessageBusPublisher
 
   def httpInteractionRoutes(db: Database,
+                            tokenValidator: Directive0,
                             namespaceDirective: Directive1[Namespace],
                             authDirective: AuthScope => Directive0,
                             messageBus: MessageBusPublisher): Route = {
@@ -89,7 +90,9 @@ trait HttpBoot {
     val vehicleService = new DeviceUpdatesResource(db, resolverClient, deviceRegistryClient,
       namespaceDirective, authDirective, messageBus)
 
-    webService.route ~ vehicleService.route
+    tokenValidator {
+      webService.route ~ vehicleService.route
+    }
   }
 }
 
@@ -163,7 +166,8 @@ object Boot extends App with DatabaseConfig with HttpBoot with RviBoot with Boot
 
     case _ =>
       FastFuture.successful {
-        httpInteractionRoutes(db, NamespaceDirectives.fromConfig(), AuthDirectives.fromConfig(), messageBusPublisher) ~
+        httpInteractionRoutes(db, TokenValidator().fromConfig(), NamespaceDirectives.fromConfig(),
+                              AuthDirectives.fromConfig(), messageBusPublisher) ~
           healthResource.route
       }
   }
