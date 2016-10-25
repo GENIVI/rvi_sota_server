@@ -916,10 +916,12 @@ definitions:
       failedUpdates:
         type: integer
         description: Number of devices which failed to update during this update request
+      cancelledUpdates:
+        type: integer
+        description: Number of devices which were cancelled during this update
       updatedDevices:
         type: integer
-        description: Number of updated devices, includes all successful updates as well as devices which were already
-         up to date before the update was launched
+        description: Number of updated devices, includes all successful updates as well as cancelled and failed devices
 
   SystemInfo:
     type: object
