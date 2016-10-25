@@ -73,7 +73,7 @@ class CampaignResource(namespaceExtractor: Directive1[Namespace],
   }
 
   def getCampaignStats(id: Campaign.Id): Route = {
-    complete(CampaignStats.get(id, deviceRegistry, updateService))
+    complete(CampaignStats.get(id, updateService))
   }
 
   val extractId: Directive1[Campaign.Id] =

@@ -31,7 +31,7 @@ case class Campaign (meta: CampaignMeta, packageId: Option[PackageId], groups: S
 }
 
 sealed case class CampaignStatistics(groupId: Uuid, updateId: Uuid, deviceCount: Int, updatedDevices: Int,
-                                     successfulUpdates: Int, failedUpdates: Int)
+                                     successfulUpdates: Int, failedUpdates: Int, cancelledUpdates: Int)
 
 object Campaign {
   case class CampaignMeta(

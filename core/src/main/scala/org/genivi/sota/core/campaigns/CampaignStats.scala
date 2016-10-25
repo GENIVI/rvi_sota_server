@@ -16,27 +16,27 @@ import scala.concurrent.{ExecutionContext, Future}
 
 object CampaignStats {
 
-  private def getCampaignStatsForUpdate(groupId: Uuid, updateId: Uuid, deviceRegistry: DeviceRegistry,
-                                        updateService: UpdateService)
+  private def getCampaignStatsForUpdate(groupId: Uuid, updateId: Uuid, updateService: UpdateService)
                                        (implicit db: Database, ec: ExecutionContext)
   : Future[CampaignStatistics] = {
     for {
       rows <- updateService.fetchUpdateSpecRows(updateId)
-      groupSize <- deviceRegistry.fetchDevicesInGroup(groupId)
-      successCount = rows.count(r => r.status.equals(UpdateStatus.Finished))
-      failureCount = rows.count(r => r.status.equals(UpdateStatus.Failed))
-    } yield CampaignStatistics(groupId, updateId, groupSize.size, rows.size, successCount, failureCount)
+      successCount  = rows.count(r => r.status.equals(UpdateStatus.Finished))
+      failureCount  = rows.count(r => r.status.equals(UpdateStatus.Failed))
+      cancelledCount = rows.count(r => r.status.equals(UpdateStatus.Canceled))
+      updatedCount  = successCount + failureCount + cancelledCount
+    } yield CampaignStatistics(groupId, updateId, rows.size, updatedCount, successCount, failureCount, cancelledCount)
   }
 
 
-  def get(id: Campaign.Id, deviceRegistry: DeviceRegistry, updateService: UpdateService)
+  def get(id: Campaign.Id, updateService: UpdateService)
          (implicit db: Database, ec: ExecutionContext)
   : Future[Seq[CampaignStatistics]] = {
     db.run(Campaigns.fetchGroups(id)).flatMap { groups =>
       Future.sequence(
         groups.collect {
           case CampaignGroup(groupId, Some(updateId)) =>
-            getCampaignStatsForUpdate(groupId, updateId, deviceRegistry, updateService)
+            getCampaignStatsForUpdate(groupId, updateId, updateService)
         })
     }
   }
