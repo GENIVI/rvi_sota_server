@@ -2,10 +2,9 @@ package org.genivi.sota.device_registry
 
 import io.circe.{Json, JsonObject}
 
-
 object JsonMatcher {
 
-  /* disregards discarded attribusets
+  /* disregards discarded attribute sets
    *
    * @return cleansed json
    */
@@ -19,7 +18,6 @@ object JsonMatcher {
       o => if (discarded.isObject) disregardObjects(o, discarded.asObject.get)
            else json
     )
-
 
   def disregardObjects(json: JsonObject, discarded: JsonObject): Json = {
     val discardedKeys =

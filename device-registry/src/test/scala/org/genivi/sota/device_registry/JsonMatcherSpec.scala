@@ -74,5 +74,4 @@ class JsonMatcherSpec extends FunSuite with Matchers {
   test("disregarding a disjoint set of attributes should yield a subset") {
     disregard(complexJsonObj, discardedAttrs4) shouldBe simpleJsonObj
   }
-
 }

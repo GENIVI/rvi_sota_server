@@ -62,11 +62,7 @@ class SystemInfoResource(deviceNamespaceAuthorizer: Directive1[Uuid])
   }
 
   def updateSystemInfo(uuid: Uuid, data: Json): Route = {
-    val f = db.run(SystemInfoRepository.update(uuid, data))
-    f.onSuccess { case _ =>
-      updateGroupMembershipsForDevice(uuid, data)
-    }
-    complete(f)
+    complete(db.run(SystemInfoRepository.update(uuid, data)))
   }
 
   def api: Route =

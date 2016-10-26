@@ -1,7 +1,6 @@
 package org.genivi.sota.data
 
 import eu.timepit.refined.api.Refined
-import org.genivi.sota.data.Uuid
 import org.scalacheck.{Arbitrary, Gen}
 
 

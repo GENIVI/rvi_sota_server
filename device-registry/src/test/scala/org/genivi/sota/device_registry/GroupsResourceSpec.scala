@@ -178,32 +178,6 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
     devices.foreach(deleteDeviceOk(_))
   }
 
-  test("updating system info for device updates group membership") {
-    val devices@Seq(d1, d2, _, _, d5) =
-      genConflictFreeDeviceTs(5).sample.get.map(createDeviceOk(_))
-    devices.zip(systemInfos).foreach { case (d, si) => createSystemInfoOk(d, si) }
-
-    createGroupFromDevices(d1, d2, arbitrary[GroupInfo.Name].sample.get) ~> route ~> check {
-      status shouldBe OK
-      val groupId = responseAs[Uuid]
-      fetchGroupInfo(groupId) ~> route ~> check {
-        status shouldBe OK
-        responseAs[Json] shouldBe groupInfo
-      }
-      updateSystemInfo(d5, groupInfo) ~> route ~> check {
-        status shouldBe OK
-      }
-      eventually {
-        listDevicesInGroup(groupId) ~> route ~> check {
-          status shouldBe OK
-          responseAs[Seq[Uuid]] should contain (d5)
-        }
-      }
-    }
-
-    devices.foreach(deleteDeviceOk(_))
-  }
-
   test("adding devices to groups") {
     val group = genGroupInfo.sample.get
     val deviceId = createDeviceOk(genDeviceT.sample.get)
