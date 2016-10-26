@@ -7,7 +7,7 @@ package org.genivi.sota.core
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
@@ -34,11 +34,12 @@ import scala.language.implicitConversions
 import slick.driver.MySQLDriver.api.Database
 import cats.syntax.show.toShowOps
 import org.genivi.sota.http.AuthDirectives.AuthScope
-import org.genivi.sota.messaging.Messages.DeviceSeen
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.core.data.client.PendingUpdateRequest._
 import UpdateSpec._
 import org.genivi.sota.rest.ResponseConversions._
+
+import scala.concurrent.Future
 
 class DeviceUpdatesResource(db: Database,
                             resolverClient: ExternalResolverClient,
@@ -84,6 +85,11 @@ class DeviceUpdatesResource(db: Database,
     entity(as[List[PackageId]]) { ids =>
       val f = DeviceUpdates
         .update(id, ids, resolverClient)
+        .flatMap { _ =>
+          //ignore failures here as the actual work has been done in update()
+          deviceRegistry.updateLastSeen(id)
+          .recover{case e => Future.successful()}
+        }
         .map(_ => OK)
 
       complete(f)

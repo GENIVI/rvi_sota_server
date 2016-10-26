@@ -146,7 +146,6 @@ object Boot extends App with DatabaseConfig with HttpBoot with RviBoot with Boot
         MessageBusPublisher.ignore
     }
 
-
   val interactionProtocol = config.getString("core.interactionProtocol")
 
   val healthResource = new HealthResource(db, org.genivi.sota.core.BuildInfo.toMap)
