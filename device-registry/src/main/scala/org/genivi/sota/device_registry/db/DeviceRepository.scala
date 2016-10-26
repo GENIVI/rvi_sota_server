@@ -17,25 +17,11 @@ import org.genivi.sota.refined.SlickRefined._
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
-import org.genivi.sota.db.Operators._
-
 
 object DeviceRepository {
 
   import Device._
-
-  // TODO generalize
-  implicit val deviceNameColumnType =
-    MappedColumnType.base[DeviceName, String](
-      { case DeviceName(value) => value.toString },
-      DeviceName
-    )
-
-  implicit val deviceIdColumnType =
-    MappedColumnType.base[DeviceId, String](
-      { case DeviceId(value) => value.toString },
-      DeviceId
-    )
+  import org.genivi.sota.db.SlickAnyVal._
 
   // scalastyle:off
   class DeviceTable(tag: Tag) extends Table[Device](tag, "Device") {

@@ -83,4 +83,25 @@ object SlickExtensions {
       }
     }
   }
+
+  implicit class DBIOOps[T](io: DBIO[Option[T]]) {
+
+    def failIfNone(t: Throwable)
+                  (implicit ec: ExecutionContext): DBIO[T] =
+      io.flatMap(_.fold[DBIO[T]](DBIO.failed(t))(DBIO.successful))
+  }
+
+  implicit class DBIOSeqOps[+T](io: DBIO[Seq[T]]) {
+    def failIfNotSingle(t: Throwable)
+                       (implicit ec: ExecutionContext): DBIO[T] = {
+      val dbio = io.flatMap { result =>
+        if(result.size > 1)
+          DBIO.failed(Errors.TooManyElements)
+        else
+          DBIO.successful(result.headOption)
+      }
+
+      DBIOOps(dbio).failIfNone(t)
+    }
+  }
 }
