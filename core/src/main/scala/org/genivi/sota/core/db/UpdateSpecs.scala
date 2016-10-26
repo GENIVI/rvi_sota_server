@@ -220,13 +220,13 @@ object UpdateSpecs {
       .handleSingleUpdateError(MissingEntity(classOf[UpdateSpec]))
   }
 
-  def cancelAllUpdatesBy(status: UpdateStatus, namespace: Namespace, packageId: PackageId)
+  private def cancelAllUpdatesBy(updateSpecFilter: UpdateSpecTable => Rep[Boolean],
+                                 packageFilter: Packages.PackageTable => Rep[Boolean])
                         (implicit ec: ExecutionContext): DBIO[Int] = {
     val updateRequestIdsQuery = for {
-      us <- updateSpecs if us.status === status
+      us <- updateSpecs if updateSpecFilter(us)
       ur <- updateRequests if ur.id === us.requestId
-      pkg <- Packages.packages if pkg.uuid === ur.packageUuid &&
-      pkg.namespace === namespace && pkg.name === packageId.name && pkg.version === packageId.version
+      pkg <- Packages.packages if pkg.uuid === ur.packageUuid && packageFilter(pkg)
     } yield (us.requestId, us.device)
 
     // Slick does not allow us to use `in` instead of `inSet`, so we need to use DBIO instead of updateRequestIdsQuery
@@ -240,6 +240,18 @@ object UpdateSpecs {
       createHistoriesIO.andThen(cancelIO)
     }
   }
+
+  def cancelAllUpdatesByRequest(updateRequest: Uuid)
+                               (implicit ec: ExecutionContext): DBIO[Int] =
+    cancelAllUpdatesBy(us => us.status === UpdateStatus.Pending && us.requestId === updateRequest.toJava,
+                       pkg => true)
+
+  def cancelAllUpdatesByStatus(status: UpdateStatus, namespace: Namespace, packageId: PackageId)
+                              (implicit ec: ExecutionContext): DBIO[Int] =
+    cancelAllUpdatesBy(us => us.status === status,
+                       pkg => pkg.namespace === namespace &&
+                         pkg.name === packageId.name &&
+                         pkg.version === packageId.version)
 
 
   /**

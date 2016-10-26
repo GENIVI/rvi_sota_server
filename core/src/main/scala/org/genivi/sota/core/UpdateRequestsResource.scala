@@ -72,6 +72,10 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
     }
   }
 
+  def cancelUpdate(updateRequestId: Uuid): Route = {
+    complete(db.run(UpdateSpecs.cancelAllUpdatesByRequest(updateRequestId)))
+  }
+
   def updateRequestAllowed(uuid: Uuid): Future[Namespace] = {
     db.run(UpdateRequests.byId(uuid.toJava).map(_.namespace))
   }
@@ -82,12 +86,17 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
     (get & uuidExtractor & pathEnd) {
       fetch
     } ~
-    (namespaceExtractor & pathEnd) { ns =>
-      get {
-        fetchUpdates(ns)
+    namespaceExtractor { ns =>
+      pathEnd {
+        get {
+          fetchUpdates(ns)
+        } ~
+        post {
+          createUpdate(ns)
+        }
       } ~
-      post {
-        createUpdate(ns)
+      (put & uuidExtractor & path("cancel")) { uuid =>
+        cancelUpdate(uuid)
       }
     }
   }

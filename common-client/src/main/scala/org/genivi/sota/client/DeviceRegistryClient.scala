@@ -64,11 +64,6 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri, 
     execHttp[Seq[Uuid]](HttpRequest(uri = baseUri.withPath(deviceGroupsUri.path / uuid.show / "devices"))
                           .withHeaders(nsHeader(ns)))
 
-
-  override def fetchGroup(uuid: Uuid)
-                         (implicit ec: ExecutionContext): Future[Seq[Uuid]] =
-    execHttp[Seq[Uuid]](HttpRequest(uri = baseUri.withPath(deviceGroupsUri.path / uuid.show / "devices")))
-
   override def fetchByDeviceId(ns: Namespace, deviceId: DeviceId)
                               (implicit ec: ExecutionContext): Future[Device] =
     execHttp[Seq[Device]](HttpRequest(uri = baseUri.withPath(devicesUri.path)

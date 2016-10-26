@@ -9,15 +9,27 @@ import cats.implicits._
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.UpdateService
 import org.genivi.sota.core.data.{Campaign, UpdateRequest}
-import org.genivi.sota.core.db.Campaigns
+import org.genivi.sota.core.db.{Campaigns, UpdateSpecs}
 import org.genivi.sota.data.{Interval, Namespace, PackageId, Uuid}
-import slick.driver.MySQLDriver.api.Database
+import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 object CampaignLauncher {
   import Campaign._
   import UpdateService._
+
+  def cancel(id: Campaign.Id)(implicit db: Database, ec: ExecutionContext): Future[Unit] = {
+    val dbIO = Campaigns.fetchGroups(id).flatMap { grps =>
+      val cancelIO = grps.collect {
+        case CampaignGroup(_, Some(ur)) =>
+                   UpdateSpecs.cancelAllUpdatesByRequest(ur)
+      }
+      DBIO.sequence(cancelIO).map(_ => ())
+    }
+
+    db.run(dbIO.transactionally)
+  }
 
   def resolve(devices: Seq[Uuid]): DependencyResolver = { pkg =>
     Future.successful(devices.map(_ -> Set(pkg.id)).toMap)
@@ -39,7 +51,7 @@ object CampaignLauncher {
       val groupId = campGrp.group
       for {
         updateRequest <- updateService.updateRequest(ns, pkgId).map(updateUpdateRequest)
-        devices       <- deviceRegistry.fetchGroup(groupId)
+        devices       <- deviceRegistry.fetchDevicesInGroup(ns, groupId)
         _             <- updateService.queueUpdate(ns, updateRequest, resolve(devices))
 
         uuid          = Uuid.fromJava(updateRequest.id)
