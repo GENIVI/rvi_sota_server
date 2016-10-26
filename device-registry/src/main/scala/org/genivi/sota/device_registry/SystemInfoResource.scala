@@ -26,25 +26,6 @@ class SystemInfoResource(deviceNamespaceAuthorizer: Directive1[Uuid])
 
   val logger = LoggerFactory.getLogger(this.getClass)
 
-  def updateGroupMembershipsForDevice(deviceUuid: Uuid, data: Json): Future[Int] = {
-    val dbIO = for {
-      _          <- GroupMemberRepository.removeDeviceFromAllGroups(deviceUuid)
-      ns         <- DeviceRepository.deviceNamespace(deviceUuid)
-      groupInfos <- GroupInfoRepository.list(ns)
-      groups     =  groupInfos
-                      .filter(r => JsonMatcher.compare(data, r.groupInfo)._1.equals(r.groupInfo))
-                      .map(_.id)
-      res        <- DBIO.sequence(groups.map { groupId =>
-                      GroupMemberRepository.addGroupMember(groupId, deviceUuid)
-                    })
-    } yield res
-
-    val f = db.run(dbIO.transactionally).map(_.sum)
-    f.onFailure { case e =>
-      logger.error(s"Got error whilst updating group id $deviceUuid: ${e.toString}")
-    }
-    f
-  }
 
   def fetchSystemInfo(uuid: Uuid): Route = {
     val comp = db.run(SystemInfoRepository.findByUuid(uuid)).recover{
@@ -56,7 +37,7 @@ class SystemInfoResource(deviceNamespaceAuthorizer: Directive1[Uuid])
   def createSystemInfo(uuid: Uuid, data: Json): Route = {
     val f = db.run(SystemInfoRepository.create(uuid, data))
     f.onSuccess { case _ =>
-      updateGroupMembershipsForDevice(uuid, data)
+      UpdateMemberships.forDevice(uuid, data)
     }
     complete(Created -> f)
   }

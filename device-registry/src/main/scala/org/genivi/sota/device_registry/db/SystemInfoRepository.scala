@@ -41,18 +41,20 @@ object SystemInfoRepository extends SlickJsonHelper {
 
   val systemInfos = TableQuery[SystemInfoTable]
 
+  def removeIdNrs(json: Json): Json = json.arrayOrObject(
+    json,
+    x => Json.fromValues(x.map(removeIdNrs)),
+    x => Json.fromFields(x.toList.collect{case (i,v) if i != "id-nr" => (i, removeIdNrs(v))})
+  )
   private def addUniqueIdsSIM(j: Json): State[Int, Json] = j.arrayOrObject(
     State.pure(j),
     _.traverseU(addUniqueIdsSIM).map(Json.fromValues),
     _.toList.traverseU {
-      case ("id", value) => State { (nr: Int) =>
-        (nr+1, Seq("id" -> value, "id-nr" -> Json.fromString(s"$nr")))
-      }
-      case (other, value) => addUniqueIdsSIM(value).map (x => Seq[(String, Json)](other -> x))
-    }.map(_.flatten).map(Json.fromFields)
+      case (other, value) => addUniqueIdsSIM(value).map(other -> _)
+    }.flatMap(xs => State{ nr => (nr+1, Json.fromFields(("id-nr" -> Json.fromString(s"$nr")) :: xs))})
   )
 
-  private def addUniqueIdsSI(j: Json): Json = addUniqueIdsSIM(j).run(0).value._2
+  def addUniqueIdNrs(j: Json): Json = addUniqueIdsSIM(j).run(0).value._2
 
   def list(ns: Namespace)(implicit ec: ExecutionContext): DBIO[Seq[SystemInfo]] =
     DeviceRepository.devices
@@ -90,13 +92,13 @@ object SystemInfoRepository extends SlickJsonHelper {
       case Success(_) => DBIO.failed(Errors.ConflictingSystemInfo)
       case Failure(_) => DBIO.successful(())
     }
-    newData = addUniqueIdsSI(data)
+    newData = addUniqueIdNrs(data)
     _ <- systemInfos += SystemInfo(uuid,newData)
   } yield ()
 
   def update(uuid: Uuid, data: SystemInfoType)(implicit ec: ExecutionContext): DBIO[Unit] = for {
     _ <- DeviceRepository.findByUuid(uuid) // check that the device exists
-    newData = addUniqueIdsSI(data)
+    newData = addUniqueIdNrs(data)
     _ <- systemInfos.insertOrUpdate(SystemInfo(uuid, newData))
   } yield ()
 

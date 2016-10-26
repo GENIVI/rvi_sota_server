@@ -8,19 +8,13 @@ import io.circe.Json
 import org.genivi.sota.data.DeviceGenerators._
 import org.genivi.sota.data.SimpleJsonGenerator._
 import org.genivi.sota.data._
+import org.genivi.sota.device_registry.db.SystemInfoRepository.removeIdNrs
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 
 class SystemInfoResourceSpec extends ResourcePropSpec {
 
   import UuidGenerator._
   import akka.http.scaladsl.model.StatusCodes._
-
-  def removeIdNr(json: Json): Json = json.arrayOrObject(
-    json,
-    x => Json.fromValues(x.map(removeIdNr)),
-    x => Json.fromFields(x.toList.map{case (i,v) => (i, removeIdNr(v))}.filter{case (i,_) => i != "id-nr"})
-  )
-
 
   property("GET /system_info request fails on non-existent device") {
     forAll { (uuid: Uuid, json: Json) =>
@@ -46,8 +40,9 @@ class SystemInfoResourceSpec extends ResourcePropSpec {
   }
 
   property("GET system_info after POST should return what was posted.") {
-    forAll { (device: DeviceT, json1: Json) =>
+    forAll { (device: DeviceT, json0: Json) =>
       val uuid: Uuid = createDeviceOk(device)
+      val json1: Json = removeIdNrs(json0)
 
       createSystemInfo(uuid, json1) ~> route ~> check {
         status shouldBe Created
@@ -56,7 +51,7 @@ class SystemInfoResourceSpec extends ResourcePropSpec {
       fetchSystemInfo(uuid) ~> route ~> check {
         status shouldBe OK
         val json2: Json = responseAs[Json]
-        json1 shouldBe removeIdNr(json2)
+        json1 shouldBe removeIdNrs(json2)
       }
 
       deleteDeviceOk(uuid)
@@ -78,7 +73,7 @@ class SystemInfoResourceSpec extends ResourcePropSpec {
       fetchSystemInfo(uuid) ~> route ~> check {
         status shouldBe OK
         val json3: Json = responseAs[Json]
-        json2 shouldBe removeIdNr(json3)
+        json2 shouldBe removeIdNrs(json3)
       }
 
       deleteDeviceOk(uuid)
@@ -96,18 +91,18 @@ class SystemInfoResourceSpec extends ResourcePropSpec {
       fetchSystemInfo(uuid) ~> route ~> check {
         status shouldBe OK
         val json2: Json = responseAs[Json]
-        json shouldBe removeIdNr(json2)
+        json shouldBe removeIdNrs(json2)
       }
 
       deleteDeviceOk(uuid)
     }
   }
 
-  property("system_info adds unique numbers for each id-field") {
-    def addId(json: Json): Json = json.arrayOrObject(
-      json,
-      x => Json.fromValues(x.map(addId)),
-      x => Json.fromFields(("uuid" -> Json.fromString("uuid")) :: x.toList.map{case (i,v) => (i, addId(v))})
+  property("system_info adds unique numbers for each json-object") {
+    def countObjects(json: Json): Int = json.arrayOrObject(
+      0,
+      x => x.map(countObjects).sum,
+      x => x.toList.map{case (_,v) => countObjects(v)}.sum + 1
     )
 
     def getField(field: String)(json: Json): Seq[Json] = json.arrayOrObject(
@@ -118,27 +113,25 @@ class SystemInfoResourceSpec extends ResourcePropSpec {
         case (_, v) => getField(field)(v)
       })
 
-    forAll{ (device: DeviceT, json: Json) =>
+    forAll{ (device: DeviceT, json0: Json) =>
       val uuid: Uuid = createDeviceOk(device)
+      val json = removeIdNrs(json0)
 
-      val jsonWithId: Json = addId(json)
-
-      updateSystemInfo(uuid, jsonWithId) ~> route ~> check {
+      updateSystemInfo(uuid, json) ~> route ~> check {
         status shouldBe OK
       }
 
       fetchSystemInfo(uuid) ~> route ~> check {
         status shouldBe OK
         val retJson = responseAs[Json]
-        jsonWithId shouldBe removeIdNr(retJson)
+        json shouldBe removeIdNrs(retJson)
 
-        val ids = getField("id")(retJson)
         val idNrs = getField("id-nr")(retJson)
         //unique
         idNrs.size shouldBe idNrs.toSet.size
 
         //same count
-        ids.size shouldBe idNrs.size
+        countObjects(json) shouldBe idNrs.size
       }
 
       deleteDeviceOk(uuid)
