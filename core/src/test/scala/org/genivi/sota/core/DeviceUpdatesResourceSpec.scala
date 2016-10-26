@@ -550,10 +550,8 @@ class DeviceUpdatesResourceSpec extends FunSuite
     whenReady(createUpdateSpec()) { case (packageModel, device, updateSpec) =>
       val url = Uri.Empty.withPath(mydeviceUri.path / device.uuid.show / "updates" / updateSpec.request.id.toString)
       val result = OperationResult(id, 1, "some result")
-      val updateReport = UpdateReport(updateSpec.request.id, List(result))
-      val installReport = InstallReport(device.uuid, updateReport)
 
-      Post(url, installReport) ~> service.route ~> check {
+      Post(url, List(result)) ~> service.route ~> check {
         status shouldBe StatusCodes.NoContent
 
         val dbIO = for {
@@ -574,10 +572,8 @@ class DeviceUpdatesResourceSpec extends FunSuite
     val fakeUpdateRequestUuid = UUID.randomUUID()
     val url = Uri.Empty.withPath(mydeviceUri.path / deviceUuid.underlying.get / "updates" / fakeUpdateRequestUuid.toString)
     val result = OperationResult(id, 1, "some result")
-    val updateReport = UpdateReport(fakeUpdateRequestUuid, List(result))
-    val installReport = InstallReport(deviceUuid, updateReport)
 
-    Post(url, installReport) ~> service.route ~> check {
+    Post(url, List(result)) ~> service.route ~> check {
       status shouldBe StatusCodes.NotFound
       responseAs[String] should include("UpdateSpec not found")
     }

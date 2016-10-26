@@ -18,7 +18,7 @@ import java.util.UUID
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.db.{BlockedInstalls, OperationResults, UpdateSpecs}
 import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, ExternalResolverClient}
-import org.genivi.sota.core.rvi.InstallReport
+import org.genivi.sota.core.rvi.{InstallReport, OperationResult, UpdateReport}
 import org.genivi.sota.core.storage.PackageStorage
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -118,8 +118,22 @@ class DeviceUpdatesResource(db: Database,
   }
 
   /**
+    * An ota client POST for the given [[UpdateRequest]] an [[UpdateReport]]
+    * (describing the outcome after installing the package in question).
+    */
+  def reportUpdateResult(device: Uuid, updateId: Uuid): Route = {
+    entity(as[List[OperationResult]]) { results =>
+      val responseF = DeviceUpdates
+        .buildReportInstallResponse(device, UpdateReport(updateId.toJava, results), messageBus)
+      complete(responseF)
+    }
+  }
+
+  /**
     * An ota client POST for the given [[UpdateRequest]] an [[InstallReport]]
     * (describing the outcome after installing the package in question).
+    *
+    * Deprecated by reportUpdateResult for mydeviceRoutes.
     */
   def reportInstall(updateId: Refined[String, Uuid.Valid]): Route = {
     entity(as[InstallReport]) { report =>
@@ -323,7 +337,9 @@ class DeviceUpdatesResource(db: Database,
           }
         } ~
         (post & authDirective(s"ota-core.${device.show}.write")) {
-          (extractRefinedUuid & pathEnd ) { reportInstall }
+          (extractUuid & pathEnd ) { updateId =>
+            reportUpdateResult(device, updateId)
+          }
         }
       } ~
       (put & authDirective(s"ota-core.${device.show}.write")) {
