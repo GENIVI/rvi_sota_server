@@ -228,7 +228,7 @@ class DeviceUpdatesResource(db: Database,
       }
     }
 
-  val route = handleErrors {
+  val routeDeprecated = handleErrors {
     // vehicle_updates is deprecated and will be removed sometime in the future
     (pathPrefix("api" / "v1") & ( pathPrefix("vehicle_updates") | pathPrefix("device_updates"))
                               & extractUuid) { device =>
@@ -285,4 +285,57 @@ class DeviceUpdatesResource(db: Database,
       }
     }
   }
+
+  val apiRoutes = handleErrors {
+    (pathPrefix("api" / "v1" / "device_updates") & extractUuid) { device =>
+      authDeviceNamespace(device) { ns =>
+        get {
+          path("queued") { pendingPackages(device) } ~
+          path("blocked") { getBlockedInstall(device) } ~
+          path("results") { results(device) } ~
+          (extractRefinedUuid & path("results")) { updateId => resultsForUpdate(device, updateId) }
+        } ~
+        put {
+          path("blocked") { setBlockedInstall(device) } ~
+          path("order") { setInstallOrder(device) } ~
+          (extractRefinedUuid & path("cancelupdate")) { updateId => cancelUpdate(device, updateId) }
+        } ~
+        post {
+          pathEnd { queueDeviceUpdate(ns, device) } ~
+          path("sync") { sync(device) }
+        } ~
+        delete {
+          path("blocked") { deleteBlockedInstall(device) }
+        }
+      }
+    }
+  }
+
+  val mydeviceRoutes = handleErrors {
+    (pathPrefix("api" / "v1" / "mydevice") & extractUuid) { device =>
+      pathPrefix("updates") {
+        (get & authDirective(s"ota-core.${device.show}.read")) {
+          pathEnd {
+            logDeviceSeen(device) { pendingPackages(device) }
+          } ~
+          (extractRefinedUuid & path("download")) { updateId =>
+            downloadPackage(device, updateId)
+          }
+        } ~
+        (post & authDirective(s"ota-core.${device.show}.write")) {
+          (extractRefinedUuid & pathEnd ) { reportInstall }
+        }
+      } ~
+      (put & authDirective(s"ota-core.${device.show}.write")) {
+        path("installed") {
+          updateInstalledPackages(device)
+        } ~
+        path("system_info") {
+          updateSystemInfo(device)
+        }
+      }
+    }
+  }
+
+  val route = apiRoutes ~ mydeviceRoutes ~ routeDeprecated
 }
