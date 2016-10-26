@@ -306,23 +306,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/Update'
-    get:
-      description: |
-        Get a list of the updates queued for a DeviceId, and update the last seen time for that DeviceId. This is called by the
-        client. To get a list of updates queued for a DeviceId without updating the last seen time, use /device_updates/{uuid}/queued
-      parameters:
-      - name: uuid
-        in: path
-        description: The device to list
-        required: true
-        type: string
-      responses:
-        200:
-          description: OK
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/pendingPackage'
   /device_updates/{uuid}/queued:
     get:
       description: Get a list of the updates queued for a device.
@@ -377,43 +360,6 @@ paths:
       responses:
         204:
           description: No Content
-  /device_updates/{uuid}/{updateId}/download:
-    get:
-      description: Download a package binary. This is called by the in-vehicle client.
-      parameters:
-      - name: uuid
-        in: path
-        description: The uuid of the vehicle making this call
-        required: true
-        type: string
-      - name: updateId
-        in: path
-        description: The UUID of an update
-        required: true
-        type: string
-      responses:
-        200:
-          description: OK
-          schema:
-            type: file
-  /device_updates/{uuid}/system_info:
-    put:
-      description: Update the system info for a device
-      parameters:
-      - name: uuid
-        in: path
-        description: The uuid of the vehicle making this call
-        required: true
-        type: string
-      - name: system
-        description: The json object representing the system info
-        in: body
-        required: true
-        schema:
-          $ref: '#/definitions/SystemInfo'
-      responses:
-        200:
-          description: OK
   /device_updates/{uuid}/sync:
     post:
       description: todo
@@ -439,50 +385,6 @@ paths:
         description: The UUID of a currently pending update
         required: true
         type: string
-      responses:
-        204:
-          description: No Content
-  /device_updates/{uuid}/{updateId}:
-    post:
-      description: Report on the status of an install. This is used by the client to send the status and/or log files after an install completes.
-      parameters:
-      - name: uuid
-        in: path
-        description: uuid of the device
-        required: true
-        type: string
-      - name: updateId
-        in: path
-        description: The UUID of a currently pending update
-        required: true
-        type: string
-      - name: installReport
-        in: body
-        required: true
-        schema:
-          $ref: '#/definitions/installReport'
-      responses:
-        415:
-          description: Unsupported Media Type todo
-  /device_updates/{uuid}/installed:
-    put:
-      description: |
-        Update the list of installed packages on a vehicle. Note that this does not do any communication
-        with the client or install any packages; it simply updates the database with the information that
-        the package is installed.
-      parameters:
-      - name: uuid
-        in: path
-        required: true
-        type: string
-      - name: packageList
-        in: body
-        description: An array of packageId objects
-        required: true
-        schema:
-          type: array
-          items:
-            $ref: '#/definitions/packageId'
       responses:
         204:
           description: No Content
@@ -543,6 +445,108 @@ paths:
             type: array
             items:
               $ref: '#/definitions/operationResult'
+  /mydevice/{uuid}/updates:
+    get:
+      description: |
+        Get a list of the updates queued for a DeviceId, and update the last seen time for that DeviceId.
+        This is called by the client device.
+      parameters:
+      - name: uuid
+        in: path
+        description: The device to list
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/pendingPackage'
+  /mydevice/{uuid}/updates/{updateId}/download:
+    get:
+      description: Download a package binary. This is called by the client device.
+      parameters:
+      - name: uuid
+        in: path
+        description: The uuid of the vehicle making this call
+        required: true
+        type: string
+      - name: updateId
+        in: path
+        description: The UUID of an update
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: file
+  /mydevice/{uuid}/updates/{updateId}:
+    post:
+      description: Report on the status of an update. This is used by the device client.
+      parameters:
+      - name: uuid
+        in: path
+        description: uuid of the device
+        required: true
+        type: string
+      - name: updateId
+        in: path
+        description: The UUID of a currently pending update
+        required: true
+        type: string
+      - name: operationResults
+        in: body
+        description: An array of operation results
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/operationResult'
+      responses:
+        415:
+          description: Unsupported Media Type todo
+  /mydevice/{uuid}/installed:
+    put:
+      description: |
+        Update the list of installed packages on a device. Note that this does not do any communication
+        with the client or install any packages; it simply updates the database with the information that
+        the package is installed.
+      parameters:
+      - name: uuid
+        in: path
+        required: true
+        type: string
+      - name: packageList
+        in: body
+        description: An array of packageId objects
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/packageId'
+      responses:
+        204:
+          description: No Content
+  /mydevice/{uuid}/system_info:
+    put:
+      description: Update the system info for a device
+      parameters:
+      - name: uuid
+        in: path
+        description: The uuid of the vehicle making this call
+        required: true
+        type: string
+      - name: system
+        description: The json object representing the system info
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/SystemInfo'
+      responses:
+        200:
+          description: OK
   /blacklist:
     get:
       description: Get a list of blacklisted packages
