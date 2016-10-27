@@ -98,6 +98,7 @@ class DevicesResource(namespaceExtractor: Directive1[Namespace],
     pathPrefix("devices") {
       namespaceExtractor { ns =>
         (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
+        (get & pathEnd) { searchDevice(ns) } ~
         extractUuid { uuid =>
           //TODO: PRO-1666, use deviceNamespaceAuthorizer for this block, instead of extractUuid, once support has been
           // added into core
@@ -120,9 +121,6 @@ class DevicesResource(namespaceExtractor: Directive1[Namespace],
         (get & path("groups") & pathEnd) {
           getGroupsForDevice(uuid)
         }
-      } ~
-      (get & pathEnd & parameter('namespace.as[Namespace])) { ns =>
-        searchDevice(ns)
       }
     }
 

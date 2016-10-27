@@ -18,6 +18,7 @@ import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
 import Device._
 import akka.http.scaladsl.marshalling.Marshal
 import cats.syntax.show._
+import org.genivi.sota.http.NamespaceDirectives.nsHeader
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.rest.ErrorRepresentation
 
@@ -125,13 +126,13 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
     val resolvePath = resolveUri
       .withPath(resolveUri.path)
       .withQuery(Query(
-        "namespace" -> namespace.get,
         "package_name" -> packageId.name.get,
         "package_version" -> packageId.version.get
       ))
 
     val httpRequest = HttpRequest(uri = resolvePath)
       .addHeader(`Accept-Encoding`(HttpEncodings.gzip))
+      .addHeader(nsHeader(namespace))
 
     val requestF = Http().singleRequest(httpRequest)
 
@@ -198,15 +199,17 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
 
     val request : HttpRequest =
       Put(packagesUri.withPath(packagesUri.path / packageId.name.get / packageId.version.get ), payload)
+        .addHeader(nsHeader(namespace))
     handlePutResponse( Http().singleRequest( request ) )
   }
 
   override def affectedDevices(namespace: Namespace, packageIds: Set[PackageId]): Future[Map[Uuid, Seq[PackageId]]] = {
-    val uri = vehiclesUri.withPath(packagesUri.path / "affected").withQuery(Query("namespace" -> namespace.get))
+    val uri = vehiclesUri.withPath(packagesUri.path / "affected")
 
     val responseF = for {
       entity <- Marshal(packageIds).to[MessageEntity]
       req = HttpRequest(method = HttpMethods.POST, uri = uri, entity = entity)
+              .addHeader(nsHeader(namespace))
       response <- Http().singleRequest(req)
     } yield response
 

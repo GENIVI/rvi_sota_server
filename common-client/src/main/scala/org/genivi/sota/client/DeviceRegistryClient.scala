@@ -22,6 +22,7 @@ import java.time.Instant
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
 import org.genivi.sota.device_registry.common.Errors
+import org.genivi.sota.http.NamespaceDirectives.nsHeader
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -42,7 +43,8 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri)
   override def searchDevice(ns: Namespace, re: String Refined Regex)
                            (implicit ec: ExecutionContext): Future[Seq[Device]] =
     execHttp[Seq[Device]](HttpRequest(uri = baseUri.withPath(devicesUri.path)
-      .withQuery(Query("regex" -> re.get, "namespace" -> ns.get))))
+      .withQuery(Query("regex" -> re.get)))
+      .withHeaders(nsHeader(ns)))
       .recover { case t =>
         log.error(t, "Could not contact device registry")
         Seq.empty[Device]
@@ -73,7 +75,8 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri)
   override def fetchByDeviceId(ns: Namespace, deviceId: DeviceId)
                               (implicit ec: ExecutionContext): Future[Device] =
     execHttp[Seq[Device]](HttpRequest(uri = baseUri.withPath(devicesUri.path)
-      .withQuery(Query("namespace" -> ns.get, "deviceId" -> deviceId.show))))
+      .withQuery(Query("deviceId" -> deviceId.show)))
+      .withHeaders(nsHeader(ns)))
       .flatMap {
         case d +: _ => FastFuture.successful(d)
         case _ => FastFuture.failed(Errors.MissingDevice)

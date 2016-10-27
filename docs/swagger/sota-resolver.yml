@@ -291,10 +291,6 @@ paths:
     get:
       description: Resolve a package into a list of vehicles it should be installed on.
       parameters:
-      - name: namespace
-        in: query
-        required: true
-        type: string
       - name: package_name
         in: query
         required: true
