@@ -81,7 +81,7 @@ class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
     entity(as[InstalledSoftware]) { installedSoftware =>
       val responseF = {
         for {
-          deviceData <- deviceRegistry.fetchDevice(device)
+          deviceData <- deviceRegistry.fetchMyDevice(device)
           _ <- updateSoftwareOnDb(deviceData.namespace, installedSoftware)
         } yield ()
       }

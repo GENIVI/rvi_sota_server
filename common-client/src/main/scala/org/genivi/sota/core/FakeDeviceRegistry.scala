@@ -68,6 +68,14 @@ class FakeDeviceRegistry(namespace: Namespace)
     }
   }
 
+  override def fetchMyDevice(uuid: Uuid)
+                            (implicit ec: ExecutionContext): Future[Device] = {
+    devices.asScala.get(uuid) match {
+      case Some(d) => FastFuture.successful(d)
+      case None => FastFuture.failed(MissingDevice)
+    }
+  }
+
   override def fetchDevicesInGroup(uuid: Uuid)
                                   (implicit ec: ExecutionContext): Future[Seq[Uuid]] = {
     FastFuture.successful(Seq())

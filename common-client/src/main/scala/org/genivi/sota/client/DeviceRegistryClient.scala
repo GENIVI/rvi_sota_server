@@ -27,7 +27,7 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport
 import scala.concurrent.{ExecutionContext, Future}
 
 
-class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri)
+class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri, mydeviceUri: Uri)
                           (implicit system: ActorSystem, mat: ActorMaterializer)
     extends DeviceRegistry {
 
@@ -62,6 +62,10 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri)
   override def fetchDevice(uuid: Uuid)
                           (implicit ec: ExecutionContext): Future[Device] =
     execHttp[Device](HttpRequest(uri = baseUri.withPath(devicesUri.path / uuid.show)))
+
+  override def fetchMyDevice(uuid: Uuid)
+                          (implicit ec: ExecutionContext): Future[Device] =
+    execHttp[Device](HttpRequest(uri = baseUri.withPath(mydeviceUri.path / uuid.show)))
 
   override def fetchDevicesInGroup(uuid: Uuid)
                                   (implicit ec: ExecutionContext): Future[Seq[Uuid]] =
@@ -98,11 +102,11 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri)
 
   override def updateLastSeen(uuid: Uuid, seenAt: Instant = Instant.now)
                              (implicit ec: ExecutionContext): Future[Unit] =
-    execHttp[Unit](HttpRequest(method = POST, uri = baseUri.withPath(devicesUri.path / uuid.show / "ping")))
+    execHttp[Unit](HttpRequest(method = POST, uri = baseUri.withPath(mydeviceUri.path / uuid.show / "ping")))
 
   override def updateSystemInfo(uuid: Uuid, json: Json)
                                (implicit ec: ExecutionContext): Future[Unit] =
-    execHttp[Unit](HttpRequest(method = PUT, uri = baseUri.withPath(devicesUri.path / uuid.show / "system_info"),
+    execHttp[Unit](HttpRequest(method = PUT, uri = baseUri.withPath(mydeviceUri.path / uuid.show / "system_info"),
       entity = HttpEntity(ContentTypes.`application/json`, json.noSpaces)))
 
   override def getSystemInfo(uuid: Uuid)
