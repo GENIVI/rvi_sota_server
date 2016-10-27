@@ -91,7 +91,7 @@ class PackageDirectives(namespaceExtractor: Directive1[Namespace], deviceRegistr
    */
   def route: Route = ErrorHandler.handleErrors {
     pathPrefix("packages") {
-      (path("affected") & parameter("namespace".as[Namespace])) { ns =>
+      (path("affected") & namespaceExtractor) { ns =>
         post { findAffected(ns) }
       } ~
       (get & path("filter")) {
