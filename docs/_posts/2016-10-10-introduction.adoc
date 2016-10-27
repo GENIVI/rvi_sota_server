@@ -8,7 +8,7 @@ order: 1
 
 == Developing a SOTA client
 
-A SOTA server isn't very useful unless it has clients to talk to. We provide a link:https://github.com/advancedtelematic/rvi_sota_client[reference implementation of a client], but you're also free to implement your own client. If you want to build an RVI-based client, the reference documentation you're looking for is over link:../dev/client-implementation.html[here], or if you're going to communicate with Core's API endpoints directly you should look at the link:../dev/api.html[Core API Documentation].
+A SOTA server isn't very useful unless it has clients to talk to. We provide a link:https://github.com/advancedtelematic/rvi_sota_client[reference implementation of a client], but you're also free to implement your own client. If you want to develop an RVI-based client, the reference documentation you're looking for is over link:../dev/client-implementation.html[here], or if you're going to communicate with Core's API endpoints directly you should look at the link:../dev/api.html[Core API Documentation].
 
 == Understanding the reference client
 
