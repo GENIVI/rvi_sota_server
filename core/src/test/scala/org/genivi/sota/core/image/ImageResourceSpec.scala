@@ -7,6 +7,7 @@ package org.genivi.sota.core.image
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.core.db.image.DataType.{Commit, Image}
 import org.genivi.sota.core.db.image.ImageRepositorySupport
@@ -16,6 +17,7 @@ import org.genivi.sota.http.NamespaceDirectives.defaultNamespaceExtractor
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
+import org.genivi.sota.data.GeneratorOps.GenSample
 
 class ImageResourceSpec extends FunSuite
   with ScalatestRouteTest
@@ -31,9 +33,9 @@ class ImageResourceSpec extends FunSuite
   val route = new ImageResource(defaultNamespaceExtractor).route
 
   test("POST Creates a new image") {
-    val commit: Commit = commitGenerator.sample.get
-    val refName = refNameGenerator.sample.get
-    val req = ImageRequest(commit, refName, "desc")
+    val commit: Commit = commitGenerator.generate
+    val refName = refNameGenerator.generate
+    val req = ImageRequest(commit, refName, "desc", Refined.unsafeApply("http://ats.com"))
 
     Post("/image", req) ~> route ~> check {
       status shouldBe StatusCodes.OK
@@ -49,13 +51,13 @@ class ImageResourceSpec extends FunSuite
   }
 
   test("GET Retrieves a namespace image") {
-    val img = imageGenerator.sample.get
+    val imgG = imageGenerator.generate
 
-    imageRepository.persist(img).futureValue
+    imageRepository.persist(imgG.namespace, imgG.commit, imgG.ref, imgG.description, imgG.pullUri).futureValue
 
     Get("/image") ~> route ~> check {
       status shouldBe StatusCodes.OK
-      responseAs[Seq[Image]] should contain(img)
+      responseAs[Seq[Image]].map(_.commit) should contain(imgG.commit)
     }
   }
 }

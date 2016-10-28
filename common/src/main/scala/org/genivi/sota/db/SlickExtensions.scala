@@ -39,7 +39,7 @@ object SlickExtensions {
     */
   implicit val javaInstantMapping = {
     MappedColumnType.base[Instant, Timestamp](
-      dt => new Timestamp(dt.toEpochMilli),
+      dt => Timestamp.from(dt),
       ts => ts.toInstant)
   }
 

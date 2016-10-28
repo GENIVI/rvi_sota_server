@@ -24,8 +24,8 @@ object Errors {
   case class EntityAlreadyExists(name: Class[_]) extends Throwable with NoStackTrace
 
   case class RawError(code: ErrorCode,
-                                responseCode: StatusCode,
-                                desc: String) extends Exception(desc) with NoStackTrace
+                      responseCode: StatusCode,
+                      desc: String) extends Exception(desc) with NoStackTrace
 
   val TooManyElements = RawError(ErrorCodes.TooManyElements, StatusCodes.InternalServerError, "Too many elements found")
 
