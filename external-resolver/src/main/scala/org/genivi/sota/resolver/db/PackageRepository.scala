@@ -81,8 +81,8 @@ object PackageRepository {
  *
    * @return     A DBIO[Seq[Package]] for the packages in the table
    */
-  def list: DBIO[Seq[Package]] =
-    packages.result
+  def list(namespace: Namespace): DBIO[Seq[Package]] =
+    packages.filter(_.namespace === namespace).result
 
   /**
    * Checks to see if a package exists in the database

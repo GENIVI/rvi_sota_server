@@ -81,8 +81,8 @@ object ComponentRepository {
       .headOption
       .failIfNone(Errors.MissingComponent)
 
-  def list: DBIO[Seq[Component]] =
-    components.result
+  def list(namespace: Namespace): DBIO[Seq[Component]] =
+    components.filter(_.namespace === namespace).result
 
   def searchByRegex(namespace: Namespace, re: Refined[String, Regex]): DBIO[Seq[Component]] =
     components.filter(i => i.namespace === namespace && regex(i.partNumber, re.get)).result

@@ -50,10 +50,12 @@ object PackageFilterRepository {
     *
     * @return     A DBIO[Seq[PackageFilter]] for the package filters in the table
    */
-  def list: DBIO[Seq[(PackageFilter, PackageId)]] =
-  packageFilters.join(PackageRepository.packages).on(_.packageUuid === _.uuid)
-    .map { case (filter, pkg) => (filter, LiftedPackageId(pkg.name, pkg.version)) }
-    .result
+  def list(namespace: Namespace): DBIO[Seq[(PackageFilter, PackageId)]] =
+    packageFilters.filter(_.namespace === namespace)
+      .join(PackageRepository.packages.filter(_.namespace === namespace))
+      .on(_.packageUuid === _.uuid)
+      .map { case (filter, pkg) => (filter, LiftedPackageId(pkg.name, pkg.version)) }
+      .result
 
   def addPackageFilter(namespace: Namespace, packageId: PackageId, name: Filter.Name)
                       (implicit db: Database, ec: ExecutionContext): DBIO[PackageFilter] = {
