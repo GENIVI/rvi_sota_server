@@ -53,12 +53,17 @@ credentials_file = "/opt/sota/credentials.toml" <3>
 
 === [core]
 
-This is simply the URL of the core SOTA update server.
+This section contains configuration for communicating with the Core server.
 
 ----
 [core]
-server = "https://sota-core.gw.prod01.advancedtelematic.com"
+server = "https://sota-core.gw.prod01.advancedtelematic.com" <1>
+polling = true <2>
+polling_sec = 10 <3>
 ----
+<1> The URL of the Core server.
+<2> Boolean indicating whether the Core server should be polled for new updates.
+<3> Set the polling frequency in seconds. This will have no effect if polling is off.
 
 === [device]
 
@@ -67,20 +72,16 @@ This section contains device-specific configuration.
 ----
 [device]
 uuid = "123e4567-e89b-12d3-a456-426655440000" <1>
-vin = "" <2>
-system_info = "system_info.sh" <3>
-polling_interval = 10 <4>
-packages_dir = "/tmp/" <5>
-package_manager = "deb" <6>
-certificates_path = "/tmp/sota_certificates" <7>
+system_info = "system_info.sh" <2>
+packages_dir = "/tmp/" <3>
+package_manager = "off" <4>
+certificates_path = "/tmp/sota_certificates" <5>
 ----
 <1> The UUID of the device. This is assigned by ATS Garage upon device creation, and should not be changed.
-<2> The device's VIN, if it has one. Deprecated feature; this value is not used by the current version of ATS Garage.
-<3> The script to use to gather system information.
-<4> The frequency, in seconds, with which the SOTA client should poll the server for updates.
-<5> The location SOTA Client should use for temporary package storage until they are processed by the software loading manager.
-<6> The software loading manager backend to use. Possible values are `deb`, `rpm`, and `off`. If an external software loading manager is in use, this should be set to `off`.
-<7> The certificate authorities SOTA Client trusts. Defaults are taken from Mozilla Servo.
+<2> The script to use to gather system information.
+<3> The location SOTA Client should use for temporary package storage until they are processed by the software loading manager.
+<4> The software loading manager backend to use. Possible values are `deb`, `rpm`, and `off`. If an external software loading manager is in use, this should be set to `off`.
+<5> The certificate authorities SOTA Client trusts. Defaults are taken from Mozilla Servo.
 
 === [network]
 
@@ -88,7 +89,7 @@ This section contains network configuration information. Some values may be igno
 
 ----
 [network]
-http_server = "127.0.0.1:8080" <1>
+http_server = "127.0.0.1:8888" <1>
 socket_commands_path = "/tmp/sota-commands.socket" <2>
 socket_events_path = "/tmp/sota-events.socket" <3>
 websocket_server = "127.0.0.1:9081" <4>
