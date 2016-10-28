@@ -2,10 +2,10 @@ swagger: '2.0'
 info:
   version: ''
   title: SOTA resolver
-  description: 'https://github.com/advancedtelematic/rvi_sota_server'
+  description: 'https://github.com/genivi/rvi_sota_server'
   license:
     name: Mozilla Public License
-    url: 'https://github.com/advancedtelematic/rvi_sota_server/blob/master/LICENSE'
+    url: 'https://github.com/genivi/rvi_sota_server/blob/master/LICENSE'
 host: 'localhost:8081'
 basePath: /api/v1/resolver
 securityDefinitions: {}
@@ -491,7 +491,7 @@ definitions:
         description: The filter's name.
       expression:
         type: string
-        description: The filter expression. See http://advancedtelematic.github.io/rvi_sota_server/doc/admin-gui-user-guide.html#filter-syntax for expression syntax.
+        description: The filter expression. See http://genivi.github.io/rvi_sota_server/doc/admin-gui-user-guide.html#filter-syntax for expression syntax.
   PackageFilter:
     type: object
     description: An association between a package and a filter.

@@ -7,7 +7,7 @@ order: 3
 ---
 :icons: font
 
-This is the user manual for the SOTA Admin Web GUI. This is a simple web front-end to the http://advancedtelematic.github.io/rvi_sota_server/dev/api.html[Core, Resolver, and Device Registry APIs]. The APIs should be considered the canonical interface.
+This is the user manual for the SOTA Admin Web GUI. This is a simple web front-end to the http://genivi.github.io/rvi_sota_server/dev/api.html[Core, Resolver, and Device Registry APIs]. The APIs should be considered the canonical interface.
 
 == Signing in
 

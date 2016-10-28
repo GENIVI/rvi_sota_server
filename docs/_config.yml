@@ -15,7 +15,7 @@ google_analytics_id: 'UA-69301419-1'
 navigation: 2
 
 # URL to source code, used in _includes/footer.html
-codeurl: 'https://github.com/advancedtelematic/rvi_sota_server'
+codeurl: 'https://github.com/genivi/rvi_sota_server'
 
 # Default categories (in order) to appear in the navigation
 sections: [

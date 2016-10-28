@@ -34,7 +34,7 @@ Systemd is not a requirement, of course; you can use whatever startup system you
 
 == SOTA Client config file guide
 
-The config file for the SOTA client is in TOML format, and can be invoked at startup with `sota_client  --config /path/to/config_file.toml`. Example config files for use with https://github.com/advancedtelematic/rvi_sota_client/raw/master/tests/genivi.sota.toml[RVI] or https://github.com/advancedtelematic/rvi_sota_client/raw/master/tests/sota.toml[HTTP] transport are available in the https://github.com/advancedtelematic/rvi_sota_client/[rvi_sota_client] repo. If you're using a commercial service like https://app.atsgarage.com[ATS Garage], you've already been provided with a config file; you can use that as a basis for any changes you need to make.
+The config file for the SOTA client is in TOML format, and can be invoked at startup with `sota_client  --config /path/to/config_file.toml`. Example config files for use with https://github.com/genivi/rvi_sota_client/raw/master/tests/genivi.sota.toml[RVI] or https://github.com/genivi/rvi_sota_client/raw/master/tests/sota.toml[HTTP] transport are available in the https://github.com/genivi/rvi_sota_client/[rvi_sota_client] repo. If you're using a commercial service like https://app.atsgarage.com[ATS Garage], you've already been provided with a config file; you can use that as a basis for any changes you need to make.
 
 === [auth]
 
@@ -78,7 +78,7 @@ package_manager = "off" <4>
 certificates_path = "/tmp/sota_certificates" <5>
 ----
 <1> The UUID of the device. This is usually assigned by the Core server on device creation. With https://app.atsgarage.com[ATS Garage], this will be provided in the config file available for download.
-<2> The script to use to gather system information. By default, this uses link:https://github.com/advancedtelematic/rvi_sota_client/blob/master/run/system_info.sh[system_info.sh].
+<2> The script to use to gather system information. By default, this uses link:https://github.com/genivi/rvi_sota_client/blob/master/run/system_info.sh[system_info.sh].
 <3> The location SOTA Client should use for temporary package storage until they are processed by the software loading manager.
 <4> The software loading manager backend to use. Possible values are `deb`, `rpm`, and `off`. If an external software loading manager is in use, this should be set to `off`.
 <5> The certificate authorities SOTA Client trusts. Defaults are taken from Mozilla Servo.
