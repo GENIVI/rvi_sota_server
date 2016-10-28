@@ -48,7 +48,7 @@ class FakeDeviceRegistry(namespace: Namespace)
   }
 
   // TODO: handle conflicts on deviceId
-  override def createDevice(d: DeviceT)
+  def createDevice(d: DeviceT)
                            (implicit ec: ExecutionContext): Future[Uuid] = {
     val uuid: Uuid = Uuid.generate()
     devices.put(uuid,
@@ -60,13 +60,8 @@ class FakeDeviceRegistry(namespace: Namespace)
     FastFuture.successful(uuid)
   }
 
-  override def fetchDevice(uuid: Uuid)
-                          (implicit ec: ExecutionContext): Future[Device] = {
-    devices.asScala.get(uuid) match {
-      case Some(d) => FastFuture.successful(d)
-      case None => FastFuture.failed(MissingDevice)
-    }
-  }
+  override def fetchDevice(ns: Namespace, uuid: Uuid)
+                          (implicit ec: ExecutionContext): Future[Device] = fetchMyDevice(uuid)
 
   override def fetchMyDevice(uuid: Uuid)
                             (implicit ec: ExecutionContext): Future[Device] = {
@@ -76,7 +71,7 @@ class FakeDeviceRegistry(namespace: Namespace)
     }
   }
 
-  override def fetchDevicesInGroup(uuid: Uuid)
+  override def fetchDevicesInGroup(ns: Namespace, uuid: Uuid)
                                   (implicit ec: ExecutionContext): Future[Seq[Uuid]] = {
     FastFuture.successful(Seq())
   }
@@ -94,27 +89,6 @@ class FakeDeviceRegistry(namespace: Namespace)
       case Some(d) => FastFuture.successful(d)
       case None => FastFuture.failed(MissingDevice)
     }
-
-  // TODO: handle conflicts on deviceId
-  override def updateDevice
-  (uuid: Uuid, device: DeviceT)
-  (implicit ec: ExecutionContext): Future[Unit] = {
-    devices.asScala.get(uuid) match {
-      case Some(d) =>
-        d.copy(deviceId = device.deviceId, deviceName = device.deviceName, deviceType = device.deviceType)
-      case None =>
-    }
-
-    Future.successful(())
-  }
-
-  override def deleteDevice
-  (uuid: Uuid)
-  (implicit ec: ExecutionContext): Future[Unit] = {
-    devices.remove(uuid)
-    systemInfo.remove(uuid)
-    FastFuture.successful(())
-  }
 
   override def updateLastSeen(uuid: Uuid, seenAt: Instant = Instant.now)
   (implicit ec: ExecutionContext): Future[Unit] = {
@@ -137,7 +111,7 @@ class FakeDeviceRegistry(namespace: Namespace)
     }
   }
 
-  override def getSystemInfo
+  def getSystemInfo
   (uuid: Uuid)
   (implicit ec: ExecutionContext): Future[Json] = {
     systemInfo.asScala.get(uuid) match {

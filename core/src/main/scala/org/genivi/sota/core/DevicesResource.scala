@@ -111,13 +111,7 @@ class DevicesResource(db: Database, client: ConnectivityClient,
 
   def getDeviceWithStatus(ns: Namespace, uuid: Uuid): Route = {
     parameters(('status.?(false))) { (includeStatus: Boolean) =>
-      val devices = deviceRegistry.fetchDevice(uuid).flatMap { device =>
-        if (device.namespace == ns) {
-          Future.successful(Seq(device))
-        } else {
-          Future.failed(MissingEntity(classOf[DeviceSearchResult]))
-        }
-      }.recoverWith {
+      val devices = deviceRegistry.fetchDevice(ns, uuid).map(Seq(_)).recoverWith {
         case e => Future.failed(MissingEntity(classOf[DeviceSearchResult]))
       }
       val devicesWithStatus = if (includeStatus) {

@@ -49,8 +49,7 @@ class SystemInfoResource(authDirective: AuthScope => Directive0, deviceNamespace
 
   def api: Route =
     pathPrefix("devices") {
-      extractUuid { uuid =>
-        //TODO: PRO-1666, use deviceNamespaceAuthorizer once support has been added to core
+      deviceNamespaceAuthorizer { uuid =>
         (get & path("system_info")) {
           fetchSystemInfo(uuid)
         } ~

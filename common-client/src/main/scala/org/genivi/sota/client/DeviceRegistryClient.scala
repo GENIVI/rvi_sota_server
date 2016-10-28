@@ -50,26 +50,19 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri, 
         Seq.empty[Device]
       }
 
-  override def createDevice(device: DeviceT)
-                           (implicit ec: ExecutionContext): Future[Uuid] = {
-    for {
-      entity <- Marshal(device).to[MessageEntity]
-      req = HttpRequest(method = POST, uri = baseUri.withPath(devicesUri.path), entity = entity)
-      response <- execHttp[Uuid](req)
-    } yield response
-  }
-
-  override def fetchDevice(uuid: Uuid)
+  override def fetchDevice(ns: Namespace, uuid: Uuid)
                           (implicit ec: ExecutionContext): Future[Device] =
-    execHttp[Device](HttpRequest(uri = baseUri.withPath(devicesUri.path / uuid.show)))
+    execHttp[Device](HttpRequest(uri = baseUri.withPath(devicesUri.path / uuid.show))
+                       .withHeaders(nsHeader(ns)))
 
   override def fetchMyDevice(uuid: Uuid)
-                          (implicit ec: ExecutionContext): Future[Device] =
+                            (implicit ec: ExecutionContext): Future[Device] =
     execHttp[Device](HttpRequest(uri = baseUri.withPath(mydeviceUri.path / uuid.show)))
 
-  override def fetchDevicesInGroup(uuid: Uuid)
+  override def fetchDevicesInGroup(ns: Namespace, uuid: Uuid)
                                   (implicit ec: ExecutionContext): Future[Seq[Uuid]] =
-    execHttp[Seq[Uuid]](HttpRequest(uri = baseUri.withPath(deviceGroupsUri.path / uuid.show / "devices")))
+    execHttp[Seq[Uuid]](HttpRequest(uri = baseUri.withPath(deviceGroupsUri.path / uuid.show / "devices"))
+                          .withHeaders(nsHeader(ns)))
 
 
   override def fetchGroup(uuid: Uuid)
@@ -86,20 +79,6 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri, 
         case _ => FastFuture.failed(Errors.MissingDevice)
       }
 
-  override def updateDevice(uuid: Uuid, device: DeviceT)
-                           (implicit ec: ExecutionContext): Future[Unit] =
-    for {
-      entity <- Marshal(device).to[MessageEntity]
-      req = HttpRequest(method = PUT, uri = baseUri.withPath(devicesUri.path / uuid.show), entity = entity)
-      response <- execHttp[Unit](req)
-    } yield response
-
-  override def deleteDevice(uuid: Uuid)
-                  (implicit ec: ExecutionContext): Future[Unit] =
-    execHttp[Unit](
-      HttpRequest(method = DELETE, uri = baseUri.withPath(devicesUri.path / uuid.show))
-    )
-
   override def updateLastSeen(uuid: Uuid, seenAt: Instant = Instant.now)
                              (implicit ec: ExecutionContext): Future[Unit] =
     execHttp[Unit](HttpRequest(method = POST, uri = baseUri.withPath(mydeviceUri.path / uuid.show / "ping")))
@@ -108,10 +87,6 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri, 
                                (implicit ec: ExecutionContext): Future[Unit] =
     execHttp[Unit](HttpRequest(method = PUT, uri = baseUri.withPath(mydeviceUri.path / uuid.show / "system_info"),
       entity = HttpEntity(ContentTypes.`application/json`, json.noSpaces)))
-
-  override def getSystemInfo(uuid: Uuid)
-                            (implicit ec: ExecutionContext): Future[Json] =
-    execHttp[Json](HttpRequest( method = GET , uri = baseUri.withPath(devicesUri.path / uuid.show / "system_info")))
 
   private def execHttp[T](httpRequest: HttpRequest)
                          (implicit unmarshaller: Unmarshaller[ResponseEntity, T],

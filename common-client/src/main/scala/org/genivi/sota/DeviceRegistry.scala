@@ -25,12 +25,8 @@ trait DeviceRegistry {
   (implicit ec: ExecutionContext): Future[Seq[Device]] =
     searchDevice(ns, Refined.unsafeApply(".*"))
 
-  def createDevice
-    (device: DeviceT)
-    (implicit ec: ExecutionContext): Future[Uuid]
-
   def fetchDevice
-    (uuid: Uuid)
+    (namespace: Namespace, uuid: Uuid)
     (implicit ec: ExecutionContext): Future[Device]
 
   def fetchMyDevice
@@ -38,7 +34,7 @@ trait DeviceRegistry {
     (implicit ec: ExecutionContext): Future[Device]
 
   def fetchDevicesInGroup
-    (uuid: Uuid)
+    (namespace: Namespace, uuid: Uuid)
     (implicit ec: ExecutionContext): Future[Seq[Uuid]]
 
   def fetchGroup
@@ -49,14 +45,6 @@ trait DeviceRegistry {
     (ns: Namespace, deviceId: DeviceId)
     (implicit ec: ExecutionContext): Future[Device]
 
-  def updateDevice
-    (uuid: Uuid, device: DeviceT)
-    (implicit ec: ExecutionContext): Future[Unit]
-
-  def deleteDevice
-    (uuid: Uuid)
-    (implicit ec: ExecutionContext): Future[Unit]
-
   def updateLastSeen
     (uuid: Uuid, seenAt: Instant = Instant.now)
     (implicit ec: ExecutionContext): Future[Unit]
@@ -64,8 +52,4 @@ trait DeviceRegistry {
   def updateSystemInfo
     (uuid: Uuid, json: Json)
     (implicit ec: ExecutionContext): Future[Unit]
-
-  def getSystemInfo
-    (uuid: Uuid)
-    (implicit ec: ExecutionContext): Future[Json]
 }

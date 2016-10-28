@@ -100,16 +100,14 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace], deviceNamespaceA
           listGroups(ns)
         }
       } ~
-      (get & extractUuid & path("devices") ) { groupId =>
-        //TODO: PRO-1666, move this back into the extractGroupId block once core supports namespaces
+      (get & extractGroupId & path("devices") ) { groupId =>
         getDevicesInGroup(groupId)
       } ~
-      extractUuid { groupId =>
-        //TODO: PRO-1666, use extractGroupId/deviceNamespaceAuthorizer once support has been added to core
-        (post & pathPrefix("devices") & extractUuid) { deviceId =>
+      extractGroupId { groupId =>
+        (post & pathPrefix("devices") & deviceNamespaceAuthorizer) { deviceId =>
           addDeviceToGroup(groupId, deviceId)
         } ~
-        (delete & pathPrefix("devices") & extractUuid) { deviceId =>
+        (delete & pathPrefix("devices") & deviceNamespaceAuthorizer) { deviceId =>
           removeDeviceFromGroup(groupId, deviceId)
         } ~
         (put & path("rename") & parameter('groupName.as[Name])) { groupName =>
