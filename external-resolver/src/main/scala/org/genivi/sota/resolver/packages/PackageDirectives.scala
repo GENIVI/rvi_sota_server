@@ -101,10 +101,10 @@ class PackageDirectives(namespaceExtractor: Directive1[Namespace], deviceRegistr
           (get & namespaceExtractor & pathEnd) { ns =>
             getPackage(ns, id)
           } ~
-            (put & pathEnd) {
-              addPackage(id)
-            } ~
-            (namespaceExtractor & pathPrefix("filter")) { ns => packageFilterApi(ns, id) }
+          (put & pathEnd) {
+            addPackage(id)
+          } ~
+          (namespaceExtractor & pathPrefix("filter")) { ns => packageFilterApi(ns, id) }
         }
     }
   }

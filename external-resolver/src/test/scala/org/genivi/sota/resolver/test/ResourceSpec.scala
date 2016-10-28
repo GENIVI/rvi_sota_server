@@ -6,7 +6,7 @@ package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
+import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.genivi.sota.core.{DatabaseSpec, FakeDeviceRegistry}
 import org.genivi.sota.data.Device.DeviceName
 import org.genivi.sota.data.{Device, Namespaces, Uuid}
@@ -39,8 +39,9 @@ trait ResourceSpec extends
   import akka.http.scaladsl.server.Directives._
 
   // Route
-  lazy implicit val route: Route = new Routing(NamespaceDirectives.defaultNamespaceExtractor,
-    deviceRegistry).route ~ new FakeDeviceRegistryRoutes(deviceRegistry).route
+  lazy implicit val route: Route =
+    new Routing(NamespaceDirectives.defaultNamespaceExtractor, deviceRegistry).route ~
+    new FakeDeviceRegistryRoutes(deviceRegistry).route
 }
 
 /**

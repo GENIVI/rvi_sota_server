@@ -4,9 +4,6 @@
  */
 package org.genivi.sota.resolver
 
-import org.genivi.sota.http.{HealthResource, NamespaceDirectives, TraceId}
-
-import scala.concurrent.ExecutionContext
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.Uri
@@ -17,19 +14,21 @@ import org.genivi.sota.client.DeviceRegistryClient
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.db.BootMigrations
+import org.genivi.sota.http.LogDirectives._
+import org.genivi.sota.http.{HealthResource, NamespaceDirectives, TraceId}
+import org.genivi.sota.messaging.daemon.MessageBusListenerActor.Subscribe
+import org.genivi.sota.resolver.components.ComponentDirectives
+import org.genivi.sota.resolver.daemon.PackageCreatedListener
+import org.genivi.sota.resolver.devices.DeviceDirectives
 import org.genivi.sota.resolver.filters.FilterDirectives
 import org.genivi.sota.resolver.packages.{PackageDirectives, PackageFiltersResource}
 import org.genivi.sota.resolver.resolve.ResolveDirectives
-import org.genivi.sota.resolver.devices.DeviceDirectives
-import org.genivi.sota.resolver.components.ComponentDirectives
 import org.genivi.sota.rest.SotaRejectionHandler.rejectionHandler
 import org.slf4j.LoggerFactory
-
-import scala.util.Try
-import org.genivi.sota.http.LogDirectives._
-import org.genivi.sota.resolver.daemon.PackageCreatedListener
-import org.genivi.sota.messaging.daemon.MessageBusListenerActor.Subscribe
 import slick.driver.MySQLDriver.api._
+
+import scala.concurrent.ExecutionContext
+import scala.util.Try
 
 
 /**
@@ -45,11 +44,11 @@ class Routing(namespaceDirective: Directive1[Namespace], deviceRegistry: DeviceR
    val route: Route = pathPrefix("api" / "v1" / "resolver") {
      handleRejections(rejectionHandler) {
        new DeviceDirectives(namespaceDirective, deviceRegistry).route ~
-         new PackageDirectives(namespaceDirective, deviceRegistry).route ~
-         new FilterDirectives(namespaceDirective).route ~
-         new ResolveDirectives(namespaceDirective, deviceRegistry).route ~
-         new ComponentDirectives(namespaceDirective).route ~
-         new PackageFiltersResource(namespaceDirective, deviceRegistry).routes
+       new PackageDirectives(namespaceDirective, deviceRegistry).route ~
+       new FilterDirectives(namespaceDirective).route ~
+       new ResolveDirectives(namespaceDirective, deviceRegistry).route ~
+       new ComponentDirectives(namespaceDirective).route ~
+       new PackageFiltersResource(namespaceDirective, deviceRegistry).routes
      }
    }
 }
