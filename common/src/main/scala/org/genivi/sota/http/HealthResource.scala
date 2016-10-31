@@ -7,13 +7,18 @@ package org.genivi.sota.http
 import akka.http.scaladsl.server.Directives
 import slick.driver.MySQLDriver.api._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.syntax._
 
 class HealthResource(db: Database, versionRepr: Map[String, Any] = Map.empty)
                     (implicit val ec: ExecutionContext) {
   import Directives._
+
+  private def dbVersion(): Future[String] = {
+    val query = sql"SELECT VERSION()".as[String].head
+    db.run(query)
+  }
 
   val route =
     (get & pathPrefix("health")) {
@@ -23,7 +28,11 @@ class HealthResource(db: Database, versionRepr: Map[String, Any] = Map.empty)
         complete(f)
       } ~
       path("version") {
-        complete(versionRepr.mapValues(_.toString).asJson)
+        val f = dbVersion().map { v =>
+          (versionRepr.mapValues(_.toString) + ("dbVersion" -> v)).asJson
+        }
+
+        complete(f)
       }
     }
 }
