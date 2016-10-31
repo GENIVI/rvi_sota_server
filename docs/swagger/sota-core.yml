@@ -2,10 +2,10 @@ swagger: '2.0'
 info:
   version: ''
   title: SOTA Core
-  description: 'https://github.com/advancedtelematic/rvi_sota_server'
+  description: 'https://github.com/genivi/rvi_sota_server'
   license:
     name: Mozilla Public License
-    url: 'https://github.com/advancedtelematic/rvi_sota_server/blob/master/LICENSE'
+    url: 'https://github.com/genivi/rvi_sota_server/blob/master/LICENSE'
 host: 'localhost:8080'
 basePath: /api/v1
 securityDefinitions: {}
