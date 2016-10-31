@@ -60,9 +60,10 @@ object CampaignLauncher {
     }
 
     for {
-      camp       <- db.run(Campaigns.setAsLaunch(id))
+      camp <- db.run(Campaigns.fetch(id))
       updateRefs <- camp.groups.toList.traverse(campGrp =>
         launchGroup(camp.meta.namespace, camp.packageId.get, campGrp))
+      _ <- db.run(Campaigns.setAsLaunch(id))
     } yield updateRefs
   }
 }
