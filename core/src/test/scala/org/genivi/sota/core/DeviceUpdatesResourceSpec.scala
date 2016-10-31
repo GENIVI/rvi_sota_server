@@ -156,7 +156,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
       status shouldBe StatusCodes.OK
       responseAs[List[UUID]] should be(empty)
 
-      val device = fakeDeviceRegistry.fetchDevice(deviceUuid).futureValue
+      val device = fakeDeviceRegistry.fetchMyDevice(deviceUuid).futureValue
       device.lastSeen shouldBe defined
       device.lastSeen.get.isAfter(now) shouldBe true
     }
@@ -540,7 +540,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
       status shouldBe StatusCodes.OK
       responseAs[List[UUID]] should be(empty)
 
-      val device = fakeDeviceRegistry.fetchDevice(deviceUuid).futureValue
+      val device = fakeDeviceRegistry.fetchMyDevice(deviceUuid).futureValue
       device.lastSeen shouldBe defined
       device.lastSeen.get.isAfter(now) shouldBe true
     }

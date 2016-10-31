@@ -236,14 +236,10 @@ class DeviceUpdatesResource(db: Database,
   def authDeviceNamespace(deviceId: Uuid) : Directive1[Namespace] =
     authNamespace flatMap { ns =>
       import scala.util.{Success, Failure}
-      val f = deviceRegistry.fetchDevice(deviceId)
+      val f = deviceRegistry.fetchDevice(ns, deviceId)
       onComplete(f) flatMap {
         case Success(device) =>
-          if (device.namespace == ns) {
             provide(ns)
-          } else {
-            reject(AuthorizationFailedRejection)
-          }
         case Failure(t) => reject(failNamespaceRejection("Cannot validate namespace"))
       }
     }

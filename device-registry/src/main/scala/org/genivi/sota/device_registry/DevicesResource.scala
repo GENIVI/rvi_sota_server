@@ -101,9 +101,7 @@ class DevicesResource(namespaceExtractor: Directive1[Namespace],
       namespaceExtractor { ns =>
         (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
         (get & pathEnd) { searchDevice(ns) } ~
-        extractUuid { uuid =>
-          //TODO: PRO-1666, use deviceNamespaceAuthorizer for this block, instead of extractUuid, once support has been
-          // added into core
+        deviceNamespaceAuthorizer { uuid =>
           (put & entity(as[DeviceT]) & pathEnd) { device =>
             updateDevice(ns, uuid, device)
           } ~
@@ -112,8 +110,7 @@ class DevicesResource(namespaceExtractor: Directive1[Namespace],
           }
         }
       } ~
-      extractUuid { uuid =>
-        //TODO: PRO-1666, use deviceNamespaceAuthorizer once support has been added into core
+      deviceNamespaceAuthorizer { uuid =>
         (post & path("ping")) {
           updateLastSeen(uuid)
         } ~
