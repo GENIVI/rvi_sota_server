@@ -109,6 +109,7 @@ class Settings(val config: Config) {
   val deviceRegistryUri = Uri(config.getString("device_registry.baseUri"))
   val deviceRegistryApi = Uri(config.getString("device_registry.devicesUri"))
   val deviceRegistryGroupApi = Uri(config.getString("device_registry.deviceGroupsUri"))
+  val deviceRegistryMyApi = Uri(config.getString("device_registry.mydeviceUri"))
 
   val rviSotaUri = Uri(config.getString("rvi.sotaServicesUri"))
   val rviEndpoint = Uri(config.getString("rvi.endpoint"))
@@ -135,7 +136,8 @@ object Boot extends App with DatabaseConfig with HttpBoot with RviBoot with Boot
   )
 
   val deviceRegistryClient = new DeviceRegistryClient(
-    settings.deviceRegistryUri, settings.deviceRegistryApi, settings.deviceRegistryGroupApi
+    settings.deviceRegistryUri, settings.deviceRegistryApi,
+    settings.deviceRegistryGroupApi, settings.deviceRegistryMyApi
   )
 
   val messageBusPublisher: MessageBusPublisher =

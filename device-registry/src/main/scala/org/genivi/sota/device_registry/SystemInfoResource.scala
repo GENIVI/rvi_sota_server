@@ -7,19 +7,20 @@ package org.genivi.sota.device_registry
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{Directive1, Route}
+import akka.http.scaladsl.server.{Directive0, Directive1, Route}
 import io.circe.Json
 import org.genivi.sota.data.{Namespace, Uuid}
 import org.genivi.sota.device_registry.db._
 import org.genivi.sota.device_registry.common.Errors.MissingSystemInfo
 import org.genivi.sota.http.UuidDirectives.extractUuid
+import org.genivi.sota.http.AuthDirectives.AuthScope
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.slf4j.LoggerFactory
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class SystemInfoResource(deviceNamespaceAuthorizer: Directive1[Uuid])
+class SystemInfoResource(authDirective: AuthScope => Directive0, deviceNamespaceAuthorizer: Directive1[Uuid])
               (implicit db: Database,
                actorSystem: ActorSystem,
                ec: ExecutionContext) {
@@ -62,5 +63,12 @@ class SystemInfoResource(deviceNamespaceAuthorizer: Directive1[Uuid])
       }
     }
 
-  def route: Route = api
+  def mydeviceRoutes: Route =
+    (pathPrefix("mydevice") & extractUuid) { uuid =>
+      (put & path("system_info") & authDirective(s"ota-core.{uuid.show}.write")) {
+        entity(as[Json]) { body => updateSystemInfo(uuid, body) }
+      }
+    }
+
+  def route: Route = api ~ mydeviceRoutes
 }

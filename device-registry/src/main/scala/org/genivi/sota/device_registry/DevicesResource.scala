@@ -23,12 +23,14 @@ import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.MessageBusPublisher._
 import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted, DeviceSeen}
 import org.genivi.sota.rest.Validation._
+import org.genivi.sota.http.AuthDirectives.AuthScope
 import org.genivi.sota.http.UuidDirectives.extractUuid
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
 
 class DevicesResource(namespaceExtractor: Directive1[Namespace],
+                      authDirective: AuthScope => Directive0,
                       messageBus: MessageBusPublisher,
                       deviceNamespaceAuthorizer: Directive1[Uuid])
                      (implicit system: ActorSystem,
@@ -124,12 +126,22 @@ class DevicesResource(namespaceExtractor: Directive1[Namespace],
       }
     }
 
+  def mydeviceRoutes: Route =
+    (pathPrefix("mydevice") & extractUuid) { uuid =>
+      (post & path("ping") & authDirective(s"ota-core.${uuid.show}.write")) {
+        updateLastSeen(uuid)
+      } ~
+      (get & pathEnd & authDirective(s"ota-core.${uuid.show}.read")) {
+        fetchDevice(uuid)
+      }
+    }
+
   /**
    * Base API route for devices.
    *
    * @return      Route object containing routes for creating, deleting, and listing devices
    * @throws      Errors.MissingDevice if device doesn't exist
    */
-  def route: Route = api
+  def route: Route = api ~ mydeviceRoutes
 
 }
