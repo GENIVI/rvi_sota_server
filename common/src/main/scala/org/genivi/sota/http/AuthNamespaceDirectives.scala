@@ -17,16 +17,38 @@ import org.genivi.sota.data.Namespace
   */
 trait NsFromToken[T] {
   def namespace(token: T): String
+  def accept(ns: Namespace, token: T): Boolean
 }
 
 object NsFromToken {
 
   implicit val NsFromIdToken = new NsFromToken[IdToken] {
     override def namespace(token: IdToken): String = token.sub.underlying
+    override def accept(ns: Namespace, token: IdToken): Boolean = namespace(token) == ns.get
   }
 
   implicit val NsFromJwt = new NsFromToken[JsonWebToken] {
-    override def namespace(token: JsonWebToken): String = token.subject.underlying
+    def grantNs(token: JsonWebToken): Set[String] = {
+      val nsPrefix = "namespace."
+      token.scope.underlying.collect {
+        case x if x.startsWith(nsPrefix) => x.substring(nsPrefix.length)
+      }
+    }
+
+    override def namespace(token: JsonWebToken): String = {
+      val nsSet = grantNs(token)
+
+      if (nsSet.size == 1) {
+        nsSet.toVector(0)
+      } else {
+        token.subject.underlying
+      }
+    }
+
+    override def accept(ns: Namespace, token: JsonWebToken): Boolean = {
+      val nsSet = grantNs(token)
+      nsSet.contains(ns.get) || (nsSet.isEmpty && ns.get == token.subject.underlying)
+    }
   }
 
   def parseToken[T: NsFromToken](serializedToken: String)
@@ -57,17 +79,24 @@ object AuthNamespaceDirectives {
 
   private[this] def badNamespaceRejection(msg: String): Rejection = AuthorizationFailedRejection
 
-  def authNamespace[T](implicit nsFromToken: NsFromToken[T], decoder: Decoder[T]): Directive1[Namespace] =
+  def authNamespace[T](ns0: Option[Namespace])
+                   (implicit nsFromToken: NsFromToken[T], decoder: Decoder[T]): Directive1[Namespace] =
     extractCredentials flatMap { creds =>
       val maybeNamespace = creds match {
         case Some(OAuth2BearerToken(serializedToken)) =>
-          NsFromToken.parseToken[T](serializedToken).map( nsFromToken.namespace )
+          NsFromToken.parseToken[T](serializedToken).flatMap{ token =>
+            ns0 match {
+              case Some(ns) if nsFromToken.accept(ns, token) => Xor.right(ns)
+              case Some(ns) => Xor.Left("The oauth token does not accept the given namespace")
+              case None => Xor.right(Namespace(nsFromToken.namespace(token)))
+            }
+          }
 
         case _ => Xor.Left("No oauth token provided to extract namespace")
     }
 
     maybeNamespace match {
-      case Xor.Right(t) => provide(Namespace(t))
+      case Xor.Right(t) => provide(t)
       case Xor.Left(msg) =>
         extractLog flatMap { l =>
           l.info(s"Could not extract namespace: $msg")

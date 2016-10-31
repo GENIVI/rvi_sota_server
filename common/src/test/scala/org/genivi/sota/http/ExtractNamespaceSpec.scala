@@ -24,7 +24,7 @@ class ExtractNamespaceSpec extends PropSpec
   import AuthNamespaceDirectives._
   import org.genivi.sota.Generators._
 
-  def route: Route = (path("test") & authNamespace[IdToken]) { (ns: Namespace) =>
+  def route: Route = (path("test") & authNamespace[IdToken](None)) { (ns: Namespace) =>
     get { complete(StatusCodes.OK -> ns.get) }
   }
 
