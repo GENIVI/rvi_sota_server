@@ -10,8 +10,9 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model.{StatusCodes, Uri}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import org.genivi.sota.core.data.{UpdateSpec, UpdateStatus}
 import org.genivi.sota.core.db._
-import org.genivi.sota.data.PackageId
+import org.genivi.sota.data.{DeviceGenerators, PackageId}
 import org.scalatest.{FunSuite, ShouldMatchers}
 import org.scalatest.concurrent.ScalaFutures
 import org.genivi.sota.http.NamespaceDirectives._
@@ -200,6 +201,27 @@ class BlacklistResourceSpec extends FunSuite
     val pendingDevices = db.run(UpdateSpecs.getDevicesQueuedForPackage(pkg.namespace, pkg.id)).futureValue
 
     pendingDevices shouldBe empty
+  }
+
+  test("blacklisting a queued package cancels item only if it was never installed") {
+    val dbIO = for {
+      (pkg, device, us) <- createUpdateSpecAction()
+      otherDevice = DeviceGenerators.genDevice.sample.get
+      otherSpec = UpdateSpec.default(us.request, otherDevice.uuid).copy(status = UpdateStatus.Finished)
+      _ <- UpdateSpecs.persist(otherSpec)
+    } yield (pkg, otherSpec)
+
+    val (pkg, otherSpec) = db.run(dbIO).futureValue
+
+    val blacklistReq = BlacklistedPackageRequest(pkg.id, Some("Some comment"))
+
+    Post(blacklistPath, blacklistReq) ~> serviceRoute ~> check {
+      status shouldBe StatusCodes.Created
+    }
+
+    val updatedSpec = db.run(UpdateSpecs.findBy(otherSpec)).futureValue
+
+    updatedSpec.status shouldBe UpdateStatus.Finished
   }
 
   test("blacklisting a queued package creates failed history item") {
