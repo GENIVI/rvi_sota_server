@@ -12,7 +12,7 @@ import cats.implicits._
 import io.circe.generic.auto._
 import java.util.UUID
 import org.genivi.sota.core.data.{Campaign, UpdateRequest, UpdateStatus}
-import org.genivi.sota.core.db.{Packages, UpdateRequests}
+import org.genivi.sota.core.db.{BlacklistedPackages, Packages, UpdateRequests}
 import org.genivi.sota.core.resolver.DefaultConnectivity
 import org.genivi.sota.core.transfer.DefaultUpdateNotifier
 import org.genivi.sota.data.{Interval, Namespaces, PackageId, Uuid, UuidGenerator}
@@ -70,6 +70,11 @@ class CampaignResourceSpec extends FunSuite
     Put(Resource.uri(id.show, "cancel")) ~> service.route ~> check {
       status shouldBe expectedCode
     }
+  }
+
+  def blacklistPackage(pkgId: PackageId): Unit = {
+    implicit val theDb = db
+    BlacklistedPackages.create(Namespaces.defaultNs, pkgId, None).map(_ => ()).futureValue
   }
 
   def createCampaign(name: CreateCampaign, expectedCode: StatusCode): Unit =
@@ -267,5 +272,26 @@ class CampaignResourceSpec extends FunSuite
     camp.groups.foreach { campGrp =>
       updateRequestCancelled(campGrp.updateRequest.get)
     }
+  }
+
+  test("campaign should not launch with blacklisted package") {
+    val campName = CreateCampaignGen.sample.get
+    val id = createCampaignOk(campName)
+
+    val pkgId = createRandomPackage()
+    setPackage(id, pkgId, StatusCodes.OK)
+
+    val setgroups = SetCampaignGroupsGen.sample.get
+    setGroups(id, setgroups, StatusCodes.OK)
+
+    val lc = LaunchCampaignGen.sample.get
+
+    blacklistPackage(pkgId)
+
+    launch(id, lc, StatusCodes.BadRequest)
+
+    val camp = fetchCampaignOk(id)
+
+    camp.meta.launched shouldBe false
   }
 }
