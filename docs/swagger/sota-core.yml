@@ -244,6 +244,18 @@ paths:
       responses:
         200:
           description: OK
+  /campaigns/{uuid}/cancel:
+    put:
+      description: 'Cancel all updates of the campaign'
+      parameters:
+      - name: uuid
+        in: path
+        description: The campaign uuid to cancel
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
   /campaigns/{uuid}/statistics:
     get:
       description: 'Get statistics on the progress of the campaign'
@@ -654,6 +666,18 @@ paths:
           description: A Map of (DeviceId -> Seq[PackageId])
           schema:
             type: object
+  /update_requests/{uuid}/cancel:
+    put:
+      parameters:
+        - name: uuid
+          in: path
+          description: The uuid of the update request to cancel
+          required: true
+          type: string
+      description: Cancel all pending devices of this update request
+      responses:
+        200:
+          description: OK
 
 definitions:
   uuid:

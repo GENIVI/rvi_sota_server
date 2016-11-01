@@ -33,6 +33,7 @@ class FakeDeviceRegistry(namespace: Namespace)
 
   private val devices =  new ConcurrentHashMap[Uuid, Device]()
   private val systemInfo = new ConcurrentHashMap[Uuid, Json]()
+  private val groups = new ConcurrentHashMap[Uuid, Seq[Uuid]]
 
   override def searchDevice
   (ns: Namespace, re: String Refined Regex)
@@ -73,11 +74,11 @@ class FakeDeviceRegistry(namespace: Namespace)
 
   override def fetchDevicesInGroup(ns: Namespace, uuid: Uuid)
                                   (implicit ec: ExecutionContext): Future[Seq[Uuid]] = {
-    FastFuture.successful(Seq())
+    groups.asScala.get(uuid) match {
+      case Some(ds) => FastFuture.successful(ds)
+      case None => FastFuture.successful(Seq())
+    }
   }
-
-  override def fetchGroup(uuid: Uuid)
-                         (implicit ec: ExecutionContext): Future[Seq[Uuid]] = FastFuture.successful(Seq())
 
   override def fetchByDeviceId
   (ns: Namespace, deviceId: DeviceId)
@@ -122,5 +123,9 @@ class FakeDeviceRegistry(namespace: Namespace)
 
   def addDevice(device: Device): Device = {
     devices.put(device.uuid, device)
+  }
+
+  def addGroup(group: Uuid, devices: Seq[Uuid]): Unit = {
+    groups.put(group, devices)
   }
 }

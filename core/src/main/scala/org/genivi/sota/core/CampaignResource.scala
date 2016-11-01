@@ -29,6 +29,10 @@ class CampaignResource(namespaceExtractor: Directive1[Namespace],
   import StatusCodes.{Success => _, _}
   import system.dispatcher
 
+  def cancel(id: Campaign.Id): Route = {
+    complete(CampaignLauncher.cancel(id))
+  }
+
   def createCampaign(ns: Namespace, name: CreateCampaign): Route = {
     complete(Created -> db.run(Campaigns.create(ns, name.name)))
   }
@@ -98,6 +102,9 @@ class CampaignResource(namespaceExtractor: Directive1[Namespace],
             delete {
               deleteCampaign(id)
             }
+          } ~
+          (path("cancel") & put) {
+            cancel(id)
           } ~
           (path("draft") & post) {
             setAsDraft(id)
