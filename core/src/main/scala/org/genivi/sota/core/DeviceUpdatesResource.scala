@@ -82,13 +82,17 @@ class DeviceUpdatesResource(db: Database,
     * An ota client PUT a list of packages to record they're installed on a device, overwriting any previous such list.
     */
   def updateInstalledPackages(id: Uuid): Route = {
-    entity(as[List[PackageId]]) { ids =>
+    (entity(as[List[PackageId]]) & extractLog) { (ids, log) =>
       val f = DeviceUpdates
         .update(id, ids, resolverClient)
         .flatMap { _ =>
           //ignore failures here as the actual work has been done in update()
-          deviceRegistry.updateLastSeen(id)
-          .recover{case e => Future.successful()}
+          deviceRegistry
+            .updateLastSeen(id)
+            .recover { case e =>
+              log.error(e, "Could not update device last seen")
+              Future.successful(())
+            }
         }
         .map(_ => OK)
 

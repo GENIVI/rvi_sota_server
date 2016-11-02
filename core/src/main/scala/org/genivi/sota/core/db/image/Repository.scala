@@ -31,26 +31,14 @@ protected class ImageRepository()(implicit ec: ExecutionContext, db: Database) {
     val now = Instant.now()
     val image = Image(ns, ImageId.generate(), commit, ref, desc, pullUri, now, now)
 
-    images
+    val io = images
+      .insertOrUpdateWithKey(image,
+        _.filter(_.namespace === ns).filter(_.commit === commit).filter(_.ref === ref),
+        _.copy(commit = commit, ref = ref,
+          description = desc, pullUri = pullUri, updatedAt = now)
+      )
 
-    val findQuery = images
-      .filter(_.namespace === ns)
-      .filter(_.commit === commit)
-      .filter(_.ref === ref)
-
-    def update(old: Image): DBIO[Image] = {
-      val updated = old.copy(commit = commit, ref = ref,
-        description = desc, pullUri = pullUri, updatedAt = now)
-
-      findQuery.update(updated).map(_ => updated)
-    }
-
-    val io = findQuery.result.headOption.flatMap {
-      case Some(old) => update(old)
-      case None => (images += image).map(_ => image)
-    }
-
-    db.run(io.transactionally)
+    db.run(io)
   }
 
   def findAll(ns: Namespace): Future[Seq[Image]] =
@@ -60,6 +48,7 @@ protected class ImageRepository()(implicit ec: ExecutionContext, db: Database) {
 trait ImageUpdateRepositorySupport {
   def imageUpdateRepository(implicit ec: ExecutionContext, db: Database) = new ImageUpdateRepository
 }
+
 
 protected class ImageUpdateRepository()(implicit ec: ExecutionContext, db: Database) {
   import DataType._
@@ -73,21 +62,14 @@ protected class ImageUpdateRepository()(implicit ec: ExecutionContext, db: Datab
     val now = Instant.now()
     val imageUpdate = ImageUpdate(ns, ImageUpdateId.generate(), imageId, device, UpdateStatus.Pending, now, now)
 
-    val findQuery = imageUpdates
-      .filter(_.imageId === imageId)
-      .filter(_.device === device)
+    val io = imageUpdates
+      .insertOrUpdateWithKey(
+        imageUpdate,
+        _.filter(_.imageId === imageId).filter(_.device === device),
+        _.copy(imageId = imageId, device = device, updatedAt = now)
+      )
 
-    def update(v: ImageUpdate): DBIO[ImageUpdate] = {
-      val updated = v.copy(imageId = imageId, device = device, updatedAt = now)
-      findQuery.update(updated).map(_ => updated)
-    }
-
-    val io = findQuery.result.headOption.flatMap {
-      case Some(v) => update(v)
-      case None => (imageUpdates += imageUpdate).map(_ => imageUpdate)
-    }
-
-    db.run(io.handleIntegrityErrors(MissingImageForUpdate).transactionally)
+    db.run(io.handleIntegrityErrors(MissingImageForUpdate))
   }
 
   def findForDevice(device: Uuid, status: UpdateStatus): Future[Seq[(ImageUpdate, Image)]] = {

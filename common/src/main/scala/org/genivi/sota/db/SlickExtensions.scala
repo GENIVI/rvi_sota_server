@@ -16,7 +16,7 @@ import org.genivi.sota.data.Namespace
 import org.genivi.sota.http.Errors
 import slick.ast.{Node, TypedType}
 import slick.driver.MySQLDriver.api._
-import slick.lifted.Rep
+import slick.lifted.{AbstractTable, Rep}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -102,6 +102,34 @@ object SlickExtensions {
       }
 
       DBIOOps(dbio).failIfNone(t)
+    }
+  }
+
+  implicit class InsertOrUpdateWithKeyOps[Q <: AbstractTable[_], E](tableQuery: TableQuery[Q])
+                                                                   (implicit ev: E =:= Q#TableElementType) {
+
+    def insertOrUpdateWithKey(element: E,
+                              primaryKeyQuery: TableQuery[Q] => Query[Q, E, Seq],
+                              onUpdate: E => E
+                             )(implicit ec: ExecutionContext): DBIO[E] = {
+
+      val findQuery = primaryKeyQuery(tableQuery)
+
+      def update(v: E): DBIO[E] = {
+        val updated = onUpdate(v)
+        findQuery.update(updated).map(_ => updated)
+      }
+
+      val io = findQuery.result.flatMap { res =>
+        if(res.isEmpty)
+          (tableQuery += element).map(_ => element)
+        else if(res.size == 1)
+          update(res.head)
+        else
+          DBIO.failed(new Exception("Too many elements found to update. primaryKeyQuery must define a unique key"))
+      }
+
+      io.transactionally
     }
   }
 }
