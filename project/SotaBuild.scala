@@ -44,7 +44,6 @@ object SotaBuild extends Build {
       "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
       "com.google.guava"  % "guava" % "18.0"
     ),
-
     shellPrompt in ThisBuild := { state => Project.extract(state).currentRef.project + "> " }
   )
 
@@ -190,7 +189,7 @@ object SotaBuild extends Build {
 
   lazy val commonMessaging = Project(id = "sota-common-messaging", base = file("common-messaging"))
     .settings(basicSettings ++ compilerSettings ++ Seq(
-      libraryDependencies ++= Dependencies.Circe ++ Dependencies.Akka :+ Dependencies.Kinesis :+ Dependencies.Nats
+      libraryDependencies ++= Dependencies.Circe ++ Dependencies.Akka :+ Dependencies.Nats :+ Dependencies.Kafka
     ))
     .dependsOn(common, commonData)
     .settings(Publish.settings)
@@ -297,7 +296,7 @@ object Dependencies {
     "com.advancedtelematic" %% "jw-security-akka-http" % JsonWebSecurityVersion
   )
 
-  lazy val Kinesis = "com.amazonaws" % "amazon-kinesis-client" % "1.6.4"
-
   lazy val Nats = "com.github.tyagihas" % "scala_nats_2.11" % "0.2.1" exclude("org.slf4j", "slf4j-simple")
+
+  lazy val Kafka = "com.typesafe.akka" %% "akka-stream-kafka" % "0.12"
 }

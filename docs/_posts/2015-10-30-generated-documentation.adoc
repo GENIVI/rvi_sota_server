@@ -14,10 +14,12 @@ link:../gen_docs/core/index.html[ScalaDocs for SOTA Core]
 
 link:../gen_docs/resolver/index.html[ScalaDocs for SOTA Resolver]
 
+link:../gen_docs/device_registry/index.html[ScalaDocs for SOTA Device Registry]
+
 link:../gen_docs/webserver/index.html[ScalaDocs for SOTA Web Server]
 
 link:../gen_docs/common/index.html[ScalaDocs for SOTA common resources]
 
 === SOTA Client
 
-link:../gen_docs/client/sota_client/index.html[Rustdoc for SOTA Client]
+link:../gen_docs/client/sota/index.html[Rustdoc for SOTA Client]

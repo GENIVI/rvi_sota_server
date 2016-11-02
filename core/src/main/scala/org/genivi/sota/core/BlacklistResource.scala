@@ -9,7 +9,7 @@ import org.genivi.sota.http.ErrorHandler._
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directive1, Route}
-import org.genivi.sota.core.db.{BlacklistedPackageRequest, BlacklistedPackages}
+import org.genivi.sota.core.db.{BlacklistedPackageRequest, BlacklistedPackages, InstallHistories, UpdateSpecs}
 import org.genivi.sota.data.{Namespace, PackageId}
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
@@ -18,7 +18,11 @@ import io.circe.generic.auto._
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.Messages.PackageBlacklisted
 import org.genivi.sota.messaging.Messages._
-import MessageBusPublisher._
+import org.genivi.sota.core.data.{InstallHistory, UpdateStatus}
+import org.genivi.sota.core.transfer.DeviceUpdates
+import org.genivi.sota.rest.ToResponse
+
+case class PreviewResponse(affected_device_count: Int)
 
 class BlacklistResource(namespaceExtractor: Directive1[Namespace],
                         messageBus: MessageBusPublisher)
@@ -26,16 +30,18 @@ class BlacklistResource(namespaceExtractor: Directive1[Namespace],
 
   import akka.http.scaladsl.server.Directives._
   import PackagesResource.extractPackageId
+  import org.genivi.sota.rest.ResponseConversions._
+  import org.genivi.sota.core.db.BlacklistedPackageResponse._
 
   implicit val _ec = system.dispatcher
 
   def addPackageToBlacklist(namespace: Namespace): Route =
     entity(as[BlacklistedPackageRequest]) { req =>
-      val f =
-        BlacklistedPackages
-          .create(namespace, req.packageId, req.comment)
-          .pipeToBus(messageBus)(_ => PackageBlacklisted(namespace, req.packageId))
-          .map(_ => StatusCodes.Created)
+      val f = for {
+        bl <- BlacklistedPackages.create(namespace, req.packageId, req.comment)
+        _ <- messageBus.publishSafe(PackageBlacklisted(namespace, req.packageId))
+        _ <- db.run(UpdateSpecs.cancelAllUpdatesBy(UpdateStatus.Pending, namespace, req.packageId))
+      } yield StatusCodes.Created
 
       complete(f)
     }
@@ -46,22 +52,31 @@ class BlacklistResource(namespaceExtractor: Directive1[Namespace],
     }
 
   def getNamespaceBlacklist(namespace: Namespace): Route =
-    complete(BlacklistedPackages.findFor(namespace))
+    complete(BlacklistedPackages.findFor(namespace).map(_.toResponse))
 
-  def getPackageBlacklist(namespace: Namespace, packageId: PackageId): Route =
-    complete(BlacklistedPackages.findFor(namespace))
+  def getPackageBlacklist(namespace: Namespace, packageId: PackageId): Route = {
+    complete(BlacklistedPackages.findByPackageId(namespace, packageId).map(ToResponse(_)))
+  }
 
   def deletePackageBlacklist(namespace: Namespace, packageId: PackageId): Route =
     complete(BlacklistedPackages.remove(namespace, packageId).map(_ => StatusCodes.OK))
 
+  def preview(ns: Namespace, pkgId: PackageId): Route =
+    complete(db.run(DeviceUpdates.countQueuedBy(pkgId, ns)).map(PreviewResponse))
+
   val route: Route =
     (handleErrors & pathPrefix("blacklist") & namespaceExtractor) { ns =>
-      post { addPackageToBlacklist(ns) } ~
-      put { updatePackageBlacklist(ns) } ~
-      get { getNamespaceBlacklist(ns) } ~
+      pathEnd {
+        post { addPackageToBlacklist(ns) } ~
+        put { updatePackageBlacklist(ns) } ~
+        get { getNamespaceBlacklist(ns) }
+      } ~
       extractPackageId { pkgId =>
-        get { getPackageBlacklist(ns, pkgId) } ~
-        delete { deletePackageBlacklist(ns, pkgId) }
+        (path("preview") & get) { preview(ns, pkgId) } ~
+        pathEnd {
+          get { getPackageBlacklist(ns, pkgId) } ~
+          delete { deletePackageBlacklist(ns, pkgId) }
+        }
       }
     }
 }

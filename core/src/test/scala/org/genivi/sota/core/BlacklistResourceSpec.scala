@@ -10,7 +10,7 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model.{StatusCodes, Uri}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import org.genivi.sota.core.db.{BlacklistedPackage, BlacklistedPackageRequest, Packages}
+import org.genivi.sota.core.db._
 import org.genivi.sota.data.PackageId
 import org.scalatest.{FunSuite, ShouldMatchers}
 import org.scalatest.concurrent.ScalaFutures
@@ -24,6 +24,7 @@ class BlacklistResourceSpec extends FunSuite
   with ScalaFutures
   with DefaultPatience
   with LongRequestTimeout
+  with UpdateResourcesDatabaseSpec
   with Generators {
 
   implicit val _db = db
@@ -35,7 +36,7 @@ class BlacklistResourceSpec extends FunSuite
   def blacklistUrl(pkg: PackageId): Uri =
     Uri.Empty.withPath(Path("/blacklist") / pkg.name.get / pkg.version.get)
 
-  def createBlacklist(): PackageId = {
+  def createBlacklist(): data.Package = {
     val pkg = PackageGen.sample.get
     db.run(Packages.create(pkg)).futureValue
 
@@ -45,20 +46,20 @@ class BlacklistResourceSpec extends FunSuite
       status shouldBe StatusCodes.Created
     }
 
-    pkg.id
+    pkg
   }
 
   test("packages can be flagged as blacklist") {
     createBlacklist()
   }
 
-  test("cannot create blacklist for non existent package") {
+  test("can create blacklist for a non existent package (foreign package)") {
     val pkg = PackageGen.sample.get
 
     val blacklistReq = BlacklistedPackageRequest(pkg.id, Some("Some comment"))
 
     Post(blacklistPath, blacklistReq) ~> serviceRoute ~> check {
-      status shouldBe StatusCodes.NotFound
+      status shouldBe StatusCodes.Created
     }
   }
 
@@ -68,25 +69,35 @@ class BlacklistResourceSpec extends FunSuite
     Get("/blacklist") ~> serviceRoute ~> check {
       status shouldBe StatusCodes.OK
 
-      val resp = responseAs[Seq[BlacklistedPackage]]
+      val resp = responseAs[Seq[BlacklistedPackageResponse]]
 
-      resp.map(_.packageId) should contain(pkg)
+      resp.map(_.packageId) should contain(pkg.id)
     }
 
   }
 
   test("packages blacklist can be updated") {
     val pkg = createBlacklist()
-    val blacklistReq = BlacklistedPackageRequest(pkg, Some("Hi"))
+    val blacklistReq = BlacklistedPackageRequest(pkg.id, Some("Hi"))
 
     Put(blacklistPath, blacklistReq) ~> serviceRoute ~> check {
       status shouldBe StatusCodes.OK
 
       Get("/blacklist") ~> serviceRoute ~> check {
-        val r = responseAs[Seq[BlacklistedPackage]]
+        val r = responseAs[Seq[BlacklistedPackageResponse]]
 
-        r.find(_.packageId == pkg).map(_.comment) should contain("Hi")
+        r.find(_.packageId == pkg.id).map(_.comment) should contain("Hi")
       }
+    }
+  }
+
+  test("blacklist for a specific package can be retrieved") {
+    val pkg = createBlacklist()
+
+    Get(s"/blacklist/${pkg.id.name.get}/${pkg.id.version.get}") ~> serviceRoute ~> check {
+      val r = responseAs[BlacklistedPackageResponse]
+      r.packageId shouldBe pkg.id
+      r.comment shouldBe "Some comment"
     }
   }
 
@@ -103,65 +114,63 @@ class BlacklistResourceSpec extends FunSuite
 
   test("packages can be unflagged as blacklisted") {
     val pkg = createBlacklist()
-    val url = blacklistUrl(pkg)
+    val url = blacklistUrl(pkg.id)
 
     Delete(url) ~> serviceRoute ~> check {
       status shouldBe StatusCodes.OK
     }
 
     Get("/blacklist") ~> serviceRoute ~> check {
-      val r = responseAs[Seq[BlacklistedPackage]]
-      r.find(_.packageId == pkg) shouldBe empty
+      val r = responseAs[Seq[BlacklistedPackageResponse]]
+      r.find(_.packageId == pkg.id) shouldBe empty
     }
   }
 
   test("can create the same blacklist twice") {
     val pkg = createBlacklist()
-    val url = blacklistUrl(pkg)
+    val url = blacklistUrl(pkg.id)
 
     Delete(url) ~> serviceRoute ~> check {
       status shouldBe StatusCodes.OK
     }
 
-    val blacklistReq = BlacklistedPackageRequest(pkg, Some("Some comment"))
+    val blacklistReq = BlacklistedPackageRequest(pkg.id, Some("Some comment"))
 
     Post(blacklistPath, blacklistReq) ~> serviceRoute ~> check {
       status shouldBe StatusCodes.Created
     }
 
     Get("/blacklist") ~> serviceRoute ~> check {
-      val r = responseAs[Seq[BlacklistedPackage]]
-      r.find(_.packageId == pkg) shouldNot be(empty)
+      val r = responseAs[Seq[BlacklistedPackageResponse]]
+      r.find(_.packageId == pkg.id) shouldNot be(empty)
     }
   }
 
   test("creating the same blacklist after DELETE works, updating the previous entry") {
     val pkg = createBlacklist()
-    val url = blacklistUrl(pkg)
+    val url = blacklistUrl(pkg.id)
 
     Delete(url) ~> serviceRoute ~> check {
       status shouldBe StatusCodes.OK
     }
 
-    val blacklistReq = BlacklistedPackageRequest(pkg, Some("Some comment"))
+    val blacklistReq = BlacklistedPackageRequest(pkg.id, Some("Some comment"))
 
-    Post(url, blacklistReq) ~> serviceRoute ~> check {
+    Post(blacklistPath, blacklistReq) ~> serviceRoute ~> check {
       status shouldBe StatusCodes.Created
     }
 
     Get("/blacklist") ~> serviceRoute ~> check {
-      val r = responseAs[Seq[BlacklistedPackage]]
-      r.filter(_.packageId == pkg) should have size 1
+      val r = responseAs[Seq[BlacklistedPackageResponse]]
+      r.filter(_.packageId == pkg.id) should have size 1
     }
   }
 
   test("creating the same blacklist twice fails") {
     val pkg = createBlacklist()
-    val url = blacklistUrl(pkg)
+    val blacklistReq = BlacklistedPackageRequest(pkg.id, Some("Some comment"))
 
-    val blacklistReq = BlacklistedPackageRequest(pkg, Some("Some comment"))
-
-    Post(url, blacklistReq) ~> serviceRoute ~> check {
+    Post(blacklistPath, blacklistReq) ~> serviceRoute ~> check {
       status shouldBe StatusCodes.Conflict
     }
   }
@@ -169,7 +178,7 @@ class BlacklistResourceSpec extends FunSuite
 
   test("cannot remove an already removed package") {
     val pkg = createBlacklist()
-    val url = blacklistUrl(pkg)
+    val url = blacklistUrl(pkg.id)
 
     Delete(url) ~> serviceRoute ~> check {
       status shouldBe StatusCodes.OK
@@ -177,6 +186,56 @@ class BlacklistResourceSpec extends FunSuite
 
     Delete(url) ~> serviceRoute ~> check {
       status shouldBe StatusCodes.NotFound
+    }
+  }
+
+  test("blacklisting a queued package cancels queued item") {
+    val (pkg, device, _) = createUpdateSpec().futureValue
+    val blacklistReq = BlacklistedPackageRequest(pkg.id, Some("Some comment"))
+
+    Post(blacklistPath, blacklistReq) ~> serviceRoute ~> check {
+      status shouldBe StatusCodes.Created
+    }
+
+    val pendingDevices = db.run(UpdateSpecs.getDevicesQueuedForPackage(pkg.namespace, pkg.id)).futureValue
+
+    pendingDevices shouldBe empty
+  }
+
+  test("blacklisting a queued package creates failed history item") {
+    val (pkg, device, _) = createUpdateSpec().futureValue
+    val blacklistReq = BlacklistedPackageRequest(pkg.id, Some("Some comment"))
+
+    Post(blacklistPath, blacklistReq) ~> serviceRoute ~> check {
+      status shouldBe StatusCodes.Created
+    }
+
+    val history = db.run(InstallHistories.list(device.uuid)).futureValue
+
+    history shouldNot be(empty)
+    history.head._1.device shouldBe device.uuid
+    history.head._1.success shouldBe false
+    history.head._2.head shouldBe pkg.id
+    history.head._2.apply(1) shouldBe true
+  }
+
+  test("/preview returns a count of devices affected by a new blacklist item") {
+    val (pkg, _, _) = createUpdateSpec().futureValue
+    val previewUrl = blacklistUrl(pkg.id) + "/preview"
+
+    Get(previewUrl) ~> serviceRoute ~> check {
+      status shouldBe StatusCodes.OK
+      responseAs[PreviewResponse].affected_device_count shouldBe 1
+    }
+  }
+
+  test("/preview returns 0 if there are no affected devices") {
+    val pkg = PackageGen.sample.get
+    val previewUrl = blacklistUrl(pkg.id) + "/preview"
+
+    Get(previewUrl) ~> serviceRoute ~> check {
+      status shouldBe StatusCodes.OK
+      responseAs[PreviewResponse].affected_device_count shouldBe 0
     }
   }
 }

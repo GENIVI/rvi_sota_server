@@ -15,15 +15,18 @@ import org.genivi.sota.core.data.UpdateStatus.UpdateStatus
 
 import scala.language.implicitConversions
 import org.genivi.sota.data.Interval
+import org.genivi.sota.rest.{GenericArgsDecoder, GenericResponseEncoder}
+import shapeless.{::, HNil}
 
 case class PendingUpdateRequest(requestId: UUID, packageId: PackageId, installPos: Int,
                                 status: UpdateStatus,
-                                createdAt: Instant)
+                                createdAt: Instant,
+                                updatedAt: Instant)
 
 object PendingUpdateRequest {
   implicit val toResponseEncoder = GenericResponseEncoder {
-    (u: UpdateRequest, updateStatus: UpdateStatus) =>
-      PendingUpdateRequest(u.id, u.packageId, u.installPos, updateStatus, u.creationTime)
+    (u: UpdateRequest, updateStatus: UpdateStatus, packageId: PackageId, updatedAt: Instant) =>
+      PendingUpdateRequest(u.id, packageId, u.installPos, updateStatus, u.creationTime, updatedAt)
   }
 }
 
@@ -37,13 +40,18 @@ case class ClientUpdateRequest(id: UUID,
                          requestConfirmation: Boolean)
 
 object ClientUpdateRequest {
-  implicit def fromRequestDecoder: RequestDecoder[ClientUpdateRequest, UpdateRequest, Namespace] =
-    RequestDecoder { (req: ClientUpdateRequest, namespace: Namespace) =>
-        UpdateRequest(req.id,
-          namespace,
-          req.packageId,
-          req.creationTime,
-          req.periodOfValidity,
-          req.priority, req.signature, req.description, req.requestConfirmation)
+  implicit val toResponseEncoder = GenericResponseEncoder { (req: UpdateRequest, packageId: PackageId) =>
+    ClientUpdateRequest(req.id, packageId,
+      req.creationTime, req.periodOfValidity, req.priority, req.signature, req.description, req.requestConfirmation)
+  }
+
+  implicit val fromRequestDecoder =
+    GenericArgsDecoder { (req: ClientUpdateRequest, packageUuid: UUID, namespace: Namespace) =>
+      UpdateRequest(req.id,
+        namespace,
+        packageUuid,
+        req.creationTime,
+        req.periodOfValidity,
+        req.priority, req.signature, req.description, req.requestConfirmation)
     }
 }

@@ -9,8 +9,7 @@ import java.util.UUID
 import org.genivi.sota.data.Interval
 import java.time.Instant
 import java.time.Duration
-import org.genivi.sota.data.Namespace
-import org.genivi.sota.data.{PackageId, Device}
+import org.genivi.sota.data.{PackageId, Device, Namespace, Uuid}
 import org.genivi.sota.core.db.InstallHistories.InstallHistoryTable
 
 /**
@@ -19,7 +18,7 @@ import org.genivi.sota.core.db.InstallHistories.InstallHistoryTable
  * devices. It describes a single package, with a period of validity and priority
  * for the update.
  * @param id A generated unique ID for this update request
- * @param packageId The name and version of the package
+ * @param packageUUid The uuid the package
  * @param creationTime When this update request was entered into SOTA
  * @param periodOfValidity The start and end times when this update may be
  *                         installed. The install won't be attempted before
@@ -35,7 +34,7 @@ import org.genivi.sota.core.db.InstallHistories.InstallHistoryTable
 case class UpdateRequest(
   id: UUID,
   namespace: Namespace,
-  packageId: PackageId,
+  packageUuid: UUID,
   creationTime: Instant,
   periodOfValidity: Interval,
   priority: Int,
@@ -48,14 +47,14 @@ object UpdateRequest {
 
   import eu.timepit.refined.auto._
 
-  def default(namespace: Namespace, packageId: PackageId): UpdateRequest = {
+  def default(namespace: Namespace, packageUuid: UUID): UpdateRequest = {
     val updateRequestId = UUID.randomUUID()
     val now = Instant.now
     val defaultPeriod = Duration.ofDays(1)
     val defaultInterval = Interval(now, now.plus(defaultPeriod))
     val defaultPriority = 10
 
-    UpdateRequest(updateRequestId, namespace, packageId,
+    UpdateRequest(updateRequestId, namespace, packageUuid,
       Instant.now, defaultInterval, defaultPriority, "", Some(""),
       requestConfirmation = false)
   }
@@ -95,15 +94,12 @@ import UpdateStatus._
   */
 case class UpdateSpec(
   request: UpdateRequest,
-  device: Device.Id,
+  device: Uuid,
   status: UpdateStatus,
   dependencies: Set[Package],
   installPos: Int,
-  creationTime: Instant
-) {
-
-  def namespace: Namespace = request.namespace
-
+  creationTime: Instant,
+  updateTime: Instant) {
   /**
    * The combined size (in bytes) of all the software updates in this package
    */
@@ -118,8 +114,8 @@ object UpdateSpec {
   implicit val updateStatusEncoder : Encoder[UpdateStatus] = Encoder[String].contramap(_.toString)
   implicit val updateStatusDecoder : Decoder[UpdateStatus] = Decoder[String].map(UpdateStatus.withName)
 
-  def default(request: UpdateRequest, device: Device.Id): UpdateSpec = {
-    UpdateSpec(request, device, UpdateStatus.Pending, Set.empty, 0, Instant.now)
+  def default(request: UpdateRequest, device: Uuid): UpdateSpec = {
+    UpdateSpec(request, device, UpdateStatus.Pending, Set.empty, 0, Instant.now, Instant.now)
   }
 }
 

@@ -2,17 +2,17 @@
  * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
-package org.genivi.sota.device_registry.test
+package org.genivi.sota.device_registry
 
 import akka.http.scaladsl.client.RequestBuilding.{Delete, Get, Post, Put}
 import akka.http.scaladsl.model.Uri.{Path, Query}
-import akka.http.scaladsl.model.{HttpRequest, Uri}
+import akka.http.scaladsl.model.{HttpRequest, Uri, StatusCodes}
 import cats.Show
-import io.circe.generic.auto._
+import cats.syntax.show._
 import io.circe.Json
-import org.genivi.sota.data.{Device, DeviceT, Namespace}
+import io.circe.generic.auto._
+import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-
 import scala.concurrent.ExecutionContext
 
 
@@ -30,64 +30,65 @@ object Resource {
 /**
  * Testing Trait for building Device requests
  */
-trait DeviceRequests {
+trait DeviceRequests { self: ResourceSpec =>
 
   import Device._
+  import StatusCodes._
 
   val api = "devices"
 
-  def fetchDevice(id: Id)
-                 (implicit s: Show[Id]): HttpRequest =
-    Get(Resource.uri(api, s.show(id)).withQuery(Query("namespace" -> "default")))
+  def fetchDevice(uuid: Uuid): HttpRequest =
+    Get(Resource.uri(api, uuid.show))
 
   def searchDevice(namespace: Namespace, regex: String): HttpRequest =
     Get(Resource.uri(api).withQuery(Query("namespace" -> namespace.get, "regex" -> regex)))
 
-  def fetchByDeviceId(namespace: Namespace, deviceId: Device.DeviceId)
-                     (implicit s: Show[Device.DeviceId]): HttpRequest =
-    Get(Resource.uri(api).withQuery(Query("namespace" -> namespace.get, "deviceId" -> s.show(deviceId))))
+  def fetchByDeviceId(namespace: Namespace, deviceId: Device.DeviceId): HttpRequest =
+    Get(Resource.uri(api).withQuery(Query("namespace" -> namespace.get, "deviceId" -> deviceId.show)))
 
-  def updateDevice(id: Id, device: DeviceT)
-                  (implicit s: Show[Id], ec: ExecutionContext): HttpRequest =
-    Put(Resource.uri(api, s.show(id)), device)
+  def updateDevice(uuid: Uuid, device: DeviceT)
+                  (implicit ec: ExecutionContext): HttpRequest =
+    Put(Resource.uri(api, uuid.show), device)
 
   def createDevice(device: DeviceT)
                   (implicit ec: ExecutionContext): HttpRequest = {
     Post(Resource.uri(api), device)
   }
 
-  def deleteDevice(id: Id)
-                  (implicit s: Show[Id]): HttpRequest =
-    Delete(Resource.uri(api, s.show(id)))
+  def createDeviceOk(device: DeviceT)
+                    (implicit ec: ExecutionContext): Uuid = {
+    createDevice(device) ~> route ~> check {
+      status shouldBe Created
+      responseAs[Uuid]
+    }
+  }
 
-  def updateLastSeen(id: Id)
-                    (implicit s: Show[Id]): HttpRequest =
-    Post(Resource.uri(api, s.show(id), "ping"))
+  def deleteDevice(uuid: Uuid): HttpRequest =
+    Delete(Resource.uri(api, uuid.show))
 
-  def fetchSystemInfo(id: Id)
-                     (implicit s: Show[Id]): HttpRequest =
-    Get(Resource.uri(api, s.show(id), "system_info"))
+  def deleteDeviceOk(uuid: Uuid)
+                    (implicit ec: ExecutionContext): Unit = {
+    deleteDevice(uuid) ~> route ~> check {
+      status shouldBe OK
+    }
+  }
 
-  def createSystemInfo(id: Id, json: Json)
-                      (implicit s: Show[Id], ec: ExecutionContext): HttpRequest =
-    Post(Resource.uri(api, s.show(id),"system_info"), json)
+  def updateLastSeen(uuid: Uuid): HttpRequest =
+    Post(Resource.uri(api, uuid.show, "ping"))
 
-  def updateSystemInfo(id: Id, json: Json)
-                      (implicit s: Show[Id], ec: ExecutionContext): HttpRequest =
-    Put(Resource.uri(api, s.show(id),"system_info"), json)
+  def fetchSystemInfo(uuid: Uuid): HttpRequest =
+    Get(Resource.uri(api, uuid.show, "system_info"))
 
-  def fetchGroupInfo(groupName: String, namespace: Namespace): HttpRequest =
-    Get(Resource.uri(api, "group_info").withQuery(Query("namespace" -> namespace.get, "groupName" -> groupName)))
-
-  def createGroupInfo(groupName: String, namespace: Namespace, json: Json)
+  def createSystemInfo(uuid: Uuid, json: Json)
                       (implicit ec: ExecutionContext): HttpRequest =
-    Post(Resource.uri(api, "group_info").withQuery(Query("namespace" -> namespace.get, "groupName" -> groupName)), json)
+    Post(Resource.uri(api, uuid.show,"system_info"), json)
 
-  def updateGroupInfo(groupName: String, namespace: Namespace, json: Json)
+  def updateSystemInfo(uuid: Uuid, json: Json)
                       (implicit ec: ExecutionContext): HttpRequest =
-    Put(Resource.uri(api, "group_info").withQuery(Query("namespace" -> namespace.get, "groupName" -> groupName)), json)
+    Put(Resource.uri(api, uuid.show,"system_info"), json)
 
-  def deleteGroupInfo(groupName: String, namespace: Namespace)
-                     (implicit ec: ExecutionContext): HttpRequest =
-    Delete(Resource.uri(api, "group_info").withQuery(Query("namespace" -> namespace.get, "groupName" -> groupName)))
+  def listGroupsForDevice(device: Uuid)
+                         (implicit ec: ExecutionContext): HttpRequest =
+    Get(Resource.uri(api, device.show, "groups"))
+
 }

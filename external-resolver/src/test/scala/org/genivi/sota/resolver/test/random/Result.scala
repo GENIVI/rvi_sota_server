@@ -2,9 +2,9 @@ package org.genivi.sota.resolver.test.random
 
 import org.genivi.sota.data.Device._
 import cats.syntax.show.toShowOps
-import org.genivi.sota.data.{Device, PackageId}
+import org.genivi.sota.data.{Device, PackageId, Uuid}
 import org.genivi.sota.resolver.components.Component
-import org.genivi.sota.resolver.packages.Package
+import org.genivi.sota.resolver.db.Package
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.rest.ErrorCode
 
@@ -34,15 +34,15 @@ final case class  Failure(c: ErrorCode)                                    exten
   * </ul>
   */
 final case object Success                                                  extends Result
-final case class  AddVehicleSuccess(device: Device.Id)                     extends Result
-final case class  SuccessVehicles(vehs : Set[Device.Id])                   extends Result
+final case class  AddVehicleSuccess(device: Uuid)                     extends Result
+final case class  SuccessVehicles(vehs : Set[Uuid])                   extends Result
 final case class  SuccessComponents(cs : Set[Component])                   extends Result
 final case class  SuccessPartNumbers(pns: Set[Component.PartNumber])       extends Result
 final case class  SuccessPackage (pkg  : Package)                          extends Result
 final case class  SuccessPackages(paks : Set[Package])                     extends Result
 final case class  SuccessPackageIds(pids : Set[PackageId])                 extends Result
 final case class  SuccessFilters (filts: Set[Filter])                      extends Result
-final case class  SuccessVehicleMap(m: Map[Device.Id, List[PackageId]])  extends Result {
+final case class  SuccessVehicleMap(m: Map[Uuid, List[PackageId]])  extends Result {
   override def toString(): String = {
     val sb = new java.lang.StringBuilder("SuccessVehicleMap(")
     var isFirstElem = true

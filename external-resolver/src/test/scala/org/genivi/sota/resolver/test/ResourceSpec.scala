@@ -6,10 +6,10 @@ package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
+import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.genivi.sota.core.{DatabaseSpec, FakeDeviceRegistry}
 import org.genivi.sota.data.Device.DeviceName
-import org.genivi.sota.data.{Device, Namespaces}
+import org.genivi.sota.data.{Device, Namespaces, Uuid}
 import org.genivi.sota.http.NamespaceDirectives
 import org.genivi.sota.resolver.Routing
 import org.scalatest.prop.PropertyChecks
@@ -39,8 +39,9 @@ trait ResourceSpec extends
   import akka.http.scaladsl.server.Directives._
 
   // Route
-  lazy implicit val route: Route = new Routing(NamespaceDirectives.defaultNamespaceExtractor,
-    deviceRegistry).route ~ new FakeDeviceRegistryRoutes(deviceRegistry).route
+  lazy implicit val route: Route =
+    new Routing(NamespaceDirectives.defaultNamespaceExtractor, deviceRegistry).route ~
+    new FakeDeviceRegistryRoutes(deviceRegistry).route
 }
 
 /**
@@ -61,8 +62,11 @@ class FakeDeviceRegistryRoutes(deviceRegistry: FakeDeviceRegistry) {
   import akka.http.scaladsl.server.Directives._
 
   val route = path("fake_devices") {
-    (put & entity(as[Device.Id])) { device =>
-      deviceRegistry.addDevice(Device(Namespaces.defaultNs, device, DeviceName(s"name-${device.show}"), Option(DeviceId(device.show))))
+    (put & entity(as[Uuid])) { uuid =>
+      deviceRegistry.addDevice(Device(Namespaces.defaultNs,
+                                      uuid,
+                                      DeviceName(s"name-${uuid.show}"),
+                                      Option(DeviceId(uuid.show))))
       complete(StatusCodes.OK -> "")
     } ~
     get {

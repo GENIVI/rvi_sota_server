@@ -17,9 +17,9 @@ define(function(require) {
     render: function() {
       var vehicles = _.map(this.props.Vehicles.deref(), function(vehicle) {
         return (
-          <tr key={vehicle.deviceId}>
+          <tr key={vehicle.uuid}>
             <td>
-              <Router.Link to='vehicle' params={{id: vehicle.id, vin: vehicle.deviceName}}>
+              <Router.Link to='vehicle' params={{id: vehicle.uuid, vin: vehicle.deviceName}}>
               { vehicle.deviceName }
               </Router.Link>
             </td>

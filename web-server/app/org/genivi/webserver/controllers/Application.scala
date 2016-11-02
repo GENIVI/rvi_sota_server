@@ -61,14 +61,16 @@ class Application @Inject() (ws: WSClient,
    * @param req request to proxy
    * @return The proxied request
    */
-  def proxyTo(apiUri: String, req: Request[RawBuffer]) : Future[Result] = {
-    def toWsHeaders(hdrs: Headers) = hdrs.toMap.map {
-      case(name, value) => name -> value.mkString }
+  def proxyTo(apiUri: String, ns: String, req: Request[RawBuffer]) : Future[Result] = {
+
+    val allowedHeaders = Seq("content-type")
+    def passHeaders(hdrs: Headers) = hdrs.toSimpleMap.filter(h => allowedHeaders.contains(h._1.toLowerCase)) +
+      ("x-ats-namespace" -> ns)
 
     val w = ws.url(apiUri + req.path)
       .withFollowRedirects(false)
       .withMethod(req.method)
-      .withHeaders(toWsHeaders(req.headers).toSeq :_*)
+      .withHeaders(passHeaders(req.headers).toSeq :_*)
       .withQueryString(req.queryString.mapValues(_.head).toSeq :_*)
 
     val wreq = req.body.asBytes() match {
@@ -96,7 +98,7 @@ class Application @Inject() (ws: WSClient,
     { // Mitigation for C04: Log transactions to and from SOTA Server
       auditLogger.info(s"Request: $req from user ${loggedIn.id}")
     }
-    proxyTo(apiByPath(path), req)
+    proxyTo(apiByPath(path), loggedIn.id, req)
   }
 
   /**
@@ -114,10 +116,24 @@ class Application @Inject() (ws: WSClient,
     // Must PUT "vehicles" on both core and resolver
     // TODO: Retry until both responses are success
     for {
-      respCore <- proxyTo(coreApiUri, req)
-      respResult <- proxyTo(resolverApiUri, req)
+      respCore <- proxyTo(coreApiUri, loggedIn.id, req)
+      respResult <- proxyTo(resolverApiUri, loggedIn.id, req)
     } yield respCore
   }
+
+  def apiProxyWithNs[T](apiUri: String): Action[RawBuffer]
+    = AsyncStack(parse.raw, AuthorityKey -> User) { implicit req =>
+      auditLogger.info(s"Request: $req from user ${loggedIn.id}")
+
+      val ns = loggedIn.id
+      val reqNs = Request(req.copy(queryString = req.queryString + ("namespace" -> List(ns))), req.body)
+
+      proxyTo(apiUri, ns, reqNs)
+    }
+
+  def listDeviceAttributes: Action[RawBuffer] = apiProxyWithNs(deviceRegistryApiUri)
+
+  def resolver: Action[RawBuffer] = apiProxyWithNs(resolverApiUri)
 
   /**
    * Renders index.html
@@ -165,7 +181,7 @@ class Application @Inject() (ws: WSClient,
       formWithErrors => Future.successful(BadRequest(views.html.login(formWithErrors))),
       user => {
         ldapAuthN.authenticate(user._1, user._2)
-          .flatMap{acc => gotoLoginSucceeded(acc.id)}
+          .flatMap{acc => gotoLoginSucceeded(user._1)}
           .recoverWith {
             case t =>
               Logger.debug("Login failed.", t)

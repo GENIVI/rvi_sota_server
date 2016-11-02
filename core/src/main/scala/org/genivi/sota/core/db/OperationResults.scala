@@ -5,13 +5,11 @@
 package org.genivi.sota.core.db
 
 import eu.timepit.refined.api.Refined
-import eu.timepit.refined.string.Uuid
 import java.util.UUID
 
 import org.genivi.sota.core.data.OperationResult
 import org.genivi.sota.core.data.UpdateRequest
-import org.genivi.sota.data.Namespace
-import org.genivi.sota.data.Device
+import org.genivi.sota.data.{Device, Namespace, Uuid}
 
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
@@ -37,18 +35,17 @@ object OperationResults {
     def updateId    = column[UUID]("update_request_id")
     def resultCode  = column[Int]("result_code")
     def resultText  = column[String]("result_text")
-    def device      = column[Device.Id]("device_uuid")
+    def device      = column[Uuid]("device_uuid")
     def namespace   = column[Namespace]("namespace")
     def receivedAt  = column[Instant]("received_at")
 
     import shapeless._
 
-    // given `id` is already unique across namespaces, no need to include namespace. Also avoids Slick issue #966.
-    def pk = primaryKey("pk_OperationResultTable", (id))
+    def pk = primaryKey("pk_OperationResultTable", id)
 
-    def * = (id, updateId, resultCode, resultText, device, namespace, receivedAt).shaped <>
-      (x => OperationResult(x._1, x._2, x._3, x._4, x._5, x._6, x._7),
-      (x: OperationResult) => Some((x.id, x.updateId, x.resultCode, x.resultText, x.device, x.namespace, x.receivedAt)))
+    def * = (id, updateId, resultCode, resultText, device, receivedAt).shaped <>
+      (x => OperationResult(x._1, x._2, x._3, x._4, x._5, x._6),
+      (x: OperationResult) => Some((x.id, x.updateId, x.resultCode, x.resultText, x.device, x.receivedAt)))
   }
   // scalastyle:on
 
@@ -65,19 +62,19 @@ object OperationResults {
   /**
    * All [[OperationResult]]-s for the given [[UpdateRequest]]
    */
-  def byId(id: Refined[String, Uuid])(implicit ec: ExecutionContext): DBIO[Seq[OperationResult]] =
+  def byId(id: Refined[String, Uuid.Valid])(implicit ec: ExecutionContext): DBIO[Seq[OperationResult]] =
     all.filter(r => r.updateId === UUID.fromString(id.get)).result
 
   /**
     * All [[OperationResult]]-s for the given device.
     */
-  def byDevice(device: Device.Id)(implicit ec: ExecutionContext): DBIO[Seq[OperationResult]] =
+  def byDevice(device: Uuid)(implicit ec: ExecutionContext): DBIO[Seq[OperationResult]] =
     all.filter(_.device === device).result
 
   /**
     * All [[OperationResult]]-s for the given (device, [[UpdateRequest]]) combination
     */
-  def byDeviceIdAndId(device: Device.Id, id: Refined[String, Uuid])
+  def byDeviceIdAndId(device: Uuid, id: Refined[String, Uuid.Valid])
                      (implicit ec: ExecutionContext): DBIO[Seq[OperationResult]] =
       all.filter(r => r.device === device && r.updateId === UUID.fromString(id.get)).result
 

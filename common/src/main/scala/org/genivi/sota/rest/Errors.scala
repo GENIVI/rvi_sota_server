@@ -17,6 +17,7 @@ object ErrorCodes {
   val InvalidEntity = ErrorCode("invalid_entity")
   val MissingEntity = ErrorCode("missing_entity")
   val ConflictingEntity = ErrorCode("conflicting_entity")
+  val TooManyElements = ErrorCode("too_many_elements")
 }
 
 case class ErrorRepresentation( code: ErrorCode, description: String )

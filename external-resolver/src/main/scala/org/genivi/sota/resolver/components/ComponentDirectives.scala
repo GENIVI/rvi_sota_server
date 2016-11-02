@@ -10,11 +10,9 @@ import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
-import org.genivi.sota.data.Namespace._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.RefinementDirectives.refinedPartNumber
-import org.genivi.sota.resolver.common.Errors
 
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._

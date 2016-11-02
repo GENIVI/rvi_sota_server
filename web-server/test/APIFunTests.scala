@@ -77,7 +77,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   case class PackageResolver(id: PackageId, description: String, vendor: String)
   case class DeviceT(deviceName: String, deviceId: Option[String] = None, deviceType: String)
   case class FilterJson(namespace: String, name: String, expression: String)
-  case class FilterPackageJson(namespace: String, filterName : String, packageName : String, packageVersion : String)
+  case class FilterPackageJson(filterName : String, packageName : String, packageVersion : String)
   case class ComponentJson(namespace: String, partNumber : String, description : String)
   case class UpdateRequest(namespace: String, id: String, packageId: PackageId, creationTime: String,
                            periodOfValidity: String, priority: Int, signature: String, description: String,
@@ -197,7 +197,7 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     val jsonResponse = decode[List[Device]](response.body)
     jsonResponse.toOption match {
       case Some(resp) => resp.length mustBe 1
-        resp.headOption.map(_.id.show) mustEqual testId
+        resp.headOption.map(_.uuid.show) mustEqual testId
       case None => fail(s"JSON parse error: $jsonResponse body: ${response.body}")
     }
   }

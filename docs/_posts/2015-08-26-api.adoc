@@ -11,16 +11,16 @@ SOTA consists of three independent microservices: SOTA Core, SOTA Resolver, and 
 The complete API spec is available in https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md[OpenAPI 2.0] format. You can view the spec files yourself in JSON or YAML formats, or view it on the web in SwaggerUI.
 
 ==== Core
-http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-core.html#!/default[SwaggerUI]
-http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-core.yml[YAML]
-http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-core.json[JSON]
+link:../swagger/sota-core.html#!/default[SwaggerUI]
+link:../swagger/sota-core.yml[YAML]
+link:../swagger/sota-core.json[JSON]
 
 ==== Resolver
-http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-resolver.html#!/default[SwaggerUI]
-http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-resolver.yml[YAML]
-http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-resolver.json[JSON]
+link:../swagger/sota-resolver.html#!/default[SwaggerUI]
+link:../swagger/sota-resolver.yml[YAML]
+link:../swagger/sota-resolver.json[JSON]
 
 ==== Device Registry
-http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-device_registry.html#!/default[SwaggerUI]
-http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-device_registry.yml[YAML]
-http://advancedtelematic.github.io/rvi_sota_server/swagger/sota-device_registry.json[JSON]
+link:../swagger/sota-device_registry.html#!/default[SwaggerUI]
+link:../swagger/sota-device_registry.yml[YAML]
+link:../swagger/sota-device_registry.json[JSON]

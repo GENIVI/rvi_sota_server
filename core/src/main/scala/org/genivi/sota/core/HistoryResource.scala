@@ -8,36 +8,45 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import eu.timepit.refined.api.Refined
-import eu.timepit.refined.string.Uuid
 import io.circe.generic.auto._
 import org.genivi.sota.core.data.InstallHistory
 import org.genivi.sota.core.db.InstallHistories
-import org.genivi.sota.data.Device
-import org.genivi.sota.data.Namespace
+import org.genivi.sota.data.{Namespace, Uuid}
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import slick.driver.MySQLDriver.api._
+import org.genivi.sota.http.UuidDirectives.allowExtractor
+
+import scala.concurrent.Future
 
 
-class HistoryResource(db: Database, namespaceExtractor: Directive1[Namespace])
-                     (implicit system: ActorSystem) extends Directives {
+class HistoryResource(namespaceExtractor: Directive1[Namespace])
+                     (implicit db: Database, system: ActorSystem) extends Directives {
 
-  import Device.{Id, ValidId}
   import CirceMarshallingSupport._
+  import org.genivi.sota.rest.ResponseConversions._
+  import org.genivi.sota.core.data.ClientInstallHistory._
+  import system.dispatcher
 
   /**
     * A web app GET all install attempts, a Seq of [[InstallHistory]], for the given device
     */
-  def history(ns: Namespace, device: Id): Route = {
-    complete(db.run(InstallHistories.list(ns, device)))
+  def history(device: Uuid): Route = {
+    val f = db.run(InstallHistories.list(device)).map(_.toResponse)
+    complete(f)
+  }
+
+  private val deviceUuid = allowExtractor(namespaceExtractor,
+    parameter('uuid.as[String Refined Uuid.Valid]).map(Uuid(_)), deviceAllowed)
+
+  private def deviceAllowed(device: Uuid): Future[Namespace] = {
+    db.run(InstallHistories.deviceNamespace(device))
   }
 
   val route =
-    (pathPrefix("history") & parameter('uuid.as[String Refined Device.ValidId])) { uuid =>
-      namespaceExtractor { ns =>
-        (get & pathEnd) {
-          history(ns, Device.Id(uuid))
-        }
+    (pathPrefix("history") & deviceUuid) { uuid =>
+      (get & pathEnd) {
+        history(uuid)
       }
     }
 }

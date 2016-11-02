@@ -2,10 +2,10 @@ swagger: '2.0'
 info:
   version: ''
   title: SOTA Device Registry
-  description: 'https://github.com/advancedtelematic/rvi_sota_server'
+  description: 'https://github.com/genivi/rvi_sota_server'
   license:
     name: Mozilla Public License
-    url: 'https://github.com/advancedtelematic/rvi_sota_server/blob/master/LICENSE'
+    url: 'https://github.com/genivi/rvi_sota_server/blob/master/LICENSE'
 host: 'localhost:8083'
 basePath: /api/v1
 securityDefinitions: {}
@@ -18,12 +18,7 @@ produces:
 paths:
   /devices:
     get:
-      description: 'Get a list of all the devices in a particular namespace in the device registry.'
-      parameters:
-      - name: namespace
-        in: query
-        required: true
-        type: string
+      description: 'Get a list of all the devices in the namespace in the device registry.'
       responses:
         200:
           description: OK
@@ -34,10 +29,6 @@ paths:
     post:
       description: 'Register a new device with a name and an ID, get back its UUID'
       parameters:
-      - name: namespace
-        in: query
-        required: true
-        type: string
       - name: DeviceT
         in: body
         required: true
@@ -46,7 +37,7 @@ paths:
       responses:
         201:
           description: Created - The UUID of the newly-created device
-        
+
   /devices/{uuid}:
     get:
       description: Get the device object for a single device
@@ -132,16 +123,43 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/SystemInfo'
-  /devices/{uuid}/group_info:
+  /devices/{uuid}/groups:
+    get:
+      description: Retrieve the group memberships for a device
+      parameters:
+      - name: uuid
+        description: The uuid of an existing device
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/uuid'
+  /device_groups:
+    get:
+      description: Returns a list of all groups
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/GroupInfo'
+  /device_groups/{groupId}:
     post:
       description: Create a group info entry for a namespace/groupName entry
       parameters:
-      - name: groupName
-        description: The name of the group of devices
-        in: query
+      - name: groupId
+        description: The uuid of an existing device object
+        in: path
         required: true
         type: string
-      - name: namespace
+      - name: groupName
+        description: The name of the group of devices
         in: query
         required: true
         type: string
@@ -157,12 +175,13 @@ paths:
     put:
       description: Update the group info entry for a namespace/groupName entry
       parameters:
-      - name: groupName
-        description: The name of the group of devices
-        in: query
+      - name: groupId
+        description: The uuid of an existing device object
+        in: path
         required: true
         type: string
-      - name: namespace
+      - name: groupName
+        description: The name of the group of devices
         in: query
         required: true
         type: string
@@ -178,12 +197,13 @@ paths:
     get:
       description: Retrieve the group info for a namespace/groupName entry
       parameters:
-      - name: groupName
-        description: The name of the group of devices
-        in: query
+      - name: groupId
+        description: The uuid of an existing device object
+        in: path
         required: true
         type: string
-      - name: namespace
+      - name: groupName
+        description: The name of the group of devices
         in: query
         required: true
         type: string
@@ -192,6 +212,115 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/GroupInfo'
+  /device_groups/{groupId}/rename:
+    put:
+      description: Rename a group
+      parameters:
+      - name: groupId
+        description: The uuid of an existing group
+        in: path
+        required: true
+        type: string
+      - name: groupName
+        description: The new name of the group
+        in: query
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+  /device_groups/{groupId}/devices:
+    get:
+      description: return a list of device uuids in group
+      parameters:
+      - name: groupId
+        description: The uuid of an existing group
+        in: path
+        required: true
+        type: string
+      responses:
+        201:
+          description: Created
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/uuid'
+  /device_groups/{uuid}/count:
+    get:
+      description: return count of devices in group
+      parameters:
+      - name: uuid
+        description: The uuid of an existing group
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: integer
+  /device_groups/{uuid}/discarded_attrs:
+    get:
+      description: return the discarded attributes for the group as json
+      parameters:
+      - name: uuid
+        description: The uuid of an existing group
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/GroupInfo'
+  /device_groups/{groupId}/devices/{deviceId}:
+    post:
+      description: add a device to a group
+      parameters:
+      - name: groupId
+        description: The uuid of an existing group
+        in: path
+        required: true
+        type: string
+      - name: deviceId
+        description: The uuid of an existing device
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+    delete:
+      description: remove a device from a group
+      parameters:
+      - name: groupId
+        description: The uuid of an existing group
+        in: path
+        required: true
+        type: string
+      - name: deviceId
+        description: The uuid of an existing device
+        in: path
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+  /device_groups/from_attributes:
+    post:
+      description: Create a group from two devices' common attributes
+      parameters:
+      - name: CreateGroupRequest
+        description: The group name and devices to compare
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/CreateGroupRequest'
+      responses:
+        200:
+          description: returns the uuid of the newly created group
+          schema:
+            $ref: '#/definitions/uuid'
 
 definitions:
   uuid:
@@ -241,3 +370,13 @@ definitions:
   GroupInfo:
     type: object
     description: A json object representing device group info. No schema yet defined.
+  CreateGroupRequest:
+    type: object
+    properties:
+      device1:
+        $ref: '#/definitions/uuid'
+      device2:
+        $ref: '#/definitions/uuid'
+      groupName:
+        type: string
+        description: a group name between 1 and 100 characters long

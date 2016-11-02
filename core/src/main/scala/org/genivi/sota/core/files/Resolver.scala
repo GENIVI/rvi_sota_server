@@ -25,8 +25,8 @@ object Types {
   case class ValidExtension()
 
   implicit val validExtension : Validate.Plain[String, ValidExtension] = Validate.fromPredicate(
-    ext => ext.length >= 1 && ext.forall(c => c.isLetter || c.isDigit),
-    ext => s"(${ext} isn't a valid file extension",
+    ext => ext.length >= 1 && ext.forall(_.isLetterOrDigit),
+    ext => s"($ext isn't a valid file extension",
     ValidExtension()
   )
 

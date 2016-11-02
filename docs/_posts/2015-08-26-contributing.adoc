@@ -1,22 +1,16 @@
 ---
 layout: page
 title: "Contributing"
-category: doc
+category: dev
 date: 2015-08-26 10:41:08
-order: 6
+order: 1
 ---
 :icons: font
 
-This project is developed entirely in the open, on public mailing lists and with public code reviews. To participate in development discussions, please subscribe to the https://lists.linuxfoundation.org/mailman/listinfo/automotive-eg-rvi[automotive-eg-rvi] mailing list, or join the #automotive channel on Freenode. Code is reviewed on https://gerrithub.io[gerrit]. Development is planned and issues are tracked in https://www.atlassian.com/software/jira[JIRA].
+This project is developed entirely in the open, on public mailing lists and with public code reviews. To participate in development discussions, please subscribe to the https://lists.linuxfoundation.org/mailman/listinfo/automotive-eg-rvi[automotive-eg-rvi] and http://lists.genivi.org/cgi-bin/mailman/listinfo/genivi-projects[GENIVI Projects] mailing lists. Development is planned and issues are tracked in the https://at.projects.genivi.org/jira/browse/SOTA[GENIVI SOTA JIRA].
 
 All code contributed to this project must be licensed under the https://www.mozilla.org/MPL/2.0/[MPL v2 license], a copy of which you can find in this repository. Documentation must be licensed under the https://creativecommons.org/licenses/by/4.0/[CC BY 4.0 license].
 
-=== Secure Development Process
-
-This project is developed with a special focus on secure engineering. During development, any interaction between components--that is, anything that crosses link:../images/Whitelisted-Interactions-Reference-Diagram.svg[a boundary] in one of the link:../dev/architecture.html#context-diagrams[context diagrams]--must undergo a security review. Any new potential threats and their attendant mitigations will be added to link:../sec/security-threats-mitigations.html[the security model], and once it passes review, the interaction will be added to link:link:../sec/whitelisted-interactions.html[the whitelist].
-
-Features need to come from the link:../ref/requirements.html[project requirements], and will be tracked on JIRA. (Check back later for a process for submitting requests for new requirements.)
-
 === Documentation
 
-We don't want to settle for just making sure RVI SOTA is a great piece of software; we want it to be something that people are interesting in using, understanding, and contributing to. To that end, we strive to make these docs as clear, up-to-date, and comprehensive as possible. So if there's anything you're having trouble with, please don't hesitate to engage with us on the https://lists.linuxfoundation.org/mailman/listinfo/automotive-eg-rvi[automotive-eg-rvi] mailing list. Or if you want to contribute to the documentation directly, you'll find the sources for the documentation site in rvi_sota_server/docs. The docs are written in Asciidoc format (complete syntax reference http://asciidoctor.org/docs/asciidoc-syntax-quick-reference/[here], but if you're familiar with Markdown you'll feel right at home), and rendered using https://jekyllrb.com/[Jekyll] and http://asciidoctor.org/[Asciidoctor].
+We don't want to settle for just making sure RVI SOTA is a great piece of software; we want it to be something that people are interesting in using, understanding, and contributing to. To that end, we strive to make these docs as clear, up-to-date, and comprehensive as possible. So if there's anything you're having trouble with, please don't hesitate to engage with us on the https://lists.linuxfoundation.org/mailman/listinfo/automotive-eg-rvi[automotive-eg-rvi] or http://lists.genivi.org/cgi-bin/mailman/listinfo/genivi-projects[GENIVI Projects] mailing list. Or if you want to contribute to the documentation directly, you'll find the sources for the documentation site in rvi_sota_server/docs. The docs are written in Asciidoc format (syntax reference http://asciidoctor.org/docs/asciidoc-syntax-quick-reference/[here], but if you're familiar with Markdown you'll feel right at home), and rendered using https://jekyllrb.com/[Jekyll] and http://asciidoctor.org/[Asciidoctor].

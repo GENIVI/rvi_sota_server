@@ -21,7 +21,7 @@ In summary, the system looks a bit like this:
 
 image:../images/System-Architecture-Diagram.svg[System Architecture Diagram]
 
-RVI clients would interact directly with Core's RVI node (note: needs to be deployed separately), while HTTPS clients interact with Core directly. For the moment, however, setting up authentication is out of scope for this documentation; for more information we suggest link:https://github.com/advancedtelematic/rvi_sota_server/tree/master/common/src/main/scala/org/genivi/sota/http[looking at the code directly].
+RVI clients would interact directly with Core's RVI node (note: needs to be deployed separately), while HTTPS clients interact with Core directly. For the moment, however, setting up authentication is out of scope for this documentation; for more information we suggest link:https://github.com/genivi/rvi_sota_server/tree/master/common/src/main/scala/org/genivi/sota/http[looking at the code directly].
 
 An ER diagram of the databases for core, resolver, and device registry can be found link:../images/ER-Diagram.svg[here].
 

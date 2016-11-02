@@ -1,7 +1,7 @@
 package org.genivi.sota.resolver.test.generators
 
 import org.genivi.sota.data.{InvalidPackageIdGenerators, Namespaces, PackageIdGenerators}
-import org.genivi.sota.resolver.packages.Package
+import org.genivi.sota.resolver.db.Package
 import org.scalacheck.{Arbitrary, Gen}
 
 trait PackageGenerators
@@ -11,9 +11,10 @@ trait PackageGenerators
 
   val genPackage: Gen[Package] = for {
     id      <- genPackageId
+    uuid    <- Gen.uuid
     desc    <- Gen.option(unicodeStringForMySQLUtf8)
     vendor  <- Gen.option(Gen.alphaStr)
-  } yield Package(defaultNs, id, desc, vendor)
+  } yield Package(uuid, defaultNs, id, desc, vendor)
 
   implicit val arbPackage: Arbitrary[Package] =
     Arbitrary(genPackage)
@@ -35,9 +36,10 @@ trait InvalidPackageGenerators
 
   val genInvalidPackage: Gen[Package] = for {
     id      <- genInvalidPackageId
+    uuid    <- Gen.uuid
     desc    <- Gen.option(unicodeStringForMySQLUtf8)
     vendor  <- Gen.option(Gen.alphaStr)
-  } yield Package(defaultNs, id, desc, vendor)
+  } yield Package(uuid, defaultNs, id, desc, vendor)
 
   def getInvalidPackage: Package = genInvalidPackage.sample.getOrElse(getInvalidPackage)
 

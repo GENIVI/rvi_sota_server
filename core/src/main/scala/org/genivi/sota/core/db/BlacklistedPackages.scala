@@ -4,24 +4,35 @@ import java.time.Instant
 import java.util.UUID
 
 import org.genivi.sota.core.SotaCoreErrors
-import org.genivi.sota.data.{Device, Namespace, PackageId}
+import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.core.db.Packages.PackageTable
+import org.genivi.sota.core.db.Packages.{LiftedPackageId, PackageTable}
 import org.genivi.sota.http.Errors
 import org.genivi.sota.http.Errors.MissingEntity
+import org.genivi.sota.rest.GenericResponseEncoder
 
 case class BlacklistedPackage(id: UUID, namespace: Namespace,
                               packageId: PackageId, comment: String, updatedAt: Instant)
 
 case class BlacklistedPackageRequest(packageId: PackageId, comment: Option[String])
 
+case class BlacklistedPackageResponse(packageId: PackageId, comment: String, updatedAt: Instant)
+
+object BlacklistedPackageResponse {
+  implicit val toResponse = GenericResponseEncoder { (blackList: BlacklistedPackage) =>
+    BlacklistedPackageResponse(blackList.packageId, blackList.comment, blackList.updatedAt)
+  }
+}
+
+
 object BlacklistedPackages {
 
   import org.genivi.sota.refined.SlickRefined._
   import org.genivi.sota.db.SlickExtensions._
+  import Packages._
 
   type BlacklistedPkgRow = (UUID, Namespace, PackageId.Name, PackageId.Version, String, Instant)
 
@@ -58,9 +69,6 @@ object BlacklistedPackages {
     def pk = primaryKey("id", id)
 
     def uniquePackageId = index("BlacklistedPackage_unique_package_id", (namespace, pkgName, pkgVersion), unique = true)
-
-    def packagesFk = foreignKey("BlacklistedPackage_pkg_fk", (namespace, pkgName, pkgVersion),
-      TableQuery[PackageTable])(r => (r.namespace, r.name, r.version))
   }
 
   // scalastyle:on
@@ -101,10 +109,7 @@ object BlacklistedPackages {
       }
     }
 
-    val dbIO = for {
-      _ <- Packages.find(namespace, pkgId)
-      _ <- insertOrUpdate()
-    } yield newBlacklist
+    val dbIO = insertOrUpdate().map(_ => newBlacklist)
 
     db.run(dbIO.transactionally)
   }
@@ -179,42 +184,32 @@ object BlacklistedPackages {
       .map(_ => ())
 
   private def findActiveQuery(namespace: Namespace,
-                        packageId: PackageId): Query[BlacklistedPackagesTable, BlacklistedPackage, Seq] =
+                              packageId: PackageId): Query[BlacklistedPackagesTable, BlacklistedPackage, Seq] =
     active
       .filter(_.namespace === namespace)
       .filter(_.pkgName === packageId.name)
       .filter(_.pkgVersion === packageId.version)
 
-  def findActivePkg(namespace: Namespace, packageId: PackageId)(implicit db: Database): Future[BlacklistedPackage] =
-    db.run(findActiveQuery(namespace, packageId).result.head)
-
-  def findAction(namespace: Namespace): DBIO[Seq[BlacklistedPackage]] =
+  private def findAction(namespace: Namespace): DBIO[Seq[BlacklistedPackage]] =
     active.filter(_.namespace === namespace).result
 
   def findFor(namespace: Namespace)(implicit db: Database): Future[Seq[BlacklistedPackage]] =
     db.run(findAction(namespace))
 
-  def impact(namespace: Namespace)
-            (implicit db: Database, ec: ExecutionContext): Future[Seq[(Device.Id, PackageId)]] = {
-    val query = active
-      .filter(_.namespace === namespace)
-      .join(UpdateRequests.all).on { case (blacklist, requests) =>
-      blacklist.namespace === requests.namespace &&
-        blacklist.pkgName === requests.packageName &&
-        blacklist.pkgVersion === requests.packageVersion
-    }.join(UpdateSpecs.updateSpecs).on { case ((blacklist, requests), specs) =>
-      requests.id === specs.requestId
-    }.map { case ((blacklist, requests), specs) =>
-      (specs.device, blacklist.pkgName, blacklist.pkgVersion)
-    }
-
-    val dbIO = query.result.map {
-      _.map { case (deviceId, pkgName, pkgVersion) =>
-        deviceId -> PackageId(pkgName, pkgVersion)
+  def findByPackageId(namespace: Namespace, packageId: PackageId)
+                     (implicit db: Database, ec: ExecutionContext): Future[BlacklistedPackage] = {
+    for {
+      blacklist <- BlacklistedPackages.findFor(namespace)
+      found <- blacklist.find(_.packageId == packageId) match {
+        case Some(bl) => Future.successful(bl)
+        case None => Future.failed(MissingBlacklistError)
       }
-    }
+    } yield found
+  }
 
-    db.run(dbIO)
+  def impact(namespace: Namespace, impactedDevicesFn: Set[PackageId] => Future[Map[Uuid, Seq[PackageId]]])
+            (implicit db: Database, ec: ExecutionContext): Future[Map[Uuid, Seq[PackageId]]] = {
+    val query =  active.filter(_.namespace === namespace).map(r => LiftedPackageId(r.pkgName, r.pkgVersion)).result
+    db.run(query).map(_.toSet).flatMap(impactedDevicesFn)
   }
 }
-

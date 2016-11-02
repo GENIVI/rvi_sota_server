@@ -2,10 +2,10 @@ swagger: '2.0'
 info:
   version: ''
   title: SOTA Core
-  description: 'https://github.com/advancedtelematic/rvi_sota_server'
+  description: 'https://github.com/genivi/rvi_sota_server'
   license:
     name: Mozilla Public License
-    url: 'https://github.com/advancedtelematic/rvi_sota_server/blob/master/LICENSE'
+    url: 'https://github.com/genivi/rvi_sota_server/blob/master/LICENSE'
 host: 'localhost:8080'
 basePath: /api/v1
 securityDefinitions: {}
@@ -48,6 +48,8 @@ paths:
               $ref: '#/definitions/Package'
   /packages/{name}/{version}:
     put:
+      consumes: 
+      - multipart/form-data
       description: Add a binary package to the system
       parameters:
       - name: name
@@ -122,6 +124,142 @@ paths:
             type: array
             items:
               type: string
+  /campaigns:
+    get:
+      description: 'List all campaigns'
+      responses:
+        200:
+          description: A list of campaign objects
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CampaignMeta'
+    post:
+      description: 'Create a new campaign'
+      parameters:
+      - name: body
+        in: body
+        description: The name of the new campaign
+        required: true
+        schema:
+          $ref: '#/definitions/CampaignCreate'
+      responses:
+        201:
+          description: The new uuid of the created campaign
+          schema:
+            $ref: '#/definitions/uuid'
+  /campaigns/{uuid}:
+    get:
+      description: 'Get a campaign from uuid'
+      parameters:
+      - name: uuid
+        in: path
+        description: The campaign uuid to get
+        required: true
+        type: string
+      responses:
+        200:
+          description: The campaign
+          schema:
+            $ref: '#/definitions/Campaign'
+    delete:
+      description: 'Delete the campaign'
+      parameters:
+      - name: uuid
+        in: path
+        description: The campaign uuid to delete
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+  /campaigns/{uuid}/package:
+    put:
+      description: 'Set the package for the campaign'
+      parameters:
+      - name: uuid
+        in: path
+        description: The campaign uuid to add package to
+        required: true
+        type: string
+      - name: body
+        in: body
+        description: The package to add
+        required: true
+        schema:
+          $ref: '#/definitions/packageId'
+      responses:
+        200:
+          description: OK
+  /campaigns/{uuid}/name:
+    put:
+      description: 'Set the name for the campaign'
+      parameters:
+      - name: uuid
+        in: path
+        description: The campaign uuid to add package to
+        required: true
+        type: string
+      - name: body
+        in: body
+        description: The name for the campaign
+        required: true
+        schema:
+          $ref: '#/definitions/CampaignCreate'
+      responses:
+        200:
+          description: OK
+  /campaigns/{uuid}/groups:
+    put:
+      description: 'Set the groups for the campaign'
+      parameters:
+      - name: uuid
+        in: path
+        description: The campaign uuid to add groups to
+        required: true
+        type: string
+      - name: body
+        in: body
+        description: The groups to add to campaign
+        required: true
+        schema: 
+          $ref: '#/definitions/SetCampaignGroups'
+      responses:
+        200:
+          description: OK
+  /campaigns/{uuid}/launch:
+    post:
+      description: 'Launch the campaign'
+      parameters:
+      - name: uuid
+        in: path
+        description: The campaign uuid to launch
+        required: true
+        type: string
+      - name: body
+        in: body
+        required: false
+        schema:
+          $ref: '#/definitions/LaunchCampaign'
+      responses:
+        200:
+          description: OK
+  /campaigns/{uuid}/statistics:
+    get:
+      description: 'Get statistics on the progress of the campaign'
+      parameters:
+      - name: uuid
+        in: path
+        description: The campaign uuid for which statistics should be returned
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CampaignStatistics'
   /update_requests:
     get:
       description: 'List all update campaigns'
@@ -168,23 +306,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/Update'
-    get:
-      description: |
-        Get a list of the updates queued for a DeviceId, and update the last seen time for that DeviceId. This is called by the
-        client. To get a list of updates queued for a DeviceId without updating the last seen time, use /device_updates/{uuid}/queued
-      parameters:
-      - name: uuid
-        in: path
-        description: The device to list
-        required: true
-        type: string
-      responses:
-        200:
-          description: OK
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/pendingPackage'
   /device_updates/{uuid}/queued:
     get:
       description: Get a list of the updates queued for a device.
@@ -239,43 +360,6 @@ paths:
       responses:
         204:
           description: No Content
-  /device_updates/{uuid}/{updateId}/download:
-    get:
-      description: Download a package binary. This is called by the in-vehicle client.
-      parameters:
-      - name: uuid
-        in: path
-        description: The uuid of the vehicle making this call
-        required: true
-        type: string
-      - name: updateId
-        in: path
-        description: The UUID of an update
-        required: true
-        type: string
-      responses:
-        200:
-          description: OK
-          schema:
-            type: file
-  /device_updates/{uuid}/system_info:
-    put:
-      description: Update the system info for a device
-      parameters:
-      - name: uuid
-        in: path
-        description: The uuid of the vehicle making this call
-        required: true
-        type: string
-      - name: system
-        description: The json object representing the system info
-        in: body
-        required: true
-        schema:
-          $ref: '#/definitions/SystemInfo'
-      responses:
-        200:
-          description: OK
   /device_updates/{uuid}/sync:
     post:
       description: todo
@@ -301,50 +385,6 @@ paths:
         description: The UUID of a currently pending update
         required: true
         type: string
-      responses:
-        204:
-          description: No Content
-  /device_updates/{uuid}/{updateId}:
-    post:
-      description: Report on the status of an install. This is used by the client to send the status and/or log files after an install completes.
-      parameters:
-      - name: uuid
-        in: path
-        description: uuid of the device
-        required: true
-        type: string
-      - name: updateId
-        in: path
-        description: The UUID of a currently pending update
-        required: true
-        type: string
-      - name: installReport
-        in: body
-        required: true
-        schema:
-          $ref: '#/definitions/installReport'
-      responses:
-        415:
-          description: Unsupported Media Type todo
-  /device_updates/{uuid}/installed:
-    put:
-      description: |
-        Update the list of installed packages on a vehicle. Note that this does not do any communication
-        with the client or install any packages; it simply updates the database with the information that
-        the package is installed.
-      parameters:
-      - name: uuid
-        in: path
-        required: true
-        type: string
-      - name: packageList
-        in: body
-        description: An array of packageId objects
-        required: true
-        schema:
-          type: array
-          items:
-            $ref: '#/definitions/packageId'
       responses:
         204:
           description: No Content
@@ -405,7 +445,109 @@ paths:
             type: array
             items:
               $ref: '#/definitions/operationResult'
-  "/blacklist":
+  /mydevice/{uuid}/updates:
+    get:
+      description: |
+        Get a list of the updates queued for a DeviceId, and update the last seen time for that DeviceId.
+        This is called by the client device.
+      parameters:
+      - name: uuid
+        in: path
+        description: The device to list
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/pendingPackage'
+  /mydevice/{uuid}/updates/{updateId}/download:
+    get:
+      description: Download a package binary. This is called by the client device.
+      parameters:
+      - name: uuid
+        in: path
+        description: The uuid of the vehicle making this call
+        required: true
+        type: string
+      - name: updateId
+        in: path
+        description: The UUID of an update
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: file
+  /mydevice/{uuid}/updates/{updateId}:
+    post:
+      description: Report on the status of an update. This is used by the device client.
+      parameters:
+      - name: uuid
+        in: path
+        description: uuid of the device
+        required: true
+        type: string
+      - name: updateId
+        in: path
+        description: The UUID of a currently pending update
+        required: true
+        type: string
+      - name: operationResults
+        in: body
+        description: An array of operation results
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/operationResult'
+      responses:
+        415:
+          description: Unsupported Media Type todo
+  /mydevice/{uuid}/installed:
+    put:
+      description: |
+        Update the list of installed packages on a device. Note that this does not do any communication
+        with the client or install any packages; it simply updates the database with the information that
+        the package is installed.
+      parameters:
+      - name: uuid
+        in: path
+        required: true
+        type: string
+      - name: packageList
+        in: body
+        description: An array of packageId objects
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/packageId'
+      responses:
+        204:
+          description: No Content
+  /mydevice/{uuid}/system_info:
+    put:
+      description: Update the system info for a device
+      parameters:
+      - name: uuid
+        in: path
+        description: The uuid of the vehicle making this call
+        required: true
+        type: string
+      - name: system
+        description: The json object representing the system info
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/SystemInfo'
+      responses:
+        200:
+          description: OK
+  /blacklist:
     get:
       description: Get a list of blacklisted packages
       responses:
@@ -414,7 +556,7 @@ paths:
           schema:
             type: array
             items:
-             $ref: '#/definitions/BlacklistedPackage'
+             $ref: '#/definitions/BlacklistItem'
     put:
       consumes:
         - application/json
@@ -424,9 +566,7 @@ paths:
           description: An object describing the package to blacklist
           required: true
           schema:
-            type: object
-            items:
-              $ref: '#definitions/BlacklistedPackageRequest'
+            $ref: '#/definitions/BlacklistedPackageRequest'
       description: Update a blacklist item
       responses:
         200:
@@ -442,13 +582,13 @@ paths:
           schema:
             type: object
             items:
-              $ref: '#definitions/BlacklistedPackageRequest'
+              $ref: '#/definitions/BlacklistedPackageRequest'
       responses:
         201:
           description: Created
       description: Create a blacklist item
 
-  "/blacklist/{package_name}/{package_version}":
+  /blacklist/{package_name}/{package_version}:
     get:
       parameters:
         - name: package_name
@@ -482,18 +622,38 @@ paths:
         200:
           description: OK
 
-  "/impact/blacklist":
+  /blacklist/{package_name}/{package_version}/preview:
+    get:
+      parameters:
+        - name: package_name
+          in: path
+          description: package name
+          required: true
+          type: string
+        - name: package_version
+          in: path
+          description: package version
+          required: true
+          type: string
+      description: Get the count of affected devices if a blacklist item was created for this package
+      responses:
+        200:
+          schema:
+            type: object
+            properties:
+              affected_devices:
+                type: integer
+                description: Count of affected devices
+          description: OK
+
+  /impact/blacklist:
     get:
       description: Current impact analysis for blacklisted packages
       responses:
         200:
-          description: An array of tuples (DeviceId -> PackageId)
+          description: A Map of (DeviceId -> Seq[PackageId])
           schema:
-            type: array
-            items:
-              type: array
-              items:
-                type: string
+            type: object
 
 definitions:
   uuid:
@@ -613,6 +773,13 @@ definitions:
       createdAt:
         type: string
         format: dateTime
+      status:
+        type: string
+        enum:
+          - InFlight
+          - Pending
+          - Canceled
+          - Failed
   installReport:
     type: object
   operationResult:
@@ -663,3 +830,105 @@ definitions:
       comment:
         type: string
         description: A free text comment about the item
+  Campaign:
+    type: object
+    properties:
+      groups:
+        type: array
+        items:
+          $ref: '#/definitions/CampaignGroup'
+        description: An array of group names
+      meta:
+        $ref: '#/definitions/CampaignMeta'
+      packageId:
+        $ref: '#/definitions/packageId'
+  CampaignMeta:
+    type: object
+    properties:
+      id:
+        $ref: '#/definitions/uuid'
+      launched:
+        type: boolean
+        description: Is this campaign launched
+      name:
+        type: string
+        description: The name of the campaign
+      namespace:
+        type: string
+        description: The namespace the campaign belongs to
+      packageUuid:
+        description: The package uuid for this campaign, can be null if none have been set yet
+        type: string
+  CampaignCreate:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The name to give to the campaign
+  CampaignGroup:
+    type: object
+    properties:
+      group:
+        $ref: '#/definitions/uuid'
+      updateRequest:
+        $ref: '#/definitions/uuid'
+  LaunchCampaign:
+    type: object
+    properties:
+      startDate:
+        type: string
+        format: dateTime
+        description: Optional, the time for the start of the campaign
+      endDate:
+        type: string
+        format: dateTime
+        description: Optional, the time for the end of the campaign
+      priority:
+        type: integer
+        description: Optional, pritority for the launch.
+      signature:
+        type: string
+        description: Optional, signature for the launch.
+      description:
+        type: string
+        description: Optional, description of the launch.
+      requestConfirmation:
+        type: boolean
+        description: True if client should wait for user confirmation before installing, defaults to false.
+  SetCampaignGroups:
+    type: object
+    properties:
+      groups:
+        type: array
+        items:
+          $ref: '#/definitions/uuid'
+        description: The uuids of the groups for the campaign
+  CampaignStatistics:
+    type: object
+    properties:
+      groupId:
+        $ref: '#/definitions/uuid'
+      updateId:
+        $ref: '#/definitions/uuid'
+      deviceCount:
+        type: integer
+        description: Number of devices in group
+      successfulUpdates:
+        type: integer
+        description: Number of devices successfully updated during this update request, not including devices already
+         updated
+      failedUpdates:
+        type: integer
+        description: Number of devices which failed to update during this update request
+      cancelledUpdates:
+        type: integer
+        description: Number of devices which were cancelled during this update
+      updatedDevices:
+        type: integer
+        description: Number of updated devices, includes all successful updates as well as cancelled and failed devices
+
+  SystemInfo:
+    type: object
+    description: |
+      This is a free-form JSON blob describing the hardware components of the client system. 
+      The format expected by the server is the output of `lshw -json -sanitize`.

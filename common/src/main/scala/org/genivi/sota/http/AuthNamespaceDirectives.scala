@@ -29,6 +29,13 @@ object NsFromToken {
     override def namespace(token: JsonWebToken): String = token.subject.underlying
   }
 
+  def parseToken[T: NsFromToken](serializedToken: String)
+    (implicit decoder: Decoder[T]): Xor[String, T] =
+    for {
+      serialized <- CompactSerialization.parse(serializedToken)
+      token      <- decode[T](serialized.encodedPayload.stringData()).leftMap(_.getMessage)
+    } yield token
+
 }
 
 /**
@@ -50,18 +57,11 @@ object AuthNamespaceDirectives {
 
   private[this] def badNamespaceRejection(msg: String): Rejection = AuthorizationFailedRejection
 
-  private[this] def extractToken[T: NsFromToken](serializedToken: String)
-                                                     (implicit decoder: Decoder[T]): Xor[String, T] =
-    for {
-      serialized <- CompactSerialization.parse(serializedToken)
-      token      <- decode[T](serialized.encodedPayload.stringData()).leftMap(_.getMessage)
-    } yield token
-
   def authNamespace[T](implicit nsFromToken: NsFromToken[T], decoder: Decoder[T]): Directive1[Namespace] =
     extractCredentials flatMap { creds =>
       val maybeNamespace = creds match {
         case Some(OAuth2BearerToken(serializedToken)) =>
-          extractToken[T](serializedToken).map( nsFromToken.namespace )
+          NsFromToken.parseToken[T](serializedToken).map( nsFromToken.namespace )
 
         case _ => Xor.Left("No oauth token provided to extract namespace")
     }

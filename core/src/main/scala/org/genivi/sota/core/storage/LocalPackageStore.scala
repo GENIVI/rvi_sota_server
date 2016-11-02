@@ -40,9 +40,8 @@ class LocalPackageStore()(implicit val system: ActorSystem, val mat: ActorMateri
   }
 
   override def store(packageId: PackageId,
-                     fileName: String, fileData: Source[ByteString, Any]): Future[(Uri, PackageSize, DigestResult)] = {
-    val fname = packageFileName(packageId, Option(fileName))
-    val sink = localFileSink(packageId, fname, fileData)
+                     filename: String, fileData: Source[ByteString, Any]): Future[(Uri, PackageSize, DigestResult)] = {
+    val sink = localFileSink(packageId, filename, fileData)
     writePackage(packageId, fileData, sink)
   }
 

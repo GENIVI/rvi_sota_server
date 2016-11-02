@@ -4,10 +4,9 @@
  */
 package org.genivi.sota.data
 
-import eu.timepit.refined.api.Refined
-import org.scalacheck.{Arbitrary, Gen}
 import cats.syntax.show._
 import org.genivi.sota.data.Device.DeviceId
+import org.scalacheck.{Arbitrary, Gen}
 
 /**
   * Created by vladimir on 16/03/16.
@@ -45,7 +44,7 @@ trait DeviceIdGenerators {
 
     val genNotAlphaNumVin: Gen[String] =
       Gen.listOfN(17, Arbitrary.arbitrary[Char]). // scalastyle:ignore magic.number
-        suchThat(_.exists(c => !(c.isLetter || c.isDigit))).flatMap(_.mkString)
+        suchThat(_.exists(!_.isLetterOrDigit)).flatMap(_.mkString)
 
     Gen.oneOf(genTooLongVin, genTooShortVin, genNotAlphaNumVin)
        .map(DeviceId)

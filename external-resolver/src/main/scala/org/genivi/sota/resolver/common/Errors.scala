@@ -6,7 +6,8 @@ package org.genivi.sota.resolver.common
 
 import org.genivi.sota.http.Errors.{MissingEntity, RawError}
 import org.genivi.sota.resolver.components.Component
-import org.genivi.sota.resolver.data.Firmware
+import org.genivi.sota.resolver.firmware.Firmware
+import org.genivi.sota.resolver.db.Package
 import org.genivi.sota.resolver.filters.Filter
 
 /**
@@ -31,7 +32,7 @@ object Errors {
   }
 
   val MissingFilter = MissingEntity(classOf[Filter])
-  val MissingPackage = MissingEntity(classOf[org.genivi.sota.resolver.packages.Package])
+  val MissingPackage = MissingEntity(classOf[Package])
   val MissingFirmware = MissingEntity(classOf[Firmware])
   val MissingComponent = MissingEntity(classOf[Component])
 

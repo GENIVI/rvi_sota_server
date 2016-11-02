@@ -4,12 +4,12 @@
  */
 package org.genivi.sota.resolver.resolve
 
-import org.genivi.sota.data.{Device, PackageId}
+import org.genivi.sota.data.{Device, PackageId, Uuid}
 
 object ResolveFunctions {
 
   def makeFakeDependencyMap(pkgId: PackageId,
-                            vs: Seq[Device.Id]): Map[Device.Id, List[PackageId]] =
+                            vs: Seq[Uuid]): Map[Uuid, List[PackageId]] =
     vs.map(device => Map(device -> List(pkgId)))
-      .foldRight(Map.empty[Device.Id, List[PackageId]])(_++_)
+      .foldRight(Map.empty[Uuid, List[PackageId]])(_++_)
 }

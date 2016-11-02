@@ -6,61 +6,74 @@ package org.genivi.sota.core.data
 
 import org.genivi.sota.data.Namespace
 import java.time.Instant
-import org.genivi.sota.data.{PackageId, Device}
+import org.genivi.sota.data.{Device, PackageId, Uuid}
 import java.util.UUID
+
+import org.genivi.sota.rest.GenericResponseEncoder
 
 /**
  * Domain object for the update operation result
+ *
  * @param id The unique id of operation.
  * @param updateId Id of update this operation belongs to.
  * @param resultCode The status of operation.
  * @param resultText The description of operation.
  * @param device The device of the vehicle the operation was performed on
- * @param namespace The namespace for the given row
  */
 case class OperationResult(
   id         : String,
   updateId   : UUID,
   resultCode : Int,
   resultText : String,
-  device     : Device.Id,
-  namespace  : Namespace,
+  device     : Uuid,
   receivedAt : Instant)
 
 object OperationResult {
   def from(rviOpResult: org.genivi.sota.core.rvi.OperationResult,
            updateRequestId: UUID,
-           device    : Device.Id,
-           namespace : Namespace
+           device: Uuid
           ): OperationResult = {
     OperationResult(
       UUID.randomUUID().toString,
       updateRequestId,
       rviOpResult.result_code,
       rviOpResult.result_text,
-      device    : Device.Id,
-      namespace : Namespace,
+      device: Uuid,
       Instant.now
     )
   }
 }
 
-/**
- * Domain object for the install history of a device
- * @param id The Id in the database. Initialize to Option.None
- * @param namespace The namespace for the given row
- * @param device The device that this install history belongs to
- * @param updateId The Id of the update
- * @param packageId Id of package which belongs to this update.
- * @param success The outcome of the install attempt
- * @param completionTime The date the install was attempted
- */
 case class InstallHistory(
   id             : Option[Long],
-  namespace      : Namespace,
-  device         : Device.Id,
+  device         : Uuid,
   updateId       : UUID,
-  packageId      : PackageId,
+  packageUuid    : UUID,
   success        : Boolean,
   completionTime : Instant
 )
+
+case class ClientInstallHistory(
+  id             : Option[Long],
+  device         : Uuid,
+  updateId       : UUID,
+  packageId      : PackageId,
+  success        : Boolean,
+  cancelled      : Boolean,
+  completionTime : Instant
+)
+
+object ClientInstallHistory {
+  implicit val toResponseEncoder = GenericResponseEncoder {
+    (ih: InstallHistory, packageId: PackageId, wasCancelled: Boolean) =>
+      ClientInstallHistory(
+        ih.id,
+        ih.device,
+        ih.updateId,
+        packageId,
+        ih.success,
+        wasCancelled,
+        ih.completionTime
+      )
+  }
+}

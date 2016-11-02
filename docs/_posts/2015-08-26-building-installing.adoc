@@ -67,15 +67,9 @@ This will apply any new migrations in src/main/resources/db/migration, and keep 
 
 TIP: If you are having trouble with flywayMigrate after an update, try `sbt flywayRepair`, then `sbt flywayMigrate` again. If that doesn't work, you can delete all database tables with `sbt flywayClean`, and then re-create them with `sbt flywayMigrate`.
 
-=== Prerequisite: RVI server node
+=== Optional component: RVI server node
 
-All client-server communications are done using the link:https://github.com/PDXostc/rvi_core[RVI protocol], and the SOTA Core Server requires an active RVI Server Node to run. The easiest way get an RVI node suitable for SOTA up and running is to use our docker images:
-
-[source,sh]
-----
-docker pull advancedtelematic/rvi
-docker run -it --name rvi-server --expose 8801 --expose 8805-8808 -p 8801:8801 -p 8805:8805 -p 8806:8806 -p 8807:8807 -p 8808:8808 advancedtelematic/rvi server
-----
+Client-server communication can be done using the link:https://github.com/genivi/rvi_core[RVI protocol]. If that functionality is desired, the SOTA Core Server will require an active RVI Server Node to run. The easiest way get an RVI node suitable for SOTA up and running is to use our link:../doc/deployment-with-dockercompose.html[docker images].
 
 .Building without an active RVI node
 ****
@@ -156,38 +150,4 @@ Try `sbt flywayRepair`, then `sbt flywayMigrate` again. If that doesn't fix the 
 
 == Building rvi_sota_client Locally
 
-To see the link:https://github.com/PDXostc/rvi_sota_client[SOTA client] in action, you will need some supporting components running. The general steps are:
-
-1.  Build and run RVI server and client nodes
-2.  Build and run rvi_sota_client
-3.  Build and run rvi_sota_demo
-
-=== Building and running RVI nodes
-
-You can build RVI directly from https://github.com/PDXostc/rvi_core[its GitHub repo], or simply run our docker image. These instructions assume you are running the docker image.
-
-1.  Pull the image: `docker pull advancedtelematic/rvi`.
-2.  In two terminal windows, run the rvi client and server nodes
-
-* Client: `docker run -it --name rvi-client --expose 8901 --expose 8905-8908 -p 8901:8901 -p 8905:8905 -p 8906:8906 -p 8907:8907 -p 8908:8908 advancedtelematic/rvi client`
-* Server: `docker run -it --name rvi-server --expose 8801 --expose 8805-8808 -p 8801:8801 -p 8805:8805 -p 8806:8806 -p 8807:8807 -p 8808:8808 advancedtelematic/rvi server`
-
-=== Building and running SOTA client
-
-The SOTA client builds as a docker container. As long as you have `rust` and `cargo` installed, `make docker` should build a docker image called `sota-client`.
-
-You can also build the SOTA client from within a docker container; this will be necessary if your build environment is not running linux. From the project root, run `docker run -it --rm -v $PWD:/build advancedtelematic/rust:latest /bin/bash`. Once you are at a bash prompt, run the following commands:
-
------------------------------
-apt-get update
-apt-get install -y libssl-dev dbus libdbus-1-dev dbus-1-dbg make
-cd /build
-cargo build --release
-exit
------------------------------
-
-Now you can run `make docker` from your normal build environment.
-
-Once the sota-client docker image is built (by either of the two methods above), you can run it with `docker run -it --name sota-client -p 9000:9000 --link rvi-client:rvi-client -e RUST_LOG=info advancedtelematic/sota-client`.
-
-The client will listen for an active campaign from the server, and download updates when they become available. It then uses dbus calls to install the package it received.
+See link:../cli/building-the-sota-client.html[Building the SOTA Client].

@@ -1,0 +1,146 @@
+---
+layout: page
+title: "Client Startup and Configuration"
+category: cli
+date: 2016-10-10 15:23:30
+order: 2
+---
+:icons: font
+
+== Starting the SOTA client
+
+In general, the SOTA client should be run at startup, as a service. For example, if you're using systemd you would want a service file like this:
+
+.Example: systemd service file
+----
+[Unit]
+Description=SOTA Client
+Wants=network-online.target
+After=network.target network-online.target
+Requires=network-online.target
+
+[Service]
+RestartSec=5
+Restart=on-failure
+Environment="RUST_LOG=info"
+DefaultTimeoutStopSec=5
+ExecStart=/usr/bin/sota_client --config /etc/sota.toml
+
+[Install]
+WantedBy=multi-user.target
+----
+
+Systemd is not a requirement, of course; you can use whatever startup system you like, or just run directly from the command line to test.
+
+== SOTA Client config file guide
+
+The config file for the SOTA client is in TOML format, and can be invoked at startup with `sota_client  --config /path/to/config_file.toml`. Example config files for use with https://github.com/genivi/rvi_sota_client/raw/master/tests/genivi.sota.toml[RVI] or https://github.com/genivi/rvi_sota_client/raw/master/tests/sota.toml[HTTP] transport are available in the https://github.com/genivi/rvi_sota_client/[rvi_sota_client] repo. If you're using a commercial service like https://app.atsgarage.com[ATS Garage], you've already been provided with a config file; you can use that as a basis for any changes you need to make.
+
+=== [auth]
+
+This section is required for connection to a SOTA server that implements authentication. It needs to be the first section of the config file. If you are not using authentication, or if you are using RVI transport for authentication, you should *delete* this section entirely.
+
+----
+[auth]
+server = "https://auth-plus.gw.prod01.advancedtelematic.com" <1>
+client_id = "bf66425f-d4d6-422b-b510-7c7f178af9fe" <2>
+client_secret = "hr8nEWzQc9" <2>
+credentials_file = "/opt/sota/credentials.toml" <3>
+----
+<1> The URL of the auth server. Example given is from https://app.atsgarage.com[ATS Garage].
+<2> A unique client ID and secret for this device.
+<3> If this value is defined, SOTA client will check this file for auth credentials first, and use the credentials it finds there. If the file does not exist, it will be created with the `client_id` and `client_secret` above.
+
+=== [core]
+
+This section contains configuration for communicating with the Core server.
+
+----
+[core]
+server = "https://sota-core.gw.prod01.advancedtelematic.com" <1>
+polling = true <2>
+polling_sec = 10 <3>
+----
+<1> The URL of the Core server. Example given is from https://app.atsgarage.com[ATS Garage].
+<2> Boolean indicating whether the Core server should be polled for new updates. You should turn this off if you are using RVI, or if there is an external component on your device using the link:../cli/client-commands-and-events-reference.html#commands[GetUpdateRequests command].
+<3> Set the polling frequency in seconds. This will have no effect if polling is off.
+
+=== [device]
+
+This section contains device-specific configuration.
+
+----
+[device]
+uuid = "123e4567-e89b-12d3-a456-426655440000" <1>
+system_info = "system_info.sh" <2>
+packages_dir = "/tmp/" <3>
+package_manager = "off" <4>
+certificates_path = "/tmp/sota_certificates" <5>
+----
+<1> The UUID of the device. This is usually assigned by the Core server on device creation. With https://app.atsgarage.com[ATS Garage], this will be provided in the config file available for download.
+<2> The script to use to gather system information. By default, this uses link:https://github.com/genivi/rvi_sota_client/blob/master/run/system_info.sh[system_info.sh].
+<3> The location SOTA Client should use for temporary package storage until they are processed by the software loading manager.
+<4> The software loading manager backend to use. Possible values are `deb`, `rpm`, and `off`. If an external software loading manager is in use, this should be set to `off`.
+<5> The certificate authorities SOTA Client trusts. Defaults are taken from Mozilla Servo.
+
+=== [network]
+
+This section contains network configuration information. Some values may be ignored if the corresponding communication methods aren't enabled.
+
+----
+[network]
+http_server = "127.0.0.1:8888" <1>
+socket_commands_path = "/tmp/sota-commands.socket" <2>
+socket_events_path = "/tmp/sota-events.socket" <3>
+websocket_server = "127.0.0.1:9081" <4>
+rvi_edge_server = "127.0.0.1:9080" <5>
+----
+<1> The host and port the client should listen on for commands if the http gateway is enabled in the [gateway] section.
+<2> The name of the unix domain socket to be used for receiving commands, if the socket gateway is enabled in the [gateway] section.
+<3> The name of the unix domain socket to be used for sending events, if the socket gateway is enabled in the [gateway] section.
+<4> The host and port to listen for local websocket connections on. Could be used, for example, for integration with an HMI.
+<5> The host and port the client should listen for RVI messages on, if the rvi gateway is enabled in the [gateway] section.
+
+=== [gateway]
+
+The SOTA Client communicates with the device's software loading manager (or other interested parties) through various gateways. For more details on how this works, please see the link:../cli/client-commands-and-events-reference.html[Client commands and events API reference].
+
+----
+[gateway]
+console = false <1>
+dbus = false
+http = false <2>
+rvi = false
+socket = false <3>
+websocket = true
+----
+<1> REPL mode, for debug use only.
+<2> Simple http server, for sending commands to the client remotely. Note that this does _not_ affect how the client communicates with the server.
+<3> Unix domain sockets for local communication.
+
+==== Optional gateway: [rvi]
+
+Remote Vehicle Interaction (RVI) is an open source infrastructure developed by GENIVI and Jaguar Land Rover to power the next generation of connected vehicle services. This section contains values for configuration of RVI nodes. Note that having this section defined does not imply that RVI will be used; if the RVI gateway is turned off in the `[gateway]` section, this is ignored.
+
+----
+[rvi]
+client = "http://127.0.0.1:8901"
+storage_dir = "/var/sota"
+timeout = 20
+----
+
+==== Optional gateway: [dbus]
+
+This section contains values for dbus configuration, using the GENIVI software loading manager's names as the default. Note that having this section defined does not imply that dbus will be used; if the dbus gateway is turned off in the `[gateway]` section, this is ignored.
+
+----
+[dbus]
+name = "org.genivi.SotaClient"
+path = "/org/genivi/SotaClient"
+interface = "org.genivi.SotaClient"
+software_manager = "org.genivi.SoftwareLoadingManager"
+software_manager_path = "/org/genivi/SoftwareLoadingManager"
+timeout = 60
+----
+
+

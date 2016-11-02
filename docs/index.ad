@@ -27,7 +27,7 @@ This project was conceived with those two ideas in mind. If you have a million v
 
 SOTA is a complete suite for uploading, managing, queueing, transmitting, validating, and deploying software updates remotely to a fleet of vehicles. It includes both a server and a client component, integrated with the rest of the GENIVI system. It's based on open standards, and designed from the ground up to be fast, secure, stable, and scalable. It's also pluggable: SOTA can integrate with existing logistics and fleet management software as part of a total security solution.
 
-Want to know more? Why not check out the link:./dev/architecture.html[Architecture page] for an introduction to how it all works? Or if you'd like to just jump in and get your hands dirty, https://github.com/PDXostc/rvi_sota_server[check out the project from GitHub]. You can link:./doc/building-installing.html[build and run it locally] with sbt, or you can link:./doc/deployment-with-dockercompose.html[launch it quickly and easily with Docker images].
+Want to know more? Why not check out the link:./dev/architecture.html[Architecture page] for an introduction to how it all works? Or if you'd like to just jump in and get your hands dirty, https://github.com/genivi/rvi_sota_server[check out the project from GitHub]. You can link:./doc/building-installing.html[build and run it locally] with sbt, or you can link:./doc/deployment-with-dockercompose.html[launch it quickly and easily with Docker images].
 
 
 

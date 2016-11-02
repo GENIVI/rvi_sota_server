@@ -7,8 +7,8 @@ package org.genivi.sota.resolver.filters
 import org.genivi.sota.data.Namespace._
 import eu.timepit.refined.api.{Refined, Validate}
 import org.genivi.sota.data.Namespace
-import org.genivi.sota.resolver.packages.Package
 import org.genivi.sota.resolver.components.Component
+import org.genivi.sota.resolver.db.Package
 import org.genivi.sota.resolver.filters.FilterAST._
 import org.scalacheck._
 
@@ -38,7 +38,7 @@ object Filter {
     Validate.fromPredicate(
       name => name.length > 1
            && name.length <= 100
-           && name.forall(c => c.isLetter || c.isDigit),
+           && name.forall(_.isLetterOrDigit),
       name => s"($name should be between two and a hundred alphanumeric characters long.)",
       ValidName()
     )

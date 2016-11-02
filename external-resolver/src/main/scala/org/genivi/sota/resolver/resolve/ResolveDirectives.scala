@@ -13,7 +13,6 @@ import org.genivi.sota.data.Namespace._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.common.RefinementDirectives._
-import org.genivi.sota.resolver.devices.DbDepResolver
 
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
@@ -22,6 +21,7 @@ import akka.http.scaladsl.unmarshalling.{FromStringUnmarshaller, Unmarshaller}
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
+import org.genivi.sota.resolver.db.DbDepResolver
 
 
 /**
@@ -46,7 +46,7 @@ class ResolveDirectives(namespaceExtractor: Directive1[Namespace],
     (get &
       encodeResponse &
       pathPrefix("resolve") &
-      parameter('namespace.as[Namespace]) & refinedPackageIdParams) { (ns, id) =>
+      namespaceExtractor & refinedPackageIdParams) { (ns, id) =>
       resolvePackage(ns, id)
     }
   }
