@@ -237,7 +237,7 @@ object UpdateSpecs {
 
       val cancelIO = updateSpecsQuery.map(_.status).update(UpdateStatus.Canceled)
 
-      createHistoriesIO.andThen(cancelIO)
+      createHistoriesIO.andThen(cancelIO).transactionally
     }
   }
 
