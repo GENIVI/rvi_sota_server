@@ -12,7 +12,7 @@ import io.circe.generic.auto._
 import org.genivi.sota.core.db.image.DataType.{Commit, Image}
 import org.genivi.sota.core.db.image.ImageRepositorySupport
 import org.genivi.sota.core.image.ImageResource.ImageRequest
-import org.genivi.sota.core.{DatabaseSpec, DefaultPatience, ImageGenerators}
+import org.genivi.sota.core.{DatabaseSpec, DefaultPatience, ImageGenerators, LongRequestTimeout}
 import org.genivi.sota.http.NamespaceDirectives.defaultNamespaceExtractor
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalatest.concurrent.ScalaFutures
@@ -26,6 +26,7 @@ class ImageResourceSpec extends FunSuite
   with ScalaFutures
   with ImageGenerators
   with DefaultPatience
+  with LongRequestTimeout
   with ImageRepositorySupport {
 
   implicit val _db = db
