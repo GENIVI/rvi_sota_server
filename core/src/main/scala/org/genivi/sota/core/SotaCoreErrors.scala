@@ -18,6 +18,7 @@ object SotaCoreErrors {
     val MissingDevice = ErrorCode("missing_device")
     val MissingPackage = ErrorCode("missing_package")
     val BlacklistedPackage = ErrorCode("blacklisted_package")
+    val MissingImageForUpdate = ErrorCode("missing_image_to_queue")
   }
 
   val BlacklistedPackage = RawError(SotaCoreErrorCodes.BlacklistedPackage, StatusCodes.BadRequest,
@@ -31,4 +32,7 @@ object SotaCoreErrors {
   val MissingPackage = RawError(SotaCoreErrorCodes.MissingPackage, StatusCodes.NotFound, "package not found")
   val MissingUpdateSpec = RawError(ErrorCodes.MissingEntity, StatusCodes.NotFound, "update spec not found")
   val MissingUpdateRequest = RawError(ErrorCodes.MissingEntity, StatusCodes.NotFound, "update request not found")
+
+  val MissingImageForUpdate = RawError(SotaCoreErrorCodes.MissingImageForUpdate, StatusCodes.PreconditionFailed,
+    "image for update not found")
 }

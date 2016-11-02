@@ -47,7 +47,16 @@ object Device {
 
   type DeviceType = DeviceType.DeviceType
 
-  final object DeviceType extends CirceEnum with SlickEnum {
+  final object DeviceType extends CirceEnum {
+    // TODO: We should encode Enums as strings, not Ints
+    // Moved this from SlickEnum, because this should **NOT** be used
+    // It's difficult to read this when reading from the database and the Id is not stable when we add/remove
+    // values from the enum
+    import slick.driver.MySQLDriver.MappedJdbcType
+    import slick.driver.MySQLDriver.api._
+
+    implicit val enumMapper = MappedJdbcType.base[Value, Int](_.id, this.apply)
+
     type DeviceType = Value
     val Other, Vehicle = Value
   }

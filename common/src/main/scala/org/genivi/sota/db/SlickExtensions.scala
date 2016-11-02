@@ -16,7 +16,7 @@ import org.genivi.sota.data.Namespace
 import org.genivi.sota.http.Errors
 import slick.ast.{Node, TypedType}
 import slick.driver.MySQLDriver.api._
-import slick.lifted.Rep
+import slick.lifted.{AbstractTable, Rep}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -39,7 +39,7 @@ object SlickExtensions {
     */
   implicit val javaInstantMapping = {
     MappedColumnType.base[Instant, Timestamp](
-      dt => new Timestamp(dt.toEpochMilli),
+      dt => Timestamp.from(dt),
       ts => ts.toInstant)
   }
 
@@ -81,6 +81,55 @@ object SlickExtensions {
         case _ =>
           DBIO.failed(Errors.TooManyElements)
       }
+    }
+  }
+
+  implicit class DBIOOps[T](io: DBIO[Option[T]]) {
+
+    def failIfNone(t: Throwable)
+                  (implicit ec: ExecutionContext): DBIO[T] =
+      io.flatMap(_.fold[DBIO[T]](DBIO.failed(t))(DBIO.successful))
+  }
+
+  implicit class DBIOSeqOps[+T](io: DBIO[Seq[T]]) {
+    def failIfNotSingle(t: Throwable)
+                       (implicit ec: ExecutionContext): DBIO[T] = {
+      val dbio = io.flatMap { result =>
+        if(result.size > 1)
+          DBIO.failed(Errors.TooManyElements)
+        else
+          DBIO.successful(result.headOption)
+      }
+
+      DBIOOps(dbio).failIfNone(t)
+    }
+  }
+
+  implicit class InsertOrUpdateWithKeyOps[Q <: AbstractTable[_], E](tableQuery: TableQuery[Q])
+                                                                   (implicit ev: E =:= Q#TableElementType) {
+
+    def insertOrUpdateWithKey(element: E,
+                              primaryKeyQuery: TableQuery[Q] => Query[Q, E, Seq],
+                              onUpdate: E => E
+                             )(implicit ec: ExecutionContext): DBIO[E] = {
+
+      val findQuery = primaryKeyQuery(tableQuery)
+
+      def update(v: E): DBIO[E] = {
+        val updated = onUpdate(v)
+        findQuery.update(updated).map(_ => updated)
+      }
+
+      val io = findQuery.result.flatMap { res =>
+        if(res.isEmpty)
+          (tableQuery += element).map(_ => element)
+        else if(res.size == 1)
+          update(res.head)
+        else
+          DBIO.failed(new Exception("Too many elements found to update. primaryKeyQuery must define a unique key"))
+      }
+
+      io.transactionally
     }
   }
 }
