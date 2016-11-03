@@ -59,4 +59,27 @@ In addition, each config value is available as a command line flag when starting
 
 == Building locally
 
-Assuming you have Rust and Cargo installed, `cargo build --release` should work. As a first troubleshooting step, make sure your Rust version matches the one that the Docker image uses; you can find that in the https://github.com/advancedtelematic/dockerfiles/blob/master/rust/Dockerfile[Dockerfile].
+As long as you're on a platform that Rust supports, you should be able to build the client. The general steps are:
+
+. Install rust with link:https://www.rustup.rs/[rustup]
+. Make sure you have the necessary dependencies installed, particularly `libdbus-dev` and `libssl-dev`
+. Clone the link:https://github.com/advancedtelematic/rvi_sota_client[client repo] (preferably the stable branch)
+. Compile using `cargo build --release`
+
+That's really it! At the moment, there is one extra step: we need to pin a particular version of link:https://github.com/hyperium/hyper[hyper], a Rust HTTP library, due to some ssl fixes that are not yet in the release branches. There's a Makefile target for that, though; just run `make rust-openssl` before you build.
+
+.Example: Building sota_client on a fresh Raspbian install, Raspberry Pi 2
+----
+apt-get update && apt-get install -y autoconf git libdbus-1-dev libtool openssl \
+  libssl-dev lshw jq
+curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable -y
+export PATH=/root/.cargo/bin:$PATH
+git clone https://github.com/advancedtelematic/rvi_sota_client.git -b stable
+cd rvi_sota_client
+make rust-openssl
+cargo build --release
+cp run/sota_certificates /etc/
+cp run/system_info.sh /usr/bin/
+----
+
+Once you have the client built, you'll probably want to take a close look at the link:../cli/client-startup-and-configuration.html[configuration guide] and perhaps the link:../cli/client-commands-and-events-reference.html[commands and events reference].
