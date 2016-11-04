@@ -32,7 +32,7 @@ class ComponentDirectives(namespaceExtractor: Directive1[Namespace])
 
   def searchComponent(ns: Namespace): Route =
     parameter('regex.as[String Refined Regex].?) { re =>
-      val query = re.fold(ComponentRepository.list)(re => ComponentRepository.searchByRegex(ns, re))
+      val query = re.fold(ComponentRepository.list(ns))(re => ComponentRepository.searchByRegex(ns, re))
       complete(db.run(query))
     }
 

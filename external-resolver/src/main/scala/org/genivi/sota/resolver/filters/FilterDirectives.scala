@@ -35,7 +35,7 @@ class FilterDirectives(namespaceExtractor: Directive1[Namespace])
 
   def searchFilter(ns: Namespace): Route =
     parameter('regex.as[String Refined Regex].?) { re =>
-      val query = re.fold(FilterRepository.list)(re => FilterRepository.searchByRegex(ns, re))
+      val query = re.fold(FilterRepository.list(ns))(re => FilterRepository.searchByRegex(ns, re))
       complete(db.run(query))
     }
 

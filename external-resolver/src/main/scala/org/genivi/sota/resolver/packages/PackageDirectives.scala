@@ -42,15 +42,19 @@ class PackageDirectives(namespaceExtractor: Directive1[Namespace], deviceRegistr
       StatusCodes.NoContent
     }
 
-  def getFilters: StandardRoute =
-    complete(db.run(PackageFilterRepository.list).map(_.toResponse))
+  def getFilters(ns: Namespace): StandardRoute =
+    complete(db.run(PackageFilterRepository.list(ns)).map(_.toResponse))
 
   def getPackage(ns: Namespace, id: PackageId): Route =
     complete(db.run(PackageRepository.exists(ns, id)))
 
-  def addPackage(id: PackageId): Route =
+  def addPackage(ns: Namespace, id: PackageId): Route =
     entity(as[Package.Metadata]) { metadata =>
-      complete(db.run(PackageRepository.add(id, metadata)))
+      if (metadata.namespace == ns) {
+        complete(db.run(PackageRepository.add(id, metadata)))
+      } else {
+        reject(AuthorizationFailedRejection)
+      }
     }
 
   def getPackageFilters(ns: Namespace, id: PackageId): Route =
@@ -90,21 +94,21 @@ class PackageDirectives(namespaceExtractor: Directive1[Namespace], deviceRegistr
    * @return      Route object containing route for adding packages
    */
   def route: Route = ErrorHandler.handleErrors {
-    pathPrefix("packages") {
-      (path("affected") & namespaceExtractor) { ns =>
+    (pathPrefix("packages") & namespaceExtractor) { ns =>
+      path("affected") {
         post { findAffected(ns) }
       } ~
       (get & path("filter")) {
-        getFilters
+        getFilters(ns)
       } ~
-        ((get | put | delete) & refinedPackageId) { id =>
-          (get & namespaceExtractor & pathEnd) { ns =>
+      ((get | put | delete) & refinedPackageId) { id =>
+        (get & pathEnd) {
             getPackage(ns, id)
-          } ~
-          (put & pathEnd) {
-            addPackage(id)
-          } ~
-          (namespaceExtractor & pathPrefix("filter")) { ns => packageFilterApi(ns, id) }
+        } ~
+        (put & pathEnd) {
+          addPackage(ns, id)
+        } ~
+        pathPrefix("filter") { packageFilterApi(ns, id) }
         }
     }
   }
