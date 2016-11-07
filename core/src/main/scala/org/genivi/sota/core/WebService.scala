@@ -9,7 +9,6 @@ import akka.event.Logging
 import akka.http.scaladsl.server.{Directive1, Directives}
 import akka.stream.ActorMaterializer
 import org.genivi.sota.common.DeviceRegistry
-import org.genivi.sota.core.image.ImageResource
 import org.genivi.sota.core.resolver.{Connectivity, ExternalResolverClient}
 import org.genivi.sota.core.transfer.UpdateNotifier
 import org.genivi.sota.data.Namespace
@@ -38,7 +37,6 @@ class WebService(notifier: UpdateNotifier,
   val blacklistResource = new BlacklistResource(authNamespace, messageBusPublisher)(db, system)
   val impactResource = new ImpactResource(authNamespace, resolver)(db, system)
   val campaignResource = new CampaignResource(authNamespace, deviceRegistry, updateService)(db, system)
-  val imageResource = new ImageResource(authNamespace)(db, system.dispatcher)
 
   val route = (handleErrors & pathPrefix("api" / "v1")) {
     campaignResource.route ~
@@ -47,7 +45,6 @@ class WebService(notifier: UpdateNotifier,
     updateRequestsResource.route ~
     historyResource.route ~
     blacklistResource.route ~
-    impactResource.route ~
-    imageResource.route
+    impactResource.route
   }
 }

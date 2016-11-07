@@ -804,6 +804,7 @@ definitions:
           - Pending
           - Canceled
           - Failed
+          - Finished
   installReport:
     type: object
   operationResult:
@@ -950,9 +951,9 @@ definitions:
       updatedDevices:
         type: integer
         description: Number of updated devices, includes all successful updates as well as cancelled and failed devices
-
   SystemInfo:
     type: object
     description: |
       This is a free-form JSON blob describing the hardware components of the client system. 
       The format expected by the server is the output of `lshw -json -sanitize`.
+

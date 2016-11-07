@@ -17,7 +17,6 @@ import org.scalacheck.{Arbitrary, Gen}
 import java.time.Instant
 import java.time.Duration
 
-import org.genivi.sota.core.db.image.DataType.{Commit, Image, ImageId, ImageUpdate, ImageUpdateId, PullUri, RefName}
 import org.genivi.sota.data.Interval
 
 /**
@@ -140,35 +139,5 @@ trait Generators {
     reqConfirm <- Gen.option(arbitrary[Boolean])
   } yield LaunchCampaign(startDate, endDate, prio, sig, desc, reqConfirm)
 }
-
-trait ImageGenerators {
-  import Namespaces._
-
-  private val genHexChar: Gen[Char] = Gen.oneOf(('a' to 'f') ++ ('0' to '9'))
-
-  val commitGenerator: Gen[Commit] = Gen.listOfN(64, genHexChar).map(_.mkString).map(Refined.unsafeApply)
-
-  val refNameGenerator: Gen[RefName] = Gen.alphaStr.suchThat(_.nonEmpty).map(RefName)
-
-  val httpUri: Gen[PullUri] = Gen.alphaStr.suchThat(_.nonEmpty).map(s => "http://" + s).map(Refined.unsafeApply)
-
-  val imageGenerator: Gen[Image] = for {
-    commit <- commitGenerator
-    name <- refNameGenerator
-    desc <- Gen.alphaStr
-    id <- Gen.uuid
-    url <- httpUri
-    now = Instant.now()
-  } yield Image(defaultNs, ImageId(id), commit, name, desc, url, now, now)
-
-
-  val imageUpdateGenerator: Gen[(Image, ImageUpdate)] = for {
-    id <- Gen.uuid
-    image <- imageGenerator
-    device <- DeviceGenerators.genDevice.map(_.uuid)
-    now = Instant.now()
-  } yield (image, ImageUpdate(defaultNs, ImageUpdateId(id), image.id, device, UpdateStatus.Pending, now, now))
-}
-
 
 object Generators extends Generators
