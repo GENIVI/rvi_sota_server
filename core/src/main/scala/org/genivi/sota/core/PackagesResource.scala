@@ -167,24 +167,24 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
       (get & namespaceExtractor & pathEnd) { ns =>
         searchPackage(ns)
       } ~
-        (namespaceExtractor & extractPackageId) { (ns, pid) =>
-          path("info") {
-            put {
-              updatePackageInfo(ns, pid)
-            }
+      (namespaceExtractor & extractPackageId) { (ns, pid) =>
+        path("info") {
+          put {
+            updatePackageInfo(ns, pid)
+          }
+        } ~
+        pathEnd {
+          get {
+            fetch(ns, pid)
           } ~
-            pathEnd {
-              get {
-                fetch(ns, pid)
-              } ~
-                put {
-                  updatePackage(ns, pid)
-                }
-            } ~
-            path("queued") {
-              queuedDevices(ns, pid)
+            put {
+              updatePackage(ns, pid)
             }
+        } ~
+        path("queued") {
+          queuedDevices(ns, pid)
         }
+      }
     }
   }
 }

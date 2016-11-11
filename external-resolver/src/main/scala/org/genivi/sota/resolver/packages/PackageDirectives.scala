@@ -103,7 +103,7 @@ class PackageDirectives(namespaceExtractor: Directive1[Namespace], deviceRegistr
       } ~
       ((get | put | delete) & refinedPackageId) { id =>
         (get & pathEnd) {
-            getPackage(ns, id)
+          getPackage(ns, id)
         } ~
         (put & pathEnd) {
           addPackage(ns, id)

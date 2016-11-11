@@ -150,11 +150,28 @@ paths:
             items:
               $ref: '#/definitions/GroupInfo'
   /device_groups/{groupId}:
+    put:
+      description: Create a group for a namespace/groupName entry
+      parameters:
+      - name: groupId
+        description: The uuid of the group
+        in: path
+        required: true
+        type: string
+      - name: groupName
+        description: The name of the group of devices
+        in: query
+        required: true
+        type: string
+      responses:
+        201:
+          description: Created
+  /device_groups/{groupId}/group_info:
     post:
       description: Create a group info entry for a namespace/groupName entry
       parameters:
       - name: groupId
-        description: The uuid of an existing device object
+        description: The uuid of the group
         in: path
         required: true
         type: string

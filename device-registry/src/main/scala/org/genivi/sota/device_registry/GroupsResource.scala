@@ -12,8 +12,8 @@ import org.genivi.sota.device_registry.db._
 import org.genivi.sota.http.UuidDirectives.{allowExtractor, extractUuid}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
-import slick.driver.MySQLDriver.api._
 import org.slf4j.LoggerFactory
+import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
@@ -21,9 +21,6 @@ import scala.util.{Failure, Success}
 class GroupsResource(namespaceExtractor: Directive1[Namespace], deviceNamespaceAuthorizer: Directive1[Uuid])
                     (implicit ec: ExecutionContext, db: Database)
   extends Directives {
-
-  import SystemInfoRepository._
-  import JsonMatcher._
 
   private val extractGroupId = allowExtractor(namespaceExtractor, extractUuid, groupAllowed)
 
@@ -93,8 +90,11 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace], deviceNamespaceA
         (post & path("from_attributes") & extractCreateGroupRequest) { request =>
           createGroupFromDevices(request, ns)
         } ~
-        (post & extractUuid & pathEnd & parameter('groupName.as[Name])) { (groupId, groupName) =>
-          entity(as[Json]) { body => createGroupInfo(groupId, groupName, ns, body) }
+        (extractUuid & parameter('groupName.as[Name])) { (groupId, groupName) =>
+          (post & path("group_info") & entity(as[Json])) { body =>
+            createGroupInfo(groupId, groupName, ns, body)
+          } ~
+          (put & pathEnd) { createGroupInfo(groupId, groupName, ns, Json.Null) }
         } ~
         (get & pathEnd) {
           listGroups(ns)
@@ -116,7 +116,7 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace], deviceNamespaceA
         (get & pathEnd) {
           fetchGroupInfo(groupId)
         } ~
-        (put & parameter('groupName.as[Name])) { groupName =>
+        (put & pathPrefix("group_info") & parameter('groupName.as[Name])) { groupName =>
           entity(as[Json]) { body => updateGroupInfo(groupId, groupName, body) }
         } ~
         (get & path("count") & pathEnd) {

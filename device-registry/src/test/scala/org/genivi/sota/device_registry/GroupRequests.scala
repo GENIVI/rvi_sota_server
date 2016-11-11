@@ -40,7 +40,11 @@ trait GroupRequests {
 
   def createGroupInfo(id: Uuid, groupName: Name, json: Json)
                      (implicit ec: ExecutionContext): HttpRequest =
-    Post(Resource.uri(groupsApi, id.underlying.get).withQuery(Query("groupName" -> groupName.get)), json)
+    Post(Resource.uri(groupsApi, id.underlying.get, "group_info").withQuery(Query("groupName" -> groupName.get)), json)
+
+  def createGroup(id: Uuid, groupName: Name)
+                     (implicit ec: ExecutionContext): HttpRequest =
+    Put(Resource.uri(groupsApi, id.underlying.get).withQuery(Query("groupName" -> groupName.get)))
 
   def addDeviceToGroup(groupId: Uuid, deviceId: Uuid)(implicit ec: ExecutionContext): HttpRequest =
     Post(Resource.uri(groupsApi, groupId.underlying.get, "devices", deviceId.underlying.get))
@@ -50,7 +54,7 @@ trait GroupRequests {
 
   def updateGroupInfo(id: Uuid, groupName: Name, json: Json)
                      (implicit ec: ExecutionContext): HttpRequest =
-    Put(Resource.uri(groupsApi, id.underlying.get).withQuery(Query("groupName" -> groupName.get)), json)
+    Put(Resource.uri(groupsApi, id.underlying.get, "group_info").withQuery(Query("groupName" -> groupName.get)), json)
 
   def renameGroup(id: Uuid, newGroupName: Name)(implicit ec: ExecutionContext): HttpRequest = {
     Put(Resource.uri(groupsApi, id.underlying.get, "rename").withQuery(Query("groupName" -> newGroupName.get)))
