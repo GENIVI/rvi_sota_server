@@ -51,7 +51,20 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
     }
   }
 
-  test("creating groups is possible") {
+  test("creating groups manually is possible") {
+    val groupName = arbitrary[GroupInfo.Name].sample.get
+    val groupId = Uuid.generate()
+    createGroup(groupId, groupName) ~> route ~> check {
+      status shouldBe Created
+    }
+
+    fetchGroupInfo(groupId) ~> route ~> check {
+      status shouldBe OK
+      responseAs[Json] shouldEqual Json.Null
+    }
+  }
+
+  test("creating groups from attributes is possible") {
 
     val complexJsonObj = Json.fromFields(List(("key", Json.fromString("value")), ("type", Json.fromString("fish"))))
     val complexNumericJsonObj = Json.fromFields(List(("key", Json.fromString("value")), ("type", Json.fromInt(5))))
