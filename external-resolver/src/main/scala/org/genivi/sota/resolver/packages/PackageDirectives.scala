@@ -16,7 +16,7 @@ import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.RefinementDirectives._
-import org.genivi.sota.resolver.db.{DeviceRepository, Package, PackageFilterRepository, PackageRepository}
+import org.genivi.sota.resolver.db.{DeviceRepository, Package, PackageFilterRepository, PackageRepository, PackageStat}
 import org.genivi.sota.resolver.filters.Filter
 import akka.http.scaladsl.unmarshalling.{FromStringUnmarshaller, Unmarshaller}
 import org.genivi.sota.common.DeviceRegistry
@@ -88,6 +88,15 @@ class PackageDirectives(namespaceExtractor: Directive1[Namespace], deviceRegistr
     }
   }
 
+  def getPackageStats(ns: Namespace, name: PackageId.Name): Route = {
+    val f = deviceRegistryClient.listNamespace(ns).flatMap { nsDevices =>
+      val uuids = nsDevices.map(_.uuid).toSet
+      DeviceRepository.allDevicesWithPackageByName(ns, name, uuids)
+        .map { _.map { case (version, count) => PackageStat(version, count) } }
+    }
+    complete(f)
+  }
+
   /**
    * API route for packages.
    *
@@ -110,6 +119,11 @@ class PackageDirectives(namespaceExtractor: Directive1[Namespace], deviceRegistr
         } ~
         pathPrefix("filter") { packageFilterApi(ns, id) }
         }
+    } ~
+    (pathPrefix("package_stats") & namespaceExtractor) { ns =>
+      (refinedPackageName) { name =>
+        getPackageStats(ns, name)
+      }
     }
   }
 }

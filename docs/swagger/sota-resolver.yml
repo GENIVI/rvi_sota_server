@@ -419,6 +419,22 @@ paths:
       responses:
         200:
           description: ''
+  /package_stats/{name}:
+    get:
+      description: Get a count of devices on which the give package is installed, grouped by versions.
+      parameters:
+      - name: name
+        in: path
+        description: The package name.
+        required: true
+        type: string
+      responses:
+        200:
+          description: A map of package versions to count.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PackageStat'
   /firmware/{uuid}:
     get:
       description: Get a list of firmware installed on the uuid.
@@ -521,4 +537,12 @@ definitions:
       lastModified:
         type: string
         format: dateTime
+  PackageStat:
+    type: object
+    description: An association between a package and a filter.
+    properties:
+      packageVersion:
+        type: string
+      installedCount:
+        type: integer
 
