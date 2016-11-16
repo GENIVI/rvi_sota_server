@@ -5,6 +5,7 @@
 package org.genivi.sota.device_registry.common
 
 import org.genivi.sota.data.GroupInfo
+import org.genivi.sota.device_registry.db.GroupMemberRepository.GroupMember
 import org.genivi.sota.device_registry.db.SystemInfoRepository.SystemInfo
 import org.genivi.sota.http.Errors.{EntityAlreadyExists, MissingEntity, RawError}
 
@@ -22,6 +23,7 @@ object Errors {
     val SystemInfoAlreadyExists = ErrorCode("system_info_already_exists")
     val MissingGroupInfo = ErrorCode("missing_group_info")
     val GroupInfoAlreadyExists = ErrorCode("group_info_already_exists")
+    val MemberAlreadyExists = ErrorCode("device_already_a_group_member")
   }
 
   val MissingDevice = RawError(Codes.MissingDevice, StatusCodes.NotFound, "device doesn't exist")
@@ -32,4 +34,5 @@ object Errors {
 
   val MissingGroupInfo = MissingEntity(classOf[GroupInfo])
   val ConflictingGroupInfo = EntityAlreadyExists(classOf[GroupInfo])
+  val MemberAlreadyExists = EntityAlreadyExists(classOf[GroupMember])
 }
