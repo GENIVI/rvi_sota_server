@@ -12,6 +12,7 @@ import io.circe.generic.auto._
 import org.genivi.sota.core.data.InstallHistory
 import org.genivi.sota.core.db.InstallHistories
 import org.genivi.sota.data.{Namespace, Uuid}
+import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import slick.driver.MySQLDriver.api._
@@ -20,7 +21,7 @@ import org.genivi.sota.http.UuidDirectives.allowExtractor
 import scala.concurrent.Future
 
 
-class HistoryResource(namespaceExtractor: Directive1[Namespace])
+class HistoryResource(namespaceExtractor: Directive1[AuthedNamespaceScope])
                      (implicit db: Database, system: ActorSystem) extends Directives {
 
   import CirceMarshallingSupport._

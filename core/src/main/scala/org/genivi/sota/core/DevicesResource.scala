@@ -19,6 +19,7 @@ import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.resolver.{ConnectivityClient, ExternalResolverClient}
 import org.genivi.sota.data.{Device, Namespace, Uuid}
+import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.Errors.MissingEntity
 import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.marshalling.CirceMarshallingSupport
@@ -45,7 +46,7 @@ case class DeviceSearchResult(
 class DevicesResource(db: Database, client: ConnectivityClient,
                       resolverClient: ExternalResolverClient,
                       deviceRegistry: DeviceRegistry,
-                      namespaceExtractor: Directive1[Namespace])
+                      namespaceExtractor: Directive1[AuthedNamespaceScope])
                      (implicit system: ActorSystem, mat: ActorMaterializer) {
 
   import CirceMarshallingSupport._

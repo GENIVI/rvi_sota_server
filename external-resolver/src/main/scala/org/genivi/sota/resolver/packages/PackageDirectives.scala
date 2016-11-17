@@ -12,6 +12,7 @@ import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{Namespace, PackageId}
+import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
@@ -27,7 +28,7 @@ import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
 
-class PackageDirectives(namespaceExtractor: Directive1[Namespace], deviceRegistryClient: DeviceRegistry)
+class PackageDirectives(namespaceExtractor: Directive1[AuthedNamespaceScope], deviceRegistryClient: DeviceRegistry)
                        (implicit system: ActorSystem,
                         db: Database, mat:
                         ActorMaterializer,

@@ -10,7 +10,7 @@ import cats.data.Xor
 import org.genivi.sota.core.DatabaseSpec
 import org.genivi.sota.data._
 import org.genivi.sota.device_registry.db.DeviceRepository
-import org.genivi.sota.http.AuthDirectives
+import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.UuidDirectives.{allowExtractor, extractUuid}
 import org.genivi.sota.messaging.MessageBus
 import org.scalatest.prop.PropertyChecks
@@ -41,11 +41,9 @@ trait ResourceSpec extends
 
   lazy val defaultNs: Namespace = Namespace("default")
 
-  lazy val namespaceExtractor = Directives.provide(defaultNs)
+  lazy val namespaceExtractor = Directives.provide(AuthedNamespaceScope(defaultNs))
 
   private val namespaceAuthorizer = allowExtractor(namespaceExtractor, extractUuid, deviceAllowed)
-
-  private val authDirective = AuthDirectives.allowAll
 
   private def deviceAllowed(deviceId: Uuid): Future[Namespace] = {
     db.run(DeviceRepository.deviceNamespace(deviceId))
@@ -59,7 +57,7 @@ trait ResourceSpec extends
 
   // Route
   lazy implicit val route: Route =
-    new DeviceRegistryRoutes(namespaceExtractor, authDirective, namespaceAuthorizer, messageBus).route
+    new DeviceRegistryRoutes(namespaceExtractor, namespaceAuthorizer, messageBus).route
 }
 
 trait ResourcePropSpec extends PropSpec with ResourceSpec with PropertyChecks

@@ -15,13 +15,14 @@ import org.genivi.sota.core.data.client._
 import org.genivi.sota.core.db.{Packages, UpdateRequests, UpdateSpecs}
 import org.genivi.sota.core.resolver.ExternalResolverClient
 import org.genivi.sota.data.{Namespace, Uuid}
+import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import slick.driver.MySQLDriver.api.Database
 
 import scala.concurrent.Future
 
 class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, updateService: UpdateService,
-                             namespaceExtractor: Directive1[Namespace])
+                             namespaceExtractor: Directive1[AuthedNamespaceScope])
                             (implicit system: ActorSystem, mat: ActorMaterializer) {
 
   import CirceMarshallingSupport._

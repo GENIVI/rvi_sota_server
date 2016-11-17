@@ -10,7 +10,7 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.genivi.sota.core.{DatabaseSpec, FakeDeviceRegistry}
 import org.genivi.sota.data.Device.DeviceName
 import org.genivi.sota.data.{Device, Namespaces, Uuid}
-import org.genivi.sota.http.{AuthDirectives, NamespaceDirectives}
+import org.genivi.sota.http.NamespaceDirectives
 import org.genivi.sota.resolver.Routing
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{BeforeAndAfterAll, PropSpec, Suite, WordSpec}
@@ -41,7 +41,6 @@ trait ResourceSpec extends
   // Route
   lazy implicit val route: Route =
     new Routing(NamespaceDirectives.defaultNamespaceExtractor,
-                AuthDirectives.allowAll,
                 deviceRegistry).route ~
     new FakeDeviceRegistryRoutes(deviceRegistry).route
 }

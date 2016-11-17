@@ -9,6 +9,7 @@ import org.genivi.sota.data.GroupInfo.Name
 import org.genivi.sota.data.{Namespace, Uuid}
 import org.genivi.sota.device_registry.common.CreateGroupRequest
 import org.genivi.sota.device_registry.db._
+import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.UuidDirectives.{allowExtractor, extractUuid}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
@@ -18,7 +19,7 @@ import slick.driver.MySQLDriver.api._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-class GroupsResource(namespaceExtractor: Directive1[Namespace], deviceNamespaceAuthorizer: Directive1[Uuid])
+class GroupsResource(namespaceExtractor: Directive1[AuthedNamespaceScope], deviceNamespaceAuthorizer: Directive1[Uuid])
                     (implicit ec: ExecutionContext, db: Database)
   extends Directives {
 

@@ -13,6 +13,7 @@ import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.Namespace._
+import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
@@ -27,7 +28,7 @@ import slick.driver.MySQLDriver.api._
  * API routes for filters.
  * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
  */
-class FilterDirectives(namespaceExtractor: Directive1[Namespace])
+class FilterDirectives(namespaceExtractor: Directive1[AuthedNamespaceScope])
                       (implicit system: ActorSystem,
                        db: Database,
                        mat: ActorMaterializer,

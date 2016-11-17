@@ -5,6 +5,7 @@
 
 package org.genivi.sota.core
 
+import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.ErrorHandler._
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes
@@ -24,7 +25,7 @@ import org.genivi.sota.rest.ToResponse
 
 case class PreviewResponse(affected_device_count: Int)
 
-class BlacklistResource(namespaceExtractor: Directive1[Namespace],
+class BlacklistResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
                         messageBus: MessageBusPublisher)
                        (implicit db: Database, system: ActorSystem) {
 

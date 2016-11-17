@@ -22,7 +22,6 @@ import org.genivi.sota.core.storage.S3PackageStore
 import org.genivi.sota.core.transfer._
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.db.BootMigrations
-import org.genivi.sota.http.AuthDirectives.AuthScope
 import org.genivi.sota.http._
 import org.genivi.sota.http.LogDirectives._
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
@@ -55,13 +54,13 @@ trait RviBoot {
     new rvi.SotaServices(updateController, resolverClient, deviceRegistryClient).route
   }
 
-  def rviRoutes(db: Database, notifier: UpdateNotifier, namespaceDirective: Directive1[Namespace]): Route = {
+  def rviRoutes(db: Database, notifier: UpdateNotifier, namespaceDirective: Directive1[AuthedNamespaceScope]): Route = {
       new WebService(notifier, resolverClient,
         deviceRegistryClient, db, namespaceDirective, messageBusPublisher).route ~
       startSotaServices(db)
   }
 
-  def rviInteractionRoutes(db: Database, namespaceDirective: Directive1[Namespace]): Future[Route] = {
+  def rviInteractionRoutes(db: Database, namespaceDirective: Directive1[AuthedNamespaceScope]): Future[Route] = {
     SotaServices.register(settings.rviSotaUri) map { sotaServices =>
       rviRoutes(db, new RviUpdateNotifier(sotaServices), namespaceDirective)
     }
@@ -82,13 +81,12 @@ trait HttpBoot {
 
   def httpInteractionRoutes(db: Database,
                             tokenValidator: Directive0,
-                            namespaceDirective: Directive1[Namespace],
-                            authDirective: AuthScope => Directive0,
+                            namespaceDirective: Directive1[AuthedNamespaceScope],
                             messageBus: MessageBusPublisher): Route = {
     val webService = new WebService(DefaultUpdateNotifier, resolverClient, deviceRegistryClient, db,
       namespaceDirective, messageBusPublisher)
     val vehicleService = new DeviceUpdatesResource(db, resolverClient, deviceRegistryClient,
-      namespaceDirective, authDirective, messageBus)
+      namespaceDirective, messageBus)
 
     tokenValidator {
       webService.route ~ vehicleService.route
@@ -168,7 +166,7 @@ object Boot extends App with DatabaseConfig with HttpBoot with RviBoot with Boot
     case _ =>
       FastFuture.successful {
         httpInteractionRoutes(db, TokenValidator().fromConfig(), NamespaceDirectives.fromConfig(),
-                              AuthDirectives.fromConfig(), messageBusPublisher) ~
+                              messageBusPublisher) ~
           healthResource.route
       }
   }

@@ -26,12 +26,12 @@ object NamespaceDirectives {
   val fromHeader: Directive1[Option[Namespace]] =
     optionalHeaderValueByName(NAMESPACE).map(_.map(Namespace(_)))
 
-  lazy val defaultNamespaceExtractor: Directive1[Namespace] = fromHeader.flatMap {
-    case Some(ns) => provide(ns)
-    case None => provide(configNamespace(ConfigFactory.load()))
+  lazy val defaultNamespaceExtractor: Directive1[AuthedNamespaceScope] = fromHeader.flatMap {
+    case Some(ns) => provide(AuthedNamespaceScope(ns))
+    case None => provide(AuthedNamespaceScope(configNamespace(ConfigFactory.load())))
   }
 
-  def fromConfig(): Directive1[Namespace] =
+  def fromConfig(): Directive1[AuthedNamespaceScope] =
     ConfigFactory.load().getString("auth.protocol") match {
       case "oauth.idtoken" =>
         logger.info("Using namespace from id token")

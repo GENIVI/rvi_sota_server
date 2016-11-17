@@ -15,6 +15,7 @@ import org.genivi.sota.core.campaigns.{CampaignLauncher, CampaignStats}
 import org.genivi.sota.core.data.Campaign
 import org.genivi.sota.core.db.Campaigns
 import org.genivi.sota.data.{Namespace, PackageId}
+import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.http.UuidDirectives._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
@@ -22,7 +23,7 @@ import slick.driver.MySQLDriver.api.Database
 
 import scala.concurrent.Future
 
-class CampaignResource(namespaceExtractor: Directive1[Namespace],
+class CampaignResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
                        deviceRegistry: DeviceRegistry, updateService: UpdateService)
                       (implicit db: Database, system: ActorSystem) {
   import Campaign._

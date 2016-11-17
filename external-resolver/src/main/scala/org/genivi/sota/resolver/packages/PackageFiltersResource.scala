@@ -10,12 +10,13 @@ import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.data.Namespace
+import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.ErrorHandler
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
 
-class PackageFiltersResource(namespaceDirective: Directive1[Namespace], deviceRegistry: DeviceRegistry)
+class PackageFiltersResource(namespaceDirective: Directive1[AuthedNamespaceScope], deviceRegistry: DeviceRegistry)
                             (implicit system: ActorSystem,
                              db: Database, mat:
                              ActorMaterializer,

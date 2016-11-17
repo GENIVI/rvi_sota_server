@@ -14,7 +14,7 @@ import io.circe.generic.auto._
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 import org.genivi.sota.device_registry.common.{Errors => DeviceRegistryErrors}
-import org.genivi.sota.http.AuthDirectives.AuthScope
+import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.http.UuidDirectives.extractUuid
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
@@ -34,8 +34,7 @@ import scala.util.{Success, Failure}
  *
  * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
  */
-class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
-                       authDirective: AuthScope => Directive0,
+class DeviceDirectives(namespaceExtractor: Directive1[AuthedNamespaceScope],
                        deviceRegistry: DeviceRegistry)
                       (implicit system: ActorSystem,
                         db: Database,
@@ -124,9 +123,11 @@ class DeviceDirectives(namespaceExtractor: Directive1[Namespace],
     }
   }
 
-  def packagesApi: Route = extractUuid { device =>
-    (path("packages") & put & authDirective(s"ota-core.{device.show}.write")) {
-      updateInstalledSoftware(device)
+  def packagesApi: Route = namespaceExtractor { authedNs =>
+    extractUuid { device =>
+      (path("packages") & put & authedNs.oauthScope(s"ota-core.{device.show}.write")) {
+        updateInstalledSoftware(device)
+      }
     }
   }
 

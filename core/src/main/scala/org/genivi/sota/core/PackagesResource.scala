@@ -37,6 +37,7 @@ import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.unmarshalling._
 import io.circe.generic.auto._
 import org.genivi.sota.core.SotaCoreErrors.SotaCoreErrorCodes
+import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.http.Errors.RawError
 
@@ -54,7 +55,7 @@ object PackagesResource {
 
 class PackagesResource(resolver: ExternalResolverClient, db : Database,
                        messageBusPublisher: MessageBusPublisher,
-                       namespaceExtractor: Directive1[Namespace])
+                       namespaceExtractor: Directive1[AuthedNamespaceScope])
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
 
   import system.dispatcher

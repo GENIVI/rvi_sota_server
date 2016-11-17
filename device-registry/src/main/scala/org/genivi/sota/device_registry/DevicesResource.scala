@@ -23,14 +23,13 @@ import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.MessageBusPublisher._
 import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted, DeviceSeen}
 import org.genivi.sota.rest.Validation._
-import org.genivi.sota.http.AuthDirectives.AuthScope
+import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.UuidDirectives.extractUuid
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
 
-class DevicesResource(namespaceExtractor: Directive1[Namespace],
-                      authDirective: AuthScope => Directive0,
+class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
                       messageBus: MessageBusPublisher,
                       deviceNamespaceAuthorizer: Directive1[Uuid])
                      (implicit system: ActorSystem,
@@ -123,15 +122,16 @@ class DevicesResource(namespaceExtractor: Directive1[Namespace],
       }
     }
 
-  def mydeviceRoutes: Route =
+  def mydeviceRoutes: Route = namespaceExtractor { authedNs =>
     (pathPrefix("mydevice") & extractUuid) { uuid =>
-      (post & path("ping") & authDirective(s"ota-core.${uuid.show}.write")) {
+      (post & path("ping") & authedNs.oauthScope(s"ota-core.${uuid.show}.write")) {
         updateLastSeen(uuid)
       } ~
-      (get & pathEnd & authDirective(s"ota-core.${uuid.show}.read")) {
+      (get & pathEnd & authedNs.oauthScopeReadonly(s"ota-core.${uuid.show}.read")) {
         fetchDevice(uuid)
       }
     }
+  }
 
   /**
    * Base API route for devices.

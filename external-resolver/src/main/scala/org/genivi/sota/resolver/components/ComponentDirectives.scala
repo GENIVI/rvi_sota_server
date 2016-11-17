@@ -18,13 +18,14 @@ import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 import Directives._
 import org.genivi.sota.data.Namespace
+import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.ErrorHandler
 
 /**
  * API routes for creating, deleting, and listing components.
  * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
  */
-class ComponentDirectives(namespaceExtractor: Directive1[Namespace])
+class ComponentDirectives(namespaceExtractor: Directive1[AuthedNamespaceScope])
                          (implicit system: ActorSystem,
                           db: Database,
                           mat: ActorMaterializer,

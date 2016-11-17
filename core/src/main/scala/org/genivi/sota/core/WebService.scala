@@ -12,6 +12,7 @@ import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.resolver.{Connectivity, ExternalResolverClient}
 import org.genivi.sota.core.transfer.UpdateNotifier
 import org.genivi.sota.data.Namespace
+import org.genivi.sota.http.AuthedNamespaceScope
 
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api.Database
@@ -21,7 +22,7 @@ class WebService(notifier: UpdateNotifier,
                  resolver: ExternalResolverClient,
                  deviceRegistry: DeviceRegistry,
                  db: Database,
-                 authNamespace: Directive1[Namespace],
+                 authNamespace: Directive1[AuthedNamespaceScope],
                  messageBusPublisher: MessageBusPublisher)
                 (implicit val system: ActorSystem, val mat: ActorMaterializer,
                  val connectivity: Connectivity, val ec: ExecutionContext) extends Directives {

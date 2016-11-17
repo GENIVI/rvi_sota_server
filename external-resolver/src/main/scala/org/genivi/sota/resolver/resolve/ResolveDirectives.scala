@@ -19,6 +19,7 @@ import slick.driver.MySQLDriver.api._
 import Directives._
 import akka.http.scaladsl.unmarshalling.{FromStringUnmarshaller, Unmarshaller}
 import org.genivi.sota.common.DeviceRegistry
+import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.db.DbDepResolver
@@ -27,7 +28,7 @@ import org.genivi.sota.resolver.db.DbDepResolver
 /**
  * API routes for package resolution.
  */
-class ResolveDirectives(namespaceExtractor: Directive1[Namespace],
+class ResolveDirectives(namespaceExtractor: Directive1[AuthedNamespaceScope],
                         deviceRegistry: DeviceRegistry)
                        (implicit system: ActorSystem,
                         db: Database,

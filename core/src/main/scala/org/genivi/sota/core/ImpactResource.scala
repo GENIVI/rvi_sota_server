@@ -13,9 +13,10 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import slick.driver.MySQLDriver.api._
 import Directives._
 import org.genivi.sota.core.resolver.ExternalResolverClient
+import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.ErrorHandler
 
-class ImpactResource(namespaceExtractor: Directive1[Namespace],
+class ImpactResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
                      resolverClient: ExternalResolverClient)
                     (implicit db: Database, system: ActorSystem) {
   import system.dispatcher
