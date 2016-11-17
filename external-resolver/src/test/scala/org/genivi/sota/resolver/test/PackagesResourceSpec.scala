@@ -15,7 +15,7 @@ import org.genivi.sota.data.UuidGenerator._
 import org.genivi.sota.data.{Device, Namespaces, PackageId, Uuid}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
-import org.genivi.sota.resolver.db.{Package, PackageResponse}
+import org.genivi.sota.resolver.db.{Package, PackageResponse, PackageStat}
 import org.genivi.sota.resolver.db.Package._
 import org.genivi.sota.resolver.test.generators.PackageGenerators
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
@@ -111,6 +111,44 @@ class PackagesResourcePropSpec extends ResourcePropSpec with PackageGenerators {
       getAffected(defaultNs, Set(p.id)) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Map[Uuid, Seq[PackageId]]] shouldBe Map(device -> Seq(p.id))
+      }
+    }
+  }
+
+  property("COUNT devices with installed package version group by package name") {
+    forAll { (device: Uuid, p: Package) =>
+      addVehicle(device) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+      }
+
+      addPackage(p.namespace, p.id.name.get, p.id.version.get, p.description, p.vendor) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+      }
+
+      installPackage(device, p) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+      }
+
+      getPackageStats(defaultNs, p.id.name) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+        responseAs[Seq[PackageStat]] should contain(PackageStat(p.id.version, 1))
+      }
+    }
+  }
+
+  property("COUNT devices with installed foreign package version group by package name") {
+    forAll { (device: Uuid, p: Package) =>
+      addVehicle(device) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+      }
+
+      installFirmware(device, Set(p.id), Set.empty) ~> route ~> check {
+        status shouldBe StatusCodes.NoContent
+      }
+
+      getPackageStats(defaultNs, p.id.name) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+        responseAs[Seq[PackageStat]] should contain(PackageStat(p.id.version, 1))
       }
     }
   }

@@ -131,4 +131,8 @@ object PackageRepository {
       (pkg.name.mappedTo[String] ++ pkg.version.mappedTo[String]).inSet(ids.map(id => id.name.get + id.version.get))
     }
   }
+
+  protected[db] def withNameQuery(ns: Namespace, name: PackageId.Name): Query[PackageTable, Package, Seq] = {
+    packages.filter { pkg => pkg.namespace === ns && pkg.name === name }
+  }
 }

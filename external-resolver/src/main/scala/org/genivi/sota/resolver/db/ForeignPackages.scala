@@ -87,4 +87,12 @@ object ForeignPackages {
   : Query[(Rep[Uuid], LiftedPackageId), (Uuid, PackageId), Seq] = {
     inSetQuery(ids).map(row => (row.device, LiftedPackageId(row.name, row.version)))
   }
+
+  protected [db] def installedByNameQuery(name: PackageId.Name, devices: Set[Uuid])
+  : Query[(Rep[PackageId.Version], Rep[Int]), (PackageId.Version, Int), Seq] = {
+    foreignPackages
+      .filter { p => p.name === name && p.device.inSet(devices) }
+      .groupBy(_.version)
+      .map { case (version, installedPkg) => (version, installedPkg.length) }
+  }
 }

@@ -26,6 +26,9 @@ object RefinementDirectives {
      refined[PackageId.ValidVersion](Slash ~ Segment))
        .as[PackageId](PackageId.apply _)
 
+  val refinedPackageName: Directive1[PackageId.Name] =
+    refined[PackageId.ValidName](Slash ~ Segment)
+
   val refinedPartNumber: Directive1[Component.PartNumber] =
     refined[Component.ValidPartNumber](Slash ~ Segment)
 
