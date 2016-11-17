@@ -3,6 +3,7 @@ package org.genivi.sota.device_registry
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model.Uri.Query
+import akka.http.scaladsl.server.Route
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
@@ -19,9 +20,10 @@ trait GroupRequests {
 
   val groupsApi = "device_groups"
 
-  def createGroupInfoOk(id: Uuid, groupName: Name, json: Json): Unit =
-    createGroupInfo(id, groupName, json) ~> route ~> check {
+  def createGroupInfoOk(groupName: Name, json: Json): Uuid =
+    createGroupInfo(groupName, json) ~> route ~> check {
       status shouldBe Created
+      responseAs[Uuid]
     }
 
   def createGroupFromDevices(device1: Uuid, device2: Uuid, groupName: Name)
@@ -38,13 +40,13 @@ trait GroupRequests {
 
   def fetchGroupInfo(id: Uuid): HttpRequest = Get(Resource.uri(groupsApi, id.underlying.get))
 
-  def createGroupInfo(id: Uuid, groupName: Name, json: Json)
+  def createGroupInfo(groupName: Name, json: Json)
                      (implicit ec: ExecutionContext): HttpRequest =
-    Post(Resource.uri(groupsApi, id.underlying.get, "group_info").withQuery(Query("groupName" -> groupName.get)), json)
+    Post(Resource.uri(groupsApi, "group_info").withQuery(Query("groupName" -> groupName.get)), json)
 
-  def createGroup(id: Uuid, groupName: Name)
+  def createGroup(groupName: Name)
                      (implicit ec: ExecutionContext): HttpRequest =
-    Put(Resource.uri(groupsApi, id.underlying.get).withQuery(Query("groupName" -> groupName.get)))
+    Post(Resource.uri(groupsApi).withQuery(Query("groupName" -> groupName.get)))
 
   def addDeviceToGroup(groupId: Uuid, deviceId: Uuid)(implicit ec: ExecutionContext): HttpRequest =
     Post(Resource.uri(groupsApi, groupId.underlying.get, "devices", deviceId.underlying.get))

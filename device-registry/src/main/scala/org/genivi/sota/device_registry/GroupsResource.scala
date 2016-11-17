@@ -90,11 +90,11 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace], deviceNamespaceA
         (post & path("from_attributes") & extractCreateGroupRequest) { request =>
           createGroupFromDevices(request, ns)
         } ~
-        (extractUuid & parameter('groupName.as[Name])) { (groupId, groupName) =>
+        parameter('groupName.as[Name]) { groupName =>
           (post & path("group_info") & entity(as[Json])) { body =>
-            createGroupInfo(groupId, groupName, ns, body)
+            createGroupInfo(Uuid.generate(), groupName, ns, body)
           } ~
-          (put & pathEnd) { createGroupInfo(groupId, groupName, ns, Json.Null) }
+          (post & pathEnd) { createGroupInfo(Uuid.generate(), groupName, ns, Json.Null) }
         } ~
         (get & pathEnd) {
           listGroups(ns)
