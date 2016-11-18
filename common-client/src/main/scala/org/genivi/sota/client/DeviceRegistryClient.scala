@@ -7,7 +7,6 @@ package org.genivi.sota.client
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshaller
@@ -20,7 +19,7 @@ import io.circe.Json
 import io.circe.generic.auto._
 import java.time.Instant
 import org.genivi.sota.common.DeviceRegistry
-import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
+import org.genivi.sota.data.{Device, Namespace, Uuid}
 import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.http.NamespaceDirectives.nsHeader
 import org.genivi.sota.marshalling.CirceMarshallingSupport

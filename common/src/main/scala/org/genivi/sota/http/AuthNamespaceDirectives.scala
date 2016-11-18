@@ -8,8 +8,6 @@ import com.advancedtelematic.akka.http.jwt.InvalidScopeRejection
 import com.advancedtelematic.jws.CompactSerialization
 import com.advancedtelematic.jwt.{JsonWebToken, Scope, Subject}
 import io.circe.parser._
-import org.genivi.sota.data.Namespace._
-import eu.timepit.refined.refineV
 import io.circe.Decoder
 import org.genivi.sota.data.Namespace
 

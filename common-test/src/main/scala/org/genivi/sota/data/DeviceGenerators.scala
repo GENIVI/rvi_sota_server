@@ -4,7 +4,6 @@
  */
 package org.genivi.sota.data
 
-import eu.timepit.refined.api.Refined
 import org.scalacheck.{Arbitrary, Gen}
 import java.time.Instant
 

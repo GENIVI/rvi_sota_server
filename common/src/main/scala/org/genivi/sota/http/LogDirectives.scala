@@ -7,8 +7,7 @@ package org.genivi.sota.http
 import akka.event.Logging
 import akka.event.Logging.LogLevel
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
-import akka.http.scaladsl.model.headers.RawHeader
-import akka.http.scaladsl.server.{Directive, Directive0, Directives}
+import akka.http.scaladsl.server.{Directive0, Directives}
 
 object LogDirectives {
   import Directives._

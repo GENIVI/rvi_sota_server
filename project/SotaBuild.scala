@@ -49,6 +49,18 @@ object SotaBuild extends Build {
     shellPrompt in ThisBuild := { state => Project.extract(state).currentRef.project + "> " }
   )
 
+  lazy val lintOptions = Seq(
+    scalacOptions in Compile ++= Seq(
+      "-Ywarn-unused-import",
+      "-Xfatal-warnings",
+      "-Xlint:-missing-interpolator",
+      "-Ywarn-dead-code",
+      "-Yno-adapted-args"
+    ),
+    scalacOptions in (Compile, doc) ++= Seq(
+      "-no-link-warnings"
+    )
+  )
 
   lazy val compilerSettings = Seq(
     scalacOptions in Compile ++= Seq("-encoding", "UTF-8", "-target:jvm-1.8", "-deprecation", "-feature", "-unchecked", "-Xlog-reflective-calls", "-Xlint", "-language:higherKinds"),
@@ -63,24 +75,24 @@ object SotaBuild extends Build {
 
   // the sub-projects
   lazy val common = Project(id = "sota-common", base = file("common"))
-    .settings(basicSettings ++ compilerSettings)
+    .settings(basicSettings ++ compilerSettings ++ lintOptions)
     .settings(libraryDependencies ++= Dependencies.JsonWebSecurity ++ Dependencies.Rest :+ Dependencies.AkkaHttpCirceJson :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
     .dependsOn(commonData)
     .settings(Publish.settings)
 
   lazy val commonData = Project(id = "sota-common-data", base = file("common-data"))
-    .settings(basicSettings ++ compilerSettings)
+    .settings(basicSettings ++ compilerSettings ++ lintOptions)
     .settings(libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.CommonsCodec :+ Dependencies.TypesafeConfig)
     .settings(Publish.settings)
 
   lazy val commonTest = Project(id = "sota-common-test", base = file("common-test"))
-    .settings(basicSettings ++ compilerSettings)
+    .settings(basicSettings ++ compilerSettings ++ lintOptions)
     .settings(libraryDependencies ++= Seq (Dependencies.Cats, Dependencies.Refined, Dependencies.Generex))
     .dependsOn(commonData)
     .settings(Publish.settings)
 
   lazy val commonDbTest = Project(id = "sota-common-db-test", base = file("common-db-test"))
-    .settings(basicSettings ++ compilerSettings)
+    .settings(basicSettings ++ compilerSettings ++ lintOptions)
     .settings(libraryDependencies ++= Dependencies.Slick :+ Dependencies.Flyway :+ Dependencies.ScalaTestLib)
     .dependsOn(commonData, commonTest)
     .settings(Publish.settings)
@@ -185,12 +197,12 @@ object SotaBuild extends Build {
     .settings(Publish.settings)
 
   lazy val commonClient = Project(id = "sota-common-client", base = file("common-client"))
-    .settings(basicSettings ++ compilerSettings)
+    .settings(basicSettings ++ compilerSettings ++ lintOptions)
     .dependsOn(common, commonData)
     .settings(Publish.settings)
 
   lazy val commonMessaging = Project(id = "sota-common-messaging", base = file("common-messaging"))
-    .settings(basicSettings ++ compilerSettings ++ Seq(
+    .settings(basicSettings ++ compilerSettings ++ lintOptions ++ Seq(
       libraryDependencies ++= Dependencies.Circe ++ Dependencies.Akka :+ Dependencies.Nats :+ Dependencies.Kafka
     ))
     .dependsOn(common, commonData)

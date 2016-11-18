@@ -8,11 +8,10 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.client.RequestBuilding._
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.ContentTypes._
-import akka.http.scaladsl.model.{FormData,HttpEntity,HttpMethods,HttpRequest,Multipart,RequestEntity,StatusCodes,Uri}
+import akka.http.scaladsl.model.{HttpEntity,Multipart,StatusCodes,Uri}
 import akka.http.scaladsl.model.headers.{Authorization,BasicHttpCredentials,OAuth2BearerToken}
-import akka.http.scaladsl.unmarshalling.{Unmarshal,Unmarshaller}
+import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.server.{AuthorizationFailedRejection, Directive0, Directives}
-import akka.http.scaladsl.server.directives.{AuthenticationDirective, Credentials}
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import cats.data.Xor
@@ -29,7 +28,7 @@ import org.apache.commons.codec.binary.Base64
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.slf4j.LoggerFactory
 import scala.concurrent.{ExecutionContext,Future}
-import scala.util.{Failure,Success,Try}
+import scala.util.{Failure,Success}
 
 case class ValidationResponse(active: Boolean)
 

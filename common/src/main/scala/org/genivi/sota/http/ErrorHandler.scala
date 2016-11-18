@@ -20,6 +20,7 @@ object Errors {
   import Directives._
   import ErrorRepresentation._
 
+  import scala.language.existentials
   case class MissingEntity(name: Class[_]) extends Throwable with NoStackTrace
   case class EntityAlreadyExists(name: Class[_]) extends Throwable with NoStackTrace
 

@@ -8,7 +8,7 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.Json
 import java.time.Instant
-import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
+import org.genivi.sota.data.{Device, Namespace, Uuid}
 import scala.concurrent.{ExecutionContext, Future}
 
 import Device._
