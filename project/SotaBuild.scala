@@ -6,6 +6,7 @@ import sbt._
 import sbt.Keys._
 import sbtbuildinfo._
 import sbtbuildinfo.BuildInfoKeys._
+import scoverage.ScoverageKeys._
 import com.typesafe.sbt.packager.docker.DockerPlugin
 import DockerPlugin.autoImport.Docker
 import com.typesafe.sbt.packager.Keys._
@@ -25,6 +26,7 @@ object SotaBuild extends Build {
     organization := "org.genivi",
     scalaVersion := "2.11.8",
     publishArtifact in Test := false,
+    coverageOutputTeamCity := true,
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += "Sonatype Nexus Repository Manager" at "http://nexus.advancedtelematic.com:8081/content/repositories/releases",
     resolvers += "version99 Empty loggers" at "http://version99.qos.ch",
