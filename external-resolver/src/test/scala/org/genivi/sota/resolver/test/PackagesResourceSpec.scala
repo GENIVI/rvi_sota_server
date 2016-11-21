@@ -5,22 +5,14 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.ValidationRejection
-import akka.http.scaladsl.testkit.RouteTestTimeout
 import eu.timepit.refined.api.Refined
-import io.circe.Json
 import io.circe.generic.auto._
-import org.genivi.sota.data.DeviceGenerators._
 import org.genivi.sota.data.UuidGenerator._
-import org.genivi.sota.data.{Device, Namespaces, PackageId, Uuid}
+import org.genivi.sota.data.{Namespaces, PackageId, Uuid}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import org.genivi.sota.resolver.common.Errors.Codes
 import org.genivi.sota.resolver.db.{Package, PackageResponse, PackageStat}
-import org.genivi.sota.resolver.db.Package._
 import org.genivi.sota.resolver.test.generators.PackageGenerators
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
-import org.genivi.sota.data.DeviceGenerators._
-import scala.concurrent.duration._
 
 /**
  * Spec for Packages REST actions

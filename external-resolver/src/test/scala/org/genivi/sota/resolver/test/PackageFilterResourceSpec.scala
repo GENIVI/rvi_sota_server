@@ -10,7 +10,7 @@ import io.circe.generic.auto._
 import org.genivi.sota.data.{Namespaces, PackageId}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
-import org.genivi.sota.resolver.db.{Package, PackageFilter, PackageFilterResponse, PackageResponse}
+import org.genivi.sota.resolver.db.{PackageFilter, PackageFilterResponse, PackageResponse}
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 

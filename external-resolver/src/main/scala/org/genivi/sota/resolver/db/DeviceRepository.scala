@@ -11,7 +11,7 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.refineV
 import eu.timepit.refined.string.Regex
 import org.genivi.sota.common.DeviceRegistry
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 import org.genivi.sota.db.Operators._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.components.{Component, ComponentRepository}

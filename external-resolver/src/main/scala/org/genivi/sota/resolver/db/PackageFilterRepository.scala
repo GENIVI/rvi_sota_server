@@ -22,7 +22,6 @@ import scala.concurrent.ExecutionContext
 object PackageFilterRepository {
 
   import org.genivi.sota.db.SlickExtensions._
-  import org.genivi.sota.db.Operators._
 
   // scalastyle:off
   class PackageFilterTable(tag: Tag) extends Table[PackageFilter](tag, "PackageFilter") {

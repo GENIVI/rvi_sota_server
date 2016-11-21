@@ -1,7 +1,6 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.unmarshalling._
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.data.Namespaces

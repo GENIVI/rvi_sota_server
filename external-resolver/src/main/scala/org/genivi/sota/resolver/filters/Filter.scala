@@ -4,13 +4,9 @@
  */
 package org.genivi.sota.resolver.filters
 
-import org.genivi.sota.data.Namespace._
 import eu.timepit.refined.api.{Refined, Validate}
 import org.genivi.sota.data.Namespace
-import org.genivi.sota.resolver.components.Component
-import org.genivi.sota.resolver.db.Package
 import org.genivi.sota.resolver.filters.FilterAST._
-import org.scalacheck._
 
 
 case class Filter(

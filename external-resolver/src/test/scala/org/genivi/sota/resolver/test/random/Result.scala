@@ -1,8 +1,7 @@
 package org.genivi.sota.resolver.test.random
 
-import org.genivi.sota.data.Device._
 import cats.syntax.show.toShowOps
-import org.genivi.sota.data.{Device, PackageId, Uuid}
+import org.genivi.sota.data.{PackageId, Uuid}
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.db.Package
 import org.genivi.sota.resolver.filters.Filter
