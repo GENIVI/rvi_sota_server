@@ -10,15 +10,11 @@ import org.genivi.sota.core.data.{UpdateSpec, UpdateStatus}
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.rvi.OperationResult
 import org.genivi.sota.core.rvi.UpdateReport
-import org.genivi.sota.data.{Device, DeviceGenerators, Namespaces, Uuid}
-import org.genivi.sota.db.SlickExtensions
-import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.genivi.sota.data.{DeviceGenerators, Namespaces, Uuid}
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.scalacheck.Gen
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Millis, Seconds, Span}
-import org.genivi.sota.marshalling.CirceInstances._
 
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
@@ -36,9 +32,6 @@ class DeviceUpdatesSpec extends FunSuite
   import DeviceGenerators._
   import DeviceUpdates._
   import Generators._
-  import SlickExtensions._
-  import UpdateStatus._
-  import UpdateSpec._
 
   implicit val actorSystem = ActorSystem("InstalledPackagesUpdateSpec-ActorSystem")
   implicit val materializer = ActorMaterializer()

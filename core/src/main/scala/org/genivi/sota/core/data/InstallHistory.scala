@@ -4,10 +4,9 @@
  */
 package org.genivi.sota.core.data
 
-import org.genivi.sota.data.Namespace
 import java.time.Instant
-import org.genivi.sota.data.{Device, PackageId, Uuid}
 import java.util.UUID
+import org.genivi.sota.data.{PackageId, Uuid}
 
 import org.genivi.sota.rest.GenericResponseEncoder
 

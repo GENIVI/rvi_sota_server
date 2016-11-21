@@ -28,7 +28,6 @@ object UpdateRequests {
   import org.genivi.sota.db._
   import SlickExtensions._
   import org.genivi.sota.refined.SlickRefined._
-  import Operators._
 
   // scalastyle:off
   /**

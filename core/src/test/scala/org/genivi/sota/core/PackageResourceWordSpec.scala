@@ -20,7 +20,6 @@ import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.Await
 import slick.driver.MySQLDriver.api._
-import DataPackage._
 import org.genivi.sota.data.PackageId
 import org.genivi.sota.http.NamespaceDirectives
 

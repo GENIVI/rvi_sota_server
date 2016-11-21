@@ -11,17 +11,16 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import cats.implicits._
 import io.circe.generic.auto._
 import java.util.UUID
-import org.genivi.sota.core.data.{Campaign, UpdateRequest, UpdateStatus}
+import org.genivi.sota.core.data.{Campaign, UpdateStatus}
 import org.genivi.sota.core.db.{BlacklistedPackages, Packages, UpdateRequests}
 import org.genivi.sota.core.resolver.DefaultConnectivity
 import org.genivi.sota.core.transfer.DefaultUpdateNotifier
-import org.genivi.sota.data.{Interval, Namespaces, PackageId, Uuid, UuidGenerator}
+import org.genivi.sota.data.{Namespaces, PackageId, Uuid}
 import org.genivi.sota.http.NamespaceDirectives.defaultNamespaceExtractor
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalacheck.Gen
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
-import scala.concurrent.Future
 
 class CampaignResourceSpec extends FunSuite
     with ScalatestRouteTest

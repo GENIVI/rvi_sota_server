@@ -10,14 +10,12 @@ import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
-import eu.timepit.refined.api.Refined
 import io.circe.Json
 import java.util.UUID
 
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.resolver.{Connectivity, ExternalResolverClient}
-import org.genivi.sota.core.data.UpdateRequest
-import org.genivi.sota.data.{Device, Uuid}
+import org.genivi.sota.data.Uuid
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -112,7 +110,6 @@ class SotaServices(updateController: ActorRef, resolverClient: ExternalResolverC
 }
 
 object SotaServices {
-  import io.circe._
   import org.genivi.sota.core.jsonrpc.client
 
   private[this] def registerService(name: String, uri: Uri)

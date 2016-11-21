@@ -4,14 +4,11 @@
  */
 package org.genivi.sota.core.jsonrpc
 
-import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server._
-import cats.data.Xor
 import io.circe.DecodingFailure
 import io.circe._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import scala.concurrent.ExecutionContext
-import shapeless.HList
 
 import scala.concurrent.Future
 
@@ -62,9 +59,6 @@ trait JsonRpcDirectives {
   implicit def lift[In, Out](fn: In => Future[Out])
                    (implicit inDecoder: Decoder[In], outEncoder: Encoder[Out], ec: ExecutionContext)
       : MethodFn = request => {
-    import shapeless._
-    import record._
-    import syntax.singleton._
 
     inDecoder.decodeJson( request.params ).map( fn ).fold[StandardRoute](
       err =>

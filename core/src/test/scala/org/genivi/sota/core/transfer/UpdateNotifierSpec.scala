@@ -18,7 +18,7 @@ import scala.concurrent.Future
 object UpdateNotifierSpec {
 
   import Arbitrary._
-  import Generators.{dependenciesGen, updateRequestGen, vinDepGen}
+  import Generators.updateRequestGen
   import UuidGenerator._
 
   val packages = scala.util.Random.shuffle( PackagesReader.read().take(100) )
@@ -48,8 +48,6 @@ class UpdateNotifierSpec extends PropSpec
   with Namespaces {
 
   import UpdateNotifierSpec._
-  import DeviceGenerators._
-  import UuidGenerator._
 
   implicit val system = akka.actor.ActorSystem("UpdateServiseSpec")
   implicit val materilizer = akka.stream.ActorMaterializer()

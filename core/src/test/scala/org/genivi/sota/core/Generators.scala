@@ -26,7 +26,6 @@ trait Generators {
 
   import Arbitrary._
   import Campaign._
-  import DeviceGenerators._
   import Namespaces._
   import UuidGenerator._
 

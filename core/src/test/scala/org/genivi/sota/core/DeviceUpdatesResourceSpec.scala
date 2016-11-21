@@ -44,7 +44,6 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
   import Arbitrary._
   import NamespaceDirectives._
-  import Device._
   import DeviceGenerators._
   import PackageIdGenerators._
   import UpdateSpec._

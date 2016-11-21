@@ -24,17 +24,13 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 import org.genivi.sota.core.transfer.DeviceUpdates
-import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec}
-import org.genivi.sota.core.data.client.PendingUpdateRequest
-import org.genivi.sota.core.data.UpdateStatus
+import org.genivi.sota.core.data.UpdateSpec
 import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, PackageDownloadProcess}
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 
-import scala.language.implicitConversions
 import slick.driver.MySQLDriver.api.Database
 import cats.syntax.show.toShowOps
 import org.genivi.sota.http.AuthedNamespaceScope
-import org.genivi.sota.http.NamespaceDirectives
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.core.data.client.PendingUpdateRequest._
 import UpdateSpec._
@@ -50,11 +46,9 @@ class DeviceUpdatesResource(db: Database,
                            (implicit system: ActorSystem, mat: ActorMaterializer,
                             connectivity: Connectivity = DefaultConnectivity) {
 
-  import shapeless._
   import Directives._
   import org.genivi.sota.http.UuidDirectives._
   import org.genivi.sota.marshalling.CirceMarshallingSupport._
-  import Device._
   import org.genivi.sota.http.ErrorHandler._
 
   implicit val ec = system.dispatcher

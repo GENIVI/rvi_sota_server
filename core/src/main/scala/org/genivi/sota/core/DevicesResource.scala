@@ -26,8 +26,6 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.languageFeature.implicitConversions
-import scala.languageFeature.postfixOps
 import scala.util.{Failure, Success}
 import slick.driver.MySQLDriver.api.Database
 import Device._

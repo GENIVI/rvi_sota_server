@@ -9,7 +9,6 @@ import org.genivi.sota.core.data.DeviceStatus.DeviceStatus
 import org.genivi.sota.core.data.UpdateStatus.UpdateStatus
 import org.genivi.sota.core.db.UpdateSpecs
 import org.genivi.sota.data.{CirceEnum, Device, Uuid}
-import org.genivi.sota.data.Namespace._
 import org.genivi.sota.refined.SlickRefined._
 import org.slf4j.LoggerFactory
 

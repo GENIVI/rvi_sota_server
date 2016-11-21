@@ -11,33 +11,27 @@ import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import cats.Show
 import io.circe.Json
 import io.circe.syntax._
-import org.genivi.sota.core.SotaCoreErrors
 import org.genivi.sota.core.data.UpdateStatus.UpdateStatus
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.UpdateSpecs._
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.resolver.ExternalResolverClient
 import org.genivi.sota.core.rvi.UpdateReport
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
-import org.genivi.sota.db.Operators._
+import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 import org.genivi.sota.db.SlickExtensions
-import org.genivi.sota.http.Errors
 import org.genivi.sota.http.Errors.MissingEntity
 import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
 import slick.dbio.DBIO
 import slick.driver.MySQLDriver.api._
 import Packages.{LiftedPackageId, LiftedPackageShape}
-import org.genivi.sota.core.db.UpdateRequests.UpdateRequestTable
-import shapeless.{HList, ::, HNil}
+import shapeless.{::, HNil}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
 import scala.util.control.NoStackTrace
 
 object DeviceUpdates {
   import SlickExtensions._
   import org.genivi.sota.marshalling.CirceInstances._
-  import org.genivi.sota.db.Operators._
   import org.genivi.sota.refined.SlickRefined._
 
   case class SetOrderFailed(msg: String) extends Exception(msg) with NoStackTrace

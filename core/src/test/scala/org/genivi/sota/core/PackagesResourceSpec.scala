@@ -8,7 +8,6 @@ package org.genivi.sota.core
 import java.io.File
 import java.net.URI
 
-import cats.syntax.show._
 import org.genivi.sota.data.PackageId._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.generic.auto._

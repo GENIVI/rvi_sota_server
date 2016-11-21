@@ -8,7 +8,6 @@ import org.genivi.sota.core.db.BlacklistedPackages
 import akka.actor.ActorSystem
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import org.genivi.sota.data.Namespace
-import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import slick.driver.MySQLDriver.api._
 import Directives._

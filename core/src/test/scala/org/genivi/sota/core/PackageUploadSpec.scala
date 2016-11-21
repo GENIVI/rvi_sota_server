@@ -3,20 +3,17 @@ package org.genivi.sota.core
 import akka.http.scaladsl.model.Multipart.FormData.BodyPart
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.server.PathMatchers
 import akka.http.scaladsl.testkit.RouteTestTimeout
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import akka.http.scaladsl.unmarshalling._
 import io.circe.generic.auto._
 import java.io.File
 
 import org.genivi.sota.core.SotaCoreErrors.SotaCoreErrorCodes
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 import org.genivi.sota.http.NamespaceDirectives
 import org.genivi.sota.marshalling.CirceMarshallingSupport
-import org.genivi.sota.messaging.Messages.PackageCreated
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.rest.ErrorRepresentation
 import org.scalatest.concurrent.ScalaFutures
@@ -26,7 +23,6 @@ import org.scalatest.{Matchers, PropSpec}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import slick.jdbc.JdbcBackend.Database
 
 
 /**

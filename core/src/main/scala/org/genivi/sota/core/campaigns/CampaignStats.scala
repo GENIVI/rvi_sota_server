@@ -4,7 +4,6 @@
   */
 package org.genivi.sota.core.campaigns
 
-import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.UpdateService
 import org.genivi.sota.core.data.Campaign.CampaignGroup
 import org.genivi.sota.core.data.{Campaign, CampaignStatistics, UpdateStatus}

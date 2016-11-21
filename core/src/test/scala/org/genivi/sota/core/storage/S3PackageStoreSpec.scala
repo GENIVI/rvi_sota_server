@@ -12,7 +12,6 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.FileIO
 import akka.testkit.TestKit
 import akka.util.ByteString
-import com.typesafe.config.ConfigFactory
 import org.genivi.sota.core.IntegrationTest
 import org.genivi.sota.data.PackageIdGenerators
 import org.scalatest.concurrent.ScalaFutures

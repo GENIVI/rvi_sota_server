@@ -6,8 +6,7 @@ package org.genivi.sota.core.data
 
 import java.time.Instant
 
-import org.genivi.sota.data.{Device, Uuid}
-import eu.timepit.refined.api.Refined
+import org.genivi.sota.data.Uuid
 
 case class BlockedInstall(id: Uuid, blockedAt: Instant)
 

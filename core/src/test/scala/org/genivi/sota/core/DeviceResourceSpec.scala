@@ -5,7 +5,6 @@
 package org.genivi.sota.core
 
 import java.time.Instant
-import java.time.chrono.Chronology
 import java.time.temporal.ChronoUnit
 
 import akka.http.scaladsl.model.{StatusCodes, Uri}
@@ -14,7 +13,7 @@ import akka.http.scaladsl.testkit.RouteTestTimeout
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.http.scaladsl.unmarshalling.Unmarshaller._
 import io.circe.generic.auto._
-import org.genivi.sota.core.data.{DeviceStatus, DeviceUpdateStatus}
+import org.genivi.sota.core.data.DeviceStatus
 import org.genivi.sota.core.jsonrpc.HttpTransport
 import org.genivi.sota.core.rvi._
 import org.genivi.sota.data._
@@ -40,8 +39,6 @@ class DeviceResourceSpec extends FunSuite
   with Namespaces {
 
   import CirceMarshallingSupport._
-  import Generators._
-  import PackageIdGenerators._
   import DeviceGenerators._
   import NamespaceDirectives._
 
