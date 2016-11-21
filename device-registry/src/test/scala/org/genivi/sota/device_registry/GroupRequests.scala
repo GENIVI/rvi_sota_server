@@ -3,7 +3,6 @@ package org.genivi.sota.device_registry
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model.Uri.Query
-import akka.http.scaladsl.server.Route
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._

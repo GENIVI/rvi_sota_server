@@ -7,9 +7,9 @@ package org.genivi.sota.device_registry
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{Directive0, Directive1, Route}
+import akka.http.scaladsl.server.{Directive1, Route}
 import io.circe.Json
-import org.genivi.sota.data.{Namespace, Uuid}
+import org.genivi.sota.data.Uuid
 import org.genivi.sota.device_registry.db._
 import org.genivi.sota.device_registry.common.Errors.MissingSystemInfo
 import org.genivi.sota.http.UuidDirectives.extractUuid
@@ -18,7 +18,7 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.slf4j.LoggerFactory
 import slick.driver.MySQLDriver.api._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class SystemInfoResource(authNamespace: Directive1[AuthedNamespaceScope],
                          deviceNamespaceAuthorizer: Directive1[Uuid])

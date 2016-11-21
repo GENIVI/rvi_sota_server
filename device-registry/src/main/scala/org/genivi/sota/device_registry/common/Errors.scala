@@ -11,11 +11,7 @@ import org.genivi.sota.http.Errors.{EntityAlreadyExists, MissingEntity, RawError
 
 object Errors {
   import akka.http.scaladsl.model.StatusCodes
-  import akka.http.scaladsl.server.Directives.complete
-  import akka.http.scaladsl.server.ExceptionHandler.PF
-  import scala.util.control.NoStackTrace
-  import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
-  import org.genivi.sota.marshalling.CirceMarshallingSupport._
+  import org.genivi.sota.rest.ErrorCode
 
   object Codes {
     val MissingDevice = ErrorCode("missing_device")

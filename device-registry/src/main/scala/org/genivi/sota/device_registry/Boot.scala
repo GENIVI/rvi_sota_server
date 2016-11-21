@@ -6,7 +6,7 @@ package org.genivi.sota.device_registry
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.{Directive0, Directive1, Directives, Route}
+import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
 import cats.data.Xor
 import org.genivi.sota.data.{Namespace, Uuid}
