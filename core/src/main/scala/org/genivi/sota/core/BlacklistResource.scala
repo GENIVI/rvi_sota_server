@@ -5,7 +5,7 @@
 
 package org.genivi.sota.core
 
-import org.genivi.sota.http.AuthedNamespaceScope
+import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.http.ErrorHandler._
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes
@@ -66,16 +66,17 @@ class BlacklistResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
 
   val route: Route =
     (handleErrors & pathPrefix("blacklist") & namespaceExtractor) { ns =>
+      val scope = Scopes.packages(ns)
       pathEnd {
-        post { addPackageToBlacklist(ns) } ~
-        put { updatePackageBlacklist(ns) } ~
-        get { getNamespaceBlacklist(ns) }
+        scope.post { addPackageToBlacklist(ns) } ~
+        scope.put { updatePackageBlacklist(ns) } ~
+        scope.get { getNamespaceBlacklist(ns) }
       } ~
       extractPackageId { pkgId =>
-        (path("preview") & get) { preview(ns, pkgId) } ~
+        (path("preview") & scope.get) { preview(ns, pkgId) } ~
         pathEnd {
-          get { getPackageBlacklist(ns, pkgId) } ~
-          delete { deletePackageBlacklist(ns, pkgId) }
+          scope.get { getPackageBlacklist(ns, pkgId) } ~
+          scope.delete { deletePackageBlacklist(ns, pkgId) }
         }
       }
     }

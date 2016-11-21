@@ -16,6 +16,7 @@ import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 import org.genivi.sota.device_registry.common.{Errors => DeviceRegistryErrors}
 import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.ErrorHandler
+import org.genivi.sota.http.Scopes
 import org.genivi.sota.http.UuidDirectives.extractUuid
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
@@ -106,16 +107,17 @@ class DeviceDirectives(namespaceExtractor: Directive1[AuthedNamespaceScope],
     */
   def packageApi(device: Uuid): Route = {
     (pathPrefix("package") & namespaceExtractor) { ns =>
-      (get & pathEnd) {
+      val scope = Scopes.devices(ns)
+      (scope.get & pathEnd) {
         parameters('regex.as[Refined[String, Regex]].?) { regFilter =>
           getPackages(device, regFilter)
         }
       } ~
       refinedPackageId { pkgId =>
-        (put & pathEnd) {
+        (scope.put & pathEnd) {
           installPackage(ns, device, pkgId)
         } ~
-        (delete & pathEnd) {
+        (scope.delete & pathEnd) {
           uninstallPackage(ns, device, pkgId)
         }
       }
@@ -148,14 +150,15 @@ class DeviceDirectives(namespaceExtractor: Directive1[AuthedNamespaceScope],
    */
   def componentApi(device: Uuid): Route =
     (pathPrefix("component") & namespaceExtractor) { ns =>
-      (get & pathEnd) {
+      val scope = Scopes.devices(ns)
+      (scope.get & pathEnd) {
         getComponents(ns, device)
       } ~
       refinedPartNumber { part =>
-        (put & pathEnd) {
+        (scope.put & pathEnd) {
           installComponent(ns, device, part)
         } ~
-        (delete & pathEnd) {
+        (scope.delete & pathEnd) {
           uninstallComponent(ns, device, part)
         }
       }
@@ -164,7 +167,8 @@ class DeviceDirectives(namespaceExtractor: Directive1[AuthedNamespaceScope],
   def deviceApi: Route =
     pathPrefix("devices") {
       namespaceExtractor { ns =>
-        (get & pathEnd) { searchDevices(ns) } ~
+        val scope = Scopes.devices(ns)
+        (scope.get & pathEnd) { searchDevices(ns) } ~
         extractDeviceUuid(ns) { device =>
           packageApi(device) ~
           componentApi(device)
@@ -179,7 +183,9 @@ class DeviceDirectives(namespaceExtractor: Directive1[AuthedNamespaceScope],
   def route: Route = ErrorHandler.handleErrors {
     deviceApi ~
     (pathPrefix("firmware") & get & namespaceExtractor & extractUuid) { (ns, device) =>
-      getFirmware(ns, device)
+      Scopes.devices(ns).checkReadonly {
+        getFirmware(ns, device)
+      }
     }
   }
 }

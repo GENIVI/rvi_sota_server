@@ -8,7 +8,6 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.model.{StatusCodes, Uri}
 import akka.http.scaladsl.server._
-import akka.http.scaladsl.unmarshalling.{FromStringUnmarshaller, Unmarshaller}
 import akka.stream.ActorMaterializer
 import cats.syntax.show._
 import eu.timepit.refined.api.Refined
@@ -21,7 +20,7 @@ import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.MessageBusPublisher._
 import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted}
-import org.genivi.sota.http.AuthedNamespaceScope
+import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.http.UuidDirectives.extractUuid
 import slick.driver.MySQLDriver.api._
 
@@ -91,34 +90,30 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
     complete(f)
   }
 
-  implicit val NamespaceUnmarshaller: FromStringUnmarshaller[Namespace] = Unmarshaller.strict(Namespace.apply)
-
-  def api: Route =
+  def api: Route = namespaceExtractor { ns =>
+    val scope = Scopes.devices(ns)
     pathPrefix("devices") {
-      namespaceExtractor { ns =>
-        (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
-        (get & pathEnd) { searchDevice(ns) } ~
-        deviceNamespaceAuthorizer { uuid =>
-          (put & entity(as[DeviceT]) & pathEnd) { device =>
-            updateDevice(ns, uuid, device)
-          } ~
-          (delete & pathEnd) {
-            deleteDevice(ns, uuid)
-          }
-        }
-      } ~
+      (scope.post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
+      (scope.get & pathEnd) { searchDevice(ns) } ~
       deviceNamespaceAuthorizer { uuid =>
-        (post & path("ping")) {
+        (scope.put & entity(as[DeviceT]) & pathEnd) { device =>
+          updateDevice(ns, uuid, device)
+        } ~
+        (scope.delete & pathEnd) {
+          deleteDevice(ns, uuid)
+        } ~
+        (scope.post & path("ping")) {
           updateLastSeen(uuid)
         } ~
-        (get & pathEnd) {
+        (scope.get & pathEnd) {
           fetchDevice(uuid)
         } ~
-        (get & path("groups") & pathEnd) {
+        (scope.get & path("groups") & pathEnd) {
           getGroupsForDevice(uuid)
         }
       }
     }
+  }
 
   def mydeviceRoutes: Route = namespaceExtractor { authedNs =>
     (pathPrefix("mydevice") & extractUuid) { uuid =>

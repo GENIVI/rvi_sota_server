@@ -20,6 +20,7 @@ import Directives._
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.ErrorHandler
+import org.genivi.sota.http.Scopes
 
 /**
  * API routes for creating, deleting, and listing components.
@@ -49,13 +50,14 @@ class ComponentDirectives(namespaceExtractor: Directive1[AuthedNamespaceScope])
 
   def route: Route = ErrorHandler.handleErrors {
     (pathPrefix("components") & namespaceExtractor) { ns =>
-      (get & pathEnd) {
+      val scope = Scopes.resolver(ns)
+      (scope.get & pathEnd) {
         searchComponent(ns)
       } ~
-        (put & refinedPartNumber & pathEnd) { part =>
+        (scope.put & refinedPartNumber & pathEnd) { part =>
           addComponent(ns, part)
         } ~
-        (delete & refinedPartNumber & pathEnd) { part =>
+        (scope.delete & refinedPartNumber & pathEnd) { part =>
           deleteComponent(ns, part)
         }
     }
