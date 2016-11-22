@@ -122,7 +122,7 @@ object SotaBuild extends Build {
     .settings(mainClass in Compile := Some("org.genivi.sota.resolver.Boot"))
 
   lazy val core = Project(id = "sota-core", base = file("core"))
-    .settings( commonSettings ++ Migrations.settings ++ Seq(
+    .settings( commonSettings ++ Migrations.settings ++ lintOptions ++ Seq(
       libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Scalaz :+ Dependencies.Flyway :+ Dependencies.AmazonS3,
       testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RequiresRvi", "-l", "IntegrationTest"),
       testOptions in IntegrationTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RequiresRvi", "-n", "IntegrationTest"),

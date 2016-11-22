@@ -5,24 +5,17 @@ import akka.actor.ActorLogging
 import akka.actor.ActorRef
 import akka.actor.Props
 import akka.actor.Stash
-import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.util.FastFuture
-import akka.parboiled2.util.Base64
 import akka.testkit.TestProbe
 import com.typesafe.config.ConfigFactory
 import io.circe.Encoder
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.nio.file.StandardOpenOption
-import java.util.UUID
 import java.security.MessageDigest
 
 import org.apache.commons.codec.binary.Hex
 import org.genivi.sota.core.Generators
-import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.resolver.ConnectivityClient
 import java.time.Instant
-import org.genivi.sota.data.{Device, Uuid}
+import org.genivi.sota.data.Uuid
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}

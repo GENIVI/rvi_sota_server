@@ -6,7 +6,6 @@ import io.circe._
 import io.circe.syntax._
 import org.scalatest.{PropSpec, Matchers, BeforeAndAfterAll}
 import org.scalatest.prop.PropertyChecks
-import scala.concurrent.Future
 
 /**
  * Base class for JSON-RPC property-based specs

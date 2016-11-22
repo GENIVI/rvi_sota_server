@@ -31,10 +31,7 @@ import org.genivi.sota.rest.Validation._
 import slick.driver.MySQLDriver.api.Database
 import org.genivi.sota.rest.ResponseConversions._
 import org.genivi.sota.core.data.PackageResponse._
-import cats.std.future._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import akka.http.scaladsl.marshalling._
-import akka.http.scaladsl.unmarshalling._
 import io.circe.generic.auto._
 import org.genivi.sota.core.SotaCoreErrors.SotaCoreErrorCodes
 import org.genivi.sota.http.AuthedNamespaceScope

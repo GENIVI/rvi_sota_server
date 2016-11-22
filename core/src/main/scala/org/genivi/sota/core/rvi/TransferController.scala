@@ -16,7 +16,7 @@ import java.nio.file.{Paths, StandardOpenOption}
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
-import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateSpec, UpdateStatus}
+import org.genivi.sota.core.data.{Package, UpdateStatus}
 import akka.actor._
 import akka.http.scaladsl.model.Uri
 import akka.stream.ActorMaterializer
@@ -29,7 +29,7 @@ import java.time.Instant
 import java.time.Duration
 
 import org.genivi.sota.core.transfer.DeviceUpdates
-import org.genivi.sota.data.{Device, Uuid}
+import org.genivi.sota.data.Uuid
 import org.genivi.sota.messaging.MessageBusPublisher
 
 import scala.collection.immutable.Queue
@@ -37,7 +37,6 @@ import scala.concurrent.duration.FiniteDuration
 import scala.math.BigDecimal.RoundingMode
 import slick.driver.MySQLDriver.api.Database
 
-import scala.collection.LinearSeq
 import scala.util.Try
 
 
@@ -135,8 +134,6 @@ class TransferProtocolActor(db: Database,
                             transferActorProps: (UUID, String, Package, ClientServices) => Props,
                             messageBus: MessageBusPublisher)
     extends Actor with ActorLogging {
-  import cats.syntax.eq._
-  import cats.syntax.show._
   import context.dispatcher
 
   val installTimeout : FiniteDuration = FiniteDuration(
@@ -421,7 +418,7 @@ class PackageTransferActor(updateId: UUID,
         case first :: second :: Nil => second - first > 1
         case first :: Nil => true
         case _ => false
-      }.map {
+      }.collect {
         case first :: _ :: Nil => first + 1
         case 1 :: Nil => 2
         case Nil => 1

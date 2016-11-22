@@ -11,7 +11,6 @@ import akka.stream.ActorMaterializer
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.resolver.{Connectivity, ExternalResolverClient}
 import org.genivi.sota.core.transfer.UpdateNotifier
-import org.genivi.sota.data.Namespace
 import org.genivi.sota.http.AuthedNamespaceScope
 
 import scala.concurrent.ExecutionContext

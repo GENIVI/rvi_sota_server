@@ -5,12 +5,10 @@
 package org.genivi.sota.core.db
 
 import cats.data.Xor
-import eu.timepit.refined.refineV
 import java.util.UUID
 import org.genivi.sota.core.data.Campaign
 import org.genivi.sota.core.SotaCoreErrors
 import org.genivi.sota.data.{Namespace, PackageId, Uuid}
-import org.genivi.sota.db.Operators._
 import org.genivi.sota.refined.SlickRefined._
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
@@ -35,7 +33,7 @@ object Campaigns {
       ,(x: CampaignMeta) => Some((x.id, x.namespace, x.name, x.launched, x.packageUuid.map(_.toJava))))
 
     def uniqueName = index("Campaign_unique_name", (namespace, name), unique = true)
-    def fkPkg = foreignKey("Campaign_pkg_fk", packageUuid, Packages.packages)(_.uuid)
+    def fkPkg = foreignKey("Campaign_pkg_fk", packageUuid, Packages.packages)(_.uuid.?)
   }
   // scalastyle:on
 

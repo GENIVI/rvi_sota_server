@@ -11,10 +11,9 @@ import org.genivi.sota.core.SotaCoreErrors
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.PackageId
-import org.genivi.sota.db.SlickExtensions._
 import slick.driver.MySQLDriver.api._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 /**
  * Database mapping definition for the Package SQL table. This defines all the

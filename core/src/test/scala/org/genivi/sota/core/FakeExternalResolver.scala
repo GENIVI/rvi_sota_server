@@ -2,11 +2,10 @@ package org.genivi.sota.core
 
 import akka.actor.ActorSystem
 import akka.event.Logging
-import akka.http.scaladsl.model.{HttpResponse, Uri}
 import akka.stream.ActorMaterializer
 import io.circe.Json
-import org.genivi.sota.core.resolver.{DefaultExternalResolverClient, ExternalResolverClient}
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.core.resolver.ExternalResolverClient
+import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 
 import scala.concurrent.Future
 

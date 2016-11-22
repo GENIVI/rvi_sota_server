@@ -10,9 +10,7 @@ import akka.stream.ActorMaterializer
 import cats.data.Xor
 import eu.timepit.refined.api.Refined
 import io.circe.jawn._
-import org.genivi.sota.data.{Device, PackageId, Uuid}
-import io.circe.generic.auto._
-import Device._
+import org.genivi.sota.data.{PackageId, Uuid}
 import cats.syntax.show._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalatest.concurrent.ScalaFutures

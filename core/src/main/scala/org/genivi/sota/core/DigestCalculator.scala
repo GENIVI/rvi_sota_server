@@ -7,11 +7,8 @@ package org.genivi.sota.core
 import java.security.MessageDigest
 
 import akka.stream.scaladsl.Sink
-import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
-import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.util.ByteString
 import org.apache.commons.codec.binary.Hex
-import org.genivi.sota.core.DigestCalculator.DigestResult
 
 import scala.concurrent.{ExecutionContext, Future}
 

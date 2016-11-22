@@ -4,12 +4,12 @@ import java.time.Instant
 import java.util.UUID
 
 import org.genivi.sota.core.SotaCoreErrors
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.core.db.Packages.{LiftedPackageId, PackageTable}
+import org.genivi.sota.core.db.Packages.LiftedPackageId
 import org.genivi.sota.http.Errors
 import org.genivi.sota.http.Errors.MissingEntity
 import org.genivi.sota.rest.GenericResponseEncoder

@@ -7,10 +7,8 @@ package org.genivi.sota.core.storage
 import java.nio.ByteBuffer
 import java.security.MessageDigest
 
-import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.event.{Logging, LoggingAdapter}
-import akka.http.scaladsl.common.StrictForm
 import akka.stream._
 import akka.stream.scaladsl.{Keep, Sink, Source}
 import akka.util.ByteString

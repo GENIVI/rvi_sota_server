@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.core.db
 
-import org.genivi.sota.core.data.{InstallHistory, UpdateRequest, UpdateSpec, UpdateStatus}
+import org.genivi.sota.core.data.{InstallHistory, UpdateSpec, UpdateStatus}
 import java.time.Instant
 import java.util.UUID
 
@@ -15,7 +15,7 @@ import org.genivi.sota.http.Errors
 import shapeless._
 import slick.driver.MySQLDriver.api._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 
 /**
@@ -28,8 +28,6 @@ object InstallHistories {
 
   import org.genivi.sota.db.SlickExtensions._
   import org.genivi.sota.refined.SlickRefined._
-  import UpdateStatus._
-  import org.genivi.sota.db.Operators._
   import UpdateSpecs.UpdateStatusColumn
 
   /**

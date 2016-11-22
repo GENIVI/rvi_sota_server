@@ -6,17 +6,13 @@ package org.genivi.sota.core
 
 import java.io.File
 
-import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{FileIO, Keep, Sink, Source}
-import akka.stream.testkit.scaladsl.TestSink
+import akka.stream.scaladsl.{FileIO, Source}
 import akka.testkit.TestKit
 import akka.util.ByteString
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuiteLike, ShouldMatchers}
-
-import scala.concurrent.Future
 
 class DigestCalculatorSpec extends TestKit(ActorSystem("DigestCalculatorTest"))
   with FunSuiteLike

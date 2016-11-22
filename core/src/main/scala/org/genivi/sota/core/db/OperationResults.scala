@@ -8,8 +8,7 @@ import eu.timepit.refined.api.Refined
 import java.util.UUID
 
 import org.genivi.sota.core.data.OperationResult
-import org.genivi.sota.core.data.UpdateRequest
-import org.genivi.sota.data.{Device, Namespace, Uuid}
+import org.genivi.sota.data.{Namespace, Uuid}
 
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
@@ -38,8 +37,6 @@ object OperationResults {
     def device      = column[Uuid]("device_uuid")
     def namespace   = column[Namespace]("namespace")
     def receivedAt  = column[Instant]("received_at")
-
-    import shapeless._
 
     def pk = primaryKey("pk_OperationResultTable", id)
 
