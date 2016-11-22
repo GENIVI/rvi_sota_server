@@ -7,7 +7,6 @@ package org.genivi.sota.device_registry.db
 import io.circe.Json
 import org.genivi.sota.data.GroupInfo._
 import org.genivi.sota.data.{GroupInfo, Namespace, Uuid}
-import org.genivi.sota.db.Operators._
 import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.device_registry.common.{Errors, SlickJsonHelper}
 import org.genivi.sota.refined.SlickRefined._

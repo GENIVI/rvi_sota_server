@@ -4,10 +4,8 @@
  */
 package org.genivi.sota.device_registry
 
-import akka.http.scaladsl.client.RequestBuilding.{Delete, Get, Post, Put}
 import akka.http.scaladsl.model.Uri.{Path, Query}
 import akka.http.scaladsl.model.{HttpRequest, Uri, StatusCodes}
-import cats.Show
 import cats.syntax.show._
 import io.circe.Json
 import io.circe.generic.auto._

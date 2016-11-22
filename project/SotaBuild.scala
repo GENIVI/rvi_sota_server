@@ -179,7 +179,7 @@ object SotaBuild extends Build {
     .settings(Publish.disable)
 
   lazy val deviceRegistry = Project(id = "sota-device_registry", base = file("device-registry"))
-    .settings(commonSettings ++ Migrations.settings ++ Seq(
+    .settings(commonSettings ++ Migrations.settings ++ lintOptions ++ Seq(
       libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Refined :+ Dependencies.Flyway,
       parallelExecution in Test := true,
       dockerExposedPorts := Seq(8083),
