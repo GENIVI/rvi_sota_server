@@ -7,9 +7,7 @@ package org.genivi.sota.resolver.components
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import org.genivi.sota.data.Namespace
-import org.genivi.sota.data.Namespace._
 import org.genivi.sota.db.Operators._
-import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.db.DeviceRepository
 

@@ -15,7 +15,6 @@ import org.genivi.sota.data.{Namespace, PackageId}
 import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.RefinementDirectives._
 import org.genivi.sota.resolver.db.{DeviceRepository, Package, PackageFilterRepository, PackageRepository, PackageStat}
 import org.genivi.sota.resolver.filters.Filter

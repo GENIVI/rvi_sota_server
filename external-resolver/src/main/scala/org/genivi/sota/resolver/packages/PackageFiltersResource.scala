@@ -9,7 +9,6 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
 import org.genivi.sota.common.DeviceRegistry
-import org.genivi.sota.data.Namespace
 import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.ErrorHandler
 import slick.driver.MySQLDriver.api._

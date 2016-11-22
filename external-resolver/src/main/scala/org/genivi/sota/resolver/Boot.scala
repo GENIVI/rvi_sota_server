@@ -7,12 +7,11 @@ package org.genivi.sota.resolver
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.Uri
-import akka.http.scaladsl.server.{Directive0, Directive1, Directives, Route}
+import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
 import com.typesafe.config.Config
 import org.genivi.sota.client.DeviceRegistryClient
 import org.genivi.sota.common.DeviceRegistry
-import org.genivi.sota.data.Namespace
 import org.genivi.sota.db.BootMigrations
 import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.LogDirectives._

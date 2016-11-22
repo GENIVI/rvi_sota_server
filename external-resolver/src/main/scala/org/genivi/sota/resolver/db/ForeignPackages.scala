@@ -7,7 +7,7 @@ package org.genivi.sota.resolver.db
 
 import java.time.Instant
 
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.data.{PackageId, Uuid}
 import org.genivi.sota.db.Operators._
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.resolver.db.PackageIdDatabaseConversions._

@@ -5,14 +5,12 @@
 package org.genivi.sota.resolver.test
 
 import akka.http.scaladsl.model.{StatusCodes, Uri}
-import eu.timepit.refined.refineV
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.data._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
 import org.genivi.sota.resolver.components.Component
-import akka.http.scaladsl.testkit.RouteTestTimeout
 import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.resolver.test.generators.PackageGenerators
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}

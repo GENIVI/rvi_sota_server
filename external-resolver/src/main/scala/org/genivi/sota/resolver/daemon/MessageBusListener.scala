@@ -8,7 +8,7 @@ package org.genivi.sota.resolver.daemon
 import akka.NotUsed
 import akka.actor.{ActorSystem, Props}
 import akka.kafka.ConsumerMessage.CommittableMessage
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.Source
 import cats.data.Xor
 import com.typesafe.config.Config
 import org.genivi.sota.messaging.Messages.{MessageLike, PackageCreated}

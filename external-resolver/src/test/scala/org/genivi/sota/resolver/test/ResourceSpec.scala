@@ -17,7 +17,6 @@ import org.scalatest.{BeforeAndAfterAll, PropSpec, Suite, WordSpec}
 import Device._
 import cats.syntax.show._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 
 trait ResourceSpec extends
   LongRequestTimeout

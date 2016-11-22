@@ -20,11 +20,7 @@ import org.genivi.sota.resolver.filters.Filter
 
 object Errors {
   import akka.http.scaladsl.model.StatusCodes
-  import akka.http.scaladsl.server.Directives.complete
-  import akka.http.scaladsl.server.ExceptionHandler.PF
-  import scala.util.control.NoStackTrace
-  import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
-  import org.genivi.sota.marshalling.CirceMarshallingSupport._
+  import org.genivi.sota.rest.ErrorCode
 
   object Codes {
     val ComponentInstalled = ErrorCode("component_is_installed")

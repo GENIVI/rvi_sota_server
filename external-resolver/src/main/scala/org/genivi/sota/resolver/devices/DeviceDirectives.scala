@@ -20,10 +20,9 @@ import org.genivi.sota.http.UuidDirectives.extractUuid
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.RefinementDirectives.{refinedPackageId, refinedPartNumber}
-import org.genivi.sota.resolver.common.{Errors, InstalledSoftware}
+import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.db.{DeviceRepository, ForeignPackages}
-import org.genivi.sota.rest.Validation._
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}

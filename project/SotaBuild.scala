@@ -98,7 +98,7 @@ object SotaBuild extends Build {
     .settings(Publish.settings)
 
   lazy val externalResolver = Project(id = "sota-resolver", base = file("external-resolver"))
-    .settings( commonSettings ++ Migrations.settings ++ Seq(
+    .settings( commonSettings ++ Migrations.settings ++ lintOptions ++ Seq(
       libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.AkkaStream :+ Dependencies.AkkaStreamTestKit :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.ParserCombinators :+ Dependencies.Flyway,
       testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RandomTest"),
       testOptions in RandomTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RandomTest"),
