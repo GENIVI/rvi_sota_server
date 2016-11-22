@@ -1,1 +1,0 @@
-initSidebarItems({"trait":[["RVIHandler","Provides a interface to register services."]]});

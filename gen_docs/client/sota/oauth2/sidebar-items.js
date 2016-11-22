@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["authenticate","Authenticate with the specified OAuth2 server to retrieve a new `AccessToken`."]]});

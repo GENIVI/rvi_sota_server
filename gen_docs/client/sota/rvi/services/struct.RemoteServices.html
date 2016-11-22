@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `RemoteServices` struct in crate `sota`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, RemoteServices">
+
+    <title>sota::rvi::services::RemoteServices - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../../index.html'>sota</a>::<wbr><a href='../index.html'>rvi</a>::<wbr><a href='index.html'>services</a></p><script>window.sidebarCurrent = {name: 'RemoteServices', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../../index.html'>sota</a>::<wbr><a href='../index.html'>rvi</a>::<wbr><a href='index.html'>services</a>::<wbr><a class='struct' href=''>RemoteServices</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-5421' class='srclink' href='../../../src/sota/src/rvi/services.rs.html#97-102' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct RemoteServices {
+    pub device_id: <a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>,
+    pub rvi_client: <a class='struct' href='../../../sota/datatype/url/struct.Url.html' title='sota::datatype::url::Url'>Url</a>,
+    pub local: <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../../../sota/rvi/services/struct.LocalServices.html' title='sota::rvi::services::LocalServices'>LocalServices</a>&gt;,
+    pub backend: <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../../../sota/rvi/services/struct.BackendServices.html' title='sota::rvi::services::BackendServices'>BackendServices</a>&gt;,
+}</pre><h2 class='fields'>Fields</h2><span id='structfield.device_id' class='structfield'><code>device_id: <a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a></code>
+                           </span><span class='stab '></span><span id='structfield.rvi_client' class='structfield'><code>rvi_client: <a class='struct' href='../../../sota/datatype/url/struct.Url.html' title='sota::datatype::url::Url'>Url</a></code>
+                           </span><span class='stab '></span><span id='structfield.local' class='structfield'><code>local: <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../../../sota/rvi/services/struct.LocalServices.html' title='sota::rvi::services::LocalServices'>LocalServices</a>&gt;</code>
+                           </span><span class='stab '></span><span id='structfield.backend' class='structfield'><code>backend: <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../../../sota/rvi/services/struct.BackendServices.html' title='sota::rvi::services::BackendServices'>BackendServices</a>&gt;</code>
+                           </span><span class='stab '></span><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class='struct' href='../../../sota/rvi/services/struct.RemoteServices.html' title='sota::rvi::services::RemoteServices'>RemoteServices</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-5426' class='srclink' href='../../../src/sota/src/rvi/services.rs.html#104-136' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>(device_id: <a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>, rvi_client: <a class='struct' href='../../../sota/datatype/url/struct.Url.html' title='sota::datatype::url::Url'>Url</a>) -&gt; <a class='struct' href='../../../sota/rvi/services/struct.RemoteServices.html' title='sota::rvi::services::RemoteServices'>RemoteServices</a></code></h4>
+<h4 id='method.send_download_started' class='method'><code>fn <a href='#method.send_download_started' class='fnname'>send_download_started</a>(&amp;self, update_id: <a class='type' href='../../../sota/datatype/package/type.UpdateRequestId.html' title='sota::datatype::package::UpdateRequestId'>UpdateRequestId</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>,&nbsp;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;</code></h4>
+<h4 id='method.send_chunk_received' class='method'><code>fn <a href='#method.send_chunk_received' class='fnname'>send_chunk_received</a>(&amp;self, chunk: <a class='struct' href='../../../sota/datatype/package/struct.ChunkReceived.html' title='sota::datatype::package::ChunkReceived'>ChunkReceived</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>,&nbsp;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;</code></h4>
+<h4 id='method.send_update_report' class='method'><code>fn <a href='#method.send_update_report' class='fnname'>send_update_report</a>(&amp;self, report: <a class='struct' href='../../../sota/datatype/update/struct.UpdateReport.html' title='sota::datatype::update::UpdateReport'>UpdateReport</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>,&nbsp;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;</code></h4>
+<h4 id='method.send_installed_software' class='method'><code>fn <a href='#method.send_installed_software' class='fnname'>send_installed_software</a>(&amp;self, installed: <a class='struct' href='../../../sota/datatype/update/struct.InstalledSoftware.html' title='sota::datatype::update::InstalledSoftware'>InstalledSoftware</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>,&nbsp;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>&gt;</code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../../";
+        window.currentCrate = "sota";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../../jquery.js"></script>
+    <script src="../../../main.js"></script>
+    
+    <script defer src="../../../search-index.js"></script>
+</body>
+</html>

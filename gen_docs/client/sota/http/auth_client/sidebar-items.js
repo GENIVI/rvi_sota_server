@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["AuthClient","The `AuthClient` will attach an `Authentication` header to each outgoing HTTP request."],["AuthHandler","The async handler for outgoing HTTP requests."]],"type":[["Stream","The `AuthClient` may be used for both HTTP and HTTPS connections."]]});

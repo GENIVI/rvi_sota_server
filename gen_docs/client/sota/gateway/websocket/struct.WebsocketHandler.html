@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `WebsocketHandler` struct in crate `sota`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, WebsocketHandler">
+
+    <title>sota::gateway::websocket::WebsocketHandler - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../../index.html'>sota</a>::<wbr><a href='../index.html'>gateway</a>::<wbr><a href='index.html'>websocket</a></p><script>window.sidebarCurrent = {name: 'WebsocketHandler', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../../index.html'>sota</a>::<wbr><a href='../index.html'>gateway</a>::<wbr><a href='index.html'>websocket</a>::<wbr><a class='struct' href=''>WebsocketHandler</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-3878' class='srclink' href='../../../src/sota/src/gateway/websocket.rs.html#51-55' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct WebsocketHandler {
+    // some fields omitted
+}</pre><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl Handler for <a class='struct' href='../../../sota/gateway/websocket/struct.WebsocketHandler.html' title='sota::gateway::websocket::WebsocketHandler'>WebsocketHandler</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-3882' class='srclink' href='../../../src/sota/src/gateway/websocket.rs.html#57-88' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.on_message' class='method'><code>fn <a href='#method.on_message' class='fnname'>on_message</a>(&amp;mut self, msg: Message) -&gt; Result&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></h4>
+<div class='docblock'><p>Called on incoming messages.</p>
+</div><h4 id='method.on_open' class='method'><code>fn <a href='#method.on_open' class='fnname'>on_open</a>(&amp;mut self, _: Handshake) -&gt; Result&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></h4>
+<div class='docblock'><p>Called when the WebSocket handshake is successful and the connection is open for sending and receiving messages. <a href="#method.on_open">Read more</a></p>
+</div><h4 id='method.on_close' class='method'><code>fn <a href='#method.on_close' class='fnname'>on_close</a>(&amp;mut self, code: CloseCode, _: &amp;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.str.html'>str</a>)</code></h4>
+<div class='docblock'><p>Called any time this endpoint receives a close control frame. This may be because the other endpoint is initiating a closing handshake, or it may be the other endpoint confirming the handshake initiated by this endpoint. <a href="#method.on_close">Read more</a></p>
+</div><h4 id='method.on_error' class='method'><code>fn <a href='#method.on_error' class='fnname'>on_error</a>(&amp;mut self, err: Error)</code></h4>
+<div class='docblock'><p>Called when an error occurs on the WebSocket.</p>
+</div><h4 id='method.on_shutdown' class='method'><code>fn <a href='#method.on_shutdown' class='fnname'>on_shutdown</a>(&amp;mut self)</code></h4>
+<div class='docblock'><p>Called when a request to shutdown all connections has been received.</p>
+</div><h4 id='method.on_request' class='method'><code>fn <a href='#method.on_request' class='fnname'>on_request</a>(&amp;mut self, req: &amp;Request) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;Response,&nbsp;Error&gt;</code></h4>
+<div class='docblock'><p>A method for handling the low-level workings of the request portion of the WebSocket handshake. <a href="#method.on_request">Read more</a></p>
+</div><h4 id='method.on_response' class='method'><code>fn <a href='#method.on_response' class='fnname'>on_response</a>(&amp;mut self, res: &amp;Response) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>,&nbsp;Error&gt;</code></h4>
+<div class='docblock'><p>A method for handling the low-level workings of the response portion of the WebSocket handshake. <a href="#method.on_response">Read more</a></p>
+</div><h4 id='method.on_timeout' class='method'><code>fn <a href='#method.on_timeout' class='fnname'>on_timeout</a>(&amp;mut self, event: Token) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>,&nbsp;Error&gt;</code></h4>
+<div class='docblock'><p>Called when a timeout is triggered. <a href="#method.on_timeout">Read more</a></p>
+</div><h4 id='method.on_new_timeout' class='method'><code>fn <a href='#method.on_new_timeout' class='fnname'>on_new_timeout</a>(&amp;mut self, Token, Timeout) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>,&nbsp;Error&gt;</code></h4>
+<div class='docblock'><p>Called when a timeout has been scheduled on the eventloop. <a href="#method.on_new_timeout">Read more</a></p>
+</div><h4 id='method.on_frame' class='method'><code>fn <a href='#method.on_frame' class='fnname'>on_frame</a>(&amp;mut self, frame: Frame) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;Frame&gt;,&nbsp;Error&gt;</code></h4>
+<div class='docblock'><p>A method for handling incoming frames. <a href="#method.on_frame">Read more</a></p>
+</div><h4 id='method.on_send_frame' class='method'><code>fn <a href='#method.on_send_frame' class='fnname'>on_send_frame</a>(&amp;mut self, frame: Frame) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;Frame&gt;,&nbsp;Error&gt;</code></h4>
+<div class='docblock'><p>A method for handling outgoing frames. <a href="#method.on_send_frame">Read more</a></p>
+</div><h4 id='method.build_request' class='method'><code>fn <a href='#method.build_request' class='fnname'>build_request</a>(&amp;mut self, url: &amp;Url) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;Request,&nbsp;Error&gt;</code></h4>
+<div class='docblock'><p>A method for creating the initial handshake request for WebSocket clients. <a href="#method.build_request">Read more</a></p>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../../";
+        window.currentCrate = "sota";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../../jquery.js"></script>
+    <script src="../../../main.js"></script>
+    
+    <script defer src="../../../search-index.js"></script>
+</body>
+</html>

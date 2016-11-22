@@ -41,13 +41,10 @@
             <li data-order=""><a href="/rvi_sota_server/doc/deployment-with-dockercompose.html">Deployment with docker-compose</a></li>
         
             
-            <li data-order="2"><a href="/rvi_sota_server/doc/deployment-with-docker-launcher.html">Deployment with Docker Launcher - Deprecated</a></li>
-        
-            
             <li data-order="6"><a href="/rvi_sota_server/doc/contributing.html">Contributing</a></li>
         
             
-            <li data-order="3"><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
+            <li data-order="3"><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI Guide</a></li>
         
             
             <li data-order="1"><a href="/rvi_sota_server/doc/building-installing.html">Building & Deploying</a></li>
@@ -92,12 +89,6 @@
             <li data-order="10"><a href="/rvi_sota_server/dev/generated-documentation.html">Auto-generated Documentation</a></li>
         
             
-            <li data-order="3"><a href="/rvi_sota_server/dev/resolver-api.html">Resolver API</a></li>
-        
-            
-            <li data-order="2"><a href="/rvi_sota_server/dev/core-api.html">Core API</a></li>
-        
-            
             <li data-order="8"><a href="/rvi_sota_server/dev/client-implementation-example-session.html">Client Implementation Example Session</a></li>
         
             
@@ -113,7 +104,7 @@
             <li data-order="5"><a href="/rvi_sota_server/dev/scala-style-guide.html">Scala Style Guide</a></li>
         
             
-            <li data-order="1"><a href="/rvi_sota_server/dev/api.html">Web server API</a></li>
+            <li data-order="1"><a href="/rvi_sota_server/dev/api.html">API</a></li>
         
     
 <!-- List additional links. It is recommended to add a divider
@@ -131,29 +122,83 @@
 </div>
 
 <div class="paragraph">
-<p>Docker is a great way to get SOTA running in a clean, reproducible way. sbt can build and publish local docker images to test with, and docker-compose combined with some ATS-provided images makes sure all of SOTA&#8217;s dependencies are taken care of.</p>
+<p>Docker is a great way to get SOTA running in a clean, reproducible way. <code>sbt</code> can build and publish local docker images to test with, and docker-compose combined with some ATS-provided images makes sure all of SOTA&#8217;s dependencies are taken care of.</p>
 </div>
+<div class="sect1">
+<h2 id="docker-compose-overview">docker-compose overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Deploying with docker-compose should be quite straightforward. Assuming docker is running on the deployment system, <code>docker-compose -p sota -f deploy/docker-compose/[filename].yml up</code> should get you a running SOTA system. This depends on the following images:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>From SOTA</p>
+<div class="ulist">
+<ul>
+<li>
+<p>advancedtelematic/sota-core</p>
+</li>
+<li>
+<p>advancedtelematic/sota-resolver</p>
+</li>
+<li>
+<p>advancedtelematic/sota-webserver</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>External images provided by ATS</p>
+<div class="ulist">
+<ul>
+<li>
+<p>advancedtelematic/mariadb</p>
+</li>
+<li>
+<p>advancedtelematic/rvi (optional)</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>When you run docker-compose, it will first search for those images locally, and if it does not find them, it will pull the ones ATS has published on Docker Hub. To ensure you&#8217;re running the latest code, you can build the images locally with <code>sbt docker:publishLocal</code>. To check for updates on the published images, you can do a <code>docker-compose -f deploy/docker-compose/[filename].yml pull</code>, or simply <code>docker pull [image name]</code> to update an individual image.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="deployment-options">Deployment options</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>There are three docker-compose files included in the git repo, under <code>/deploy/docker-compose</code>:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><code>server-bare.yml</code> contains all of the SOTA server components, with client communication disabled.</p>
+<p><code>docker-compose.yml</code> contains the default SOTA Server components.</p>
 </li>
 <li>
-<p><code>server-rvi.yml</code> contains the server components plus the server-side RVI node, for communication with clients.</p>
+<p><code>core-rvi.yml</code> contains the additional RVI server node with environment overrides for the SOTA Core server.</p>
 </li>
 <li>
-<p><code>server-rvi-client.yml</code> contains the server components, the server-side RVI node, plus a debug build of the SOTA client</p>
+<p><code>client-rvi.yml</code> contains the additional RVI client node for testing with the SOTA Client</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>As long as you have docker-compose 1.6 or higher, you should be able to run these with <code>docker-compose -p sota -f [filename].yml</code>. They will pull docker images from ATS Docker Hub respositories by default; you&#8217;ll generally want to replace the component you&#8217;re working on with a local version. <code>sbt docker:publishLocal</code> will give you docker images for the three main components. You can then modify the YAML files to point to your local images instead.</p>
+<p>To start the base SOTA Server, run <code>docker-compose -f docker-compose.yml up</code>. To start the SOTA Server with an RVI backend node, run <code>docker-compose -f docker-compose.yml -f core-rvi.yml up</code>. To start the SOTA Server with both RVI backend and device nodes, run <code>docker-compose -f docker-compose.yml -f core-rvi.yml -f client-rvi.yml up</code>.</p>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="cloud-deployment">Cloud deployment</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>If you want to deploy to the cloud, docker-compose can also help you do that. The easiest way is to use <a href="https://docs.docker.com/machine/drivers/aws/">docker-machine&#8217;s AWS driver</a> to create and deploy to a remote host.</p>
+</div>
+</div>
 </div>
 
                         </div>

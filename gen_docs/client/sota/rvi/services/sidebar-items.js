@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["BackendServices",""],["LocalServices",""],["RemoteServices",""],["RviMessage",""],["Services","Hold references to RVI service endpoints, currently active `Transfers`, and where to broadcast outcome `Event`s to."]]});

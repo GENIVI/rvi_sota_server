@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["OTA","Encapsulate the client configuration and HTTP client used for over-the-air communication."]]});

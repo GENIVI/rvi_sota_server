@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `datatype` mod in crate `sota`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, datatype">
+
+    <title>sota::datatype - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>sota</a></p><script>window.sidebarCurrent = {name: 'datatype', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>sota</a>::<wbr><a class='mod' href=''>datatype</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-19' class='srclink' href='../../src/sota/src/datatype/mod.rs.html#1-26' title='goto source code'>[src]</a></span></h1>
+<h2 id='reexports' class='section-header'><a href="#reexports">Reexports</a></h2>
+<table><tr><td><code>pub use self::auth::{<a class='struct' href='../../sota/datatype/auth/struct.AccessToken.html' title='sota::datatype::auth::AccessToken'>AccessToken</a>, <a class='enum' href='../../sota/datatype/auth/enum.Auth.html' title='sota::datatype::auth::Auth'>Auth</a>, <a class='struct' href='../../sota/datatype/auth/struct.ClientId.html' title='sota::datatype::auth::ClientId'>ClientId</a>, <a class='struct' href='../../sota/datatype/auth/struct.ClientSecret.html' title='sota::datatype::auth::ClientSecret'>ClientSecret</a>, <a class='struct' href='../../sota/datatype/auth/struct.ClientCredentials.html' title='sota::datatype::auth::ClientCredentials'>ClientCredentials</a>};</code></td></tr><tr><td><code>pub use self::<a class='mod'
+                                       href='./command/index.html'>command</a>::<a class='enum' href='../../sota/datatype/command/enum.Command.html' title='sota::datatype::command::Command'>Command</a>;</code></td></tr><tr><td><code>pub use self::config::{<a class='struct' href='../../sota/datatype/config/struct.AuthConfig.html' title='sota::datatype::config::AuthConfig'>AuthConfig</a>, <a class='struct' href='../../sota/datatype/config/struct.CoreConfig.html' title='sota::datatype::config::CoreConfig'>CoreConfig</a>, <a class='struct' href='../../sota/datatype/config/struct.Config.html' title='sota::datatype::config::Config'>Config</a>, <a class='struct' href='../../sota/datatype/config/struct.DBusConfig.html' title='sota::datatype::config::DBusConfig'>DBusConfig</a>, <a class='struct' href='../../sota/datatype/config/struct.DeviceConfig.html' title='sota::datatype::config::DeviceConfig'>DeviceConfig</a>, <a class='struct' href='../../sota/datatype/config/struct.GatewayConfig.html' title='sota::datatype::config::GatewayConfig'>GatewayConfig</a>, <a class='struct' href='../../sota/datatype/config/struct.RviConfig.html' title='sota::datatype::config::RviConfig'>RviConfig</a>};</code></td></tr><tr><td><code>pub use self::<a class='mod'
+                                       href='./error/index.html'>error</a>::<a class='enum' href='../../sota/datatype/error/enum.Error.html' title='sota::datatype::error::Error'>Error</a>;</code></td></tr><tr><td><code>pub use self::<a class='mod'
+                                       href='./event/index.html'>event</a>::<a class='enum' href='../../sota/datatype/event/enum.Event.html' title='sota::datatype::event::Event'>Event</a>;</code></td></tr><tr><td><code>pub use self::json_rpc::{<a class='struct' href='../../sota/datatype/json_rpc/struct.RpcRequest.html' title='sota::datatype::json_rpc::RpcRequest'>RpcRequest</a>, <a class='struct' href='../../sota/datatype/json_rpc/struct.RpcOk.html' title='sota::datatype::json_rpc::RpcOk'>RpcOk</a>, <a class='struct' href='../../sota/datatype/json_rpc/struct.RpcErr.html' title='sota::datatype::json_rpc::RpcErr'>RpcErr</a>};</code></td></tr><tr><td><code>pub use self::package::{<a class='struct' href='../../sota/datatype/package/struct.ChunkReceived.html' title='sota::datatype::package::ChunkReceived'>ChunkReceived</a>, <a class='struct' href='../../sota/datatype/package/struct.DownloadStarted.html' title='sota::datatype::package::DownloadStarted'>DownloadStarted</a>, <a class='struct' href='../../sota/datatype/package/struct.DownloadComplete.html' title='sota::datatype::package::DownloadComplete'>DownloadComplete</a>, <a class='struct' href='../../sota/datatype/package/struct.GetInstalledSoftware.html' title='sota::datatype::package::GetInstalledSoftware'>GetInstalledSoftware</a>, <a class='struct' href='../../sota/datatype/package/struct.Package.html' title='sota::datatype::package::Package'>Package</a>, <a class='struct' href='../../sota/datatype/package/struct.PendingUpdateRequest.html' title='sota::datatype::package::PendingUpdateRequest'>PendingUpdateRequest</a>, <a class='struct' href='../../sota/datatype/package/struct.UpdateAvailable.html' title='sota::datatype::package::UpdateAvailable'>UpdateAvailable</a>, <a class='type' href='../../sota/datatype/package/type.UpdateRequestId.html' title='sota::datatype::package::UpdateRequestId'>UpdateRequestId</a>, <a class='enum' href='../../sota/datatype/package/enum.UpdateState.html' title='sota::datatype::package::UpdateState'>UpdateState</a>};</code></td></tr><tr><td><code>pub use self::<a class='mod'
+                                       href='./system_info/index.html'>system_info</a>::<a class='struct' href='../../sota/datatype/system_info/struct.SystemInfo.html' title='sota::datatype::system_info::SystemInfo'>SystemInfo</a>;</code></td></tr><tr><td><code>pub use self::update::{<a class='struct' href='../../sota/datatype/update/struct.DeviceReport.html' title='sota::datatype::update::DeviceReport'>DeviceReport</a>, <a class='struct' href='../../sota/datatype/update/struct.InstalledFirmware.html' title='sota::datatype::update::InstalledFirmware'>InstalledFirmware</a>, <a class='struct' href='../../sota/datatype/update/struct.InstalledPackage.html' title='sota::datatype::update::InstalledPackage'>InstalledPackage</a>, <a class='struct' href='../../sota/datatype/update/struct.InstalledSoftware.html' title='sota::datatype::update::InstalledSoftware'>InstalledSoftware</a>, <a class='struct' href='../../sota/datatype/update/struct.OperationResult.html' title='sota::datatype::update::OperationResult'>OperationResult</a>, <a class='enum' href='../../sota/datatype/update/enum.UpdateResultCode.html' title='sota::datatype::update::UpdateResultCode'>UpdateResultCode</a>, <a class='struct' href='../../sota/datatype/update/struct.UpdateReport.html' title='sota::datatype::update::UpdateReport'>UpdateReport</a>};</code></td></tr><tr><td><code>pub use self::url::{<a class='enum' href='../../sota/datatype/url/enum.Method.html' title='sota::datatype::url::Method'>Method</a>, <a class='struct' href='../../sota/datatype/url/struct.Url.html' title='sota::datatype::url::Url'>Url</a>};</code></td></tr></table><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='auth/index.html'
+                                  title='sota::datatype::auth'>auth</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='command/index.html'
+                                  title='sota::datatype::command'>command</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='config/index.html'
+                                  title='sota::datatype::config'>config</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='dbus/index.html'
+                                  title='sota::datatype::dbus'>dbus</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='error/index.html'
+                                  title='sota::datatype::error'>error</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='event/index.html'
+                                  title='sota::datatype::event'>event</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='json_rpc/index.html'
+                                  title='sota::datatype::json_rpc'>json_rpc</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='package/index.html'
+                                  title='sota::datatype::package'>package</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='system_info/index.html'
+                                  title='sota::datatype::system_info'>system_info</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='update/index.html'
+                                  title='sota::datatype::update'>update</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='mod' href='url/index.html'
+                                  title='sota::datatype::url'>url</a></td>
+                           <td class='docblock short'>
+                                
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "sota";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Event","System-wide events that are broadcast to all interested parties."]]});

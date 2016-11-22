@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["ChunkParams","Type for messages transferring single chunks."]]});

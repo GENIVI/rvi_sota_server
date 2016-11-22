@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Abort",""],["Chunk",""],["Finish",""],["Notify",""],["Report",""],["Start",""]],"trait":[["Parameter","Each `Parameter` implementation handles a specific kind of RVI client request, optionally responding with an `Event` on completion."]]});

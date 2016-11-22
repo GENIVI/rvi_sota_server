@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Console","The console gateway is used for REPL-style interaction with the client."]]});

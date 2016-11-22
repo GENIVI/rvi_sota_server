@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["TestClient","The `TestClient` will return HTTP responses from an existing list of strings."]]});

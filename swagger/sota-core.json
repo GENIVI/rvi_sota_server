@@ -1,0 +1,1276 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "",
+    "title": "SOTA Core",
+    "description": "https://github.com/advancedtelematic/rvi_sota_server",
+    "license": {
+      "name": "Mozilla Public License",
+      "url": "https://github.com/advancedtelematic/rvi_sota_server/blob/master/LICENSE"
+    }
+  },
+  "host": "localhost:8080",
+  "basePath": "/api/v1",
+  "securityDefinitions": {
+  },
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/devices": {
+      "get": {
+        "description": "Get a list of all the devices in the Core database.",
+        "parameters": [
+          {
+            "name": "deviceId",
+            "description": "Hi",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "deviceName",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A array of Device",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Device"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/packages": {
+      "get": {
+        "description": "Get a list of all the software packages and versions in the Core database.",
+        "responses": {
+          "200": {
+            "description": "A array of packages",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Package"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/packages/{name}/{version}": {
+      "put": {
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "description": "Add a binary package to the system",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "description": "The package name.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "description": "The package version.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "in": "query",
+            "description": "A short description of of the package.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "vendor",
+            "in": "query",
+            "description": "The package vendor.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "signature",
+            "in": "query",
+            "description": "A cryptographic signature signing the binary.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "file",
+            "in": "formData",
+            "description": "The binary package.",
+            "required": true,
+            "type": "file"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "description": "Return the Package object for a specific package.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "description": "The package name.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "description": "The package version.",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Package"
+            }
+          }
+        }
+      }
+    },
+    "/packages/{name}/{version}/queued_devices": {
+      "get": {
+        "description": "Return a list of device uuids that have the package queued for install.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "description": "The package name.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "description": "The package version.",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/campaign": {
+      "get": {
+        "description": "List all campaigns",
+        "responses": {
+          "200": {
+            "description": "A list of campaign objects",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/CampaignMeta"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Create a new campaign",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The name of the new campaign",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CampaignCreate"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "The new uuid of the created campaign",
+            "schema": {
+              "$ref": "#/definitions/uuid"
+            }
+          }
+        }
+      }
+    },
+    "/campaigns/{uuid}": {
+      "get": {
+        "description": "Get a campaign from uuid",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The campaign uuid to get",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The campaign",
+            "schema": {
+              "$ref": "#/definitions/Campaign"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete the campaign",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The campaign uuid to delete",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/campaigns/{uuid}/package": {
+      "put": {
+        "description": "Set the package for the campaign",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The campaign uuid to add package to",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The package to add",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/packageId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/campaigns/{uuid}/name": {
+      "put": {
+        "description": "Set the name for the campaign",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The campaign uuid to add package to",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The name for the campaign",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CampaignCreate"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/campaigns/{uuid}/groups": {
+      "put": {
+        "description": "Set the groups for the campaign",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The campaign uuid to add groups to",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "The groups to add to campaign",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CampaignGroups"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/campaigns/{uuid}/launch": {
+      "post": {
+        "description": "Launch the campaign",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The campaign uuid to launch",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/update_requests": {
+      "get": {
+        "description": "List all update campaigns",
+        "responses": {
+          "200": {
+            "description": "A list of update campaign objects.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Update"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/history": {
+      "get": {
+        "description": "Get the package install history of a device.",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "query",
+            "description": "An existing device uuid.",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "todo": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/device_updates/{uuid}": {
+      "post": {
+        "description": "Create an update sending a package to vehicle",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The device uuid to install the package on",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "packageId",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/packageId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Update"
+            }
+          }
+        }
+      },
+      "get": {
+        "description": "Get a list of the updates queued for a DeviceId, and update the last seen time for that DeviceId. This is called by the\nclient. To get a list of updates queued for a DeviceId without updating the last seen time, use /device_updates/{uuid}/queued\n",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The device to list",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/pendingPackage"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/device_updates/{uuid}/queued": {
+      "get": {
+        "description": "Get a list of the updates queued for a device.",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The device to list",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/pendingPackage"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/device_updates/{uuid}/blocked": {
+      "get": {
+        "description": "Get whether the update queue for the given device is blocked.",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The device to query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/BlockedInstall"
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Put a block on the update queue for the given device.",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The device to block",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      },
+      "delete": {
+        "description": "Delete a block on the update queue for the given device.",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The device to unblock",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/device_updates/{uuid}/{updateId}/download": {
+      "get": {
+        "description": "Download a package binary. This is called by the in-vehicle client.",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The uuid of the vehicle making this call",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "updateId",
+            "in": "path",
+            "description": "The UUID of an update",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "file"
+            }
+          }
+        }
+      }
+    },
+    "/device_updates/{uuid}/system_info": {
+      "put": {
+        "description": "Update the system info for a device",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The uuid of the vehicle making this call",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "system",
+            "description": "The json object representing the system info",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SystemInfo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/device_updates/{uuid}/sync": {
+      "post": {
+        "description": "todo",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The uuid of the vehicle making this call",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/device_updates/{uuid}/{updateId}/cancelupdate": {
+      "put": {
+        "description": "Cancel a currently pending update",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "updateId",
+            "in": "path",
+            "description": "The UUID of a currently pending update",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/device_updates/{uuid}/{updateId}": {
+      "post": {
+        "description": "Report on the status of an install. This is used by the client to send the status and/or log files after an install completes.",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "uuid of the device",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "updateId",
+            "in": "path",
+            "description": "The UUID of a currently pending update",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "installReport",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/installReport"
+            }
+          }
+        ],
+        "responses": {
+          "415": {
+            "description": "Unsupported Media Type todo"
+          }
+        }
+      }
+    },
+    "/device_updates/{uuid}/installed": {
+      "put": {
+        "description": "Update the list of installed packages on a vehicle. Note that this does not do any communication\nwith the client or install any packages; it simply updates the database with the information that\nthe package is installed.\n",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "packageList",
+            "in": "body",
+            "description": "An array of packageId objects",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/packageId"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/device_updates/{uuid}/order": {
+      "put": {
+        "description": "Set the install order for a vehicle's queued packages.\n",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "orderMapping",
+            "in": "body",
+            "description": "An object with mappings between install position and updateId for all queued packages. Note that for a valid response,\nall updateIds currently pending must be listed and assigned a unique installPos.\n",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/orderMapping"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/device_updates/{uuid}/results": {
+      "get": {
+        "description": "Get a list of results for all updates for a given DeviceId.",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The uuid to list",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/operationResult"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/device_updates/{uuid}/{updateId}/results": {
+      "get": {
+        "description": "Get a list of results for a given update.",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "The device to list",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "updateId",
+            "in": "path",
+            "description": "The UUID of a currently pending update",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/operationResult"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/blacklist": {
+      "get": {
+        "description": "Get a list of blacklisted packages",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/BlacklistItem"
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "BlacklistedPackageRequest",
+            "in": "body",
+            "description": "An object describing the package to blacklist",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/BlacklistedPackageRequest"
+            }
+          }
+        ],
+        "description": "Update a blacklist item",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "BlacklistedPackageRequest",
+            "in": "body",
+            "description": "An object describing the package to blacklist",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "items": {
+                "$ref": "#/definitions/BlacklistedPackageRequest"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "description": "Create a blacklist item"
+      }
+    },
+    "/blacklist/{package_name}/{package_version}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "package_name",
+            "in": "path",
+            "description": "package name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "package_version",
+            "in": "path",
+            "description": "package version",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "description": "Get a blacklist item",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "parameters": [
+          {
+            "name": "package_name",
+            "in": "path",
+            "description": "package name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "package_version",
+            "in": "path",
+            "description": "package version",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "description": "Delete a blacklist item",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/blacklist/{package_name}/{package_version}/preview": {
+      "get": {
+        "parameters": [
+          {
+            "name": "package_name",
+            "in": "path",
+            "description": "package name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "package_version",
+            "in": "path",
+            "description": "package version",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "description": "Get the count of affected devices if a blacklist item was created for this package",
+        "responses": {
+          "200": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "affected_devices": {
+                  "type": "integer",
+                  "description": "Count of affected devices"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/impact/blacklist": {
+      "get": {
+        "description": "Current impact analysis for blacklisted packages",
+        "responses": {
+          "200": {
+            "description": "A Map of (DeviceId -> Seq[PackageId])",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "uuid": {
+      "type": "string",
+      "description": "32 lowercase hexadecimal digits, displayed in five groups separated by hyphens"
+    },
+    "namespace": {
+      "type": "string",
+      "description": "The namespace scope of the request. Default value is 'default'"
+    },
+    "DeviceId": {
+      "type": "string",
+      "description": "A 17-digit VIN. May contain only capital letters and digits. Cannot contain the letters I, O, or Q."
+    },
+    "DeviceName": {
+      "type": "string",
+      "description": "Custom name for a device"
+    },
+    "DeviceType": {
+      "type": "string",
+      "description": "Valid values are \"Vehicle\" and \"Other\""
+    },
+    "Device": {
+      "type": "object",
+      "properties": {
+        "namespace": {
+          "$ref": "#/definitions/namespace"
+        },
+        "deviceId": {
+          "$ref": "#/definitions/DeviceId"
+        },
+        "id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "deviceName": {
+          "$ref": "#/definitions/DeviceName"
+        },
+        "deviceType": {
+          "$ref": "#/definitions/DeviceType"
+        },
+        "lastseen": {
+          "type": "string",
+          "format": "dateTime",
+          "description": "The last time a device uuid was seen by the SOTA server."
+        }
+      }
+    },
+    "Package": {
+      "type": "object",
+      "properties": {
+        "namespace": {
+          "$ref": "#/definitions/namespace"
+        },
+        "id": {
+          "$ref": "#/definitions/packageId"
+        },
+        "uri": {
+          "type": "object",
+          "properties": {
+            "uri": {
+              "type": "string",
+              "description": "A URI the package file is available at."
+            }
+          }
+        },
+        "size": {
+          "type": "integer",
+          "description": "The package file size, in bytes."
+        },
+        "checkSum": {
+          "type": "string",
+          "description": "The MD5 checksum of the binary package."
+        },
+        "description": {
+          "type": "string",
+          "description": "A short description of of the package."
+        },
+        "vendor": {
+          "type": "string",
+          "description": "The package vendor."
+        },
+        "signature": {
+          "type": "string",
+          "description": "A cryptographic signature signing the binary."
+        },
+        "isBlackListed": {
+          "type": "boolean",
+          "description": "True if the package is currently blacklisted"
+        }
+      }
+    },
+    "packageId": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The package name."
+        },
+        "version": {
+          "type": "string",
+          "description": "The package version, in major.minor.patch notation by default."
+        }
+      }
+    },
+    "Update": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The UUID of the update"
+        },
+        "namespace": {
+          "$ref": "#/definitions/namespace"
+        },
+        "packageId": {
+          "$ref": "#/definitions/packageId"
+        },
+        "creationTime": {
+          "type": "string",
+          "format": "dateTime",
+          "description": "The date and time the campaign was created"
+        },
+        "periodOfValidity": {
+          "type": "string",
+          "format": "dateTime/dateTime",
+          "description": "The start and end of the update campaign"
+        },
+        "priority": {
+          "type": "integer",
+          "description": "The priority of the campaign"
+        },
+        "signature": {
+          "type": "string",
+          "description": "A cryptographic signature signing the update campaign."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the update campaign."
+        },
+        "requestConfirmation": {
+          "type": "boolean",
+          "description": "True if client should wait for user confirmation before installing."
+        },
+        "installPos": {
+          "type": "integer",
+          "description": "The order in which the package should be installed. 0 is first, incrementing thereafter."
+        }
+      }
+    },
+    "pendingPackage": {
+      "type": "object",
+      "properties": {
+        "requestId": {
+          "type": "string"
+        },
+        "packageId": {
+          "$ref": "#/definitions/packageId"
+        },
+        "installPos": {
+          "type": "integer"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "dateTime"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "InFlight",
+            "Pending",
+            "Canceled",
+            "Failed"
+          ]
+        }
+      }
+    },
+    "installReport": {
+      "type": "object"
+    },
+    "operationResult": {
+      "type": "object",
+      "properties": {
+        "updateId": {
+          "type": "string"
+        },
+        "resultCode": {
+          "type": "integer"
+        },
+        "resultText": {
+          "type": "string"
+        },
+        "receivedAt": {
+          "type": "string",
+          "format": "dateTime"
+        }
+      }
+    },
+    "orderMapping": {
+      "type": "object"
+    },
+    "BlockedInstall": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The UUID of the device"
+        },
+        "blockedAt": {
+          "type": "string",
+          "format": "dateTime",
+          "description": "The time the update queue for the device was blocked."
+        }
+      }
+    },
+    "BlacklistItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "namespace": {
+          "$ref": "#/definitions/namespace"
+        },
+        "packageId": {
+          "$ref": "#/definitions/packageId"
+        },
+        "comment": {
+          "type": "string",
+          "description": "A free text comment about the item"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "dateTime",
+          "description": "The last time this blacklist entry was changed."
+        }
+      }
+    },
+    "BlacklistedPackageRequest": {
+      "type": "object",
+      "properties": {
+        "packageId": {
+          "$ref": "#/definitions/packageId"
+        },
+        "comment": {
+          "type": "string",
+          "description": "A free text comment about the item"
+        }
+      }
+    },
+    "Campaign": {
+      "type": "object",
+      "properties": {
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "An array of group names"
+        },
+        "meta": {
+          "$ref": "#/definitions/CampaignMeta"
+        },
+        "packageId": {
+          "$ref": "#/definitions/packageId"
+        }
+      }
+    },
+    "CampaignMeta": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/uuid"
+        },
+        "launched": {
+          "type": "boolean",
+          "description": "Is this campaign launched"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the campaign"
+        },
+        "namespace": {
+          "type": "string",
+          "description": "The namespace the campaign belongs to"
+        },
+        "packageUuid": {
+          "description": "The package uuid for this campaign, can be null if none have been set yet",
+          "type": "string"
+        }
+      }
+    },
+    "CampaignCreate": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name to give to the campaign"
+        }
+      }
+    },
+    "CampaignGroups": {
+      "type": "object",
+      "properties": {
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The groups for the campaign"
+        }
+      }
+    },
+    "SystemInfo": {
+      "type": "object",
+      "description": "This is a free-form JSON blob describing the hardware components of the client system. \nThe format expected by the server is the output of `lshw -json -sanitize`.\n"
+    }
+  }
+}

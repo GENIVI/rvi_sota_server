@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["ErrorCode","The error code as specified by jsonrpc."],["RpcErr","Encapsulates a failed JSON-RPC response."],["RpcOk","Encapsulates a successful JSON-RPC response."],["RpcRequest","Encode the body of a JSON-RPC call."]]});

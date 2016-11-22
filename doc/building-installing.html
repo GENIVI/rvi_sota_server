@@ -41,13 +41,10 @@
             <li data-order=""><a href="/rvi_sota_server/doc/deployment-with-dockercompose.html">Deployment with docker-compose</a></li>
         
             
-            <li data-order="2"><a href="/rvi_sota_server/doc/deployment-with-docker-launcher.html">Deployment with Docker Launcher - Deprecated</a></li>
-        
-            
             <li data-order="6"><a href="/rvi_sota_server/doc/contributing.html">Contributing</a></li>
         
             
-            <li data-order="3"><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI User Guide</a></li>
+            <li data-order="3"><a href="/rvi_sota_server/doc/admin-gui-user-guide.html">Admin GUI Guide</a></li>
         
             
             <li data-order="1"><a href="/rvi_sota_server/doc/building-installing.html">Building & Deploying</a></li>
@@ -92,12 +89,6 @@
             <li data-order="10"><a href="/rvi_sota_server/dev/generated-documentation.html">Auto-generated Documentation</a></li>
         
             
-            <li data-order="3"><a href="/rvi_sota_server/dev/resolver-api.html">Resolver API</a></li>
-        
-            
-            <li data-order="2"><a href="/rvi_sota_server/dev/core-api.html">Core API</a></li>
-        
-            
             <li data-order="8"><a href="/rvi_sota_server/dev/client-implementation-example-session.html">Client Implementation Example Session</a></li>
         
             
@@ -113,7 +104,7 @@
             <li data-order="5"><a href="/rvi_sota_server/dev/scala-style-guide.html">Scala Style Guide</a></li>
         
             
-            <li data-order="1"><a href="/rvi_sota_server/dev/api.html">Web server API</a></li>
+            <li data-order="1"><a href="/rvi_sota_server/dev/api.html">API</a></li>
         
     
 <!-- List additional links. It is recommended to add a divider
@@ -131,7 +122,7 @@
 </div>
 
 <div class="paragraph">
-<p>Both the SOTA server components and the SOTA client are available as docker containers, and can be run quickly with <a href="https://docs.docker.com/compose">docker-compose</a>. For more detailed instructions on running SOTA with docker, see <a href="../doc/deployment-with-dockercompose.html">Deployment with docker-compose</a>. It is also possible to <a href="../doc/deployment-with-docker-launcher.html">deploy directly to EC2</a> using <a href="https://github.com/advancedtelematic/docker-launcher">docker-launcher</a>, however this method is deprecated and unsupported.</p>
+<p>Both the SOTA server components and the SOTA client are available as docker containers, and can be run quickly with <a href="https://docs.docker.com/compose">docker-compose</a>. For more detailed instructions on running SOTA with docker, see <a href="../doc/deployment-with-dockercompose.html">Deployment with docker-compose</a>.</p>
 </div>
 <div class="paragraph">
 <p>This page contains instructions on getting a local development system up and running.</p>
@@ -156,6 +147,18 @@
 </ul>
 </li>
 </ul>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+While we do our best to keep this page current, it may be a good idea to cross-reference the setup for <a href="../doc/deployment-with-dockercompose.html">docker-compose deployment</a> if you&#8217;re having trouble getting it running locally. We use the publicly available docker-compose files in CI, so if anything changes, it will also get changed there.
+</td>
+</tr>
+</table>
 </div>
 <div class="sect1">
 <h2 id="building-rvi_sota_server-locally">Building rvi_sota_server Locally</h2>
@@ -196,7 +199,7 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.45-b02, mixed mode)</code></pre>
 <div class="sect2">
 <h3 id="prerequisite-mariadb">Prerequisite: MariaDB</h3>
 <div class="paragraph">
-<p>For development, a local MariaDB install is required. (Note that this is <strong>not</strong> required for deployment, as Docker Launcher will handle the creation of the database. If a Docker Launcher local deployment is attempted on a machine already running a database instance, there may be conflicts.) Create two databases called <code>sota_core</code> and <code>sota_resolver</code>:</p>
+<p>For development, a local MariaDB install is required. Create two databases called <code>sota_core</code> and <code>sota_resolver</code>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -205,11 +208,15 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.45-b02, mixed mode)</code></pre>
 <span style="color: #008000; font-weight: bold">CREATE</span> <span style="color: #008000; font-weight: bold">DATABASE</span> sota_core_test <span style="color: #008000">CHARACTER</span> <span style="color: #008000; font-weight: bold">SET</span> utf8;
 <span style="color: #008000; font-weight: bold">CREATE</span> <span style="color: #008000; font-weight: bold">DATABASE</span> sota_resolver <span style="color: #008000">CHARACTER</span> <span style="color: #008000; font-weight: bold">SET</span> utf8;
 <span style="color: #008000; font-weight: bold">CREATE</span> <span style="color: #008000; font-weight: bold">DATABASE</span> sota_resolver_test <span style="color: #008000">CHARACTER</span> <span style="color: #008000; font-weight: bold">SET</span> utf8;
+<span style="color: #008000; font-weight: bold">CREATE</span> <span style="color: #008000; font-weight: bold">DATABASE</span> sota_device_registry <span style="color: #008000">CHARACTER</span> <span style="color: #008000; font-weight: bold">SET</span> utf8;
+<span style="color: #008000; font-weight: bold">CREATE</span> <span style="color: #008000; font-weight: bold">DATABASE</span> sota_device_registry_test <span style="color: #008000">CHARACTER</span> <span style="color: #008000; font-weight: bold">SET</span> utf8;
 <span style="color: #008000; font-weight: bold">CREATE</span> <span style="color: #008000; font-weight: bold">USER</span> <span style="color: #BA2121">&#39;sota&#39;</span><span style="color: #666666">@</span><span style="color: #BA2121">&#39;localhost&#39;</span> IDENTIFIED <span style="color: #008000; font-weight: bold">BY</span> <span style="color: #BA2121">&#39;s0ta&#39;</span>;
 <span style="color: #008000; font-weight: bold">GRANT</span> <span style="color: #008000; font-weight: bold">ALL</span> <span style="color: #008000; font-weight: bold">PRIVILEGES</span> <span style="color: #008000; font-weight: bold">ON</span> sota_core . <span style="color: #666666">*</span> <span style="color: #008000; font-weight: bold">TO</span> <span style="color: #BA2121">&#39;sota&#39;</span><span style="color: #666666">@</span><span style="color: #BA2121">&#39;localhost&#39;</span>;
 <span style="color: #008000; font-weight: bold">GRANT</span> <span style="color: #008000; font-weight: bold">ALL</span> <span style="color: #008000; font-weight: bold">PRIVILEGES</span> <span style="color: #008000; font-weight: bold">ON</span> sota_core_test . <span style="color: #666666">*</span> <span style="color: #008000; font-weight: bold">TO</span> <span style="color: #BA2121">&#39;sota&#39;</span><span style="color: #666666">@</span><span style="color: #BA2121">&#39;localhost&#39;</span>;
 <span style="color: #008000; font-weight: bold">GRANT</span> <span style="color: #008000; font-weight: bold">ALL</span> <span style="color: #008000; font-weight: bold">PRIVILEGES</span> <span style="color: #008000; font-weight: bold">ON</span> sota_resolver . <span style="color: #666666">*</span> <span style="color: #008000; font-weight: bold">TO</span> <span style="color: #BA2121">&#39;sota&#39;</span><span style="color: #666666">@</span><span style="color: #BA2121">&#39;localhost&#39;</span>;
 <span style="color: #008000; font-weight: bold">GRANT</span> <span style="color: #008000; font-weight: bold">ALL</span> <span style="color: #008000; font-weight: bold">PRIVILEGES</span> <span style="color: #008000; font-weight: bold">ON</span> sota_resolver_test . <span style="color: #666666">*</span> <span style="color: #008000; font-weight: bold">TO</span> <span style="color: #BA2121">&#39;sota&#39;</span><span style="color: #666666">@</span><span style="color: #BA2121">&#39;localhost&#39;</span>;
+<span style="color: #008000; font-weight: bold">GRANT</span> <span style="color: #008000; font-weight: bold">ALL</span> <span style="color: #008000; font-weight: bold">PRIVILEGES</span> <span style="color: #008000; font-weight: bold">ON</span> sota_device_registry . <span style="color: #666666">*</span> <span style="color: #008000; font-weight: bold">TO</span> <span style="color: #BA2121">&#39;sota&#39;</span><span style="color: #666666">@</span><span style="color: #BA2121">&#39;localhost&#39;</span>;
+<span style="color: #008000; font-weight: bold">GRANT</span> <span style="color: #008000; font-weight: bold">ALL</span> <span style="color: #008000; font-weight: bold">PRIVILEGES</span> <span style="color: #008000; font-weight: bold">ON</span> sota_device_registry_test . <span style="color: #666666">*</span> <span style="color: #008000; font-weight: bold">TO</span> <span style="color: #BA2121">&#39;sota&#39;</span><span style="color: #666666">@</span><span style="color: #BA2121">&#39;localhost&#39;</span>;
 FLUSH <span style="color: #008000; font-weight: bold">PRIVILEGES</span>;</code></pre>
 </div>
 </div>
@@ -217,7 +224,7 @@ FLUSH <span style="color: #008000; font-weight: bold">PRIVILEGES</span>;</code><
 <p>To update the database schema, run <code>sbt flywayMigrate</code></p>
 </div>
 <div class="paragraph">
-<p>This will apply any new migrations in src/main/resources/db/migration, and keep your existing data. This command expects to find the databases on localhost with sota/s0ta for the username/password. The URL to the database and login details can be overridden with the <code>CORE_DB_URL</code>, <code>CORE_DB_USER</code> and <code>CORE_DB_PASSWORD</code> environment variables for the core and <code>RESOLVER_DB_URL</code>, <code>RESOLVER_DB_USER</code> and, <code>RESOLVER_DB_PASSWORD</code> for the external resolver. See <code>project/SotaBuild.scala</code> for the implementation.</p>
+<p>This will apply any new migrations in src/main/resources/db/migration, and keep your existing data. This command expects to find the databases on localhost with sota/s0ta for the username/password. The URL to the database and login details can be overridden with the <code>CORE_DB_URL</code>, <code>CORE_DB_USER</code> and <code>CORE_DB_PASSWORD</code> environment variables for the core, <code>RESOLVER_DB_URL</code>, <code>RESOLVER_DB_USER</code>, and <code>RESOLVER_DB_PASSWORD</code> for the external resolver, and <code>DEVICE_REGISTRY_DB_URL</code>, <code>DEVICE_REGISTRY_DB_USER</code>, and <code>DEVICE_REGISTRY_DB_PASSWORD</code> for the device registry. See <code>project/SotaBuild.scala</code> for the implementation.</p>
 </div>
 <div class="admonitionblock tip">
 <table>
@@ -267,6 +274,7 @@ sbt sota-core/run</code></pre>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="sh">sbt sota-resolver/run
 sbt sota-core/run
+sbt sota-device_registry/run
 sbt sota-webserver/run</code></pre>
 </div>
 </div>
@@ -290,6 +298,18 @@ The SOTA Core server looks for the RVI server node on localhost by default. If y
 </td>
 <td class="content">
 The version format of packages is configurable, defaulting to MAJOR.MINOR.PATCH, where MAJOR, MINOR, and PATCH are unsigned integers. To change the format, specify a regular expression in the <code>PACKAGES_VERSION_FORMAT</code> environment variable.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+The SOTA Web server connects to a LDAP server for login authentication, specified by the environment variables <code>LDAP_HOST</code> and <code>LDAP_PORT</code>. For testing, you can start an in-memory LDAP server by setting <code>LDAP_INMEMORY_ENABLE=true</code>. When running from the console the in-memory LDAP server is started by default, however the following paths need to be specified: <code>LDAP_KEY_STORE_PATH=web-server/conf/certs/client.jks LDAP_TRUST_STORE_PATH=web-server/conf/certs/exampletrust.jks ./sbt sota-webserver/run</code>.
 </td>
 </tr>
 </table>
