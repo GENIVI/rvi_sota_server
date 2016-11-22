@@ -5,9 +5,6 @@
 
 package org.genivi.sota.db
 
-import org.genivi.sota.http.Errors
-
-import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
 /**

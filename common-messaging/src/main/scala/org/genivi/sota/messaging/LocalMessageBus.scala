@@ -5,11 +5,11 @@
 
 package org.genivi.sota.messaging
 
-import akka.{Done, NotUsed}
+import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.Source
-import org.genivi.sota.messaging.Messages.{BusMessage, MessageLike}
+import org.genivi.sota.messaging.Messages.MessageLike
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try

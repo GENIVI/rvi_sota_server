@@ -6,8 +6,6 @@ package org.genivi.sota.data
 
 import io.circe.{Json,JsonObject}
 import org.scalacheck.{Arbitrary, Gen}
-import scala.language.implicitConversions
-
 
 trait SimpleJsonGenerator {
 

@@ -8,8 +8,6 @@ import com.mifmif.common.regex.Generex
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import org.scalacheck.{Arbitrary, Gen}
-import scala.language.implicitConversions
-
 
 object RegexGenerators {
 
