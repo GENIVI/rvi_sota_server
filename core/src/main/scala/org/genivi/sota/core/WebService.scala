@@ -31,6 +31,7 @@ class WebService(notifier: UpdateNotifier,
 
   val devicesResource = new DevicesResource(db, connectivity.client, resolver, deviceRegistry, authNamespace)
   val packagesResource = new PackagesResource(resolver, db, messageBusPublisher, authNamespace)
+  val autoInstallResource = new AutoInstallResource(db, deviceRegistry, authNamespace)
   val updateService = new UpdateService(notifier, deviceRegistry)
   val updateRequestsResource = new UpdateRequestsResource(db, resolver, updateService, authNamespace)
   val historyResource = new HistoryResource(authNamespace)(db, system)
@@ -42,6 +43,7 @@ class WebService(notifier: UpdateNotifier,
     campaignResource.route ~
     devicesResource.route ~
     packagesResource.route ~
+    autoInstallResource.route ~
     updateRequestsResource.route ~
     historyResource.route ~
     blacklistResource.route ~

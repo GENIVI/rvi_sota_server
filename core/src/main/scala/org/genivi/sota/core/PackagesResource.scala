@@ -40,13 +40,16 @@ import org.genivi.sota.http.Errors.RawError
 import scala.concurrent.Future
 
 object PackagesResource {
+
+  val extractPackageName: Directive1[PackageId.Name] =
+    refined[PackageId.ValidName](Slash ~ Segment)
+
   /**
     * A scala HTTP routing directive that extracts a package name/version from
     * the request URL
     */
-  val extractPackageId: Directive1[PackageId] = (
-    refined[PackageId.ValidName](Slash ~ Segment) &
-      refined[PackageId.ValidVersion](Slash ~ Segment)).as(PackageId.apply _)
+  val extractPackageId: Directive1[PackageId] =
+    (extractPackageName & refined[PackageId.ValidVersion](Slash ~ Segment)).as(PackageId.apply _)
 }
 
 class PackagesResource(resolver: ExternalResolverClient, db : Database,
