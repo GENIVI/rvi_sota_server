@@ -1,0 +1,13 @@
+language: scala
+jdk:
+  - oraclejdk8
+scala:
+  - 2.11.2
+services:
+  - docker
+before_install:
+  - mkdir entrypoint.d
+  - echo "CREATE DATABASE sota_resolver;CREATE DATABASE sota_resolver_test;CREATE DATABASE sota_core;CREATE DATABASE sota_core_test;GRANT ALL PRIVILEGES ON \`sota\_core%\`.* TO 'sota_test'@'%';GRANT ALL PRIVILEGES ON \`sota\_resolver%\`.* TO 'sota_test'@'%';GRANT ALL PRIVILEGES ON \`sota\_device\_registry%\`.* TO 'sota_test'@'%';FLUSH PRIVILEGES;" > entrypoint.d/db_user.sql
+  - docker run -d --name mariadb-sota -p 3306:3306 -v $(pwd)/entrypoint.d:/docker-entrypoint-initdb.d -e MYSQL_ROOT_PASSWORD=sota-test -e MYSQL_USER=sota_test -e MYSQL_PASSWORD=s0ta mariadb:10.1 --character-set-server=utf8 --collation-server=utf8_unicode_ci --max_connections=1000
+script:
+  - ./sbt coverage sota-core/ut:test sota-resolver/ut:test sota-device_registry/ut:test sota-common/test
