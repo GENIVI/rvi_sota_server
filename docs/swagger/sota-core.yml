@@ -743,6 +743,10 @@ definitions:
       isBlackListed:
         type: boolean
         description: True if the package is currently blacklisted
+      createdAt:
+        type: string
+        format: dateTime
+        description: The time the package was uploaded to core
   packageId:
     type: object
     properties:

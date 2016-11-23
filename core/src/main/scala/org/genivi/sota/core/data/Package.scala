@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.core.data
 
+import java.time.Instant
 import java.util.UUID
 
 import akka.http.scaladsl.model.Uri
@@ -28,15 +29,16 @@ import org.genivi.sota.rest.GenericResponseEncoder
  * @param signature A cryptographic signature for the package
  */
 case class Package(
-  namespace: Namespace,
-  uuid: UUID,
-  id: PackageId,
-  uri: Uri,
-  size: Long,
-  checkSum: String,
-  description: Option[String],
-  vendor: Option[String],
-  signature: Option[String]
+                    namespace: Namespace,
+                    uuid: UUID,
+                    id: PackageId,
+                    uri: Uri,
+                    size: Long,
+                    checkSum: String,
+                    description: Option[String],
+                    vendor: Option[String],
+                    signature: Option[String],
+                    createdAt: Instant = Instant.now()
 )
 
 case class PackageResponse(

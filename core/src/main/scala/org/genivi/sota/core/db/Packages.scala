@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.core.db
 
+import java.time.Instant
 import java.util.UUID
 
 import akka.http.scaladsl.model.Uri
@@ -50,14 +51,16 @@ object Packages {
     def description = column[String]("description")
     def vendor = column[String]("vendor")
     def signature = column[String]("signature")
+    def createdAt = column[Instant]("createdAt")
 
     def pk = primaryKey("pk_package", uuid)
 
     def uniqueUuid = index("Package_unique_name_version", (namespace, name, version), unique = true)
 
-    def * = (namespace, name, version, uri, size, checkSum, description.?, vendor.?, signature.?, uuid).shaped <>
-      (x => Package(x._1, x._10, PackageId(x._2, x._3), x._4, x._5, x._6, x._7, x._8, x._9),
-        (x: Package) => Some((x.namespace, x.id.name, x.id.version, x.uri, x.size, x.checkSum, x.description, x.vendor, x.signature, x.uuid)))
+    def * = (namespace, name, version, uri, size, checkSum, description.?, vendor.?, signature.?, uuid, createdAt).shaped <>
+      (x => Package(x._1, x._10, PackageId(x._2, x._3), x._4, x._5, x._6, x._7, x._8, x._9, x._11),
+        (x: Package) => Some((x.namespace, x.id.name, x.id.version, x.uri, x.size, x.checkSum, x.description, x.vendor,
+                              x.signature, x.uuid, x.createdAt)))
   }
   // scalastyle:on
 
