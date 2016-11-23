@@ -13,7 +13,7 @@ import org.genivi.sota.data.Uuid
 import org.genivi.sota.device_registry.db._
 import org.genivi.sota.device_registry.common.Errors.MissingSystemInfo
 import org.genivi.sota.http.UuidDirectives.extractUuid
-import org.genivi.sota.http.AuthedNamespaceScope
+import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.slf4j.LoggerFactory
 import slick.driver.MySQLDriver.api._
@@ -49,15 +49,16 @@ class SystemInfoResource(authNamespace: Directive1[AuthedNamespaceScope],
   }
 
   def api: Route =
-    pathPrefix("devices") {
+    (pathPrefix("devices") & authNamespace) { ns =>
+      val scope = Scopes.devices(ns)
       deviceNamespaceAuthorizer { uuid =>
-        (get & path("system_info")) {
+        (scope.get & path("system_info")) {
           fetchSystemInfo(uuid)
         } ~
-        (post & path("system_info")) {
+        (scope.post & path("system_info")) {
           entity(as[Json]) { body => createSystemInfo(uuid, body) }
         } ~
-        (put & path("system_info")) {
+        (scope.put & path("system_info")) {
           entity(as[Json]) { body => updateSystemInfo(uuid, body) }
         }
       }

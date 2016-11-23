@@ -18,6 +18,7 @@ import akka.http.scaladsl.unmarshalling.{FromStringUnmarshaller, Unmarshaller}
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.ErrorHandler
+import org.genivi.sota.http.Scopes
 import org.genivi.sota.resolver.db.DbDepResolver
 
 
@@ -44,7 +45,9 @@ class ResolveDirectives(namespaceExtractor: Directive1[AuthedNamespaceScope],
       encodeResponse &
       pathPrefix("resolve") &
       namespaceExtractor & refinedPackageIdParams) { (ns, id) =>
-      resolvePackage(ns, id)
+      Scopes.resolver(ns).checkReadonly{
+        resolvePackage(ns, id)
+      }
     }
   }
 }

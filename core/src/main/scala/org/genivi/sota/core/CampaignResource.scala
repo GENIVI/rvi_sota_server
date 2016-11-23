@@ -15,8 +15,7 @@ import org.genivi.sota.core.campaigns.{CampaignLauncher, CampaignStats}
 import org.genivi.sota.core.data.Campaign
 import org.genivi.sota.core.db.Campaigns
 import org.genivi.sota.data.{Namespace, PackageId}
-import org.genivi.sota.http.AuthedNamespaceScope
-import org.genivi.sota.http.ErrorHandler
+import org.genivi.sota.http.{AuthedNamespaceScope, ErrorHandler, Scopes}
 import org.genivi.sota.http.UuidDirectives._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import slick.driver.MySQLDriver.api.Database
@@ -84,49 +83,50 @@ class CampaignResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
   val extractId: Directive1[Campaign.Id] =
     allowExtractor(namespaceExtractor, extractUuid.map(Campaign.Id(_)), campaignAllowed)
 
-  val route = ErrorHandler.handleErrors {
+  val route = (ErrorHandler.handleErrors & namespaceExtractor) { ns =>
+    val scope = Scopes.campaigns(ns)
     extractExecutionContext { implicit ec =>
       pathPrefix("campaigns") {
-        (pathEnd & namespaceExtractor) { ns =>
-          get {
+        pathEnd {
+          scope.get {
             listCampaigns(ns)
           } ~
-          (post & entity(as[CreateCampaign])) { name =>
+          (scope.post & entity(as[CreateCampaign])) { name =>
             createCampaign(ns, name)
           }
         } ~
         extractId { id =>
           pathEnd {
-            get {
+            scope.get {
               fetchCampaign(id)
             } ~
-            delete {
+            scope.delete {
               deleteCampaign(id)
             }
           } ~
-          (path("cancel") & put) {
+          (path("cancel") & scope.put) {
             cancel(id)
           } ~
-          (path("draft") & post) {
+          (path("draft") & scope.post) {
             setAsDraft(id)
           } ~
-          (path("launch") & post) {
+          (path("launch") & scope.post) {
             entity(as[LaunchCampaign]) { launchCampaign =>
               launch(id, launchCampaign)
             } ~ {
               launch(id, LaunchCampaign())
             }
           } ~
-          (path("groups") & put & entity(as[SetCampaignGroups])) { groups =>
+          (path("groups") & scope.put & entity(as[SetCampaignGroups])) { groups =>
             setCampaignGroups(id, groups)
           } ~
-          (path("name") & put & entity(as[CreateCampaign])) { campName =>
+          (path("name") & scope.put & entity(as[CreateCampaign])) { campName =>
             setCampaignName(id, campName)
           } ~
-          (path("package") & put & entity(as[PackageId])) { pkgId =>
+          (path("package") & scope.put & entity(as[PackageId])) { pkgId =>
             setCampaignPackage(id, pkgId)
           } ~
-          (path("statistics") & get) {
+          (path("statistics") & scope.get) {
             getCampaignStats(id)
           }
         }

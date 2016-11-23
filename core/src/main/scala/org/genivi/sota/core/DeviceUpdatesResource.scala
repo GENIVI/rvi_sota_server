@@ -30,7 +30,7 @@ import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 
 import slick.driver.MySQLDriver.api.Database
 import cats.syntax.show.toShowOps
-import org.genivi.sota.http.AuthedNamespaceScope
+import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.core.data.client.PendingUpdateRequest._
 import UpdateSpec._
@@ -303,22 +303,23 @@ class DeviceUpdatesResource(db: Database,
   val apiRoutes = handleErrors {
     (pathPrefix("api" / "v1" / "device_updates") & extractUuid) { device =>
       authDeviceNamespace(device) { ns =>
-        get {
+        val scope = Scopes.devices(ns)
+        scope.get {
           path("queued") { pendingPackages(device) } ~
           path("blocked") { getBlockedInstall(device) } ~
           path("results") { results(device) } ~
           (extractRefinedUuid & path("results")) { updateId => resultsForUpdate(device, updateId) }
         } ~
-        put {
+        scope.put {
           path("blocked") { setBlockedInstall(device) } ~
           path("order") { setInstallOrder(device) } ~
           (extractRefinedUuid & path("cancelupdate")) { updateId => cancelUpdate(device, updateId) }
         } ~
-        post {
+        scope.post {
           pathEnd { queueDeviceUpdate(ns, device) } ~
           path("sync") { sync(device) }
         } ~
-        delete {
+        scope.delete {
           path("blocked") { deleteBlockedInstall(device) }
         }
       }

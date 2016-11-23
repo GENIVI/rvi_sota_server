@@ -34,8 +34,7 @@ import org.genivi.sota.core.data.PackageResponse._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.generic.auto._
 import org.genivi.sota.core.SotaCoreErrors.SotaCoreErrorCodes
-import org.genivi.sota.http.AuthedNamespaceScope
-import org.genivi.sota.http.ErrorHandler
+import org.genivi.sota.http.{AuthedNamespaceScope, ErrorHandler, Scopes}
 import org.genivi.sota.http.Errors.RawError
 
 import scala.concurrent.Future
@@ -160,26 +159,28 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
     complete(db.run(UpdateSpecs.getDevicesQueuedForPackage(ns, pid)))
   }
 
-  val route = ErrorHandler.handleErrors {
+
+  val route = (ErrorHandler.handleErrors & namespaceExtractor) { ns =>
+    val scope = Scopes.packages(ns)
     pathPrefix("packages") {
-      (get & namespaceExtractor & pathEnd) { ns =>
+      (scope.get & pathEnd) {
         searchPackage(ns)
       } ~
-      (namespaceExtractor & extractPackageId) { (ns, pid) =>
+      extractPackageId { pid =>
         path("info") {
-          put {
+          scope.put {
             updatePackageInfo(ns, pid)
           }
         } ~
         pathEnd {
-          get {
+          scope.get {
             fetch(ns, pid)
           } ~
-            put {
-              updatePackage(ns, pid)
-            }
+          scope.put {
+            updatePackage(ns, pid)
+          }
         } ~
-        path("queued") {
+        (scope.check & path("queued")) {
           queuedDevices(ns, pid)
         }
       }

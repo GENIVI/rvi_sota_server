@@ -15,6 +15,7 @@ import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.ErrorHandler
+import org.genivi.sota.http.Scopes
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.db.PackageFilterRepository
@@ -67,25 +68,26 @@ class FilterDirectives(namespaceExtractor: Directive1[AuthedNamespaceScope])
     }
 
   def route: Route =
-    ErrorHandler.handleErrors {
-      (pathPrefix("filters") & namespaceExtractor) { ns =>
-        (get & pathEnd) {
+    (ErrorHandler.handleErrors & namespaceExtractor) { ns =>
+      val scope = Scopes.resolver(ns)
+      pathPrefix("filters") {
+        (scope.get & pathEnd) {
           searchFilter(ns)
         } ~
-        (get & refined[Filter.ValidName](Slash ~ Segment) & path("package")) { fname =>
+        (scope.get & refined[Filter.ValidName](Slash ~ Segment) & path("package")) { fname =>
           getPackages(ns, fname)
         } ~
-        (post & pathEnd) {
+        (scope.post & pathEnd) {
           createFilter(ns)
         } ~
-        (put & refined[Filter.ValidName](Slash ~ Segment) & pathEnd) { fname =>
+        (scope.put & refined[Filter.ValidName](Slash ~ Segment) & pathEnd) { fname =>
           updateFilter(ns, fname)
         } ~
-        (delete & refined[Filter.ValidName](Slash ~ Segment) & pathEnd) { fname =>
+        (scope.delete & refined[Filter.ValidName](Slash ~ Segment) & pathEnd) { fname =>
           deleteFilter(ns, fname)
         }
       } ~
-      (post & path("validate" / "filter")) {
+      (scope.post & path("validate" / "filter")) {
         validateFilter
       }
     }

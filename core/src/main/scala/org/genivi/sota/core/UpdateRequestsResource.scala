@@ -15,7 +15,7 @@ import org.genivi.sota.core.data.client._
 import org.genivi.sota.core.db.{Packages, UpdateRequests, UpdateSpecs}
 import org.genivi.sota.core.resolver.ExternalResolverClient
 import org.genivi.sota.data.{Namespace, Uuid}
-import org.genivi.sota.http.AuthedNamespaceScope
+import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import slick.driver.MySQLDriver.api.Database
 
@@ -83,22 +83,21 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
 
   val uuidExtractor = allowExtractor(namespaceExtractor, extractUuid, updateRequestAllowed)
 
-  val route = pathPrefix("update_requests") {
-    (get & uuidExtractor & pathEnd) {
+  val route = (pathPrefix("update_requests") & namespaceExtractor) { ns =>
+    val scope = Scopes.updates(ns)
+    (scope.get & uuidExtractor & pathEnd) {
       fetch
     } ~
-    namespaceExtractor { ns =>
-      pathEnd {
-        get {
-          fetchUpdates(ns)
-        } ~
-        post {
-          createUpdate(ns)
-        }
+    pathEnd {
+      scope.get {
+        fetchUpdates(ns)
       } ~
-      (put & uuidExtractor & path("cancel")) { uuid =>
-        cancelUpdate(uuid)
+      scope.post {
+        createUpdate(ns)
       }
+    } ~
+    (scope.put & uuidExtractor & path("cancel")) { uuid =>
+      cancelUpdate(uuid)
     }
   }
 }

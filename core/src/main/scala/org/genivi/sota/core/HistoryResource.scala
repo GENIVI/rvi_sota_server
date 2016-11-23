@@ -11,7 +11,7 @@ import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.core.db.InstallHistories
 import org.genivi.sota.data.{Namespace, Uuid}
-import org.genivi.sota.http.AuthedNamespaceScope
+import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import slick.driver.MySQLDriver.api._
@@ -43,10 +43,12 @@ class HistoryResource(namespaceExtractor: Directive1[AuthedNamespaceScope])
     db.run(InstallHistories.deviceNamespace(device))
   }
 
-  val route =
+  val route = namespaceExtractor { authedNs =>
+    val scope = Scopes.updates(authedNs)
     (pathPrefix("history") & deviceUuid) { uuid =>
-      (get & pathEnd) {
+      (scope.get & pathEnd) {
         history(uuid)
       }
     }
+  }
 }

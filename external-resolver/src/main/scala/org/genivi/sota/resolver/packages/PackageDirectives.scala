@@ -14,6 +14,7 @@ import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{Namespace, PackageId}
 import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.ErrorHandler
+import org.genivi.sota.http.Scopes
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.RefinementDirectives._
 import org.genivi.sota.resolver.db.{DeviceRepository, Package, PackageFilterRepository, PackageRepository, PackageStat}
@@ -66,16 +67,18 @@ class PackageDirectives(namespaceExtractor: Directive1[AuthedNamespaceScope], de
   def deletePackageFilter(ns: Namespace, id: PackageId, fname: String Refined Filter.ValidName): Route =
     complete(db.run(PackageFilterRepository.deletePackageFilter(ns, id, fname)))
 
-  def packageFilterApi(ns: Namespace, id: PackageId): Route =
-      (get & pathEnd) {
-        getPackageFilters(ns, id)
-      } ~
-      (put & refinedFilterName & pathEnd) { fname =>
-        addPackageFilter(ns, id, fname)
-      } ~
-      (delete & refinedFilterName & pathEnd) { fname =>
-        deletePackageFilter(ns, id, fname)
+  def packageFilterApi(ns: AuthedNamespaceScope, id: PackageId): Route = {
+    val scope = Scopes.resolver(ns)
+    (scope.get & pathEnd) {
+      getPackageFilters(ns, id)
+    } ~
+    (scope.put & refinedFilterName & pathEnd) { fname =>
+      addPackageFilter(ns, id, fname)
+    } ~
+    (scope.delete & refinedFilterName & pathEnd) { fname =>
+      deletePackageFilter(ns, id, fname)
     }
+  }
 
   def findAffected(ns: Namespace): Route = {
     entity(as[Set[PackageId]]) { packageIds =>
@@ -102,26 +105,27 @@ class PackageDirectives(namespaceExtractor: Directive1[AuthedNamespaceScope], de
    *
    * @return      Route object containing route for adding packages
    */
-  def route: Route = ErrorHandler.handleErrors {
-    (pathPrefix("packages") & namespaceExtractor) { ns =>
+  def route: Route = (ErrorHandler.handleErrors & namespaceExtractor) { ns =>
+    val scope = Scopes.resolver(ns)
+    pathPrefix("packages") {
       path("affected") {
-        post { findAffected(ns) }
+        scope.post { findAffected(ns) }
       } ~
-      (get & path("filter")) {
+      (scope.get & path("filter")) {
         getFilters(ns)
       } ~
-      ((get | put | delete) & refinedPackageId) { id =>
-        (get & pathEnd) {
+      ((scope.get | scope.put | scope.delete) & refinedPackageId) { id =>
+        (scope.get & pathEnd) {
           getPackage(ns, id)
         } ~
-        (put & pathEnd) {
+        (scope.put & pathEnd) {
           addPackage(ns, id)
         } ~
         pathPrefix("filter") { packageFilterApi(ns, id) }
         }
     } ~
-    (pathPrefix("package_stats") & namespaceExtractor) { ns =>
-      (refinedPackageName) { name =>
+    pathPrefix("package_stats") {
+      (scope.checkReadonly & refinedPackageName) { name =>
         getPackageStats(ns, name)
       }
     }
