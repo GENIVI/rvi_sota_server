@@ -12,7 +12,7 @@ Please refer to [the documentation](http://genivi.github.io/rvi_sota_server/) fo
 
 To run tests, we need a mariadb instance running. We also need a user
 with `CREATE DATABASE` privileges. All tests run in parallel, so we
-need to increaser maximum allowed connections with:
+need to increase maximum allowed connections with:
 
     set global max_connections = 1000;
     
