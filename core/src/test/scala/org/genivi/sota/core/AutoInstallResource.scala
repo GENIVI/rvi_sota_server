@@ -24,6 +24,7 @@ class AutoInstallResourceSpec extends FunSuite
     with DatabaseSpec
     with ShouldMatchers
     with ScalaFutures
+    with LongRequestTimeout
     with DefaultPatience
     with Generators {
   import Uri.{Path, Query}
