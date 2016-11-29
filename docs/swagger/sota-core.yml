@@ -124,6 +124,82 @@ paths:
             type: array
             items:
               type: string
+  /auto_install:
+    get:
+      description: Return a list of packages that will update automatically for a given device uuid.
+      parameters:
+        - name: device
+          in: query
+          description: The device uuid.
+          required: true
+          type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              type: string
+  /auto_install/{pkgName}:
+    get:
+      description: Return a list of device uuids that will update automatically for that package.
+      parameters:
+      - name: pkgName
+        in: path
+        description: The package name.
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              type: string
+    delete:
+      description: Remove all automatical updates for this package.
+      parameters:
+      - name: pkgName
+        in: path
+        description: The package name.
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+  /auto_install/{pkgName}/{uuid}:
+    put:
+      description: Add a device uuid to be automatically updated for this package.
+      parameters:
+      - name: pkgName
+        in: path
+        description: The package name.
+        required: true
+        type: string
+      - name: uuid
+        in: path
+        description: The device uuid.
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+    delete:
+      description: Remove a device from being automatically updated for this package.
+      parameters:
+      - name: pkgName
+        in: path
+        description: The package name.
+        required: true
+        type: string
+      - name: uuid
+        in: path
+        description: The device uuid.
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
   /campaigns:
     get:
       description: 'List all campaigns'
