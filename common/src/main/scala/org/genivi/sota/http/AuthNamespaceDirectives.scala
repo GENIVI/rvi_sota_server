@@ -11,10 +11,10 @@ import io.circe.parser._
 import io.circe.Decoder
 import org.genivi.sota.data.Namespace
 
-case class AuthedNamespaceScope(namespace: Namespace, scope: Scope, owned: Boolean) {
+case class AuthedNamespaceScope(namespace: Namespace, scope: Option[Scope] = None) {
   type ScopeItem = String
 
-  def hasScope(sc: ScopeItem) : Boolean = owned || scope.underlying.contains(sc)
+  def hasScope(sc: ScopeItem) : Boolean = scope.isEmpty || scope.get.underlying.contains(sc)
 
   def hasScopeReadonly(sc: ScopeItem) : Boolean = hasScope(sc) || hasScope(sc + ".readonly")
 
@@ -35,8 +35,6 @@ object AuthedNamespaceScope {
 
   val namespacePrefix = "namespace."
 
-  def apply(ns: Namespace) : AuthedNamespaceScope = AuthedNamespaceScope(ns, Scope(Set.empty), owned = true)
-
   def apply(token: IdToken) : AuthedNamespaceScope = {
     AuthedNamespaceScope(Namespace(token.sub.underlying))
   }
@@ -46,9 +44,9 @@ object AuthedNamespaceScope {
       case x if x.startsWith(namespacePrefix) => x.substring(namespacePrefix.length)
     }
     if (nsSet.size == 1) {
-      AuthedNamespaceScope(Namespace(nsSet.toVector(0)), token.scope, owned = false)
+      AuthedNamespaceScope(Namespace(nsSet.toVector(0)), Some(token.scope))
     } else {
-      AuthedNamespaceScope(Namespace(token.subject.underlying), token.scope, owned = true)
+      AuthedNamespaceScope(Namespace(token.subject.underlying), Some(token.scope))
     }
   }
 }
@@ -109,7 +107,7 @@ object AuthNamespaceDirectives {
             ns0 match {
               case Some(ns) if ns == authedNs.namespace => Xor.right(authedNs)
               case Some(ns) if authedNs.hasScope(AuthedNamespaceScope.namespacePrefix + ns) =>
-                Xor.right(AuthedNamespaceScope(ns, authedNs.scope, false))
+                Xor.right(AuthedNamespaceScope(ns, authedNs.scope))
               case Some(ns) => Xor.Left("The oauth token does not accept the given namespace")
               case None => Xor.right(authedNs)
             }
