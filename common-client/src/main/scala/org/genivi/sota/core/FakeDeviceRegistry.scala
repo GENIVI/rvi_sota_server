@@ -57,7 +57,8 @@ class FakeDeviceRegistry(namespace: Namespace)
         uuid = uuid,
         deviceName = d.deviceName,
         deviceId = d.deviceId,
-        deviceType = d.deviceType))
+        deviceType = d.deviceType,
+        createdAt = Instant.now()))
     FastFuture.successful(uuid)
   }
 

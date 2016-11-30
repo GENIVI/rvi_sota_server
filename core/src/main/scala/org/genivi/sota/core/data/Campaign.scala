@@ -37,7 +37,8 @@ object Campaign {
     namespace: Namespace,
     name : String,
     launched: Boolean = false,
-    packageUuid: Option[Uuid] = None
+    packageUuid: Option[Uuid] = None,
+    createdAt: Instant
   )
   case class CreateCampaign(name: String)
   case class SetCampaignGroups(groups: Seq[Uuid])

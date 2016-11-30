@@ -51,7 +51,7 @@ object Packages {
     def description = column[String]("description")
     def vendor = column[String]("vendor")
     def signature = column[String]("signature")
-    def createdAt = column[Instant]("createdAt")
+    def createdAt = column[Instant]("created_at")
 
     def pk = primaryKey("pk_package", uuid)
 

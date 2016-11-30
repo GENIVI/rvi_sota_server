@@ -27,7 +27,8 @@ final case class Device(namespace: Namespace,
                   deviceName: DeviceName,
                   deviceId: Option[DeviceId] = None,
                   deviceType: DeviceType = DeviceType.Other,
-                  lastSeen: Option[Instant] = None) {
+                  lastSeen: Option[Instant] = None,
+                  createdAt: Instant) {
 
   // TODO: Use org.genivi.sota.core.data.client.ResponseEncoder
   def toResponse: DeviceT = DeviceT(deviceName, deviceId, deviceType)
