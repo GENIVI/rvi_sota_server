@@ -75,6 +75,44 @@ paths:
       responses:
         200:
           description: OK
+  /devices/{uuid}/packages:
+    put:
+      description: |
+        Mark a list of packages as installed on a device. Note that this does not install anything.
+        It only updates device registry's database of installed packages. This endpoint is for ingesting the list of
+        installed packages sent from the in-vehicle client.
+      parameters:
+      - name: uuid
+        in: path
+        description: The target uuid.
+        required: true
+        type: string
+      - name: InstalledPackages
+        in: body
+        description: A complete list of the packages on the device.
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/PackageId'
+      responses:
+        200:
+          description: OK
+    get:
+      description: Return a list of packages installed on the device.
+      parameters:
+      - name: uuid
+        in: path
+        description: the vehicle uuid.
+        required: true
+        type: string
+      responses:
+        200:
+          description: A list of all packages installed on the device
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/InstalledPackage'
   /devices/{uuid}/system_info:
     post:
       description: Create the system info for a device
@@ -387,3 +425,23 @@ definitions:
       groupName:
         type: string
         description: a group name between 1 and 100 characters long
+  PackageId:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The package name.
+      version:
+        type: string
+        description: The package version, in major.minor.patch notation by default.
+  InstalledPackage:
+    type: object
+    properties:
+      device:
+        $ref: '#/definitions/uuid'
+      packageId:
+        $ref: '#/definitions/PackageId'
+      lastModified:
+        type: string
+        format: dateTime
+        description: The last time a package installation was changed
