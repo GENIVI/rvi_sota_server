@@ -14,13 +14,15 @@ import eu.timepit.refined.api.Refined
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.core.data.{Package => DataPackage}
 import org.genivi.sota.core.db.Packages
+import org.genivi.sota.core.resolver.DefaultConnectivity
+import org.genivi.sota.core.transfer.DefaultUpdateNotifier
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.ShouldMatchers
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.Await
 import slick.driver.MySQLDriver.api._
-import org.genivi.sota.data.PackageId
+import org.genivi.sota.data.{Namespaces, PackageId}
 import org.genivi.sota.http.NamespaceDirectives
 
 import scala.concurrent.duration._
@@ -44,6 +46,7 @@ class PackageResourceWordSpec extends WordSpec
   import CirceMarshallingSupport._
   import NamespaceDirectives._
 
+  val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
   val externalResolverClient = new FakeExternalResolver()
 
   implicit val routeTimeout: RouteTestTimeout = RouteTestTimeout(20.second)
@@ -51,8 +54,12 @@ class PackageResourceWordSpec extends WordSpec
   lazy val messageBusPublisher = MessageBusPublisher.ignore
 
   implicit val defaultPatience = PatienceConfig(5.seconds, 500.millis)
+  implicit val connectivity = DefaultConnectivity
 
-  lazy val service = new PackagesResource(externalResolverClient, db, messageBusPublisher, defaultNamespaceExtractor)
+  lazy val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
+
+  lazy val service = new PackagesResource(externalResolverClient, updateService, db, messageBusPublisher,
+                                          defaultNamespaceExtractor)
 
   val testPackagesParams = List(
     ("default", "vim", "7.0.1", UUID.randomUUID()),

@@ -17,6 +17,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.util.ByteString
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
+import org.genivi.sota.core.autoinstall.AutoInstall
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
@@ -52,7 +53,9 @@ object PackagesResource {
     (extractPackageName & refined[PackageId.ValidVersion](Slash ~ Segment)).as(PackageId.apply _)
 }
 
-class PackagesResource(resolver: ExternalResolverClient, db : Database,
+class PackagesResource(resolver: ExternalResolverClient,
+                       updateService: UpdateService,
+                       db : Database,
                        messageBusPublisher: MessageBusPublisher,
                        namespaceExtractor: Directive1[AuthedNamespaceScope])
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
@@ -120,7 +123,13 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
         pkg <- db.run(Packages.create(newPkg))
       } yield StatusCodes.NoContent
 
-      resultF.pipeToBus(messageBusPublisher)(_ => PackageCreated(ns, pid, description, vendor, signature))
+      val event = PackageCreated(ns, pid, description, vendor, signature)
+
+      resultF.flatMap { _ =>
+        AutoInstall.packageCreated(updateService, event)
+      }
+
+      resultF.pipeToBus(messageBusPublisher)(_ => event)
     }
 
     def handleErrors(throwable: Throwable): Route = throwable match {
