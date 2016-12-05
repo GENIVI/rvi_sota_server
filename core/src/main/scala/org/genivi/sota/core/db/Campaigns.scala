@@ -4,12 +4,16 @@
  */
 package org.genivi.sota.core.db
 
+import java.time.Instant
+
 import cats.data.Xor
 import java.util.UUID
+
 import org.genivi.sota.core.data.Campaign
 import org.genivi.sota.core.SotaCoreErrors
 import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 import org.genivi.sota.refined.SlickRefined._
+
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
@@ -25,12 +29,13 @@ object Campaigns {
     def name = column[String]("name")
     def launched = column[Boolean]("launched")
     def packageUuid = column[Option[UUID]]("package_uuid")
+    def createdAt = column[Instant]("created_at")
 
     def pk = primaryKey("pk_campaign", id)
 
-    def * = (id, namespace, name, launched, packageUuid).shaped <>
-      (x => CampaignMeta(x._1, x._2, x._3, x._4, x._5.map(Uuid.fromJava _))
-      ,(x: CampaignMeta) => Some((x.id, x.namespace, x.name, x.launched, x.packageUuid.map(_.toJava))))
+    def * = (id, namespace, name, launched, packageUuid, createdAt).shaped <>
+      (x => CampaignMeta(x._1, x._2, x._3, x._4, x._5.map(Uuid.fromJava _), x._6)
+      ,(x: CampaignMeta) => Some((x.id, x.namespace, x.name, x.launched, x.packageUuid.map(_.toJava), x.createdAt)))
 
     def uniqueName = index("Campaign_unique_name", (namespace, name), unique = true)
     def fkPkg = foreignKey("Campaign_pkg_fk", packageUuid, Packages.packages)(_.uuid.?)
@@ -69,7 +74,7 @@ object Campaigns {
             (implicit ec: ExecutionContext): DBIO[Campaign.Id] = {
     val id: Campaign.Id = Id(Uuid.generate())
 
-    (campaignsMeta += CampaignMeta(id, ns, name))
+    (campaignsMeta += CampaignMeta(id, ns, name, createdAt = Instant.now()))
       .handleIntegrityErrors(ConflictingCampaign)
       .map(_ => id)
   }

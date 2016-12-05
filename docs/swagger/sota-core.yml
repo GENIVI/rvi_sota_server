@@ -964,6 +964,10 @@ definitions:
       packageUuid:
         description: The package uuid for this campaign, can be null if none have been set yet
         type: string
+      createdAt:
+        type: string
+        format: dateTime
+        description: The time the package was uploaded to core
   CampaignCreate:
     type: object
     properties:

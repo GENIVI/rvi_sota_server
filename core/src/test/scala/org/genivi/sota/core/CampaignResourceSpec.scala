@@ -293,4 +293,20 @@ class CampaignResourceSpec extends FunSuite
 
     camp.meta.launched shouldBe false
   }
+
+  test("campaign created date should not change on update") {
+    val campName = CreateCampaignGen.sample.get
+
+    val id = createCampaignOk(campName)
+
+    val createdAt = getCampaignsOk().filter(_.id == id).map(_.createdAt)
+
+    val pkgId = createRandomPackage()
+    setPackage(id, pkgId, StatusCodes.OK)
+
+    val setgroups = SetCampaignGroupsGen.sample.get
+    setGroups(id, setgroups, StatusCodes.OK)
+
+    getCampaignsOk().filter(_.id == id).map(_.createdAt) shouldEqual createdAt
+  }
 }
