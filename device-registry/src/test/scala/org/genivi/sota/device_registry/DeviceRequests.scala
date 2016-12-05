@@ -89,7 +89,7 @@ trait DeviceRequests { self: ResourceSpec =>
     Get(Resource.uri(api, device.show, "groups"))
 
   def installSoftware(device: Uuid, packages: Set[PackageId]): HttpRequest =
-    Put(Resource.uri("devices", device.show, "packages"), packages)
+    Put(Resource.uri("mydevice", device.show, "packages"), packages)
 
   def installSoftwareOk(device: Uuid, packages: Set[PackageId])
                        (implicit route: Route): Unit =
@@ -99,4 +99,7 @@ trait DeviceRequests { self: ResourceSpec =>
 
   def listPackages(device: Uuid)(implicit ec: ExecutionContext): HttpRequest =
     Get(Resource.uri("devices", device.show, "packages"))
+
+  def getStatsForPackage(pkg: PackageId)(implicit ec: ExecutionContext): HttpRequest =
+    Get(Resource.uri("device_count", pkg.name.get, pkg.version.get))
 }

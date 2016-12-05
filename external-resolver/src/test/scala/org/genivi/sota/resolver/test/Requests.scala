@@ -15,10 +15,10 @@ import cats.syntax.show.toShowOps
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.resolver.components.Component
-import org.genivi.sota.resolver.firmware.Firmware
 import org.genivi.sota.resolver.db.Package
 import org.genivi.sota.resolver.db.PackageFilterResponse
 import org.genivi.sota.resolver.filters.Filter
+import org.genivi.sota.resolver.firmware.Firmware
 import org.genivi.sota.resolver.resolve.ResolveFunctions
 import org.scalatest.Matchers
 

@@ -7,7 +7,6 @@ package org.genivi.sota.resolver.firmware
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.datatype.FirmwareCommon
 
-
 case class Firmware(
   namespace: Namespace,
   module: Firmware.Module,

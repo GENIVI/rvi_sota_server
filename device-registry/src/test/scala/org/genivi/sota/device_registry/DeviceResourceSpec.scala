@@ -11,9 +11,10 @@ import akka.http.scaladsl.model.StatusCodes._
 import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.data._
-import org.genivi.sota.device_registry.db.InstalledPackages.InstalledPackage
+import org.genivi.sota.device_registry.db.InstalledPackages.{DevicesCount, InstalledPackage}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalacheck.Arbitrary._
+import org.scalacheck.Gen
 
 
 /**
@@ -283,6 +284,30 @@ class DeviceResourceSpec extends ResourcePropSpec {
       }
 
       deleteDeviceOk(uuid)
+    }
+  }
+
+  property("Can get stats for a package") {
+    val deviceNumber = 20
+    val groupNumber = 5
+    val deviceTs = genConflictFreeDeviceTs(deviceNumber).sample.get
+    val groups = Gen.listOfN(groupNumber, genGroupName).sample.get
+    val pkg = genPackageId.sample.get
+
+    val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
+    val groupIds: Seq[Uuid] = groups.map(createGroupOk(_))
+
+    (0 until deviceNumber).foreach { i =>
+      addDeviceToGroupOk(groupIds(i % groupNumber), deviceIds(i))
+    }
+    deviceIds.foreach(device => installSoftwareOk(device, Set(pkg)))
+
+    getStatsForPackage(pkg) ~> route ~> check {
+      status shouldBe OK
+      val resp = responseAs[DevicesCount]
+      resp.deviceCount shouldBe deviceNumber
+      //convert to sets as order isn't important
+      resp.groupIds shouldBe groupIds.toSet
     }
   }
 }

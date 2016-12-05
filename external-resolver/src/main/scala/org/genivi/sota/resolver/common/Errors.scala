@@ -6,9 +6,9 @@ package org.genivi.sota.resolver.common
 
 import org.genivi.sota.http.Errors.{MissingEntity, RawError}
 import org.genivi.sota.resolver.components.Component
-import org.genivi.sota.resolver.firmware.Firmware
 import org.genivi.sota.resolver.db.Package
 import org.genivi.sota.resolver.filters.Filter
+import org.genivi.sota.resolver.firmware.Firmware
 
 /**
   * The resolver deals with devices, packages, filters and components,

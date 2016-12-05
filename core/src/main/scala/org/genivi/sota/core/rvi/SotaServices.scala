@@ -4,6 +4,8 @@
  */
 package org.genivi.sota.core.rvi
 
+import java.util.UUID
+
 import akka.actor.{ActorRef, ActorSystem}
 import akka.event.Logging
 import akka.http.scaladsl.model.Uri
@@ -11,8 +13,6 @@ import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import io.circe.Json
-import java.util.UUID
-
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.resolver.{Connectivity, ExternalResolverClient}
 import org.genivi.sota.data.Uuid
@@ -73,10 +73,9 @@ final case class InstalledPackages(device: Uuid, installed_software: Json )
 class SotaServices(updateController: ActorRef, resolverClient: ExternalResolverClient, deviceRegistry: DeviceRegistry)
                   (implicit system: ActorSystem, mat: ActorMaterializer) {
   import Directives._
+  import io.circe.generic.auto._
   import org.genivi.sota.core.jsonrpc.JsonRpcDirectives._
   import system.dispatcher
-
-  import io.circe.generic.auto._
 
   val log = Logging( system, "org.genivi.sota.core.SotaServices" )
 
