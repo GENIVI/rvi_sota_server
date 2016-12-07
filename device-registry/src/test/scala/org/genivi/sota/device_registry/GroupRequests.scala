@@ -47,8 +47,20 @@ trait GroupRequests {
                      (implicit ec: ExecutionContext): HttpRequest =
     Post(Resource.uri(groupsApi).withQuery(Query("groupName" -> groupName.get)))
 
+  def createGroupOk(groupName: Name)
+                 (implicit ec: ExecutionContext): Uuid =
+    createGroup(groupName) ~> route ~> check {
+      status shouldBe Created
+      responseAs[Uuid]
+    }
+
   def addDeviceToGroup(groupId: Uuid, deviceId: Uuid)(implicit ec: ExecutionContext): HttpRequest =
     Post(Resource.uri(groupsApi, groupId.underlying.get, "devices", deviceId.underlying.get))
+
+  def addDeviceToGroupOk(groupId: Uuid, deviceId: Uuid)(implicit ec: ExecutionContext): Unit =
+    addDeviceToGroup(groupId, deviceId) ~> route ~> check {
+      status shouldBe OK
+    }
 
   def removeDeviceFromGroup(groupId: Uuid, deviceId: Uuid)(implicit ec: ExecutionContext): HttpRequest =
     Delete(Resource.uri(groupsApi, groupId.underlying.get, "devices", deviceId.underlying.get))

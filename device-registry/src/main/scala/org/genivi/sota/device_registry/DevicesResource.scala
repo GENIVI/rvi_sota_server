@@ -23,6 +23,7 @@ import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted}
 import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.http.UuidDirectives.extractUuid
 import slick.driver.MySQLDriver.api._
+import org.genivi.sota.rest.Validation._
 
 import scala.concurrent.ExecutionContext
 
@@ -37,6 +38,10 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
   import Device._
   import Directives._
   import StatusCodes._
+
+  val extractPackageId: Directive1[PackageId] = (refined[PackageId.ValidName](Slash ~ Segment)
+                                                & refined[PackageId.ValidVersion](Slash ~ Segment))
+                                                .as(PackageId.apply _)
 
   def searchDevice(ns: Namespace): Route =
     parameters(('regex.as[String Refined Regex].?,
@@ -90,6 +95,19 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
     complete(f)
   }
 
+  def updateInstalledSoftware(device: Uuid): Route = {
+    entity(as[Seq[PackageId]]) { installedSoftware =>
+      val f = db.run(InstalledPackages.setInstalled(device, installedSoftware.toSet))
+      onSuccess(f) { complete(StatusCodes.NoContent) }
+    }
+  }
+
+  def getDevicesCount(pkg: PackageId, ns: Namespace): Route =
+    complete(db.run(InstalledPackages.getDevicesCount(pkg, ns)))
+
+  def listPackagesOnDevice(device: Uuid): Route =
+    complete(db.run(InstalledPackages.installedOn(device)))
+
   def api: Route = namespaceExtractor { ns =>
     val scope = Scopes.devices(ns)
     pathPrefix("devices") {
@@ -110,8 +128,14 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
         } ~
         (scope.get & path("groups") & pathEnd) {
           getGroupsForDevice(uuid)
+        } ~
+        (path("packages") & scope.get) {
+          listPackagesOnDevice(uuid)
         }
       }
+    } ~
+    (scope.get & pathPrefix("device_count") & extractPackageId) { pkg =>
+      getDevicesCount(pkg, ns)
     }
   }
 
@@ -122,6 +146,9 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
       } ~
       (get & pathEnd & authedNs.oauthScopeReadonly(s"ota-core.${uuid.show}.read")) {
         fetchDevice(uuid)
+      } ~
+      (put & path("packages") & authedNs.oauthScope(s"ota-core.{device.show}.write")) {
+        updateInstalledSoftware(uuid)
       }
     }
   }

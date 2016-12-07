@@ -75,7 +75,7 @@ paths:
       responses:
         200:
           description: OK
-  /devices/{uuid}/packages:
+  /mydevice/{uuid}/packages:
     put:
       description: |
         Mark a list of packages as installed on a device. Note that this does not install anything.
@@ -98,6 +98,7 @@ paths:
       responses:
         200:
           description: OK
+  /devices/{uuid}/packages:
     get:
       description: Return a list of packages installed on the device.
       parameters:
@@ -366,6 +367,25 @@ paths:
           description: returns the uuid of the newly created group
           schema:
             $ref: '#/definitions/uuid'
+  /device_count/{name}/{version}/:
+    get:
+      description: returns count of groups and devices with the given package installed
+      parameters:
+      - name: name
+        in: path
+        description: The package name.
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: The package version.
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/DevicesCount'
 
 definitions:
   uuid:
@@ -449,3 +469,14 @@ definitions:
         type: string
         format: dateTime
         description: The last time a package installation was changed
+  DevicesCount:
+    type: object
+    properties:
+      deviceCount:
+        type: integer
+        description: count of devices with this package installed
+      groupCount:
+        description: a set containing all the group ids that have this package installed
+        type: array
+        items:
+          $ref: '#/definitions/uuid'

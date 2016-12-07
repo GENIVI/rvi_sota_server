@@ -36,8 +36,7 @@ class DeviceRegistryRoutes(namespaceExtractor: Directive1[AuthedNamespaceScope],
       ErrorHandler.handleErrors {
         new DevicesResource(namespaceExtractor, messageBus, deviceNamespaceAuthorizer).route ~
         new SystemInfoResource(namespaceExtractor, deviceNamespaceAuthorizer).route ~
-        new GroupsResource(namespaceExtractor, deviceNamespaceAuthorizer).route ~
-        new DevicePackagesResource(namespaceExtractor, deviceNamespaceAuthorizer).route
+        new GroupsResource(namespaceExtractor, deviceNamespaceAuthorizer).route
       }
     }
   }

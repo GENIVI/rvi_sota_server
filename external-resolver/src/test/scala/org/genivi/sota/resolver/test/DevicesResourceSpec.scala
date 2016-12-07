@@ -13,11 +13,11 @@ import org.genivi.sota.data._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
 import org.genivi.sota.resolver.components.Component
-import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.resolver.test.generators.PackageGenerators
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 import org.scalacheck._
 import cats.syntax.show._
+import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.resolver.db.Package
 import org.scalatest.concurrent.ScalaFutures
 

@@ -7,7 +7,7 @@ package org.genivi.sota.device_registry.db
 
 import java.time.Instant
 
-import org.genivi.sota.data.{PackageId, Uuid}
+import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
@@ -21,6 +21,8 @@ object InstalledPackages {
 
   case class InstalledPackage(device: Uuid, packageId: PackageId,
                               lastModified: Instant)
+
+  case class DevicesCount(deviceCount: Int, groupIds: Set[Uuid])
 
   private def toTuple(fp: InstalledPackage): Option[InstalledPkgRow] =
     Some((fp.device, fp.packageId.name, fp.packageId.version, fp.lastModified))
@@ -56,4 +58,22 @@ object InstalledPackages {
       .filter(_.device === device)
       .result
 
+  def getDevicesCount(pkg: PackageId, ns: Namespace)(implicit ec: ExecutionContext): DBIO[DevicesCount] =
+    for {
+      devices <- installedPackages
+        .filter(p => p.name === pkg.name && p.version === pkg.version)
+        .join(DeviceRepository.devices).on(_.device === _.uuid)
+        .filter(_._2.namespace === ns)
+        .map(_._1.device)
+        .countDistinct
+        .result
+      groups <- installedPackages
+        .filter(p => p.name === pkg.name && p.version === pkg.version)
+        .join(GroupMemberRepository.groupMembers).on(_.device === _.deviceUuid)
+        .join(DeviceRepository.devices).on(_._2.deviceUuid === _.uuid)
+        .filter(_._2.namespace === ns)
+        .map(_._1._2.groupId)
+        .distinct
+        .result
+    } yield DevicesCount(devices, groups.toSet)
 }

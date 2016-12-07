@@ -18,7 +18,7 @@ import eu.timepit.refined.string.Regex
 import io.circe.Json
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.data.Device._
-import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
+import org.genivi.sota.data._
 import org.genivi.sota.device_registry.common.Errors._
 
 import scala.collection.JavaConverters._
@@ -129,4 +129,8 @@ class FakeDeviceRegistry(namespace: Namespace)
   def addGroup(group: Uuid, devices: Seq[Uuid]): Unit = {
     groups.put(group, devices)
   }
+
+  def setInstalledPackages
+    (device: Uuid, packages: Seq[PackageId])(implicit ec: ExecutionContext) : Future[Unit] =
+      FastFuture.successful(Unit)
 }

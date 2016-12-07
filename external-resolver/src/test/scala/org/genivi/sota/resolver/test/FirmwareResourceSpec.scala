@@ -9,7 +9,7 @@ import java.time.Instant
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.core.FakeDeviceRegistry
 import org.genivi.sota.data.Device.DeviceName
-import org.genivi.sota.data.{Device, Namespace, Namespaces, Uuid}
+import org.genivi.sota.data._
 import org.genivi.sota.resolver.firmware.Firmware
 
 /**

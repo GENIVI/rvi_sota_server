@@ -20,14 +20,14 @@ import org.genivi.sota.http.Scopes
 import org.genivi.sota.http.UuidDirectives.extractUuid
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
-import org.genivi.sota.resolver.common.RefinementDirectives.{refinedPackageId, refinedPartNumber}
 import org.genivi.sota.resolver.common.InstalledSoftware
+import org.genivi.sota.resolver.common.RefinementDirectives.{refinedPackageId, refinedPartNumber}
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.db.{DeviceRepository, ForeignPackages}
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Success, Failure}
+import scala.util.{Failure, Success}
 
 /**
  * API routes for everything related to vehicles: creation, deletion, and package and component association.
@@ -91,6 +91,7 @@ class DeviceDirectives(namespaceExtractor: Directive1[AuthedNamespaceScope],
         for {
           deviceData <- deviceRegistry.fetchMyDevice(device)
           _ <- updateSoftwareOnDb(deviceData.namespace, installedSoftware)
+          _ <- deviceRegistry.setInstalledPackages(device, installedSoftware.packages.toSeq)
         } yield ()
       }
 
