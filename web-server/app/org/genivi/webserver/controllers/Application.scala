@@ -51,7 +51,8 @@ class Application @Inject() (ws: WSClient,
     case "vehicle_updates" :: _ => coreApiUri
     case "history" :: _ => coreApiUri
     case "devices" :: _ => deviceRegistryApiUri
-    case "devices_count" :: _ => deviceRegistryApiUri
+    case "device_groups" :: _ => deviceRegistryApiUri
+    case "device_count" :: _ => deviceRegistryApiUri
     case _ => resolverApiUri
   }
 
