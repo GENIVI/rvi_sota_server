@@ -17,4 +17,6 @@ env:
     - CORE_TEST_DB_URL="jdbc:mariadb://localhost:3307/"
     - DEVICE_REGISTRY_TEST_DB_URL="jdbc:mariadb://localhost:3307/"
 script:
-  - ./sbt coverage sota-core/ut:test sota-resolver/ut:test sota-device_registry/ut:test sota-common/test
+  - ./sbt coverage sota-core/ut:test sota-resolver/ut:test sota-device_registry/ut:test sota-common/test coverageReport
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
