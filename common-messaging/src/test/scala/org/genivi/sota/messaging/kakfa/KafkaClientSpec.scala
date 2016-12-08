@@ -13,7 +13,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 import akka.testkit.TestKit
 import cats.data.Xor
-import org.genivi.sota.data.{Device, Namespace, Uuid}
+import org.genivi.sota.data.{Namespace, Uuid}
 import org.genivi.sota.messaging.Messages.DeviceSeen
 import org.genivi.sota.messaging.kafka.KafkaClient
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
