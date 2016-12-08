@@ -34,7 +34,7 @@ class WebService(notifier: UpdateNotifier,
   val packagesResource = new PackagesResource(resolver, updateService, db, messageBusPublisher, authNamespace)
   val autoInstallResource = new AutoInstallResource(db, deviceRegistry, authNamespace)
   val updateRequestsResource = new UpdateRequestsResource(db, resolver, updateService, authNamespace)
-  val historyResource = new HistoryResource(authNamespace)(db, system)
+  val historyResource = new HistoryResource(deviceRegistry, authNamespace)(db, system)
   val blacklistResource = new BlacklistResource(authNamespace, messageBusPublisher)(db, system)
   val impactResource = new ImpactResource(authNamespace, resolver)(db, system)
   val campaignResource = new CampaignResource(authNamespace, deviceRegistry, updateService)(db, system)
