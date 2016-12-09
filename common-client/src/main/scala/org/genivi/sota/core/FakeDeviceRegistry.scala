@@ -17,6 +17,7 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.Json
 import org.genivi.sota.common.DeviceRegistry
+import org.genivi.sota.client.NoContent
 import org.genivi.sota.data.Device._
 import org.genivi.sota.data._
 import org.genivi.sota.device_registry.common.Errors._
@@ -93,21 +94,21 @@ class FakeDeviceRegistry(namespace: Namespace)
     }
 
   override def updateLastSeen(uuid: Uuid, seenAt: Instant = Instant.now)
-  (implicit ec: ExecutionContext): Future[Unit] = {
+  (implicit ec: ExecutionContext): Future[NoContent] = {
     devices.asScala.get(uuid).foreach { d =>
       devices.put(uuid, d.copy(lastSeen = Option(seenAt)))
     }
 
-    FastFuture.successful(())
+    FastFuture.successful(NoContent())
   }
 
   override def updateSystemInfo
   (uuid: Uuid, json: Json)
-  (implicit ec: ExecutionContext): Future[Unit] = {
+  (implicit ec: ExecutionContext): Future[NoContent] = {
     devices.asScala.get(uuid) match {
       case Some(_) =>
         systemInfo.put(uuid, json)
-        FastFuture.successful(())
+        FastFuture.successful(NoContent())
       case None =>
         FastFuture.failed(MissingDevice)
     }
@@ -131,6 +132,6 @@ class FakeDeviceRegistry(namespace: Namespace)
   }
 
   def setInstalledPackages
-    (device: Uuid, packages: Seq[PackageId])(implicit ec: ExecutionContext) : Future[Unit] =
-      FastFuture.successful(Unit)
+    (device: Uuid, packages: Seq[PackageId])(implicit ec: ExecutionContext) : Future[NoContent] =
+      FastFuture.successful(NoContent())
 }
