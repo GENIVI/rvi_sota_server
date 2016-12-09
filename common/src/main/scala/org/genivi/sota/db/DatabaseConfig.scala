@@ -1,8 +1,8 @@
-/**
- * Copyright: Copyright (C) 2016, Jaguar Land Rover
- * License: MPL-2.0
+/*
+ * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
+ *  License: MPL-2.0
  */
-package org.genivi.sota.core.db
+package org.genivi.sota.db
 
 import slick.driver.MySQLDriver.api._
 
@@ -13,6 +13,4 @@ import slick.driver.MySQLDriver.api._
  */
 trait DatabaseConfig {
   val db = Database.forConfig("database")
-
-  implicit val session: Session = db.createSession()
 }

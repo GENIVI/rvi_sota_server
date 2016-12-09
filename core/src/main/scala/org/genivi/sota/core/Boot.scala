@@ -15,15 +15,15 @@ import akka.stream.ActorMaterializer
 import cats.data.Xor
 import com.typesafe.config.Config
 import org.genivi.sota.client.DeviceRegistryClient
-import org.genivi.sota.core.db.DatabaseConfig
 import org.genivi.sota.core.resolver._
 import org.genivi.sota.core.rvi._
 import org.genivi.sota.core.storage.S3PackageStore
 import org.genivi.sota.core.transfer._
-import org.genivi.sota.db.BootMigrations
+import org.genivi.sota.db.{BootMigrations, DatabaseConfig}
 import org.genivi.sota.http._
 import org.genivi.sota.http.LogDirectives._
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
+import org.genivi.sota.monitoring.{DatabaseMetrics, MetricsSupport}
 import slick.driver.MySQLDriver.api.Database
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -113,7 +113,10 @@ class Settings(val config: Config) {
 }
 
 
-object Boot extends App with DatabaseConfig with HttpBoot with RviBoot with BootMigrations {
+object Boot extends App with DatabaseConfig with HttpBoot with RviBoot with BootMigrations
+  with MetricsSupport
+  with DatabaseMetrics {
+
   import VersionDirectives._
 
   implicit val system = ActorSystem("sota-core-service")

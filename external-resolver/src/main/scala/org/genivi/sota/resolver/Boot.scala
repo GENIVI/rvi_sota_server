@@ -12,11 +12,12 @@ import akka.stream.ActorMaterializer
 import com.typesafe.config.Config
 import org.genivi.sota.client.DeviceRegistryClient
 import org.genivi.sota.common.DeviceRegistry
-import org.genivi.sota.db.BootMigrations
+import org.genivi.sota.db.{BootMigrations, DatabaseConfig}
 import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.LogDirectives._
 import org.genivi.sota.http.{HealthResource, NamespaceDirectives, TraceId}
 import org.genivi.sota.messaging.daemon.MessageBusListenerActor.Subscribe
+import org.genivi.sota.monitoring.{DatabaseMetrics, MetricsSupport}
 import org.genivi.sota.resolver.components.ComponentDirectives
 import org.genivi.sota.resolver.daemon.PackageCreatedListener
 import org.genivi.sota.resolver.devices.DeviceDirectives
@@ -66,14 +67,18 @@ class Settings(val config: Config) {
 }
 
 
-object Boot extends App with Directives with BootMigrations {
+object Boot extends App with Directives with BootMigrations
+  with DatabaseConfig
+  with MetricsSupport
+  with DatabaseMetrics {
+
   import org.genivi.sota.http.VersionDirectives.versionHeaders
 
   implicit val system = ActorSystem("ota-plus-resolver")
   implicit val materializer = ActorMaterializer()
   implicit val exec = system.dispatcher
   implicit val log = LoggerFactory.getLogger(this.getClass)
-  implicit val db = Database.forConfig("database")
+  implicit val _db = db
 
   lazy val config = system.settings.config
   lazy val settings = new Settings(config)
