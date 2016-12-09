@@ -4,17 +4,18 @@
  */
 package org.genivi.sota.core.db
 
-import org.genivi.sota.core.data.{InstallHistory, UpdateRequest, UpdateSpec, UpdateStatus}
+import org.genivi.sota.core.data.{InstallHistory, UpdateSpec, UpdateStatus}
 import java.time.Instant
 import java.util.UUID
 
 import org.genivi.sota.core.db.Packages.{LiftedPackageId, LiftedPackageShape}
+import org.genivi.sota.core.db.UpdateSpecs.{UpdateSpecRow, UpdateSpecTable}
 import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 import org.genivi.sota.http.Errors
 import shapeless._
 import slick.driver.MySQLDriver.api._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 
 /**
@@ -27,8 +28,6 @@ object InstallHistories {
 
   import org.genivi.sota.db.SlickExtensions._
   import org.genivi.sota.refined.SlickRefined._
-  import UpdateStatus._
-  import org.genivi.sota.db.Operators._
   import UpdateSpecs.UpdateStatusColumn
 
   /**
@@ -109,9 +108,10 @@ object InstallHistories {
     log(spec.device, spec.request.id, spec.request.packageUuid, success)
   }
 
-  protected [db] def logAll(updateRequests: Query[Rep[UUID], UUID, Seq], success: Boolean): DBIO[Int] = {
+  protected [db] def logAll(updateSpecQuery: Query[UpdateSpecTable, UpdateSpecRow, Seq],
+                            success: Boolean): DBIO[Int] = {
     val query = for {
-      us <- UpdateSpecs.updateSpecs if us.requestId.in(updateRequests)
+      us <- updateSpecQuery
       ur <- UpdateRequests.all if ur.id === us.requestId
     } yield (Option.empty[Long], us.device, us.requestId, ur.packageUuid, success, Instant.now)
 

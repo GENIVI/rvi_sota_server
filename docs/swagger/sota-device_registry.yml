@@ -75,6 +75,45 @@ paths:
       responses:
         200:
           description: OK
+  /mydevice/{uuid}/packages:
+    put:
+      description: |
+        Mark a list of packages as installed on a device. Note that this does not install anything.
+        It only updates device registry's database of installed packages. This endpoint is for ingesting the list of
+        installed packages sent from the in-vehicle client.
+      parameters:
+      - name: uuid
+        in: path
+        description: The target uuid.
+        required: true
+        type: string
+      - name: InstalledPackages
+        in: body
+        description: A complete list of the packages on the device.
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/PackageId'
+      responses:
+        200:
+          description: OK
+  /devices/{uuid}/packages:
+    get:
+      description: Return a list of packages installed on the device.
+      parameters:
+      - name: uuid
+        in: path
+        description: the vehicle uuid.
+        required: true
+        type: string
+      responses:
+        200:
+          description: A list of all packages installed on the device
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/InstalledPackage'
   /devices/{uuid}/system_info:
     post:
       description: Create the system info for a device
@@ -149,15 +188,21 @@ paths:
             type: array
             items:
               $ref: '#/definitions/GroupInfo'
-  /device_groups/{groupId}:
+    post:
+      description: Create a group for a namespace/groupName entry
+      parameters:
+      - name: groupName
+        description: The name of the group of devices
+        in: query
+        required: true
+        type: string
+      responses:
+        201:
+          description: Created
+  /device_groups/group_info:
     post:
       description: Create a group info entry for a namespace/groupName entry
       parameters:
-      - name: groupId
-        description: The uuid of an existing device object
-        in: path
-        required: true
-        type: string
       - name: groupName
         description: The name of the group of devices
         in: query
@@ -172,6 +217,7 @@ paths:
       responses:
         201:
           description: Created
+  /device_groups/{groupId}/group_info:
     put:
       description: Update the group info entry for a namespace/groupName entry
       parameters:
@@ -321,6 +367,25 @@ paths:
           description: returns the uuid of the newly created group
           schema:
             $ref: '#/definitions/uuid'
+  /device_count/{name}/{version}/:
+    get:
+      description: returns count of groups and devices with the given package installed
+      parameters:
+      - name: name
+        in: path
+        description: The package name.
+        required: true
+        type: string
+      - name: version
+        in: path
+        description: The package version.
+        required: true
+        type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/DevicesCount'
 
 definitions:
   uuid:
@@ -364,6 +429,10 @@ definitions:
         type: string
         format: dateTime
         description: The last time a device uuid was seen by the SOTA server.
+      createdAt:
+        type: string
+        format: dateTime
+        description: The time the device was created
   SystemInfo:
     type: object
     description: A json object representing system info. No schema yet defined.
@@ -380,3 +449,34 @@ definitions:
       groupName:
         type: string
         description: a group name between 1 and 100 characters long
+  PackageId:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The package name.
+      version:
+        type: string
+        description: The package version, in major.minor.patch notation by default.
+  InstalledPackage:
+    type: object
+    properties:
+      device:
+        $ref: '#/definitions/uuid'
+      packageId:
+        $ref: '#/definitions/PackageId'
+      lastModified:
+        type: string
+        format: dateTime
+        description: The last time a package installation was changed
+  DevicesCount:
+    type: object
+    properties:
+      deviceCount:
+        type: integer
+        description: count of devices with this package installed
+      groupCount:
+        description: a set containing all the group ids that have this package installed
+        type: array
+        items:
+          $ref: '#/definitions/uuid'

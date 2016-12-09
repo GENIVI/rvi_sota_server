@@ -5,7 +5,6 @@ import cats.state.{State, StateT}
 import org.genivi.sota.data._
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.filters.Filter
-import org.genivi.sota.resolver.db.PackageFilter
 import org.genivi.sota.resolver.test._
 import org.genivi.sota.rest.ErrorCodes
 import org.scalacheck.Gen
@@ -14,9 +13,7 @@ import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
 import Misc._
 import eu.timepit.refined.api.Refined
-import org.genivi.sota.resolver.components.Component.PartNumber
 import org.genivi.sota.resolver.db
-import org.genivi.sota.resolver.db.PackageFilter
 import org.genivi.sota.resolver.test.generators.{ComponentGenerators, FilterGenerators, PackageGenerators}
 
 
@@ -293,7 +290,6 @@ trait CommandUtils extends
 
 trait InvalidCommandUtils { _: CommandUtils =>
 
-  import InvalidDeviceGenerators._
   import org.genivi.sota.resolver.test.generators.InvalidFilterGenerators._
   import org.genivi.sota.resolver.test.generators.InvalidComponentGenerators._
 

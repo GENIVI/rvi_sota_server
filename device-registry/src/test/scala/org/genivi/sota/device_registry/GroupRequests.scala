@@ -19,9 +19,10 @@ trait GroupRequests {
 
   val groupsApi = "device_groups"
 
-  def createGroupInfoOk(id: Uuid, groupName: Name, json: Json): Unit =
-    createGroupInfo(id, groupName, json) ~> route ~> check {
+  def createGroupInfoOk(groupName: Name, json: Json): Uuid =
+    createGroupInfo(groupName, json) ~> route ~> check {
       status shouldBe Created
+      responseAs[Uuid]
     }
 
   def createGroupFromDevices(device1: Uuid, device2: Uuid, groupName: Name)
@@ -38,19 +39,35 @@ trait GroupRequests {
 
   def fetchGroupInfo(id: Uuid): HttpRequest = Get(Resource.uri(groupsApi, id.underlying.get))
 
-  def createGroupInfo(id: Uuid, groupName: Name, json: Json)
+  def createGroupInfo(groupName: Name, json: Json)
                      (implicit ec: ExecutionContext): HttpRequest =
-    Post(Resource.uri(groupsApi, id.underlying.get).withQuery(Query("groupName" -> groupName.get)), json)
+    Post(Resource.uri(groupsApi, "group_info").withQuery(Query("groupName" -> groupName.get)), json)
+
+  def createGroup(groupName: Name)
+                     (implicit ec: ExecutionContext): HttpRequest =
+    Post(Resource.uri(groupsApi).withQuery(Query("groupName" -> groupName.get)))
+
+  def createGroupOk(groupName: Name)
+                 (implicit ec: ExecutionContext): Uuid =
+    createGroup(groupName) ~> route ~> check {
+      status shouldBe Created
+      responseAs[Uuid]
+    }
 
   def addDeviceToGroup(groupId: Uuid, deviceId: Uuid)(implicit ec: ExecutionContext): HttpRequest =
     Post(Resource.uri(groupsApi, groupId.underlying.get, "devices", deviceId.underlying.get))
+
+  def addDeviceToGroupOk(groupId: Uuid, deviceId: Uuid)(implicit ec: ExecutionContext): Unit =
+    addDeviceToGroup(groupId, deviceId) ~> route ~> check {
+      status shouldBe OK
+    }
 
   def removeDeviceFromGroup(groupId: Uuid, deviceId: Uuid)(implicit ec: ExecutionContext): HttpRequest =
     Delete(Resource.uri(groupsApi, groupId.underlying.get, "devices", deviceId.underlying.get))
 
   def updateGroupInfo(id: Uuid, groupName: Name, json: Json)
                      (implicit ec: ExecutionContext): HttpRequest =
-    Put(Resource.uri(groupsApi, id.underlying.get).withQuery(Query("groupName" -> groupName.get)), json)
+    Put(Resource.uri(groupsApi, id.underlying.get, "group_info").withQuery(Query("groupName" -> groupName.get)), json)
 
   def renameGroup(id: Uuid, newGroupName: Name)(implicit ec: ExecutionContext): HttpRequest = {
     Put(Resource.uri(groupsApi, id.underlying.get, "rename").withQuery(Query("groupName" -> newGroupName.get)))

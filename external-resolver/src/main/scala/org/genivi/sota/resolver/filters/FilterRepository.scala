@@ -13,7 +13,6 @@ import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.db.PackageFilterRepository
 
 import scala.concurrent.ExecutionContext
-import scala.util.control.NoStackTrace
 import slick.driver.MySQLDriver.api._
 
 
@@ -66,8 +65,8 @@ object FilterRepository {
       _ <- FilterRepository.delete(namespace, name)
     } yield ()
 
-  def list: DBIO[Seq[Filter]] =
-    filters.result
+  def list(namespace: Namespace): DBIO[Seq[Filter]] =
+    filters.filter(_.namespace === namespace).result
 
   def searchByRegex(namespace: Namespace, re: Refined[String, Regex]): DBIO[Seq[Filter]] =
     filters.filter(filter => filter.namespace === namespace && regex(filter.name, re.get)).result

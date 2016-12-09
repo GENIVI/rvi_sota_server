@@ -9,8 +9,7 @@ import java.util.UUID
 import org.genivi.sota.data.Interval
 import java.time.Instant
 import java.time.Duration
-import org.genivi.sota.data.{PackageId, Device, Namespace, Uuid}
-import org.genivi.sota.core.db.InstallHistories.InstallHistoryTable
+import org.genivi.sota.data.{Namespace, Uuid}
 
 /**
  * Domain object for an update request.
@@ -44,8 +43,6 @@ case class UpdateRequest(
   installPos: Int = 0)
 
 object UpdateRequest {
-
-  import eu.timepit.refined.auto._
 
   def default(namespace: Namespace, packageUuid: UUID): UpdateRequest = {
     val updateRequestId = UUID.randomUUID()

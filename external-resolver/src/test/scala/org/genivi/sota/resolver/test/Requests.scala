@@ -15,10 +15,10 @@ import cats.syntax.show.toShowOps
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.resolver.components.Component
-import org.genivi.sota.resolver.firmware.Firmware
 import org.genivi.sota.resolver.db.Package
 import org.genivi.sota.resolver.db.PackageFilterResponse
 import org.genivi.sota.resolver.filters.Filter
+import org.genivi.sota.resolver.firmware.Firmware
 import org.genivi.sota.resolver.resolve.ResolveFunctions
 import org.scalatest.Matchers
 
@@ -131,6 +131,10 @@ trait PackageRequestsHttp {
   def getAffected(namespace: Namespace, ids: Set[PackageId])
                  (implicit ec: ExecutionContext): HttpRequest =
     Post(Resource.uri("packages", "affected").withQuery(Query("namespace" -> namespace.get)), ids)
+
+  def getPackageStats(namespace: Namespace, name: PackageId.Name)
+                 (implicit ec: ExecutionContext): HttpRequest =
+    Get(Resource.uri("package_stats", name.get))
 }
 
 trait PackageRequests extends

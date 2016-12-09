@@ -6,9 +6,9 @@ package org.genivi.sota.resolver.common
 
 import org.genivi.sota.http.Errors.{MissingEntity, RawError}
 import org.genivi.sota.resolver.components.Component
-import org.genivi.sota.resolver.firmware.Firmware
 import org.genivi.sota.resolver.db.Package
 import org.genivi.sota.resolver.filters.Filter
+import org.genivi.sota.resolver.firmware.Firmware
 
 /**
   * The resolver deals with devices, packages, filters and components,
@@ -20,11 +20,7 @@ import org.genivi.sota.resolver.filters.Filter
 
 object Errors {
   import akka.http.scaladsl.model.StatusCodes
-  import akka.http.scaladsl.server.Directives.complete
-  import akka.http.scaladsl.server.ExceptionHandler.PF
-  import scala.util.control.NoStackTrace
-  import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
-  import org.genivi.sota.marshalling.CirceMarshallingSupport._
+  import org.genivi.sota.rest.ErrorCode
 
   object Codes {
     val ComponentInstalled = ErrorCode("component_is_installed")

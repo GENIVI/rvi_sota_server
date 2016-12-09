@@ -17,6 +17,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.util.ByteString
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
+import org.genivi.sota.core.autoinstall.AutoInstall
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
@@ -31,30 +32,32 @@ import org.genivi.sota.rest.Validation._
 import slick.driver.MySQLDriver.api.Database
 import org.genivi.sota.rest.ResponseConversions._
 import org.genivi.sota.core.data.PackageResponse._
-import cats.std.future._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import akka.http.scaladsl.marshalling._
-import akka.http.scaladsl.unmarshalling._
 import io.circe.generic.auto._
 import org.genivi.sota.core.SotaCoreErrors.SotaCoreErrorCodes
-import org.genivi.sota.http.ErrorHandler
+import org.genivi.sota.http.{AuthedNamespaceScope, ErrorHandler, Scopes}
 import org.genivi.sota.http.Errors.RawError
 
 import scala.concurrent.Future
 
 object PackagesResource {
+
+  val extractPackageName: Directive1[PackageId.Name] =
+    refined[PackageId.ValidName](Slash ~ Segment)
+
   /**
     * A scala HTTP routing directive that extracts a package name/version from
     * the request URL
     */
-  val extractPackageId: Directive1[PackageId] = (
-    refined[PackageId.ValidName](Slash ~ Segment) &
-      refined[PackageId.ValidVersion](Slash ~ Segment)).as(PackageId.apply _)
+  val extractPackageId: Directive1[PackageId] =
+    (extractPackageName & refined[PackageId.ValidVersion](Slash ~ Segment)).as(PackageId.apply _)
 }
 
-class PackagesResource(resolver: ExternalResolverClient, db : Database,
+class PackagesResource(resolver: ExternalResolverClient,
+                       updateService: UpdateService,
+                       db : Database,
                        messageBusPublisher: MessageBusPublisher,
-                       namespaceExtractor: Directive1[Namespace])
+                       namespaceExtractor: Directive1[AuthedNamespaceScope])
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
 
   import system.dispatcher
@@ -120,7 +123,13 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
         pkg <- db.run(Packages.create(newPkg))
       } yield StatusCodes.NoContent
 
-      resultF.pipeToBus(messageBusPublisher)(_ => PackageCreated(ns, pid, description, vendor, signature))
+      val event = PackageCreated(ns, pid, description, vendor, signature)
+
+      resultF.flatMap { _ =>
+        AutoInstall.packageCreated(updateService, event)
+      }
+
+      resultF.pipeToBus(messageBusPublisher)(_ => event)
     }
 
     def handleErrors(throwable: Throwable): Route = throwable match {
@@ -162,29 +171,31 @@ class PackagesResource(resolver: ExternalResolverClient, db : Database,
     complete(db.run(UpdateSpecs.getDevicesQueuedForPackage(ns, pid)))
   }
 
-  val route = ErrorHandler.handleErrors {
+
+  val route = (ErrorHandler.handleErrors & namespaceExtractor) { ns =>
+    val scope = Scopes.packages(ns)
     pathPrefix("packages") {
-      (get & namespaceExtractor & pathEnd) { ns =>
+      (scope.get & pathEnd) {
         searchPackage(ns)
       } ~
-        (namespaceExtractor & extractPackageId) { (ns, pid) =>
-          path("info") {
-            put {
-              updatePackageInfo(ns, pid)
-            }
+      extractPackageId { pid =>
+        path("info") {
+          scope.put {
+            updatePackageInfo(ns, pid)
+          }
+        } ~
+        pathEnd {
+          scope.get {
+            fetch(ns, pid)
           } ~
-            pathEnd {
-              get {
-                fetch(ns, pid)
-              } ~
-                put {
-                  updatePackage(ns, pid)
-                }
-            } ~
-            path("queued") {
-              queuedDevices(ns, pid)
-            }
+          scope.put {
+            updatePackage(ns, pid)
+          }
+        } ~
+        (scope.check & path("queued")) {
+          queuedDevices(ns, pid)
         }
+      }
     }
   }
 }

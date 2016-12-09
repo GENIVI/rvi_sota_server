@@ -8,14 +8,13 @@ import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.util.FastFuture
 import cats.Show
-import eu.timepit.refined._
 import eu.timepit.refined.string._
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.resolver.Connectivity
 import org.genivi.sota.core.transfer.UpdateNotifier
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 import java.time.Instant
 import java.util.UUID
 
@@ -26,7 +25,6 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
 import slick.dbio.DBIO
 import slick.driver.MySQLDriver.api._
-import org.genivi.sota.db.Operators._
 
 case class PackagesNotFound(packageIds: (PackageId)*)
                            (implicit show: Show[PackageId])

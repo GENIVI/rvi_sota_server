@@ -4,10 +4,12 @@
  */
 package org.genivi.sota.resolver.test
 
+import java.time.Instant
+
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.core.FakeDeviceRegistry
 import org.genivi.sota.data.Device.DeviceName
-import org.genivi.sota.data.{Device, Namespace, Namespaces, Uuid}
+import org.genivi.sota.data._
 import org.genivi.sota.resolver.firmware.Firmware
 
 /**
@@ -19,7 +21,7 @@ class FirmwareResourceSpec extends ResourceWordSpec {
 
   override val deviceRegistry = {
     val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
-    deviceRegistry.addDevice(Device(Namespaces.defaultNs, device, DeviceName("device name")))
+    deviceRegistry.addDevice(Device(Namespaces.defaultNs, device, DeviceName("device name"), createdAt = Instant.now()))
     deviceRegistry
   }
 

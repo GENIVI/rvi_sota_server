@@ -3,21 +3,18 @@ package org.genivi.sota.resolver.test
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.testkit.RouteTestTimeout
 import cats.state.State
-import org.genivi.sota.data.{Device, DeviceT, PackageId, Uuid}
+import org.genivi.sota.data.{PackageId, Uuid}
 import org.genivi.sota.resolver.test.random.Misc._
 import org.genivi.sota.resolver.test.random._
 import Session._
 import org.genivi.sota.resolver.components.Component
-import org.genivi.sota.resolver.db.{Package, PackageResponse}
+import org.genivi.sota.resolver.db.PackageResponse
 import org.genivi.sota.resolver.filters.Filter
 import org.genivi.sota.rest.{ErrorRepresentation, ToResponse}
 import org.scalatest.Tag
 
 import scala.annotation.tailrec
-import scala.concurrent.Await
-import scala.concurrent.duration._
 import org.genivi.sota.resolver.db.PackageResponse._
 import org.genivi.sota.rest.ResponseConversions._
 

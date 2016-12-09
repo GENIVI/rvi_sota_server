@@ -8,16 +8,17 @@ package org.genivi.sota.core
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import cats.syntax.show._
+import cats.implicits._
 import io.circe.generic.auto._
 import java.util.UUID
-import org.genivi.sota.core.data.{Campaign, UpdateRequest}
-import org.genivi.sota.core.db.{Packages, UpdateRequests}
+import org.genivi.sota.core.data.{Campaign, UpdateStatus}
+import org.genivi.sota.core.db.{BlacklistedPackages, Packages, UpdateRequests}
 import org.genivi.sota.core.resolver.DefaultConnectivity
 import org.genivi.sota.core.transfer.DefaultUpdateNotifier
-import org.genivi.sota.data.{Interval, Namespaces, PackageId}
+import org.genivi.sota.data.{Namespaces, PackageId, Uuid}
 import org.genivi.sota.http.NamespaceDirectives.defaultNamespaceExtractor
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.scalacheck.Gen
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 
@@ -55,7 +56,24 @@ class CampaignResourceSpec extends FunSuite
       ur.description shouldBe lc.description
       lc.requestConfirmation.foreach(ur.requestConfirmation shouldBe _)
     }
+  }
 
+  def updateRequestCancelled(urId: Uuid): Unit = {
+    implicit val theDB = db
+    whenReady(updateService.fetchUpdateSpecRows(urId)) { rows =>
+      all(rows.map(_.status)) shouldBe UpdateStatus.Canceled
+    }
+  }
+
+  def cancel(id: Campaign.Id, expectedCode: StatusCode): Unit = {
+    Put(Resource.uri(id.show, "cancel")) ~> service.route ~> check {
+      status shouldBe expectedCode
+    }
+  }
+
+  def blacklistPackage(pkgId: PackageId): Unit = {
+    implicit val theDb = db
+    BlacklistedPackages.create(Namespaces.defaultNs, pkgId, None).map(_ => ()).futureValue
   }
 
   def createCampaign(name: CreateCampaign, expectedCode: StatusCode): Unit =
@@ -75,6 +93,16 @@ class CampaignResourceSpec extends FunSuite
     whenReady(db.run(Packages.create(pkg))) { pkg =>
       pkg.id
     }
+  }
+
+  def createRandomGroups(): SetCampaignGroups = {
+
+    val setgroups = SetCampaignGroupsGen.sample.get
+    setgroups.groups.foreach { grpId =>
+      val deviceUuids = Gen.nonEmptyContainerOf[List, Uuid](Uuid.generate()).sample.get
+      deviceRegistry.addGroup(grpId, deviceUuids)
+    }
+    setgroups
   }
 
   def fetchCampaignOk(id: Campaign.Id): Campaign =
@@ -118,7 +146,7 @@ class CampaignResourceSpec extends FunSuite
     val pkgId = createRandomPackage()
     setPackage(id, pkgId, StatusCodes.OK)
 
-    val setgroups = SetCampaignGroupsGen.sample.get
+    val setgroups = createRandomGroups()
     setGroups(id, setgroups, StatusCodes.OK)
 
     val lc = LaunchCampaignGen.sample.get
@@ -200,7 +228,7 @@ class CampaignResourceSpec extends FunSuite
     val pkgId = createRandomPackage()
     setPackage(id, pkgId, StatusCodes.OK)
 
-    val setgroups = SetCampaignGroupsGen.sample.get
+    val setgroups = createRandomGroups()
     setGroups(id, setgroups, StatusCodes.OK)
 
     val lc = LaunchCampaignGen.sample.get
@@ -215,11 +243,70 @@ class CampaignResourceSpec extends FunSuite
     val pkgId = createRandomPackage()
     setPackage(id, pkgId, StatusCodes.OK)
 
-    val setgroups = SetCampaignGroupsGen.sample.get
+    val setgroups = createRandomGroups()
     setGroups(id, setgroups, StatusCodes.OK)
 
     val lc = LaunchCampaignGen.sample.get
     launch(id, lc, StatusCodes.OK)
     launch(id, lc, StatusCodes.Locked)
+  }
+
+  test("can cancel a campaign") {
+    val campName = CreateCampaignGen.sample.get
+    val id = createCampaignOk(campName)
+
+    val pkgId = createRandomPackage()
+    setPackage(id, pkgId, StatusCodes.OK)
+
+    val setgroups = createRandomGroups()
+    setGroups(id, setgroups, StatusCodes.OK)
+
+    val lc = LaunchCampaignGen.sample.get
+    launch(id, lc, StatusCodes.OK)
+
+    cancel(id, StatusCodes.OK)
+
+    val camp = fetchCampaignOk(id)
+
+    camp.groups.foreach { campGrp =>
+      updateRequestCancelled(campGrp.updateRequest.get)
+    }
+  }
+
+  test("campaign should not launch with blacklisted package") {
+    val campName = CreateCampaignGen.sample.get
+    val id = createCampaignOk(campName)
+
+    val pkgId = createRandomPackage()
+    setPackage(id, pkgId, StatusCodes.OK)
+
+    val setgroups = SetCampaignGroupsGen.sample.get
+    setGroups(id, setgroups, StatusCodes.OK)
+
+    val lc = LaunchCampaignGen.sample.get
+
+    blacklistPackage(pkgId)
+
+    launch(id, lc, StatusCodes.BadRequest)
+
+    val camp = fetchCampaignOk(id)
+
+    camp.meta.launched shouldBe false
+  }
+
+  test("campaign created date should not change on update") {
+    val campName = CreateCampaignGen.sample.get
+
+    val id = createCampaignOk(campName)
+
+    val createdAt = getCampaignsOk().filter(_.id == id).map(_.createdAt)
+
+    val pkgId = createRandomPackage()
+    setPackage(id, pkgId, StatusCodes.OK)
+
+    val setgroups = SetCampaignGroupsGen.sample.get
+    setGroups(id, setgroups, StatusCodes.OK)
+
+    getCampaignsOk().filter(_.id == id).map(_.createdAt) shouldEqual createdAt
   }
 }

@@ -9,7 +9,6 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import io.circe.Encoder
 import io.circe.generic.auto._
 import org.genivi.sota.core.resolver.{ConnectivityClient, DefaultConnectivity}
-import org.genivi.sota.core.data.UpdateSpec
 import org.genivi.sota.core.data.client.ClientUpdateRequest
 import org.genivi.sota.core.transfer.DefaultUpdateNotifier
 import org.genivi.sota.marshalling.CirceMarshallingSupport
@@ -18,7 +17,6 @@ import java.time.temporal.ChronoUnit
 
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
-import akka.http.scaladsl.unmarshalling._
 import org.genivi.sota.data.{Interval, Namespaces}
 import org.genivi.sota.http.NamespaceDirectives
 
@@ -34,7 +32,6 @@ class UpdateRequestResourceSpec extends FunSuite
   with LongRequestTimeout {
 
   import CirceMarshallingSupport._
-  import UpdateSpec._
   import NamespaceDirectives._
 
   implicit val log = Logging(system, "UpdateRequestResourceSpec")

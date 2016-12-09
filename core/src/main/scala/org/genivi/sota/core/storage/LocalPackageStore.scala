@@ -10,7 +10,6 @@ import java.nio.file.Paths
 
 import akka.actor.ActorSystem
 import akka.event.Logging
-import akka.http.scaladsl.common.StrictForm
 import akka.http.scaladsl.model._
 import akka.stream._
 import akka.stream.scaladsl.{FileIO, Sink, Source}

@@ -1,19 +1,14 @@
 package org.genivi.sota.http
 
-import javax.crypto.SecretKey
-
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import com.advancedtelematic.jws.{CompactSerialization, Jws, JwsPayload}
-import org.genivi.sota.data.Namespace._
+import com.advancedtelematic.jws.{CompactSerialization, JwsPayload}
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{Matchers, PropSpec}
 import com.advancedtelematic.json.signature.JcaSupport._
 import com.advancedtelematic.jwa.HS256
-import org.genivi.sota.data.Namespace
-
 
 class ExtractNamespaceSpec extends PropSpec
   with PropertyChecks
@@ -24,7 +19,7 @@ class ExtractNamespaceSpec extends PropSpec
   import AuthNamespaceDirectives._
   import org.genivi.sota.Generators._
 
-  def route: Route = (path("test") & authNamespace[IdToken]) { (ns: Namespace) =>
+  def route: Route = (path("test") & authNamespace[IdToken](None)) { ns =>
     get { complete(StatusCodes.OK -> ns.get) }
   }
 

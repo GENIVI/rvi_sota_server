@@ -4,15 +4,15 @@
  */
 package org.genivi.sota.device_registry
 
-import akka.http.scaladsl.client.RequestBuilding.{Delete, Get, Post, Put}
 import akka.http.scaladsl.model.Uri.{Path, Query}
-import akka.http.scaladsl.model.{HttpRequest, Uri, StatusCodes}
-import cats.Show
+import akka.http.scaladsl.model.{HttpRequest, StatusCodes, Uri}
+import akka.http.scaladsl.server.Route
 import cats.syntax.show._
 import io.circe.Json
 import io.circe.generic.auto._
-import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
+import org.genivi.sota.data._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
+
 import scala.concurrent.ExecutionContext
 
 
@@ -51,27 +51,24 @@ trait DeviceRequests { self: ResourceSpec =>
     Put(Resource.uri(api, uuid.show), device)
 
   def createDevice(device: DeviceT)
-                  (implicit ec: ExecutionContext): HttpRequest = {
+                  (implicit ec: ExecutionContext): HttpRequest =
     Post(Resource.uri(api), device)
-  }
 
   def createDeviceOk(device: DeviceT)
-                    (implicit ec: ExecutionContext): Uuid = {
+                    (implicit ec: ExecutionContext): Uuid =
     createDevice(device) ~> route ~> check {
       status shouldBe Created
       responseAs[Uuid]
     }
-  }
 
   def deleteDevice(uuid: Uuid): HttpRequest =
     Delete(Resource.uri(api, uuid.show))
 
   def deleteDeviceOk(uuid: Uuid)
-                    (implicit ec: ExecutionContext): Unit = {
+                    (implicit ec: ExecutionContext): Unit =
     deleteDevice(uuid) ~> route ~> check {
       status shouldBe OK
     }
-  }
 
   def updateLastSeen(uuid: Uuid): HttpRequest =
     Post(Resource.uri(api, uuid.show, "ping"))
@@ -91,4 +88,18 @@ trait DeviceRequests { self: ResourceSpec =>
                          (implicit ec: ExecutionContext): HttpRequest =
     Get(Resource.uri(api, device.show, "groups"))
 
+  def installSoftware(device: Uuid, packages: Set[PackageId]): HttpRequest =
+    Put(Resource.uri("mydevice", device.show, "packages"), packages)
+
+  def installSoftwareOk(device: Uuid, packages: Set[PackageId])
+                       (implicit route: Route): Unit =
+    installSoftware(device, packages) ~> route ~> check {
+      status shouldBe StatusCodes.NoContent
+    }
+
+  def listPackages(device: Uuid)(implicit ec: ExecutionContext): HttpRequest =
+    Get(Resource.uri("devices", device.show, "packages"))
+
+  def getStatsForPackage(pkg: PackageId)(implicit ec: ExecutionContext): HttpRequest =
+    Get(Resource.uri("device_count", pkg.name.get, pkg.version.get))
 }

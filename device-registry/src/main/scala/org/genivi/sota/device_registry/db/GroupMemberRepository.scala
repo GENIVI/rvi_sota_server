@@ -35,7 +35,7 @@ object GroupMemberRepository {
   //this method assumes that groupId and deviceId belong to the same namespace
   def addGroupMember(groupId: Uuid, deviceId: Uuid)(implicit ec: ExecutionContext): DBIO[Int] =
     (groupMembers += GroupMember(groupId, deviceId))
-      .handleIntegrityErrors(Errors.ConflictingGroupInfo)
+      .handleIntegrityErrors(Errors.MemberAlreadyExists)
 
   def addOrUpdateGroupMember(groupId: Uuid, deviceId: Uuid)(implicit ec: ExecutionContext): DBIO[Int] =
     groupMembers.insertOrUpdate(GroupMember(groupId, deviceId))

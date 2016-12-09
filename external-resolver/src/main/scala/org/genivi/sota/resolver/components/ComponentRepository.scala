@@ -7,9 +7,7 @@ package org.genivi.sota.resolver.components
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import org.genivi.sota.data.Namespace
-import org.genivi.sota.data.Namespace._
 import org.genivi.sota.db.Operators._
-import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.db.DeviceRepository
 
@@ -81,8 +79,8 @@ object ComponentRepository {
       .headOption
       .failIfNone(Errors.MissingComponent)
 
-  def list: DBIO[Seq[Component]] =
-    components.result
+  def list(namespace: Namespace): DBIO[Seq[Component]] =
+    components.filter(_.namespace === namespace).result
 
   def searchByRegex(namespace: Namespace, re: Refined[String, Regex]): DBIO[Seq[Component]] =
     components.filter(i => i.namespace === namespace && regex(i.partNumber, re.get)).result

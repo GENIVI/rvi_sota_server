@@ -1,32 +1,72 @@
 package org.genivi.sota.http
 
 import akka.http.scaladsl.model.headers.OAuth2BearerToken
-import akka.http.scaladsl.server.{AuthorizationFailedRejection, Directive1, Directives, Rejection}
+import akka.http.scaladsl.server.{AuthorizationFailedRejection, Directive0, Directive1, Directives, Rejection}
+import akka.http.scaladsl.server.Directives._
 import cats.data.Xor
+import com.advancedtelematic.akka.http.jwt.InvalidScopeRejection
 import com.advancedtelematic.jws.CompactSerialization
-import com.advancedtelematic.jwt.{JsonWebToken, Subject}
+import com.advancedtelematic.jwt.{JsonWebToken, Scope, Subject}
 import io.circe.parser._
-import org.genivi.sota.data.Namespace._
-import eu.timepit.refined.refineV
 import io.circe.Decoder
 import org.genivi.sota.data.Namespace
+
+case class AuthedNamespaceScope(namespace: Namespace, scope: Option[Scope] = None) {
+  type ScopeItem = String
+
+  def hasScope(sc: ScopeItem) : Boolean = scope.isEmpty || scope.get.underlying.contains(sc)
+
+  def hasScopeReadonly(sc: ScopeItem) : Boolean = hasScope(sc) || hasScope(sc + ".readonly")
+
+  def oauthScope(scope: ScopeItem): Directive0 = {
+    if (hasScope(scope)) pass
+    else reject(InvalidScopeRejection(scope), AuthorizationFailedRejection)
+  }
+
+  def oauthScopeReadonly(scope: ScopeItem): Directive0 = {
+    if (hasScopeReadonly(scope)) pass
+    else reject(InvalidScopeRejection(scope), AuthorizationFailedRejection)
+  }
+}
+
+object AuthedNamespaceScope {
+  import scala.language.implicitConversions
+  implicit def toNamespace(ns: AuthedNamespaceScope): Namespace = ns.namespace
+
+  val namespacePrefix = "namespace."
+
+  def apply(token: IdToken) : AuthedNamespaceScope = {
+    AuthedNamespaceScope(Namespace(token.sub.underlying))
+  }
+
+  def apply(token: JsonWebToken) : AuthedNamespaceScope = {
+    val nsSet = token.scope.underlying.collect {
+      case x if x.startsWith(namespacePrefix) => x.substring(namespacePrefix.length)
+    }
+    if (nsSet.size == 1) {
+      AuthedNamespaceScope(Namespace(nsSet.toVector(0)), Some(token.scope))
+    } else {
+      AuthedNamespaceScope(Namespace(token.subject.underlying), Some(token.scope))
+    }
+  }
+}
 
 /**
   * Type class defining an extraction of namespace information from a token of type `T`
   * @tparam T type of a token
   */
 trait NsFromToken[T] {
-  def namespace(token: T): String
+  def toNamespaceScope(token: T): AuthedNamespaceScope
 }
 
 object NsFromToken {
 
   implicit val NsFromIdToken = new NsFromToken[IdToken] {
-    override def namespace(token: IdToken): String = token.sub.underlying
+    override def toNamespaceScope(token: IdToken) = AuthedNamespaceScope(token)
   }
 
   implicit val NsFromJwt = new NsFromToken[JsonWebToken] {
-    override def namespace(token: JsonWebToken): String = token.subject.underlying
+    override def toNamespaceScope(token: JsonWebToken) = AuthedNamespaceScope(token)
   }
 
   def parseToken[T: NsFromToken](serializedToken: String)
@@ -57,17 +97,27 @@ object AuthNamespaceDirectives {
 
   private[this] def badNamespaceRejection(msg: String): Rejection = AuthorizationFailedRejection
 
-  def authNamespace[T](implicit nsFromToken: NsFromToken[T], decoder: Decoder[T]): Directive1[Namespace] =
+  def authNamespace[T](ns0: Option[Namespace])
+                   (implicit nsFromToken: NsFromToken[T], decoder: Decoder[T]): Directive1[AuthedNamespaceScope] =
     extractCredentials flatMap { creds =>
       val maybeNamespace = creds match {
         case Some(OAuth2BearerToken(serializedToken)) =>
-          NsFromToken.parseToken[T](serializedToken).map( nsFromToken.namespace )
+          NsFromToken.parseToken[T](serializedToken).flatMap{ token =>
+            val authedNs = nsFromToken.toNamespaceScope(token)
+            ns0 match {
+              case Some(ns) if ns == authedNs.namespace => Xor.right(authedNs)
+              case Some(ns) if authedNs.hasScope(AuthedNamespaceScope.namespacePrefix + ns) =>
+                Xor.right(AuthedNamespaceScope(ns, authedNs.scope))
+              case Some(ns) => Xor.Left("The oauth token does not accept the given namespace")
+              case None => Xor.right(authedNs)
+            }
+          }
 
         case _ => Xor.Left("No oauth token provided to extract namespace")
     }
 
     maybeNamespace match {
-      case Xor.Right(t) => provide(Namespace(t))
+      case Xor.Right(t) => provide(t)
       case Xor.Left(msg) =>
         extractLog flatMap { l =>
           l.info(s"Could not extract namespace: $msg")

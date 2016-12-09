@@ -19,7 +19,7 @@ import org.genivi.sota.data._
 import java.time.Instant
 
 import eu.timepit.refined.api.Refined
-import org.genivi.sota.http.{AuthDirectives, NamespaceDirectives}
+import org.genivi.sota.http.NamespaceDirectives
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.scalacheck.{Arbitrary, Gen}
@@ -44,7 +44,6 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
   import Arbitrary._
   import NamespaceDirectives._
-  import Device._
   import DeviceGenerators._
   import PackageIdGenerators._
   import UpdateSpec._
@@ -55,7 +54,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
   implicit val connectivity = new FakeConnectivity()
 
   lazy val service = new DeviceUpdatesResource(db, fakeResolver, fakeDeviceRegistry, defaultNamespaceExtractor,
-    AuthDirectives.allowAll, MessageBusPublisher.ignore)
+    MessageBusPublisher.ignore)
 
   val fakeResolver = new FakeExternalResolver()
 
@@ -204,7 +203,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
   // Deprecated, see newer 'mydevice' test below
   test("GET to download a file returns 3xx if the package URL is an s3 URI") {
     val service = new DeviceUpdatesResource(db, fakeResolver, fakeDeviceRegistry, defaultNamespaceExtractor,
-      AuthDirectives.allowAll, MessageBusPublisher.ignore) {
+      MessageBusPublisher.ignore) {
       override lazy val packageRetrievalOp: (Package) => Future[HttpResponse] = {
         _ => Future.successful {
           HttpResponse(StatusCodes.Found, Location("https://some-fake-place") :: Nil)
@@ -581,7 +580,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
   test("Device GET download returns 3xx if the package URL is an s3 URI") {
     val service = new DeviceUpdatesResource(db, fakeResolver, fakeDeviceRegistry, defaultNamespaceExtractor,
-      AuthDirectives.allowAll, MessageBusPublisher.ignore) {
+      MessageBusPublisher.ignore) {
       override lazy val packageRetrievalOp: (Package) => Future[HttpResponse] = {
         _ => Future.successful {
           HttpResponse(StatusCodes.Found, Location("https://some-fake-place") :: Nil)

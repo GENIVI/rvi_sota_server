@@ -7,7 +7,6 @@ package org.genivi.sota.resolver.db
 import java.util.UUID
 
 import org.genivi.sota.data.{Namespace, PackageId}
-import org.genivi.sota.db.Operators._
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.db.Package.Metadata
@@ -81,8 +80,8 @@ object PackageRepository {
  *
    * @return     A DBIO[Seq[Package]] for the packages in the table
    */
-  def list: DBIO[Seq[Package]] =
-    packages.result
+  def list(namespace: Namespace): DBIO[Seq[Package]] =
+    packages.filter(_.namespace === namespace).result
 
   /**
    * Checks to see if a package exists in the database
@@ -130,5 +129,9 @@ object PackageRepository {
     packages.filter { pkg =>
       (pkg.name.mappedTo[String] ++ pkg.version.mappedTo[String]).inSet(ids.map(id => id.name.get + id.version.get))
     }
+  }
+
+  protected[db] def withNameQuery(ns: Namespace, name: PackageId.Name): Query[PackageTable, Package, Seq] = {
+    packages.filter { pkg => pkg.namespace === ns && pkg.name === name }
   }
 }

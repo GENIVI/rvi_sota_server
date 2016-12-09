@@ -5,15 +5,11 @@
 package org.genivi.sota.device_registry
 
 import io.circe.Json
-import org.genivi.sota.data.DeviceGenerators._
-import org.genivi.sota.data.SimpleJsonGenerator._
 import org.genivi.sota.data._
 import org.genivi.sota.device_registry.db.SystemInfoRepository.removeIdNrs
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 
 class SystemInfoResourceSpec extends ResourcePropSpec {
-
-  import UuidGenerator._
   import akka.http.scaladsl.model.StatusCodes._
 
   property("GET /system_info request fails on non-existent device") {

@@ -18,13 +18,15 @@ import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 import Directives._
 import org.genivi.sota.data.Namespace
+import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.ErrorHandler
+import org.genivi.sota.http.Scopes
 
 /**
  * API routes for creating, deleting, and listing components.
  * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
  */
-class ComponentDirectives(namespaceExtractor: Directive1[Namespace])
+class ComponentDirectives(namespaceExtractor: Directive1[AuthedNamespaceScope])
                          (implicit system: ActorSystem,
                           db: Database,
                           mat: ActorMaterializer,
@@ -32,7 +34,7 @@ class ComponentDirectives(namespaceExtractor: Directive1[Namespace])
 
   def searchComponent(ns: Namespace): Route =
     parameter('regex.as[String Refined Regex].?) { re =>
-      val query = re.fold(ComponentRepository.list)(re => ComponentRepository.searchByRegex(ns, re))
+      val query = re.fold(ComponentRepository.list(ns))(re => ComponentRepository.searchByRegex(ns, re))
       complete(db.run(query))
     }
 
@@ -48,13 +50,14 @@ class ComponentDirectives(namespaceExtractor: Directive1[Namespace])
 
   def route: Route = ErrorHandler.handleErrors {
     (pathPrefix("components") & namespaceExtractor) { ns =>
-      (get & pathEnd) {
+      val scope = Scopes.resolver(ns)
+      (scope.get & pathEnd) {
         searchComponent(ns)
       } ~
-        (put & refinedPartNumber & pathEnd) { part =>
+        (scope.put & refinedPartNumber & pathEnd) { part =>
           addComponent(ns, part)
         } ~
-        (delete & refinedPartNumber & pathEnd) { part =>
+        (scope.delete & refinedPartNumber & pathEnd) { part =>
           deleteComponent(ns, part)
         }
     }

@@ -1,3 +1,8 @@
+[![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
+[![TravisCI Build Status](https://travis-ci.org/advancedtelematic/rvi_sota_server.svg?branch=master)](https://travis-ci.org/advancedtelematic/rvi_sota_server)
+[![codecov](https://codecov.io/gh/advancedtelematic/rvi_sota_server/branch/master/graph/badge.svg)](https://codecov.io/gh/advancedtelematic/rvi_sota_server)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/538/badge)](https://bestpractices.coreinfrastructure.org/projects/538)
+
 # GENIVI SOTA Project
 
 This project is the top-level git repository for the GENIVI SOTA project.
@@ -10,7 +15,7 @@ Please refer to [the documentation](http://genivi.github.io/rvi_sota_server/) fo
 
 To run tests, we need a mariadb instance running. We also need a user
 with `CREATE DATABASE` privileges. All tests run in parallel, so we
-need to increaser maximum allowed connections with:
+need to increase maximum allowed connections with:
 
     set global max_connections = 1000;
     

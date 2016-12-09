@@ -5,16 +5,13 @@
 package org.genivi.sota.device_registry.common
 
 import org.genivi.sota.data.GroupInfo
+import org.genivi.sota.device_registry.db.GroupMemberRepository.GroupMember
 import org.genivi.sota.device_registry.db.SystemInfoRepository.SystemInfo
 import org.genivi.sota.http.Errors.{EntityAlreadyExists, MissingEntity, RawError}
 
 object Errors {
   import akka.http.scaladsl.model.StatusCodes
-  import akka.http.scaladsl.server.Directives.complete
-  import akka.http.scaladsl.server.ExceptionHandler.PF
-  import scala.util.control.NoStackTrace
-  import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
-  import org.genivi.sota.marshalling.CirceMarshallingSupport._
+  import org.genivi.sota.rest.ErrorCode
 
   object Codes {
     val MissingDevice = ErrorCode("missing_device")
@@ -22,6 +19,7 @@ object Errors {
     val SystemInfoAlreadyExists = ErrorCode("system_info_already_exists")
     val MissingGroupInfo = ErrorCode("missing_group_info")
     val GroupInfoAlreadyExists = ErrorCode("group_info_already_exists")
+    val MemberAlreadyExists = ErrorCode("device_already_a_group_member")
   }
 
   val MissingDevice = RawError(Codes.MissingDevice, StatusCodes.NotFound, "device doesn't exist")
@@ -32,4 +30,5 @@ object Errors {
 
   val MissingGroupInfo = MissingEntity(classOf[GroupInfo])
   val ConflictingGroupInfo = EntityAlreadyExists(classOf[GroupInfo])
+  val MemberAlreadyExists = EntityAlreadyExists(classOf[GroupMember])
 }

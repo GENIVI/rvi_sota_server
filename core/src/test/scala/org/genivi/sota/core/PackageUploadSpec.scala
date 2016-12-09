@@ -3,20 +3,18 @@ package org.genivi.sota.core
 import akka.http.scaladsl.model.Multipart.FormData.BodyPart
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.server.PathMatchers
 import akka.http.scaladsl.testkit.RouteTestTimeout
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import akka.http.scaladsl.unmarshalling._
 import io.circe.generic.auto._
 import java.io.File
 
 import org.genivi.sota.core.SotaCoreErrors.SotaCoreErrorCodes
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.core.resolver.{DefaultConnectivity, ExternalResolverClient, ExternalResolverRequestFailed}
+import org.genivi.sota.core.transfer.DefaultUpdateNotifier
+import org.genivi.sota.data.{Namespace, Namespaces, PackageId, Uuid}
 import org.genivi.sota.http.NamespaceDirectives
 import org.genivi.sota.marshalling.CirceMarshallingSupport
-import org.genivi.sota.messaging.Messages.PackageCreated
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.rest.ErrorRepresentation
 import org.scalatest.concurrent.ScalaFutures
@@ -26,7 +24,6 @@ import org.scalatest.{Matchers, PropSpec}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import slick.jdbc.JdbcBackend.Database
 
 
 /**
@@ -47,8 +44,10 @@ class PackageUploadSpec extends PropSpec
   val PackagesPath = Path / "packages"
 
   implicit val patience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
+  implicit val connectivity = DefaultConnectivity
 
   class Service(resolverResult: Future[Unit] ) {
+    val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
     val resolver = new ExternalResolverClient {
       override def putPackage(namespace: Namespace, packageId: PackageId, description: Option[String], vendor: Option[String]): Future[Unit] = resolverResult
 
@@ -62,7 +61,8 @@ class PackageUploadSpec extends PropSpec
 
     lazy val messageBusPublisher = MessageBusPublisher.ignore
 
-    val resource = new PackagesResource(resolver, db, messageBusPublisher, defaultNamespaceExtractor)
+    val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
+    val resource = new PackagesResource(resolver, updateService, db, messageBusPublisher, defaultNamespaceExtractor)
   }
 
   def toBodyPart(name : String)(x: String) = BodyPart.Strict(name, HttpEntity( x ) )

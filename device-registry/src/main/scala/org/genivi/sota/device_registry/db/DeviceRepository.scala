@@ -17,25 +17,11 @@ import org.genivi.sota.refined.SlickRefined._
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
-import org.genivi.sota.db.Operators._
-
 
 object DeviceRepository {
 
   import Device._
-
-  // TODO generalize
-  implicit val deviceNameColumnType =
-    MappedColumnType.base[DeviceName, String](
-      { case DeviceName(value) => value.toString },
-      DeviceName
-    )
-
-  implicit val deviceIdColumnType =
-    MappedColumnType.base[DeviceId, String](
-      { case DeviceId(value) => value.toString },
-      DeviceId
-    )
+  import org.genivi.sota.db.SlickAnyVal._
 
   // scalastyle:off
   class DeviceTable(tag: Tag) extends Table[Device](tag, "Device") {
@@ -45,8 +31,9 @@ object DeviceRepository {
     def deviceId = column[Option[DeviceId]]("device_id")
     def deviceType = column[DeviceType]("device_type")
     def lastSeen = column[Option[Instant]]("last_seen")
+    def createdAt = column[Instant]("created_at")
 
-    def * = (namespace, uuid, deviceName, deviceId, deviceType, lastSeen).shaped <>
+    def * = (namespace, uuid, deviceName, deviceId, deviceType, lastSeen, createdAt).shaped <>
       ((Device.apply _).tupled, Device.unapply)
 
     def pk = primaryKey("uuid", uuid)
@@ -61,7 +48,8 @@ object DeviceRepository {
              (implicit ec: ExecutionContext): DBIO[Uuid] = {
     val uuid: Uuid = Uuid.generate()
 
-    val dbIO = devices += Device(ns, uuid, device.deviceName, device.deviceId, device.deviceType)
+    val dbIO = devices += Device(ns, uuid, device.deviceName, device.deviceId, device.deviceType,
+                                 createdAt = Instant.now())
 
     dbIO
       .map(_ => uuid)

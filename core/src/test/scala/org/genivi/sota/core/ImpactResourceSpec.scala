@@ -8,13 +8,11 @@ package org.genivi.sota.core
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.genivi.sota.core.db.BlacklistedPackages
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 import org.genivi.sota.http.NamespaceDirectives._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import org.genivi.sota.marshalling.RefinedMarshallingSupport._
-import io.circe.generic.auto._
 
 import scala.concurrent.Future
 

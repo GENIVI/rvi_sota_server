@@ -4,8 +4,7 @@
   */
 package org.genivi.sota.core.db
 
-import org.genivi.sota.data.{Device, Uuid}
-import org.genivi.sota.data.Namespace._
+import org.genivi.sota.data.Uuid
 import org.genivi.sota.core.data.BlockedInstall
 import org.genivi.sota.refined.SlickRefined._
 import java.time.Instant
@@ -17,7 +16,6 @@ import slick.driver.MySQLDriver.api._
 object BlockedInstalls {
 
   import org.genivi.sota.db.SlickExtensions._
-  import Device._
 
   // scalastyle:off
   class BlockedInstallTable(tag: Tag) extends Table[BlockedInstall](tag, "BlockedInstall") {

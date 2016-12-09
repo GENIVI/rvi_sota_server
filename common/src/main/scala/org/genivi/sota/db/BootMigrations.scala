@@ -5,7 +5,7 @@
 
 package org.genivi.sota.db
 
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.ConfigFactory
 import org.flywaydb.core.Flyway
 import org.slf4j.LoggerFactory
 

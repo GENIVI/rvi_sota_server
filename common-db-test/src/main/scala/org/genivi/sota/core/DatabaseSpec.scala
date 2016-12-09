@@ -4,14 +4,19 @@
 */
 package org.genivi.sota.core
 
+import java.util.TimeZone
+
 import com.typesafe.config.{Config, ConfigFactory}
 import org.flywaydb.core.Flyway
 import org.scalatest.{BeforeAndAfterAll, Suite}
 import slick.driver.MySQLDriver.api._
+
 import scala.collection.JavaConverters._
 
 trait DatabaseSpec extends BeforeAndAfterAll {
   self: Suite =>
+
+  TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
 
   lazy val db = Database.forConfig("", slickDbConfig)
 

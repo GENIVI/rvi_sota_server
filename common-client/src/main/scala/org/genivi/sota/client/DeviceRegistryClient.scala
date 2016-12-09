@@ -7,7 +7,6 @@ package org.genivi.sota.client
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshaller
@@ -18,12 +17,15 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.Json
 import io.circe.generic.auto._
+import io.circe.syntax._
 import java.time.Instant
+
 import org.genivi.sota.common.DeviceRegistry
-import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
+import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
 import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.http.NamespaceDirectives.nsHeader
 import org.genivi.sota.marshalling.CirceMarshallingSupport
+
 import scala.concurrent.{ExecutionContext, Future}
 
 
@@ -64,11 +66,6 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri, 
     execHttp[Seq[Uuid]](HttpRequest(uri = baseUri.withPath(deviceGroupsUri.path / uuid.show / "devices"))
                           .withHeaders(nsHeader(ns)))
 
-
-  override def fetchGroup(uuid: Uuid)
-                         (implicit ec: ExecutionContext): Future[Seq[Uuid]] =
-    execHttp[Seq[Uuid]](HttpRequest(uri = baseUri.withPath(deviceGroupsUri.path / uuid.show / "devices")))
-
   override def fetchByDeviceId(ns: Namespace, deviceId: DeviceId)
                               (implicit ec: ExecutionContext): Future[Device] =
     execHttp[Seq[Device]](HttpRequest(uri = baseUri.withPath(devicesUri.path)
@@ -87,6 +84,11 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri, 
                                (implicit ec: ExecutionContext): Future[Unit] =
     execHttp[Unit](HttpRequest(method = PUT, uri = baseUri.withPath(mydeviceUri.path / uuid.show / "system_info"),
       entity = HttpEntity(ContentTypes.`application/json`, json.noSpaces)))
+
+  def setInstalledPackages
+    (device: Uuid, packages: Seq[PackageId])(implicit ec: ExecutionContext) : Future[Unit] =
+      execHttp[Unit](HttpRequest(method = PUT, uri = baseUri.withPath(mydeviceUri.path / device.show / "packages"),
+        entity = HttpEntity(ContentTypes.`application/json`, packages.asJson.noSpaces)))
 
   private def execHttp[T](httpRequest: HttpRequest)
                          (implicit unmarshaller: Unmarshaller[ResponseEntity, T],

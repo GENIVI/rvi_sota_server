@@ -8,29 +8,26 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.model.{StatusCodes, Uri}
 import akka.http.scaladsl.server._
-import akka.http.scaladsl.unmarshalling.{FromStringUnmarshaller, Unmarshaller}
 import akka.stream.ActorMaterializer
 import cats.syntax.show._
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.data._
-import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.device_registry.db._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.MessageBusPublisher._
-import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted, DeviceSeen}
-import org.genivi.sota.rest.Validation._
-import org.genivi.sota.http.AuthDirectives.AuthScope
+import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted}
+import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.http.UuidDirectives.extractUuid
 import slick.driver.MySQLDriver.api._
+import org.genivi.sota.rest.Validation._
 
 import scala.concurrent.ExecutionContext
 
-class DevicesResource(namespaceExtractor: Directive1[Namespace],
-                      authDirective: AuthScope => Directive0,
+class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
                       messageBus: MessageBusPublisher,
                       deviceNamespaceAuthorizer: Directive1[Uuid])
                      (implicit system: ActorSystem,
@@ -41,6 +38,10 @@ class DevicesResource(namespaceExtractor: Directive1[Namespace],
   import Device._
   import Directives._
   import StatusCodes._
+
+  val extractPackageId: Directive1[PackageId] = (refined[PackageId.ValidName](Slash ~ Segment)
+                                                & refined[PackageId.ValidVersion](Slash ~ Segment))
+                                                .as(PackageId.apply _)
 
   def searchDevice(ns: Namespace): Route =
     parameters(('regex.as[String Refined Regex].?,
@@ -94,44 +95,63 @@ class DevicesResource(namespaceExtractor: Directive1[Namespace],
     complete(f)
   }
 
-  implicit val NamespaceUnmarshaller: FromStringUnmarshaller[Namespace] = Unmarshaller.strict(Namespace.apply)
+  def updateInstalledSoftware(device: Uuid): Route = {
+    entity(as[Seq[PackageId]]) { installedSoftware =>
+      val f = db.run(InstalledPackages.setInstalled(device, installedSoftware.toSet))
+      onSuccess(f) { complete(StatusCodes.NoContent) }
+    }
+  }
 
-  def api: Route =
+  def getDevicesCount(pkg: PackageId, ns: Namespace): Route =
+    complete(db.run(InstalledPackages.getDevicesCount(pkg, ns)))
+
+  def listPackagesOnDevice(device: Uuid): Route =
+    complete(db.run(InstalledPackages.installedOn(device)))
+
+  def api: Route = namespaceExtractor { ns =>
+    val scope = Scopes.devices(ns)
     pathPrefix("devices") {
-      namespaceExtractor { ns =>
-        (post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
-        (get & pathEnd) { searchDevice(ns) } ~
-        deviceNamespaceAuthorizer { uuid =>
-          (put & entity(as[DeviceT]) & pathEnd) { device =>
-            updateDevice(ns, uuid, device)
-          } ~
-          (delete & pathEnd) {
-            deleteDevice(ns, uuid)
-          }
-        }
-      } ~
+      (scope.post & entity(as[DeviceT]) & pathEndOrSingleSlash) { device => createDevice(ns, device) } ~
+      (scope.get & pathEnd) { searchDevice(ns) } ~
       deviceNamespaceAuthorizer { uuid =>
-        (post & path("ping")) {
+        (scope.put & entity(as[DeviceT]) & pathEnd) { device =>
+          updateDevice(ns, uuid, device)
+        } ~
+        (scope.delete & pathEnd) {
+          deleteDevice(ns, uuid)
+        } ~
+        (scope.post & path("ping")) {
           updateLastSeen(uuid)
         } ~
-        (get & pathEnd) {
+        (scope.get & pathEnd) {
           fetchDevice(uuid)
         } ~
-        (get & path("groups") & pathEnd) {
+        (scope.get & path("groups") & pathEnd) {
           getGroupsForDevice(uuid)
+        } ~
+        (path("packages") & scope.get) {
+          listPackagesOnDevice(uuid)
         }
       }
+    } ~
+    (scope.get & pathPrefix("device_count") & extractPackageId) { pkg =>
+      getDevicesCount(pkg, ns)
     }
+  }
 
-  def mydeviceRoutes: Route =
+  def mydeviceRoutes: Route = namespaceExtractor { authedNs =>
     (pathPrefix("mydevice") & extractUuid) { uuid =>
-      (post & path("ping") & authDirective(s"ota-core.${uuid.show}.write")) {
+      (post & path("ping") & authedNs.oauthScope(s"ota-core.${uuid.show}.write")) {
         updateLastSeen(uuid)
       } ~
-      (get & pathEnd & authDirective(s"ota-core.${uuid.show}.read")) {
+      (get & pathEnd & authedNs.oauthScopeReadonly(s"ota-core.${uuid.show}.read")) {
         fetchDevice(uuid)
+      } ~
+      (put & path("packages") & authedNs.oauthScope(s"ota-core.{device.show}.write")) {
+        updateInstalledSoftware(uuid)
       }
     }
+  }
 
   /**
    * Base API route for devices.

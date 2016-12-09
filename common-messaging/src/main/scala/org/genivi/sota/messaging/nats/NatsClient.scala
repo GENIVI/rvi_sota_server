@@ -2,7 +2,7 @@ package org.genivi.sota.messaging.nats
 
 import java.util.Properties
 
-import akka.{Done, NotUsed}
+import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.actor.Status.Failure
 import akka.stream.OverflowStrategy

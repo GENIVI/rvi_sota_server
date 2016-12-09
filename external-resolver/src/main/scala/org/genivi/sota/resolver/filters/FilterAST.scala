@@ -7,13 +7,11 @@ package org.genivi.sota.resolver.filters
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.{Regex, regexValidate}
 import org.genivi.sota.data.{Device, PackageId}
-import org.genivi.sota.data.Device.showDevice
 import cats.syntax.show._
 
 import scala.util.parsing.combinator.syntactical.StandardTokenParsers
 import scala.util.parsing.combinator.{ImplicitConversions, PackratParsers}
 import org.genivi.sota.resolver.components.Component
-import org.genivi.sota.resolver.db.Package
 
 
 sealed trait FilterAST

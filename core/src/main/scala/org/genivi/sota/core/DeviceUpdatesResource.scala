@@ -24,16 +24,13 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 import org.genivi.sota.core.transfer.DeviceUpdates
-import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec}
-import org.genivi.sota.core.data.client.PendingUpdateRequest
-import org.genivi.sota.core.data.UpdateStatus
+import org.genivi.sota.core.data.UpdateSpec
 import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, PackageDownloadProcess}
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 
-import scala.language.implicitConversions
 import slick.driver.MySQLDriver.api.Database
 import cats.syntax.show.toShowOps
-import org.genivi.sota.http.AuthDirectives.AuthScope
+import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.core.data.client.PendingUpdateRequest._
 import UpdateSpec._
@@ -44,17 +41,14 @@ import scala.concurrent.Future
 class DeviceUpdatesResource(db: Database,
                             resolverClient: ExternalResolverClient,
                             deviceRegistry: DeviceRegistry,
-                            authNamespace: Directive1[Namespace],
-                            authDirective: AuthScope => Directive0,
+                            authNamespace: Directive1[AuthedNamespaceScope],
                             messageBus: MessageBusPublisher)
                            (implicit system: ActorSystem, mat: ActorMaterializer,
                             connectivity: Connectivity = DefaultConnectivity) {
 
-  import shapeless._
   import Directives._
   import org.genivi.sota.http.UuidDirectives._
   import org.genivi.sota.marshalling.CirceMarshallingSupport._
-  import Device._
   import org.genivi.sota.http.ErrorHandler._
 
   implicit val ec = system.dispatcher
@@ -82,13 +76,17 @@ class DeviceUpdatesResource(db: Database,
     * An ota client PUT a list of packages to record they're installed on a device, overwriting any previous such list.
     */
   def updateInstalledPackages(id: Uuid): Route = {
-    entity(as[List[PackageId]]) { ids =>
+    (entity(as[List[PackageId]]) & extractLog) { (ids, log) =>
       val f = DeviceUpdates
         .update(id, ids, resolverClient)
         .flatMap { _ =>
           //ignore failures here as the actual work has been done in update()
-          deviceRegistry.updateLastSeen(id)
-          .recover{case e => Future.successful()}
+          deviceRegistry
+            .updateLastSeen(id)
+            .recover { case e =>
+              log.error(e, "Could not update device last seen")
+              Future.successful(())
+            }
         }
         .map(_ => OK)
 
@@ -233,7 +231,7 @@ class DeviceUpdatesResource(db: Database,
 
   private[this] def failNamespaceRejection(msg: String): Rejection = AuthorizationFailedRejection
 
-  def authDeviceNamespace(deviceId: Uuid) : Directive1[Namespace] =
+  def authDeviceNamespace(deviceId: Uuid) : Directive1[AuthedNamespaceScope] =
     authNamespace flatMap { ns =>
       import scala.util.{Success, Failure}
       val f = deviceRegistry.fetchDevice(ns, deviceId)
@@ -244,22 +242,22 @@ class DeviceUpdatesResource(db: Database,
       }
     }
 
-  val routeDeprecated = handleErrors {
+  val routeDeprecated = handleErrors { authNamespace { authedNs =>
     // vehicle_updates is deprecated and will be removed sometime in the future
     (pathPrefix("api" / "v1") & ( pathPrefix("vehicle_updates") | pathPrefix("device_updates"))
                               & extractUuid) { device =>
       get {
         pathEnd {
-          authDirective(s"ota-core.${device.show}.read") {
+          authedNs.oauthScopeReadonly(s"ota-core.${device.show}.read") {
             logDeviceSeen(device) { pendingPackages(device) }
           }
         } ~
-        (path("queued") & authDirective(s"ota-core.${device.show}.read")) {
+        (path("queued") & authedNs.oauthScopeReadonly(s"ota-core.${device.show}.read")) {
           // Backward compatible with sota_client v0.2.17
           logDeviceSeen(device) { pendingPackages(device) }
         } ~
         (extractRefinedUuid & path("download")) { updateId =>
-          authDirective(s"ota-core.${device.show}.read") {
+          authedNs.oauthScopeReadonly(s"ota-core.${device.show}.read") {
             downloadPackage(device, updateId)
           }
         } ~
@@ -272,12 +270,12 @@ class DeviceUpdatesResource(db: Database,
       } ~
       put {
         path("installed") {
-          authDirective(s"ota-core.${device.show}.write") {
+          authedNs.oauthScope(s"ota-core.${device.show}.write") {
             updateInstalledPackages(device)
           }
         } ~
         path("system_info") {
-          authDirective(s"ota-core.${device.show}.write") {
+          authedNs.oauthScope(s"ota-core.${device.show}.write") {
             updateSystemInfo(device)
           }
         } ~
@@ -288,7 +286,7 @@ class DeviceUpdatesResource(db: Database,
         }
       } ~
       post {
-        (extractRefinedUuid & pathEnd & authDirective(s"ota-core.${device.show}.write")) { reportInstall } ~
+        (extractRefinedUuid & pathEnd & authedNs.oauthScope(s"ota-core.${device.show}.write")) { reportInstall } ~
         authDeviceNamespace(device) { ns =>
           pathEnd { queueDeviceUpdate(ns, device) } ~
           path("sync") { sync(device) }
@@ -299,38 +297,39 @@ class DeviceUpdatesResource(db: Database,
           path("blocked") { deleteBlockedInstall(device) }
         }
       }
-    }
+    }}
   }
 
   val apiRoutes = handleErrors {
     (pathPrefix("api" / "v1" / "device_updates") & extractUuid) { device =>
       authDeviceNamespace(device) { ns =>
-        get {
+        val scope = Scopes.devices(ns)
+        scope.get {
           path("queued") { pendingPackages(device) } ~
           path("blocked") { getBlockedInstall(device) } ~
           path("results") { results(device) } ~
           (extractRefinedUuid & path("results")) { updateId => resultsForUpdate(device, updateId) }
         } ~
-        put {
+        scope.put {
           path("blocked") { setBlockedInstall(device) } ~
           path("order") { setInstallOrder(device) } ~
           (extractRefinedUuid & path("cancelupdate")) { updateId => cancelUpdate(device, updateId) }
         } ~
-        post {
+        scope.post {
           pathEnd { queueDeviceUpdate(ns, device) } ~
           path("sync") { sync(device) }
         } ~
-        delete {
+        scope.delete {
           path("blocked") { deleteBlockedInstall(device) }
         }
       }
     }
   }
 
-  val mydeviceRoutes = handleErrors {
+  val mydeviceRoutes = handleErrors { authNamespace { authedNs =>
     (pathPrefix("api" / "v1" / "mydevice") & extractUuid) { device =>
       pathPrefix("updates") {
-        (get & authDirective(s"ota-core.${device.show}.read")) {
+        (get & authedNs.oauthScopeReadonly(s"ota-core.${device.show}.read")) {
           pathEnd {
             logDeviceSeen(device) { pendingPackages(device) }
           } ~
@@ -338,13 +337,13 @@ class DeviceUpdatesResource(db: Database,
             downloadPackage(device, updateId)
           }
         } ~
-        (post & authDirective(s"ota-core.${device.show}.write")) {
+        (post & authedNs.oauthScope(s"ota-core.${device.show}.write")) {
           (extractUuid & pathEnd ) { updateId =>
             reportUpdateResult(device, updateId)
           }
         }
       } ~
-      (put & authDirective(s"ota-core.${device.show}.write")) {
+      (put & authedNs.oauthScope(s"ota-core.${device.show}.write")) {
         path("installed") {
           updateInstalledPackages(device)
         } ~
@@ -352,7 +351,7 @@ class DeviceUpdatesResource(db: Database,
           updateSystemInfo(device)
         }
       }
-    }
+    }}
   }
 
   val route = apiRoutes ~ mydeviceRoutes ~ routeDeprecated

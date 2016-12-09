@@ -9,21 +9,19 @@ import org.genivi.sota.data.GroupInfo.Name
 import org.genivi.sota.data.{Namespace, Uuid}
 import org.genivi.sota.device_registry.common.CreateGroupRequest
 import org.genivi.sota.device_registry.db._
+import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.http.UuidDirectives.{allowExtractor, extractUuid}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
-import slick.driver.MySQLDriver.api._
 import org.slf4j.LoggerFactory
+import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-class GroupsResource(namespaceExtractor: Directive1[Namespace], deviceNamespaceAuthorizer: Directive1[Uuid])
+class GroupsResource(namespaceExtractor: Directive1[AuthedNamespaceScope], deviceNamespaceAuthorizer: Directive1[Uuid])
                     (implicit ec: ExecutionContext, db: Database)
   extends Directives {
-
-  import SystemInfoRepository._
-  import JsonMatcher._
 
   private val extractGroupId = allowExtractor(namespaceExtractor, extractUuid, groupAllowed)
 
@@ -88,41 +86,43 @@ class GroupsResource(namespaceExtractor: Directive1[Namespace], deviceNamespaceA
     complete(db.run(GroupInfoRepository.discardedAttrs(groupId)))
 
   val route: Route =
-    pathPrefix("device_groups") {
-      namespaceExtractor { ns =>
-        (post & path("from_attributes") & extractCreateGroupRequest) { request =>
-          createGroupFromDevices(request, ns)
-        } ~
-        (post & extractUuid & pathEnd & parameter('groupName.as[Name])) { (groupId, groupName) =>
-          entity(as[Json]) { body => createGroupInfo(groupId, groupName, ns, body) }
-        } ~
-        (get & pathEnd) {
-          listGroups(ns)
-        }
+    (pathPrefix("device_groups") & namespaceExtractor) { ns =>
+      val scope = Scopes.devices(ns)
+      (scope.post & path("from_attributes") & extractCreateGroupRequest) { request =>
+        createGroupFromDevices(request, ns)
       } ~
-      (get & extractGroupId & path("devices") ) { groupId =>
+      parameter('groupName.as[Name]) { groupName =>
+        (scope.post & path("group_info") & entity(as[Json])) { body =>
+          createGroupInfo(Uuid.generate(), groupName, ns, body)
+        } ~
+        (scope.post & pathEnd) { createGroupInfo(Uuid.generate(), groupName, ns, Json.Null) }
+      } ~
+      (scope.get & pathEnd) {
+        listGroups(ns)
+      } ~
+      (scope.get & extractGroupId & path("devices") ) { groupId =>
         getDevicesInGroup(groupId)
       } ~
       extractGroupId { groupId =>
-        (post & pathPrefix("devices") & deviceNamespaceAuthorizer) { deviceId =>
+        (scope.post & pathPrefix("devices") & deviceNamespaceAuthorizer) { deviceId =>
           addDeviceToGroup(groupId, deviceId)
         } ~
-        (delete & pathPrefix("devices") & deviceNamespaceAuthorizer) { deviceId =>
+        (scope.delete & pathPrefix("devices") & deviceNamespaceAuthorizer) { deviceId =>
           removeDeviceFromGroup(groupId, deviceId)
         } ~
-        (put & path("rename") & parameter('groupName.as[Name])) { groupName =>
+        (scope.put & path("rename") & parameter('groupName.as[Name])) { groupName =>
           renameGroup(groupId, groupName)
         } ~
-        (get & pathEnd) {
+        (scope.get & pathEnd) {
           fetchGroupInfo(groupId)
         } ~
-        (put & parameter('groupName.as[Name])) { groupName =>
+        (scope.put & pathPrefix("group_info") & parameter('groupName.as[Name])) { groupName =>
           entity(as[Json]) { body => updateGroupInfo(groupId, groupName, body) }
         } ~
-        (get & path("count") & pathEnd) {
+        (scope.get & path("count") & pathEnd) {
           countDevices(groupId)
         } ~
-        (get & path("discarded_attrs") & pathEnd) {
+        (scope.get & path("discarded_attrs") & pathEnd) {
           getDiscardedAttrs(groupId)
         }
       }

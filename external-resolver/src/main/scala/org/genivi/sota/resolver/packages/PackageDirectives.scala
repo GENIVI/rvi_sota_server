@@ -12,11 +12,12 @@ import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.data.Namespace._
 import org.genivi.sota.data.{Namespace, PackageId}
+import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.ErrorHandler
+import org.genivi.sota.http.Scopes
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.common.RefinementDirectives._
-import org.genivi.sota.resolver.db.{DeviceRepository, Package, PackageFilterRepository, PackageRepository}
+import org.genivi.sota.resolver.db.{DeviceRepository, Package, PackageFilterRepository, PackageRepository, PackageStat}
 import org.genivi.sota.resolver.filters.Filter
 import akka.http.scaladsl.unmarshalling.{FromStringUnmarshaller, Unmarshaller}
 import org.genivi.sota.common.DeviceRegistry
@@ -27,7 +28,7 @@ import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api._
 
 
-class PackageDirectives(namespaceExtractor: Directive1[Namespace], deviceRegistryClient: DeviceRegistry)
+class PackageDirectives(namespaceExtractor: Directive1[AuthedNamespaceScope], deviceRegistryClient: DeviceRegistry)
                        (implicit system: ActorSystem,
                         db: Database, mat:
                         ActorMaterializer,
@@ -42,15 +43,19 @@ class PackageDirectives(namespaceExtractor: Directive1[Namespace], deviceRegistr
       StatusCodes.NoContent
     }
 
-  def getFilters: StandardRoute =
-    complete(db.run(PackageFilterRepository.list).map(_.toResponse))
+  def getFilters(ns: Namespace): StandardRoute =
+    complete(db.run(PackageFilterRepository.list(ns)).map(_.toResponse))
 
   def getPackage(ns: Namespace, id: PackageId): Route =
     complete(db.run(PackageRepository.exists(ns, id)))
 
-  def addPackage(id: PackageId): Route =
+  def addPackage(ns: Namespace, id: PackageId): Route =
     entity(as[Package.Metadata]) { metadata =>
-      complete(db.run(PackageRepository.add(id, metadata)))
+      if (metadata.namespace == ns) {
+        complete(db.run(PackageRepository.add(id, metadata)))
+      } else {
+        reject(AuthorizationFailedRejection)
+      }
     }
 
   def getPackageFilters(ns: Namespace, id: PackageId): Route =
@@ -62,16 +67,18 @@ class PackageDirectives(namespaceExtractor: Directive1[Namespace], deviceRegistr
   def deletePackageFilter(ns: Namespace, id: PackageId, fname: String Refined Filter.ValidName): Route =
     complete(db.run(PackageFilterRepository.deletePackageFilter(ns, id, fname)))
 
-  def packageFilterApi(ns: Namespace, id: PackageId): Route =
-      (get & pathEnd) {
-        getPackageFilters(ns, id)
-      } ~
-      (put & refinedFilterName & pathEnd) { fname =>
-        addPackageFilter(ns, id, fname)
-      } ~
-      (delete & refinedFilterName & pathEnd) { fname =>
-        deletePackageFilter(ns, id, fname)
+  def packageFilterApi(ns: AuthedNamespaceScope, id: PackageId): Route = {
+    val scope = Scopes.resolver(ns)
+    (scope.get & pathEnd) {
+      getPackageFilters(ns, id)
+    } ~
+    (scope.put & refinedFilterName & pathEnd) { fname =>
+      addPackageFilter(ns, id, fname)
+    } ~
+    (scope.delete & refinedFilterName & pathEnd) { fname =>
+      deletePackageFilter(ns, id, fname)
     }
+  }
 
   def findAffected(ns: Namespace): Route = {
     entity(as[Set[PackageId]]) { packageIds =>
@@ -84,28 +91,43 @@ class PackageDirectives(namespaceExtractor: Directive1[Namespace], deviceRegistr
     }
   }
 
+  def getPackageStats(ns: Namespace, name: PackageId.Name): Route = {
+    val f = deviceRegistryClient.listNamespace(ns).flatMap { nsDevices =>
+      val uuids = nsDevices.map(_.uuid).toSet
+      DeviceRepository.allDevicesWithPackageByName(ns, name, uuids)
+        .map { _.map { case (version, count) => PackageStat(version, count) } }
+    }
+    complete(f)
+  }
+
   /**
    * API route for packages.
    *
    * @return      Route object containing route for adding packages
    */
-  def route: Route = ErrorHandler.handleErrors {
+  def route: Route = (ErrorHandler.handleErrors & namespaceExtractor) { ns =>
+    val scope = Scopes.resolver(ns)
     pathPrefix("packages") {
-      (path("affected") & namespaceExtractor) { ns =>
-        post { findAffected(ns) }
+      path("affected") {
+        scope.post { findAffected(ns) }
       } ~
-      (get & path("filter")) {
-        getFilters
+      (scope.get & path("filter")) {
+        getFilters(ns)
       } ~
-        ((get | put | delete) & refinedPackageId) { id =>
-          (get & namespaceExtractor & pathEnd) { ns =>
-            getPackage(ns, id)
-          } ~
-          (put & pathEnd) {
-            addPackage(id)
-          } ~
-          (namespaceExtractor & pathPrefix("filter")) { ns => packageFilterApi(ns, id) }
+      ((scope.get | scope.put | scope.delete) & refinedPackageId) { id =>
+        (scope.get & pathEnd) {
+          getPackage(ns, id)
+        } ~
+        (scope.put & pathEnd) {
+          addPackage(ns, id)
+        } ~
+        pathPrefix("filter") { packageFilterApi(ns, id) }
         }
+    } ~
+    pathPrefix("package_stats") {
+      (scope.checkReadonly & refinedPackageName) { name =>
+        getPackageStats(ns, name)
+      }
     }
   }
 }

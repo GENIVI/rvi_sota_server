@@ -13,7 +13,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 import akka.testkit.TestKit
 import cats.data.Xor
-import org.genivi.sota.data.{Device, Uuid}
+import org.genivi.sota.data.{Namespace, Uuid}
 import org.genivi.sota.messaging.Messages.DeviceSeen
 import org.genivi.sota.messaging.kafka.KafkaClient
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
@@ -41,13 +41,13 @@ class KafkaClientSpec extends TestKit(ActorSystem("KafkaClientSpec"))
   }
 
   test("can send an event to bus") {
-    val testMsg = DeviceSeen(Uuid.generate(), Instant.now)
+    val testMsg = DeviceSeen(Namespace("ns"), Uuid.generate(), Instant.now)
     val f = publisher.publish(testMsg).map(_ => 0)
     f.futureValue shouldBe 0
   }
 
   test("can send-receive events from bus") {
-    val testMsg = DeviceSeen(Uuid.generate(), Instant.now)
+    val testMsg = DeviceSeen(Namespace("ns"), Uuid.generate(), Instant.now)
 
     val source = KafkaClient.source[DeviceSeen](system, system.settings.config) match {
       case Xor.Right(s) => s
@@ -65,7 +65,7 @@ class KafkaClientSpec extends TestKit(ActorSystem("KafkaClientSpec"))
   }
 
   test("can send-receive and commit events from bus") {
-    val testMsg = DeviceSeen(Uuid.generate(), Instant.now)
+    val testMsg = DeviceSeen(Namespace("ns"), Uuid.generate(), Instant.now)
 
     val source = KafkaClient.commitableSource[DeviceSeen](system.settings.config) match {
       case Xor.Right(s) => s

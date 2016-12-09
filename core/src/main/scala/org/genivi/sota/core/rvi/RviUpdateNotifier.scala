@@ -4,12 +4,11 @@
  */
 package org.genivi.sota.core.rvi
 
-import akka.event.LoggingAdapter
 import org.genivi.sota.core.data.UpdateSpec
 import org.genivi.sota.core.resolver.Connectivity
 import org.genivi.sota.core.transfer._
 import java.time.Instant
-import org.genivi.sota.data.{Device, Uuid}
+import org.genivi.sota.data.Uuid
 import scala.concurrent.{ExecutionContext, Future}
 
 
@@ -18,8 +17,6 @@ import scala.concurrent.{ExecutionContext, Future}
  * can/should be updated.
  */
 class RviUpdateNotifier(services: ServerServices) extends UpdateNotifier {
-
-  import io.circe.generic.auto._
 
   override def notifyDevice(device: Uuid, update: UpdateSpec)
                             (implicit connectivity: Connectivity, ec: ExecutionContext): Future[Int] = {

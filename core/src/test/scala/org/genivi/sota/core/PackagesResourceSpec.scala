@@ -8,7 +8,6 @@ package org.genivi.sota.core
 import java.io.File
 import java.net.URI
 
-import cats.syntax.show._
 import org.genivi.sota.data.PackageId._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.generic.auto._
@@ -22,11 +21,13 @@ import cats.data.Xor
 import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.core.db.{BlacklistedPackages, Packages}
+import org.genivi.sota.core.resolver.DefaultConnectivity
 import org.genivi.sota.core.storage.PackageStorage.PackageStorageOp
 import org.genivi.sota.core.storage.LocalPackageStore
+import org.genivi.sota.core.transfer.DefaultUpdateNotifier
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
-import org.genivi.sota.data.{Namespace, PackageId}
+import org.genivi.sota.data.{Namespace, Namespaces, PackageId}
 import org.genivi.sota.messaging.MessageBusPublisher
 
 import scala.concurrent.Future
@@ -44,9 +45,13 @@ class PackagesResourceSpec extends FunSuite
 
   implicit val _db = db
 
+  val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
   val resolver = new FakeExternalResolver()
 
-  val service = new PackagesResource(resolver, db, MessageBusPublisher.ignore, defaultNamespaceExtractor) {
+  implicit val connectivity = DefaultConnectivity
+
+  lazy val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
+  val service = new PackagesResource(resolver, updateService, db, MessageBusPublisher.ignore, defaultNamespaceExtractor) {
     override val packageStorageOp: PackageStorageOp = new LocalPackageStore().store _
   }
 

@@ -80,7 +80,6 @@ object client extends Dynamic {
   final case class Request(method: String, params: Json, id: Int) {
 
     import shapeless._
-    import record._
     import syntax.singleton._
     import io.circe.generic.auto._
 

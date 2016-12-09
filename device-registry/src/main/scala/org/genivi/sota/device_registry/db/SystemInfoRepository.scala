@@ -74,7 +74,6 @@ object SystemInfoRepository extends SlickJsonHelper {
         fold[DBIO[SystemInfo]](DBIO.failed(Errors.MissingSystemInfo))(DBIO.successful))
 
   def findByUuid(uuid: Uuid)(implicit ec: ExecutionContext): DBIO[SystemInfoType] = {
-    import org.genivi.sota.db.Operators._
     val dbIO = for {
       _ <- DeviceRepository.findByUuid(uuid)
       p <- systemInfos

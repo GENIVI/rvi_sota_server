@@ -11,13 +11,13 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.refineV
 import eu.timepit.refined.string.Regex
 import org.genivi.sota.common.DeviceRegistry
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 import org.genivi.sota.db.Operators._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.components.{Component, ComponentRepository}
-import org.genivi.sota.resolver.firmware.Firmware
 import org.genivi.sota.resolver.db.PackageIdDatabaseConversions._
 import org.genivi.sota.resolver.filters._
+import org.genivi.sota.resolver.firmware.Firmware
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -259,6 +259,19 @@ object DeviceRepository {
             acc + (device -> all)
           }
         }
+
+    db.run(dbDevicesIO)
+  }
+
+  def allDevicesWithPackageByName(namespace: Namespace, name: PackageId.Name, devices: Set[Uuid])
+  (implicit db: Database, ec: ExecutionContext): Future[Seq[(PackageId.Version, Int)]] = {
+    val dbDevicesIO = installedPackages
+      .join(PackageRepository.withNameQuery(namespace, name))
+      .on(_.packageUuid === _.uuid)
+      .groupBy(_._2.version)
+      .map { case (version, installedPkg) => (version, installedPkg.length) }
+      .union(ForeignPackages.installedByNameQuery(name, devices))
+      .result
 
     db.run(dbDevicesIO)
   }

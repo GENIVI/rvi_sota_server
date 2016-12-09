@@ -8,14 +8,13 @@ import org.genivi.sota.core.db.BlacklistedPackages
 import akka.actor.ActorSystem
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import org.genivi.sota.data.Namespace
-import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import slick.driver.MySQLDriver.api._
 import Directives._
 import org.genivi.sota.core.resolver.ExternalResolverClient
-import org.genivi.sota.http.ErrorHandler
+import org.genivi.sota.http.{AuthedNamespaceScope, ErrorHandler, Scopes}
 
-class ImpactResource(namespaceExtractor: Directive1[Namespace],
+class ImpactResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
                      resolverClient: ExternalResolverClient)
                     (implicit db: Database, system: ActorSystem) {
   import system.dispatcher
@@ -27,8 +26,9 @@ class ImpactResource(namespaceExtractor: Directive1[Namespace],
     complete(f)
   }
 
-  val route = (ErrorHandler.handleErrors & pathPrefix("impact"))  {
-    (get & path("blacklist") & namespaceExtractor) { ns =>
+  val route = (ErrorHandler.handleErrors & pathPrefix("impact") & namespaceExtractor)  { ns =>
+    val scope = Scopes.packages(ns)
+    (scope.get & path("blacklist")) {
       runImpactAnalysis(ns)
     }
   }

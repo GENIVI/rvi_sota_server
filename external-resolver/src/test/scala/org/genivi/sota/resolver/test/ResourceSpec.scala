@@ -4,6 +4,8 @@
  */
 package org.genivi.sota.resolver.test
 
+import java.time.Instant
+
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
@@ -17,7 +19,6 @@ import org.scalatest.{BeforeAndAfterAll, PropSpec, Suite, WordSpec}
 import Device._
 import cats.syntax.show._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 
 trait ResourceSpec extends
   LongRequestTimeout
@@ -40,7 +41,8 @@ trait ResourceSpec extends
 
   // Route
   lazy implicit val route: Route =
-    new Routing(NamespaceDirectives.defaultNamespaceExtractor, deviceRegistry).route ~
+    new Routing(NamespaceDirectives.defaultNamespaceExtractor,
+                deviceRegistry).route ~
     new FakeDeviceRegistryRoutes(deviceRegistry).route
 }
 
@@ -66,7 +68,8 @@ class FakeDeviceRegistryRoutes(deviceRegistry: FakeDeviceRegistry) {
       deviceRegistry.addDevice(Device(Namespaces.defaultNs,
                                       uuid,
                                       DeviceName(s"name-${uuid.show}"),
-                                      Option(DeviceId(uuid.show))))
+                                      Option(DeviceId(uuid.show)),
+                                     createdAt = Instant.now()))
       complete(StatusCodes.OK -> "")
     } ~
     get {

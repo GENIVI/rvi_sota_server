@@ -13,12 +13,12 @@ import java.time.Instant
 
 import org.genivi.sota.core.data.UpdateStatus.UpdateStatus
 
-import scala.language.implicitConversions
 import org.genivi.sota.data.Interval
 import org.genivi.sota.rest.{GenericArgsDecoder, GenericResponseEncoder}
-import shapeless.{::, HNil}
 
-case class PendingUpdateRequest(requestId: UUID, packageId: PackageId, installPos: Int,
+case class PendingUpdateRequest(requestId: UUID,
+                                packageId: PackageId,
+                                installPos: Int,
                                 status: UpdateStatus,
                                 createdAt: Instant,
                                 updatedAt: Instant)

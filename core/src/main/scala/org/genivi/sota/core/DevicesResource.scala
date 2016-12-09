@@ -19,14 +19,12 @@ import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.resolver.{ConnectivityClient, ExternalResolverClient}
 import org.genivi.sota.data.{Device, Namespace, Uuid}
+import org.genivi.sota.http.{AuthedNamespaceScope, ErrorHandler, Scopes}
 import org.genivi.sota.http.Errors.MissingEntity
-import org.genivi.sota.http.ErrorHandler
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.languageFeature.implicitConversions
-import scala.languageFeature.postfixOps
 import scala.util.{Failure, Success}
 import slick.driver.MySQLDriver.api.Database
 import Device._
@@ -45,7 +43,7 @@ case class DeviceSearchResult(
 class DevicesResource(db: Database, client: ConnectivityClient,
                       resolverClient: ExternalResolverClient,
                       deviceRegistry: DeviceRegistry,
-                      namespaceExtractor: Directive1[Namespace])
+                      namespaceExtractor: Directive1[AuthedNamespaceScope])
                      (implicit system: ActorSystem, mat: ActorMaterializer) {
 
   import CirceMarshallingSupport._
@@ -123,13 +121,13 @@ class DevicesResource(db: Database, client: ConnectivityClient,
     }
   }
 
-
   // Use "devices_info" path
   // Deprecate "devices" path (which is used in device-registry)
   val route =
     ((pathPrefix("devices_info") | pathPrefix("devices")) & namespaceExtractor) { ns =>
-      (pathEnd & get) { search(ns) } ~
-      (get & extractUuid) { uuid =>
+      val scope = Scopes.devices(ns)
+      (pathEnd & scope.get) { search(ns) } ~
+      (scope.get & extractUuid) { uuid =>
         ErrorHandler.handleErrors {
           getDeviceWithStatus(ns, uuid)
         }

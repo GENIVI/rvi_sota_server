@@ -7,7 +7,7 @@ package org.genivi.sota.resolver.db
 
 import java.time.Instant
 
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.data.{PackageId, Uuid}
 import org.genivi.sota.db.Operators._
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.resolver.db.PackageIdDatabaseConversions._
@@ -86,5 +86,13 @@ object ForeignPackages {
   protected [db] def installedQuery(ids: Set[PackageId])
   : Query[(Rep[Uuid], LiftedPackageId), (Uuid, PackageId), Seq] = {
     inSetQuery(ids).map(row => (row.device, LiftedPackageId(row.name, row.version)))
+  }
+
+  protected [db] def installedByNameQuery(name: PackageId.Name, devices: Set[Uuid])
+  : Query[(Rep[PackageId.Version], Rep[Int]), (PackageId.Version, Int), Seq] = {
+    foreignPackages
+      .filter { p => p.name === name && p.device.inSet(devices) }
+      .groupBy(_.version)
+      .map { case (version, installedPkg) => (version, installedPkg.length) }
   }
 }

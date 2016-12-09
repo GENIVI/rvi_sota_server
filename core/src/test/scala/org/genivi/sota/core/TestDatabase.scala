@@ -4,10 +4,8 @@
   */
 package org.genivi.sota.core
 
-import akka.http.scaladsl.util.FastFuture
-import com.typesafe.config.{Config, ConfigFactory}
-import org.genivi.sota.common.DeviceRegistry
-import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateSpec}
+import com.typesafe.config.ConfigFactory
+import org.genivi.sota.core.data.{Package, UpdateSpec}
 import org.genivi.sota.core.db.{Packages, UpdateRequests, UpdateSpecs}
 import org.genivi.sota.data._
 import org.genivi.sota.http.NamespaceDirectives
@@ -18,7 +16,6 @@ import slick.driver.MySQLDriver.api._
 
 object NamespaceSpec {
   import eu.timepit.refined.auto._
-  import eu.timepit.refined.string._
 
   lazy val defaultNamespace: Namespace = {
     val config = ConfigFactory.load()

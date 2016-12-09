@@ -8,9 +8,10 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.Json
 import java.time.Instant
-import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
-import scala.concurrent.{ExecutionContext, Future}
 
+import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+
+import scala.concurrent.{ExecutionContext, Future}
 import Device._
 
 
@@ -37,10 +38,6 @@ trait DeviceRegistry {
     (namespace: Namespace, uuid: Uuid)
     (implicit ec: ExecutionContext): Future[Seq[Uuid]]
 
-  def fetchGroup
-    (uuid: Uuid)
-    (implicit ec: ExecutionContext): Future[Seq[Uuid]]
-
   def fetchByDeviceId
     (ns: Namespace, deviceId: DeviceId)
     (implicit ec: ExecutionContext): Future[Device]
@@ -52,4 +49,7 @@ trait DeviceRegistry {
   def updateSystemInfo
     (uuid: Uuid, json: Json)
     (implicit ec: ExecutionContext): Future[Unit]
+
+  def setInstalledPackages
+    (device: Uuid, packages: Seq[PackageId])(implicit ec: ExecutionContext) : Future[Unit]
 }

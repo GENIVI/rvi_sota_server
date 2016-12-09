@@ -14,8 +14,7 @@ import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
-import Device._
+import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 import akka.http.scaladsl.marshalling.Marshal
 import cats.syntax.show._
 import org.genivi.sota.http.NamespaceDirectives.nsHeader
@@ -115,7 +114,6 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
     extends ExternalResolverClient {
 
   import CirceMarshallingSupport._
-  import io.circe._
   import system.dispatcher
   import io.circe.generic.auto._
   import akka.http.scaladsl.model.headers._

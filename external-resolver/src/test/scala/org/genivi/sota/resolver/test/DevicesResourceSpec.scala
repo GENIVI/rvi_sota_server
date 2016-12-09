@@ -4,20 +4,20 @@
  */
 package org.genivi.sota.resolver.test
 
+import java.time.Instant
+
 import akka.http.scaladsl.model.{StatusCodes, Uri}
-import eu.timepit.refined.refineV
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.data._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.resolver.common.Errors.Codes
 import org.genivi.sota.resolver.components.Component
-import akka.http.scaladsl.testkit.RouteTestTimeout
-import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.resolver.test.generators.PackageGenerators
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 import org.scalacheck._
 import cats.syntax.show._
+import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.resolver.db.Package
 import org.scalatest.concurrent.ScalaFutures
 
@@ -165,6 +165,8 @@ class DevicesResourceWordSpec extends ResourceWordSpec with Namespaces {
   val devices = "devices"
 
   val uuid = Uuid(Refined.unsafeApply("1f22860a-3ea2-491f-9042-37c98c2d51cd"))
+
+  deviceRegistry.addDevice(Device(Namespaces.defaultNs, uuid, DeviceName("name"), createdAt = Instant.now()))
 
   "Vin resource" should {
     "install a package on a VIN on PUT request to /vehicles/:vin/package/:packageName/:packageVersion" in {

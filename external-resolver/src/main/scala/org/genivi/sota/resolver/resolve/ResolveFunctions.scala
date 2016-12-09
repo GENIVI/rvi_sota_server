@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.resolver.resolve
 
-import org.genivi.sota.data.{Device, PackageId, Uuid}
+import org.genivi.sota.data.{PackageId, Uuid}
 
 object ResolveFunctions {
 

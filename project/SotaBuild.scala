@@ -6,6 +6,7 @@ import sbt._
 import sbt.Keys._
 import sbtbuildinfo._
 import sbtbuildinfo.BuildInfoKeys._
+import scoverage.ScoverageKeys._
 import com.typesafe.sbt.packager.docker.DockerPlugin
 import DockerPlugin.autoImport.Docker
 import com.typesafe.sbt.packager.Keys._
@@ -25,6 +26,7 @@ object SotaBuild extends Build {
     organization := "org.genivi",
     scalaVersion := "2.11.8",
     publishArtifact in Test := false,
+    coverageOutputTeamCity := true,
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += "Sonatype Nexus Repository Manager" at "http://nexus.advancedtelematic.com:8081/content/repositories/releases",
     resolvers += "version99 Empty loggers" at "http://version99.qos.ch",
@@ -47,6 +49,18 @@ object SotaBuild extends Build {
     shellPrompt in ThisBuild := { state => Project.extract(state).currentRef.project + "> " }
   )
 
+  lazy val lintOptions = Seq(
+    scalacOptions in Compile ++= Seq(
+      "-Ywarn-unused-import",
+      "-Xfatal-warnings",
+      "-Xlint:-missing-interpolator",
+      "-Ywarn-dead-code",
+      "-Yno-adapted-args"
+    ),
+    scalacOptions in (Compile, doc) ++= Seq(
+      "-no-link-warnings"
+    )
+  )
 
   lazy val compilerSettings = Seq(
     scalacOptions in Compile ++= Seq("-encoding", "UTF-8", "-target:jvm-1.8", "-deprecation", "-feature", "-unchecked", "-Xlog-reflective-calls", "-Xlint", "-language:higherKinds"),
@@ -61,30 +75,30 @@ object SotaBuild extends Build {
 
   // the sub-projects
   lazy val common = Project(id = "sota-common", base = file("common"))
-    .settings(basicSettings ++ compilerSettings)
+    .settings(basicSettings ++ compilerSettings ++ lintOptions)
     .settings(libraryDependencies ++= Dependencies.JsonWebSecurity ++ Dependencies.Rest :+ Dependencies.AkkaHttpCirceJson :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
     .dependsOn(commonData)
     .settings(Publish.settings)
 
   lazy val commonData = Project(id = "sota-common-data", base = file("common-data"))
-    .settings(basicSettings ++ compilerSettings)
+    .settings(basicSettings ++ compilerSettings ++ lintOptions)
     .settings(libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.CommonsCodec :+ Dependencies.TypesafeConfig)
     .settings(Publish.settings)
 
   lazy val commonTest = Project(id = "sota-common-test", base = file("common-test"))
-    .settings(basicSettings ++ compilerSettings)
+    .settings(basicSettings ++ compilerSettings ++ lintOptions)
     .settings(libraryDependencies ++= Seq (Dependencies.Cats, Dependencies.Refined, Dependencies.Generex))
     .dependsOn(commonData)
     .settings(Publish.settings)
 
   lazy val commonDbTest = Project(id = "sota-common-db-test", base = file("common-db-test"))
-    .settings(basicSettings ++ compilerSettings)
+    .settings(basicSettings ++ compilerSettings ++ lintOptions)
     .settings(libraryDependencies ++= Dependencies.Slick :+ Dependencies.Flyway :+ Dependencies.ScalaTestLib)
     .dependsOn(commonData, commonTest)
     .settings(Publish.settings)
 
   lazy val externalResolver = Project(id = "sota-resolver", base = file("external-resolver"))
-    .settings( commonSettings ++ Migrations.settings ++ Seq(
+    .settings( commonSettings ++ Migrations.settings ++ lintOptions ++ Seq(
       libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.AkkaStream :+ Dependencies.AkkaStreamTestKit :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.ParserCombinators :+ Dependencies.Flyway,
       testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RandomTest"),
       testOptions in RandomTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RandomTest"),
@@ -108,7 +122,7 @@ object SotaBuild extends Build {
     .settings(mainClass in Compile := Some("org.genivi.sota.resolver.Boot"))
 
   lazy val core = Project(id = "sota-core", base = file("core"))
-    .settings( commonSettings ++ Migrations.settings ++ Seq(
+    .settings( commonSettings ++ Migrations.settings ++ lintOptions ++ Seq(
       libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Scalaz :+ Dependencies.Flyway :+ Dependencies.AmazonS3,
       testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RequiresRvi", "-l", "IntegrationTest"),
       testOptions in IntegrationTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RequiresRvi", "-n", "IntegrationTest"),
@@ -165,7 +179,7 @@ object SotaBuild extends Build {
     .settings(Publish.disable)
 
   lazy val deviceRegistry = Project(id = "sota-device_registry", base = file("device-registry"))
-    .settings(commonSettings ++ Migrations.settings ++ Seq(
+    .settings(commonSettings ++ Migrations.settings ++ lintOptions ++ Seq(
       libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Refined :+ Dependencies.Flyway,
       parallelExecution in Test := true,
       dockerExposedPorts := Seq(8083),
@@ -183,12 +197,12 @@ object SotaBuild extends Build {
     .settings(Publish.settings)
 
   lazy val commonClient = Project(id = "sota-common-client", base = file("common-client"))
-    .settings(basicSettings ++ compilerSettings)
+    .settings(basicSettings ++ compilerSettings ++ lintOptions)
     .dependsOn(common, commonData)
     .settings(Publish.settings)
 
   lazy val commonMessaging = Project(id = "sota-common-messaging", base = file("common-messaging"))
-    .settings(basicSettings ++ compilerSettings ++ Seq(
+    .settings(basicSettings ++ compilerSettings ++ lintOptions ++ Seq(
       libraryDependencies ++= Dependencies.Circe ++ Dependencies.Akka :+ Dependencies.Nats :+ Dependencies.Kafka
     ))
     .dependsOn(common, commonData)

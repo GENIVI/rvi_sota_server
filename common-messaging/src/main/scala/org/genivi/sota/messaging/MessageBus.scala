@@ -1,14 +1,11 @@
 package org.genivi.sota.messaging
 
-import akka.{Done, NotUsed}
+import akka.NotUsed
 import akka.actor.ActorSystem
-import akka.kafka.ConsumerMessage.CommittableMessage
-import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.Source
 import cats.data.Xor
 import com.typesafe.config.ConfigException.Missing
-import com.typesafe.config.{Config, ConfigException}
-import io.circe.{Decoder, Encoder}
+import com.typesafe.config.Config
 import org.genivi.sota.messaging.Messages._
 import org.genivi.sota.messaging.kafka.KafkaClient
 import org.genivi.sota.messaging.nats.NatsClient
@@ -59,8 +56,6 @@ object MessageBus {
   val DEFAULT_CLIENT_BUFFER_SIZE = 1024 // number of msgs
 
   lazy val log = LoggerFactory.getLogger(this.getClass)
-
-  import org.genivi.sota.marshalling.CirceInstances._
 
   def subscribe[T](system: ActorSystem, config: Config)
                   (implicit messageLike: MessageLike[T]): Throwable Xor Source[T, NotUsed] = {

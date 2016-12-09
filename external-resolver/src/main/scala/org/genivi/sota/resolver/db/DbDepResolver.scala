@@ -35,7 +35,6 @@ case class DeviceIdPackages(device: Uuid, vin: Option[DeviceId],
 object DbDepResolver {
   import Device._
   import cats.syntax.show._
-  import org.genivi.sota.refined.SlickRefined._
 
   type DeviceComponentRow = (Uuid, Option[PackageId.Name], Option[PackageId.Version], Option[Component.PartNumber])
 

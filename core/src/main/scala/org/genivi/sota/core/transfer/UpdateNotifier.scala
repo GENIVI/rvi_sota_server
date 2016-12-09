@@ -7,10 +7,10 @@ package org.genivi.sota.core.transfer
 import akka.event.LoggingAdapter
 import java.util.UUID
 
-import org.genivi.sota.core.data.{Package, UpdateSpec}
+import org.genivi.sota.core.data.UpdateSpec
 import org.genivi.sota.core.resolver.Connectivity
 import org.genivi.sota.core.rvi.ServerServices
-import org.genivi.sota.data.{Device, Uuid}
+import org.genivi.sota.data.Uuid
 import scala.concurrent.{ExecutionContext, Future}
 
 

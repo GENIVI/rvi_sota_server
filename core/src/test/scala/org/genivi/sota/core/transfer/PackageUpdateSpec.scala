@@ -3,35 +3,31 @@ package org.genivi.sota.core.transfer
 import akka.actor.{ActorRef, ActorSystem}
 import akka.event.Logging
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import akka.testkit.{TestKit, TestProbe}
 import eu.timepit.refined.api.Refined
-import eu.timepit.refined.refineV
 import org.genivi.sota.core.Generators.updateRequestGen
 import org.genivi.sota.core._
-import org.genivi.sota.core.data.{Package, UpdateRequest, UpdateSpec}
+import org.genivi.sota.core.data.{UpdateRequest, UpdateSpec}
 import org.genivi.sota.core.db.Packages
 import org.genivi.sota.core.jsonrpc.HttpTransport
-import org.genivi.sota.core.resolver.DefaultExternalResolverClient
 import org.genivi.sota.core.rvi._
 import org.genivi.sota.data._
 import java.time.{Duration, Instant}
 import java.util.UUID
 
 import cats.data.Xor
-import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
+import org.genivi.sota.messaging.MessageBus
 import org.scalacheck.{Arbitrary, Gen}
-import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture, whenReady}
+import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture}
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
 
 import scala.concurrent.{Await, ExecutionContext, Future}
-import slick.jdbc.JdbcBackend.Database
 
 
 /**
@@ -74,7 +70,6 @@ object SotaClient {
   import org.genivi.sota.marshalling.CirceInstances._
 
   import Arbitrary._
-  import DeviceGenerators._
   import UuidGenerator._
 
   class ClientActor(rviClient: ConnectivityClient, clientServices: ClientServices) extends Actor with ActorLogging {
@@ -167,8 +162,7 @@ object SotaClient {
 trait SotaCore {
   self: DatabaseSpec =>
 
-  import org.genivi.sota.core.rvi.{TransferProtocolActor, PackageTransferActor,
-    UpdateController, JsonRpcRviClient, RviConnectivity}
+  import org.genivi.sota.core.rvi.{TransferProtocolActor, PackageTransferActor, UpdateController, RviConnectivity}
 
   implicit val system = akka.actor.ActorSystem("PackageUpdateSpec")
   implicit val materializer = akka.stream.ActorMaterializer()
@@ -207,8 +201,6 @@ class PackageUpdateSpec extends PropSpec
   with Namespaces {
 
   import DataGenerators._
-  import DeviceGenerators._
-  import UuidGenerator._
 
   override def beforeAll() : Unit = {
     super.beforeAll()
@@ -218,7 +210,6 @@ class PackageUpdateSpec extends PropSpec
 
   def init(services: ServerServices,
            generatedData: Map[UpdateRequest, UpdateService.DeviceToPackageIds]): Future[Set[UpdateSpec]] = {
-    import slick.driver.MySQLDriver.api._
 
     implicit val _db = db
 

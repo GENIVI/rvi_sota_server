@@ -15,13 +15,14 @@ import org.genivi.sota.core.data.client._
 import org.genivi.sota.core.db.{Packages, UpdateRequests, UpdateSpecs}
 import org.genivi.sota.core.resolver.ExternalResolverClient
 import org.genivi.sota.data.{Namespace, Uuid}
+import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import slick.driver.MySQLDriver.api.Database
 
 import scala.concurrent.Future
 
 class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, updateService: UpdateService,
-                             namespaceExtractor: Directive1[Namespace])
+                             namespaceExtractor: Directive1[AuthedNamespaceScope])
                             (implicit system: ActorSystem, mat: ActorMaterializer) {
 
   import CirceMarshallingSupport._
@@ -72,23 +73,31 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
     }
   }
 
+  def cancelUpdate(updateRequestId: Uuid): Route = {
+    complete(db.run(UpdateSpecs.cancelAllUpdatesByRequest(updateRequestId)))
+  }
+
   def updateRequestAllowed(uuid: Uuid): Future[Namespace] = {
     db.run(UpdateRequests.byId(uuid.toJava).map(_.namespace))
   }
 
   val uuidExtractor = allowExtractor(namespaceExtractor, extractUuid, updateRequestAllowed)
 
-  val route = pathPrefix("update_requests") {
-    (get & uuidExtractor & pathEnd) {
+  val route = (pathPrefix("update_requests") & namespaceExtractor) { ns =>
+    val scope = Scopes.updates(ns)
+    (scope.get & uuidExtractor & pathEnd) {
       fetch
     } ~
-    (namespaceExtractor & pathEnd) { ns =>
-      get {
+    pathEnd {
+      scope.get {
         fetchUpdates(ns)
       } ~
-      post {
+      scope.post {
         createUpdate(ns)
       }
+    } ~
+    (scope.put & uuidExtractor & path("cancel")) { uuid =>
+      cancelUpdate(uuid)
     }
   }
 }

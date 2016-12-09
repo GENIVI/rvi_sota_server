@@ -38,20 +38,35 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
 
   test("GET all groups lists all groups") {
     //TODO: PRO-1182 turn this back into a property when we can delete groups
-    val groups = Gen.resize(10, arbitrary[Set[GroupInfo]]).sample.get
-    groups.foreach { case GroupInfo(id, groupName, namespace, groupInfo, discardedAttrs) =>
-      createGroupInfoOk(id, groupName, groupInfo)
+    val groups = Gen.listOfN(10, arbitrary[GroupInfo]).sample.get
+    groups.foreach { group =>
+      createGroupInfoOk(group.groupName, group.groupInfo)
     }
 
     listGroups() ~> route ~> check {
       status shouldBe OK
-      // invoking createGroupInfo routes directly disregards discarded attributes
-      responseAs[Set[GroupInfo]].map(_.copy(discardedAttrs = Json.Null)) shouldBe
-        groups.map(_.copy(discardedAttrs = Json.Null))
+      val responseGroups = responseAs[Set[GroupInfo]]
+      responseGroups.size shouldBe groups.size
+      responseGroups.foreach { group =>
+        groups.count(p => p.groupName == group.groupName && p.groupInfo == group.groupInfo) shouldBe 1
+      }
     }
   }
 
-  test("creating groups is possible") {
+  test("creating groups manually is possible") {
+    val groupName = arbitrary[GroupInfo.Name].sample.get
+    createGroup(groupName) ~> route ~> check {
+      status shouldBe Created
+      val groupId = responseAs[Uuid]
+      fetchGroupInfo(groupId) ~> route ~> check {
+        status shouldBe OK
+        responseAs[Json] shouldEqual Json.Null
+      }
+    }
+
+  }
+
+  test("creating groups from attributes is possible") {
 
     val complexJsonObj = Json.fromFields(List(("key", Json.fromString("value")), ("type", Json.fromString("fish"))))
     val complexNumericJsonObj = Json.fromFields(List(("key", Json.fromString("value")), ("type", Json.fromInt(5))))
@@ -100,9 +115,9 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
 
   test("GET group_info after POST should return what was posted.") {
     val group = genGroupInfo.sample.get
-    createGroupInfoOk(group.id, group.groupName, group.groupInfo)
+    val groupId = createGroupInfoOk(group.groupName, group.groupInfo)
 
-    fetchGroupInfo(group.id) ~> route ~> check {
+    fetchGroupInfo(groupId) ~> route ~> check {
       status shouldBe OK
       val json2: Json = responseAs[Json]
       group.groupInfo shouldEqual json2
@@ -110,18 +125,18 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
   }
 
   test("GET group_info after PUT should return what was updated.") {
-    val id = genUuid.sample.get
     val groupName = genGroupName.sample.get
+    val group = genGroupInfo.sample.get
     val json1 = simpleJsonGen.sample.get
     val json2 = simpleJsonGen.sample.get
 
-    createGroupInfoOk(id, groupName, json1)
+    val groupId = createGroupInfoOk(group.groupName, group.groupInfo)
 
-    updateGroupInfo(id, groupName, json2) ~> route ~> check {
+    updateGroupInfo(groupId, groupName, json2) ~> route ~> check {
       status shouldBe OK
     }
 
-    fetchGroupInfo(id) ~> route ~> check {
+    fetchGroupInfo(groupId) ~> route ~> check {
       status shouldBe OK
       val json3: Json = responseAs[Json]
       json2 shouldBe json3
@@ -131,16 +146,16 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
   test("Renaming groups") {
     val group = genGroupInfo.sample.get
     val newGroupName = genGroupName.sample.get
-    createGroupInfoOk(group.id, group.groupName, group.groupInfo)
+    val groupId = createGroupInfoOk(group.groupName, group.groupInfo)
 
-    renameGroup(group.id, newGroupName) ~> route ~> check {
+    renameGroup(groupId, newGroupName) ~> route ~> check {
       status shouldBe OK
     }
 
     listGroups() ~> route ~> check {
       status shouldBe OK
       val groups = responseAs[Seq[GroupInfo]]
-      groups.count(e => e.id.equals(group.id) && e.groupName.equals(newGroupName)) shouldBe 1
+      groups.count(e => e.id.equals(groupId) && e.groupName.equals(newGroupName)) shouldBe 1
     }
   }
 
@@ -181,15 +196,13 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
   test("adding devices to groups") {
     val group = genGroupInfo.sample.get
     val deviceId = createDeviceOk(genDeviceT.sample.get)
-    createGroupInfo(group.id, group.groupName, group.groupInfo) ~> route ~> check {
-      status shouldBe Created
-    }
+    val groupId = createGroupInfoOk(group.groupName, group.groupInfo)
 
-    addDeviceToGroup(group.id, deviceId) ~> route ~> check {
+    addDeviceToGroup(groupId, deviceId) ~> route ~> check {
       status shouldBe OK
     }
 
-    listDevicesInGroup(group.id) ~> route ~> check {
+    listDevicesInGroup(groupId) ~> route ~> check {
       status shouldBe OK
       val devices = responseAs[Seq[Uuid]]
       devices.contains(deviceId) shouldBe true
@@ -201,25 +214,23 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
   test("removing devices from groups") {
     val group = genGroupInfo.sample.get
     val deviceId = createDeviceOk(genDeviceT.sample.get)
-    createGroupInfo(group.id, group.groupName, group.groupInfo) ~> route ~> check {
-      status shouldBe Created
-    }
+    val groupId = createGroupInfoOk(group.groupName, group.groupInfo)
 
-    addDeviceToGroup(group.id, deviceId) ~> route ~> check {
+    addDeviceToGroup(groupId, deviceId) ~> route ~> check {
       status shouldBe OK
     }
 
-    listDevicesInGroup(group.id) ~> route ~> check {
+    listDevicesInGroup(groupId) ~> route ~> check {
       status shouldBe OK
       val devices = responseAs[Seq[Uuid]]
       devices.contains(deviceId) shouldBe true
     }
 
-    removeDeviceFromGroup(group.id, deviceId) ~> route ~> check {
+    removeDeviceFromGroup(groupId, deviceId) ~> route ~> check {
       status shouldBe OK
     }
 
-    listDevicesInGroup(group.id) ~> route ~> check {
+    listDevicesInGroup(groupId) ~> route ~> check {
       status shouldBe OK
       val devices = responseAs[Seq[Uuid]]
       devices.contains(deviceId) shouldBe false

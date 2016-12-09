@@ -4,30 +4,18 @@
  */
 package org.genivi.sota.device_registry.common
 
+import org.genivi.sota.http.Errors.RawError
+
 object Errors {
   import akka.http.scaladsl.model.StatusCodes
-  import akka.http.scaladsl.server.Directives.complete
-  import akka.http.scaladsl.server.ExceptionHandler.PF
-  import scala.util.control.NoStackTrace
-  import org.genivi.sota.rest.{ErrorCode, ErrorRepresentation}
-  import org.genivi.sota.marshalling.CirceMarshallingSupport._
+  import org.genivi.sota.rest.ErrorCode
 
   object Codes {
     val MissingDevice = ErrorCode("missing_device")
     val ConflictingDeviceId = ErrorCode("conflicting_device_id")
   }
 
-  case object MissingDevice extends Throwable with NoStackTrace
-  case object ConflictingDeviceId extends Throwable with NoStackTrace
-
-  val onMissingDevice: PF = {
-    case Errors.MissingDevice =>
-      complete(StatusCodes.NotFound -> ErrorRepresentation(Codes.MissingDevice, "Device doesn't exist"))
-  }
-
-  val onConflictingDeviceId: PF = {
-    case Errors.ConflictingDeviceId =>
-      complete(StatusCodes.Conflict -> ErrorRepresentation(Codes.ConflictingDeviceId, "deviceId is already in use"))
-  }
+  val MissingDevice = RawError(Codes.MissingDevice, StatusCodes.NotFound, "Device doesn't exist")
+  val ConflictingDeviceId = RawError(Codes.ConflictingDeviceId, StatusCodes.Conflict, "deviceId is already in use")
 
 }

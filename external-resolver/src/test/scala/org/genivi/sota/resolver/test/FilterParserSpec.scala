@@ -7,7 +7,6 @@ package org.genivi.sota.resolver.test
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.data.Device.DeviceId
 import org.genivi.sota.data.{Namespaces, PackageId}
-import org.scalacheck._
 import org.scalatest.FlatSpec
 import org.genivi.sota.resolver.filters._
 import org.genivi.sota.resolver.filters.FilterAST._
@@ -87,7 +86,6 @@ class FilterParserSpec extends FlatSpec {
 class FilterQuerySpec extends ResourceWordSpec with Namespaces {
 
   import org.genivi.sota.resolver.components.Component
-  import org.genivi.sota.resolver.db.Package
 
   val vin1: DeviceId = DeviceId("APABEPA1234567890")
   val vin2: DeviceId = DeviceId("APACEPA1234567890")

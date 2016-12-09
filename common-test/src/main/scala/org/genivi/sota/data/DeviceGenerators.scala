@@ -4,7 +4,6 @@
  */
 package org.genivi.sota.data
 
-import eu.timepit.refined.api.Refined
 import org.scalacheck.{Arbitrary, Gen}
 import java.time.Instant
 
@@ -36,7 +35,7 @@ trait DeviceGenerators {
     deviceId <- Gen.option(deviceIdGen)
     deviceType <- genDeviceType
     lastSeen <- Gen.option(genLastSeen)
-  } yield Device(Namespaces.defaultNs, uuid, name, deviceId, deviceType, lastSeen)
+  } yield Device(Namespaces.defaultNs, uuid, name, deviceId, deviceType, lastSeen, Instant.now())
 
   val genDevice: Gen[Device] = genDeviceWith(genDeviceName, genDeviceId)
 

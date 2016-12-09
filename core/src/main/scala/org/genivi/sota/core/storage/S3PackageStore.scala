@@ -4,26 +4,22 @@
  */
 package org.genivi.sota.core.storage
 
-import java.io.{File, FileInputStream, InputStream}
+import java.io.File
 
 import akka.actor.ActorSystem
-import akka.event.Logging
-import akka.http.scaladsl.common.StrictForm.FileData
 import akka.http.scaladsl.model._
 import akka.stream._
-import akka.stream.scaladsl.{FileIO, Sink, Source, StreamConverters}
+import akka.stream.scaladsl.{FileIO, Source}
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.regions.{Region, Regions}
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model._
 import com.typesafe.config.Config
 import org.genivi.sota.core.DigestCalculator.DigestResult
-import org.genivi.sota.core.data.Package
 import org.genivi.sota.data.PackageId
 import java.time.{Duration, Instant}
 
 import akka.util.ByteString
-import com.amazonaws.services.s3.transfer.TransferManager
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.Future

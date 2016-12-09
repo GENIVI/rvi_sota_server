@@ -9,12 +9,11 @@ import java.util.UUID
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.UpdateRequests.UpdateRequestTable
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 import org.genivi.sota.db.SlickExtensions
 import java.time.Instant
+import cats.syntax.show.toShowOps
 
-import akka.http.scaladsl.marshalling.ToResponseMarshallable
-import org.genivi.sota.core.SotaCoreErrors
 import org.genivi.sota.http.Errors.MissingEntity
 import slick.driver.MySQLDriver.api._
 
@@ -128,6 +127,18 @@ object UpdateSpecs {
   }
 
   /**
+    * Look up by (UpdateRequest.UUID, Device.UUID) tuple.
+    *
+    * @param arg: Sequence of tuples (UpdateRequest.UUID, Device.UUID)
+    */
+  private def inSeq(arg: Seq[(UUID, Uuid)]): Query[UpdateSpecTable, UpdateSpecRow, Seq] = {
+    updateSpecs.filter { r =>
+      (r.requestId.mappedTo[String] ++ r.device.mappedTo[String])
+        .inSet(arg.map { case (req, device) => req.toString + device.show })
+    }
+  }
+
+  /**
     * Lookup by PK in [[UpdateSpecTable]] table.
     * Note: A tuple is returned instead of an [[UpdateSpec]] instance because
     * the later would require joining [[RequiredPackageTable]] to populate the `dependencies` of that instance.
@@ -209,24 +220,38 @@ object UpdateSpecs {
       .handleSingleUpdateError(MissingEntity(classOf[UpdateSpec]))
   }
 
-  def cancelAllUpdatesBy(status: UpdateStatus, namespace: Namespace, packageId: PackageId)
+  private def cancelAllUpdatesBy(updateSpecFilter: UpdateSpecTable => Rep[Boolean],
+                                 packageFilter: Packages.PackageTable => Rep[Boolean])
                         (implicit ec: ExecutionContext): DBIO[Int] = {
     val updateRequestIdsQuery = for {
-      us <- updateSpecs if us.status === status
+      us <- updateSpecs if updateSpecFilter(us)
       ur <- updateRequests if ur.id === us.requestId
-      pkg <- Packages.packages if pkg.uuid === ur.packageUuid &&
-      pkg.namespace === namespace && pkg.name === packageId.name && pkg.version === packageId.version
-    } yield ur.id
-
-    val createHistoriesIO = InstallHistories.logAll(updateRequestIdsQuery, success = false)
+      pkg <- Packages.packages if pkg.uuid === ur.packageUuid && packageFilter(pkg)
+    } yield (us.requestId, us.device)
 
     // Slick does not allow us to use `in` instead of `inSet`, so we need to use DBIO instead of updateRequestIdsQuery
-    val dbIO = updateRequestIdsQuery.result.flatMap { ids =>
-      updateSpecs.filter(_.requestId.inSet(ids)).map(_.status).update(UpdateStatus.Canceled)
-    }
+    updateRequestIdsQuery.result.flatMap { ids =>
+      val updateSpecsQuery = inSeq(ids)
 
-    createHistoriesIO.andThen(dbIO).transactionally
+      val createHistoriesIO = InstallHistories.logAll(updateSpecsQuery, success = false)
+
+      val cancelIO = updateSpecsQuery.map(_.status).update(UpdateStatus.Canceled)
+
+      createHistoriesIO.andThen(cancelIO).transactionally
+    }
   }
+
+  def cancelAllUpdatesByRequest(updateRequest: Uuid)
+                               (implicit ec: ExecutionContext): DBIO[Int] =
+    cancelAllUpdatesBy(us => us.status === UpdateStatus.Pending && us.requestId === updateRequest.toJava,
+                       pkg => true)
+
+  def cancelAllUpdatesByStatus(status: UpdateStatus, namespace: Namespace, packageId: PackageId)
+                              (implicit ec: ExecutionContext): DBIO[Int] =
+    cancelAllUpdatesBy(us => us.status === status,
+                       pkg => pkg.namespace === namespace &&
+                         pkg.name === packageId.name &&
+                         pkg.version === packageId.version)
 
 
   /**

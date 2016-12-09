@@ -6,10 +6,8 @@ package org.genivi.sota.core.data
 
 import cats.Show
 import cats.data.Xor
-import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string._
 import io.circe._
-import io.circe.generic.auto._
 import java.time.Instant
 import java.util.UUID
 import org.genivi.sota.core.SotaCoreErrors
@@ -39,7 +37,8 @@ object Campaign {
     namespace: Namespace,
     name : String,
     launched: Boolean = false,
-    packageUuid: Option[Uuid] = None
+    packageUuid: Option[Uuid] = None,
+    createdAt: Instant
   )
   case class CreateCampaign(name: String)
   case class SetCampaignGroups(groups: Seq[Uuid])

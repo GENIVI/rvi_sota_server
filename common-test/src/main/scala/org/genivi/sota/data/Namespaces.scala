@@ -4,10 +4,7 @@
  */
 package org.genivi.sota.data
 
-import eu.timepit.refined.api.Refined
-import org.genivi.sota.data.Namespace._
 import org.scalacheck.Gen
-
 
 trait Namespaces {
 

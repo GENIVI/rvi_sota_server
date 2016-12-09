@@ -23,26 +23,24 @@ object NamespaceDirectives {
     Namespace( Try(config.getString("core.defaultNs")).getOrElse("default"))
   }
 
-  lazy val defaultNamespaceExtractor: Directive1[Namespace] = {
-    extractRequest.flatMap { req =>
-      req.headers.find(_.is(NAMESPACE)).map(_.value()) match {
-        case Some(ns) => provide(Namespace(ns))
-        case None => provide(configNamespace(ConfigFactory.load()))
-      }
-    }
+  val fromHeader: Directive1[Option[Namespace]] =
+    optionalHeaderValueByName(NAMESPACE).map(_.map(Namespace(_)))
+
+  lazy val defaultNamespaceExtractor: Directive1[AuthedNamespaceScope] = fromHeader.flatMap {
+    case Some(ns) => provide(AuthedNamespaceScope(ns))
+    case None => provide(AuthedNamespaceScope(configNamespace(ConfigFactory.load())))
   }
 
-  def fromConfig(): Directive1[Namespace] = {
+  def fromConfig(): Directive1[AuthedNamespaceScope] =
     ConfigFactory.load().getString("auth.protocol") match {
       case "oauth.idtoken" =>
         logger.info("Using namespace from id token")
-        AuthNamespaceDirectives.authNamespace[IdToken]
+        fromHeader.flatMap(AuthNamespaceDirectives.authNamespace[IdToken])
       case "oauth.accesstoken" =>
         logger.info("Using namespace from access token")
-        AuthNamespaceDirectives.authNamespace[JsonWebToken]
+        fromHeader.flatMap(AuthNamespaceDirectives.authNamespace[JsonWebToken])
       case _ =>
         logger.info("Using namespace from default conf extractor")
         defaultNamespaceExtractor
     }
-  }
 }

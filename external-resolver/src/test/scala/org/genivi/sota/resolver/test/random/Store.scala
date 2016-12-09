@@ -6,7 +6,6 @@ import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.filters.Filter
 import org.scalacheck.Gen
 import Misc._
-import org.genivi.sota.data.Device._
 import cats.syntax.show.toShowOps
 import org.genivi.sota.data.{Device, PackageId, Uuid}
 import org.genivi.sota.resolver.db.Package

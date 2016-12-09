@@ -13,7 +13,9 @@ import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.Namespace._
+import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.ErrorHandler
+import org.genivi.sota.http.Scopes
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.resolver.db.PackageFilterRepository
@@ -27,7 +29,7 @@ import slick.driver.MySQLDriver.api._
  * API routes for filters.
  * @see {@linktourl http://advancedtelematic.github.io/rvi_sota_server/dev/api.html}
  */
-class FilterDirectives(namespaceExtractor: Directive1[Namespace])
+class FilterDirectives(namespaceExtractor: Directive1[AuthedNamespaceScope])
                       (implicit system: ActorSystem,
                        db: Database,
                        mat: ActorMaterializer,
@@ -35,7 +37,7 @@ class FilterDirectives(namespaceExtractor: Directive1[Namespace])
 
   def searchFilter(ns: Namespace): Route =
     parameter('regex.as[String Refined Regex].?) { re =>
-      val query = re.fold(FilterRepository.list)(re => FilterRepository.searchByRegex(ns, re))
+      val query = re.fold(FilterRepository.list(ns))(re => FilterRepository.searchByRegex(ns, re))
       complete(db.run(query))
     }
 
@@ -66,25 +68,26 @@ class FilterDirectives(namespaceExtractor: Directive1[Namespace])
     }
 
   def route: Route =
-    ErrorHandler.handleErrors {
-      (pathPrefix("filters") & namespaceExtractor) { ns =>
-        (get & pathEnd) {
+    (ErrorHandler.handleErrors & namespaceExtractor) { ns =>
+      val scope = Scopes.resolver(ns)
+      pathPrefix("filters") {
+        (scope.get & pathEnd) {
           searchFilter(ns)
         } ~
-        (get & refined[Filter.ValidName](Slash ~ Segment) & path("package")) { fname =>
+        (scope.get & refined[Filter.ValidName](Slash ~ Segment) & path("package")) { fname =>
           getPackages(ns, fname)
         } ~
-        (post & pathEnd) {
+        (scope.post & pathEnd) {
           createFilter(ns)
         } ~
-        (put & refined[Filter.ValidName](Slash ~ Segment) & pathEnd) { fname =>
+        (scope.put & refined[Filter.ValidName](Slash ~ Segment) & pathEnd) { fname =>
           updateFilter(ns, fname)
         } ~
-        (delete & refined[Filter.ValidName](Slash ~ Segment) & pathEnd) { fname =>
+        (scope.delete & refined[Filter.ValidName](Slash ~ Segment) & pathEnd) { fname =>
           deleteFilter(ns, fname)
         }
       } ~
-      (post & path("validate" / "filter")) {
+      (scope.post & path("validate" / "filter")) {
         validateFilter
       }
     }

@@ -7,21 +7,17 @@ package org.genivi.sota.core
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
-import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
-import org.genivi.sota.core.data.InstallHistory
+import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.db.InstallHistories
-import org.genivi.sota.data.{Namespace, Uuid}
+import org.genivi.sota.data.{DeviceDirectives, Uuid}
+import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.marshalling.CirceMarshallingSupport
-import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import slick.driver.MySQLDriver.api._
-import org.genivi.sota.http.UuidDirectives.allowExtractor
-
-import scala.concurrent.Future
 
 
-class HistoryResource(namespaceExtractor: Directive1[Namespace])
-                     (implicit db: Database, system: ActorSystem) extends Directives {
+class HistoryResource(val deviceRegistry: DeviceRegistry, namespaceExtractor: Directive1[AuthedNamespaceScope])
+                     (implicit db: Database, system: ActorSystem) extends Directives with DeviceDirectives {
 
   import CirceMarshallingSupport._
   import org.genivi.sota.rest.ResponseConversions._
@@ -36,17 +32,13 @@ class HistoryResource(namespaceExtractor: Directive1[Namespace])
     complete(f)
   }
 
-  private val deviceUuid = allowExtractor(namespaceExtractor,
-    parameter('uuid.as[String Refined Uuid.Valid]).map(Uuid(_)), deviceAllowed)
+  val route = namespaceExtractor { authedNs =>
+    val scope = Scopes.updates(authedNs)
 
-  private def deviceAllowed(device: Uuid): Future[Namespace] = {
-    db.run(InstallHistories.deviceNamespace(device))
-  }
-
-  val route =
-    (pathPrefix("history") & deviceUuid) { uuid =>
-      (get & pathEnd) {
+    (pathPrefix("history") & deviceQueryExtractor('uuid, authedNs)) { uuid =>
+      (scope.get & pathEnd) {
         history(uuid)
       }
     }
+  }
 }
