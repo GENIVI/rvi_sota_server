@@ -77,18 +77,19 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri, 
       }
 
   override def updateLastSeen(uuid: Uuid, seenAt: Instant = Instant.now)
-                             (implicit ec: ExecutionContext): Future[Unit] =
-    execHttp[Unit](HttpRequest(method = POST, uri = baseUri.withPath(mydeviceUri.path / uuid.show / "ping")))
+                             (implicit ec: ExecutionContext): Future[NoContent] =
+    execHttp[NoContent](HttpRequest(method = POST, uri = baseUri.withPath(mydeviceUri.path / uuid.show / "ping")))
 
   override def updateSystemInfo(uuid: Uuid, json: Json)
-                               (implicit ec: ExecutionContext): Future[Unit] =
-    execHttp[Unit](HttpRequest(method = PUT, uri = baseUri.withPath(mydeviceUri.path / uuid.show / "system_info"),
+                               (implicit ec: ExecutionContext): Future[NoContent] =
+    execHttp[NoContent](HttpRequest(method = PUT, uri = baseUri.withPath(mydeviceUri.path / uuid.show / "system_info"),
       entity = HttpEntity(ContentTypes.`application/json`, json.noSpaces)))
 
-  def setInstalledPackages
-    (device: Uuid, packages: Seq[PackageId])(implicit ec: ExecutionContext) : Future[Unit] =
-      execHttp[Unit](HttpRequest(method = PUT, uri = baseUri.withPath(mydeviceUri.path / device.show / "packages"),
+  override def setInstalledPackages
+    (device: Uuid, packages: Seq[PackageId])(implicit ec: ExecutionContext) : Future[NoContent] =
+      execHttp[NoContent](HttpRequest(method = PUT, uri = baseUri.withPath(mydeviceUri.path / device.show / "packages"),
         entity = HttpEntity(ContentTypes.`application/json`, packages.asJson.noSpaces)))
+
 
   private def execHttp[T](httpRequest: HttpRequest)
                          (implicit unmarshaller: Unmarshaller[ResponseEntity, T],
