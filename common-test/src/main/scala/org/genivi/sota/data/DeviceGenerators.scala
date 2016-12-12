@@ -25,7 +25,7 @@ trait DeviceGenerators {
     t <- Gen.oneOf(DeviceType.values.toSeq)
   } yield t
 
-  val genLastSeen: Gen[Instant] = for {
+  val genInstant: Gen[Instant] = for {
     millis <- Gen.chooseNum[Long](0, 10000000000000L)
   } yield Instant.ofEpochMilli(millis)
 
@@ -34,8 +34,9 @@ trait DeviceGenerators {
     name <- deviceNameGen
     deviceId <- Gen.option(deviceIdGen)
     deviceType <- genDeviceType
-    lastSeen <- Gen.option(genLastSeen)
-  } yield Device(Namespaces.defaultNs, uuid, name, deviceId, deviceType, lastSeen, Instant.now())
+    lastSeen <- Gen.option(genInstant)
+    activated <- Gen.option(genInstant)
+  } yield Device(Namespaces.defaultNs, uuid, name, deviceId, deviceType, lastSeen, Instant.now(), activated)
 
   val genDevice: Gen[Device] = genDeviceWith(genDeviceName, genDeviceId)
 
@@ -71,7 +72,7 @@ trait DeviceGenerators {
   implicit lazy val arbDeviceName: Arbitrary[DeviceName] = Arbitrary(genDeviceName)
   implicit lazy val arbDeviceId: Arbitrary[DeviceId] = Arbitrary(genDeviceId)
   implicit lazy val arbDeviceType: Arbitrary[DeviceType] = Arbitrary(genDeviceType)
-  implicit lazy val arbLastSeen: Arbitrary[Instant] = Arbitrary(genLastSeen)
+  implicit lazy val arbLastSeen: Arbitrary[Instant] = Arbitrary(genInstant)
   implicit lazy val arbDevice: Arbitrary[Device] = Arbitrary(genDevice)
   implicit lazy val arbDeviceT: Arbitrary[DeviceT] = Arbitrary(genDeviceT)
 
