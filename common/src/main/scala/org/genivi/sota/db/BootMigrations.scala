@@ -7,9 +7,12 @@ package org.genivi.sota.db
 
 import com.typesafe.config.ConfigFactory
 import org.flywaydb.core.Flyway
+import org.genivi.sota.http.BootApp
 import org.slf4j.LoggerFactory
 
 trait BootMigrations {
+  self: BootApp =>
+
   private val _migrateConfig = ConfigFactory.load()
 
   private val _migrateLog = LoggerFactory.getLogger(this.getClass)
@@ -24,8 +27,8 @@ trait BootMigrations {
 
     val flyway = new Flyway
     flyway.setDataSource(url, user, password)
-    val count = flyway.migrate()
 
+    val count = flyway.migrate()
     _migrateLog.info(s"Ran $count migrations")
   }
 }
