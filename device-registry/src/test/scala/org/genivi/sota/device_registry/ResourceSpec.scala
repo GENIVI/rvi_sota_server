@@ -28,6 +28,7 @@ trait ResourceSpec extends
     with DeviceRequests
     with GroupInfoGenerators
     with GroupRequests
+    with PublicCredentialsRequests
     with PackageIdGenerators
     with Matchers
     with SimpleJsonGenerator

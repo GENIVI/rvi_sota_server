@@ -37,6 +37,11 @@ object Messages {
     deviceId: Option[DeviceId],
     deviceType: DeviceType) extends BusMessage
 
+  final case class DevicePublicCredentialsSet(
+    namespace: Namespace,
+    uuid: Uuid,
+    credentials: String) extends BusMessage
+
   final case class DeviceActivated(
     namespace: Namespace,
     uuid: Uuid,
@@ -122,6 +127,8 @@ object Messages {
   implicit val deviceSeenMessageLike = MessageLike[DeviceSeen](_.uuid.show)
 
   implicit val deviceCreatedMessageLike = MessageLike[DeviceCreated](_.uuid.show)
+
+  implicit val devicePublicCredentialsSetMessageLike = MessageLike[DevicePublicCredentialsSet](_.uuid.show)
 
   implicit val deviceDeletedMessageLike = MessageLike[DeviceDeleted](_.uuid.show)
 

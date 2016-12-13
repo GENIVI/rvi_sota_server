@@ -5,6 +5,7 @@
 package org.genivi.sota.device_registry.common
 
 import org.genivi.sota.data.GroupInfo
+import org.genivi.sota.device_registry.db.PublicCredentialsRepository.DevicePublicCredentials
 import org.genivi.sota.device_registry.db.GroupMemberRepository.GroupMember
 import org.genivi.sota.device_registry.db.SystemInfoRepository.SystemInfo
 import org.genivi.sota.http.Errors.{EntityAlreadyExists, MissingEntity, RawError}
@@ -20,6 +21,8 @@ object Errors {
     val MissingGroupInfo = ErrorCode("missing_group_info")
     val GroupInfoAlreadyExists = ErrorCode("group_info_already_exists")
     val MemberAlreadyExists = ErrorCode("device_already_a_group_member")
+    val RequestNeedsDeviceId = ErrorCode("reguest_needs_deviceid")
+    val RequestNeedsCredentials = ErrorCode("request_needs_credentials")
   }
 
   val MissingDevice = RawError(Codes.MissingDevice, StatusCodes.NotFound, "device doesn't exist")
@@ -31,4 +34,10 @@ object Errors {
   val MissingGroupInfo = MissingEntity(classOf[GroupInfo])
   val ConflictingGroupInfo = EntityAlreadyExists(classOf[GroupInfo])
   val MemberAlreadyExists = EntityAlreadyExists(classOf[GroupMember])
+
+  val MissingDevicePublicCredentials = MissingEntity(classOf[DevicePublicCredentials])
+  val RequestNeedsDeviceId = RawError(Codes.RequestNeedsDeviceId, StatusCodes.BadRequest,
+                                      "request should contain deviceId")
+  val RequestNeedsCredentials = RawError(Codes.RequestNeedsCredentials, StatusCodes.BadRequest,
+                                         "request should contain credentials")
 }

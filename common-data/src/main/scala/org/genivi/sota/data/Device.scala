@@ -19,7 +19,8 @@ import org.genivi.sota.data.DeviceStatus._
 final case class DeviceT(
   deviceName: DeviceName,
   deviceId: Option[Device.DeviceId] = None,
-  deviceType: Device.DeviceType = Device.DeviceType.Other
+  deviceType: Device.DeviceType = Device.DeviceType.Other,
+  credentials: Option[String] = None
 )
 
 
