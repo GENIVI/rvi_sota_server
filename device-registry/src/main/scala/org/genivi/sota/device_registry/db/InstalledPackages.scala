@@ -53,6 +53,9 @@ object InstalledPackages {
       installedPackages ++= packages.map(InstalledPackage(device, _, Instant.now()))
     ).transactionally
 
+  def setInstalledForDevices(data: Seq[(Uuid, Seq[PackageId])])(implicit ec: ExecutionContext): DBIO[Unit] =
+    DBIO.seq(data.map(devicePkgs => setInstalled(devicePkgs._1, devicePkgs._2.toSet)): _*).transactionally
+
   def installedOn(device: Uuid)(implicit ec: ExecutionContext): DBIO[Seq[InstalledPackage]] =
     installedPackages
       .filter(_.device === device)

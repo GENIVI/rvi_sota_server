@@ -74,6 +74,10 @@ object ForeignPackages {
       .result.map(_.map(_.packageId))
   }
 
+  def listPackages: DBIO[Seq[InstalledForeignPackage]] =
+    foreignPackages
+      .result
+
   //scalastyle: off
   private def inSetQuery(ids: Set[PackageId]): Query[InstalledForeignPackageTable, InstalledForeignPackage, Seq] = {
     foreignPackages

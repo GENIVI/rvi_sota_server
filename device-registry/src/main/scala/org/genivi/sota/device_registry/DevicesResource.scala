@@ -111,6 +111,13 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
     }
   }
 
+  def updateInstalledSoftwareForDevices(): Route = {
+    entity(as[Seq[(Uuid, Seq[PackageId])]]) { installedDeviceSoftware =>
+      val f = db.run(InstalledPackages.setInstalledForDevices(installedDeviceSoftware))
+      onSuccess(f) { complete(StatusCodes.NoContent) }
+    }
+  }
+
   def getDevicesCount(pkg: PackageId, ns: Namespace): Route =
     complete(db.run(InstalledPackages.getDevicesCount(pkg, ns)))
 
@@ -164,7 +171,7 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
       (get & pathEnd & authedNs.oauthScopeReadonly(s"ota-core.${uuid.show}.read")) {
         fetchDevice(uuid)
       } ~
-      (put & path("packages") & authedNs.oauthScope(s"ota-core.{device.show}.write")) {
+      (put & path("packages") & authedNs.oauthScope(s"ota-core.${uuid.show}.write")) {
         updateInstalledSoftware(uuid)
       }
     }
@@ -176,6 +183,9 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
    * @return      Route object containing routes for creating, deleting, and listing devices
    * @throws      Errors.MissingDevice if device doesn't exist
    */
-  def route: Route = api ~ mydeviceRoutes
+  def route: Route = api ~ mydeviceRoutes ~
+    (pathPrefix("mydevice") & put & path("packages")) {
+      updateInstalledSoftwareForDevices()
+    }
 
 }

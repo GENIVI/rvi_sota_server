@@ -95,6 +95,9 @@ object Boot extends BootApp with Directives with BootMigrations
       }
     }
 
+  if(sys.env.get("RESOLVER_DEVICE_MIGRATE").contains("true")) {
+    DeviceDataMigrator(deviceRegistryClient)
+  }
 
   val messageBusListener = system.actorOf(PackageCreatedListener.props(db, system.settings.config))
   messageBusListener ! Subscribe
