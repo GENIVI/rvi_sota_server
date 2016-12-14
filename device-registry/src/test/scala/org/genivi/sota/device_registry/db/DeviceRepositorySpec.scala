@@ -26,14 +26,29 @@ class DeviceRepositorySpec extends FunSuite
 
     val device = genDeviceT.sample.get.copy(deviceId = Some(genDeviceId.sample.get))
     val setTwice = for {
-      uuid <- db.run(DeviceRepository.create(Namespaces.defaultNs, device))
-      first <- db.run(DeviceRepository.updateLastSeen(uuid, Instant.now()))
-      second <- db.run(DeviceRepository.updateLastSeen(uuid, Instant.now()))
+      uuid <- DeviceRepository.create(Namespaces.defaultNs, device)
+      first <- DeviceRepository.updateLastSeen(uuid, Instant.now())
+      second <- DeviceRepository.updateLastSeen(uuid, Instant.now())
     } yield (first, second)
 
-    whenReady(setTwice, Timeout(Span(10, Seconds))) {
+    whenReady(db.run(setTwice), Timeout(Span(10, Seconds))) {
       case (f, s) => f shouldBe(true)
                      s shouldBe(false)
+    }
+  }
+
+  test("activated_at can be counted") {
+
+    val device = genDeviceT.sample.get.copy(deviceId = Some(genDeviceId.sample.get))
+    val createDevice = for {
+      uuid <- DeviceRepository.create(Namespaces.defaultNs, device)
+      now = Instant.now()
+      _ <- DeviceRepository.updateLastSeen(uuid, now)
+      count <- DeviceRepository.countActivatedDevices(now, now.plusSeconds(100))
+    } yield count
+
+    whenReady(db.run(createDevice), Timeout(Span(10, Seconds))) { count =>
+      count shouldBe(1)
     }
   }
 }

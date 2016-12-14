@@ -19,13 +19,14 @@ import org.genivi.sota.data._
 import org.genivi.sota.device_registry.db._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
+import org.genivi.sota.unmarshalling.AkkaHttpUnmarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted, DeviceSeen}
 import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.http.UuidDirectives.extractUuid
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.rest.Validation._
-
+import java.time.OffsetDateTime
 import scala.concurrent.ExecutionContext
 
 class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
@@ -115,6 +116,11 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
   def listPackagesOnDevice(device: Uuid): Route =
     complete(db.run(InstalledPackages.installedOn(device)))
 
+  def getActiveDeviceCount(): Route =
+    parameters(('start.as[OffsetDateTime], 'end.as[OffsetDateTime])) { (start, end) =>
+      complete(db.run(DeviceRepository.countActivatedDevices(start.toInstant, end.toInstant)))
+    }
+
   def api: Route = namespaceExtractor { ns =>
     val scope = Scopes.devices(ns)
     pathPrefix("devices") {
@@ -143,6 +149,9 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
     } ~
     (scope.get & pathPrefix("device_count") & extractPackageId) { pkg =>
       getDevicesCount(pkg, ns)
+    } ~
+    (scope.get & pathPrefix("active_device_count")) {
+      getActiveDeviceCount()
     }
   }
 
