@@ -21,30 +21,47 @@ object Messages {
 
   val partitionPrefixSize = 256
 
-  final case class DeviceSeen(namespace: Namespace,
-                              uuid: Uuid,
-                              lastSeen: Instant) extends BusMessage
+  final case class DeviceSeen(
+    namespace: Namespace,
+    uuid: Uuid,
+    lastSeen: Instant) extends BusMessage
 
-  final case class DeviceCreated(namespace: Namespace,
-                                 uuid: Uuid,
-                                 deviceName: DeviceName,
-                                 deviceId: Option[DeviceId],
-                                 deviceType: DeviceType) extends BusMessage
+  final case class DeviceCreated(
+    namespace: Namespace,
+    uuid: Uuid,
+    deviceName: DeviceName,
+    deviceId: Option[DeviceId],
+    deviceType: DeviceType) extends BusMessage
 
-  final case class DeviceDeleted(namespace: Namespace, uuid: Uuid) extends BusMessage
+  final case class DeviceActivated(
+    namespace: Namespace,
+    uuid: Uuid,
+    at: Instant) extends BusMessage
 
-  final case class PackageCreated(namespace: Namespace, packageId: PackageId,
-                                  description: Option[String], vendor: Option[String],
-                                  signature: Option[String]) extends BusMessage
+  final case class DeviceDeleted(
+    namespace: Namespace,
+    uuid: Uuid) extends BusMessage
 
-  final case class PackageBlacklisted(namespace: Namespace, packageId: PackageId) extends BusMessage
+  final case class PackageCreated(
+    namespace: Namespace,
+    packageId: PackageId,
+    description: Option[String],
+    vendor: Option[String],
+    signature: Option[String]) extends BusMessage
 
+  final case class PackageBlacklisted(
+    namespace: Namespace,
+    packageId: PackageId) extends BusMessage
 
   //Create custom UpdateSpec here instead of using org.genivi.sota.core.data.UpdateSpec as that would require moving
   //multiple RVI messages into SotaCommon. Furthermore, for now this class contains just the info required by the
   //front end.
-  final case class UpdateSpec(namespace: Namespace, device: Uuid, packageUuid: UUID,
-                              status: String) extends BusMessage
+  final case class UpdateSpec(
+    namespace: Namespace,
+    device: Uuid,
+    packageUuid: UUID,
+    status: String) extends BusMessage
+
 
   implicit class StreamNameOp[T <: Class[_]](v: T) {
     def streamName: String = {
@@ -72,24 +89,31 @@ object Messages {
 
 
   implicit val deviceSeenMessageLike = new MessageLike[DeviceSeen] {
-    override def id(v: DeviceSeen): String = v.uuid.underlying.get
+    override def id(v: DeviceSeen): String = v.uuid.show
 
     implicit val encoder: Encoder[DeviceSeen] = deriveEncoder
     implicit val decoder: Decoder[DeviceSeen] = deriveDecoder
   }
 
   implicit val deviceCreatedMessageLike = new MessageLike[DeviceCreated] {
-    override def id(v: DeviceCreated): String = v.uuid.underlying.get
+    override def id(v: DeviceCreated): String = v.uuid.show
 
     implicit val encoder: Encoder[DeviceCreated] = deriveEncoder
     implicit val decoder: Decoder[DeviceCreated] = deriveDecoder
   }
 
   implicit val deviceDeletedMessageLike = new MessageLike[DeviceDeleted] {
-    override def id(v: DeviceDeleted): String = v.uuid.underlying.get
+    override def id(v: DeviceDeleted): String = v.uuid.show
 
     implicit val encoder: Encoder[DeviceDeleted] = deriveEncoder
     implicit val decoder: Decoder[DeviceDeleted] = deriveDecoder
+  }
+
+  implicit val deviceActivatedMessageLike = new MessageLike[DeviceActivated] {
+    override def id(v: DeviceActivated): String = v.uuid.show
+
+    implicit val encoder: Encoder[DeviceActivated] = deriveEncoder
+    implicit val decoder: Decoder[DeviceActivated] = deriveDecoder
   }
 
 
