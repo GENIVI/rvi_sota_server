@@ -12,7 +12,6 @@ import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
 import org.genivi.sota.db.Operators.regex
 import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.device_registry.common.Errors
-import org.genivi.sota.messaging.Messages.DeviceSeen
 import org.genivi.sota.refined.SlickRefined._
 import slick.driver.MySQLDriver.api._
 
@@ -32,9 +31,10 @@ object DeviceRepository {
     def deviceType = column[DeviceType]("device_type")
     def lastSeen = column[Option[Instant]]("last_seen")
     def createdAt = column[Instant]("created_at")
+    def activatedAt = column[Option[Instant]]("activated_at")
 
-    def * = (namespace, uuid, deviceName, deviceId, deviceType, lastSeen, createdAt).shaped <>
-      ((Device.apply _).tupled, Device.unapply)
+    def * = (namespace, uuid, deviceName, deviceId, deviceType, lastSeen, createdAt, activatedAt)
+      .shaped <> ((Device.apply _).tupled, Device.unapply)
 
     def pk = primaryKey("uuid", uuid)
   }
@@ -96,14 +96,18 @@ object DeviceRepository {
       .flatMap(_.fold[DBIO[Device]](DBIO.failed(Errors.MissingDevice))(DBIO.successful))
   }
 
-  def updateLastSeen(uuid: Uuid)
-                    (implicit ec: ExecutionContext): DBIO[DeviceSeen] =
-    for {
-      device <- findByUuid(uuid)
-      now = Instant.now()
-      newDevice = device.copy(lastSeen = Some(now))
-      _ <- devices.insertOrUpdate(newDevice)
-    } yield DeviceSeen(device.namespace, uuid, now)
+  def updateLastSeen(uuid: Uuid, when: Instant)
+                    (implicit ec: ExecutionContext): DBIO[Boolean] = {
+
+    val sometime = Some(when)
+
+    val dbIO = for {
+      count <- devices.filter(_.uuid === uuid).filter(_.activatedAt.isEmpty).map(_.activatedAt).update(sometime)
+      _ <- devices.filter(_.uuid === uuid).map(_.lastSeen).update(sometime)
+    } yield count > 0
+
+    dbIO.transactionally
+  }
 
   def delete(ns: Namespace, uuid: Uuid)
             (implicit ec: ExecutionContext): DBIO[Unit] = {

@@ -4,6 +4,8 @@
  */
 package org.genivi.sota.device_registry
 
+import java.time.Instant
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.model.{StatusCodes, Uri}
@@ -18,8 +20,7 @@ import org.genivi.sota.device_registry.db._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
-import org.genivi.sota.messaging.MessageBusPublisher._
-import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted}
+import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted, DeviceSeen}
 import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.http.UuidDirectives.extractUuid
 import slick.driver.MySQLDriver.api._
@@ -89,9 +90,15 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
   def getGroupsForDevice(uuid: Uuid): Route =
     complete(db.run(GroupMemberRepository.listGroupsForDevice(uuid)))
 
+  def updateLastSeen(ns: Namespace, uuid: Uuid): Route = {
+    val now = Instant.now()
 
-  def updateLastSeen(uuid: Uuid): Route = {
-    val f = db.run(DeviceRepository.updateLastSeen(uuid)).pipeToBus(messageBus)(identity)
+    val f = db.run(DeviceRepository.updateLastSeen(uuid, now))
+      .andThen {
+        case scala.util.Success(_) =>
+          messageBus.publish(DeviceSeen(ns, uuid, now))
+      }
+
     complete(f)
   }
 
@@ -121,7 +128,7 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
           deleteDevice(ns, uuid)
         } ~
         (scope.post & path("ping")) {
-          updateLastSeen(uuid)
+          updateLastSeen(ns.namespace, uuid)
         } ~
         (scope.get & pathEnd) {
           fetchDevice(uuid)
@@ -142,7 +149,7 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
   def mydeviceRoutes: Route = namespaceExtractor { authedNs =>
     (pathPrefix("mydevice") & extractUuid) { uuid =>
       (post & path("ping") & authedNs.oauthScope(s"ota-core.${uuid.show}.write")) {
-        updateLastSeen(uuid)
+        updateLastSeen(authedNs.namespace, uuid)
       } ~
       (get & pathEnd & authedNs.oauthScopeReadonly(s"ota-core.${uuid.show}.read")) {
         fetchDevice(uuid)
