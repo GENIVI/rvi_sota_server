@@ -5,6 +5,7 @@ import java.util.UUID
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
+import org.genivi.sota.DefaultPatience
 import org.genivi.sota.core._
 import org.genivi.sota.core.data.{UpdateSpec, UpdateStatus}
 import org.genivi.sota.core.db._

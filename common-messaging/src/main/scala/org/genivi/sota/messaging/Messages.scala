@@ -53,6 +53,8 @@ object Messages {
     namespace: Namespace,
     packageId: PackageId) extends BusMessage
 
+  final case class ImageStorageUsage(namespace: Namespace, timestamp: Instant, byteCount: Long) extends BusMessage
+
   //Create custom UpdateSpec here instead of using org.genivi.sota.core.data.UpdateSpec as that would require moving
   //multiple RVI messages into SotaCommon. Furthermore, for now this class contains just the info required by the
   //front end.
@@ -136,5 +138,14 @@ object Messages {
 
     override implicit val encoder: Encoder[PackageBlacklisted] = deriveEncoder
     override implicit val decoder: Decoder[PackageBlacklisted] = deriveDecoder
+  }
+
+  implicit val imageStorageUsageMessageLike = new MessageLike[ImageStorageUsage] {
+    override def id(v: ImageStorageUsage): String = v.namespace.get
+
+    import io.circe.generic.semiauto._
+
+    implicit val encoder: Encoder[ImageStorageUsage] = deriveEncoder
+    implicit val decoder: Decoder[ImageStorageUsage] = deriveDecoder
   }
 }

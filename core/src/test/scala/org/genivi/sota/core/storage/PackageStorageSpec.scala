@@ -12,7 +12,8 @@ import akka.testkit.TestKit
 import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
 import eu.timepit.refined.api.Refined
-import org.genivi.sota.core.{DefaultPatience, Generators, IntegrationTest}
+import org.genivi.sota.DefaultPatience
+import org.genivi.sota.core.{Generators, IntegrationTest}
 import org.genivi.sota.data.PackageId
 import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
 import org.scalatest.{FunSuiteLike, ShouldMatchers}

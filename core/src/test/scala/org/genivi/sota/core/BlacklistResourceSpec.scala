@@ -10,6 +10,7 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model.{StatusCodes, Uri}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import org.genivi.sota.DefaultPatience
 import org.genivi.sota.core.data.{UpdateSpec, UpdateStatus}
 import org.genivi.sota.core.db._
 import org.genivi.sota.data.{DeviceGenerators, PackageId}

@@ -2,7 +2,8 @@
  * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
  * License: MPL-2.0
  */
-package org.genivi.sota.core
+
+package org.genivi.sota
 
 import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.time.{Millis, Seconds, Span}

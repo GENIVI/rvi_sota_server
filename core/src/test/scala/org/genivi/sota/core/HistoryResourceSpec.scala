@@ -16,6 +16,7 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 import cats.syntax.show._
+import org.genivi.sota.DefaultPatience
 import org.genivi.sota.data.DeviceGenerators.{genDeviceId, genDeviceT}
 import org.genivi.sota.data.Namespaces
 

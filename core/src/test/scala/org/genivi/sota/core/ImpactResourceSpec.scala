@@ -7,6 +7,7 @@ package org.genivi.sota.core
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import org.genivi.sota.DefaultPatience
 import org.genivi.sota.core.db.BlacklistedPackages
 import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 import org.scalatest.concurrent.ScalaFutures

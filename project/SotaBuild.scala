@@ -88,12 +88,14 @@ object SotaBuild extends Build {
   lazy val commonTest = Project(id = "sota-common-test", base = file("common-test"))
     .settings(basicSettings ++ compilerSettings ++ lintOptions)
     .settings(libraryDependencies ++= Seq (Dependencies.Cats, Dependencies.Refined, Dependencies.Generex))
+    .settings(libraryDependencies += Dependencies.ScalaTestLib % "provided")
     .dependsOn(commonData)
     .settings(Publish.settings)
 
   lazy val commonDbTest = Project(id = "sota-common-db-test", base = file("common-db-test"))
     .settings(basicSettings ++ compilerSettings ++ lintOptions)
-    .settings(libraryDependencies ++= Dependencies.Slick :+ Dependencies.Flyway :+ Dependencies.ScalaTestLib)
+    .settings(libraryDependencies ++= Dependencies.Slick :+ Dependencies.Flyway)
+    .settings(libraryDependencies += Dependencies.ScalaTestLib % "provided")
     .dependsOn(commonData, commonTest)
     .settings(Publish.settings)
 
