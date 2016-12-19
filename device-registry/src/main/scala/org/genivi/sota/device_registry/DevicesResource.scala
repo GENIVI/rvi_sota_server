@@ -21,7 +21,7 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.unmarshalling.AkkaHttpUnmarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
-import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted, DeviceSeen}
+import org.genivi.sota.messaging.Messages.{DeviceActivated, DeviceCreated, DeviceDeleted, DeviceSeen}
 import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.http.UuidDirectives.extractUuid
 import slick.driver.MySQLDriver.api._
@@ -96,8 +96,9 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
 
     val f = db.run(DeviceRepository.updateLastSeen(uuid, now))
       .andThen {
-        case scala.util.Success(_) =>
+        case scala.util.Success(activated) =>
           messageBus.publish(DeviceSeen(ns, uuid, now))
+          if (activated) messageBus.publish(DeviceActivated(ns, uuid, now))
       }
 
     complete(f)
