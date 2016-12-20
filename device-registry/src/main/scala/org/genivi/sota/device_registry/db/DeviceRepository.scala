@@ -97,14 +97,15 @@ object DeviceRepository {
   }
 
   def updateLastSeen(uuid: Uuid, when: Instant)
-                    (implicit ec: ExecutionContext): DBIO[Boolean] = {
+                    (implicit ec: ExecutionContext): DBIO[(Boolean, Namespace)] = {
 
     val sometime = Some(when)
 
     val dbIO = for {
       count <- devices.filter(_.uuid === uuid).filter(_.activatedAt.isEmpty).map(_.activatedAt).update(sometime)
       _ <- devices.filter(_.uuid === uuid).map(_.lastSeen).update(sometime)
-    } yield count > 0
+      ns <- devices.filter(_.uuid === uuid).map(_.namespace).result.failIfNotSingle(Errors.MissingDevice)
+    } yield (count > 0, ns)
 
     dbIO.transactionally
   }
