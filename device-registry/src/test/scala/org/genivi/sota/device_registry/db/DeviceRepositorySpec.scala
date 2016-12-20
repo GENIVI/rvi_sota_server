@@ -27,8 +27,8 @@ class DeviceRepositorySpec extends FunSuite
     val device = genDeviceT.sample.get.copy(deviceId = Some(genDeviceId.sample.get))
     val setTwice = for {
       uuid <- DeviceRepository.create(Namespaces.defaultNs, device)
-      first <- DeviceRepository.updateLastSeen(uuid, Instant.now())
-      second <- DeviceRepository.updateLastSeen(uuid, Instant.now())
+      first <- DeviceRepository.updateLastSeen(uuid, Instant.now()).map(_._1)
+      second <- DeviceRepository.updateLastSeen(uuid, Instant.now()).map(_._1)
     } yield (first, second)
 
     whenReady(db.run(setTwice), Timeout(Span(10, Seconds))) {

@@ -91,12 +91,12 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
   def getGroupsForDevice(uuid: Uuid): Route =
     complete(db.run(GroupMemberRepository.listGroupsForDevice(uuid)))
 
-  def updateLastSeen(ns: Namespace, uuid: Uuid): Route = {
+  def updateLastSeen(uuid: Uuid): Route = {
     val now = Instant.now()
 
     val f = db.run(DeviceRepository.updateLastSeen(uuid, now))
       .andThen {
-        case scala.util.Success(activated) =>
+        case scala.util.Success((activated, ns)) =>
           messageBus.publish(DeviceSeen(ns, uuid, now))
           if (activated) messageBus.publish(DeviceActivated(ns, uuid, now))
       }
@@ -142,7 +142,7 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
           deleteDevice(ns, uuid)
         } ~
         (scope.post & path("ping")) {
-          updateLastSeen(ns.namespace, uuid)
+          updateLastSeen(uuid)
         } ~
         (scope.get & pathEnd) {
           fetchDevice(uuid)
@@ -163,10 +163,10 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
     }
   }
 
-  def mydeviceRoutes: Route = namespaceExtractor { authedNs =>
+  def mydeviceRoutes: Route = namespaceExtractor { authedNs => // Don't use this as a namespace
     (pathPrefix("mydevice") & extractUuid) { uuid =>
       (post & path("ping") & authedNs.oauthScope(s"ota-core.${uuid.show}.write")) {
-        updateLastSeen(authedNs.namespace, uuid)
+        updateLastSeen(uuid)
       } ~
       (get & pathEnd & authedNs.oauthScopeReadonly(s"ota-core.${uuid.show}.read")) {
         fetchDevice(uuid)
