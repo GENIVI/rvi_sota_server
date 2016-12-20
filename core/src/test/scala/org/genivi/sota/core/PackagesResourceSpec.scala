@@ -20,6 +20,7 @@ import akka.util.ByteString
 import cats.data.Xor
 import io.circe.Json
 import io.circe.generic.auto._
+import org.genivi.sota.DefaultPatience
 import org.genivi.sota.core.db.{BlacklistedPackages, Packages}
 import org.genivi.sota.core.resolver.DefaultConnectivity
 import org.genivi.sota.core.storage.PackageStorage.PackageStorageOp

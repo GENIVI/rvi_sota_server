@@ -11,6 +11,7 @@ import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.MalformedQueryParamRejection
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import eu.timepit.refined.api.Refined
+import org.genivi.sota.DefaultPatience
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.core.data.{Package => DataPackage}
 import org.genivi.sota.core.db.Packages
@@ -24,7 +25,6 @@ import scala.concurrent.Await
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.data.{Namespaces, PackageId}
 import org.genivi.sota.http.NamespaceDirectives
-
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.scalatest.concurrent.PatienceConfiguration

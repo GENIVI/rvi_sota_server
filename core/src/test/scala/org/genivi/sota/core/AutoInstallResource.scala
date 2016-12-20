@@ -7,15 +7,13 @@ package org.genivi.sota.core
 
 import akka.http.scaladsl.model.{HttpRequest, StatusCodes, Uri}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-
 import cats.implicits._
-
+import org.genivi.sota.DefaultPatience
 import org.genivi.sota.data.{Namespaces, PackageId, Uuid}
 import org.genivi.sota.data.DeviceGenerators._
 import org.genivi.sota.data.GeneratorOps._
 import org.genivi.sota.http.NamespaceDirectives.defaultNamespaceExtractor
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-
 import org.scalatest.{FunSuite, ShouldMatchers}
 import org.scalatest.concurrent.ScalaFutures
 

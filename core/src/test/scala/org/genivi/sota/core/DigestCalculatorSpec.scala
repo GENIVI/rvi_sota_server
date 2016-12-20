@@ -11,6 +11,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{FileIO, Source}
 import akka.testkit.TestKit
 import akka.util.ByteString
+import org.genivi.sota.DefaultPatience
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuiteLike, ShouldMatchers}
 
