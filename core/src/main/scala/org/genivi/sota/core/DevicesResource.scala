@@ -37,6 +37,8 @@ case class DeviceSearchResult(
                         deviceId: Option[DeviceId],
                         deviceType: Device.DeviceType,
                         lastSeen: Option[Instant] = None,
+                        createdAt: Instant,
+                        activatedAt: Option[Instant] = None,
                         status: Option[DeviceStatus] = None
                         )
 
@@ -91,6 +93,8 @@ class DevicesResource(db: Database, client: ConnectivityClient,
         d.deviceId,
         d.deviceType,
         deviceStatus.flatMap(_.lastSeen).orElse(d.lastSeen),
+        d.createdAt,
+        d.activatedAt,
         deviceStatus.map(_.status)
       )
     }
