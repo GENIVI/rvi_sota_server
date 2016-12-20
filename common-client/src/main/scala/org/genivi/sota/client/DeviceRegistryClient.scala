@@ -27,6 +27,7 @@ import org.genivi.sota.http.NamespaceDirectives.nsHeader
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.reflect.ClassTag
 
 
 class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri, mydeviceUri: Uri)
@@ -85,19 +86,25 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri, 
     execHttp[NoContent](HttpRequest(method = PUT, uri = baseUri.withPath(mydeviceUri.path / uuid.show / "system_info"),
       entity = HttpEntity(ContentTypes.`application/json`, json.noSpaces)))
 
-  override def setInstalledPackages
-    (device: Uuid, packages: Seq[PackageId])(implicit ec: ExecutionContext) : Future[NoContent] =
-      execHttp[NoContent](HttpRequest(method = PUT, uri = baseUri.withPath(mydeviceUri.path / device.show / "packages"),
-        entity = HttpEntity(ContentTypes.`application/json`, packages.asJson.noSpaces)))
+  override def setInstalledPackages(device: Uuid, packages: Seq[PackageId])
+                                   (implicit ec: ExecutionContext) : Future[NoContent] =
+    execHttp[NoContent](HttpRequest(method = PUT, uri = baseUri.withPath(mydeviceUri.path / device.show / "packages"),
+      entity = HttpEntity(ContentTypes.`application/json`, packages.asJson.noSpaces)))
 
+  def setInstalledPackagesForDevices(data: Seq[(Uuid, Set[PackageId])])
+                                    (implicit ec: ExecutionContext) : Future[NoContent] =
+    execHttp[NoContent](HttpRequest(method = PUT, uri = baseUri.withPath(mydeviceUri.path / "packages"),
+      entity = HttpEntity(ContentTypes.`application/json`, data.asJson.noSpaces)))
 
   private def execHttp[T](httpRequest: HttpRequest)
                          (implicit unmarshaller: Unmarshaller[ResponseEntity, T],
-                          ec: ExecutionContext): Future[T] = {
+                          ec: ExecutionContext, ct: ClassTag[T]): Future[T] = {
     http.singleRequest(httpRequest).flatMap { response =>
       response.status match {
         case Conflict => FastFuture.failed(Errors.ConflictingDeviceId)
         case NotFound => FastFuture.failed(Errors.MissingDevice)
+        case StatusCodes.NoContent if ct.runtimeClass == classOf[NoContent] =>
+          FastFuture.successful(org.genivi.sota.client.NoContent()).asInstanceOf[Future[T]]
         case other if other.isSuccess() => unmarshaller(response.entity)
         case err => FastFuture.failed(new Exception(err.toString))
       }

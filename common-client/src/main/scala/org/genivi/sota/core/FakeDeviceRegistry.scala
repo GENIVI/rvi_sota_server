@@ -134,4 +134,8 @@ class FakeDeviceRegistry(namespace: Namespace)
   def setInstalledPackages
     (device: Uuid, packages: Seq[PackageId])(implicit ec: ExecutionContext) : Future[NoContent] =
       FastFuture.successful(NoContent())
+
+  def setInstalledPackagesForDevices(data: Seq[(Uuid, Set[PackageId])])
+                                    (implicit ec: ExecutionContext) : Future[NoContent] =
+    FastFuture.successful(NoContent())
 }
