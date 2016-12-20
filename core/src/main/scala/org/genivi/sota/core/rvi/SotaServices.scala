@@ -13,7 +13,6 @@ import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import io.circe.Json
-import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.resolver.{Connectivity, ExternalResolverClient}
 import org.genivi.sota.data.Uuid
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
@@ -70,7 +69,7 @@ final case class InstalledPackages(device: Uuid, installed_software: Json )
  * @param updateController the actor to forward messages for processing
  * @param resolverClient the resolver to update when a vehicle sends its installed packages
  */
-class SotaServices(updateController: ActorRef, resolverClient: ExternalResolverClient, deviceRegistry: DeviceRegistry)
+class SotaServices(updateController: ActorRef, resolverClient: ExternalResolverClient)
                   (implicit system: ActorSystem, mat: ActorMaterializer) {
   import Directives._
   import io.circe.generic.auto._

@@ -19,6 +19,7 @@ import org.genivi.sota.core.resolver._
 import org.genivi.sota.core.rvi._
 import org.genivi.sota.core.storage.S3PackageStore
 import org.genivi.sota.core.transfer._
+import org.genivi.sota.core.user_profile._
 import org.genivi.sota.db.{BootMigrations, DatabaseConfig}
 import org.genivi.sota.http._
 import org.genivi.sota.http.LogDirectives._
@@ -50,7 +51,7 @@ trait RviBoot {
       TransferProtocolActor.props(db, rviConnectivity.client,
         PackageTransferActor.props(rviConnectivity.client, s3PackageStoreOpt), messageBusPublisher)
     val updateController = system.actorOf(UpdateController.props(transferProtocolProps ), "update-controller")
-    new rvi.SotaServices(updateController, resolverClient, deviceRegistryClient).route
+    new rvi.SotaServices(updateController, resolverClient).route
   }
 
   def rviRoutes(db: Database, notifier: UpdateNotifier, namespaceDirective: Directive1[AuthedNamespaceScope]): Route = {
@@ -76,6 +77,8 @@ trait HttpBoot {
 
   def deviceRegistryClient: DeviceRegistryClient
 
+  def userProfileClient: Option[UserProfileClient]
+
   def messageBusPublisher: MessageBusPublisher
 
   def httpInteractionRoutes(db: Database,
@@ -84,11 +87,11 @@ trait HttpBoot {
                             messageBus: MessageBusPublisher): Route = {
     val webService = new WebService(DefaultUpdateNotifier, resolverClient, deviceRegistryClient, db,
       namespaceDirective, messageBusPublisher)
-    val vehicleService = new DeviceUpdatesResource(db, resolverClient, deviceRegistryClient,
-      namespaceDirective, messageBus)
+    val deviceService = new DeviceUpdatesResource(db, resolverClient, deviceRegistryClient,
+      userProfileClient, namespaceDirective, messageBus)
 
     tokenValidator {
-      webService.route ~ vehicleService.route
+      webService.route ~ deviceService.route
     }
   }
 }
@@ -107,6 +110,13 @@ class Settings(val config: Config) {
   val deviceRegistryApi = Uri(config.getString("device_registry.devicesUri"))
   val deviceRegistryGroupApi = Uri(config.getString("device_registry.deviceGroupsUri"))
   val deviceRegistryMyApi = Uri(config.getString("device_registry.mydeviceUri"))
+
+  val userProfileBaseUri =
+    if (config.getBoolean("user_profile.use")) Some(Uri(config.getString("user_profile.baseUri")))
+    else None
+  val userProfileApi =
+    if (config.getBoolean("user_profile.use")) Some(Uri(config.getString("user_profile.api")))
+    else None
 
   val rviSotaUri = Uri(config.getString("rvi.sotaServicesUri"))
   val rviEndpoint = Uri(config.getString("rvi.endpoint"))
@@ -135,6 +145,11 @@ object Boot extends BootApp
     settings.deviceRegistryUri, settings.deviceRegistryApi,
     settings.deviceRegistryGroupApi, settings.deviceRegistryMyApi
   )
+
+  val userProfileClient = for {
+    baseUri <- settings.userProfileBaseUri
+    api <- settings.userProfileApi
+  } yield new UserProfileClient(baseUri, api)
 
   val messageBusPublisher: MessageBusPublisher =
     MessageBus.publisher(system, system.settings.config) match {

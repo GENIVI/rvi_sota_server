@@ -18,6 +18,7 @@ import java.util.UUID
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.db.{BlockedInstalls, OperationResults, UpdateSpecs}
 import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, ExternalResolverClient}
+import org.genivi.sota.core.user_profile.UserProfile
 import org.genivi.sota.core.rvi.{InstallReport, OperationResult, UpdateReport}
 import org.genivi.sota.core.storage.PackageStorage
 import java.time.Instant
@@ -41,6 +42,7 @@ import scala.concurrent.Future
 class DeviceUpdatesResource(db: Database,
                             resolverClient: ExternalResolverClient,
                             deviceRegistry: DeviceRegistry,
+                            userProfile: Option[UserProfile],
                             authNamespace: Directive1[AuthedNamespaceScope],
                             messageBus: MessageBusPublisher)
                            (implicit system: ActorSystem, mat: ActorMaterializer,
@@ -115,11 +117,23 @@ class DeviceUpdatesResource(db: Database,
   /**
     * An ota client GET the binary file for the package that the given [[UpdateRequest]] and [[Device]] refers to.
     */
-  def downloadPackage(device: Uuid, updateId: Refined[String, Uuid.Valid]): Route = {
+  def downloadPackage(device: Uuid, updateId: Refined[String, Uuid.Valid]): Route =
     withRangeSupport {
-      complete(packageDownloadProcess.buildClientDownloadResponse(device, updateId))
+      val download = packageDownloadProcess.buildClientDownloadResponse(device, updateId)
+
+      userProfile match {
+        case Some(up) =>
+          authDeviceNamespace(device) { ns =>
+            val action = for {
+              withinLimit <- up.checkDeviceLimit(ns, device)
+              result <- if (withinLimit) download
+                        else Future.failed(SotaCoreErrors.DeviceLimitReached)
+            } yield result
+            complete(action)
+          }
+        case None => complete(download)
+      }
     }
-  }
 
   /**
     * An ota client POST for the given [[UpdateRequest]] an [[UpdateReport]]
