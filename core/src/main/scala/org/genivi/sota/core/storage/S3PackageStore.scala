@@ -78,13 +78,14 @@ class S3PackageStore(credentials: S3Credentials)
     log.info(s"Uploading $fileName to amazon s3")
 
     val asyncPut = for {
-      putResult <- Future { s3client.putObject(request) }
+      _ <- Future { s3client.putObject(request) }
       url <- Future { s3client.getUrl(bucketId, fileName) }
-    } yield (putResult, url)
+      metadata <- Future { s3client.getObjectMetadata(bucketId, fileName) }
+    } yield (url, metadata.getContentLength)
 
-    asyncPut map { case (putResult, url)  =>
+    asyncPut map { case (url, size)  =>
       log.info(s"$fileName uploaded to $url")
-      (Uri(url.toString), putResult.getMetadata.getContentLength)
+      (Uri(url.toString), size)
     }
   }
 
