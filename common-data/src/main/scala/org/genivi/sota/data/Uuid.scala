@@ -30,5 +30,5 @@ object Uuid {
 
   // Slick mapping
   implicit val uuidColumnType =
-    MappedColumnType.base[Uuid, String](_.show, (s: String) => Uuid(Refined.unsafeApply(s)))
+    MappedColumnType.base[Uuid, String](_.show, (s: String) => Uuid(refineV[Uuid.Valid](s).right.get))
 }
