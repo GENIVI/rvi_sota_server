@@ -52,7 +52,6 @@ object SotaBuild extends Build {
   lazy val lintOptions = Seq(
     scalacOptions in Compile ++= Seq(
       "-Ywarn-unused-import",
-      "-Xfatal-warnings",
       "-Xlint:-missing-interpolator",
       "-Ywarn-dead-code",
       "-Yno-adapted-args"
