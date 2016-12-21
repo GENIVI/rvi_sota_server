@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.core
 
+import java.time.Instant
 import java.util.UUID
 
 import akka.Done
@@ -26,7 +27,7 @@ import org.genivi.sota.core.storage.PackageStorage.PackageStorageOp
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.PackageId
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
-import org.genivi.sota.messaging.Messages.PackageCreated
+import org.genivi.sota.messaging.Messages.{PackageCreated, PackageStorageUsage}
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.rest.Validation._
 import slick.driver.MySQLDriver.api.Database
@@ -62,7 +63,6 @@ class PackagesResource(resolver: ExternalResolverClient,
 
   import system.dispatcher
   import PackagesResource._
-  import MessageBusPublisher._
 
   implicit val _config = system.settings.config
   implicit val _db = db
@@ -116,20 +116,19 @@ class PackagesResource(resolver: ExternalResolverClient,
                      description: Option[String], vendor: Option[String],
                      signature: Option[String],
                      file: Source[ByteString, Any]): Future[StatusCode] = {
-      val resultF = for {
+      val packageCreateF = for {
         _ <- resolver.putPackage(ns, pid, description, vendor)
         (uri, size, digest) <- packageStorageOp(pid, ns.get, file)
         newPkg = Package(ns, UUID.randomUUID(), pid, uri, size, digest, description, vendor, signature)
-        pkg <- db.run(Packages.create(newPkg))
+        usage <- db.run(Packages.create(newPkg).andThen(Packages.usage(ns)))
+      } yield usage
+
+      for {
+        usage <- packageCreateF
+        _ <- AutoInstall.packageCreated(ns, pid, updateService)
+        _ <- messageBusPublisher.publishSafe(PackageCreated(ns, pid, description, vendor, signature))
+        _ <- messageBusPublisher.publishSafe(PackageStorageUsage(ns, Instant.now, usage))
       } yield StatusCodes.NoContent
-
-      val event = PackageCreated(ns, pid, description, vendor, signature)
-
-      resultF.flatMap { _ =>
-        AutoInstall.packageCreated(updateService, event)
-      }
-
-      resultF.pipeToBus(messageBusPublisher)(_ => event)
     }
 
     def handleErrors(throwable: Throwable): Route = throwable match {
