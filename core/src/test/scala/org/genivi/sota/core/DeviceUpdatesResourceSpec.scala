@@ -53,8 +53,8 @@ class DeviceUpdatesResourceSpec extends FunSuite
   implicit val _db = db
   implicit val connectivity = new FakeConnectivity()
 
-  lazy val service = new DeviceUpdatesResource(db, fakeResolver, fakeDeviceRegistry, defaultNamespaceExtractor,
-    MessageBusPublisher.ignore)
+  lazy val service = new DeviceUpdatesResource(db, fakeResolver, fakeDeviceRegistry, None,
+    defaultNamespaceExtractor, MessageBusPublisher.ignore)
 
   val fakeResolver = new FakeExternalResolver()
 
@@ -202,8 +202,8 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
   // Deprecated, see newer 'mydevice' test below
   test("GET to download a file returns 3xx if the package URL is an s3 URI") {
-    val service = new DeviceUpdatesResource(db, fakeResolver, fakeDeviceRegistry, defaultNamespaceExtractor,
-      MessageBusPublisher.ignore) {
+    val service = new DeviceUpdatesResource(db, fakeResolver, fakeDeviceRegistry, None,
+      defaultNamespaceExtractor, MessageBusPublisher.ignore) {
       override lazy val packageRetrievalOp: (Package) => Future[HttpResponse] = {
         _ => Future.successful {
           HttpResponse(StatusCodes.Found, Location("https://some-fake-place") :: Nil)
@@ -579,8 +579,8 @@ class DeviceUpdatesResourceSpec extends FunSuite
   }
 
   test("Device GET download returns 3xx if the package URL is an s3 URI") {
-    val service = new DeviceUpdatesResource(db, fakeResolver, fakeDeviceRegistry, defaultNamespaceExtractor,
-      MessageBusPublisher.ignore) {
+    val service = new DeviceUpdatesResource(db, fakeResolver, fakeDeviceRegistry, None,
+      defaultNamespaceExtractor, MessageBusPublisher.ignore) {
       override lazy val packageRetrievalOp: (Package) => Future[HttpResponse] = {
         _ => Future.successful {
           HttpResponse(StatusCodes.Found, Location("https://some-fake-place") :: Nil)
