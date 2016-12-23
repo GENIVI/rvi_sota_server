@@ -123,14 +123,13 @@ class DeviceUpdatesResource(db: Database,
 
       userProfile match {
         case Some(up) =>
-          authDeviceNamespace(device) { ns =>
-            val action = for {
-              withinLimit <- up.checkDeviceLimit(ns, device)
-              result <- if (withinLimit) download
-                        else Future.failed(SotaCoreErrors.DeviceLimitReached)
-            } yield result
-            complete(action)
-          }
+          val action = for {
+            deviceData <- deviceRegistry.fetchMyDevice(device)
+            withinLimit <- up.checkDeviceLimit(deviceData.namespace, device)
+            result <- if (withinLimit) download
+                      else Future.failed(SotaCoreErrors.DeviceLimitReached)
+          } yield result
+          complete(action)
         case None => complete(download)
       }
     }
@@ -251,7 +250,7 @@ class DeviceUpdatesResource(db: Database,
       val f = deviceRegistry.fetchDevice(ns, deviceId)
       onComplete(f) flatMap {
         case Success(device) =>
-            provide(ns)
+          provide(ns)
         case Failure(t) => reject(failNamespaceRejection("Cannot validate namespace"))
       }
     }
