@@ -59,6 +59,9 @@ object Messages {
 
   final case class PackageStorageUsage(namespace: Namespace, timestamp: Instant, byteCount: Long) extends BusMessage
 
+  final case class BandwidthUsage(id: UUID, namespace: Namespace, timestamp: Instant, byteCount: Long,
+                                  downloadSource: String) extends BusMessage
+
   //Create custom UpdateSpec here instead of using org.genivi.sota.core.data.UpdateSpec as that would require moving
   //multiple RVI messages into SotaCommon. Furthermore, for now this class contains just the info required by the
   //front end.
@@ -124,4 +127,6 @@ object Messages {
   implicit val imageStorageUsageMessageLike = MessageLike[ImageStorageUsage](_.namespace.get)
 
   implicit val packageStorageUsageMessageLike = MessageLike[PackageStorageUsage](_.namespace.get)
+
+  implicit val bandwidthUsageMessageLike = MessageLike[BandwidthUsage](_.id.toString)
 }
