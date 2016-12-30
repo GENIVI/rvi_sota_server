@@ -24,8 +24,7 @@ import org.genivi.sota.core.db._
 import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
 import org.genivi.sota.core.storage.PackageStorage
 import org.genivi.sota.core.storage.PackageStorage.PackageStorageOp
-import org.genivi.sota.data.Namespace
-import org.genivi.sota.data.PackageId
+import org.genivi.sota.data.{Namespace, PackageId}
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.messaging.Messages.{PackageCreated, PackageStorageUsage}
 import org.genivi.sota.messaging.MessageBusPublisher
@@ -88,17 +87,14 @@ class PackagesResource(resolver: ExternalResolverClient,
     * An ota client GET [[Package]] info, including for example S3 uri of its binary file.
     */
   def fetch(ns: Namespace, pid: PackageId): Route = {
-    // TODO: Include error description with rejectEmptyResponse?
-    rejectEmptyResponse {
-      complete {
-        val query = for {
-          p <- Packages.byId(ns, pid)
-          isBlacklisted <- BlacklistedPackages.isBlacklisted(ns, pid)
-        } yield (p, isBlacklisted)
+    complete {
+      val query = for {
+        p <- Packages.byId(ns, pid)
+        isBlacklisted <- BlacklistedPackages.isBlacklisted(ns, pid)
+      } yield (p, isBlacklisted)
 
-        db.run(query).map { case (pkg, blacklisted) =>
-          pkg.toResponse(blacklisted)
-        }
+      db.run(query).map { case (pkg, blacklisted) =>
+        pkg.toResponse(blacklisted)
       }
     }
   }

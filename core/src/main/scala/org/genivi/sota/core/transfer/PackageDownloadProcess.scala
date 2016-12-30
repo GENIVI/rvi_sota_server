@@ -36,13 +36,16 @@ class PackageDownloadProcess(db: Database, packageRetrieval: PackageRetrievalOp)
     * </ul>
     */
   def buildClientDownloadResponse(device: Uuid, updateRequestId: Refined[String, Uuid.Valid])
-                                 (implicit ec: ExecutionContext): Future[HttpResponse] = {
+                                 (implicit ec: ExecutionContext): Future[(Package, HttpResponse)] = {
     val dbIO = for {
       pkg <- findForDownload(updateRequestId)
       _ <- UpdateSpecs.setStatus(device, UUID.fromString(updateRequestId.get), UpdateStatus.InFlight)
     } yield pkg
 
-    db.run(dbIO.transactionally).flatMap(packageRetrieval)
+    for {
+      pkg <- db.run(dbIO.transactionally)
+      resp <- packageRetrieval(pkg)
+    } yield (pkg, resp)
   }
 
   /**

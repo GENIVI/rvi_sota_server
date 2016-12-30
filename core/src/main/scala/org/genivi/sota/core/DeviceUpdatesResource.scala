@@ -27,15 +27,16 @@ import java.time.temporal.ChronoUnit
 import org.genivi.sota.core.transfer.DeviceUpdates
 import org.genivi.sota.core.data.UpdateSpec
 import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, PackageDownloadProcess}
-import org.genivi.sota.data.{Namespace, PackageId, Uuid}
-
+import org.genivi.sota.data.{Namespace, PackageId, UpdateType, Uuid}
 import slick.driver.MySQLDriver.api.Database
 import cats.syntax.show.toShowOps
 import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.core.data.client.PendingUpdateRequest._
 import UpdateSpec._
+import org.genivi.sota.messaging.Messages.BandwidthUsage
 import org.genivi.sota.rest.ResponseConversions._
+import MessageBusPublisher._
 
 import scala.concurrent.Future
 
@@ -114,24 +115,28 @@ class DeviceUpdatesResource(db: Database,
     complete(db.run(vehiclePackages))
   }
 
-  /**
-    * An ota client GET the binary file for the package that the given [[UpdateRequest]] and [[Device]] refers to.
-    */
   def downloadPackage(device: Uuid, updateId: Refined[String, Uuid.Valid]): Route =
     withRangeSupport {
-      val download = packageDownloadProcess.buildClientDownloadResponse(device, updateId)
+      val userWithinLimitFuture =
+        userProfile match {
+          case Some(up) =>
+            for {
+              deviceData <- deviceRegistry.fetchMyDevice(device)
+              withinLimit <- up.checkDeviceLimit(deviceData.namespace, device)
+              result <- if (withinLimit) Future.successful(())
+              else Future.failed(SotaCoreErrors.DeviceLimitReached)
+            } yield result
+          case None =>
+            Future.successful(())
+        }
 
-      userProfile match {
-        case Some(up) =>
-          val action = for {
-            deviceData <- deviceRegistry.fetchMyDevice(device)
-            withinLimit <- up.checkDeviceLimit(deviceData.namespace, device)
-            result <- if (withinLimit) download
-                      else Future.failed(SotaCoreErrors.DeviceLimitReached)
-          } yield result
-          complete(action)
-        case None => complete(download)
-      }
+      val f = userWithinLimitFuture
+        .flatMap(_ => packageDownloadProcess.buildClientDownloadResponse(device, updateId))
+        .pipeToBus(messageBus) { case (pkg, _) =>
+          BandwidthUsage(UUID.randomUUID(), pkg.namespace, Instant.now, pkg.size, UpdateType.Package, pkg.id.show)
+        }
+
+      complete(f.map(_._2))
     }
 
   /**
