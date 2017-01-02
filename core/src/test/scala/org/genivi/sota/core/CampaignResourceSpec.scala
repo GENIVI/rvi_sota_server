@@ -216,11 +216,21 @@ class CampaignResourceSpec extends FunSuite
     val id = createCampaignOk(campName)
     launchCampaign(id)
 
-    val campName2 = CreateCampaignGen.sample.get
-    renameCampaign(id, campName2, StatusCodes.Locked)
+
+    val setgroups = createRandomGroups()
+    setGroups(id, setgroups, StatusCodes.Locked)
 
     val pkg = createRandomPackage()
     setPackage(id, pkg, StatusCodes.Locked)
+  }
+
+  test("can rename a launched campaign") {
+    val campName = CreateCampaignGen.sample.get
+    val id = createCampaignOk(campName)
+    launchCampaign(id)
+
+    val campName2 = CreateCampaignGen.sample.get
+    renameCampaign(id, campName2, StatusCodes.OK)
   }
 
   test("can't launch campaign with inconsitent dates") {
