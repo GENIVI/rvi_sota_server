@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.device_registry
 
-import java.time.Instant
+import java.time.{Instant, OffsetDateTime}
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.headers.Location
@@ -17,16 +17,16 @@ import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.data._
 import org.genivi.sota.device_registry.db._
+import org.genivi.sota.http.UuidDirectives.extractUuid
+import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
-import org.genivi.sota.unmarshalling.AkkaHttpUnmarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.Messages.{DeviceActivated, DeviceCreated, DeviceDeleted, DeviceSeen}
-import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
-import org.genivi.sota.http.UuidDirectives.extractUuid
-import slick.driver.MySQLDriver.api._
 import org.genivi.sota.rest.Validation._
-import java.time.OffsetDateTime
+import org.genivi.sota.unmarshalling.AkkaHttpUnmarshallingSupport._
+import slick.driver.MySQLDriver.api._
+
 import scala.concurrent.ExecutionContext
 
 class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
@@ -47,12 +47,15 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
 
   def searchDevice(ns: Namespace): Route =
     parameters(('regex.as[String Refined Regex].?,
-                'deviceId.as[String].?)) { // TODO: Use refined
-      case (Some(re), None) =>
-        complete(db.run(DeviceRepository.search(ns, re)))
-      case (None, Some(deviceId)) =>
+                'deviceId.as[String].?, // TODO: Use refined
+                'offset.as[Long].?,
+                'limit.as[Long].?)) {
+      case (Some(re), None, offset, limit) =>
+        complete(db.run(DeviceRepository.search(ns, re, offset, limit)))
+      case (None, Some(deviceId), offset, limit) =>
         complete(db.run(DeviceRepository.findByDeviceId(ns, DeviceId(deviceId))))
-      case (None, None) => complete(db.run(DeviceRepository.list(ns)))
+      case (None, None, offset, limit) =>
+        complete(db.run(DeviceRepository.list(ns, offset, limit)))
       case _ =>
         complete((BadRequest, "'regex' and 'deviceId' parameters cannot be used together!"))
     }

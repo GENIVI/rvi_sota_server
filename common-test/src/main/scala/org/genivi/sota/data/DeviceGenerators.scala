@@ -14,8 +14,10 @@ trait DeviceGenerators {
   import UuidGenerator._
 
   val genDeviceName: Gen[DeviceName] = for {
-    name <- arbitrary[String]
-  } yield DeviceName(name)
+    //use a minimum length for DeviceName to reduce possibility of naming conflicts
+    size <- Gen.choose(10, 100)
+    name <- Gen.containerOfN[Seq, Char](size, Gen.alphaNumChar)
+  } yield DeviceName(name.mkString)
 
   val genDeviceId: Gen[DeviceId] = for {
     id <- Gen.identifier
@@ -52,20 +54,13 @@ trait DeviceGenerators {
     genConflictFreeDeviceTs(arbitrary[Int].sample.get)
 
   def genConflictFreeDeviceTs(n: Int): Gen[Seq[DeviceT]] = {
-    val names: Seq[DeviceName] =
-      Gen.containerOfN[Seq, DeviceName](n, genDeviceName)
-      .suchThat { c => c.distinct.length == c.length }
-      .sample.get
-    val ids: Seq[DeviceId] =
-      Gen.containerOfN[Seq, DeviceId](n, genDeviceId)
-      .suchThat { c => c.distinct.length == c.length }
-      .sample.get
-
-    val namesG: Seq[Gen[DeviceName]] = names.map(Gen.const(_))
-    val idsG: Seq[Gen[DeviceId]] = ids.map(Gen.const(_))
-
-    namesG.zip(idsG).map { case (nameG, idG) =>
-      genDeviceTWith(nameG, idG).sample.get
+    for {
+      dns <- Gen.containerOfN[Seq, DeviceName](n, genDeviceName)
+      dids <- Gen.containerOfN[Seq, DeviceId](n, genDeviceId)
+    } yield {
+      dns.zip(dids).map { case (nameG, idG) =>
+        genDeviceTWith(nameG, idG).sample.get
+      }
     }
   }
 

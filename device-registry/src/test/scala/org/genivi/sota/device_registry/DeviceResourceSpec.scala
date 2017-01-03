@@ -4,13 +4,15 @@
  */
 package org.genivi.sota.device_registry
 
-import java.time.{Instant, OffsetDateTime}
+import java.time.OffsetDateTime
+import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 import akka.http.scaladsl.model.StatusCodes._
 import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.data._
+import org.genivi.sota.device_registry.db.DeviceRepository
 import org.genivi.sota.device_registry.db.InstalledPackages.{DevicesCount, InstalledPackage}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalacheck.Arbitrary._
@@ -23,6 +25,8 @@ import org.scalacheck.Gen
 class DeviceResourceSpec extends ResourcePropSpec {
 
   import Device._
+
+  private val deviceNumber = DeviceRepository.defaultLimit + 10
 
   def isRecent(time: Option[Instant]): Boolean = time match {
     case Some(t) => t.isAfter(Instant.now.minus(3, ChronoUnit.MINUTES))
@@ -355,5 +359,35 @@ class DeviceResourceSpec extends ResourcePropSpec {
       //convert to sets as order isn't important
       resp.groupIds shouldBe groupIds.toSet
     }
+  }
+
+  property("can list devices with custom pagination limit") {
+    val limit = 30
+    val deviceTs = genConflictFreeDeviceTs(deviceNumber).sample.get
+    val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
+
+    searchDevice(defaultNs, "", limit = limit) ~> route ~> check {
+      status shouldBe OK
+      val result = responseAs[Seq[Device]]
+      result.length shouldBe limit
+    }
+    deviceIds.foreach(deleteDeviceOk(_))
+  }
+
+  property("can list devices with custom pagination limit and offset") {
+    val limit = 30
+    val offset = 10
+    val deviceTs = genConflictFreeDeviceTs(deviceNumber).sample.get
+    val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
+
+    searchDevice(defaultNs, "", offset = offset, limit = limit) ~> route ~> check {
+      status shouldBe OK
+      val devices = responseAs[Seq[Device]]
+      devices.length shouldBe limit
+      devices.zip(devices.tail).foreach { case (device1, device2) =>
+        device1.deviceName.underlying.compareTo(device2.deviceName.underlying) should be <= 0
+      }
+    }
+    deviceIds.foreach(deleteDeviceOk(_))
   }
 }

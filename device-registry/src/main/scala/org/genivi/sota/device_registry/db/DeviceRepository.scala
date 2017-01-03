@@ -42,7 +42,21 @@ object DeviceRepository {
   // scalastyle:on
   val devices = TableQuery[DeviceTable]
 
-  def list(ns: Namespace): DBIO[Seq[Device]] = devices.filter(_.namespace === ns).result
+  val defaultLimit = 50
+
+  def list(ns: Namespace, offset: Option[Long], limit: Option[Long]): DBIO[Seq[Device]] = {
+    val filteredDevices = devices.filter(_.namespace === ns)
+    (offset, limit) match {
+      case (None, None) =>
+        filteredDevices
+          .sortBy(_.deviceName)
+          .result
+      case _ =>
+        filteredDevices
+          .paginate(_.deviceName, offset.getOrElse(0), limit.getOrElse(defaultLimit))
+          .result
+    }
+  }
 
   def create(ns: Namespace, device: DeviceT)
              (implicit ec: ExecutionContext): DBIO[Uuid] = {
@@ -72,10 +86,19 @@ object DeviceRepository {
       .filter(d => d.namespace === ns && d.deviceId === deviceId)
       .result
 
-  def search(ns: Namespace, re: String Refined Regex): DBIO[Seq[Device]] =
-    devices
-      .filter(d => d.namespace === ns && regex(d.deviceName, re))
-      .result
+  def search(ns: Namespace, re: String Refined Regex, offset: Option[Long], limit: Option[Long]): DBIO[Seq[Device]] = {
+    val filteredDevices = devices.filter(d => d.namespace === ns && regex(d.deviceName, re))
+    (offset, limit) match {
+      case (None, None) =>
+        filteredDevices
+          .sortBy(_.deviceName)
+          .result
+      case _ =>
+        filteredDevices
+          .paginate(_.deviceName, offset.getOrElse(0), limit.getOrElse(defaultLimit))
+          .result
+    }
+  }
 
   def update(ns: Namespace, uuid: Uuid, device: DeviceT)(implicit ec: ExecutionContext): DBIO[Unit] = {
     val dbIO = devices

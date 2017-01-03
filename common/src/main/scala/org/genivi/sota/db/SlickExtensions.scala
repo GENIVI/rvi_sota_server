@@ -56,6 +56,15 @@ object SlickExtensions {
   implicit def uuidToJava(refined: Refined[String, Uuid]): Rep[UUID] =
     UUID.fromString(refined.get).bind
 
+  implicit class DbioPaginateExtensions[E, U, A](action: Query[E, U, Seq]) {
+    def paginate[T <% slick.lifted.Ordered](fn: E => T, offset: Long, limit: Long): Query[E, U, Seq] = {
+      action
+        .sortBy(fn)
+        .drop(offset)
+        .take(limit)
+    }
+  }
+
   implicit class DbioActionExtensions[T](action: DBIO[T]) {
     def handleIntegrityErrors(error: Throwable)(implicit ec: ExecutionContext): DBIO[T] = {
       action.asTry.flatMap {
