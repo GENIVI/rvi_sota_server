@@ -234,7 +234,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
       }
 
       getActiveDeviceCount(start, end) ~> route ~> check {
-        responseAs[Int] shouldBe 1
+        responseAs[ActiveDeviceCount].deviceCount shouldBe 1
       }
 
       deleteDeviceOk(uuid)
