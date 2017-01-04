@@ -83,4 +83,5 @@ object Device {
     def show(odt: OffsetDateTime) = odt.toString
   }
 
+  case class ActiveDeviceCount(deviceCount: Int)
 }

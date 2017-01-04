@@ -410,7 +410,7 @@ paths:
             $ref: '#/definitions/DevicesCount'
   /active_device_count:
     get:
-      description: returns count of devices active during the given time interval
+      description: returns count of devices active during the given time interval (for an implicitely given namespace)
       parameters:
       - name: start
         in: query
@@ -428,7 +428,7 @@ paths:
         200:
           description: OK
           schema:
-            $ref: '#/definitions/ActiveDevicesCount'
+            $ref: '#/definitions/ActiveDeviceCount'
 
 definitions:
   uuid:
@@ -527,6 +527,9 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/uuid'
-  ActiveDevicesCount:
-    type: integer
-    description: count of active devices (in a given interval)
+  ActiveDeviceCount:
+    type: object
+    properties:
+      deviceCount:
+        type: integer
+        description: count of active devices (in a given interval)

@@ -151,11 +151,11 @@ object DeviceRepository {
       .result
       .failIfNotSingle(Errors.MissingDevice)
 
-  def countActivatedDevices(start: Instant, end: Instant): DBIO[Int] = {
+  def countActivatedDevices(ns: Namespace, start: Instant, end: Instant): DBIO[Int] = {
     devices
+      .filter(_.namespace === ns)
       .map(_.activatedAt.getOrElse(start.minusSeconds(36000)))
-      .filter(_ >= start)
-      .filter(_ < end)
+      .filter(activatedAt => activatedAt >= start && activatedAt < end)
       .countDistinct
       .result
   }
