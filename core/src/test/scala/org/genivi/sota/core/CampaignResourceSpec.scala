@@ -11,6 +11,8 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import cats.implicits._
 import io.circe.generic.auto._
 import java.util.UUID
+
+import org.genivi.sota.DefaultPatience
 import org.genivi.sota.core.data.{Campaign, UpdateStatus}
 import org.genivi.sota.core.db.{BlacklistedPackages, Packages, UpdateRequests}
 import org.genivi.sota.core.resolver.DefaultConnectivity
@@ -214,11 +216,21 @@ class CampaignResourceSpec extends FunSuite
     val id = createCampaignOk(campName)
     launchCampaign(id)
 
-    val campName2 = CreateCampaignGen.sample.get
-    renameCampaign(id, campName2, StatusCodes.Locked)
+
+    val setgroups = createRandomGroups()
+    setGroups(id, setgroups, StatusCodes.Locked)
 
     val pkg = createRandomPackage()
     setPackage(id, pkg, StatusCodes.Locked)
+  }
+
+  test("can rename a launched campaign") {
+    val campName = CreateCampaignGen.sample.get
+    val id = createCampaignOk(campName)
+    launchCampaign(id)
+
+    val campName2 = CreateCampaignGen.sample.get
+    renameCampaign(id, campName2, StatusCodes.OK)
   }
 
   test("can't launch campaign with inconsitent dates") {

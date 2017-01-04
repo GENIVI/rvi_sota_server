@@ -15,15 +15,16 @@ import akka.stream.ActorMaterializer
 import cats.data.Xor
 import com.typesafe.config.Config
 import org.genivi.sota.client.DeviceRegistryClient
-import org.genivi.sota.core.db.DatabaseConfig
 import org.genivi.sota.core.resolver._
 import org.genivi.sota.core.rvi._
 import org.genivi.sota.core.storage.S3PackageStore
 import org.genivi.sota.core.transfer._
-import org.genivi.sota.db.BootMigrations
+import org.genivi.sota.core.user_profile._
+import org.genivi.sota.db.{BootMigrations, DatabaseConfig}
 import org.genivi.sota.http._
 import org.genivi.sota.http.LogDirectives._
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
+import org.genivi.sota.monitoring.{DatabaseMetrics, MetricsSupport}
 import slick.driver.MySQLDriver.api.Database
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -50,7 +51,7 @@ trait RviBoot {
       TransferProtocolActor.props(db, rviConnectivity.client,
         PackageTransferActor.props(rviConnectivity.client, s3PackageStoreOpt), messageBusPublisher)
     val updateController = system.actorOf(UpdateController.props(transferProtocolProps ), "update-controller")
-    new rvi.SotaServices(updateController, resolverClient, deviceRegistryClient).route
+    new rvi.SotaServices(updateController, resolverClient).route
   }
 
   def rviRoutes(db: Database, notifier: UpdateNotifier, namespaceDirective: Directive1[AuthedNamespaceScope]): Route = {
@@ -76,6 +77,8 @@ trait HttpBoot {
 
   def deviceRegistryClient: DeviceRegistryClient
 
+  def userProfileClient: Option[UserProfileClient]
+
   def messageBusPublisher: MessageBusPublisher
 
   def httpInteractionRoutes(db: Database,
@@ -84,11 +87,11 @@ trait HttpBoot {
                             messageBus: MessageBusPublisher): Route = {
     val webService = new WebService(DefaultUpdateNotifier, resolverClient, deviceRegistryClient, db,
       namespaceDirective, messageBusPublisher)
-    val vehicleService = new DeviceUpdatesResource(db, resolverClient, deviceRegistryClient,
-      namespaceDirective, messageBus)
+    val deviceService = new DeviceUpdatesResource(db, resolverClient, deviceRegistryClient,
+      userProfileClient, namespaceDirective, messageBus)
 
     tokenValidator {
-      webService.route ~ vehicleService.route
+      webService.route ~ deviceService.route
     }
   }
 }
@@ -108,25 +111,31 @@ class Settings(val config: Config) {
   val deviceRegistryGroupApi = Uri(config.getString("device_registry.deviceGroupsUri"))
   val deviceRegistryMyApi = Uri(config.getString("device_registry.mydeviceUri"))
 
+  val userProfileBaseUri =
+    if (config.getBoolean("user_profile.use")) Some(Uri(config.getString("user_profile.baseUri")))
+    else None
+  val userProfileApi =
+    if (config.getBoolean("user_profile.use")) Some(Uri(config.getString("user_profile.api")))
+    else None
+
   val rviSotaUri = Uri(config.getString("rvi.sotaServicesUri"))
   val rviEndpoint = Uri(config.getString("rvi.endpoint"))
 }
 
 
-object Boot extends App with DatabaseConfig with HttpBoot with RviBoot with BootMigrations {
+object Boot extends BootApp
+  with VersionInfo
+  with DatabaseConfig
+  with HttpBoot
+  with RviBoot
+  with BootMigrations
+  with MetricsSupport
+  with DatabaseMetrics {
+
   import VersionDirectives._
 
-  implicit val system = ActorSystem("sota-core-service")
-  implicit val materializer = ActorMaterializer()
-  implicit val exec = system.dispatcher
-  implicit val log = Logging(system, "boot")
   lazy val config = system.settings.config
   val settings = new Settings(config)
-
-  lazy val version: String = {
-    val bi = org.genivi.sota.core.BuildInfo
-    bi.name + "/" + bi.version
-  }
 
   val resolverClient = new DefaultExternalResolverClient(
     settings.resolverUri, settings.resolverResolveUri, settings.resolverPackagesUri, settings.resolverVehiclesUri
@@ -136,6 +145,11 @@ object Boot extends App with DatabaseConfig with HttpBoot with RviBoot with Boot
     settings.deviceRegistryUri, settings.deviceRegistryApi,
     settings.deviceRegistryGroupApi, settings.deviceRegistryMyApi
   )
+
+  val userProfileClient = for {
+    baseUri <- settings.userProfileBaseUri
+    api <- settings.userProfileApi
+  } yield new UserProfileClient(baseUri, api)
 
   val messageBusPublisher: MessageBusPublisher =
     MessageBus.publisher(system, system.settings.config) match {
@@ -147,7 +161,7 @@ object Boot extends App with DatabaseConfig with HttpBoot with RviBoot with Boot
 
   val interactionProtocol = config.getString("core.interactionProtocol")
 
-  val healthResource = new HealthResource(db, org.genivi.sota.core.BuildInfo.toMap)
+  val healthResource = new HealthResource(db, versionMap)
 
   log.info(s"using interaction protocol '$interactionProtocol'")
 
@@ -170,19 +184,19 @@ object Boot extends App with DatabaseConfig with HttpBoot with RviBoot with Boot
       }
   }
 
-  val startupF =
-    routes() map { r =>
+  val binding =
+    routes().flatMap { r =>
       val sealedRoutes = sotaLog(Route.seal(r))
 
       Http()
         .bindAndHandle(sealedRoutes, settings.host, settings.port)
     }
 
-  startupF onComplete {
+  binding onComplete {
     case Success(services) =>
       log.info(s"Server online at http://${settings.host}:${settings.port}")
     case Failure(e) =>
-      log.error(e, "Unable to start")
+      log.error("Unable to start", e)
       sys.exit(-1)
   }
 

@@ -5,11 +5,13 @@ import java.util.UUID
 
 import cats.data.Xor
 import cats.syntax.show._
+import io.circe.generic.decoding.DerivedDecoder
+import io.circe.generic.encoding.DerivedObjectEncoder
 import io.circe.{Decoder, Encoder}
 import io.circe.parser._
-import io.circe.generic.semiauto._
 import org.genivi.sota.marshalling.CirceInstances._
 import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import shapeless.Lazy
 
 import scala.reflect.ClassTag
 
@@ -21,30 +23,51 @@ object Messages {
 
   val partitionPrefixSize = 256
 
-  final case class DeviceSeen(namespace: Namespace,
-                              uuid: Uuid,
-                              lastSeen: Instant) extends BusMessage
+  final case class DeviceSeen(
+    namespace: Namespace,
+    uuid: Uuid,
+    lastSeen: Instant) extends BusMessage
 
-  final case class DeviceCreated(namespace: Namespace,
-                                 uuid: Uuid,
-                                 deviceName: DeviceName,
-                                 deviceId: Option[DeviceId],
-                                 deviceType: DeviceType) extends BusMessage
+  final case class DeviceCreated(
+    namespace: Namespace,
+    uuid: Uuid,
+    deviceName: DeviceName,
+    deviceId: Option[DeviceId],
+    deviceType: DeviceType) extends BusMessage
 
-  final case class DeviceDeleted(namespace: Namespace, uuid: Uuid) extends BusMessage
+  final case class DeviceActivated(
+    namespace: Namespace,
+    uuid: Uuid,
+    at: Instant) extends BusMessage
 
-  final case class PackageCreated(namespace: Namespace, packageId: PackageId,
-                                  description: Option[String], vendor: Option[String],
-                                  signature: Option[String]) extends BusMessage
+  final case class DeviceDeleted(
+    namespace: Namespace,
+    uuid: Uuid) extends BusMessage
 
-  final case class PackageBlacklisted(namespace: Namespace, packageId: PackageId) extends BusMessage
+  final case class PackageCreated(
+    namespace: Namespace,
+    packageId: PackageId,
+    description: Option[String],
+    vendor: Option[String],
+    signature: Option[String]) extends BusMessage
 
+  final case class PackageBlacklisted(
+    namespace: Namespace,
+    packageId: PackageId) extends BusMessage
+
+  final case class ImageStorageUsage(namespace: Namespace, timestamp: Instant, byteCount: Long) extends BusMessage
+
+  final case class PackageStorageUsage(namespace: Namespace, timestamp: Instant, byteCount: Long) extends BusMessage
 
   //Create custom UpdateSpec here instead of using org.genivi.sota.core.data.UpdateSpec as that would require moving
   //multiple RVI messages into SotaCommon. Furthermore, for now this class contains just the info required by the
   //front end.
-  final case class UpdateSpec(namespace: Namespace, device: Uuid, packageUuid: UUID,
-                              status: String) extends BusMessage
+  final case class UpdateSpec(
+    namespace: Namespace,
+    device: Uuid,
+    packageUuid: UUID,
+    status: String) extends BusMessage
+
 
   implicit class StreamNameOp[T <: Class[_]](v: T) {
     def streamName: String = {
@@ -54,6 +77,20 @@ object Messages {
 
   implicit class StreamNameInstanceOp[T <: BusMessage](v: T) {
     def streamName: String = v.getClass.streamName
+  }
+
+  object MessageLike {
+    def apply[T](idFn: T => String)
+                (implicit ct: ClassTag[T],
+                 encode: Lazy[DerivedObjectEncoder[T]],
+                 decode: Lazy[DerivedDecoder[T]]): MessageLike[T] = new MessageLike[T] {
+      override def id(v: T): String = idFn(v)
+
+      import io.circe.generic.semiauto._
+
+      override implicit val encoder: Encoder[T] = deriveEncoder[T]
+      override implicit val decoder: Decoder[T] = deriveDecoder[T]
+    }
   }
 
   abstract class MessageLike[T]()(implicit val tag: ClassTag[T]) {
@@ -70,47 +107,21 @@ object Messages {
     implicit val decoder: Decoder[T]
   }
 
+  implicit val deviceSeenMessageLike = MessageLike[DeviceSeen](_.uuid.show)
 
-  implicit val deviceSeenMessageLike = new MessageLike[DeviceSeen] {
-    override def id(v: DeviceSeen): String = v.uuid.underlying.get
+  implicit val deviceCreatedMessageLike = MessageLike[DeviceCreated](_.uuid.show)
 
-    implicit val encoder: Encoder[DeviceSeen] = deriveEncoder
-    implicit val decoder: Decoder[DeviceSeen] = deriveDecoder
-  }
+  implicit val deviceDeletedMessageLike = MessageLike[DeviceDeleted](_.uuid.show)
 
-  implicit val deviceCreatedMessageLike = new MessageLike[DeviceCreated] {
-    override def id(v: DeviceCreated): String = v.uuid.underlying.get
+  implicit val deviceActivatedMessageLike = MessageLike[DeviceActivated](_.uuid.show)
 
-    implicit val encoder: Encoder[DeviceCreated] = deriveEncoder
-    implicit val decoder: Decoder[DeviceCreated] = deriveDecoder
-  }
+  implicit val packageCreatedMessageLike = MessageLike[PackageCreated](_.packageId.mkString)
 
-  implicit val deviceDeletedMessageLike = new MessageLike[DeviceDeleted] {
-    override def id(v: DeviceDeleted): String = v.uuid.underlying.get
+  implicit val updateSpecMessageLike = MessageLike[UpdateSpec](_.device.show)
 
-    implicit val encoder: Encoder[DeviceDeleted] = deriveEncoder
-    implicit val decoder: Decoder[DeviceDeleted] = deriveDecoder
-  }
+  implicit val blacklistedPackageMessageLike = MessageLike[PackageBlacklisted](_.packageId.mkString)
 
+  implicit val imageStorageUsageMessageLike = MessageLike[ImageStorageUsage](_.namespace.get)
 
-  implicit val packageCreatedMessageLike = new MessageLike[PackageCreated] {
-    override def id(v: PackageCreated): String = v.packageId.mkString
-
-    implicit val encoder: Encoder[PackageCreated] = deriveEncoder
-    implicit val decoder: Decoder[PackageCreated] = deriveDecoder
-  }
-
-  implicit val updateSpecMessageLike = new MessageLike[UpdateSpec] {
-    override def id(v: UpdateSpec): String = v.device.show
-
-    implicit val encoder: Encoder[UpdateSpec] = deriveEncoder
-    implicit val decoder: Decoder[UpdateSpec] = deriveDecoder
-  }
-
-  implicit val blacklistedPackageMessageLike = new MessageLike[PackageBlacklisted]() {
-    override def id(v: PackageBlacklisted): String = v.packageId.mkString
-
-    override implicit val encoder: Encoder[PackageBlacklisted] = deriveEncoder
-    override implicit val decoder: Decoder[PackageBlacklisted] = deriveDecoder
-  }
+  implicit val packageStorageUsageMessageLike = MessageLike[PackageStorageUsage](_.namespace.get)
 }

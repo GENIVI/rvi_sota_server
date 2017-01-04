@@ -76,7 +76,7 @@ object SotaBuild extends Build {
   // the sub-projects
   lazy val common = Project(id = "sota-common", base = file("common"))
     .settings(basicSettings ++ compilerSettings ++ lintOptions)
-    .settings(libraryDependencies ++= Dependencies.JsonWebSecurity ++ Dependencies.Rest :+ Dependencies.AkkaHttpCirceJson :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
+    .settings(libraryDependencies ++= Dependencies.JsonWebSecurity ++ Dependencies.Rest ++ Dependencies.DropwizardMetrics :+ Dependencies.AkkaHttpCirceJson :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
     .dependsOn(commonData)
     .settings(Publish.settings)
 
@@ -88,12 +88,14 @@ object SotaBuild extends Build {
   lazy val commonTest = Project(id = "sota-common-test", base = file("common-test"))
     .settings(basicSettings ++ compilerSettings ++ lintOptions)
     .settings(libraryDependencies ++= Seq (Dependencies.Cats, Dependencies.Refined, Dependencies.Generex))
+    .settings(libraryDependencies += Dependencies.ScalaTestLib % "provided")
     .dependsOn(commonData)
     .settings(Publish.settings)
 
   lazy val commonDbTest = Project(id = "sota-common-db-test", base = file("common-db-test"))
     .settings(basicSettings ++ compilerSettings ++ lintOptions)
-    .settings(libraryDependencies ++= Dependencies.Slick :+ Dependencies.Flyway :+ Dependencies.ScalaTestLib)
+    .settings(libraryDependencies ++= Dependencies.Slick :+ Dependencies.Flyway)
+    .settings(libraryDependencies += Dependencies.ScalaTestLib % "provided")
     .dependsOn(commonData, commonTest)
     .settings(Publish.settings)
 
@@ -299,6 +301,12 @@ object Dependencies {
   lazy val ParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
 
   lazy val CommonsCodec = "commons-codec" % "commons-codec" % "1.10"
+
+  lazy val DropwizardMetrics = Seq(
+    "io.dropwizard.metrics" % "metrics-core" % "3.1.2",
+    "io.dropwizard.metrics" % "metrics-jvm" % "3.1.2"
+  )
+
 
   lazy val Rest = Akka ++ Slick
 

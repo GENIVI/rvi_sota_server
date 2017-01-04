@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.data
 
-import java.time.Instant
+import java.time.{Instant, OffsetDateTime}
 
 import cats.Show
 import cats.syntax.show._
@@ -28,7 +28,8 @@ final case class Device(namespace: Namespace,
                   deviceId: Option[DeviceId] = None,
                   deviceType: DeviceType = DeviceType.Other,
                   lastSeen: Option[Instant] = None,
-                  createdAt: Instant) {
+                  createdAt: Instant,
+                  activatedAt: Option[Instant] = None) {
 
   // TODO: Use org.genivi.sota.core.data.client.ResponseEncoder
   def toResponse: DeviceT = DeviceT(deviceName, deviceId, deviceType)
@@ -76,6 +77,10 @@ object Device {
 
   implicit def DeviceOrdering(implicit ord: Ordering[Uuid]): Ordering[Device] = new Ordering[Device] {
     override def compare(d1: Device, d2: Device): Int = ord.compare(d1.uuid, d2.uuid)
+  }
+
+  implicit val showOffsetDateTable = new Show[OffsetDateTime] {
+    def show(odt: OffsetDateTime) = odt.toString
   }
 
 }

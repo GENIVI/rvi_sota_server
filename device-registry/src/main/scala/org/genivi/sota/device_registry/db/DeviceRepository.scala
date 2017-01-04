@@ -12,7 +12,6 @@ import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
 import org.genivi.sota.db.Operators.regex
 import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.device_registry.common.Errors
-import org.genivi.sota.messaging.Messages.DeviceSeen
 import org.genivi.sota.refined.SlickRefined._
 import slick.driver.MySQLDriver.api._
 
@@ -32,9 +31,10 @@ object DeviceRepository {
     def deviceType = column[DeviceType]("device_type")
     def lastSeen = column[Option[Instant]]("last_seen")
     def createdAt = column[Instant]("created_at")
+    def activatedAt = column[Option[Instant]]("activated_at")
 
-    def * = (namespace, uuid, deviceName, deviceId, deviceType, lastSeen, createdAt).shaped <>
-      ((Device.apply _).tupled, Device.unapply)
+    def * = (namespace, uuid, deviceName, deviceId, deviceType, lastSeen, createdAt, activatedAt)
+      .shaped <> ((Device.apply _).tupled, Device.unapply)
 
     def pk = primaryKey("uuid", uuid)
   }
@@ -42,7 +42,21 @@ object DeviceRepository {
   // scalastyle:on
   val devices = TableQuery[DeviceTable]
 
-  def list(ns: Namespace): DBIO[Seq[Device]] = devices.filter(_.namespace === ns).result
+  val defaultLimit = 50
+
+  def list(ns: Namespace, offset: Option[Long], limit: Option[Long]): DBIO[Seq[Device]] = {
+    val filteredDevices = devices.filter(_.namespace === ns)
+    (offset, limit) match {
+      case (None, None) =>
+        filteredDevices
+          .sortBy(_.deviceName)
+          .result
+      case _ =>
+        filteredDevices
+          .paginate(_.deviceName, offset.getOrElse(0), limit.getOrElse(defaultLimit))
+          .result
+    }
+  }
 
   def create(ns: Namespace, device: DeviceT)
              (implicit ec: ExecutionContext): DBIO[Uuid] = {
@@ -72,10 +86,19 @@ object DeviceRepository {
       .filter(d => d.namespace === ns && d.deviceId === deviceId)
       .result
 
-  def search(ns: Namespace, re: String Refined Regex): DBIO[Seq[Device]] =
-    devices
-      .filter(d => d.namespace === ns && regex(d.deviceName, re))
-      .result
+  def search(ns: Namespace, re: String Refined Regex, offset: Option[Long], limit: Option[Long]): DBIO[Seq[Device]] = {
+    val filteredDevices = devices.filter(d => d.namespace === ns && regex(d.deviceName, re))
+    (offset, limit) match {
+      case (None, None) =>
+        filteredDevices
+          .sortBy(_.deviceName)
+          .result
+      case _ =>
+        filteredDevices
+          .paginate(_.deviceName, offset.getOrElse(0), limit.getOrElse(defaultLimit))
+          .result
+    }
+  }
 
   def update(ns: Namespace, uuid: Uuid, device: DeviceT)(implicit ec: ExecutionContext): DBIO[Unit] = {
     val dbIO = devices
@@ -96,14 +119,19 @@ object DeviceRepository {
       .flatMap(_.fold[DBIO[Device]](DBIO.failed(Errors.MissingDevice))(DBIO.successful))
   }
 
-  def updateLastSeen(uuid: Uuid)
-                    (implicit ec: ExecutionContext): DBIO[DeviceSeen] =
-    for {
-      device <- findByUuid(uuid)
-      now = Instant.now()
-      newDevice = device.copy(lastSeen = Some(now))
-      _ <- devices.insertOrUpdate(newDevice)
-    } yield DeviceSeen(device.namespace, uuid, now)
+  def updateLastSeen(uuid: Uuid, when: Instant)
+                    (implicit ec: ExecutionContext): DBIO[(Boolean, Namespace)] = {
+
+    val sometime = Some(when)
+
+    val dbIO = for {
+      count <- devices.filter(_.uuid === uuid).filter(_.activatedAt.isEmpty).map(_.activatedAt).update(sometime)
+      _ <- devices.filter(_.uuid === uuid).map(_.lastSeen).update(sometime)
+      ns <- devices.filter(_.uuid === uuid).map(_.namespace).result.failIfNotSingle(Errors.MissingDevice)
+    } yield (count > 0, ns)
+
+    dbIO.transactionally
+  }
 
   def delete(ns: Namespace, uuid: Uuid)
             (implicit ec: ExecutionContext): DBIO[Unit] = {
@@ -122,4 +150,13 @@ object DeviceRepository {
       .map(_.namespace)
       .result
       .failIfNotSingle(Errors.MissingDevice)
+
+  def countActivatedDevices(ns: Namespace, start: Instant, end: Instant): DBIO[Int] = {
+    devices
+      .filter(_.namespace === ns)
+      .map(_.activatedAt.getOrElse(start.minusSeconds(36000)))
+      .filter(activatedAt => activatedAt >= start && activatedAt < end)
+      .countDistinct
+      .result
+  }
 }

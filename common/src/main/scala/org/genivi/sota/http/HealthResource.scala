@@ -10,10 +10,11 @@ import javax.management.{JMX, ObjectName}
 import akka.http.scaladsl.server.Directives
 import com.zaxxer.hikari.pool.HikariPoolMBean
 import slick.driver.MySQLDriver.api._
-
+import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.syntax._
+import org.genivi.sota.monitoring.MetricsSupport
 
 class HealthResource(db: Database, versionRepr: Map[String, Any] = Map.empty)
                     (implicit val ec: ExecutionContext) {
@@ -23,6 +24,8 @@ class HealthResource(db: Database, versionRepr: Map[String, Any] = Map.empty)
   // TODO: Use proper db name after upgrading slick (https://github.com/slick/slick/issues/1326)
   private lazy val poolName = new ObjectName("com.zaxxer.hikari:type=Pool (database)")
   private lazy val poolProxy = JMX.newMXBeanProxy(mBeanServer, poolName, classOf[HikariPoolMBean])
+
+  val metricRegistry = MetricsSupport.metricRegistry
 
   private def dbVersion(): Future[String] = {
     val query = sql"SELECT VERSION()".as[String].head
@@ -52,6 +55,12 @@ class HealthResource(db: Database, versionRepr: Map[String, Any] = Map.empty)
         )
 
         complete(data.asJson)
+      } ~
+      path("jvm") {
+        val jvm = metricRegistry.getGauges(MetricsSupport.JvmFilter).asScala
+        val data = jvm.mapValues(_.getValue.toString)
+
+        complete(data.toMap.asJson)
       }
     }
 }

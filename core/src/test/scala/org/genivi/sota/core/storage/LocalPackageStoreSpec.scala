@@ -10,7 +10,7 @@ import akka.http.scaladsl.model.HttpEntity
 import akka.stream.ActorMaterializer
 import akka.testkit.TestKit
 import akka.util.ByteString
-import org.genivi.sota.core.DefaultPatience
+import org.genivi.sota.DefaultPatience
 import org.genivi.sota.data.PackageIdGenerators
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuiteLike, ShouldMatchers}

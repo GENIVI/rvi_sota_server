@@ -4,6 +4,8 @@
  */
 package org.genivi.sota.device_registry
 
+import java.time.OffsetDateTime
+
 import akka.http.scaladsl.model.Uri.{Path, Query}
 import akka.http.scaladsl.model.{HttpRequest, StatusCodes, Uri}
 import akka.http.scaladsl.server.Route
@@ -40,8 +42,9 @@ trait DeviceRequests { self: ResourceSpec =>
   def fetchDevice(uuid: Uuid): HttpRequest =
     Get(Resource.uri(api, uuid.show))
 
-  def searchDevice(namespace: Namespace, regex: String): HttpRequest =
-    Get(Resource.uri(api).withQuery(Query("namespace" -> namespace.get, "regex" -> regex)))
+  def searchDevice(namespace: Namespace, regex: String, offset: Long = 0,
+                   limit: Long = 50): HttpRequest =
+    Get(Resource.uri(api).withQuery(Query("regex" -> regex, "offset" -> offset.toString, "limit" -> limit.toString)))
 
   def fetchByDeviceId(namespace: Namespace, deviceId: Device.DeviceId): HttpRequest =
     Get(Resource.uri(api).withQuery(Query("namespace" -> namespace.get, "deviceId" -> deviceId.show)))
@@ -70,7 +73,7 @@ trait DeviceRequests { self: ResourceSpec =>
       status shouldBe OK
     }
 
-  def updateLastSeen(uuid: Uuid): HttpRequest =
+  def devicePing(uuid: Uuid): HttpRequest =
     Post(Resource.uri(api, uuid.show, "ping"))
 
   def fetchSystemInfo(uuid: Uuid): HttpRequest =
@@ -102,4 +105,7 @@ trait DeviceRequests { self: ResourceSpec =>
 
   def getStatsForPackage(pkg: PackageId)(implicit ec: ExecutionContext): HttpRequest =
     Get(Resource.uri("device_count", pkg.name.get, pkg.version.get))
+
+  def getActiveDeviceCount(start: OffsetDateTime, end: OffsetDateTime): HttpRequest =
+    Get(Resource.uri("active_device_count").withQuery(Query("start" -> start.show, "end" -> end.show)))
 }

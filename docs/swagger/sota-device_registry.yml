@@ -18,7 +18,29 @@ produces:
 paths:
   /devices:
     get:
-      description: 'Get a list of all the devices in the namespace in the device registry.'
+      description: 'Get a list of all the devices, in alphabetical order by deviceName, in the namespace in the device registry.'
+      parameters:
+      - name: regex
+        description: a regular expression to use when searching
+        in: query
+        required: false
+        type: string
+      - name: deviceId
+        in: query
+        required: false
+        type: string
+      - name: offset
+        description: the offset into the list of devices
+        in: query
+        required: false
+        type: integer
+        format: int64
+      - name: limit
+        description: the maximum amount of devices to return, after the offset
+        in: query
+        required: false
+        type: integer
+        format: int64
       responses:
         200:
           description: OK
@@ -386,6 +408,27 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/DevicesCount'
+  /active_device_count:
+    get:
+      description: returns count of devices active during the given time interval (for an implicitely given namespace)
+      parameters:
+      - name: start
+        in: query
+        description: start time (inclusive)
+        required: true
+        type: string
+        format: offsetDateTime
+      - name: end
+        in: query
+        description: end time (exclusive)
+        required: true
+        type: string
+        format: offsetDateTime
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ActiveDevicesCount'
 
 definitions:
   uuid:
@@ -433,6 +476,10 @@ definitions:
         type: string
         format: dateTime
         description: The time the device was created
+      activatedAt:
+        type: string
+        format: dateTime
+        description: The time the device was activated
   SystemInfo:
     type: object
     description: A json object representing system info. No schema yet defined.
@@ -480,3 +527,6 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/uuid'
+  ActiveDevicesCount:
+    type: integer
+    description: count of active devices (in a given interval)

@@ -149,4 +149,12 @@ object Packages {
       .result
       .failIfNotSingle(SotaCoreErrors.MissingPackage)
   }
+
+  def usage(ns: Namespace)(implicit ec: ExecutionContext): DBIO[Long] =
+    packages
+      .filter(_.namespace === ns)
+      .map(_.size)
+      .sum
+      .result
+      .map(_.getOrElse(0L))
 }

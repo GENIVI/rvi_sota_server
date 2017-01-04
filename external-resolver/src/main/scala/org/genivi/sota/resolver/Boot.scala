@@ -12,11 +12,11 @@ import akka.stream.ActorMaterializer
 import com.typesafe.config.Config
 import org.genivi.sota.client.DeviceRegistryClient
 import org.genivi.sota.common.DeviceRegistry
-import org.genivi.sota.db.BootMigrations
-import org.genivi.sota.http.AuthedNamespaceScope
+import org.genivi.sota.db.{BootMigrations, DatabaseConfig}
+import org.genivi.sota.http._
 import org.genivi.sota.http.LogDirectives._
-import org.genivi.sota.http.{HealthResource, NamespaceDirectives, TraceId}
 import org.genivi.sota.messaging.daemon.MessageBusListenerActor.Subscribe
+import org.genivi.sota.monitoring.{DatabaseMetrics, MetricsSupport}
 import org.genivi.sota.resolver.components.ComponentDirectives
 import org.genivi.sota.resolver.daemon.PackageCreatedListener
 import org.genivi.sota.resolver.devices.DeviceDirectives
@@ -24,7 +24,6 @@ import org.genivi.sota.resolver.filters.FilterDirectives
 import org.genivi.sota.resolver.packages.{PackageDirectives, PackageFiltersResource}
 import org.genivi.sota.resolver.resolve.ResolveDirectives
 import org.genivi.sota.rest.SotaRejectionHandler.rejectionHandler
-import org.slf4j.LoggerFactory
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
@@ -66,22 +65,18 @@ class Settings(val config: Config) {
 }
 
 
-object Boot extends App with Directives with BootMigrations {
+object Boot extends BootApp with Directives with BootMigrations
+  with VersionInfo
+  with DatabaseConfig
+  with MetricsSupport
+  with DatabaseMetrics {
+
   import org.genivi.sota.http.VersionDirectives.versionHeaders
 
-  implicit val system = ActorSystem("ota-plus-resolver")
-  implicit val materializer = ActorMaterializer()
-  implicit val exec = system.dispatcher
-  implicit val log = LoggerFactory.getLogger(this.getClass)
-  implicit val db = Database.forConfig("database")
+  implicit val _db = db
 
   lazy val config = system.settings.config
   lazy val settings = new Settings(config)
-
-  lazy val version = {
-    val bi = org.genivi.sota.resolver.BuildInfo
-    s"${bi.name}/${bi.version}"
-  }
 
   val namespaceDirective = NamespaceDirectives.fromConfig()
 
@@ -96,17 +91,20 @@ object Boot extends App with Directives with BootMigrations {
       versionHeaders(version)) {
       Route.seal {
         new Routing(namespaceDirective, deviceRegistryClient).route ~
-        new HealthResource(db, org.genivi.sota.resolver.BuildInfo.toMap).route
+        new HealthResource(db, versionMap).route
       }
     }
 
+  if(sys.env.get("RESOLVER_DEVICE_MIGRATE").contains("true")) {
+    DeviceDataMigrator(deviceRegistryClient)
+  }
 
   val messageBusListener = system.actorOf(PackageCreatedListener.props(db, system.settings.config))
   messageBusListener ! Subscribe
 
   val host = config.getString("server.host")
   val port = config.getInt("server.port")
-  val bindingFuture = Http().bindAndHandle(routes, host, port)
+  Http().bindAndHandle(routes, host, port)
 
   log.info(s"sota resolver started at http://$host:$port/")
 

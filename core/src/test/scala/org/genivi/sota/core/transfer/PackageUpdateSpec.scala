@@ -184,7 +184,7 @@ trait SotaCore {
                                   messageBus)
     val updateController = system.actorOf( UpdateController.props(transferProtocolProps ), "update-controller")
     val client = new FakeExternalResolver()
-    new SotaServices(updateController, client, deviceRegistry).route
+    new SotaServices(updateController, client).route
   }
 
 }

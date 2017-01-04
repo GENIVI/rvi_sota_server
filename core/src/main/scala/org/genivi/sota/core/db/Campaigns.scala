@@ -155,17 +155,12 @@ object Campaigns {
   }
 
   def setName(id: Campaign.Id, name: String)
-             (implicit ec: ExecutionContext): DBIO[Unit] = {
-    val dbIO = for {
-      _ <- canEdit(id)
-      _ <- byId(id)
-             .map(_.name)
-             .update(name)
-             .handleIntegrityErrors(ConflictingCampaign)
-    } yield ()
-
-    dbIO.transactionally
-  }
+             (implicit ec: ExecutionContext): DBIO[Unit] =
+    byId(id)
+      .map(_.name)
+      .update(name)
+      .handleIntegrityErrors(ConflictingCampaign)
+      .handleSingleUpdateError(MissingCampaign)
 
   def setUpdateUuid(id: Campaign.Id, group: Uuid, update: Uuid)
                  (implicit ec: ExecutionContext): DBIO[Unit] = {

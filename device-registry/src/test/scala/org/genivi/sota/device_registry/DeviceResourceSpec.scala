@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.device_registry
 
+import java.time.OffsetDateTime
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
@@ -11,6 +12,7 @@ import akka.http.scaladsl.model.StatusCodes._
 import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.data._
+import org.genivi.sota.device_registry.db.DeviceRepository
 import org.genivi.sota.device_registry.db.InstalledPackages.{DevicesCount, InstalledPackage}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalacheck.Arbitrary._
@@ -24,6 +26,8 @@ class DeviceResourceSpec extends ResourcePropSpec {
 
   import Device._
 
+  private val deviceNumber = DeviceRepository.defaultLimit + 10
+
   def isRecent(time: Option[Instant]): Boolean = time match {
     case Some(t) => t.isAfter(Instant.now.minus(3, ChronoUnit.MINUTES))
     case None => false
@@ -34,7 +38,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
       fetchDevice(uuid)          ~> route ~> check { status shouldBe NotFound }
       updateDevice(uuid, device) ~> route ~> check { status shouldBe NotFound }
       deleteDevice(uuid)         ~> route ~> check { status shouldBe NotFound }
-      updateLastSeen(uuid)       ~> route ~> check { status shouldBe NotFound }
+      devicePing(uuid)           ~> route ~> check { status shouldBe NotFound }
     }
   }
 
@@ -146,7 +150,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
 
       val uuid: Uuid = createDeviceOk(devicePre)
 
-      updateLastSeen(uuid) ~> route ~> check {
+      devicePing(uuid) ~> route ~> check {
         status shouldBe OK
       }
 
@@ -191,6 +195,52 @@ class DeviceResourceSpec extends ResourcePropSpec {
     }
   }
 
+  property("First POST request on 'ping' should update 'activatedAt' field for device.") {
+    forAll { (uuid: Uuid, devicePre: DeviceT) =>
+
+      val uuid: Uuid = createDeviceOk(devicePre)
+
+      devicePing(uuid) ~> route ~> check {
+        status shouldBe OK
+      }
+
+      fetchDevice(uuid) ~> route ~> check {
+        val firstDevice = responseAs[Device]
+
+        val firstActivation = firstDevice.activatedAt
+        firstActivation should not be None
+        isRecent(firstActivation) shouldBe true
+
+        fetchDevice(uuid) ~> route ~> check {
+          val secondDevice = responseAs[Device]
+
+          secondDevice.activatedAt shouldBe firstActivation
+        }
+      }
+
+      deleteDeviceOk(uuid)
+    }
+  }
+
+  property("POST request on ping gets counted") {
+    forAll { (uuid: Uuid, devicePre: DeviceT) =>
+
+      val start = OffsetDateTime.now()
+      val uuid: Uuid = createDeviceOk(devicePre)
+      val end = start.plusHours(1)
+
+      devicePing(uuid) ~> route ~> check {
+        status shouldBe OK
+      }
+
+      getActiveDeviceCount(start, end) ~> route ~> check {
+        responseAs[Int] shouldBe 1
+      }
+
+      deleteDeviceOk(uuid)
+    }
+  }
+
   property("PUT request updates device.") {
     forAll(genConflictFreeDeviceTs(2)) { case Seq(d1: DeviceT, d2: DeviceT) =>
 
@@ -216,7 +266,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
 
       val uuid: Uuid = createDeviceOk(d1)
 
-      updateLastSeen(uuid) ~> route ~> check {
+      devicePing(uuid) ~> route ~> check {
         status shouldBe OK
       }
 
@@ -309,5 +359,35 @@ class DeviceResourceSpec extends ResourcePropSpec {
       //convert to sets as order isn't important
       resp.groupIds shouldBe groupIds.toSet
     }
+  }
+
+  property("can list devices with custom pagination limit") {
+    val limit = 30
+    val deviceTs = genConflictFreeDeviceTs(deviceNumber).sample.get
+    val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
+
+    searchDevice(defaultNs, "", limit = limit) ~> route ~> check {
+      status shouldBe OK
+      val result = responseAs[Seq[Device]]
+      result.length shouldBe limit
+    }
+    deviceIds.foreach(deleteDeviceOk(_))
+  }
+
+  property("can list devices with custom pagination limit and offset") {
+    val limit = 30
+    val offset = 10
+    val deviceTs = genConflictFreeDeviceTs(deviceNumber).sample.get
+    val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
+
+    searchDevice(defaultNs, "", offset = offset, limit = limit) ~> route ~> check {
+      status shouldBe OK
+      val devices = responseAs[Seq[Device]]
+      devices.length shouldBe limit
+      devices.zip(devices.tail).foreach { case (device1, device2) =>
+        device1.deviceName.underlying.compareTo(device2.deviceName.underlying) should be <= 0
+      }
+    }
+    deviceIds.foreach(deleteDeviceOk(_))
   }
 }
