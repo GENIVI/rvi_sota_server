@@ -127,9 +127,9 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
   def listPackagesOnDevice(device: Uuid): Route =
     complete(db.run(InstalledPackages.installedOn(device)))
 
-  def getActiveDeviceCount(): Route =
+  def getActiveDeviceCount(ns: Namespace): Route =
     parameters(('start.as[OffsetDateTime], 'end.as[OffsetDateTime])) { (start, end) =>
-      complete(db.run(DeviceRepository.countActivatedDevices(start.toInstant, end.toInstant)))
+      complete(db.run(DeviceRepository.countActivatedDevices(ns, start.toInstant, end.toInstant)))
     }
 
   def api: Route = namespaceExtractor { ns =>
@@ -161,8 +161,8 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
     (scope.get & pathPrefix("device_count") & extractPackageId) { pkg =>
       getDevicesCount(pkg, ns)
     } ~
-    (scope.get & pathPrefix("active_device_count")) {
-      getActiveDeviceCount()
+    (scope.get & path("active_device_count")) {
+      getActiveDeviceCount(ns)
     }
   }
 

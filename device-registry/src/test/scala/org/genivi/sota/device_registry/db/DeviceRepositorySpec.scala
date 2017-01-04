@@ -44,7 +44,7 @@ class DeviceRepositorySpec extends FunSuite
       uuid <- DeviceRepository.create(Namespaces.defaultNs, device)
       now = Instant.now()
       _ <- DeviceRepository.updateLastSeen(uuid, now)
-      count <- DeviceRepository.countActivatedDevices(now, now.plusSeconds(100))
+      count <- DeviceRepository.countActivatedDevices(Namespaces.defaultNs, now, now.plusSeconds(100))
     } yield count
 
     whenReady(db.run(createDevice), Timeout(Span(10, Seconds))) { count =>

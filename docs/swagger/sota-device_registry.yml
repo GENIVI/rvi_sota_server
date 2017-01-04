@@ -410,7 +410,7 @@ paths:
             $ref: '#/definitions/DevicesCount'
   /active_device_count:
     get:
-      description: returns count of devices active during the given time interval
+      description: returns count of devices active during the given time interval (for an implicitely given namespace)
       parameters:
       - name: start
         in: query
