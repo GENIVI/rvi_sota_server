@@ -2,7 +2,7 @@ version: '2'
 services:
 
   rvi_backend:
-    image: advancedtelematic/rvi:0.5.0
+    image: advancedtelematic/rvi:latest
     ports:
       - 8801:8801
       - 8807:8807
