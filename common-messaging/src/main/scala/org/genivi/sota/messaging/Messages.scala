@@ -10,7 +10,8 @@ import io.circe.generic.encoding.DerivedObjectEncoder
 import io.circe.{Decoder, Encoder}
 import io.circe.parser._
 import org.genivi.sota.marshalling.CirceInstances._
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.data._
+import org.genivi.sota.data.UpdateType.UpdateType
 import shapeless.Lazy
 
 import scala.reflect.ClassTag
@@ -58,6 +59,9 @@ object Messages {
   final case class ImageStorageUsage(namespace: Namespace, timestamp: Instant, byteCount: Long) extends BusMessage
 
   final case class PackageStorageUsage(namespace: Namespace, timestamp: Instant, byteCount: Long) extends BusMessage
+
+  final case class BandwidthUsage(id: UUID, namespace: Namespace, timestamp: Instant, byteCount: Long,
+                                  updateType: UpdateType, updateId: String) extends BusMessage
 
   //Create custom UpdateSpec here instead of using org.genivi.sota.core.data.UpdateSpec as that would require moving
   //multiple RVI messages into SotaCommon. Furthermore, for now this class contains just the info required by the
@@ -124,4 +128,6 @@ object Messages {
   implicit val imageStorageUsageMessageLike = MessageLike[ImageStorageUsage](_.namespace.get)
 
   implicit val packageStorageUsageMessageLike = MessageLike[PackageStorageUsage](_.namespace.get)
+
+  implicit val bandwidthUsageMessageLike = MessageLike[BandwidthUsage](_.id.toString)
 }

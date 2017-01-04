@@ -32,8 +32,8 @@ import org.scalatest.{FunSuite, ShouldMatchers}
 import org.genivi.sota.data.{Namespace, Namespaces, PackageId}
 import org.genivi.sota.messaging.LocalMessageBus
 import org.genivi.sota.messaging.Messages.PackageStorageUsage
-import scala.concurrent.duration._
 
+import scala.concurrent.duration._
 import scala.concurrent.Future
 
 class PackagesResourceSpec extends FunSuite
