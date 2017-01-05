@@ -87,15 +87,14 @@ object SotaBuild extends Build {
   lazy val commonTest = Project(id = "sota-common-test", base = file("common-test"))
     .settings(basicSettings ++ compilerSettings ++ lintOptions)
     .settings(libraryDependencies ++= Seq (Dependencies.Cats, Dependencies.Refined, Dependencies.Generex))
-    .settings(libraryDependencies += Dependencies.ScalaTestLib % "provided")
+    .settings(libraryDependencies += Dependencies.ScalaTest(Provided))
     .dependsOn(commonData)
     .settings(Publish.settings)
 
   lazy val commonDbTest = Project(id = "sota-common-db-test", base = file("common-db-test"))
     .settings(basicSettings ++ compilerSettings ++ lintOptions)
-    .settings(libraryDependencies ++= Dependencies.Slick :+ Dependencies.Flyway)
-    .settings(libraryDependencies += Dependencies.ScalaTestLib % "provided")
-    .dependsOn(commonData, commonTest)
+    .settings(libraryDependencies ++= Dependencies.Database)
+    .settings(libraryDependencies += Dependencies.ScalaTest(Provided))
     .settings(Publish.settings)
 
   lazy val externalResolver = Project(id = "sota-resolver", base = file("external-resolver"))
@@ -169,7 +168,7 @@ object SotaBuild extends Build {
         "com.unboundid" % "unboundid-ldapsdk" % "3.1.1",
         ws,
         play.sbt.Play.autoImport.cache
-      ) ++ Dependencies.Database ++ Dependencies.Play2Auth
+      ) ++ Dependencies.Slick ++ Dependencies.Play2Auth
     ))
     .dependsOn(common, commonData)
     .enablePlugins(PlayScala, SbtWeb, BuildInfoPlugin)
@@ -213,7 +212,7 @@ object SotaBuild extends Build {
     .settings( basicSettings )
     .settings( Versioning.settings )
     .settings(Release.settings(common, commonData, commonTest, core, externalResolver, deviceRegistry, commonClient, commonMessaging))
-    .aggregate(common, commonData, commonTest, core, externalResolver, webServer, deviceRegistry, commonClient, commonMessaging)
+    .aggregate(common, commonData, commonTest, commonDbTest, core, externalResolver, webServer, deviceRegistry, commonClient, commonMessaging)
     .enablePlugins(Versioning.Plugin)
     .settings(Publish.disable)
 }
@@ -272,19 +271,17 @@ object Dependencies {
   lazy val Scalaz = "org.scalaz" %% "scalaz-core" % "7.1.3"
   lazy val Cats   = "org.spire-math" %% "cats" % "0.3.0"
 
-  lazy val ScalaTestLib = "org.scalatest" %% "scalatest" % "2.2.4"
-
-  lazy val ScalaTest = ScalaTestLib % "test"
+  def ScalaTest(conf: Configuration = Test) = "org.scalatest" %% "scalatest" % "2.2.4" % conf
 
   lazy val ScalaCheck = "org.scalacheck" %% "scalacheck" % "1.12.4" % "test"
 
   lazy val Flyway = "org.flywaydb" % "flyway-core" % "4.0.3"
 
-  lazy val TestFrameworks = Seq( ScalaTest, ScalaCheck )
+  lazy val TestFrameworks = Seq(ScalaTest(), ScalaCheck)
 
   lazy val TypesafeConfig = "com.typesafe" % "config" % "1.3.0"
 
-  lazy val Database = Seq (
+  lazy val Slick = Seq (
     "com.typesafe.slick" %% "slick" % "3.1.1",
     "com.typesafe.slick" %% "slick-hikaricp" % "3.1.1",
     "org.mariadb.jdbc" % "mariadb-java-client" % "1.4.4"
@@ -295,7 +292,7 @@ object Dependencies {
     "jp.t2v" %% "play2-auth-test"   % Play2AuthVersion % "test"
   )
 
-  lazy val Slick = Database ++ Seq(Flyway)
+  lazy val Database = Slick ++ Seq(Flyway)
 
   lazy val ParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
 
@@ -307,7 +304,7 @@ object Dependencies {
   )
 
 
-  lazy val Rest = Akka ++ Slick
+  lazy val Rest = Akka ++ Database
 
   lazy val AmazonS3 = "com.amazonaws" % "aws-java-sdk-s3" % AWSVersion
 

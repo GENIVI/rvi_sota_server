@@ -29,10 +29,7 @@ trait DatabaseSpec extends BeforeAndAfterAll {
 
   private lazy val config = ConfigFactory.load()
 
-  private lazy val testDbConfig: Config = {
-    val testDbConfName = config.getString("testDatabaseConf")
-    config.getConfig(testDbConfName)
-  }
+  private lazy val testDbConfig: Config = config.getConfig("database")
 
   private lazy val slickDbConfig: Config = {
     val withSchemaName =
