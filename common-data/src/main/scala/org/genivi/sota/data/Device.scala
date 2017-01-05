@@ -9,6 +9,7 @@ import java.time.{Instant, OffsetDateTime}
 import cats.Show
 import cats.syntax.show._
 import org.genivi.sota.data.Device._
+import org.genivi.sota.data.DeviceStatus._
 
 
 /*
@@ -29,7 +30,8 @@ final case class Device(namespace: Namespace,
                   deviceType: DeviceType = DeviceType.Other,
                   lastSeen: Option[Instant] = None,
                   createdAt: Instant,
-                  activatedAt: Option[Instant] = None) {
+                  activatedAt: Option[Instant] = None,
+                  deviceStatus: DeviceStatus = NotSeen) {
 
   // TODO: Use org.genivi.sota.core.data.client.ResponseEncoder
   def toResponse: DeviceT = DeviceT(deviceName, deviceId, deviceType)

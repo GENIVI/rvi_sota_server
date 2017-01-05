@@ -6,9 +6,9 @@ package org.genivi.sota.core.campaigns
 
 import org.genivi.sota.core.UpdateService
 import org.genivi.sota.core.data.Campaign.CampaignGroup
-import org.genivi.sota.core.data.{Campaign, CampaignStatistics, UpdateStatus}
+import org.genivi.sota.core.data.{Campaign, CampaignStatistics}
 import org.genivi.sota.core.db.Campaigns
-import org.genivi.sota.data.Uuid
+import org.genivi.sota.data.{UpdateStatus, Uuid}
 import slick.driver.MySQLDriver.api.Database
 
 import scala.concurrent.{ExecutionContext, Future}

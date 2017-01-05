@@ -4,13 +4,13 @@
  */
 package org.genivi.sota.core.db
 
-import org.genivi.sota.core.data.{InstallHistory, UpdateSpec, UpdateStatus}
+import org.genivi.sota.core.data.{InstallHistory, UpdateSpec}
 import java.time.Instant
 import java.util.UUID
 
 import org.genivi.sota.core.db.Packages.{LiftedPackageId, LiftedPackageShape}
 import org.genivi.sota.core.db.UpdateSpecs.{UpdateSpecRow, UpdateSpecTable}
-import org.genivi.sota.data.{Namespace, PackageId, Uuid}
+import org.genivi.sota.data.{Namespace, PackageId, UpdateStatus, Uuid}
 import org.genivi.sota.http.Errors
 import shapeless._
 import slick.driver.MySQLDriver.api._

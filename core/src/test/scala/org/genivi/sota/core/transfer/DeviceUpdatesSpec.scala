@@ -7,11 +7,11 @@ import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.DefaultPatience
 import org.genivi.sota.core._
-import org.genivi.sota.core.data.{UpdateSpec, UpdateStatus}
+import org.genivi.sota.core.data.UpdateSpec
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.rvi.OperationResult
 import org.genivi.sota.core.rvi.UpdateReport
-import org.genivi.sota.data.{DeviceGenerators, Namespaces, Uuid}
+import org.genivi.sota.data.{DeviceGenerators, Namespaces, UpdateStatus, Uuid}
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.scalacheck.Gen
 import org.scalatest._

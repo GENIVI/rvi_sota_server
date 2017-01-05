@@ -9,6 +9,7 @@ import java.time.Instant
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
+import org.genivi.sota.data.DeviceStatus.DeviceStatus
 import org.genivi.sota.db.Operators.regex
 import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.device_registry.common.Errors
@@ -32,8 +33,9 @@ object DeviceRepository {
     def lastSeen = column[Option[Instant]]("last_seen")
     def createdAt = column[Instant]("created_at")
     def activatedAt = column[Option[Instant]]("activated_at")
+    def deviceStatus = column[DeviceStatus]("device_status")
 
-    def * = (namespace, uuid, deviceName, deviceId, deviceType, lastSeen, createdAt, activatedAt)
+    def * = (namespace, uuid, deviceName, deviceId, deviceType, lastSeen, createdAt, activatedAt, deviceStatus)
       .shaped <> ((Device.apply _).tupled, Device.unapply)
 
     def pk = primaryKey("uuid", uuid)
@@ -159,4 +161,11 @@ object DeviceRepository {
       .countDistinct
       .result
   }
+
+  def setDeviceStatus(uuid: Uuid, status: DeviceStatus)(implicit ec: ExecutionContext): DBIO[Unit] =
+    devices
+      .filter(_.uuid === uuid)
+      .map(_.deviceStatus)
+      .update(status)
+      .handleSingleUpdateError(Errors.MissingDevice)
 }

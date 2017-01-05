@@ -15,10 +15,13 @@ import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.db.{BootMigrations, DatabaseConfig}
 import org.genivi.sota.http._
 import org.genivi.sota.http.LogDirectives._
+import org.genivi.sota.messaging.Messages.{BusMessage, PackageCreated}
 import org.genivi.sota.messaging.daemon.MessageBusListenerActor.Subscribe
+import org.genivi.sota.messaging.kafka.MessageListener
 import org.genivi.sota.monitoring.{DatabaseMetrics, MetricsSupport}
 import org.genivi.sota.resolver.components.ComponentDirectives
-import org.genivi.sota.resolver.daemon.PackageCreatedListener
+import org.genivi.sota.resolver.db.Package.Metadata
+import org.genivi.sota.resolver.db.PackageRepository
 import org.genivi.sota.resolver.devices.DeviceDirectives
 import org.genivi.sota.resolver.filters.FilterDirectives
 import org.genivi.sota.resolver.packages.{PackageDirectives, PackageFiltersResource}
@@ -26,7 +29,7 @@ import org.genivi.sota.resolver.resolve.ResolveDirectives
 import org.genivi.sota.rest.SotaRejectionHandler.rejectionHandler
 import slick.driver.MySQLDriver.api._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 
@@ -99,7 +102,11 @@ object Boot extends BootApp with Directives with BootMigrations
     DeviceDataMigrator(deviceRegistryClient)
   }
 
-  val messageBusListener = system.actorOf(PackageCreatedListener.props(db, system.settings.config))
+  def storePackage(msg: PackageCreated): Future[_] =
+    db.run(PackageRepository.add(msg.packageId, Metadata(msg.namespace, msg.description, msg.vendor)))
+
+  val messageBusListener =
+    system.actorOf(MessageListener.props[PackageCreated](system.settings.config, storePackage))
   messageBusListener ! Subscribe
 
   val host = config.getString("server.host")

@@ -6,16 +6,17 @@ package org.genivi.sota.core.data
 
 import io.circe._
 import java.util.UUID
-import org.genivi.sota.data.Interval
+
+import org.genivi.sota.data.{Interval, Namespace, UpdateStatus, Uuid}
 import java.time.Instant
 import java.time.Duration
-import org.genivi.sota.data.{Namespace, Uuid}
 
 /**
  * Domain object for an update request.
  * An update request refers to the intent to update a package on a number of
  * devices. It describes a single package, with a period of validity and priority
  * for the update.
+ *
  * @param id A generated unique ID for this update request
  * @param packageUUid The uuid the package
  * @param creationTime When this update request was entered into SOTA
@@ -55,18 +56,6 @@ object UpdateRequest {
       Instant.now, defaultInterval, defaultPriority, "", Some(""),
       requestConfirmation = false)
   }
-}
-
-/**
- * The states that an [[UpdateSpec]] may be in.
- * Updates start in Pending state, then go to InFlight, then either Failed or
- * Finished. At any point before the Failed or Finished state it may transfer
- * to the Canceled state when a user cancels the operation
- */
-object UpdateStatus extends Enumeration {
-  type UpdateStatus = Value
-
-  val Pending, InFlight, Canceled, Failed, Finished = Value
 }
 
 import UpdateStatus._

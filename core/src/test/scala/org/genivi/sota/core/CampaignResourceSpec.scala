@@ -13,11 +13,11 @@ import io.circe.generic.auto._
 import java.util.UUID
 
 import org.genivi.sota.DefaultPatience
-import org.genivi.sota.core.data.{Campaign, UpdateStatus}
+import org.genivi.sota.core.data.Campaign
 import org.genivi.sota.core.db.{BlacklistedPackages, Packages, UpdateRequests}
 import org.genivi.sota.core.resolver.DefaultConnectivity
 import org.genivi.sota.core.transfer.DefaultUpdateNotifier
-import org.genivi.sota.data.{Namespaces, PackageId, Uuid}
+import org.genivi.sota.data.{Namespaces, PackageId, UpdateStatus, Uuid}
 import org.genivi.sota.http.NamespaceDirectives.defaultNamespaceExtractor
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalacheck.Gen
