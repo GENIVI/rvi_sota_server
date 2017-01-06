@@ -33,8 +33,6 @@ trait ResourceSpec extends
     with DatabaseSpec
     with BeforeAndAfterAll { self: Suite =>
 
-  implicit val _db = db
-
   val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
 
   import akka.http.scaladsl.server.Directives._

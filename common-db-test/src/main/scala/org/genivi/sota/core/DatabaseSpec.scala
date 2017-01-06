@@ -18,7 +18,7 @@ trait DatabaseSpec extends BeforeAndAfterAll {
 
   TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
 
-  lazy val db = Database.forConfig("", slickDbConfig)
+  implicit lazy val db = Database.forConfig("", slickDbConfig)
 
   protected lazy val schemaName = {
     val catalog = testDbConfig.getString("catalog")

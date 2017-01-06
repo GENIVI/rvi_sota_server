@@ -53,7 +53,6 @@ class DeviceUpdatesResourceSpec extends FunSuite
   import UuidGenerator._
 
   implicit val patience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
-  implicit val _db = db
   implicit val connectivity = new FakeConnectivity()
 
   lazy val service = new DeviceUpdatesResource(db, fakeResolver, fakeDeviceRegistry, None,

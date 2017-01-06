@@ -28,7 +28,6 @@ class ImpactResourceSpec
     with LongRequestTimeout
     with UpdateResourcesDatabaseSpec {
 
-  implicit val _db = db
   implicit val _ec = system.dispatcher
 
   def fakeExternalResolver(affected: Map[Uuid, Seq[PackageId]] = Map.empty) = new FakeExternalResolver() {

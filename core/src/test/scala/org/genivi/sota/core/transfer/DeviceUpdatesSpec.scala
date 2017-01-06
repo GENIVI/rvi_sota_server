@@ -40,7 +40,6 @@ class DeviceUpdatesSpec extends FunSuite
   val id = Uuid(Refined.unsafeApply(UUID.randomUUID().toString))
 
   implicit val ec = ExecutionContext.global
-  implicit val _db = db
 
   test("forwards request to resolver client") {
     val device = genDeviceT.sample.get.copy(deviceId = Some(genDeviceId.sample.get))

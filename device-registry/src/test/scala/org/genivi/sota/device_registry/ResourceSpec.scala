@@ -35,8 +35,6 @@ trait ResourceSpec extends
 
   self: Suite =>
 
-  implicit val _db = db
-
   implicit val routeTimeout: RouteTestTimeout =
     RouteTestTimeout(10.second)
 

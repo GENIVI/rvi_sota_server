@@ -58,8 +58,6 @@ class DeviceResourceSpec extends FunSuite
 
   implicit val patience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
 
-  implicit val _db = db
-
   def resourceUri( pathSuffix : String ) : Uri = {
     Uri.Empty.withPath(BasePath / pathSuffix)
   }
