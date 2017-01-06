@@ -48,8 +48,6 @@ class PackagesResourceSpec extends FunSuite
 
   import org.genivi.sota.http.NamespaceDirectives._
 
-  implicit val _db = db
-
   val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
   val resolver = new FakeExternalResolver()
 

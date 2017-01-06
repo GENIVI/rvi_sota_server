@@ -31,8 +31,6 @@ class HistoryResourceSpec() extends FunSuite
   with DefaultPatience
   with Generators {
 
-  implicit val _db = db
-
   val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
   val service = new HistoryResource(deviceRegistry, defaultNamespaceExtractor)
   val baseUri = Uri.Empty.withPath(Path("/history"))

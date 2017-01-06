@@ -61,7 +61,6 @@ class CampaignResourceSpec extends FunSuite
   }
 
   def updateRequestCancelled(urId: Uuid): Unit = {
-    implicit val theDB = db
     whenReady(updateService.fetchUpdateSpecRows(urId)) { rows =>
       all(rows.map(_.status)) shouldBe UpdateStatus.Canceled
     }
@@ -74,7 +73,6 @@ class CampaignResourceSpec extends FunSuite
   }
 
   def blacklistPackage(pkgId: PackageId): Unit = {
-    implicit val theDb = db
     BlacklistedPackages.create(Namespaces.defaultNs, pkgId, None).map(_ => ()).futureValue
   }
 
