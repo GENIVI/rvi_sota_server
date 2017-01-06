@@ -212,7 +212,7 @@ object SotaBuild extends Build {
   lazy val sota = Project(id = "sota", base = file("."))
     .settings( basicSettings )
     .settings( Versioning.settings )
-    .settings(Release.settings(common, commonData, commonTest, core, externalResolver, deviceRegistry, commonClient, commonMessaging))
+    .settings(Release.settings(common, commonData, commonTest, commonDbTest, core, externalResolver, deviceRegistry, commonClient, commonMessaging))
     .aggregate(common, commonData, commonTest, commonDbTest, core, externalResolver, webServer, deviceRegistry, commonClient, commonMessaging)
     .enablePlugins(Versioning.Plugin)
     .settings(Publish.disable)
