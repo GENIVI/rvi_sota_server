@@ -9,14 +9,13 @@ import java.util.UUID
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.UpdateRequests.UpdateRequestTable
-import org.genivi.sota.data.{Namespace, PackageId, Uuid}
+import org.genivi.sota.data.{Namespace, PackageId, UpdateStatus, Uuid}
 import org.genivi.sota.db.SlickExtensions
 import java.time.Instant
-import cats.syntax.show.toShowOps
 
+import cats.syntax.show.toShowOps
 import org.genivi.sota.http.Errors.MissingEntity
 import slick.driver.MySQLDriver.api._
-
 
 import scala.collection.immutable.Queue
 import scala.concurrent.ExecutionContext

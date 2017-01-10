@@ -13,7 +13,6 @@ import akka.http.scaladsl.testkit.RouteTestTimeout
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.http.scaladsl.unmarshalling.Unmarshaller._
 import io.circe.generic.auto._
-import org.genivi.sota.core.data.DeviceStatus
 import org.genivi.sota.core.jsonrpc.HttpTransport
 import org.genivi.sota.core.rvi._
 import org.genivi.sota.data._

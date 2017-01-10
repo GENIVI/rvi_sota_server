@@ -18,7 +18,7 @@ import io.circe.generic.auto._
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.resolver.{ConnectivityClient, ExternalResolverClient}
-import org.genivi.sota.data.{Device, Namespace, Uuid}
+import org.genivi.sota.data.{Device, DeviceUpdateStatus, Namespace, Uuid}
 import org.genivi.sota.http.{AuthedNamespaceScope, ErrorHandler, Scopes}
 import org.genivi.sota.http.Errors.MissingEntity
 import org.genivi.sota.marshalling.CirceMarshallingSupport
@@ -28,7 +28,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 import slick.driver.MySQLDriver.api.Database
 import Device._
-import org.genivi.sota.core.data.DeviceStatus.DeviceStatus
+import org.genivi.sota.data.DeviceStatus.DeviceStatus
 
 case class DeviceSearchResult(
                         namespace: Namespace,
@@ -69,7 +69,7 @@ class DevicesResource(db: Database, client: ConnectivityClient,
         val devices = deviceRegistry.searchDevice(ns, regex)
 
         if (includeStatus) {
-          val f = DeviceSearch.fetchDeviceStatus(devices)
+          val f = DeviceSearchCore.fetchDeviceStatus(devices)
           val response = f flatMap buildSearchResponse(devices)
           completeWith(response)
         } else {
@@ -117,7 +117,7 @@ class DevicesResource(db: Database, client: ConnectivityClient,
         case e => Future.failed(MissingEntity(classOf[DeviceSearchResult]))
       }
       val devicesWithStatus = if (includeStatus) {
-        DeviceSearch.fetchDeviceStatus(devices) flatMap buildSearchResponse(devices)
+        DeviceSearchCore.fetchDeviceStatus(devices) flatMap buildSearchResponse(devices)
       } else {
         buildSearchResponse(devices)(Seq.empty)
       }

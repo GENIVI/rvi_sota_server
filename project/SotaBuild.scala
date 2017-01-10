@@ -195,6 +195,7 @@ object SotaBuild extends Build {
     .dependsOn(common, commonData, commonMessaging, commonTest % "test", commonDbTest % "test")
     .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
     .settings(Publish.settings)
+    .settings(mainClass in Compile := Some("org.genivi.sota.device_registry.Boot"))
 
   lazy val commonClient = Project(id = "sota-common-client", base = file("common-client"))
     .settings(basicSettings ++ compilerSettings ++ lintOptions)
