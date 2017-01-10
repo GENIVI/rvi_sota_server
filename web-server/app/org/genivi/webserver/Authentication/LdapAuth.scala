@@ -113,7 +113,7 @@ class LdapAuth @Inject() (config: Configuration, lifecicle: ApplicationLifecycle
 
   private[this] def findUser(baseDN: String, filter: String, userName: String): Future[SearchResult] =
     Future {
-      ldap.search(baseDN, SearchScope.ONE, filter.format(userName))
+      ldap.search(baseDN, SearchScope.SUB, filter.format(userName))
     }
 
   private[this] def bind(dn: String, password: String): Future[NotUsed] = Future {
