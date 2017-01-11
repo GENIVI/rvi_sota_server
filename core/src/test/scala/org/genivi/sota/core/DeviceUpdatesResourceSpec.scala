@@ -88,7 +88,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
       status shouldBe StatusCodes.OK
 
       packageIds.foreach { p =>
-        fakeResolver.isInstalled(p) shouldBe true
+        fakeDeviceRegistry.isInstalled(deviceUuid, p) shouldBe true
       }
     }
   }
@@ -480,7 +480,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
       status shouldBe StatusCodes.OK
 
       packageIds.foreach { p =>
-        fakeResolver.isInstalled(p) shouldBe true
+        fakeDeviceRegistry.isInstalled(deviceUuid, p) shouldBe true
       }
     }
   }
