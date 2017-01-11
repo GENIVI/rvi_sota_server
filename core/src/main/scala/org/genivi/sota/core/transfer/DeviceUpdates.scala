@@ -146,7 +146,7 @@ object DeviceUpdates {
       .filter(_.device === device)
       .filter(_.requestId === updateRequestId)
       .join(updateRequests).on(_.requestId === _.id)
-      .joinLeft(requiredPackages).on(_._1.requestId === _.requestId)
+      .joinLeft(requiredPackages.filter(_.device === device)).on(_._1.requestId === _.requestId)
       .result
 
     val specsWithDepsIO = updateSpecsIO flatMap { specsWithDeps =>
