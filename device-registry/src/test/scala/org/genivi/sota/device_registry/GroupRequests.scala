@@ -29,8 +29,16 @@ trait GroupRequests {
                             (implicit ec: ExecutionContext): HttpRequest =
     Post(Resource.uri("device_groups", "from_attributes"), CreateGroupRequest(device1, device2, groupName).asJson)
 
-  def listDevicesInGroup(groupId: Uuid)(implicit ec: ExecutionContext): HttpRequest =
-    Get(Resource.uri("device_groups", groupId.underlying.get, "devices"))
+  def listDevicesInGroup(groupId: Uuid, offset: Option[Long] = None, limit: Option[Long] = None)
+                        (implicit ec: ExecutionContext): HttpRequest =
+    (offset, limit) match {
+      case (None, None) =>
+        Get(Resource.uri("device_groups", groupId.underlying.get, "devices"))
+      case _ =>
+        Get(Resource.uri("device_groups", groupId.underlying.get, "devices")
+          .withQuery(Query("offset" -> offset.getOrElse(0).toString,
+            "limit" -> limit.getOrElse(50).toString)))
+    }
 
   def countDevicesInGroup(groupId: Uuid)(implicit ec: ExecutionContext): HttpRequest =
     Get(Resource.uri("device_groups", groupId.underlying.get, "count"))

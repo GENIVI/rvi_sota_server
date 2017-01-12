@@ -57,9 +57,14 @@ object SlickExtensions {
     UUID.fromString(refined.get).bind
 
   implicit class DbioPaginateExtensions[E, U, A](action: Query[E, U, Seq]) {
-    def paginate[T <% slick.lifted.Ordered](fn: E => T, offset: Long, limit: Long): Query[E, U, Seq] = {
+    def paginateAndSort[T <% slick.lifted.Ordered](fn: E => T, offset: Long, limit: Long): Query[E, U, Seq] = {
       action
         .sortBy(fn)
+        .drop(offset)
+        .take(limit)
+    }
+    def paginate(offset: Long, limit: Long): Query[E, U, Seq] = {
+      action
         .drop(offset)
         .take(limit)
     }

@@ -52,7 +52,7 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
                 'limit.as[Long].?)) {
       case (Some(re), None, offset, limit) =>
         complete(db.run(DeviceRepository.search(ns, re, offset, limit)))
-      case (None, Some(deviceId), offset, limit) =>
+      case (None, Some(deviceId), _, _) =>
         complete(db.run(DeviceRepository.findByDeviceId(ns, DeviceId(deviceId))))
       case (None, None, offset, limit) =>
         complete(db.run(DeviceRepository.list(ns, offset, limit)))
