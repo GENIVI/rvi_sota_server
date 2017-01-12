@@ -55,7 +55,7 @@ object DeviceRepository {
           .result
       case _ =>
         filteredDevices
-          .paginate(_.deviceName, offset.getOrElse(0), limit.getOrElse(defaultLimit))
+          .paginateAndSort(_.deviceName, offset.getOrElse(0), limit.getOrElse(defaultLimit))
           .result
     }
   }
@@ -97,7 +97,7 @@ object DeviceRepository {
           .result
       case _ =>
         filteredDevices
-          .paginate(_.deviceName, offset.getOrElse(0), limit.getOrElse(defaultLimit))
+          .paginateAndSort(_.deviceName, offset.getOrElse(0), limit.getOrElse(defaultLimit))
           .result
     }
   }

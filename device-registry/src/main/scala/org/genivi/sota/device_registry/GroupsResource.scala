@@ -39,20 +39,19 @@ class GroupsResource(namespaceExtractor: Directive1[AuthedNamespaceScope], devic
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  private def groupAllowed(groupId: Uuid): Future[Namespace] = {
+  private def groupAllowed(groupId: Uuid): Future[Namespace] =
     db.run(GroupInfoRepository.groupInfoNamespace(groupId))
-  }
 
-  private def deviceAllowed(deviceId: Uuid): Future[Namespace] = {
+  private def deviceAllowed(deviceId: Uuid): Future[Namespace] =
     db.run(DeviceRepository.deviceNamespace(deviceId))
-  }
 
-  def createGroupFromDevices(request: CreateGroupRequest, namespace: Namespace): Route = {
+  def createGroupFromDevices(request: CreateGroupRequest, namespace: Namespace): Route =
     complete(UpdateMemberships.createGroupFromDevices(request, namespace))
-  }
 
   def getDevicesInGroup(groupId: Uuid): Route = {
-    complete(db.run(GroupMemberRepository.listDevicesInGroup(groupId)))
+    parameters(('offset.as[Long].?, 'limit.as[Long].?)) { (offset, limit) =>
+      complete(db.run(GroupMemberRepository.listDevicesInGroup(groupId, offset, limit)))
+    }
   }
 
   def listGroups(ns: Namespace): Route =
@@ -100,7 +99,7 @@ class GroupsResource(namespaceExtractor: Directive1[AuthedNamespaceScope], devic
       (scope.get & pathEnd) {
         listGroups(ns)
       } ~
-      (scope.get & extractGroupId & path("devices") ) { groupId =>
+      (scope.get & extractGroupId & path("devices")) { groupId =>
         getDevicesInGroup(groupId)
       } ~
       extractGroupId { groupId =>

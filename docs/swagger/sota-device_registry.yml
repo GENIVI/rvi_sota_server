@@ -306,6 +306,18 @@ paths:
         in: path
         required: true
         type: string
+      - name: offset
+        description: the offset into the list of devices
+        in: query
+        required: false
+        type: integer
+        format: int64
+      - name: limit
+        description: the maximum amount of devices to return, after the offset
+        in: query
+        required: false
+        type: integer
+        format: int64
       responses:
         201:
           description: Created

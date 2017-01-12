@@ -42,8 +42,7 @@ trait DeviceRequests { self: ResourceSpec =>
   def fetchDevice(uuid: Uuid): HttpRequest =
     Get(Resource.uri(api, uuid.show))
 
-  def searchDevice(namespace: Namespace, regex: String, offset: Long = 0,
-                   limit: Long = 50): HttpRequest =
+  def searchDevice(namespace: Namespace, regex: String, offset: Long = 0, limit: Long = 50): HttpRequest =
     Get(Resource.uri(api).withQuery(Query("regex" -> regex, "offset" -> offset.toString, "limit" -> limit.toString)))
 
   def fetchByDeviceId(namespace: Namespace, deviceId: Device.DeviceId): HttpRequest =
