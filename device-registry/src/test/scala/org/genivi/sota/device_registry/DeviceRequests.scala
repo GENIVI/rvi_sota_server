@@ -42,6 +42,9 @@ trait DeviceRequests { self: ResourceSpec =>
   def fetchDevice(uuid: Uuid): HttpRequest =
     Get(Resource.uri(api, uuid.show))
 
+  def listDevices(): HttpRequest =
+    Get(Resource.uri(api))
+
   def searchDevice(namespace: Namespace, regex: String, offset: Long = 0, limit: Long = 50): HttpRequest =
     Get(Resource.uri(api).withQuery(Query("regex" -> regex, "offset" -> offset.toString, "limit" -> limit.toString)))
 
@@ -107,4 +110,7 @@ trait DeviceRequests { self: ResourceSpec =>
 
   def getActiveDeviceCount(start: OffsetDateTime, end: OffsetDateTime): HttpRequest =
     Get(Resource.uri("active_device_count").withQuery(Query("start" -> start.show, "end" -> end.show)))
+
+  def getInstalledForAllDevices(offset: Long = 0, limit: Long = 50): HttpRequest =
+    Get(Resource.uri("device_packages").withQuery(Query("offset" -> offset.toString, "limit" -> limit.toString)))
 }

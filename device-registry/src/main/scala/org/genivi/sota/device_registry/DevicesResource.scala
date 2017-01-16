@@ -133,6 +133,11 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
         .map(ActiveDeviceCount(_)))
     }
 
+  def getDistinctPackages(ns: Namespace): Route =
+    parameters('offset.as[Long].?, 'limit.as[Long].?) { (offset, limit) =>
+      complete(db.run(InstalledPackages.getInstalledForAllDevices(ns, offset, limit)))
+    }
+
   def api: Route = namespaceExtractor { ns =>
     val scope = Scopes.devices(ns)
     pathPrefix("devices") {
@@ -181,13 +186,22 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
     }
   }
 
+  val devicePackagesRoutes: Route = namespaceExtractor { authedNs =>
+    val scope = Scopes.devices(authedNs)
+    pathPrefix("device_packages") {
+      (pathEnd & scope.get) {
+        getDistinctPackages(authedNs)
+      }
+    }
+  }
+
   /**
    * Base API route for devices.
    *
    * @return      Route object containing routes for creating, deleting, and listing devices
    * @throws      Errors.MissingDevice if device doesn't exist
    */
-  def route: Route = api ~ mydeviceRoutes ~
+  def route: Route = api ~ mydeviceRoutes ~ devicePackagesRoutes
     (pathPrefix("mydevice") & put & path("packages")) {
       updateInstalledSoftwareForDevices()
     }
