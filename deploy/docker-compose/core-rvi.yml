@@ -4,8 +4,7 @@ services:
   rvi_backend:
     image: advancedtelematic/rvi:latest
     ports:
-      - 8801:8801
-      - 8807:8807
+      - "8801-8811:8801-8811"
     stdin_open: true
     command: backend
 
