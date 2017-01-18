@@ -359,6 +359,8 @@ class DeviceResourceSpec extends ResourcePropSpec {
       //convert to sets as order isn't important
       resp.groupIds shouldBe groupIds.toSet
     }
+
+    deviceIds.foreach(deleteDeviceOk(_))
   }
 
   property("can list devices with custom pagination limit") {
@@ -388,6 +390,50 @@ class DeviceResourceSpec extends ResourcePropSpec {
         device1.deviceName.underlying.compareTo(device2.deviceName.underlying) should be <= 0
       }
     }
+    deviceIds.foreach(deleteDeviceOk(_))
+  }
+
+  property("can list installed packages with custom pagination limit and offset") {
+    import GeneratorOps._
+    val limit = 30
+    val offset = 10
+
+    //This property is about the whole namespace so we need to clean the db
+    listDevices() ~> route ~> check {
+      status shouldBe OK
+      val devs = responseAs[Seq[Device]]
+      devs.map(_.uuid).foreach(deleteDeviceOk(_))
+    }
+
+    val deviceTs = genConflictFreeDeviceTs(deviceNumber).generate
+    val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
+
+    // the database is case-insensitve so when we need to take that in to account when sorting in scala
+    // furthermore PackageId is not lexicographically ordered so we just use pairs
+    def canonPkg(pkg: PackageId) =
+      (pkg.name.get.toLowerCase, pkg.version.get)
+
+    val commonPkg = genPackageId.generate
+
+    val allDevicesPackages = deviceIds.map {device =>
+      val pkgs = Gen.listOf(genPackageId).generate.toSet + commonPkg
+      installSoftwareOk(device, pkgs)
+      pkgs
+    }
+    val allPackages = allDevicesPackages.map(_.map(canonPkg)).toSet.flatten.toSeq.sorted
+
+    getInstalledForAllDevices(offset=offset, limit=limit) ~> route ~> check {
+      status shouldBe OK
+      val paginationResult = responseAs[PaginatedResult[PackageId]]
+      paginationResult.total shouldBe allPackages.length
+      paginationResult.limit shouldBe limit
+      paginationResult.offset shouldBe offset
+      val packages = paginationResult.values.map(canonPkg)
+      packages.length shouldBe scala.math.min(limit, allPackages.length)
+      packages shouldBe sorted
+      packages shouldBe allPackages.drop(offset).take(limit)
+    }
+
     deviceIds.foreach(deleteDeviceOk(_))
   }
 }

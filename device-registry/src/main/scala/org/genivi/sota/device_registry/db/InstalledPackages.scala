@@ -7,7 +7,7 @@ package org.genivi.sota.device_registry.db
 
 import java.time.Instant
 
-import org.genivi.sota.data.{Namespace, PackageId, Uuid}
+import org.genivi.sota.data.{Namespace, PackageId, PaginatedResult, Uuid}
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
@@ -44,6 +44,8 @@ object InstalledPackages {
     def * = (device, name, version, lastModified) <> (fromTuple, toTuple)
   }
 
+  val defaultLimit = 50
+
   private val installedPackages = TableQuery[InstalledPackageTable]
 
   def setInstalled(device: Uuid, packages: Set[PackageId])
@@ -79,4 +81,22 @@ object InstalledPackages {
         .distinct
         .result
     } yield DevicesCount(devices, groups.toSet)
+
+  def getInstalledForAllDevices(ns: Namespace, moffset: Option[Long], mlimit: Option[Long])
+                               (implicit ec: ExecutionContext): DBIO[PaginatedResult[PackageId]] = {
+    val offset = moffset.getOrElse[Long](0)
+    val limit = mlimit.getOrElse[Long](defaultLimit)
+    val query = DeviceRepository
+      .devices.filter(_.namespace === ns)
+      .join(installedPackages).on(_.uuid === _.device)
+      .map(r => (r._2.name, r._2.version))
+      .distinct
+
+    val pagedquery = query.paginateAndSort(identity, offset, limit)
+    val pkgResult = pagedquery.result.map(_.map {case (name, version) => PackageId(name, version)})
+
+    query.length.result.zip(pkgResult).map{ case (total, values) =>
+      PaginatedResult(total=total, limit=limit, offset=offset, values=values)
+    }
+  }
 }
