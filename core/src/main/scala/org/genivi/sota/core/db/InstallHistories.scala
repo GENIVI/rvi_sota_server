@@ -85,7 +85,7 @@ object InstallHistories {
     installHistories
       .filter(_.device === device)
       .join(Packages.packages).on(_.packageUuid === _.uuid)
-      .joinLeft(UpdateSpecs.updateSpecs).on(_._1.updateId === _.requestId)
+      .joinLeft(UpdateSpecs.updateSpecs).on((ih, us) => ih._1.updateId === us.requestId && ih._1.device === us.device)
       .map { case ((ih, pkg), us) => (ih, LiftedPackageId(pkg.name, pkg.version), us.map(_.status)) }
       .result
       .map { _.map { case (ih, pkgId, status) => (ih, pkgId :: status.contains(UpdateStatus.Canceled) :: HNil) } }
