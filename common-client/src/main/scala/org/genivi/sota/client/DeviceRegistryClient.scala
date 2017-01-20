@@ -106,7 +106,9 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri, 
         case StatusCodes.NoContent if ct.runtimeClass == classOf[NoContent] =>
           FastFuture.successful(org.genivi.sota.client.NoContent()).asInstanceOf[Future[T]]
         case other if other.isSuccess() => unmarshaller(response.entity)
-        case err => FastFuture.failed(new Exception(err.toString))
+        case err => log.error(s"Got exception for request to ${httpRequest.uri}\n" +
+          s"Error message: ${response.entity.toString}")
+          FastFuture.failed(new Exception(err.toString))
       }
     }
   }
