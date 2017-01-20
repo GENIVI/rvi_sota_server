@@ -25,6 +25,7 @@ object DeviceDataMigrator {
                         pkgsPerDevice(elem.device) = pkgsPerDevice.getOrElse(elem.device, Set()) + elem.packageId
                       }
       _             <- deviceRegistry.setInstalledPackagesForDevices(pkgsPerDevice.toSeq)
+      _ = logger.info(s"Migration successful for ${rows.size} rows")
     } yield ()
     Await.result(f, 3.minutes)
   }
