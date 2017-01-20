@@ -89,7 +89,7 @@ TIP: SendInstalledPackages is intended to send a complete list of all packages o
 
 Different subsets of commands and events are used in each gateway depending on its purpose.
 
-The Websocket gateway supports subscribing to every event in the client. This gateway is currently used for updating the ATS Garage web interface for example.
+The Websocket gateway supports subscribing to every event in the client. This gateway would be useful for integrating update notifications and control into an HTML5 UI, for example, or for any other use case where very detailed tracking of client behaviour is needed.
 
 The HTTP and Console gateways support sending any command to the client, and will receive the final event after interpreting it. These gateways are primarily used for testing.
 
