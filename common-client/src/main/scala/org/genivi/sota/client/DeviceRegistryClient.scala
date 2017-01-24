@@ -91,11 +91,6 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri, 
     execHttp[NoContent](HttpRequest(method = PUT, uri = baseUri.withPath(mydeviceUri.path / device.show / "packages"),
       entity = HttpEntity(ContentTypes.`application/json`, packages.asJson.noSpaces)))
 
-  def setInstalledPackagesForDevices(data: Seq[(Uuid, Set[PackageId])])
-                                    (implicit ec: ExecutionContext) : Future[NoContent] =
-    execHttp[NoContent](HttpRequest(method = PUT, uri = baseUri.withPath(mydeviceUri.path / "packages"),
-      entity = HttpEntity(ContentTypes.`application/json`, data.asJson.noSpaces)))
-
   private def execHttp[T](httpRequest: HttpRequest)
                          (implicit unmarshaller: Unmarshaller[ResponseEntity, T],
                           ec: ExecutionContext, ct: ClassTag[T]): Future[T] = {

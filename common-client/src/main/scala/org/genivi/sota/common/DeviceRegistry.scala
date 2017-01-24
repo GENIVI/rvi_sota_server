@@ -54,6 +54,4 @@ trait DeviceRegistry {
   def setInstalledPackages
     (device: Uuid, packages: Seq[PackageId])(implicit ec: ExecutionContext) : Future[NoContent]
 
-  def setInstalledPackagesForDevices
-    (data: Seq[(Uuid, Set[PackageId])])(implicit ec: ExecutionContext) : Future[NoContent]
 }

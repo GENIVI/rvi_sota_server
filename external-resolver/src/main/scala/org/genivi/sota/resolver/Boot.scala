@@ -15,7 +15,7 @@ import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.db.{BootMigrations, DatabaseConfig}
 import org.genivi.sota.http._
 import org.genivi.sota.http.LogDirectives._
-import org.genivi.sota.messaging.Messages.{BusMessage, PackageCreated}
+import org.genivi.sota.messaging.Messages.PackageCreated
 import org.genivi.sota.messaging.daemon.MessageBusListenerActor.Subscribe
 import org.genivi.sota.messaging.kafka.MessageListener
 import org.genivi.sota.monitoring.{DatabaseMetrics, MetricsSupport}
@@ -97,10 +97,6 @@ object Boot extends BootApp with Directives with BootMigrations
         new HealthResource(db, versionMap).route
       }
     }
-
-  if(sys.env.get("RESOLVER_DEVICE_MIGRATE").contains("true")) {
-    DeviceDataMigrator(deviceRegistryClient)
-  }
 
   def storePackage(msg: PackageCreated): Future[_] =
     db.run(PackageRepository.add(msg.packageId, Metadata(msg.namespace, msg.description, msg.vendor)))
