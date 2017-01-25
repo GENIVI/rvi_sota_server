@@ -36,5 +36,11 @@ object DeviceDataMigrator {
       now               = Instant.now()
       nonForeignPkgs    = nonForeignPkgRows.map{ r => InstalledForeignPackage(r._2, r._3, now) }
       foreignPkgs       <- ForeignPackages.listPackages
-    } yield foreignPkgs ++ nonForeignPkgs
+    } yield {
+      //account for the fact that some package names are capitalised and some aren't
+      foreignPkgs ++ nonForeignPkgs.filter { p =>
+        foreignPkgs.count(row => p.device.underlying.get.equalsIgnoreCase(row.device.underlying.get) &&
+          p.packageId.name.get.equalsIgnoreCase(row.packageId.name.get)) == 0
+      }
+    }
 }
