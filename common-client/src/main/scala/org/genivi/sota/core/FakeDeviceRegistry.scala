@@ -140,7 +140,8 @@ class FakeDeviceRegistry(namespace: Namespace)
 
   def affectedDevices(namespace: Namespace, packages: Set[PackageId])
                      (implicit ec: ExecutionContext): Future[Map[Uuid, Set[PackageId]]] = {
-    Future.successful(installedPackages.asScala
-      .map(r => (r._1, r._2.intersect(packages))).toMap)
+    Future.successful(installedPackages.asScala.map {
+      case (device, pkgs) => (device, pkgs.intersect(packages))
+    }.filter(_._2.nonEmpty).toMap)
   }
 }

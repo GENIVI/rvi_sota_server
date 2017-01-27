@@ -9,7 +9,6 @@ import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.core.db.Packages.LiftedPackageId
 import org.genivi.sota.http.Errors
 import org.genivi.sota.http.Errors.MissingEntity
 import org.genivi.sota.rest.GenericResponseEncoder
@@ -30,6 +29,7 @@ object BlacklistedPackageResponse {
 
 object BlacklistedPackages {
 
+  import org.genivi.sota.refined.PackageIdDatabaseConversions._
   import org.genivi.sota.refined.SlickRefined._
   import org.genivi.sota.db.SlickExtensions._
   import Packages._

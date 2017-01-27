@@ -134,10 +134,7 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
   def findAffected(ns: Namespace): Route = {
     entity(as[Set[PackageId]]) { packageIds =>
       val f = InstalledPackages.allInstalledPackagesById(ns, packageIds).map {
-        _.foldLeft(Map.empty[Uuid, Set[PackageId]]) { case (acc, (device, pid)) =>
-          val all = acc.getOrElse(device, Set.empty[PackageId]) + pid
-          acc + (device -> all)
-        }
+        _.groupBy(_._1).mapValues(_.map(_._2).toSet)
       }
       complete(db.run(f))
     }

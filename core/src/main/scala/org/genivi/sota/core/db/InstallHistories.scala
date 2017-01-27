@@ -8,7 +8,6 @@ import org.genivi.sota.core.data.{InstallHistory, UpdateSpec}
 import java.time.Instant
 import java.util.UUID
 
-import org.genivi.sota.core.db.Packages.{LiftedPackageId, LiftedPackageShape}
 import org.genivi.sota.core.db.UpdateSpecs.{UpdateSpecRow, UpdateSpecTable}
 import org.genivi.sota.data.{Namespace, PackageId, UpdateStatus, Uuid}
 import org.genivi.sota.http.Errors
@@ -27,6 +26,7 @@ import scala.concurrent.ExecutionContext
 object InstallHistories {
 
   import org.genivi.sota.db.SlickExtensions._
+  import org.genivi.sota.refined.PackageIdDatabaseConversions._
   import org.genivi.sota.refined.SlickRefined._
   import UpdateSpecs.UpdateStatusColumn
 

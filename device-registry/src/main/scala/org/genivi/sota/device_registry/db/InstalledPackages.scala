@@ -8,24 +8,15 @@ package org.genivi.sota.device_registry.db
 import java.time.Instant
 
 import org.genivi.sota.data.{Namespace, PackageId, PaginatedResult, Uuid}
+import org.genivi.sota.refined.PackageIdDatabaseConversions._
 import org.genivi.sota.refined.SlickRefined._
-import org.genivi.sota.device_registry.db.PackageIdDatabaseConversions.LiftedPackageId
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
 
-object PackageIdDatabaseConversions {
-
-  case class LiftedPackageId(name: Rep[PackageId.Name], version: Rep[PackageId.Version])
-
-  implicit object LiftedPackageShape extends CaseClassShape(LiftedPackageId.tupled,
-    (p: (PackageId.Name, PackageId.Version)) => PackageId(p._1, p._2))
-
-}
 object InstalledPackages {
 
   import org.genivi.sota.db.SlickExtensions._
-  import org.genivi.sota.refined.SlickRefined._
 
   type InstalledPkgRow = (Uuid, PackageId.Name, PackageId.Version, Instant)
 
