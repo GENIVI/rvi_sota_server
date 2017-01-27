@@ -436,4 +436,18 @@ class DeviceResourceSpec extends ResourcePropSpec {
 
     deviceIds.foreach(deleteDeviceOk(_))
   }
+
+  property("Posting to affected packages returns affected devices") {
+    forAll { (device: DeviceT, p: PackageId) =>
+      val uuid = createDeviceOk(device)
+
+      installSoftwareOk(uuid, Set(p))
+
+      getAffected(Set(p)) ~> route ~> check {
+        status shouldBe OK
+        responseAs[Map[Uuid, Seq[PackageId]]] should contain(uuid -> Seq(p))
+      }
+    }
+  }
+
 }

@@ -207,8 +207,8 @@ object BlacklistedPackages {
     } yield found
   }
 
-  def impact(namespace: Namespace, impactedDevicesFn: Set[PackageId] => Future[Map[Uuid, Seq[PackageId]]])
-            (implicit db: Database, ec: ExecutionContext): Future[Map[Uuid, Seq[PackageId]]] = {
+  def impact(namespace: Namespace, impactedDevicesFn: Set[PackageId] => Future[Map[Uuid, Set[PackageId]]])
+            (implicit db: Database, ec: ExecutionContext): Future[Map[Uuid, Set[PackageId]]] = {
     val query =  active.filter(_.namespace === namespace).map(r => LiftedPackageId(r.pkgName, r.pkgVersion)).result
     db.run(query).map(_.toSet).flatMap(impactedDevicesFn)
   }

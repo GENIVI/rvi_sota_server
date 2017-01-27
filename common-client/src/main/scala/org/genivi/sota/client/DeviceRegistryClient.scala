@@ -91,6 +91,13 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri, 
     execHttp[NoContent](HttpRequest(method = PUT, uri = baseUri.withPath(mydeviceUri.path / device.show / "packages"),
       entity = HttpEntity(ContentTypes.`application/json`, packages.asJson.noSpaces)))
 
+  override def affectedDevices(namespace: Namespace, packageIds: Set[PackageId])
+                              (implicit ec: ExecutionContext): Future[Map[Uuid, Set[PackageId]]] = {
+    execHttp[Map[Uuid, Set[PackageId]]](HttpRequest(method = POST,
+      uri = baseUri.withPath(mydeviceUri.path / "affected"),
+      entity = HttpEntity(ContentTypes.`application/json`, packageIds.asJson.noSpaces)))
+  }
+
   private def execHttp[T](httpRequest: HttpRequest)
                          (implicit unmarshaller: Unmarshaller[ResponseEntity, T],
                           ec: ExecutionContext, ct: ClassTag[T]): Future[T] = {

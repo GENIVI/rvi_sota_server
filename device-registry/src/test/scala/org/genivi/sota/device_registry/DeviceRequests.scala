@@ -113,4 +113,7 @@ trait DeviceRequests { self: ResourceSpec =>
 
   def getInstalledForAllDevices(offset: Long = 0, limit: Long = 50): HttpRequest =
     Get(Resource.uri("device_packages").withQuery(Query("offset" -> offset.toString, "limit" -> limit.toString)))
+
+  def getAffected(pkgs: Set[PackageId]): HttpRequest =
+    Post(Resource.uri("packages", "affected"), pkgs)
 }
