@@ -72,6 +72,7 @@ object Messages {
     packageUuid: UUID,
     status: String) extends BusMessage
 
+  final case class UserCreated(id: String, email: String) extends BusMessage
 
   implicit class StreamNameOp[T <: Class[_]](v: T) {
     def streamName: String = {
@@ -130,4 +131,6 @@ object Messages {
   implicit val packageStorageUsageMessageLike = MessageLike[PackageStorageUsage](_.namespace.get)
 
   implicit val bandwidthUsageMessageLike = MessageLike[BandwidthUsage](_.id.toString)
+
+  implicit val userCreatedMessageLike = MessageLike[UserCreated](_.id)
 }
