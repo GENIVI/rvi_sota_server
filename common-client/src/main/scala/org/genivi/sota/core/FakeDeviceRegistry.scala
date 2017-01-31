@@ -34,7 +34,8 @@ class FakeDeviceRegistry(namespace: Namespace)
 
   private val devices =  new ConcurrentHashMap[Uuid, Device]()
   private val systemInfo = new ConcurrentHashMap[Uuid, Json]()
-  private val groups = new ConcurrentHashMap[Uuid, Seq[Uuid]]
+  private val groups = new ConcurrentHashMap[Uuid, Seq[Uuid]]()
+  private val installedPackages = new ConcurrentHashMap[Uuid, Set[PackageId]]()
 
   override def searchDevice
   (ns: Namespace, re: String Refined Regex)
@@ -131,7 +132,16 @@ class FakeDeviceRegistry(namespace: Namespace)
     groups.put(group, devices)
   }
 
-  def setInstalledPackages
-    (device: Uuid, packages: Seq[PackageId])(implicit ec: ExecutionContext) : Future[NoContent] =
-      FastFuture.successful(NoContent())
+  def setInstalledPackages(device: Uuid, packages: Seq[PackageId])
+                          (implicit ec: ExecutionContext): Future[NoContent] = {
+    installedPackages.put(device, packages.toSet)
+    FastFuture.successful(NoContent())
+  }
+
+  def affectedDevices(namespace: Namespace, packages: Set[PackageId])
+                     (implicit ec: ExecutionContext): Future[Map[Uuid, Set[PackageId]]] = {
+    Future.successful(installedPackages.asScala.map {
+      case (device, pkgs) => (device, pkgs.intersect(packages))
+    }.filter(_._2.nonEmpty).toMap)
+  }
 }

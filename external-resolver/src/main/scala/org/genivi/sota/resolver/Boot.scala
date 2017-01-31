@@ -65,6 +65,7 @@ class Settings(val config: Config) {
   val deviceRegistryApi = Uri(config.getString("device_registry.devicesUri"))
   val deviceRegistryGroupApi = Uri(config.getString("device_registry.deviceGroupsUri"))
   val deviceRegistryMyApi = Uri(config.getString("device_registry.mydeviceUri"))
+  val deviceRegistryPackagesUri = Uri(config.getString("device_registry.packagesUri"))
 }
 
 
@@ -85,7 +86,8 @@ object Boot extends BootApp with Directives with BootMigrations
 
   val deviceRegistryClient = new DeviceRegistryClient(
     settings.deviceRegistryUri, settings.deviceRegistryApi,
-    settings.deviceRegistryGroupApi, settings.deviceRegistryMyApi
+    settings.deviceRegistryGroupApi, settings.deviceRegistryMyApi,
+    settings.deviceRegistryPackagesUri
   )
 
   val routes: Route =

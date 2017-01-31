@@ -8,6 +8,8 @@ package org.genivi.sota.device_registry.db
 import java.time.Instant
 
 import org.genivi.sota.data.{Namespace, PackageId, PaginatedResult, Uuid}
+import org.genivi.sota.refined.PackageIdDatabaseConversions._
+import org.genivi.sota.refined.SlickRefined._
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
@@ -15,7 +17,6 @@ import scala.concurrent.ExecutionContext
 object InstalledPackages {
 
   import org.genivi.sota.db.SlickExtensions._
-  import org.genivi.sota.refined.SlickRefined._
 
   type InstalledPkgRow = (Uuid, PackageId.Name, PackageId.Version, Instant)
 
@@ -96,4 +97,22 @@ object InstalledPackages {
       PaginatedResult(total=total, limit=limit, offset=offset, values=values)
     }
   }
+
+  protected[db] def inSetQuery(ids: Set[PackageId]): Query[InstalledPackageTable, _, Seq] = {
+    installedPackages.filter { pkg =>
+      (pkg.name.mappedTo[String] ++ pkg.version.mappedTo[String]).inSet(ids.map(id => id.name.get + id.version.get))
+    }
+  }
+
+  //this isn't paginated as it's only intended to be called by core, hence it also not being in swagger
+  def allInstalledPackagesById(namespace: Namespace, ids: Set[PackageId])
+                              (implicit db: Database, ec: ExecutionContext): DBIO[Seq[(Uuid, PackageId)]] = {
+    inSetQuery(ids)
+      .join(DeviceRepository.devices)
+      .on(_.device === _.uuid)
+      .filter(_._2.namespace === namespace)
+      .map(r => (r._1.device, LiftedPackageId(r._1.name, r._1.version)))
+      .result
+  }
+
 }

@@ -13,9 +13,9 @@ import eu.timepit.refined.string.Regex
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 import org.genivi.sota.db.Operators._
+import org.genivi.sota.refined.PackageIdDatabaseConversions.LiftedPackageId
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.components.{Component, ComponentRepository}
-import org.genivi.sota.resolver.db.PackageIdDatabaseConversions._
 import org.genivi.sota.resolver.filters._
 import org.genivi.sota.resolver.firmware.Firmware
 import slick.driver.MySQLDriver.api._
@@ -242,25 +242,6 @@ object DeviceRepository {
       devices <- deviceRegistry.listNamespace(namespace)
       searchResult <- DbDepResolver.filterDevices(namespace, devices.map(d => d.uuid -> d.deviceId).toMap, filter)
     } yield searchResult
-  }
-
-  def allInstalledPackagesById(namespace: Namespace, ids: Set[PackageId], devices: Set[Uuid])
-                              (implicit db: Database, ec: ExecutionContext): Future[Map[Uuid, Seq[PackageId]]] = {
-    val dbDevicesIO =
-      installedPackages.join(PackageRepository.inSetQuery(ids)).on(_.packageUuid === _.uuid)
-        .filter(_._2.namespace === namespace)
-        .map { case (ip, pkg) => (ip.device, LiftedPackageId(pkg.name, pkg.version)) }
-        .union(ForeignPackages.installedQuery(ids))
-        .filter(_._1.inSet(devices))
-        .result
-        .map {
-          _.foldLeft(Map.empty[Uuid, Seq[PackageId]]) { case (acc, (device, pid)) =>
-            val all = pid +: acc.getOrElse(device, Seq.empty[PackageId])
-            acc + (device -> all)
-          }
-        }
-
-    db.run(dbDevicesIO)
   }
 
   def allDevicesWithPackageByName(namespace: Namespace, name: PackageId.Name, devices: Set[Uuid])

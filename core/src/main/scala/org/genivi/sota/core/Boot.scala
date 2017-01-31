@@ -110,6 +110,7 @@ class Settings(val config: Config) {
   val deviceRegistryApi = Uri(config.getString("device_registry.devicesUri"))
   val deviceRegistryGroupApi = Uri(config.getString("device_registry.deviceGroupsUri"))
   val deviceRegistryMyApi = Uri(config.getString("device_registry.mydeviceUri"))
+  val deviceRegistryPackagesApi = Uri(config.getString("device_registry.packagesUri"))
 
   val userProfileBaseUri =
     if (config.getBoolean("user_profile.use")) Some(Uri(config.getString("user_profile.baseUri")))
@@ -143,7 +144,8 @@ object Boot extends BootApp
 
   val deviceRegistryClient = new DeviceRegistryClient(
     settings.deviceRegistryUri, settings.deviceRegistryApi,
-    settings.deviceRegistryGroupApi, settings.deviceRegistryMyApi
+    settings.deviceRegistryGroupApi, settings.deviceRegistryMyApi,
+    settings.deviceRegistryPackagesApi
   )
 
   val userProfileClient = for {

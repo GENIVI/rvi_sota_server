@@ -11,15 +11,15 @@ import org.genivi.sota.data.Namespace
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import slick.driver.MySQLDriver.api._
 import Directives._
-import org.genivi.sota.core.resolver.ExternalResolverClient
+import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.http.{AuthedNamespaceScope, ErrorHandler, Scopes}
 
 class ImpactResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
-                     resolverClient: ExternalResolverClient)
+                     deviceRegistry: DeviceRegistry)
                     (implicit db: Database, system: ActorSystem) {
   import system.dispatcher
 
-  val affectedDevicesFn = (resolverClient.affectedDevices _).curried
+  private val affectedDevicesFn = (deviceRegistry.affectedDevices _).curried
 
   def runImpactAnalysis(namespace: Namespace): Route = {
     val f = BlacklistedPackages.impact(namespace, affectedDevicesFn(namespace))

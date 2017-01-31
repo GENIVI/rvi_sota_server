@@ -14,16 +14,6 @@ import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
 
-
-object PackageIdDatabaseConversions {
-
-  case class LiftedPackageId(name: Rep[PackageId.Name], version: Rep[PackageId.Version])
-
-  implicit object LiftedPackageShape extends CaseClassShape(LiftedPackageId.tupled,
-    (p: (PackageId.Name, PackageId.Version)) => PackageId(p._1, p._2))
-
-}
-
 /**
  * Data access object for Packages
  */

@@ -69,44 +69,6 @@ class PackagesResourcePropSpec extends ResourcePropSpec with PackageGenerators {
     }
   }
 
-  property("Posting to affected packages returns affected devices") {
-    forAll { (device: Uuid, p: Package) =>
-      addVehicle(device) ~> route ~> check {
-        status shouldBe StatusCodes.OK
-      }
-
-      addPackage(p.namespace, p.id.name.get, p.id.version.get, p.description, p.vendor) ~> route ~> check {
-        status shouldBe StatusCodes.OK
-      }
-
-      installPackage(device, p) ~> route ~> check {
-        status shouldBe StatusCodes.OK
-      }
-
-      getAffected(defaultNs, Set(p.id)) ~> route ~> check {
-        status shouldBe StatusCodes.OK
-        responseAs[Map[Uuid, Seq[PackageId]]] should contain(device -> Seq(p.id))
-      }
-    }
-  }
-
-  property("Posting to affected foreign packages returns affected devices") {
-    forAll { (device: Uuid, p: Package) =>
-      addVehicle(device) ~> route ~> check {
-        status shouldBe StatusCodes.OK
-      }
-
-      installFirmware(device, Set(p.id), Set.empty) ~> route ~> check {
-        status shouldBe StatusCodes.NoContent
-      }
-
-      getAffected(defaultNs, Set(p.id)) ~> route ~> check {
-        status shouldBe StatusCodes.OK
-        responseAs[Map[Uuid, Seq[PackageId]]] shouldBe Map(device -> Seq(p.id))
-      }
-    }
-  }
-
   property("COUNT devices with installed package version group by package name") {
     forAll { (device: Uuid, p: Package) =>
       addVehicle(device) ~> route ~> check {

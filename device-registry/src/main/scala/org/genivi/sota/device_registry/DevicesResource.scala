@@ -131,6 +131,15 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
       complete(db.run(InstalledPackages.getInstalledForAllDevices(ns, offset, limit)))
     }
 
+  def findAffected(ns: Namespace): Route = {
+    entity(as[Set[PackageId]]) { packageIds =>
+      val f = InstalledPackages.allInstalledPackagesById(ns, packageIds).map {
+        _.groupBy(_._1).mapValues(_.map(_._2).toSet)
+      }
+      complete(db.run(f))
+    }
+  }
+
   def api: Route = namespaceExtractor { ns =>
     val scope = Scopes.devices(ns)
     pathPrefix("devices") {
@@ -185,6 +194,9 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
       (pathEnd & scope.get) {
         getDistinctPackages(authedNs)
       }
+    } ~
+    (path("packages" / "affected") & scope.post) {
+      findAffected(authedNs)
     }
   }
 

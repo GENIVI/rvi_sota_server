@@ -22,7 +22,7 @@ import org.genivi.sota.http.Errors.MissingEntity
 import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
 import slick.dbio.DBIO
 import slick.driver.MySQLDriver.api._
-import Packages.{LiftedPackageId, LiftedPackageShape}
+import org.genivi.sota.refined.PackageIdDatabaseConversions._
 import org.genivi.sota.data.UpdateStatus.UpdateStatus
 import shapeless.{::, HNil}
 
