@@ -74,6 +74,8 @@ object Messages {
 
   final case class UserCreated(id: String, email: String) extends BusMessage
 
+  final case class UserLogin(id: String, timestamp: Instant) extends BusMessage
+
   implicit class StreamNameOp[T <: Class[_]](v: T) {
     def streamName: String = {
       v.getSimpleName.filterNot(c => List('$').contains(c))
@@ -133,4 +135,7 @@ object Messages {
   implicit val bandwidthUsageMessageLike = MessageLike[BandwidthUsage](_.id.toString)
 
   implicit val userCreatedMessageLike = MessageLike[UserCreated](_.id)
+
+  implicit val userLoginMessageLike = MessageLike[UserLogin](_.id)
+
 }
