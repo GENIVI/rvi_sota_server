@@ -13,10 +13,11 @@ import akka.stream.ActorMaterializer
 import cats.data.Xor
 import org.genivi.sota.data.{Namespace, UpdateStatus, Uuid}
 import org.genivi.sota.db.{BootMigrations, DatabaseConfig}
+import org.genivi.sota.device_registry.daemon.DeviceUpdateStatusListener
 import org.genivi.sota.device_registry.db.DeviceRepository
 import org.genivi.sota.http.UuidDirectives.{allowExtractor, extractUuid}
 import org.genivi.sota.http._
-import org.genivi.sota.messaging.Messages.UpdateSpec
+import org.genivi.sota.messaging.Messages.{DeviceUpdateStatus, UpdateSpec}
 import org.genivi.sota.messaging.daemon.MessageBusListenerActor.Subscribe
 import org.genivi.sota.messaging.kafka.MessageListener
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
@@ -83,17 +84,9 @@ object Boot extends BootApp with Directives with BootMigrations
       new HealthResource(db, versionMap).route
     }
 
-  private def updateDeviceStatus(msg: UpdateSpec) = {
-    import org.genivi.sota.data.DeviceSearchCommon._
-    db.run(for {
-      device <- DeviceRepository.findByUuid(msg.device)
-      status = currentDeviceStatus(device.lastSeen, Seq((Instant.now(), UpdateStatus.withName(msg.status))))
-      _ <- DeviceRepository.setDeviceStatus(device.uuid, status)
-    } yield ())
-  }
-
   val messageBusListener =
-    system.actorOf(MessageListener.props[UpdateSpec](system.settings.config, updateDeviceStatus))
+    system.actorOf(MessageListener.props[UpdateSpec](system.settings.config,
+      DeviceUpdateStatusListener.action(messageBus)))
   messageBusListener ! Subscribe
 
   val host = config.getString("server.host")
