@@ -16,7 +16,7 @@ define(function(require) {
         SotaDispatcher.dispatch({
             actionType: 'add-component-to-vin',
             partNumber: partNumber,
-            vin: this.props.Vin
+            id: this.props.Id
         });
       },
       buttonLabel: "Add Installed Component",
