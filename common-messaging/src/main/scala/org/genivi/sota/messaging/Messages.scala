@@ -9,6 +9,7 @@ import io.circe.generic.decoding.DerivedDecoder
 import io.circe.generic.encoding.DerivedObjectEncoder
 import io.circe.{Decoder, Encoder}
 import io.circe.parser._
+import org.genivi.sota.data.DeviceStatus.DeviceStatus
 import org.genivi.sota.marshalling.CirceInstances._
 import org.genivi.sota.data._
 import org.genivi.sota.data.UpdateType.UpdateType
@@ -76,6 +77,10 @@ object Messages {
 
   final case class UserLogin(id: String, timestamp: Instant) extends BusMessage
 
+  final case class DeviceUpdateStatus(namespace: Namespace,
+                                      device: Uuid,
+                                      status: DeviceStatus) extends BusMessage
+
   implicit class StreamNameOp[T <: Class[_]](v: T) {
     def streamName: String = {
       v.getSimpleName.filterNot(c => List('$').contains(c))
@@ -138,4 +143,5 @@ object Messages {
 
   implicit val userLoginMessageLike = MessageLike[UserLogin](_.id)
 
+  implicit val deviceStatusMessageLike = MessageLike[DeviceUpdateStatus](_.device.show)
 }
