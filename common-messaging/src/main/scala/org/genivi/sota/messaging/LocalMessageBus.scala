@@ -9,13 +9,22 @@ import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.Source
-import org.genivi.sota.messaging.Messages.MessageLike
+import org.genivi.sota.messaging.Messages.{BusMessage, MessageLike}
+import org.genivi.sota.messaging.kafka.MessageListener.CommittableMsg
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 object LocalMessageBus {
   def subscribe[T](system: ActorSystem)(implicit m: MessageLike[T]): Source[T, NotUsed] = {
+    Source.actorRef(MessageBus.DEFAULT_CLIENT_BUFFER_SIZE, OverflowStrategy.dropTail).mapMaterializedValue { ref =>
+      system.eventStream.subscribe(ref, m.tag.runtimeClass)
+      NotUsed
+    }
+  }
+
+  def subscribeCommittable[T <: BusMessage](system: ActorSystem)(implicit m: MessageLike[T])
+  : Source[CommittableMsg[T], NotUsed] = {
     Source.actorRef(MessageBus.DEFAULT_CLIENT_BUFFER_SIZE, OverflowStrategy.dropTail).mapMaterializedValue { ref =>
       system.eventStream.subscribe(ref, m.tag.runtimeClass)
       NotUsed
