@@ -4,13 +4,12 @@
  */
 package org.genivi.sota.core.db
 
-import org.genivi.sota.core.data.{InstallHistory, UpdateSpec, UpdateStatus}
+import org.genivi.sota.core.data.{InstallHistory, UpdateSpec}
 import java.time.Instant
 import java.util.UUID
 
-import org.genivi.sota.core.db.Packages.{LiftedPackageId, LiftedPackageShape}
 import org.genivi.sota.core.db.UpdateSpecs.{UpdateSpecRow, UpdateSpecTable}
-import org.genivi.sota.data.{Namespace, PackageId, Uuid}
+import org.genivi.sota.data.{Namespace, PackageId, UpdateStatus, Uuid}
 import org.genivi.sota.http.Errors
 import shapeless._
 import slick.driver.MySQLDriver.api._
@@ -27,6 +26,7 @@ import scala.concurrent.ExecutionContext
 object InstallHistories {
 
   import org.genivi.sota.db.SlickExtensions._
+  import org.genivi.sota.refined.PackageIdDatabaseConversions._
   import org.genivi.sota.refined.SlickRefined._
   import UpdateSpecs.UpdateStatusColumn
 
@@ -85,7 +85,7 @@ object InstallHistories {
     installHistories
       .filter(_.device === device)
       .join(Packages.packages).on(_.packageUuid === _.uuid)
-      .joinLeft(UpdateSpecs.updateSpecs).on(_._1.updateId === _.requestId)
+      .joinLeft(UpdateSpecs.updateSpecs).on((ih, us) => ih._1.updateId === us.requestId && ih._1.device === us.device)
       .map { case ((ih, pkg), us) => (ih, LiftedPackageId(pkg.name, pkg.version), us.map(_.status)) }
       .result
       .map { _.map { case (ih, pkgId, status) => (ih, pkgId :: status.contains(UpdateStatus.Canceled) :: HNil) } }

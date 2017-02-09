@@ -1,53 +1,15 @@
-/**
- * Copyright: Copyright (C) 2016, ATS Advanced Telematic Systems GmbH
- * License: MPL-2.0
- */
 package org.genivi.sota.core.data
 
 import java.time.Instant
-import org.genivi.sota.core.data.DeviceStatus.DeviceStatus
-import org.genivi.sota.core.data.UpdateStatus.UpdateStatus
-import org.genivi.sota.core.db.UpdateSpecs
-import org.genivi.sota.data.{CirceEnum, Device, Uuid}
-import org.genivi.sota.refined.SlickRefined._
-import org.slf4j.LoggerFactory
+
+import org.genivi.sota.data.{Device, DeviceUpdateStatus, Uuid}
+import org.genivi.sota.data.DeviceSearchCommon._
+import slick.driver.MySQLDriver.api._
+import org.genivi.sota.core.db.UpdateSpecs._
 
 import scala.concurrent.{ExecutionContext, Future}
-import slick.driver.MySQLDriver.api._
 
-
-object DeviceStatus extends CirceEnum {
-  type DeviceStatus = Value
-
-  val NotSeen, Error, UpToDate, Outdated = Value
-}
-
-case class DeviceUpdateStatus(device: Uuid, status: DeviceStatus, lastSeen: Option[Instant])
-
-object DeviceSearch {
-  import UpdateSpecs._
-  import DeviceStatus._
-
-  lazy val logger = LoggerFactory.getLogger(this.getClass)
-
-  def currentDeviceStatus(lastSeen: Option[Instant], updateStatuses: Seq[(Instant, UpdateStatus)]): DeviceStatus = {
-    import UpdateStatus._
-
-    if(lastSeen.isEmpty) {
-      NotSeen
-    } else {
-      val statuses = updateStatuses.sortBy(_._1).reverse.map(_._2)
-
-      if(statuses.headOption.contains(UpdateStatus.Failed)) {
-        Error
-      } else if(!statuses.forall(s => List(Canceled, Finished, Failed).contains(s))) {
-        Outdated
-      } else {
-        UpToDate
-      }
-    }
-  }
-
+object DeviceSearchCore {
 
   def fetchDeviceStatus(searchR: Future[Seq[Device]])
                        (implicit db: Database, ec: ExecutionContext): Future[Seq[DeviceUpdateStatus]] = {

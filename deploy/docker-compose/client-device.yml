@@ -1,0 +1,12 @@
+version: '2'
+services:
+
+  sota-client:
+    image: advancedtelematic/sota-client
+    depends_on:
+      - device-registry
+      - core
+    environment:
+      NAMESPACE: "genivi"
+      CORE_SERVER: "http://core:8080"
+      REGISTRY_SERVER: "http://device-registry:8083"

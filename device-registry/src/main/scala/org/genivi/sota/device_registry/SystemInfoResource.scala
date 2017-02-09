@@ -64,7 +64,7 @@ class SystemInfoResource(authNamespace: Directive1[AuthedNamespaceScope],
       }
     }
 
-  def mydeviceRoutes: Route = authNamespace { authedNs =>
+  def mydeviceRoutes: Route = authNamespace { authedNs => // don't use this as a namespace
     (pathPrefix("mydevice") & extractUuid) { uuid =>
       (put & path("system_info") & authedNs.oauthScope(s"ota-core.{uuid.show}.write")) {
         entity(as[Json]) { body => updateSystemInfo(uuid, body) }

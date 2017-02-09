@@ -80,17 +80,6 @@ class PackageDirectives(namespaceExtractor: Directive1[AuthedNamespaceScope], de
     }
   }
 
-  def findAffected(ns: Namespace): Route = {
-    entity(as[Set[PackageId]]) { packageIds =>
-      val f = deviceRegistryClient.listNamespace(ns).flatMap { nsDevices =>
-        val uuids = nsDevices.map(_.uuid).toSet
-        DeviceRepository.allInstalledPackagesById(ns, packageIds, uuids)
-      }
-
-      complete(f)
-    }
-  }
-
   def getPackageStats(ns: Namespace, name: PackageId.Name): Route = {
     val f = deviceRegistryClient.listNamespace(ns).flatMap { nsDevices =>
       val uuids = nsDevices.map(_.uuid).toSet
@@ -108,9 +97,6 @@ class PackageDirectives(namespaceExtractor: Directive1[AuthedNamespaceScope], de
   def route: Route = (ErrorHandler.handleErrors & namespaceExtractor) { ns =>
     val scope = Scopes.resolver(ns)
     pathPrefix("packages") {
-      path("affected") {
-        scope.post { findAffected(ns) }
-      } ~
       (scope.get & path("filter")) {
         getFilters(ns)
       } ~

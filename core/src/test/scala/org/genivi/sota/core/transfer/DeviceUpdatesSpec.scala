@@ -5,12 +5,13 @@ import java.util.UUID
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import eu.timepit.refined.api.Refined
+import org.genivi.sota.DefaultPatience
 import org.genivi.sota.core._
-import org.genivi.sota.core.data.{UpdateSpec, UpdateStatus}
+import org.genivi.sota.core.data.UpdateSpec
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.rvi.OperationResult
 import org.genivi.sota.core.rvi.UpdateReport
-import org.genivi.sota.data.{DeviceGenerators, Namespaces, Uuid}
+import org.genivi.sota.data.{DeviceGenerators, Namespaces, UpdateStatus, Uuid}
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.scalacheck.Gen
 import org.scalatest._
@@ -39,7 +40,6 @@ class DeviceUpdatesSpec extends FunSuite
   val id = Uuid(Refined.unsafeApply(UUID.randomUUID().toString))
 
   implicit val ec = ExecutionContext.global
-  implicit val _db = db
 
   test("forwards request to resolver client") {
     val device = genDeviceT.sample.get.copy(deviceId = Some(genDeviceId.sample.get))

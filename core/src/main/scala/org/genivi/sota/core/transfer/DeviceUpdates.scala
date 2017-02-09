@@ -11,19 +11,19 @@ import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import cats.Show
 import io.circe.Json
 import io.circe.syntax._
-import org.genivi.sota.core.data.UpdateStatus.UpdateStatus
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.UpdateSpecs._
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.resolver.ExternalResolverClient
 import org.genivi.sota.core.rvi.UpdateReport
-import org.genivi.sota.data.{Namespace, PackageId, Uuid}
+import org.genivi.sota.data.{Namespace, PackageId, UpdateStatus, Uuid}
 import org.genivi.sota.db.SlickExtensions
 import org.genivi.sota.http.Errors.MissingEntity
 import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
 import slick.dbio.DBIO
 import slick.driver.MySQLDriver.api._
-import Packages.{LiftedPackageId, LiftedPackageShape}
+import org.genivi.sota.refined.PackageIdDatabaseConversions._
+import org.genivi.sota.data.UpdateStatus.UpdateStatus
 import shapeless.{::, HNil}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -146,7 +146,7 @@ object DeviceUpdates {
       .filter(_.device === device)
       .filter(_.requestId === updateRequestId)
       .join(updateRequests).on(_.requestId === _.id)
-      .joinLeft(requiredPackages).on(_._1.requestId === _.requestId)
+      .joinLeft(requiredPackages.filter(_.device === device)).on(_._1.requestId === _.requestId)
       .result
 
     val specsWithDepsIO = updateSpecsIO flatMap { specsWithDeps =>

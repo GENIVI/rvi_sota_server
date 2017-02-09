@@ -30,8 +30,11 @@ There are three docker-compose files included in the git repo, under `/deploy/do
 * `docker-compose.yml` contains the default SOTA Server components.
 * `core-rvi.yml` contains the additional RVI server node with environment overrides for the SOTA Core server.
 * `client-rvi.yml` contains the additional RVI client node for testing with the SOTA Client
+* `client-device.yml` contains the additional SOTA client for testing
 
 To start the base SOTA Server, run `docker-compose -f docker-compose.yml up`. To start the SOTA Server with an RVI backend node, run `docker-compose -f docker-compose.yml -f core-rvi.yml up`. To start the SOTA Server with both RVI backend and device nodes, run `docker-compose -f docker-compose.yml -f core-rvi.yml -f client-rvi.yml up`.
+
+To start the base SOTA Server with a SOTA Client device, run `docker-compose -f docker-compose.yml -f client-device.yml up`. Note that you may have to restart some services to ensure proper startup order, e.g. `docker restart dockercompose_sota-client_1`. You can check logs with e.g. `docker logs dockercompose_sota-client_1`.
 
 == Cloud deployment
 

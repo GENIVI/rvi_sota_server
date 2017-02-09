@@ -11,11 +11,13 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import cats.implicits._
 import io.circe.generic.auto._
 import java.util.UUID
-import org.genivi.sota.core.data.{Campaign, UpdateStatus}
+
+import org.genivi.sota.DefaultPatience
+import org.genivi.sota.core.data.Campaign
 import org.genivi.sota.core.db.{BlacklistedPackages, Packages, UpdateRequests}
 import org.genivi.sota.core.resolver.DefaultConnectivity
 import org.genivi.sota.core.transfer.DefaultUpdateNotifier
-import org.genivi.sota.data.{Namespaces, PackageId, Uuid}
+import org.genivi.sota.data.{Namespaces, PackageId, UpdateStatus, Uuid}
 import org.genivi.sota.http.NamespaceDirectives.defaultNamespaceExtractor
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalacheck.Gen
@@ -59,7 +61,6 @@ class CampaignResourceSpec extends FunSuite
   }
 
   def updateRequestCancelled(urId: Uuid): Unit = {
-    implicit val theDB = db
     whenReady(updateService.fetchUpdateSpecRows(urId)) { rows =>
       all(rows.map(_.status)) shouldBe UpdateStatus.Canceled
     }
@@ -72,7 +73,6 @@ class CampaignResourceSpec extends FunSuite
   }
 
   def blacklistPackage(pkgId: PackageId): Unit = {
-    implicit val theDb = db
     BlacklistedPackages.create(Namespaces.defaultNs, pkgId, None).map(_ => ()).futureValue
   }
 
@@ -214,11 +214,21 @@ class CampaignResourceSpec extends FunSuite
     val id = createCampaignOk(campName)
     launchCampaign(id)
 
-    val campName2 = CreateCampaignGen.sample.get
-    renameCampaign(id, campName2, StatusCodes.Locked)
+
+    val setgroups = createRandomGroups()
+    setGroups(id, setgroups, StatusCodes.Locked)
 
     val pkg = createRandomPackage()
     setPackage(id, pkg, StatusCodes.Locked)
+  }
+
+  test("can rename a launched campaign") {
+    val campName = CreateCampaignGen.sample.get
+    val id = createCampaignOk(campName)
+    launchCampaign(id)
+
+    val campName2 = CreateCampaignGen.sample.get
+    renameCampaign(id, campName2, StatusCodes.OK)
   }
 
   test("can't launch campaign with inconsitent dates") {

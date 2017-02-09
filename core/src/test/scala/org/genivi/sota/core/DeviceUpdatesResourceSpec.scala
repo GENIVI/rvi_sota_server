@@ -18,20 +18,22 @@ import org.genivi.sota.core.transfer.DeviceUpdates
 import org.genivi.sota.data._
 import java.time.Instant
 
+import akka.testkit.TestKitBase
 import eu.timepit.refined.api.Refined
 import org.genivi.sota.http.NamespaceDirectives
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import org.genivi.sota.messaging.MessageBusPublisher
+import org.genivi.sota.messaging.{LocalMessageBus, MessageBusPublisher}
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{FunSuite, Inspectors, ShouldMatchers}
-
 import slick.driver.MySQLDriver.api._
+
 import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import cats.syntax.show._
+import org.genivi.sota.messaging.Messages.BandwidthUsage
 
 class DeviceUpdatesResourceSpec extends FunSuite
   with ShouldMatchers
@@ -40,7 +42,8 @@ class DeviceUpdatesResourceSpec extends FunSuite
   with DatabaseSpec
   with Inspectors
   with UpdateResourcesDatabaseSpec
-  with LongRequestTimeout {
+  with LongRequestTimeout
+  with TestKitBase {
 
   import Arbitrary._
   import NamespaceDirectives._
@@ -50,11 +53,10 @@ class DeviceUpdatesResourceSpec extends FunSuite
   import UuidGenerator._
 
   implicit val patience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
-  implicit val _db = db
   implicit val connectivity = new FakeConnectivity()
 
-  lazy val service = new DeviceUpdatesResource(db, fakeResolver, fakeDeviceRegistry, defaultNamespaceExtractor,
-    MessageBusPublisher.ignore)
+  lazy val service = new DeviceUpdatesResource(db, fakeResolver, fakeDeviceRegistry, None,
+    defaultNamespaceExtractor, LocalMessageBus.publisher(system))
 
   val fakeResolver = new FakeExternalResolver()
 
@@ -202,8 +204,8 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
   // Deprecated, see newer 'mydevice' test below
   test("GET to download a file returns 3xx if the package URL is an s3 URI") {
-    val service = new DeviceUpdatesResource(db, fakeResolver, fakeDeviceRegistry, defaultNamespaceExtractor,
-      MessageBusPublisher.ignore) {
+    val service = new DeviceUpdatesResource(db, fakeResolver, fakeDeviceRegistry, None,
+      defaultNamespaceExtractor, MessageBusPublisher.ignore) {
       override lazy val packageRetrievalOp: (Package) => Future[HttpResponse] = {
         _ => Future.successful {
           HttpResponse(StatusCodes.Found, Location("https://some-fake-place") :: Nil)
@@ -579,8 +581,8 @@ class DeviceUpdatesResourceSpec extends FunSuite
   }
 
   test("Device GET download returns 3xx if the package URL is an s3 URI") {
-    val service = new DeviceUpdatesResource(db, fakeResolver, fakeDeviceRegistry, defaultNamespaceExtractor,
-      MessageBusPublisher.ignore) {
+    val service = new DeviceUpdatesResource(db, fakeResolver, fakeDeviceRegistry, None,
+      defaultNamespaceExtractor, MessageBusPublisher.ignore) {
       override lazy val packageRetrievalOp: (Package) => Future[HttpResponse] = {
         _ => Future.successful {
           HttpResponse(StatusCodes.Found, Location("https://some-fake-place") :: Nil)
@@ -620,6 +622,23 @@ class DeviceUpdatesResourceSpec extends FunSuite
     }
   }
 
+  test("publishes message to bus on fetch") {
+    system.eventStream.subscribe(testActor, classOf[BandwidthUsage])
+
+    whenReady(createUpdateSpec()) { case (packageModel, device, updateSpec) =>
+      val url =
+        Uri.Empty.withPath(mydeviceUri.path / device.uuid.underlying.get / "updates" / updateSpec.request.id.toString / "download")
+
+      Get(url) ~> service.route ~> check {
+        status shouldBe StatusCodes.OK
+      }
+
+      expectMsgPF(10.seconds, "usage equal to pkg size and source equal to pkg id") {
+        case m@BandwidthUsage(_, _, _, usage, updateType, source)
+          if updateType == UpdateType.Package && usage == packageModel.size && source == packageModel.id.show => m
+      }
+    }
+  }
 }
 
 class FakeConnectivity extends Connectivity {

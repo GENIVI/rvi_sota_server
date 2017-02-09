@@ -10,19 +10,15 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.coding.Gzip
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
-import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import org.genivi.sota.data.{Namespace, PackageId, Uuid}
-import akka.http.scaladsl.marshalling.Marshal
 import cats.syntax.show._
 import org.genivi.sota.http.NamespaceDirectives.nsHeader
 import org.genivi.sota.marshalling.CirceMarshallingSupport
-import org.genivi.sota.rest.ErrorRepresentation
 
 import scala.concurrent.Future
-import scala.util.Failure
 
 trait ExternalResolverClient {
 
@@ -59,8 +55,6 @@ trait ExternalResolverClient {
     * @param json A JSON encoded list of installed packages
     */
   def setInstalledPackages(device: Uuid, json: io.circe.Json) : Future[Unit]
-
-  def affectedDevices(namespace: Namespace, packageIds: Set[PackageId]): Future[Map[Uuid, Seq[PackageId]]]
 }
 
 /**
@@ -199,30 +193,5 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
       Put(packagesUri.withPath(packagesUri.path / packageId.name.get / packageId.version.get ), payload)
         .addHeader(nsHeader(namespace))
     handlePutResponse( Http().singleRequest( request ) )
-  }
-
-  override def affectedDevices(namespace: Namespace, packageIds: Set[PackageId]): Future[Map[Uuid, Seq[PackageId]]] = {
-    val uri = vehiclesUri.withPath(packagesUri.path / "affected")
-
-    val responseF = for {
-      entity <- Marshal(packageIds).to[MessageEntity]
-      req = HttpRequest(method = HttpMethods.POST, uri = uri, entity = entity)
-              .addHeader(nsHeader(namespace))
-      response <- Http().singleRequest(req)
-    } yield response
-
-    val futureResult = responseF.flatMap {
-      case HttpResponse(StatusCodes.OK, _, entity, _) =>
-        Unmarshal(entity).to[Map[Uuid, Seq[PackageId]]]
-
-      case HttpResponse(StatusCodes.BadRequest, _, entity, _) =>
-        Unmarshal(entity).to[ErrorRepresentation].flatMap( x =>
-          FastFuture.failed(ExternalResolverRequestFailed(s"Error returned from external resolver: $x")))
-
-      case HttpResponse(status, _, _, _) =>
-        FastFuture.failed(ExternalResolverRequestFailed(status))
-    }
-
-    futureResult.andThen { case Failure(t) => log.error(t, "Request to external resolver failed." ) }
   }
 }

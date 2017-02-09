@@ -20,13 +20,13 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
     }
   }
 
-  val complexJsonArray =
+  private val complexJsonArray =
     Json.arr(Json.fromFields(List(("key", Json.fromString("value")), ("type", Json.fromString("fish")))))
-  val complexNumericJsonArray =
+  private val complexNumericJsonArray =
     Json.arr(Json.fromFields(List(("key", Json.fromString("value")), ("type", Json.fromInt(5)))))
 
-  val groupInfo = parse("""{"cat":"dog","fish":{"cow":1}}""").toOption.get
-  val systemInfos = Seq(
+  private val groupInfo = parse("""{"cat":"dog","fish":{"cow":1}}""").toOption.get
+  private val systemInfos = Seq(
     parse("""{"cat":"dog","fish":{"cow":1,"sheep":[42,"penguin",23]}}"""), // device #1
     parse("""{"cat":"dog","fish":{"cow":1,"sloth":true},"antilope":"bison"}"""), // device #2
     parse("""{"fish":{"cow":1},"cat":"dog"}"""), // matches without discarding
@@ -35,6 +35,7 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
     parse("""{"cat":"dog","fish":{"cow":1},"bison":17}"""), // doesn't match without discarding
     parse("""{"cat":"dog","fish":{"cow":2,"sheep":false},"antilope":"emu"}""") // doesn't match with discarding
     ).map(_.toOption.get)
+  private val limit = 30
 
   test("GET all groups lists all groups") {
     //TODO: PRO-1182 turn this back into a property when we can delete groups
@@ -51,6 +52,68 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
         groups.count(p => p.groupName == group.groupName && p.groupInfo == group.groupInfo) shouldBe 1
       }
     }
+  }
+
+  test("can list all devices in a group by not providing an offset or limit") {
+    val defaultPaginationLimit = 50
+    val deviceNumber = defaultPaginationLimit + 10
+
+    val group = genGroupInfo.sample.get
+    val groupId = createGroupOk(group.groupName)
+
+    val deviceTs = genConflictFreeDeviceTs(deviceNumber).sample.get
+    val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
+
+    deviceIds.foreach(deviceId => addDeviceToGroupOk(groupId, deviceId))
+
+    listDevicesInGroup(groupId) ~> route ~> check {
+      status shouldBe OK
+      val result = responseAs[Seq[Uuid]]
+      result.length shouldBe deviceNumber
+    }
+    deviceIds.foreach(deleteDeviceOk(_))
+  }
+
+  test("can list devices with custom pagination limit") {
+    val deviceNumber = 50
+    val group = genGroupInfo.sample.get
+    val groupId = createGroupOk(group.groupName)
+
+    val deviceTs = genConflictFreeDeviceTs(deviceNumber).sample.get
+    val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
+
+    deviceIds.foreach(deviceId => addDeviceToGroupOk(groupId, deviceId))
+
+    listDevicesInGroup(groupId, limit = Some(limit)) ~> route ~> check {
+      status shouldBe OK
+      val result = responseAs[Seq[Uuid]]
+      result.length shouldBe limit
+    }
+    deviceIds.foreach(deleteDeviceOk(_))
+  }
+
+  test("can list devices with custom pagination limit and offset") {
+    val offset = 10
+    val deviceNumber = 50
+    val group = genGroupInfo.sample.get
+    val groupId = createGroupOk(group.groupName)
+
+    val deviceTs = genConflictFreeDeviceTs(deviceNumber).sample.get
+    val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
+
+    deviceIds.foreach(deviceId => addDeviceToGroupOk(groupId, deviceId))
+
+    val allDevices = listDevicesInGroup(groupId, limit = Some(deviceNumber)) ~> route ~> check {
+      responseAs[Seq[Uuid]]
+    }
+
+    listDevicesInGroup(groupId, offset = Some(offset), limit = Some(limit)) ~> route ~> check {
+      status shouldBe OK
+      val result = responseAs[Seq[Uuid]]
+      result.length shouldBe limit
+      allDevices.slice(offset, offset + limit) shouldEqual result
+    }
+    deviceIds.foreach(deleteDeviceOk(_))
   }
 
   test("creating groups manually is possible") {
@@ -238,4 +301,5 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
 
     deleteDeviceOk(deviceId)
   }
+
 }

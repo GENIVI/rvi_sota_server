@@ -1,0 +1,1000 @@
+{
+	"variables": [],
+	"info": {
+		"name": "01 - Device_Registry_TestCases",
+		"_postman_id": "da70c27f-accc-e0dc-a6fa-7c2b2f2b43b0",
+		"description": "https://github.com/advancedtelematic/rvi_sota_server",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "01 - Devices",
+			"description": "Folder for devices",
+			"item": [
+				{
+					"name": "GET /devices",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Empty Body\"] = responseBody.has(\"\");",
+									"",
+									"postman.setEnvironmentVariable(\"TestNum\", 0);",
+									"",
+									"postman.clearEnvironmentVariable(\"qa_device_0_uuid\");",
+									"",
+									"postman.clearEnvironmentVariable(\"qa_device_1_uuid\");",
+									"",
+									"postman.clearEnvironmentVariable(\"qa_device_2_uuid\");",
+									"",
+									"postman.clearEnvironmentVariable(\"qa_device_1_name\");",
+									"",
+									"postman.clearEnvironmentVariable(\"qa_device_2_name\");",
+									"",
+									"postman.clearEnvironmentVariable(\"groupID\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/devices?namespace={{namespace}}",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {},
+						"description": "Get a list of all the devices in a particular namespace in the device registry."
+					},
+					"response": []
+				},
+				{
+					"name": "POST /devices (device_A)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Successful POST request\"] = responseCode.code === 201 || responseCode.code === 202;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"",
+									"postman.setEnvironmentVariable(\"qa_device_0_uuid\", response);",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/devices?namespace={{namespace}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"deviceName\": \"{{device_name}}{{$randomInt}}\",\n  \"deviceId\": \"{{$timestamp}}\",\n  \"deviceType\": \"Vehicle\"\n}\n"
+						},
+						"description": "Register a new device with a name and an ID, get back its UUID"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /devices/{uuid} (device_A)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"",
+									"tests[\"namespace in Response\"] = response.namespace == environment.namespace;",
+									"",
+									"tests[\"id in Response\"] = response.uuid == environment.qa_device_0_uuid;",
+									"",
+									"tests[\"lastSeen in Response\"] = response.lastSeen === null;",
+									"",
+									"tests[\"device type in Response\"] = response.deviceType == \"Vehicle\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/devices/{{qa_device_0_uuid}}",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "Get the device object for a single device"
+					},
+					"response": []
+				},
+				{
+					"name": "DEL /devices/{uuid} (device_A)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"postman.clearEnvironmentVariable(\"qa_device_0_uuid\");",
+									"",
+									"tests[\"Body is correct\"] = responseBody === \"{}\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/devices/{{qa_device_0_uuid}}",
+						"method": "DELETE",
+						"header": [],
+						"body": {},
+						"description": "Delete a device"
+					},
+					"response": []
+				},
+				{
+					"name": "POST /devices (device_B)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Successful POST request\"] = responseCode.code === 201 || responseCode.code === 202;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"",
+									"postman.setEnvironmentVariable(\"qa_device_1_uuid\", response);",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/devices?namespace={{namespace}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"deviceName\": \"{{device_name}}{{$randomInt}}\",\n  \"deviceId\": \"{{$timestamp}}\",\n  \"deviceType\": \"Vehicle\"\n}"
+						},
+						"description": "Register a new device with a name and an ID, get back its UUID"
+					},
+					"response": []
+				},
+				{
+					"name": "POST /devices/{uuid}/ping (device_B)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Successful POST request\"] = responseCode.code === 200 || responseCode.code === 201 || responseCode.code === 202;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"",
+									"tests[\"lastSeen in Response\"] = response.lastSeen !== null;",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/devices/{{qa_device_1_uuid}}/ping",
+						"method": "POST",
+						"header": [],
+						"body": {},
+						"description": "Update the last seen time for a device"
+					},
+					"response": []
+				},
+				{
+					"name": "POST /devices/{uuid}/system_info (device_B)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Successful POST request\"] = responseCode.code === 201 || responseCode.code === 202;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/devices/{{qa_device_1_uuid}}/system_info",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"description": "Create the system info for the 2nd device. \n"
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /devices/{uuid}/system_info (device_B)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/devices/{{qa_device_1_uuid}}/system_info",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  {\n    \"name\": \"nano\",\n    \"version\": \"2.2.4-1\"\n  }\n]"
+						},
+						"description": "Update the system info for the 2nd device. \n"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /devices/{uuid}/system_info (device_B)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/devices/{{qa_device_1_uuid}}/system_info",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "Get the system info for the 2nd device. \n"
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /mydevice/{uuid}/packages",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Content-Type is present\"] = postman.getResponseHeader(\"Content-Type\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/mydevice/{{qa_device_1_uuid}}/packages",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  {\n    \"name\": \"nano\",\n    \"version\": \"2.2.6-3\"\n  }\n]"
+						},
+						"description": "Mark a list of packages as installed on a device. Note that this does not install anything. It only updates device registry's database of installed packages. This endpoint is for ingesting the list of installed packages sent from the in-vehicle client."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /devices/{uuid}/packages (device_B)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Correct package\"] = responseBody.has(\"nano\");",
+									"",
+									"tests[\"Correct version\"] = responseBody.has(\"2.2.6-3\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/devices/{{qa_device_1_uuid}}/packages",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "Return a list of packages installed on the device."
+					},
+					"response": []
+				},
+				{
+					"name": "POST /devices (device_C)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Successful POST request\"] = responseCode.code === 201 || responseCode.code === 202;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"",
+									"postman.setEnvironmentVariable(\"qa_device_2_uuid\", response);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/devices?namespace={{namespace}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"deviceName\": \"{{device_name}}{{$randomInt}}\",\n  \"deviceId\": \"{{$timestamp}}\",\n  \"deviceType\": \"Vehicle\"\n}\n"
+						},
+						"description": "Register a new device with a name and an ID, get back its UUID"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /devices/{uuid} (device_B)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"",
+									"tests[\"namespace in Response\"] = response.namespace == environment.namespace;",
+									"",
+									"postman.setEnvironmentVariable(\"qa_device_1_name\", response.deviceName);",
+									"",
+									"tests[\"lastSeen in Response\"] = response.lastSeen !== null;",
+									"",
+									"tests[\"deviceType in Response\"] = response.deviceType == \"Vehicle\";",
+									"",
+									"tests[\"activatedAt in Response\"] = response.activatedAt !== null;",
+									"",
+									"tests[\"deviceStatus in Response\"] = response.deviceStatus == \"NotSeen\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/devices/{{qa_device_1_uuid}}",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "Get the device object for a single device"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /devices/{uuid} (device_C)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"",
+									"tests[\"namespace in Response\"] = response.namespace == environment.namespace;",
+									"",
+									"postman.setEnvironmentVariable(\"qa_device_2_name\", response.deviceName);",
+									"",
+									"tests[\"lastSeen in Response\"] = response.lastSeen === null;",
+									"",
+									"tests[\"deviceType in Response\"] = response.deviceType == \"Vehicle\";",
+									"",
+									"tests[\"activatedAt in Response\"] = response.activatedAt === null;",
+									"",
+									"tests[\"deviceStatus in Response\"] = response.deviceStatus == \"NotSeen\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/devices/{{qa_device_2_uuid}}",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "Get the device object for a single device"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "02.0 - Groups",
+			"description": "",
+			"item": [
+				{
+					"name": "POST /device_groups",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Successful POST request\"] = responseCode.code === 201 || responseCode.code === 202;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/device_groups?groupName=coolGroup",
+						"method": "POST",
+						"header": [],
+						"body": {},
+						"description": "Create a group for a namespace/groupName entry"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /device_groups",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Content-Type is present\"] = postman.getResponseHeader(\"Content-Type\");",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"",
+									"postman.setEnvironmentVariable(\"groupID\", jsonData[0].id);",
+									"",
+									"postman.setEnvironmentVariable(\"groupName\", jsonData[0].groupName);",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/device_groups",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "Returns a list of all groups"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /devices/{uuid}/groups (empty)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body is Empty\"] = responseBody!==null && responseBody.length===2;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/devices/{{qa_device_2_uuid}}/groups",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "Retrieve the group memberships for a device - Should be empty"
+					},
+					"response": []
+				},
+				{
+					"name": "POST /device_groups/{groupId}/devices/{deviceId} (device_C)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Successful POST request\"] = responseCode.code === 200 || responseCode.code === 201 || responseCode.code === 202;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/device_groups/{{groupID}}/devices/{{qa_device_2_uuid}}",
+						"method": "POST",
+						"header": [],
+						"body": {},
+						"description": "add a device to a group"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /devices/{uuid}/groups",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"",
+									"tests[\"Contains New Group\"] = response[0] === environment.groupID;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/devices/{{qa_device_2_uuid}}/groups",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "Retrieve the group memberships for a device"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /device_groups/{groupId}/devices",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"",
+									"tests[\"Body is correct\"] = jsonData[0] === environment.qa_device_2_uuid;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/device_groups/{{groupID}}/devices",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "return a list of device uuids in group"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "02.1 - GroupInfo",
+			"description": "",
+			"item": [
+				{
+					"name": "POST /device_groups/group_info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Successful POST request\"] = responseCode.code === 201 || responseCode.code === 202;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/device_groups/{{qa_device_2_uuid}}/group_info?groupName={{groupName}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"description": "Create a group info entry for a namespace/groupName entry"
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /device_groups/{groupId}/group_info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/device_groups/{{groupID}}/group_info?groupName={{groupName}}",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"description": "Update the group info entry for a namespace/groupName entry"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /device_groups/{groupId}/group_info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/device_groups/{{groupID}}/group_info?groupName={{groupName}}",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "Retrieve the group info for a namespace/groupName entry"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /device_groups/{uuid}/count",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/device_groups/{{qa_device_2_uuid}}/count",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "return count of devices in group"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "02.2 - Groups (cont.)",
+			"description": "",
+			"item": [
+				{
+					"name": "POST /device_groups/from_attributes",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/device_groups/from_attributes",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"device1\": \"4a055d6a-212d-4851-9475-b5a8d0069cf2\",\n  \"device2\": \"25262a20-b4ea-4065-be82-00fdd46a0000\",\n  \"groupName\": \"4476a97d-fb77-46c9-a6bb-8140b0902de5\"\n}"
+						},
+						"description": "Create a group from two devices' common attributes"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /device_groups/{uuid}/discarded_attrs",
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/device_groups/{{qa_device_2_uuid}}/discarded_attrs",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "return the discarded attributes for the group as json"
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /device_groups/{groupId}/rename",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/device_groups/{{groupID}}/rename?groupName={{renamedGroup}}",
+						"method": "PUT",
+						"header": [],
+						"body": {},
+						"description": "Rename a group"
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /device_groups/{groupId}/devices/{deviceId}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body is correct\"] = responseBody === \"{}\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/device_groups/{{groupID}}/devices/{{qa_device_2_uuid}}",
+						"method": "DELETE",
+						"header": [],
+						"body": {},
+						"description": "remove a device from a group"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /devices/{uuid}/groups (empty post-test)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body is Empty\"] = responseBody!==null && responseBody.length===2;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/devices/{{qa_device_2_uuid}}/groups",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "Retrieve the group memberships for a device - Should be empty"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "03 - Count",
+			"description": "",
+			"item": [
+				{
+					"name": "GET /device_count/{name}/{version}/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body contains deviceCount\"] = responseBody.has(\"deviceCount\");",
+									"",
+									"tests[\"Body contains groupIds\"] = responseBody.has(\"groupIds\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/device_count/{{packageAref}}",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "returns count of groups and devices with the given package installed"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /active_device_count",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"postman.clearEnvironmentVariable(\"isoTime\");",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"",
+									"tests[\"Single Device Noted\"] = jsonData.deviceCount === 1;"
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"postman.setEnvironmentVariable('isoTime',(new Date()).toISOString());"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{localHost}}:{{DeviceRegistry}}/api/v1/active_device_count?start=2017-02-01T16:50:27.000Z&end={{isoTime}}",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "returns count of devices active during the given time interval (for an implicitely given namespace)\n"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

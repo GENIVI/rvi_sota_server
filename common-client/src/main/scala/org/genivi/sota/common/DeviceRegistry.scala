@@ -9,6 +9,7 @@ import eu.timepit.refined.string.Regex
 import io.circe.Json
 import java.time.Instant
 
+import org.genivi.sota.client.NoContent
 import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -44,12 +45,15 @@ trait DeviceRegistry {
 
   def updateLastSeen
     (uuid: Uuid, seenAt: Instant = Instant.now)
-    (implicit ec: ExecutionContext): Future[Unit]
+    (implicit ec: ExecutionContext): Future[NoContent]
 
   def updateSystemInfo
     (uuid: Uuid, json: Json)
-    (implicit ec: ExecutionContext): Future[Unit]
+    (implicit ec: ExecutionContext): Future[NoContent]
 
   def setInstalledPackages
-    (device: Uuid, packages: Seq[PackageId])(implicit ec: ExecutionContext) : Future[Unit]
+    (device: Uuid, packages: Seq[PackageId])(implicit ec: ExecutionContext) : Future[NoContent]
+
+  def affectedDevices(namespace: Namespace, packageIds: Set[PackageId])
+                     (implicit ec: ExecutionContext): Future[Map[Uuid, Set[PackageId]]]
 }

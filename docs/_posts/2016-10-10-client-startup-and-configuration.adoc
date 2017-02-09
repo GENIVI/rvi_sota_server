@@ -45,11 +45,9 @@ This section is required for connection to a SOTA server that implements authent
 server = "https://auth-plus.gw.prod01.advancedtelematic.com" <1>
 client_id = "bf66425f-d4d6-422b-b510-7c7f178af9fe" <2>
 client_secret = "hr8nEWzQc9" <2>
-credentials_file = "/opt/sota/credentials.toml" <3>
 ----
 <1> The URL of the auth server. Example given is from https://app.atsgarage.com[ATS Garage].
 <2> A unique client ID and secret for this device.
-<3> If this value is defined, SOTA client will check this file for auth credentials first, and use the credentials it finds there. If the file does not exist, it will be created with the `client_id` and `client_secret` above.
 
 === [core]
 
@@ -75,13 +73,35 @@ uuid = "123e4567-e89b-12d3-a456-426655440000" <1>
 system_info = "system_info.sh" <2>
 packages_dir = "/tmp/" <3>
 package_manager = "off" <4>
-certificates_path = "/tmp/sota_certificates" <5>
+auto_download = true <5>
+certificates_path = "/tmp/sota_certificates" <6>
 ----
 <1> The UUID of the device. This is usually assigned by the Core server on device creation. With https://app.atsgarage.com[ATS Garage], this will be provided in the config file available for download.
 <2> The script to use to gather system information. By default, this uses link:https://github.com/genivi/rvi_sota_client/blob/master/run/system_info.sh[system_info.sh].
 <3> The location SOTA Client should use for temporary package storage until they are processed by the software loading manager.
 <4> The software loading manager backend to use. Possible values are `deb`, `rpm`, and `off`. If an external software loading manager is in use, this should be set to `off`.
-<5> The certificate authorities SOTA Client trusts. Defaults are taken from Mozilla Servo.
+<5> Boolean indicating whether the client should automatically start downloading new packages. If this is set to false then an external mechanism will need to trigger the start of the download instead.
+<6> The certificate authorities SOTA Client trusts. Defaults are taken from Mozilla Servo.
+
+=== [gateway]
+
+The SOTA Client communicates with the device's software loading manager (or other interested parties) through various gateways. For more details on how this works, please see the link:../cli/client-commands-and-events-reference.html[Client commands and events API reference].
+
+----
+[gateway]
+console = false <1>
+dbus = false <2>
+http = false <3>
+rvi = false <4>
+socket = false <5>
+websocket = true <6>
+----
+<1> Start a basic REPL that can send any command to the client. This gateway is used for testing only.
+<2> Send a message to D-Bus on available updates, and listen for replies to trigger a download or forward an installation report.
+<3> Start a basic HTTP server that will accept new commands and reply with the final event. This gateway is primarily used for testing.
+<4> Start an RVI HTTP server that can receive packages from an RVI Erlang client.
+<5> Listen on a socket for incoming commands, and broadcast all download events.
+<6> Broadcast events to each connected websocket client.
 
 === [network]
 
@@ -95,28 +115,11 @@ socket_events_path = "/tmp/sota-events.socket" <3>
 websocket_server = "127.0.0.1:9081" <4>
 rvi_edge_server = "127.0.0.1:9080" <5>
 ----
-<1> The host and port the client should listen on for commands if the http gateway is enabled in the [gateway] section.
-<2> The name of the unix domain socket to be used for receiving commands, if the socket gateway is enabled in the [gateway] section.
-<3> The name of the unix domain socket to be used for sending events, if the socket gateway is enabled in the [gateway] section.
-<4> The host and port to listen for local websocket connections on. Could be used, for example, for integration with an HMI.
-<5> The host and port the client should listen for RVI messages on, if the rvi gateway is enabled in the [gateway] section.
-
-=== [gateway]
-
-The SOTA Client communicates with the device's software loading manager (or other interested parties) through various gateways. For more details on how this works, please see the link:../cli/client-commands-and-events-reference.html[Client commands and events API reference].
-
-----
-[gateway]
-console = false <1>
-dbus = false
-http = false <2>
-rvi = false
-socket = false <3>
-websocket = true
-----
-<1> REPL mode, for debug use only.
-<2> Simple http server, for sending commands to the client remotely. Note that this does _not_ affect how the client communicates with the server.
-<3> Unix domain sockets for local communication.
+<1> The host and port the client should listen on for receiving commands (if the http gateway is enabled).
+<2> The name of the unix domain socket to be used for receiving commands (if the socket gateway is enabled).
+<3> The name of the unix domain socket to be used for listening to `DownloadComplete` and `DownloadFailed` events broadcast by client (if the socket gateway is enabled).
+<4> The host and port to listen for new websocket clients (if the websocket gateway is enabled).
+<5> The host and port the client should listen for RVI messages on (if the rvi gateway is enabled).
 
 ==== Optional gateway: [rvi]
 
@@ -142,5 +145,3 @@ software_manager = "org.genivi.SoftwareLoadingManager"
 software_manager_path = "/org/genivi/SoftwareLoadingManager"
 timeout = 60
 ----
-
-

@@ -18,6 +18,7 @@ import java.util.UUID
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.db.{BlockedInstalls, OperationResults, UpdateSpecs}
 import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, ExternalResolverClient}
+import org.genivi.sota.core.user_profile.UserProfile
 import org.genivi.sota.core.rvi.{InstallReport, OperationResult, UpdateReport}
 import org.genivi.sota.core.storage.PackageStorage
 import java.time.Instant
@@ -26,21 +27,23 @@ import java.time.temporal.ChronoUnit
 import org.genivi.sota.core.transfer.DeviceUpdates
 import org.genivi.sota.core.data.UpdateSpec
 import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, PackageDownloadProcess}
-import org.genivi.sota.data.{Namespace, PackageId, Uuid}
-
+import org.genivi.sota.data.{Namespace, PackageId, UpdateType, Uuid}
 import slick.driver.MySQLDriver.api.Database
 import cats.syntax.show.toShowOps
 import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.core.data.client.PendingUpdateRequest._
 import UpdateSpec._
+import org.genivi.sota.messaging.Messages.BandwidthUsage
 import org.genivi.sota.rest.ResponseConversions._
+import MessageBusPublisher._
 
 import scala.concurrent.Future
 
 class DeviceUpdatesResource(db: Database,
                             resolverClient: ExternalResolverClient,
                             deviceRegistry: DeviceRegistry,
+                            userProfile: Option[UserProfile],
                             authNamespace: Directive1[AuthedNamespaceScope],
                             messageBus: MessageBusPublisher)
                            (implicit system: ActorSystem, mat: ActorMaterializer,
@@ -112,14 +115,29 @@ class DeviceUpdatesResource(db: Database,
     complete(db.run(vehiclePackages))
   }
 
-  /**
-    * An ota client GET the binary file for the package that the given [[UpdateRequest]] and [[Device]] refers to.
-    */
-  def downloadPackage(device: Uuid, updateId: Refined[String, Uuid.Valid]): Route = {
+  def downloadPackage(device: Uuid, updateId: Refined[String, Uuid.Valid]): Route =
     withRangeSupport {
-      complete(packageDownloadProcess.buildClientDownloadResponse(device, updateId))
+      val userWithinLimitFuture =
+        userProfile match {
+          case Some(up) =>
+            for {
+              deviceData <- deviceRegistry.fetchMyDevice(device)
+              withinLimit <- up.checkDeviceLimit(deviceData.namespace, device)
+              result <- if (withinLimit) Future.successful(())
+              else Future.failed(SotaCoreErrors.DeviceLimitReached)
+            } yield result
+          case None =>
+            Future.successful(())
+        }
+
+      val f = userWithinLimitFuture
+        .flatMap(_ => packageDownloadProcess.buildClientDownloadResponse(device, updateId))
+        .pipeToBus(messageBus) { case (pkg, _) =>
+          BandwidthUsage(UUID.randomUUID(), pkg.namespace, Instant.now, pkg.size, UpdateType.Package, pkg.id.show)
+        }
+
+      complete(f.map(_._2))
     }
-  }
 
   /**
     * An ota client POST for the given [[UpdateRequest]] an [[UpdateReport]]
@@ -237,7 +255,7 @@ class DeviceUpdatesResource(db: Database,
       val f = deviceRegistry.fetchDevice(ns, deviceId)
       onComplete(f) flatMap {
         case Success(device) =>
-            provide(ns)
+          provide(ns)
         case Failure(t) => reject(failNamespaceRejection("Cannot validate namespace"))
       }
     }

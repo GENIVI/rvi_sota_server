@@ -15,10 +15,12 @@ import akka.stream.scaladsl.Source
 import akka.stream.testkit.scaladsl.TestSink
 import akka.testkit.TestKit
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.genivi.sota.DefaultPatience
 import org.genivi.sota.core.DatabaseSpec
 import org.genivi.sota.messaging.Messages.PackageCreated
+import org.genivi.sota.messaging.kafka.MessageListener
+import org.genivi.sota.resolver.Boot
 import org.genivi.sota.resolver.db.PackageRepository
-import org.genivi.sota.resolver.test.DefaultPatience
 import org.genivi.sota.resolver.test.generators.PackageGenerators
 import org.scalacheck.Arbitrary
 import org.scalatest.concurrent.{Eventually, ScalaFutures}
@@ -66,7 +68,7 @@ with DefaultPatience {
 
   ignore("saves package to database") {
     forAll { (pkg: PackageCreated) =>
-      val source = PackageCreatedListener.buildSource(db, fakeKafkaSource(pkg))
+      val source = MessageListener.buildSource[PackageCreated](fakeKafkaSource(pkg), Boot.storePackage)
       val sink = TestSink.probe[PackageCreated]
 
       val subscriber = source.runWith(sink)

@@ -11,9 +11,8 @@ import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.PackageId
 import java.time.Instant
 
-import org.genivi.sota.core.data.UpdateStatus.UpdateStatus
-
 import org.genivi.sota.data.Interval
+import org.genivi.sota.data.UpdateStatus.UpdateStatus
 import org.genivi.sota.rest.{GenericArgsDecoder, GenericResponseEncoder}
 
 case class PendingUpdateRequest(requestId: UUID,

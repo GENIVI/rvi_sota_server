@@ -4,19 +4,25 @@
  */
 package org.genivi.sota.device_registry
 
+import java.time.Instant
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
 import cats.data.Xor
-import org.genivi.sota.data.{Namespace, Uuid}
-import org.genivi.sota.db.BootMigrations
+import org.genivi.sota.data.{Namespace, UpdateStatus, Uuid}
+import org.genivi.sota.db.{BootMigrations, DatabaseConfig}
+import org.genivi.sota.device_registry.daemon.DeviceUpdateStatusListener
 import org.genivi.sota.device_registry.db.DeviceRepository
 import org.genivi.sota.http.UuidDirectives.{allowExtractor, extractUuid}
 import org.genivi.sota.http._
+import org.genivi.sota.messaging.Messages.{DeviceUpdateStatus, UpdateSpec}
+import org.genivi.sota.messaging.daemon.MessageBusListenerActor.Subscribe
+import org.genivi.sota.messaging.kafka.MessageListener
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
+import org.genivi.sota.monitoring.{DatabaseMetrics, MetricsSupport}
 import org.genivi.sota.rest.SotaRejectionHandler.rejectionHandler
-import org.slf4j.LoggerFactory
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -42,21 +48,17 @@ class DeviceRegistryRoutes(namespaceExtractor: Directive1[AuthedNamespaceScope],
   }
 }
 
-object Boot extends App with Directives with BootMigrations {
+object Boot extends BootApp with Directives with BootMigrations
+  with VersionInfo
+  with DatabaseConfig
+  with MetricsSupport
+  with DatabaseMetrics {
+
   import LogDirectives._
   import VersionDirectives._
 
-  implicit val system = ActorSystem("device-registry")
-  implicit val materializer = ActorMaterializer()
-  implicit val exec = system.dispatcher
-  implicit val log = LoggerFactory.getLogger(this.getClass)
-  implicit val db = Database.forConfig("database")
+  implicit val _db = db
   lazy val config = system.settings.config
-
-  lazy val version = {
-    val bi = org.genivi.sota.device_registry.BuildInfo
-    s"${bi.name}/${bi.version}"
-  }
 
   val authNamespace = NamespaceDirectives.fromConfig()
 
@@ -79,12 +81,17 @@ object Boot extends App with Directives with BootMigrations {
       logResponseMetrics("device-registry", TraceId.traceMetrics) &
       versionHeaders(version)) {
       new DeviceRegistryRoutes(authNamespace, namespaceAuthorizer, messageBus).route ~
-      new HealthResource(db, org.genivi.sota.device_registry.BuildInfo.toMap).route
+      new HealthResource(db, versionMap).route
     }
+
+  val messageBusListener =
+    system.actorOf(MessageListener.props[UpdateSpec](system.settings.config,
+      DeviceUpdateStatusListener.action(messageBus)))
+  messageBusListener ! Subscribe
 
   val host = config.getString("server.host")
   val port = config.getInt("server.port")
-  val binding = Http().bindAndHandle(routes, host, port)
+  Http().bindAndHandle(routes, host, port)
 
   log.info(s"device registry started at http://$host:$port/")
 

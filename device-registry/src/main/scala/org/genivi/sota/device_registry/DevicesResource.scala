@@ -4,6 +4,8 @@
  */
 package org.genivi.sota.device_registry
 
+import java.time.{Instant, OffsetDateTime}
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.model.{StatusCodes, Uri}
@@ -15,15 +17,15 @@ import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import org.genivi.sota.data._
 import org.genivi.sota.device_registry.db._
+import org.genivi.sota.http.UuidDirectives.extractUuid
+import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
-import org.genivi.sota.messaging.MessageBusPublisher._
-import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted}
-import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
-import org.genivi.sota.http.UuidDirectives.extractUuid
-import slick.driver.MySQLDriver.api._
+import org.genivi.sota.messaging.Messages.{DeviceActivated, DeviceCreated, DeviceDeleted, DeviceSeen}
 import org.genivi.sota.rest.Validation._
+import org.genivi.sota.unmarshalling.AkkaHttpUnmarshallingSupport._
+import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
 
@@ -45,12 +47,15 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
 
   def searchDevice(ns: Namespace): Route =
     parameters(('regex.as[String Refined Regex].?,
-                'deviceId.as[String].?)) { // TODO: Use refined
-      case (Some(re), None) =>
-        complete(db.run(DeviceRepository.search(ns, re)))
-      case (None, Some(deviceId)) =>
+                'deviceId.as[String].?, // TODO: Use refined
+                'offset.as[Long].?,
+                'limit.as[Long].?)) {
+      case (Some(re), None, offset, limit) =>
+        complete(db.run(DeviceRepository.search(ns, re, offset, limit)))
+      case (None, Some(deviceId), _, _) =>
         complete(db.run(DeviceRepository.findByDeviceId(ns, DeviceId(deviceId))))
-      case (None, None) => complete(db.run(DeviceRepository.list(ns)))
+      case (None, None, offset, limit) =>
+        complete(db.run(DeviceRepository.list(ns, offset, limit)))
       case _ =>
         complete((BadRequest, "'regex' and 'deviceId' parameters cannot be used together!"))
     }
@@ -89,9 +94,16 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
   def getGroupsForDevice(uuid: Uuid): Route =
     complete(db.run(GroupMemberRepository.listGroupsForDevice(uuid)))
 
-
   def updateLastSeen(uuid: Uuid): Route = {
-    val f = db.run(DeviceRepository.updateLastSeen(uuid)).pipeToBus(messageBus)(identity)
+    val now = Instant.now()
+
+    val f = db.run(DeviceRepository.updateLastSeen(uuid, now))
+      .andThen {
+        case scala.util.Success((activated, ns)) =>
+          messageBus.publish(DeviceSeen(ns, uuid, now))
+          if (activated) messageBus.publish(DeviceActivated(ns, uuid, now))
+      }
+
     complete(f)
   }
 
@@ -107,6 +119,26 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
 
   def listPackagesOnDevice(device: Uuid): Route =
     complete(db.run(InstalledPackages.installedOn(device)))
+
+  def getActiveDeviceCount(ns: Namespace): Route =
+    parameters(('start.as[OffsetDateTime], 'end.as[OffsetDateTime])) { (start, end) =>
+      complete(db.run(DeviceRepository.countActivatedDevices(ns, start.toInstant, end.toInstant))
+        .map(ActiveDeviceCount(_)))
+    }
+
+  def getDistinctPackages(ns: Namespace): Route =
+    parameters('offset.as[Long].?, 'limit.as[Long].?) { (offset, limit) =>
+      complete(db.run(InstalledPackages.getInstalledForAllDevices(ns, offset, limit)))
+    }
+
+  def findAffected(ns: Namespace): Route = {
+    entity(as[Set[PackageId]]) { packageIds =>
+      val f = InstalledPackages.allInstalledPackagesById(ns, packageIds).map {
+        _.groupBy(_._1).mapValues(_.map(_._2).toSet)
+      }
+      complete(db.run(f))
+    }
+  }
 
   def api: Route = namespaceExtractor { ns =>
     val scope = Scopes.devices(ns)
@@ -136,10 +168,13 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
     } ~
     (scope.get & pathPrefix("device_count") & extractPackageId) { pkg =>
       getDevicesCount(pkg, ns)
+    } ~
+    (scope.get & path("active_device_count")) {
+      getActiveDeviceCount(ns)
     }
   }
 
-  def mydeviceRoutes: Route = namespaceExtractor { authedNs =>
+  def mydeviceRoutes: Route = namespaceExtractor { authedNs => // Don't use this as a namespace
     (pathPrefix("mydevice") & extractUuid) { uuid =>
       (post & path("ping") & authedNs.oauthScope(s"ota-core.${uuid.show}.write")) {
         updateLastSeen(uuid)
@@ -147,9 +182,21 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
       (get & pathEnd & authedNs.oauthScopeReadonly(s"ota-core.${uuid.show}.read")) {
         fetchDevice(uuid)
       } ~
-      (put & path("packages") & authedNs.oauthScope(s"ota-core.{device.show}.write")) {
+      (put & path("packages") & authedNs.oauthScope(s"ota-core.${uuid.show}.write")) {
         updateInstalledSoftware(uuid)
       }
+    }
+  }
+
+  val devicePackagesRoutes: Route = namespaceExtractor { authedNs =>
+    val scope = Scopes.devices(authedNs)
+    pathPrefix("device_packages") {
+      (pathEnd & scope.get) {
+        getDistinctPackages(authedNs)
+      }
+    } ~
+    (path("packages" / "affected") & scope.post) {
+      findAffected(authedNs)
     }
   }
 
@@ -159,6 +206,6 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
    * @return      Route object containing routes for creating, deleting, and listing devices
    * @throws      Errors.MissingDevice if device doesn't exist
    */
-  def route: Route = api ~ mydeviceRoutes
+  def route: Route = api ~ mydeviceRoutes ~ devicePackagesRoutes
 
 }
