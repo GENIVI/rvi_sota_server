@@ -26,7 +26,7 @@ trait ResourceSpec extends
     with DatabaseSpec
     with DeviceGenerators
     with DeviceRequests
-    with GroupInfoGenerators
+    with GroupGenerators
     with GroupRequests
     with PublicCredentialsRequests
     with PackageIdGenerators

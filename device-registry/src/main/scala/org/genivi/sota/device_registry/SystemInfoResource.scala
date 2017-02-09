@@ -38,9 +38,6 @@ class SystemInfoResource(authNamespace: Directive1[AuthedNamespaceScope],
 
   def createSystemInfo(uuid: Uuid, data: Json): Route = {
     val f = db.run(SystemInfoRepository.create(uuid, data))
-    f.onSuccess { case _ =>
-      UpdateMemberships.forDevice(uuid, data)
-    }
     complete(Created -> f)
   }
 
