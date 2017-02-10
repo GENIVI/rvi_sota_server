@@ -32,7 +32,6 @@ object BlacklistedPackages {
   import org.genivi.sota.refined.PackageIdDatabaseConversions._
   import org.genivi.sota.refined.SlickRefined._
   import org.genivi.sota.db.SlickExtensions._
-  import Packages._
 
   type BlacklistedPkgRow = (UUID, Namespace, PackageId.Name, PackageId.Version, String, Instant)
 

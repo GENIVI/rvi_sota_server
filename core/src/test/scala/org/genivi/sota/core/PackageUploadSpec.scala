@@ -5,24 +5,19 @@ import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.RouteTestTimeout
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import io.circe.generic.auto._
 import java.io.File
 
-import org.genivi.sota.core.SotaCoreErrors.SotaCoreErrorCodes
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.core.resolver.{DefaultConnectivity, ExternalResolverClient, ExternalResolverRequestFailed}
+import org.genivi.sota.core.resolver.DefaultConnectivity
 import org.genivi.sota.core.transfer.DefaultUpdateNotifier
-import org.genivi.sota.data.{Namespace, Namespaces, PackageId, Uuid}
+import org.genivi.sota.data.Namespaces
 import org.genivi.sota.http.NamespaceDirectives
-import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.messaging.MessageBusPublisher
-import org.genivi.sota.rest.ErrorRepresentation
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Matchers, PropSpec}
 
-import scala.concurrent.Future
 import scala.concurrent.duration._
 
 
@@ -46,20 +41,12 @@ class PackageUploadSpec extends PropSpec
   implicit val patience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
   implicit val connectivity = DefaultConnectivity
 
-  class Service(resolverResult: Future[Unit] ) {
+  object Service {
     val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
-    val resolver = new ExternalResolverClient {
-      override def putPackage(namespace: Namespace, packageId: PackageId, description: Option[String], vendor: Option[String]): Future[Unit] = resolverResult
-
-      override def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Uuid, Set[PackageId]]] = ???
-
-      override def setInstalledPackages(device: Uuid, json: io.circe.Json) : Future[Unit] = ???
-    }
-
     lazy val messageBusPublisher = MessageBusPublisher.ignore
 
     val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
-    val resource = new PackagesResource(resolver, updateService, db, messageBusPublisher, defaultNamespaceExtractor)
+    val resource = new PackagesResource(updateService, db, messageBusPublisher, defaultNamespaceExtractor)
   }
 
   def toBodyPart(name : String)(x: String) = BodyPart.Strict(name, HttpEntity( x ) )
@@ -78,37 +65,21 @@ class PackageUploadSpec extends PropSpec
   }
 
   property("Package can be uploaded using PUT request")  {
-    new Service( Future.successful(())) {
-      forAll { (pckg: Package) =>
-        mkRequest(pckg) ~> resource.route ~> check {
-          status shouldBe StatusCodes.NoContent
-        }
-      }
-    }
-  }
-
-  property("Returns service unavailable if request to external resolver fails") {
-    import CirceMarshallingSupport._
-    new Service( Future.failed( ExternalResolverRequestFailed( StatusCodes.InternalServerError ) ) ) {
-      forAll { (pckg: Package) =>
-        mkRequest( pckg ) ~> resource.route ~> check {
-          status shouldBe StatusCodes.ServiceUnavailable
-          responseAs[ErrorRepresentation].code shouldBe SotaCoreErrorCodes.ExternalResolverError
-        }
+    forAll { (pckg: Package) =>
+      mkRequest(pckg) ~> Service.resource.route ~> check {
+        status shouldBe StatusCodes.NoContent
       }
     }
   }
 
   property("Upsert") {
-    new Service( Future.successful(())) {
-      forAll { (pckg: Package) =>
-        mkRequest( pckg ) ~> resource.route ~> check {
-          status shouldBe StatusCodes.NoContent
-        }
+    forAll { (pckg: Package) =>
+      mkRequest( pckg ) ~> Service.resource.route ~> check {
+        status shouldBe StatusCodes.NoContent
+      }
 
-        mkRequest( pckg ) ~> resource.route ~> check {
-          status shouldBe StatusCodes.NoContent
-        }
+      mkRequest( pckg ) ~> Service.resource.route ~> check {
+        status shouldBe StatusCodes.NoContent
       }
     }
   }

@@ -21,7 +21,6 @@ import eu.timepit.refined.string.Regex
 import org.genivi.sota.core.autoinstall.AutoInstall
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.db._
-import org.genivi.sota.core.resolver.{ExternalResolverClient, ExternalResolverRequestFailed}
 import org.genivi.sota.core.storage.PackageStorage
 import org.genivi.sota.core.storage.PackageStorage.PackageStorageOp
 import org.genivi.sota.data.{Namespace, PackageId}
@@ -34,9 +33,7 @@ import org.genivi.sota.rest.ResponseConversions._
 import org.genivi.sota.core.data.PackageResponse._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.generic.auto._
-import org.genivi.sota.core.SotaCoreErrors.SotaCoreErrorCodes
 import org.genivi.sota.http.{AuthedNamespaceScope, ErrorHandler, Scopes}
-import org.genivi.sota.http.Errors.RawError
 
 import scala.concurrent.Future
 
@@ -53,8 +50,7 @@ object PackagesResource {
     (extractPackageName & refined[PackageId.ValidVersion](Slash ~ Segment)).as(PackageId.apply _)
 }
 
-class PackagesResource(resolver: ExternalResolverClient,
-                       updateService: UpdateService,
+class PackagesResource(updateService: UpdateService,
                        db : Database,
                        messageBusPublisher: MessageBusPublisher,
                        namespaceExtractor: Directive1[AuthedNamespaceScope])
@@ -102,7 +98,6 @@ class PackagesResource(resolver: ExternalResolverClient,
   /**
     * An ota client PUT the given [[PackageId]] and uploads a binary file for it via form submission.
     * <ul>
-    *   <li>Resolver is notified about the new package.</li>
     *   <li>That file is stored in S3 (obtaining an S3-URI in the process)</li>
     *   <li>A record for the package is inserted in Core's DB (Package SQL table).</li>
     * </ul>
@@ -113,7 +108,6 @@ class PackagesResource(resolver: ExternalResolverClient,
                      signature: Option[String],
                      file: Source[ByteString, Any]): Future[StatusCode] = {
       val packageCreateF = for {
-        _ <- resolver.putPackage(ns, pid, description, vendor)
         (uri, size, digest) <- packageStorageOp(pid, ns.get, file)
         newPkg = Package(ns, UUID.randomUUID(), pid, uri, size, digest, description, vendor, signature)
         usage <- db.run(Packages.create(newPkg).andThen(Packages.usage(ns)))
@@ -125,13 +119,6 @@ class PackagesResource(resolver: ExternalResolverClient,
         _ <- messageBusPublisher.publishSafe(PackageCreated(ns, pid, description, vendor, signature))
         _ <- messageBusPublisher.publishSafe(PackageStorageUsage(ns, Instant.now, usage))
       } yield StatusCodes.NoContent
-    }
-
-    def handleErrors(throwable: Throwable): Route = throwable match {
-      case ExternalResolverRequestFailed(msg, cause) =>
-        log.error(cause, s"Unable to create/update package: $msg")
-        failWith(RawError(SotaCoreErrorCodes.ExternalResolverError, StatusCodes.ServiceUnavailable, msg))
-      case e => failWith(e)
     }
 
     // FIXME: There is a bug in akka, so we need to drain the stream before
@@ -147,7 +134,7 @@ class PackagesResource(resolver: ExternalResolverClient,
     parameters('description.?, 'vendor.?, 'signature.?) { (description, vendor, signature) =>
       fileUpload("file") { case (_, file) =>
         val storePkgF = storePackage(ns, pid, description, vendor, signature, file)
-        completeOrRecoverWith(storePkgF) { ex => onComplete(drainStream(file))(_ => handleErrors(ex)) }
+        completeOrRecoverWith(storePkgF) { ex => onComplete(drainStream(file))(_ => failWith(ex)) }
       }
     }
   }

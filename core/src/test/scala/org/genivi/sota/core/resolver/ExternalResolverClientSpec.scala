@@ -30,19 +30,6 @@ class ExternalResolverClientSpec extends PropSpec with Matchers with BeforeAndAf
   implicit val executionCtx = ExecutionContext.Implicits.global
   val client = new DefaultExternalResolverClient( Uri.Empty, Uri.Empty, Uri.Empty, Uri.Empty )
 
-  property("handles failed put requests") {
-    val error = new Throwable("ups")
-    ScalaFutures.whenReady( client.handlePutResponse( Future.failed( error ) ).failed ) { e =>
-      e shouldBe ExternalResolverRequestFailed( error )
-    }
-  }
-
-  property("handles unexpected status codes") {
-    ScalaFutures.whenReady( client.handlePutResponse( Future.successful( HttpResponse(StatusCodes.BadRequest) ) ).failed ) { e =>
-      e shouldBe a [ExternalResolverRequestFailed]
-    }
-  }
-
   val id0 = Uuid(Refined.unsafeApply(UUID.randomUUID().toString))
 
   val s: String = s"""{"${id0.show}": [{"version":"23.5.2","name":"rust"}]}"""
