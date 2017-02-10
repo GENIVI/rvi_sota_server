@@ -73,6 +73,16 @@ object DeviceRepository {
       .transactionally
   }
 
+  def findUuidFromUniqueDeviceIdOrCreate(ns: Namespace, deviceId: DeviceId, devT: DeviceT)
+                                (implicit ec: ExecutionContext): DBIO[(Boolean, Uuid)] = for {
+    devs <- findByDeviceId(ns, deviceId)
+    (created, uuid) <- devs match {
+      case Seq() => create(ns, devT).map((true, _))
+      case Seq(d) => DBIO.successful((false, d.uuid))
+      case _ => DBIO.failed(Errors.ConflictingDevice)
+    }
+  } yield (created, uuid)
+
   def exists(ns: Namespace, uuid: Uuid)
             (implicit ec: ExecutionContext): DBIO[Device] =
     devices
