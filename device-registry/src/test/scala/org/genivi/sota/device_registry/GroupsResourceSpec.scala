@@ -4,12 +4,11 @@ import akka.http.scaladsl.model.StatusCodes._
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser._
-import org.genivi.sota.data.{GroupInfo, Uuid}
+import org.genivi.sota.data.{Group, Uuid}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Gen
 import org.scalatest.FunSuite
-import org.scalatest.concurrent.Eventually.eventually
 
 
 class GroupsResourceSpec extends FunSuite with ResourceSpec {
@@ -39,17 +38,17 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
 
   test("GET all groups lists all groups") {
     //TODO: PRO-1182 turn this back into a property when we can delete groups
-    val groups = Gen.listOfN(10, arbitrary[GroupInfo]).sample.get
-    groups.foreach { group =>
-      createGroupInfoOk(group.groupName, group.groupInfo)
+    val groupNames = Gen.listOfN(10, arbitrary[Group.Name]).sample.get
+    groupNames.foreach { groupName =>
+      createGroupOk(groupName)
     }
 
     listGroups() ~> route ~> check {
       status shouldBe OK
-      val responseGroups = responseAs[Set[GroupInfo]]
-      responseGroups.size shouldBe groups.size
+      val responseGroups = responseAs[Set[Group]]
+      responseGroups.size shouldBe groupNames.size
       responseGroups.foreach { group =>
-        groups.count(p => p.groupName == group.groupName && p.groupInfo == group.groupInfo) shouldBe 1
+        groupNames.count(name => name == group.groupName) shouldBe 1
       }
     }
   }
@@ -58,8 +57,8 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
     val defaultPaginationLimit = 50
     val deviceNumber = defaultPaginationLimit + 10
 
-    val group = genGroupInfo.sample.get
-    val groupId = createGroupOk(group.groupName)
+    val groupName = genGroupName.sample.get
+    val groupId = createGroupOk(groupName)
 
     val deviceTs = genConflictFreeDeviceTs(deviceNumber).sample.get
     val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
@@ -116,100 +115,10 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
     deviceIds.foreach(deleteDeviceOk(_))
   }
 
-  test("creating groups manually is possible") {
-    val groupName = arbitrary[GroupInfo.Name].sample.get
-    createGroup(groupName) ~> route ~> check {
-      status shouldBe Created
-      val groupId = responseAs[Uuid]
-      fetchGroupInfo(groupId) ~> route ~> check {
-        status shouldBe OK
-        responseAs[Json] shouldEqual Json.Null
-      }
-    }
-
-  }
-
-  test("creating groups from attributes is possible") {
-
-    val complexJsonObj = Json.fromFields(List(("key", Json.fromString("value")), ("type", Json.fromString("fish"))))
-    val complexNumericJsonObj = Json.fromFields(List(("key", Json.fromString("value")), ("type", Json.fromInt(5))))
-
-    val groupName = arbitrary[GroupInfo.Name].sample.get
-
-    val device1 = createDeviceOk(genDeviceT.sample.get)
-    val device2 = createDeviceOk(genDeviceT.sample.get)
-
-    createSystemInfoOk(device1, complexJsonObj)
-    createSystemInfoOk(device2, complexNumericJsonObj)
-
-    createGroupFromDevices(device1, device2, groupName) ~> route ~> check {
-      status shouldBe OK
-      val groupId = responseAs[Uuid]
-      eventually {
-        listDevicesInGroup(groupId) ~> route ~> check {
-          status shouldBe OK
-          responseAs[Set[Uuid]] should contain allOf(device1, device2)
-        }
-        listGroupsForDevice(device1) ~> route ~> check {
-          status shouldBe OK
-          responseAs[Set[Uuid]] should contain(groupId)
-        }
-        listGroupsForDevice(device2) ~> route ~> check {
-          status shouldBe OK
-          responseAs[Set[Uuid]] should contain(groupId)
-        }
-        countDevicesInGroup(groupId) ~> route ~> check {
-          status shouldBe OK
-          responseAs[Int] shouldEqual 2
-        }
-      }
-    }
-
-    deleteDeviceOk(device1)
-    deleteDeviceOk(device2)
-  }
-
-  test("GET /group_info request fails on non-existent device") {
-    val id = genUuid.sample.get
-    fetchGroupInfo(id) ~> route ~> check {
-      status shouldBe NotFound
-    }
-  }
-
-  test("GET group_info after POST should return what was posted.") {
-    val group = genGroupInfo.sample.get
-    val groupId = createGroupInfoOk(group.groupName, group.groupInfo)
-
-    fetchGroupInfo(groupId) ~> route ~> check {
-      status shouldBe OK
-      val json2: Json = responseAs[Json]
-      group.groupInfo shouldEqual json2
-    }
-  }
-
-  test("GET group_info after PUT should return what was updated.") {
-    val groupName = genGroupName.sample.get
-    val group = genGroupInfo.sample.get
-    val json1 = simpleJsonGen.sample.get
-    val json2 = simpleJsonGen.sample.get
-
-    val groupId = createGroupInfoOk(group.groupName, group.groupInfo)
-
-    updateGroupInfo(groupId, groupName, json2) ~> route ~> check {
-      status shouldBe OK
-    }
-
-    fetchGroupInfo(groupId) ~> route ~> check {
-      status shouldBe OK
-      val json3: Json = responseAs[Json]
-      json2 shouldBe json3
-    }
-  }
-
   test("Renaming groups") {
-    val group = genGroupInfo.sample.get
+    val groupName = genGroupName.sample.get
     val newGroupName = genGroupName.sample.get
-    val groupId = createGroupInfoOk(group.groupName, group.groupInfo)
+    val groupId = createGroupOk(groupName)
 
     renameGroup(groupId, newGroupName) ~> route ~> check {
       status shouldBe OK
@@ -217,7 +126,7 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
 
     listGroups() ~> route ~> check {
       status shouldBe OK
-      val groups = responseAs[Seq[GroupInfo]]
+      val groups = responseAs[Seq[Group]]
       groups.count(e => e.id.equals(groupId) && e.groupName.equals(newGroupName)) shouldBe 1
     }
   }
@@ -228,38 +137,10 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
     }
   }
 
-  test("match devices to an existing group") {
-    val devices@Seq(d1, d2, d3, d4, d5, d6, d7) =
-      genConflictFreeDeviceTs(7).sample.get.map(createDeviceOk(_))
-    devices.zip(systemInfos).foreach { case (d, si) => createSystemInfoOk(d, si) }
-
-    createGroupFromDevices(d1, d2, arbitrary[GroupInfo.Name].sample.get) ~> route ~> check {
-      status shouldBe OK
-      val groupId = responseAs[Uuid]
-      fetchGroupInfo(groupId) ~> route ~> check {
-        status shouldBe OK
-        responseAs[Json] shouldBe groupInfo
-      }
-      eventually {
-        listDevicesInGroup(groupId) ~> route ~> check {
-          status shouldBe OK
-          val r = responseAs[Seq[Uuid]]
-          r should contain (d3)
-          r should contain (d4)
-          r should not contain (d5)
-          r should not contain (d6)
-          r should not contain (d7)
-        }
-      }
-    }
-
-    devices.foreach(deleteDeviceOk(_))
-  }
-
   test("adding devices to groups") {
-    val group = genGroupInfo.sample.get
+    val groupName = genGroupName.sample.get
     val deviceId = createDeviceOk(genDeviceT.sample.get)
-    val groupId = createGroupInfoOk(group.groupName, group.groupInfo)
+    val groupId = createGroupOk(groupName)
 
     addDeviceToGroup(groupId, deviceId) ~> route ~> check {
       status shouldBe OK
@@ -275,9 +156,9 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
   }
 
   test("removing devices from groups") {
-    val group = genGroupInfo.sample.get
+    val groupName = genGroupName.sample.get
     val deviceId = createDeviceOk(genDeviceT.sample.get)
-    val groupId = createGroupInfoOk(group.groupName, group.groupInfo)
+    val groupId = createGroupOk(groupName)
 
     addDeviceToGroup(groupId, deviceId) ~> route ~> check {
       status shouldBe OK

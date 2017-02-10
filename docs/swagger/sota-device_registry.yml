@@ -206,10 +206,6 @@ paths:
       responses:
         200:
           description: OK
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/GroupInfo'
     post:
       description: Create a group for a namespace/groupName entry
       parameters:
@@ -221,65 +217,6 @@ paths:
       responses:
         201:
           description: Created
-  /device_groups/group_info:
-    post:
-      description: Create a group info entry for a namespace/groupName entry
-      parameters:
-      - name: groupName
-        description: The name of the group of devices
-        in: query
-        required: true
-        type: string
-      - name: groupInfo
-        description: The json object representing the group info
-        in: body
-        required: true
-        schema:
-          $ref: '#/definitions/GroupInfo'
-      responses:
-        201:
-          description: Created
-  /device_groups/{groupId}/group_info:
-    put:
-      description: Update the group info entry for a namespace/groupName entry
-      parameters:
-      - name: groupId
-        description: The uuid of an existing device object
-        in: path
-        required: true
-        type: string
-      - name: groupName
-        description: The name of the group of devices
-        in: query
-        required: true
-        type: string
-      - name: groupInfo
-        description: The json object representing the group info
-        in: body
-        required: true
-        schema:
-          $ref: '#/definitions/GroupInfo'
-      responses:
-        200:
-          description: OK
-    get:
-      description: Retrieve the group info for a namespace/groupName entry
-      parameters:
-      - name: groupId
-        description: The uuid of an existing device object
-        in: path
-        required: true
-        type: string
-      - name: groupName
-        description: The name of the group of devices
-        in: query
-        required: true
-        type: string
-      responses:
-        200:
-          description: OK
-          schema:
-            $ref: '#/definitions/GroupInfo'
   /device_groups/{groupId}/rename:
     put:
       description: Rename a group
@@ -339,20 +276,6 @@ paths:
           description: OK
           schema:
             type: integer
-  /device_groups/{uuid}/discarded_attrs:
-    get:
-      description: return the discarded attributes for the group as json
-      parameters:
-      - name: uuid
-        description: The uuid of an existing group
-        in: path
-        required: true
-        type: string
-      responses:
-        200:
-          description: OK
-          schema:
-            $ref: '#/definitions/GroupInfo'
   /device_groups/{groupId}/devices/{deviceId}:
     post:
       description: add a device to a group
@@ -386,21 +309,6 @@ paths:
       responses:
         200:
           description: OK
-  /device_groups/from_attributes:
-    post:
-      description: Create a group from two devices' common attributes
-      parameters:
-      - name: CreateGroupRequest
-        description: The group name and devices to compare
-        in: body
-        required: true
-        schema:
-          $ref: '#/definitions/CreateGroupRequest'
-      responses:
-        200:
-          description: returns the uuid of the newly created group
-          schema:
-            $ref: '#/definitions/uuid'
   /device_count/{name}/{version}/:
     get:
       description: returns count of groups and devices with the given package installed
@@ -495,9 +403,6 @@ definitions:
   SystemInfo:
     type: object
     description: A json object representing system info. No schema yet defined.
-  GroupInfo:
-    type: object
-    description: A json object representing device group info. No schema yet defined.
   CreateGroupRequest:
     type: object
     properties:

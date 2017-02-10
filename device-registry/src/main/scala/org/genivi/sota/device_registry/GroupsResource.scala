@@ -3,11 +3,9 @@ package org.genivi.sota.device_registry
 import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server._
-import io.circe.Json
 import io.circe.generic.auto._
-import org.genivi.sota.data.GroupInfo.Name
+import org.genivi.sota.data.Group.Name
 import org.genivi.sota.data.{Namespace, Uuid}
-import org.genivi.sota.device_registry.common.CreateGroupRequest
 import org.genivi.sota.device_registry.db._
 import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.http.UuidDirectives.{allowExtractor, extractUuid}
@@ -24,23 +22,8 @@ class GroupsResource(namespaceExtractor: Directive1[AuthedNamespaceScope], devic
 
   private val extractGroupId = allowExtractor(namespaceExtractor, extractUuid, groupAllowed)
 
-  private val extractCreateGroupRequest: Directive1[CreateGroupRequest] =
-    (namespaceExtractor & entity(as[CreateGroupRequest])).tflatMap { case (ns, request) =>
-      val devicesExist = for {
-        _ <- DeviceRepository.exists(ns, request.device1)
-        _ <- DeviceRepository.exists(ns, request.device2)
-      } yield ()
-      onComplete(db.run(devicesExist)).flatMap {
-        case Success(_) => provide(request)
-        case Failure(error) => reject(ValidationRejection("Device not found"))
-      }
-    }
-
   private def groupAllowed(groupId: Uuid): Future[Namespace] =
     db.run(GroupInfoRepository.groupInfoNamespace(groupId))
-
-  def createGroupFromDevices(request: CreateGroupRequest, namespace: Namespace): Route =
-    complete(UpdateMemberships.createGroupFromDevices(request, namespace))
 
   def getDevicesInGroup(groupId: Uuid): Route = {
     parameters(('offset.as[Long].?, 'limit.as[Long].?)) { (offset, limit) =>
@@ -51,17 +34,10 @@ class GroupsResource(namespaceExtractor: Directive1[AuthedNamespaceScope], devic
   def listGroups(ns: Namespace): Route =
     complete(db.run(GroupInfoRepository.list(ns)))
 
-  def fetchGroupInfo(groupId: Uuid): Route =
-    complete(db.run(GroupInfoRepository.getGroupInfoById(groupId)))
-
-  def createGroupInfo(id: Uuid,
-                      groupName: Name,
-                      namespace: Namespace,
-                      groupInfo: Json): Route =
-    complete(StatusCodes.Created -> db.run(GroupInfoRepository.create(id, groupName, namespace, groupInfo, Json.Null)))
-
-  def updateGroupInfo(groupId: Uuid, groupName: Name, groupInfo: Json): Route =
-    complete(db.run(GroupInfoRepository.updateGroupInfo(groupId, groupInfo)))
+  def createGroup(id: Uuid,
+                  groupName: Name,
+                  namespace: Namespace): Route =
+    complete(StatusCodes.Created -> db.run(GroupInfoRepository.create(id, groupName, namespace)))
 
   def renameGroup(groupId: Uuid, newGroupName: Name): Route =
     complete(db.run(GroupInfoRepository.renameGroup(groupId, newGroupName)))
@@ -75,20 +51,11 @@ class GroupsResource(namespaceExtractor: Directive1[AuthedNamespaceScope], devic
   def removeDeviceFromGroup(groupId: Uuid, deviceId: Uuid): Route =
     complete(db.run(GroupMemberRepository.removeGroupMember(groupId, deviceId)))
 
-  def getDiscardedAttrs(groupId: Uuid): Route =
-    complete(db.run(GroupInfoRepository.discardedAttrs(groupId)))
-
   val route: Route =
     (pathPrefix("device_groups") & namespaceExtractor) { ns =>
       val scope = Scopes.devices(ns)
-      (scope.post & path("from_attributes") & extractCreateGroupRequest) { request =>
-        createGroupFromDevices(request, ns)
-      } ~
-      parameter('groupName.as[Name]) { groupName =>
-        (scope.post & path("group_info") & entity(as[Json])) { body =>
-          createGroupInfo(Uuid.generate(), groupName, ns, body)
-        } ~
-        (scope.post & pathEnd) { createGroupInfo(Uuid.generate(), groupName, ns, Json.Null) }
+      (scope.post & parameter('groupName.as[Name]) & pathEnd) { groupName =>
+        createGroup(Uuid.generate(), groupName, ns)
       } ~
       (scope.get & pathEnd) {
         listGroups(ns)
@@ -106,17 +73,8 @@ class GroupsResource(namespaceExtractor: Directive1[AuthedNamespaceScope], devic
         (scope.put & path("rename") & parameter('groupName.as[Name])) { groupName =>
           renameGroup(groupId, groupName)
         } ~
-        (scope.get & pathEnd) {
-          fetchGroupInfo(groupId)
-        } ~
-        (scope.put & pathPrefix("group_info") & parameter('groupName.as[Name])) { groupName =>
-          entity(as[Json]) { body => updateGroupInfo(groupId, groupName, body) }
-        } ~
         (scope.get & path("count") & pathEnd) {
           countDevices(groupId)
-        } ~
-        (scope.get & path("discarded_attrs") & pathEnd) {
-          getDiscardedAttrs(groupId)
         }
       }
     }

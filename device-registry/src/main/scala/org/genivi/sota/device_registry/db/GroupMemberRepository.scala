@@ -48,7 +48,7 @@ object GroupMemberRepository {
     groupMembers
       .filter(r => r.groupId === groupId && r.deviceUuid === deviceId)
       .delete
-      .handleSingleUpdateError(Errors.MissingGroupInfo)
+      .handleSingleUpdateError(Errors.MissingGroup)
 
   def listDevicesInGroup(groupId: Uuid, offset: Option[Long] = None, limit: Option[Long] = None)
                         (implicit ec: ExecutionContext): DBIO[Seq[Uuid]] = {
@@ -68,10 +68,7 @@ object GroupMemberRepository {
   }
 
   def countDevicesInGroup(groupId: Uuid)(implicit ec: ExecutionContext): DBIO[Int] =
-    GroupInfoRepository
-      .getGroupInfoById(groupId)
-      .flatMap(_ => listDevicesInGroup(groupId))
-      .map(_.size)
+    listDevicesInGroup(groupId).map(_.size)
 
   def listGroupsForDevice(device: Uuid)(implicit ec: ExecutionContext): DBIO[Seq[Uuid]] =
     DeviceRepository.findByUuid(device).flatMap { _ =>

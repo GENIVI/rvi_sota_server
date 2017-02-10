@@ -7,17 +7,13 @@ package org.genivi.sota.data
 import eu.timepit.refined.api.{Refined, Validate}
 import io.circe.Json
 
-import GroupInfo._
+import Group._
 
-case class GroupInfo(id: Uuid,
-                     groupName: Name,
-                     namespace: Namespace,
-                     groupInfo: GroupInfoType,
-                     discardedAttrs: GroupInfoType)
+case class Group(id: Uuid,
+                 groupName: Name,
+                 namespace: Namespace)
 
-object GroupInfo {
-  type GroupInfoType = Json
-
+object Group {
   case class ValidName()
 
   type Name = Refined[String, ValidName]
