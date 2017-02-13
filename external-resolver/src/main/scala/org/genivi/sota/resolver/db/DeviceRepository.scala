@@ -243,17 +243,4 @@ object DeviceRepository {
       searchResult <- DbDepResolver.filterDevices(namespace, devices.map(d => d.uuid -> d.deviceId).toMap, filter)
     } yield searchResult
   }
-
-  def allDevicesWithPackageByName(namespace: Namespace, name: PackageId.Name, devices: Set[Uuid])
-  (implicit db: Database, ec: ExecutionContext): Future[Seq[(PackageId.Version, Int)]] = {
-    val dbDevicesIO = installedPackages
-      .join(PackageRepository.withNameQuery(namespace, name))
-      .on(_.packageUuid === _.uuid)
-      .groupBy(_._2.version)
-      .map { case (version, installedPkg) => (version, installedPkg.length) }
-      .union(ForeignPackages.installedByNameQuery(name, devices))
-      .result
-
-    db.run(dbDevicesIO)
-  }
 }

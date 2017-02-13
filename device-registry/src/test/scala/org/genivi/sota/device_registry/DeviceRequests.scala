@@ -116,4 +116,7 @@ trait DeviceRequests { self: ResourceSpec =>
 
   def getAffected(pkgs: Set[PackageId]): HttpRequest =
     Post(Resource.uri("packages", "affected"), pkgs)
+
+  def getPackageStats(name: PackageId.Name): HttpRequest =
+    Get(Resource.uri("package_stats", name.get))
 }

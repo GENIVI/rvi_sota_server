@@ -349,6 +349,22 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/ActiveDeviceCount'
+  /package_stats/{name}:
+    get:
+      description: Get a count of devices on which the give package is installed, grouped by versions.
+      parameters:
+      - name: name
+        in: path
+        description: The package name.
+        required: true
+        type: string
+      responses:
+        200:
+          description: A map of package versions to count.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PackageStat'
 
 definitions:
   uuid:
@@ -450,3 +466,11 @@ definitions:
       deviceCount:
         type: integer
         description: count of active devices (in a given interval)
+  PackageStat:
+    type: object
+    description: An association between a package and a filter.
+    properties:
+      packageVersion:
+        type: string
+      installedCount:
+        type: integer

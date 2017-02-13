@@ -33,9 +33,9 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
                       messageBus: MessageBusPublisher,
                       deviceNamespaceAuthorizer: Directive1[Uuid])
                      (implicit system: ActorSystem,
-             db: Database,
-             mat: ActorMaterializer,
-             ec: ExecutionContext) {
+                               db: Database,
+                               mat: ActorMaterializer,
+                               ec: ExecutionContext) {
 
   import Device._
   import Directives._
@@ -44,6 +44,9 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
   val extractPackageId: Directive1[PackageId] = (refined[PackageId.ValidName](Slash ~ Segment)
                                                 & refined[PackageId.ValidVersion](Slash ~ Segment))
                                                 .as(PackageId.apply _)
+
+  val refinedPackageName: Directive1[PackageId.Name] =
+    refined[PackageId.ValidName](Slash ~ Segment)
 
   def searchDevice(ns: Namespace): Route =
     parameters(('regex.as[String Refined Regex].?,
@@ -140,6 +143,13 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
     }
   }
 
+  def getPackageStats(ns: Namespace, name: PackageId.Name): Route = {
+    parameters('offset.as[Long].?, 'limit.as[Long].?) { (offset, limit) =>
+      val f = db.run(InstalledPackages.listAllWithPackageByName(ns, name, offset, limit))
+      complete(f)
+    }
+  }
+
   def api: Route = namespaceExtractor { ns =>
     val scope = Scopes.devices(ns)
     pathPrefix("devices") {
@@ -197,6 +207,11 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
     } ~
     (path("packages" / "affected") & scope.post) {
       findAffected(authedNs)
+    } ~
+    pathPrefix("package_stats") {
+      (scope.get & refinedPackageName & pathEnd) { name =>
+        getPackageStats(authedNs, name)
+      }
     }
   }
 
