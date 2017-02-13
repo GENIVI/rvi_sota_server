@@ -34,13 +34,5 @@ class FakeExternalResolver()(implicit system: ActorSystem, mat: ActorMaterialize
     Future.successful(Map.empty)
   }
 
-  override def putPackage(namespace: Namespace,
-                          packageId: PackageId,
-                          description: Option[String],
-                          vendor: Option[String]): Future[Unit] = {
-    logger.info(s"Fake resolver called. namespace=$namespace, packageId=${packageId.mkString}")
-    Future.successful(())
-  }
-
   def isInstalled(packageId: PackageId): Boolean = installedPackages.contains(packageId)
 }

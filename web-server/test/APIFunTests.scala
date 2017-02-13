@@ -208,36 +208,6 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     addPackage(testPackageNameAlt, testPackageVersion)
   }
 
-  "test adding manually installed packages" taggedAs APITests in {
-    val response = makeRequest("resolver/devices/" + testIdAlt.get + "/package/" + testPackageNameAlt +
-      "/" + testPackageVersion, PUT)
-    response.status mustBe OK
-  }
-
-  "test viewing manually installed packages" taggedAs APITests in {
-    val response = makeRequest("resolver/devices/" + testIdAlt.get + "/package", GET)
-    response.status mustBe OK
-    val jsonResponse = decode[List[PackageId]](response.body)
-    jsonResponse.toOption match {
-      case Some(resp : List[PackageId]) => resp.length mustBe 1
-                                           resp.head.name mustEqual testPackageNameAlt
-                                           resp.head.version mustEqual testPackageVersion
-      case None => fail("JSON parse error:" + jsonResponse.toString)
-    }
-  }
-
-  "test viewing vehicles with a given package installed" taggedAs APITests in {
-    val response = makeRequest("resolver/devices?packageName=" + testPackageNameAlt + "&packageVersion=" +
-      testPackageVersion, GET)
-    response.status mustBe OK
-    val jsonResponse = decode[List[String]](response.body)
-    jsonResponse.toOption match {
-      case Some(resp) => resp.length mustBe 1
-        resp.headOption mustEqual testIdAlt
-      case None => fail("JSON parse error:" + jsonResponse.toString)
-    }
-  }
-
   "test searching packages" taggedAs APITests in {
     val response = makeRequest("packages?regex=^" + testPackageName + "$", GET)
     response.status mustBe OK
@@ -283,34 +253,6 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
     jsonResponse.toOption match {
       case Some(resp : FilterJson) => resp.name mustEqual testFilterName
                                       resp.expression mustEqual testFilterAlternateExpression
-      case None => fail("JSON parse error:" + jsonResponse.toString)
-    }
-  }
-
-  "test adding filters to a package" taggedAs APITests in {
-    addFilterToPackage(testPackageName)
-  }
-
-  "test removing filters from a package" taggedAs APITests in {
-    val response = makeRequest("resolver/packages/" + testPackageName + "/" + testPackageVersion + "/filter/" +
-      testFilterName, DELETE)
-    response.status mustBe OK
-  }
-
-  "test re-adding filters to a package" taggedAs APITests in {
-    //we also re-add the filter to test whether updates filter vins properly
-    addFilterToPackage(testPackageName)
-  }
-
-  "test viewing packages with a given filter" taggedAs APITests in {
-    val response = makeRequest("resolver/filters/" + testFilterName + "/package", GET)
-    response.status mustBe OK
-    val jsonResponse = decode[List[PackageResolver]](response.body)
-    jsonResponse.toOption match {
-      case Some(resp : List[PackageResolver]) =>
-        resp.length mustBe 1
-        resp.head.id.name mustBe testPackageName
-        resp.head.id.version mustBe testPackageVersion
       case None => fail("JSON parse error:" + jsonResponse.toString)
     }
   }
@@ -367,41 +309,6 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
         resp.headOption mustEqual testId
       case None =>
         fail("JSON parse error: " + jsonResponse.toString + s"body: ${response.body}")
-    }
-  }
-
-
-  "test creating install campaigns" taggedAs APITests in {
-    val cookie = getLoginCookie
-    val currentTimestamp = Instant.now().toString
-    val tomorrowTimestamp = Instant.now().plus(1, ChronoUnit.DAYS).toString
-    val uuid = UUID.randomUUID().toString
-    val updateId = UUID.randomUUID().toString
-    val data = UpdateRequest(testNamespace, updateId, PackageId(testPackageName, testPackageVersion), currentTimestamp,
-      currentTimestamp + "/" + tomorrowTimestamp, 1, "sig", "desc", true)
-    val response = await(wsClient.url("http://" + webserverHost + s":$webserverPort/api/v1/update_requests")
-      .withHeaders("Cookie" -> Cookies.encodeCookieHeader(cookie))
-      .withHeaders("Content-Type" -> "application/json")
-      .post(data.asJson.noSpaces))
-    response.status mustBe CREATED
-  }
-
-  "test list of vins affected by update" taggedAs APITests in {
-    val response = makeRequest(
-      s"resolver/resolve?namespace=$testNamespace&package_name=$testPackageName&package_version=$testPackageVersion",
-      GET)
-
-    response.status mustBe OK
-    import org.genivi.sota.marshalling.CirceInstances._
-
-    val jsonResponse = decode[Map[String, Seq[PackageId]]](response.body)
-    jsonResponse.toOption match {
-      case Some(resp : Map[String, Seq[PackageId]]) => resp.toList.length mustBe 1
-                                                    resp.headOption.map(_._1) mustBe testId
-                                                    resp.head._2.length mustBe 1
-                                                    resp.head._2.head.name mustBe testPackageName
-                                                    resp.head._2.head.version mustBe testPackageVersion
-      case None => fail("JSON parse error:" + jsonResponse.toString)
     }
   }
 }

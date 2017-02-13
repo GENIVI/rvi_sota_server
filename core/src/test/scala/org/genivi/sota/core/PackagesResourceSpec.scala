@@ -49,12 +49,11 @@ class PackagesResourceSpec extends FunSuite
   import org.genivi.sota.http.NamespaceDirectives._
 
   val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
-  val resolver = new FakeExternalResolver()
 
   implicit val connectivity = DefaultConnectivity
 
   lazy val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
-  val service = new PackagesResource(resolver, updateService, db, LocalMessageBus.publisher(system), defaultNamespaceExtractor) {
+  val service = new PackagesResource(updateService, db, LocalMessageBus.publisher(system), defaultNamespaceExtractor) {
     override val packageStorageOp: PackageStorageOp = new LocalPackageStore().store _
   }
 

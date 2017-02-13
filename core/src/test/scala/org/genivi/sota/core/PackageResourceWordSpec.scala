@@ -46,7 +46,6 @@ class PackageResourceWordSpec extends WordSpec
   import NamespaceDirectives._
 
   val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
-  val externalResolverClient = new FakeExternalResolver()
 
   lazy val messageBusPublisher = MessageBusPublisher.ignore
 
@@ -54,7 +53,7 @@ class PackageResourceWordSpec extends WordSpec
 
   lazy val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
 
-  lazy val service = new PackagesResource(externalResolverClient, updateService, db, messageBusPublisher,
+  lazy val service = new PackagesResource(updateService, db, messageBusPublisher,
                                           defaultNamespaceExtractor)
 
   val testPackagesParams = List(

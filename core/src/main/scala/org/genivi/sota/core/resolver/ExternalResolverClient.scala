@@ -23,17 +23,6 @@ import scala.concurrent.Future
 trait ExternalResolverClient {
 
   /**
-    * Add a new package to SOTA
-    * This is called when the user adds a new package to the SOTA system
-    *
-    * @param packageId The name and version of the package
-    * @param description A description of the package (optional)
-    * @param vendor The vendor providing the package (optional)
-    */
-  def putPackage(namespace: Namespace, packageId: PackageId, description: Option[String],
-                 vendor: Option[String]): Future[Unit]
-
-  /**
     * Given a package name and version, return vehicles that it should be
     * installed on.
     *
@@ -142,19 +131,6 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
     }
   }
 
-  def handlePutResponse( futureResponse: Future[HttpResponse] ) : Future[Unit] =
-    futureResponse.flatMap { response =>
-      response.status match {
-        case StatusCodes.OK => FastFuture.successful(())
-        case sc =>
-          log.warning( s"Unexpected response to put package request with status code '$sc'")
-          Future.failed( ExternalResolverRequestFailed(sc) )
-      }
-    }.recoverWith {
-      case e: ExternalResolverRequestFailed => Future.failed(e)
-      case e => Future.failed( ExternalResolverRequestFailed(e) )
-    }
-
   override def setInstalledPackages(device: Uuid, json: io.circe.Json) : Future[Unit] = {
     import akka.http.scaladsl.client.RequestBuilding.Put
     import org.genivi.sota.rest.ErrorRepresentation
@@ -173,25 +149,5 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
     }
     futureResult.onFailure { case t => log.error( t, "Request to external resolver failed." ) }
     futureResult
-  }
-
-  override def putPackage(namespace: Namespace, packageId: PackageId, description: Option[String],
-                          vendor: Option[String]): Future[Unit] = {
-    import akka.http.scaladsl.client.RequestBuilding._
-    import shapeless._
-    import syntax.singleton._
-    import io.circe.generic.auto._
-
-    val payload =
-      ('id ->> ('name ->> packageId.name.get :: 'version ->> packageId.version.get :: HNil)) ::
-      ('description ->> description) ::
-      ('vendor  ->> vendor) ::
-      ('namespace  ->> namespace.get) ::
-      HNil
-
-    val request : HttpRequest =
-      Put(packagesUri.withPath(packagesUri.path / packageId.name.get / packageId.version.get ), payload)
-        .addHeader(nsHeader(namespace))
-    handlePutResponse( Http().singleRequest( request ) )
   }
 }
