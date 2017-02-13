@@ -4,20 +4,18 @@
  */
 package org.genivi.sota.device_registry
 
-import java.time.Instant
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
 import cats.data.Xor
-import org.genivi.sota.data.{Namespace, UpdateStatus, Uuid}
+import org.genivi.sota.data.{Namespace, Uuid}
 import org.genivi.sota.db.{BootMigrations, DatabaseConfig}
 import org.genivi.sota.device_registry.daemon.DeviceUpdateStatusListener
 import org.genivi.sota.device_registry.db.DeviceRepository
 import org.genivi.sota.http.UuidDirectives.{allowExtractor, extractUuid}
 import org.genivi.sota.http._
-import org.genivi.sota.messaging.Messages.{DeviceUpdateStatus, UpdateSpec}
+import org.genivi.sota.messaging.Messages.UpdateSpec
 import org.genivi.sota.messaging.daemon.MessageBusListenerActor.Subscribe
 import org.genivi.sota.messaging.kafka.MessageListener
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}

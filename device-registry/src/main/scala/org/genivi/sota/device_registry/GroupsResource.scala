@@ -14,7 +14,6 @@ import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
 
 class GroupsResource(namespaceExtractor: Directive1[AuthedNamespaceScope], deviceNamespaceAuthorizer: Directive1[Uuid])
                     (implicit ec: ExecutionContext, db: Database)

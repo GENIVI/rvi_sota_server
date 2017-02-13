@@ -7,10 +7,9 @@ package org.genivi.sota.resolver.test
 import akka.http.scaladsl.model.StatusCodes
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
-import org.genivi.sota.data.UuidGenerator._
-import org.genivi.sota.data.{Namespaces, PackageId, Uuid}
+import org.genivi.sota.data.{Namespaces, PackageId}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import org.genivi.sota.resolver.db.{Package, PackageResponse, PackageStat}
+import org.genivi.sota.resolver.db.{Package, PackageResponse}
 import org.genivi.sota.resolver.test.generators.PackageGenerators
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
 
