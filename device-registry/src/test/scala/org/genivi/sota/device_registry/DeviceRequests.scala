@@ -102,8 +102,12 @@ trait DeviceRequests { self: ResourceSpec =>
       status shouldBe StatusCodes.NoContent
     }
 
-  def listPackages(device: Uuid)(implicit ec: ExecutionContext): HttpRequest =
-    Get(Resource.uri("devices", device.show, "packages"))
+  def listPackages(device: Uuid, regex: Option[String] = None)(implicit ec: ExecutionContext): HttpRequest =
+    regex match {
+      case Some(r) => Get(Resource.uri("devices", device.show, "packages").withQuery(Query("regex" -> r)))
+      case None => Get(Resource.uri("devices", device.show, "packages"))
+    }
+
 
   def getStatsForPackage(pkg: PackageId)(implicit ec: ExecutionContext): HttpRequest =
     Get(Resource.uri("device_count", pkg.name.get, pkg.version.get))

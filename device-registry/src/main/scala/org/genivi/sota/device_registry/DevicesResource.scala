@@ -121,7 +121,9 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
     complete(db.run(InstalledPackages.getDevicesCount(pkg, ns)))
 
   def listPackagesOnDevice(device: Uuid): Route =
-    complete(db.run(InstalledPackages.installedOn(device)))
+    parameters('regex.as[String Refined Regex].?) { regex =>
+      complete(db.run(InstalledPackages.installedOn(device, regex)))
+    }
 
   def getActiveDeviceCount(ns: Namespace): Route =
     parameters(('start.as[OffsetDateTime], 'end.as[OffsetDateTime])) { (start, end) =>

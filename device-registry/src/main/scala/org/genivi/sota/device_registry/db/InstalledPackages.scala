@@ -7,8 +7,11 @@ package org.genivi.sota.device_registry.db
 
 import java.time.Instant
 
+import eu.timepit.refined.api.Refined
+import eu.timepit.refined.string.Regex
 import org.genivi.sota.data.PackageId.Name
 import org.genivi.sota.data.{Namespace, PackageId, PaginatedResult, Uuid}
+import org.genivi.sota.db.Operators.regex
 import org.genivi.sota.device_registry.common.PackageStat
 import org.genivi.sota.refined.PackageIdDatabaseConversions._
 import org.genivi.sota.refined.SlickRefined._
@@ -58,10 +61,17 @@ object InstalledPackages {
       installedPackages ++= packages.map(InstalledPackage(device, _, Instant.now()))
     ).transactionally
 
-  def installedOn(device: Uuid)(implicit ec: ExecutionContext): DBIO[Seq[InstalledPackage]] =
-    installedPackages
-      .filter(_.device === device)
-      .result
+  def installedOn(device: Uuid, regexOpt: Option[String Refined Regex])
+                 (implicit ec: ExecutionContext): DBIO[Seq[InstalledPackage]] =
+    regexOpt match {
+      case Some(re) => installedPackages
+        .filter(_.device === device)
+        .filter(row => regex(row.name.mappedTo[String] ++ "-" ++ row.version.mappedTo[String], re))
+        .result
+      case None => installedPackages
+        .filter(_.device === device)
+        .result
+    }
 
   def getDevicesCount(pkg: PackageId, ns: Namespace)(implicit ec: ExecutionContext): DBIO[DevicesCount] =
     for {

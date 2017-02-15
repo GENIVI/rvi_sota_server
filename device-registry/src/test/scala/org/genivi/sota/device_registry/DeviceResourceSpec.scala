@@ -9,6 +9,7 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 import akka.http.scaladsl.model.StatusCodes._
+import eu.timepit.refined.api.Refined
 import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.data._
@@ -26,6 +27,7 @@ import org.scalacheck.Gen
 class DeviceResourceSpec extends ResourcePropSpec {
 
   import Device._
+  import GeneratorOps._
 
   private val deviceNumber = DeviceRepository.defaultLimit + 10
 
@@ -338,6 +340,26 @@ class DeviceResourceSpec extends ResourcePropSpec {
     }
   }
 
+  property("Can filter list of installed packages on a device") {
+    val uuid = createDeviceOk(genDeviceT.generate)
+    val pkgs = List(PackageId(Refined.unsafeApply("foo"), Refined.unsafeApply("1.0.0")),
+      PackageId(Refined.unsafeApply("bar"), Refined.unsafeApply("1.0.0")))
+
+    installSoftware(uuid, pkgs.toSet) ~> route ~> check {
+      status shouldBe NoContent
+    }
+
+    listPackages(uuid, Some("foo")) ~> route ~> check {
+      status shouldBe OK
+      val response = responseAs[Seq[InstalledPackage]]
+      response.length shouldBe 1
+      response.head.packageId shouldEqual pkgs.head
+      response.head.device shouldBe uuid
+    }
+
+    deleteDeviceOk(uuid)
+  }
+
   property("Can get stats for a package") {
     val deviceNumber = 20
     val groupNumber = 5
@@ -394,8 +416,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
     deviceIds.foreach(deleteDeviceOk(_))
   }
 
-  property("can list installed packages with custom pagination limit and offset") {
-    import GeneratorOps._
+  property("can list installed packages for all devices with custom pagination limit and offset") {
     val limit = 30
     val offset = 10
 
