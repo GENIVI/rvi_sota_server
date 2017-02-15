@@ -358,6 +358,18 @@ paths:
         description: The package name.
         required: true
         type: string
+      - name: offset
+        description: the offset into the list of package stats
+        in: query
+        required: false
+        type: integer
+        format: int64
+      - name: limit
+        description: the maximum amount of package stat objects to return, after the offset
+        in: query
+        required: false
+        type: integer
+        format: int64
       responses:
         200:
           description: A map of package versions to count.
