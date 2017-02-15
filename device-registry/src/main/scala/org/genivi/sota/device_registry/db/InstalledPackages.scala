@@ -7,7 +7,9 @@ package org.genivi.sota.device_registry.db
 
 import java.time.Instant
 
+import org.genivi.sota.data.PackageId.Name
 import org.genivi.sota.data.{Namespace, PackageId, PaginatedResult, Uuid}
+import org.genivi.sota.device_registry.common.PackageStat
 import org.genivi.sota.refined.PackageIdDatabaseConversions._
 import org.genivi.sota.refined.SlickRefined._
 import slick.driver.MySQLDriver.api._
@@ -113,6 +115,25 @@ object InstalledPackages {
       .filter(_._2.namespace === namespace)
       .map(r => (r._1.device, LiftedPackageId(r._1.name, r._1.version)))
       .result
+  }
+
+  def listAllWithPackageByName(ns: Namespace, name: Name, moffset: Option[Long], mlimit: Option[Long])
+                              (implicit ec: ExecutionContext)
+    : DBIO[PaginatedResult[PackageStat]] = {
+    val offset = moffset.getOrElse[Long](0)
+    val limit = mlimit.getOrElse[Long](defaultLimit)
+    val query = installedPackages
+      .filter(_.name === name)
+      .groupBy(_.version)
+      .map { case (version, installedPkg) => (version, installedPkg.length) }
+      .drop(0) //workaround for slick issue: https://github.com/slick/slick/issues/1355
+
+    val pagedquery = query.paginate(offset, limit)
+    val pkgResult = pagedquery.result.map(_.map { case (version, count) => PackageStat(version, count) })
+
+    query.length.result.zip(pkgResult).map { case (total, values) =>
+      PaginatedResult(total = total, limit = limit, offset = offset, values = values)
+    }
   }
 
 }

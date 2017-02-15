@@ -12,6 +12,7 @@ import akka.http.scaladsl.model.StatusCodes._
 import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.data._
+import org.genivi.sota.device_registry.common.PackageStat
 import org.genivi.sota.device_registry.db.DeviceRepository
 import org.genivi.sota.device_registry.db.InstalledPackages.{DevicesCount, InstalledPackage}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
@@ -450,4 +451,25 @@ class DeviceResourceSpec extends ResourcePropSpec {
     }
   }
 
+  property("Package stats correct reports number of installed instances") {
+    val devices = genConflictFreeDeviceTs(10).sample.get
+    val pkgName = genPackageIdName.sample.get
+    val pkgVersion = genConflictFreePackageIdVersion(2)
+
+    val uuids = devices.map(createDeviceOk(_))
+    uuids.zipWithIndex.foreach { case (uuid, i) =>
+      if(i % 2 == 0) {
+        installSoftwareOk(uuid, Set(PackageId(pkgName, pkgVersion.head)))
+      } else {
+        installSoftwareOk(uuid, Set(PackageId(pkgName, pkgVersion(1))))
+      }
+    }
+    getPackageStats(pkgName) ~> route ~> check {
+      status shouldBe OK
+      val r = responseAs[PaginatedResult[PackageStat]]
+      r.total shouldBe 2
+      r.values.contains(PackageStat(pkgVersion.head, 5)) shouldBe true
+      r.values.contains(PackageStat(pkgVersion(1), 5)) shouldBe true
+    }
+  }
 }

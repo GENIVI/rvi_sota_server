@@ -4,6 +4,8 @@
  */
 package org.genivi.sota.data
 
+import java.security.InvalidParameterException
+
 import eu.timepit.refined.api.Refined
 import org.scalacheck.{Arbitrary, Gen}
 
@@ -21,6 +23,19 @@ trait PackageIdGenerators {
 
   val genPackageIdVersion: Gen[PackageId.Version] =
     Gen.listOfN(3, Gen.choose(0, 999)).map(_.mkString(".")).map(Refined.unsafeApply) // scalastyle:ignore magic.number
+
+  def genConflictFreePackageIdVersion(n: Int): Seq[PackageId.Version] = {
+    import GeneratorOps._
+    if(n < 2) throw new InvalidParameterException("n must be greater than or equal to 2")
+    var versions = Set(genPackageIdVersion.generate)
+    while(versions.size < n) {
+      val v = genPackageIdVersion.generate
+      if(!versions.contains(v)) {
+        versions += v
+      }
+    }
+    versions.toSeq
+  }
 
   val genPackageId: Gen[PackageId] =
     for {

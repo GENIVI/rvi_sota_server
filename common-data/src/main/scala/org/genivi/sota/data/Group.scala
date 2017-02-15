@@ -5,7 +5,6 @@
 package org.genivi.sota.data
 
 import eu.timepit.refined.api.{Refined, Validate}
-import io.circe.Json
 
 import Group._
 
