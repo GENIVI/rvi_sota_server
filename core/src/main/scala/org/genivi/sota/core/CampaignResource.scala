@@ -18,12 +18,14 @@ import org.genivi.sota.data.{Namespace, PackageId}
 import org.genivi.sota.http.{AuthedNamespaceScope, ErrorHandler, Scopes}
 import org.genivi.sota.http.UuidDirectives._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.genivi.sota.messaging.MessageBusPublisher
 import slick.driver.MySQLDriver.api.Database
 
 import scala.concurrent.Future
 
 class CampaignResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
-                       deviceRegistry: DeviceRegistry, updateService: UpdateService)
+                       deviceRegistry: DeviceRegistry, updateService: UpdateService,
+                       messageBus: MessageBusPublisher)
                       (implicit db: Database, system: ActorSystem) {
   import Campaign._
   import StatusCodes.{Success => _, _}
@@ -47,7 +49,7 @@ class CampaignResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
 
   def launch(id: Campaign.Id, lc: LaunchCampaign): Route = {
     lc.isValid match {
-      case Xor.Right(()) => complete(CampaignLauncher.launch(deviceRegistry, updateService, id, lc))
+      case Xor.Right(()) => complete(CampaignLauncher.launch(deviceRegistry, updateService, id, lc, messageBus))
       case Xor.Left(err) => complete(Conflict -> err)
     }
   }

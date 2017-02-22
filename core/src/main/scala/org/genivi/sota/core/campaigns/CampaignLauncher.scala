@@ -9,8 +9,11 @@ import cats.implicits._
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.UpdateService
 import org.genivi.sota.core.data.{Campaign, UpdateRequest}
-import org.genivi.sota.core.db.{Campaigns, UpdateSpecs}
+import org.genivi.sota.core.db.{Campaigns, Packages, UpdateSpecs}
 import org.genivi.sota.data.{Interval, Namespace, PackageId, Uuid}
+import org.genivi.sota.messaging.MessageBusPublisher
+import org.genivi.sota.messaging.Messages.CampaignLaunched
+import org.slf4j.LoggerFactory
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -18,6 +21,8 @@ import scala.concurrent.{ExecutionContext, Future}
 object CampaignLauncher {
   import Campaign._
   import UpdateService._
+
+  private val log = LoggerFactory.getLogger(this.getClass)
 
   def cancel(id: Campaign.Id)(implicit db: Database, ec: ExecutionContext): Future[Unit] = {
     val dbIO = Campaigns.fetchGroups(id).flatMap { grps =>
@@ -35,8 +40,22 @@ object CampaignLauncher {
     Future.successful(devices.map(_ -> Set(pkg.id)).toMap)
   }
 
-  def launch (deviceRegistry: DeviceRegistry, updateService: UpdateService, id: Campaign.Id, lc: LaunchCampaign)
-             (implicit db: Database, system: ActorSystem, ec: ExecutionContext): Future[List[Uuid]] = {
+  def sendMsg(namespace: Namespace, devices: Set[Uuid], pkgId: PackageId, updateId: Uuid,
+              messageBus: MessageBusPublisher)
+             (implicit db: Database, system: ActorSystem, ec: ExecutionContext)
+      : Future[Unit] = {
+    import scala.async.Async._
+    async {
+      val pkg = await(db.run(Packages.byId(namespace, pkgId)))
+      val msg = CampaignLaunched(namespace, updateId, devices, pkg.uri, pkgId, pkg.size, pkg.checkSum)
+      await(messageBus.publish(msg))
+    }
+  }
+
+  def launch (deviceRegistry: DeviceRegistry, updateService: UpdateService, id: Campaign.Id, lc: LaunchCampaign,
+              messageBus: MessageBusPublisher)
+             (implicit db: Database, system: ActorSystem, ec: ExecutionContext)
+      : Future[List[Uuid]] = {
     def updateUpdateRequest(ur: UpdateRequest): UpdateRequest = {
       ur.copy(periodOfValidity = Interval(lc.startDate.getOrElse(ur.periodOfValidity.start),
                                           lc.endDate.getOrElse(ur.periodOfValidity.end)),
@@ -56,6 +75,7 @@ object CampaignLauncher {
 
         uuid          = Uuid.fromJava(updateRequest.id)
         _             <- db.run(Campaigns.setUpdateUuid(id, groupId, uuid))
+        _             <- sendMsg(ns, devices.toSet, pkgId, uuid, messageBus)
       } yield uuid
     }
 

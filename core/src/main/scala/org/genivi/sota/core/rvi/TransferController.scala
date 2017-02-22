@@ -383,7 +383,7 @@ class PackageTransferActor(updateId: UUID,
    */
   def downloadingRemotePackage(): Receive = {
     if(isLocalFile(pckg.uri)) {
-      self ! (new URI(pckg.uri.toString()))
+      self ! new URI(pckg.uri.toString())
     } else {
       s3PackageStore
         .retrieveFile(packageUri = pckg.uri)

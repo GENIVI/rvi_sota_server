@@ -30,7 +30,7 @@ object SotaBuild extends Build {
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += "Sonatype Nexus Repository Manager" at "http://nexus.advancedtelematic.com:8081/content/repositories/releases",
     resolvers += "version99 Empty loggers" at "http://version99.qos.ch",
-    libraryDependencies ++= Dependencies.TestFrameworks,
+    libraryDependencies ++= Dependencies.TestFrameworks :+ Dependencies.Async,
 
     testOptions in Test ++= Seq(
       Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
@@ -255,6 +255,8 @@ object Dependencies {
   val AkkaSlf4j = "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion
 
   val Generex = "com.github.mifmif" % "generex" % "1.0.0"
+
+  val Async = "org.scala-lang.modules" %% "scala-async" % "0.9.6"
 
   val Logback = Seq(
     "ch.qos.logback" % "logback-classic" % LogbackVersion,
