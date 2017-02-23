@@ -20,7 +20,7 @@ This message is sent each time a device connects; for example, when it checks fo
 
 Fields:
 
-[%autoscale,cols="1,4",width="60%"]
+[%autoscale,cols="1,4"]
 |===
 | namespace | A string representing the namespace subscribed to
 | uuid      | The uuid of the device in question
@@ -34,7 +34,7 @@ This message is sent when a new device is created.
 
 Fields:
 
-[%autoscale,cols="1,4",width="60%"]
+[%autoscale,cols="1,4"]
 |===
 | namespace | A string representing the namespace subscribed to
 | uuid      | The uuid of the device in question
@@ -49,7 +49,7 @@ This message is sent the first time a device connects
 
 Fields:
 
-[%autoscale,cols="1,4",width="60%"]
+[%autoscale,cols="1,4"]
 |===
 | namespace| A string representing the namespace subscribed to
 | uuid     | The uuid of the device in question
@@ -62,7 +62,7 @@ Fields:
 
 // Fields:
 
-// [%autoscale,cols="1,4",width="60%"]
+// [%autoscale,cols="1,4"]
 // |===
 // | namespace | A string representing the namespace subscribed to
 // | uuid      | The uuid of the device in question
@@ -75,7 +75,7 @@ to OTA+
 
 Fields:
 
-[%autoscale,cols="1,4",width="60%"]
+[%autoscale,cols="1,4"]
 |===
 | namespace  | A string representing the namespace subscribed to
 | packageId  | An object containing the package name and package version
@@ -90,7 +90,7 @@ This message is sent when a package is blacklisted
 
 Fields:
 
-[%autoscale,cols="1,4",width="60%"]
+[%autoscale,cols="1,4"]
 |===
 | namespace  | A string representing the namespace subscribed to
 | packageId  | An object containing the package name and package version
@@ -102,7 +102,7 @@ This message is sent when an OSTree image is pushed.
 
 Fields:
 
-[%autoscale,cols="1,4",width="60%"]
+[%autoscale,cols="1,4"]
 |===
 | namespace | A string representing the namespace subscribed to
 | timestamp | A UTC timestamp of when the image was pushed
@@ -115,7 +115,7 @@ This message is sent when a package is uploaded.
 
 Fields:
 
-[%autoscale,cols="1,4",width="60%"]
+[%autoscale,cols="1,4"]
 |===
 | namespace | A string representing the namespace subscribed to
 | timestamp | A UTC timestamp of when the image was pushed
@@ -128,7 +128,7 @@ This message is sent when the status of a package update on a particular device 
 
 Fields:
 
-[%autoscale,cols="1,4",width="60%"]
+[%autoscale,cols="1,4"]
 |===
 | namespace   | A string representing the namespace subscribed to
 | device      | The uuid of the device in question
