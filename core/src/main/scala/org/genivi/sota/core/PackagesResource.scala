@@ -4,13 +4,11 @@
  */
 package org.genivi.sota.core
 
-import java.time.Instant
-import java.util.UUID
-
 import akka.Done
 import akka.actor.ActorSystem
 import akka.event.Logging
-import akka.http.scaladsl.model.{StatusCode, StatusCodes}
+import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive1, Route}
 import akka.stream._
@@ -18,24 +16,24 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.util.ByteString
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
-import org.genivi.sota.core.autoinstall.AutoInstall
+import io.circe.generic.auto._
+import java.util.UUID
+import org.genivi.sota.core.DigestCalculator.DigestResult
 import org.genivi.sota.core.data.Package
+import org.genivi.sota.core.data.PackageResponse._
 import org.genivi.sota.core.db._
 import org.genivi.sota.core.storage.PackageStorage
 import org.genivi.sota.core.storage.PackageStorage.PackageStorageOp
+import org.genivi.sota.core.storage.StoragePipeline
 import org.genivi.sota.data.{Namespace, PackageId}
-import org.genivi.sota.marshalling.RefinedMarshallingSupport._
-import org.genivi.sota.messaging.Messages.{PackageCreated, PackageStorageUsage}
-import org.genivi.sota.messaging.MessageBusPublisher
-import org.genivi.sota.rest.Validation._
-import slick.driver.MySQLDriver.api.Database
-import org.genivi.sota.rest.ResponseConversions._
-import org.genivi.sota.core.data.PackageResponse._
-import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import io.circe.generic.auto._
 import org.genivi.sota.http.{AuthedNamespaceScope, ErrorHandler, Scopes}
-
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.genivi.sota.marshalling.RefinedMarshallingSupport._
+import org.genivi.sota.messaging.MessageBusPublisher
+import org.genivi.sota.rest.ResponseConversions._
+import org.genivi.sota.rest.Validation._
 import scala.concurrent.Future
+import slick.driver.MySQLDriver.api.Database
 
 object PackagesResource {
 
@@ -48,10 +46,11 @@ object PackagesResource {
     */
   val extractPackageId: Directive1[PackageId] =
     (extractPackageName & refined[PackageId.ValidVersion](Slash ~ Segment)).as(PackageId.apply _)
+
 }
 
 class PackagesResource(updateService: UpdateService,
-                       db : Database,
+                       db: Database,
                        messageBusPublisher: MessageBusPublisher,
                        namespaceExtractor: Directive1[AuthedNamespaceScope])
                       (implicit system: ActorSystem, mat: ActorMaterializer) {
@@ -61,10 +60,12 @@ class PackagesResource(updateService: UpdateService,
 
   implicit val _config = system.settings.config
   implicit val _db = db
+  implicit val _bus = messageBusPublisher
 
   private[this] val log = Logging.getLogger(system, "org.genivi.sota.core.PackagesResource")
 
   val packageStorageOp: PackageStorageOp = new PackageStorage().store _
+  lazy val storagePipeline = new StoragePipeline(updateService, packageStorageOp)
 
   /**
     * An ota client GET a Seq of [[Package]] either from regex search, or from table scan.
@@ -103,23 +104,6 @@ class PackagesResource(updateService: UpdateService,
     * </ul>
     */
   def updatePackage(ns: Namespace, pid: PackageId): Route = {
-    def storePackage(ns: Namespace, pid: PackageId,
-                     description: Option[String], vendor: Option[String],
-                     signature: Option[String],
-                     file: Source[ByteString, Any]): Future[StatusCode] = {
-      val packageCreateF = for {
-        (uri, size, digest) <- packageStorageOp(pid, ns.get, file)
-        newPkg = Package(ns, UUID.randomUUID(), pid, uri, size, digest, description, vendor, signature)
-        usage <- db.run(Packages.create(newPkg).andThen(Packages.usage(ns)))
-      } yield usage
-
-      for {
-        usage <- packageCreateF
-        _ <- AutoInstall.packageCreated(ns, pid, updateService)
-        _ <- messageBusPublisher.publishSafe(PackageCreated(ns, pid, description, vendor, signature))
-        _ <- messageBusPublisher.publishSafe(PackageStorageUsage(ns, Instant.now, usage))
-      } yield StatusCodes.NoContent
-    }
 
     // FIXME: There is a bug in akka, so we need to drain the stream before
     // returning the response
@@ -133,8 +117,14 @@ class PackagesResource(updateService: UpdateService,
     // TODO: Fix form fields metadata causing error for large upload
     parameters('description.?, 'vendor.?, 'signature.?) { (description, vendor, signature) =>
       fileUpload("file") { case (_, file) =>
-        val storePkgF = storePackage(ns, pid, description, vendor, signature, file)
-        completeOrRecoverWith(storePkgF) { ex => onComplete(drainStream(file))(_ => failWith(ex)) }
+
+        val newPkg = (uri: Uri, size: Long, digest: DigestResult) =>
+          Package(ns, UUID.randomUUID(), pid, uri, size, digest, description, vendor, signature)
+
+        val storePkgF = storagePipeline.storePackage(ns, pid, file, newPkg)
+        completeOrRecoverWith(storePkgF.map(_ => StatusCodes.NoContent)) { ex =>
+          onComplete(drainStream(file))(_ => failWith(ex))
+        }
       }
     }
   }

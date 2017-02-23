@@ -58,6 +58,14 @@ object Messages {
     vendor: Option[String],
     signature: Option[String]) extends BusMessage
 
+  final case class TreehubCommit (
+    ns: Namespace,
+    commit: String,
+    refName: String,
+    description: String,
+    size: Int,
+    uri: String) extends BusMessage
+
   final case class PackageBlacklisted(
     namespace: Namespace,
     packageId: PackageId) extends BusMessage
@@ -135,6 +143,8 @@ object Messages {
   implicit val deviceActivatedMessageLike = MessageLike[DeviceActivated](_.uuid.show)
 
   implicit val packageCreatedMessageLike = MessageLike[PackageCreated](_.packageId.mkString)
+
+  implicit val treehubCommitMessageLike = MessageLike[TreehubCommit](_.commit)
 
   implicit val updateSpecMessageLike = MessageLike[UpdateSpec](_.device.show)
 
