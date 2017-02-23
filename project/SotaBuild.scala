@@ -123,7 +123,7 @@ object SotaBuild extends Build {
 
   lazy val core = Project(id = "sota-core", base = file("core"))
     .settings( commonSettings ++ Migrations.settings ++ lintOptions ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Scalaz :+ Dependencies.Flyway :+ Dependencies.AmazonS3,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Scalaz :+ Dependencies.Flyway :+ Dependencies.AmazonS3 :+ Dependencies.LibTuf :+ Dependencies.LibAts,
       testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RequiresRvi", "-l", "IntegrationTest"),
       testOptions in IntegrationTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RequiresRvi", "-n", "IntegrationTest"),
       parallelExecution in Test := true,
@@ -220,7 +220,9 @@ object SotaBuild extends Build {
 
 object Dependencies {
 
-  val AkkaVersion = "2.4.7"
+  val AkkaVersion = "2.4.17"
+
+  val AkkaHttpVersion = "10.0.3"
 
   val CirceVersion = "0.4.1"
 
@@ -234,13 +236,17 @@ object Dependencies {
 
   val JsonWebSecurityVersion = "0.3.1"
 
-  val AkkaHttp = "com.typesafe.akka" %% "akka-http-experimental" % AkkaVersion
+  val libTufV = "0.0.1-49-gc2ca2f6"
+
+  val libAtsV = "0.0.1-8-gad81bff"
+
+  val AkkaHttp = "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion
 
   val AkkaStream = "com.typesafe.akka" %% "akka-stream" % AkkaVersion
 
   val AkkaStreamTestKit = "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % "test"
 
-  val AkkaHttpTestKit = "com.typesafe.akka" %% "akka-http-testkit" % AkkaVersion % "test"
+  val AkkaHttpTestKit = "com.typesafe.akka" %% "akka-http-testkit" % AkkaHttpVersion % "test"
 
   val AkkaTestKit = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % "test"
 
@@ -318,4 +324,9 @@ object Dependencies {
   lazy val Nats = "com.github.tyagihas" % "scala_nats_2.11" % "0.2.1" exclude("org.slf4j", "slf4j-simple")
 
   lazy val Kafka = "com.typesafe.akka" %% "akka-stream-kafka" % "0.12"
+
+  lazy val LibTuf = "com.advancedtelematic" %% "libtuf" % libTufV
+
+  lazy val LibAts = "com.advancedtelematic" %% "libats" % libAtsV
+
 }

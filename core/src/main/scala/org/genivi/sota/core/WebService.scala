@@ -10,14 +10,13 @@ import akka.http.scaladsl.server.{Directive1, Directives}
 import akka.stream.ActorMaterializer
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.resolver.{Connectivity, ExternalResolverClient}
-import org.genivi.sota.core.transfer.UpdateNotifier
 import org.genivi.sota.http.AuthedNamespaceScope
 
 import scala.concurrent.ExecutionContext
 import slick.driver.MySQLDriver.api.Database
 import org.genivi.sota.messaging.MessageBusPublisher
 
-class WebService(notifier: UpdateNotifier,
+class WebService(updateService: UpdateService,
                  resolver: ExternalResolverClient,
                  deviceRegistry: DeviceRegistry,
                  db: Database,
@@ -29,7 +28,6 @@ class WebService(notifier: UpdateNotifier,
 
   import org.genivi.sota.http.ErrorHandler._
 
-  val updateService = new UpdateService(notifier, deviceRegistry)
   val devicesResource = new DevicesResource(db, connectivity.client, resolver, deviceRegistry, authNamespace)
   val packagesResource = new PackagesResource(updateService, db, messageBusPublisher, authNamespace)
   val autoInstallResource = new AutoInstallResource(db, deviceRegistry, authNamespace)
