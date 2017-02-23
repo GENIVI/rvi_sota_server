@@ -44,7 +44,7 @@ define(function(require) {
               });
           break;
           case 'edit-filter':
-            sendRequest.doPost('/api/v1/validate/filter', payload.filter)
+            sendRequest.doPost('/api/v1/resolver/validate/filter', payload.filter)
               .success(_.bind(function(filter) {
                 updateFilter(payload);
               }, this));
