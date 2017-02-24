@@ -1,0 +1,17 @@
+"Value","Default","Description"
+"PACKAGES_VERSION_FORMAT","""""""^\d+\.\d+\.\d+$""""""","A regular expression that package version numbers will be validated against."
+"LDAP_HOST","“localhost”","The hostname of an LDAP server."
+"LDAP_PORT",8389,"The port the LDAP service is running on."
+"LDAP_AUTHN_ID","uid=sota,ou=users,dc=genivi,dc=org",
+"LDAP_PASSWORD","“s0ta”",
+"LDAP_KEY_STORE_TYPE","“JKS”",
+"LDAP_KEY_STORE_PATH","“conf/certs/client.jks”",
+"LDAP_KEY_STORE_PASSWORD",,
+"LDAP_TRUST_STORE_PATH","""conf/certs/exampletrust.jks""",
+"AUTHN_BASE_DN","ou=users,dc=genivi,dc=org",
+"AUTHN_SEARCH_FILTER","""uid=%s""",
+"LDAP_INMEMORY_ENABLE","null","If set to true, will run an in-memory LDAP server with a few hard-coded users, for easy testing."
+"CORE_API_URI","""http://localhost:8080""","Core’s URI."
+"RESOLVER_API_URI","""http://localhost:8081""","Resolver’s URI."
+"DEVICE_REGISTRY_API_URI","""http://localhost:8083""","Device Registry’s URI."
+"DOCKER_IP","“localhost”","If you are using docker-machine, set this to your docker-machine IP."
