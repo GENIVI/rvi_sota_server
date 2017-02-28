@@ -12,26 +12,33 @@ define(function(require) {
     },
     mixins: [togglePanel],
     componentWillUnmount: function(){
-      this.props.Vehicles.removeWatch(this.props.PollEventName);
+      this.props.VinsForComponent.removeWatch(this.props.PollEventName);
+      this.props.Vehicles.removeWatch(this.props.VehiclesPollEventName);
     },
     componentWillMount: function(){
       this.refreshData();
-      this.props.Vehicles.addWatch(this.props.PollEventName, _.bind(this.forceUpdate, this, null));
+      this.props.VinsForComponent.addWatch(this.props.PollEventName, _.bind(this.forceUpdate, this, null));
+      this.props.Vehicles.addWatch(this.props.VehiclesPollEventName, _.bind(this.forceUpdate, this, null));
     },
     refreshData: function() {
       SotaDispatcher.dispatch(this.props.DispatchObject);
+      SotaDispatcher.dispatch(this.props.VehiclesDispatchObject);
     },
     label: function() {return this.props.Label},
     panel: function() {
-      var vehicles = _.map(this.props.Vehicles.deref(), function(vehicle) {
-        return (
-          <li className='list-group-item' key={vehicle.uuid}>
-            <Router.Link to='vehicle' params={{vin: vehicle.uuid, id: vehicle.deviceName}}>
-                {vehicle.deviceName}
-            </Router.Link>
-          </li>
-        );
-      });
+      var vehicles = [];
+      if(!_.isUndefined(this.props.Vehicles.deref())) {
+        vehicles = _.map(this.props.VinsForComponent.deref(), function(vehicle) {
+          var foundDevice = _.findWhere(this.props.Vehicles.deref(), {uuid: vehicle.vin});
+          return (
+            <li className='list-group-item' key={vehicle.vin}>
+              <Router.Link to='vehicle' params={{vin: vehicle.vin, id: foundDevice.deviceName}}>
+                  {foundDevice.deviceName}
+              </Router.Link>
+            </li>
+          );
+        }, this);
+      }
       return (
         <div>
           <ul className='list-group'>
