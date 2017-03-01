@@ -3,6 +3,7 @@ package org.genivi.sota.messaging
 import java.time.Instant
 import java.util.UUID
 
+import akka.http.scaladsl.model.Uri
 import cats.data.Xor
 import cats.syntax.show._
 import io.circe.generic.decoding.DerivedDecoder
@@ -94,6 +95,9 @@ object Messages {
                                       device: Uuid,
                                       status: DeviceStatus) extends BusMessage
 
+  final case class CampaignLaunched(namespace: Namespace, updateId: Uuid, devices: Set[Uuid], pkgUri: Uri,
+                                    pkg: PackageId, pkgSize: Long, pkgChecksum: String) extends BusMessage
+
   implicit class StreamNameOp[T <: Class[_]](v: T) {
     def streamName: String = {
       v.getSimpleName.filterNot(c => List('$').contains(c))
@@ -161,4 +165,6 @@ object Messages {
   implicit val userLoginMessageLike = MessageLike[UserLogin](_.id)
 
   implicit val deviceStatusMessageLike = MessageLike[DeviceUpdateStatus](_.device.show)
+
+  implicit val campaignLaunchedMessageLike = MessageLike[CampaignLaunched](_.updateId.show)
 }

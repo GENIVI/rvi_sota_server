@@ -20,6 +20,7 @@ import org.genivi.sota.core.transfer.DefaultUpdateNotifier
 import org.genivi.sota.data.{Namespaces, PackageId, UpdateStatus, Uuid}
 import org.genivi.sota.http.NamespaceDirectives.defaultNamespaceExtractor
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.genivi.sota.messaging.MessageBusPublisher
 import org.scalacheck.Gen
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
@@ -39,8 +40,11 @@ class CampaignResourceSpec extends FunSuite
 
   val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
 
+  val messageBus = MessageBusPublisher.ignore
+
   val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
-  val service = new CampaignResource(defaultNamespaceExtractor, deviceRegistry, updateService)(db, system)
+  val service =
+    new CampaignResource(defaultNamespaceExtractor, deviceRegistry, updateService, messageBus)(db, system)
 
   object Resource {
     def uri(pathSuffixes: String*): Uri = {

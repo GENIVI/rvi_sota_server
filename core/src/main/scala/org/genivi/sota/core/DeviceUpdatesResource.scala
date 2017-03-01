@@ -37,6 +37,7 @@ import UpdateSpec._
 import org.genivi.sota.messaging.Messages.BandwidthUsage
 import org.genivi.sota.rest.ResponseConversions._
 import MessageBusPublisher._
+import org.genivi.sota.core.campaigns.CampaignLauncher
 
 import scala.concurrent.Future
 
@@ -188,6 +189,7 @@ class DeviceUpdatesResource(db: Database,
   def queueDeviceUpdate(ns: Namespace, device: Uuid): Route = {
     entity(as[PackageId]) { packageId =>
       val result = updateService.queueDeviceUpdate(ns, device, packageId).map { case (ur, us, updateTime) =>
+        CampaignLauncher.sendMsg(ns, Set(device), packageId, Uuid.fromJava(ur.id), messageBus)
         ur.toResponse((us.status, packageId, updateTime))
       }
       complete(result)

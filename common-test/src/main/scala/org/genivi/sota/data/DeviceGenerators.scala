@@ -20,8 +20,9 @@ trait DeviceGenerators {
   } yield DeviceName(name.mkString)
 
   val genDeviceId: Gen[DeviceId] = for {
-    id <- Gen.identifier
-  } yield DeviceId(id)
+    size <- Gen.choose(10, 100)
+    name <- Gen.containerOfN[Seq, Char](size, Gen.alphaNumChar)
+  } yield DeviceId(name.mkString)
 
   val genDeviceType: Gen[DeviceType] = for {
     t <- Gen.oneOf(DeviceType.values.toSeq)
