@@ -85,18 +85,6 @@ paths:
       responses:
         200:
           description: OK
-  /devices/{uuid}/ping:
-    post:
-      description: Update the last seen time for a device
-      parameters:
-      - name: uuid
-        description: The uuid of an existing device object
-        in: path
-        required: true
-        type: string
-      responses:
-        200:
-          description: OK
   /mydevice/{uuid}/packages:
     put:
       description: |

@@ -34,12 +34,13 @@ import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.core.data.client.PendingUpdateRequest._
 import UpdateSpec._
-import org.genivi.sota.messaging.Messages.BandwidthUsage
+import org.genivi.sota.messaging.Messages.{BandwidthUsage, DeviceSeen}
 import org.genivi.sota.rest.ResponseConversions._
 import MessageBusPublisher._
 import org.genivi.sota.core.campaigns.CampaignLauncher
 
 import scala.concurrent.Future
+import scala.async.Async._
 
 class DeviceUpdatesResource(db: Database,
                             resolverClient: ExternalResolverClient,
@@ -65,16 +66,19 @@ class DeviceUpdatesResource(db: Database,
 
   protected lazy val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
 
-  def logDeviceSeen(id: Uuid): Directive0 = {
-    val f = deviceRegistry.updateLastSeen(id)
-    onComplete(f).flatMap(_ => pass)
-  }
+  private def sendDeviceSeen(id: Uuid): Future[Unit] =
+    async {
+      val namespace = await(deviceRegistry.fetchMyDevice(id).map(_.namespace))
+      await(messageBus.publishSafe(DeviceSeen(namespace, id, Instant.now())))
+    }
 
-  def updateSystemInfo(id: Uuid): Route = {
+  def logDeviceSeen(id: Uuid): Directive0 =
+    onComplete(sendDeviceSeen(id)).flatMap(_ => pass)
+
+  def updateSystemInfo(id: Uuid): Route =
     entity(as[Json]) { json =>
       complete(deviceRegistry.updateSystemInfo(id,json))
     }
-  }
 
   /**
     * An ota client PUT a list of packages to record they're installed on a device, overwriting any previous such list.
@@ -85,8 +89,7 @@ class DeviceUpdatesResource(db: Database,
         .update(id, ids, resolverClient)
         .flatMap { _ =>
           //ignore failures here as the actual work has been done in update()
-          deviceRegistry
-            .updateLastSeen(id)
+          sendDeviceSeen(id)
             .recover { case e =>
               log.error(e, "Could not update device last seen")
               Future.successful(())

@@ -14,34 +14,42 @@ import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.data._
 import org.genivi.sota.device_registry.common.PackageStat
+import org.genivi.sota.device_registry.daemon.DeviceSeenListener
 import org.genivi.sota.device_registry.db.DeviceRepository
 import org.genivi.sota.device_registry.db.InstalledPackages.{DevicesCount, InstalledPackage}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.genivi.sota.messaging.MessageBusPublisher
+import org.genivi.sota.messaging.Messages.DeviceSeen
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Gen
+import org.scalatest.concurrent.ScalaFutures
 
 
 /**
  * Spec for DeviceRepository REST actions
  */
-class DeviceResourceSpec extends ResourcePropSpec {
+class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
 
   import Device._
   import GeneratorOps._
 
   private val deviceNumber = DeviceRepository.defaultLimit + 10
+  private implicit val exec = system.dispatcher
+  private val publisher = DeviceSeenListener.action(MessageBusPublisher.ignore)(_)
 
   def isRecent(time: Option[Instant]): Boolean = time match {
     case Some(t) => t.isAfter(Instant.now.minus(3, ChronoUnit.MINUTES))
     case None => false
   }
 
+  private def sendDeviceSeen(uuid: Uuid, lastSeen: Instant = Instant.now()): Unit =
+      publisher(DeviceSeen(defaultNs, uuid, Instant.now())).futureValue
+
   property("GET, PUT, DELETE, and POST '/ping' request fails on non-existent device") {
     forAll { (uuid: Uuid, device: DeviceT, json: Json) =>
       fetchDevice(uuid)          ~> route ~> check { status shouldBe NotFound }
       updateDevice(uuid, device) ~> route ~> check { status shouldBe NotFound }
       deleteDevice(uuid)         ~> route ~> check { status shouldBe NotFound }
-      devicePing(uuid)           ~> route ~> check { status shouldBe NotFound }
     }
   }
 
@@ -153,9 +161,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
 
       val uuid: Uuid = createDeviceOk(devicePre)
 
-      devicePing(uuid) ~> route ~> check {
-        status shouldBe OK
-      }
+      sendDeviceSeen(uuid)
 
       fetchDevice(uuid) ~> route ~> check {
         val devicePost: Device = responseAs[Device]
@@ -163,7 +169,6 @@ class DeviceResourceSpec extends ResourcePropSpec {
         devicePost.lastSeen should not be None
         isRecent(devicePost.lastSeen) shouldBe true
       }
-
       deleteDeviceOk(uuid)
     }
   }
@@ -203,9 +208,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
 
       val uuid: Uuid = createDeviceOk(devicePre)
 
-      devicePing(uuid) ~> route ~> check {
-        status shouldBe OK
-      }
+      sendDeviceSeen(uuid)
 
       fetchDevice(uuid) ~> route ~> check {
         val firstDevice = responseAs[Device]
@@ -232,9 +235,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
       val uuid: Uuid = createDeviceOk(devicePre)
       val end = start.plusHours(1)
 
-      devicePing(uuid) ~> route ~> check {
-        status shouldBe OK
-      }
+      sendDeviceSeen(uuid)
 
       getActiveDeviceCount(start, end) ~> route ~> check {
         responseAs[ActiveDeviceCount].deviceCount shouldBe 1
@@ -269,9 +270,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
 
       val uuid: Uuid = createDeviceOk(d1)
 
-      devicePing(uuid) ~> route ~> check {
-        status shouldBe OK
-      }
+      sendDeviceSeen(uuid)
 
       updateDevice(uuid, d2) ~> route ~> check {
         status shouldBe OK

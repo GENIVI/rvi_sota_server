@@ -7,7 +7,6 @@ package org.genivi.sota.common
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.Json
-import java.time.Instant
 
 import org.genivi.sota.client.NoContent
 import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
@@ -42,10 +41,6 @@ trait DeviceRegistry {
   def fetchByDeviceId
     (ns: Namespace, deviceId: DeviceId)
     (implicit ec: ExecutionContext): Future[Device]
-
-  def updateLastSeen
-    (uuid: Uuid, seenAt: Instant = Instant.now)
-    (implicit ec: ExecutionContext): Future[NoContent]
 
   def updateSystemInfo
     (uuid: Uuid, json: Json)

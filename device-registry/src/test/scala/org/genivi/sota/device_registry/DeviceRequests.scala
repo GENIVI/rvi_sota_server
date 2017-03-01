@@ -75,9 +75,6 @@ trait DeviceRequests { self: ResourceSpec =>
       status shouldBe OK
     }
 
-  def devicePing(uuid: Uuid): HttpRequest =
-    Post(Resource.uri(api, uuid.show, "ping"))
-
   def fetchSystemInfo(uuid: Uuid): HttpRequest =
     Get(Resource.uri(api, uuid.show, "system_info"))
 

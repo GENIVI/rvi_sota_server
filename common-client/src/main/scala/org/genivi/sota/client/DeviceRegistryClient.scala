@@ -18,7 +18,6 @@ import eu.timepit.refined.string.Regex
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
-import java.time.Instant
 
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
@@ -76,10 +75,6 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri, 
         case d +: _ => FastFuture.successful(d)
         case _ => FastFuture.failed(Errors.MissingDevice)
       }
-
-  override def updateLastSeen(uuid: Uuid, seenAt: Instant = Instant.now)
-                             (implicit ec: ExecutionContext): Future[NoContent] =
-    execHttp[NoContent](HttpRequest(method = POST, uri = baseUri.withPath(mydeviceUri.path / uuid.show / "ping")))
 
   override def updateSystemInfo(uuid: Uuid, json: Json)
                                (implicit ec: ExecutionContext): Future[NoContent] =
