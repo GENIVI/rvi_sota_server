@@ -469,6 +469,8 @@ class DeviceResourceSpec extends ResourcePropSpec {
         status shouldBe OK
         responseAs[Map[Uuid, Seq[PackageId]]] should contain(uuid -> Seq(p))
       }
+
+      deleteDeviceOk(uuid)
     }
   }
 
@@ -492,5 +494,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
       r.values.contains(PackageStat(pkgVersion.head, 5)) shouldBe true
       r.values.contains(PackageStat(pkgVersion(1), 5)) shouldBe true
     }
+
+    uuids.foreach(deleteDeviceOk(_))
   }
 }
