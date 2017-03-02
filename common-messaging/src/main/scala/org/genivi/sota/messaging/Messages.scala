@@ -87,7 +87,7 @@ object Messages {
     packageUuid: UUID,
     status: String) extends BusMessage
 
-  final case class UserCreated(id: String, email: String) extends BusMessage
+  final case class UserCreated(id: String) extends BusMessage
 
   final case class UserLogin(id: String, timestamp: Instant) extends BusMessage
 
