@@ -8,7 +8,6 @@ import akka.Done
 import akka.actor.ActorSystem
 import akka.event.Logging
 import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive1, Route}
 import akka.stream._
@@ -18,7 +17,6 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
 import java.util.UUID
-import org.genivi.sota.core.DigestCalculator.DigestResult
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.data.PackageResponse._
 import org.genivi.sota.core.db._
@@ -65,7 +63,7 @@ class PackagesResource(updateService: UpdateService,
   private[this] val log = Logging.getLogger(system, "org.genivi.sota.core.PackagesResource")
 
   val packageStorageOp: PackageStorageOp = new PackageStorage().store _
-  lazy val storagePipeline = new StoragePipeline(updateService, packageStorageOp)
+  lazy val storagePipeline = new StoragePipeline(updateService)
 
   /**
     * An ota client GET a Seq of [[Package]] either from regex search, or from table scan.
@@ -118,11 +116,13 @@ class PackagesResource(updateService: UpdateService,
     parameters('description.?, 'vendor.?, 'signature.?) { (description, vendor, signature) =>
       fileUpload("file") { case (_, file) =>
 
-        val newPkg = (uri: Uri, size: Long, digest: DigestResult) =>
-          Package(ns, UUID.randomUUID(), pid, uri, size, digest, description, vendor, signature)
+        val action = for {
+          (uri, size, digest) <- packageStorageOp(pid, ns.get, file)
+          pkg = Package(ns, UUID.randomUUID(), pid, uri, size, digest, description, vendor, signature)
+          _ <- storagePipeline.storePackage(pkg)
+        } yield ()
 
-        val storePkgF = storagePipeline.storePackage(ns, pid, file, newPkg)
-        completeOrRecoverWith(storePkgF.map(_ => StatusCodes.NoContent)) { ex =>
+        completeOrRecoverWith(action.map(_ => StatusCodes.NoContent)) { ex =>
           onComplete(drainStream(file))(_ => failWith(ex))
         }
       }
