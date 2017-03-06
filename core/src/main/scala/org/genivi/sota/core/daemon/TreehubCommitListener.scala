@@ -61,7 +61,7 @@ class TreehubCommitListener(db: Database,
   } yield PackageId(n, v)
 
   def mkPkg(event: TreehubCommit, pid: PackageId): Package =
-      Package(event.ns, UUID.randomUUID(), pid, event.uri, event.size, event.commit, Some(event.description), None, None)
+    Package(event.ns, UUID.randomUUID(), pid, event.uri, event.size, event.commit, Some(event.description), None, None)
 
   def publishToTuf(event: TreehubCommit, pid: PackageId): Future[Unit] = for {
     hash <- Future.fromTry(event.commit.refineTry[ValidChecksum])
