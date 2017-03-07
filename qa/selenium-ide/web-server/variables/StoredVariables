@@ -11,82 +11,26 @@
 <thead>
 <tr><td rowspan="1" colspan="3">New Test</td></tr>
 </thead><tbody>
-<tr>
-	<td>randomString</td>
-	<td>16</td>
-	<td>arandomVIN</td>
-</tr>
-<!--However ${randomVIN} cannot yet be used, as it may contain illegal characters.-->
-<tr>
-	<td>echo</td>
-	<td>${arandomVIN}</td>
-	<td></td>
-</tr>
-<!--We have to remove all instances of 'I', 'O' and 'Q'-->
-<tr>
-	<td>getEval</td>
-	<td>index = 0;</td>
-	<td></td>
-</tr>
-<tr>
-	<td>while</td>
-	<td>index &lt; 47;</td>
-	<td></td>
-</tr>
+<!--Get 16 random VIN characters (alphanumeric capitals excluding Q, I, and O)-->
 <tr>
 	<td>storeEval</td>
-	<td>(function(input) {return input.replace(&quot;Q&quot;, &quot;R&quot;);})('${arandomVIN}')</td>
-	<td>arandomVIN</td>
-</tr>
-<tr>
-	<td>storeEval</td>
-	<td>(function(input) {return input.replace(&quot;O&quot;, &quot;F&quot;);})('${arandomVIN}')</td>
-	<td>arandomVIN</td>
-</tr>
-<tr>
-	<td>storeEval</td>
-	<td>(function(input) {return input.replace(&quot;I&quot;, &quot;K&quot;);})('${arandomVIN}')</td>
-	<td>arandomVIN</td>
-</tr>
-<tr>
-	<td>storeEval</td>
-	<td>index</td>
-	<td>value</td>
+	<td>(function() {var VIN = ''; var chars = '01234567890ABCDEFGHJKLMNPRSTUVWXYZ'.split( '' ); for (var i = 0 ; i &lt; 16; i++ ) VIN +=&nbsp;&nbsp;chars[ Math.floor( Math.random() * chars.length ) ];return VIN;})</td>
+	<td>randomVINprefix</td>
 </tr>
 <tr>
 	<td>echo</td>
-	<td>${value}</td>
-	<td></td>
-</tr>
-<tr>
-	<td>getEval</td>
-	<td>index++;</td>
-	<td></td>
-</tr>
-<tr>
-	<td>endWhile</td>
-	<td></td>
+	<td>${randomVINprefix}</td>
 	<td></td>
 </tr>
 <!--...now make it 17 digits, and it's good to go-->
 <tr>
-	<td>store</td>
-	<td>1</td>
-	<td>x</td>
-</tr>
-<tr>
-	<td>store</td>
-	<td>2</td>
-	<td>z</td>
-</tr>
-<tr>
 	<td>storeEval</td>
-	<td>storedVars['arandomVIN']+storedVars['x']</td>
+	<td>&quot;${randomVINprefix}&quot; + &quot;1&quot;</td>
 	<td>randomVIN</td>
 </tr>
 <tr>
 	<td>storeEval</td>
-	<td>storedVars['arandomVIN']+storedVars['z']</td>
+	<td>&quot;${randomVINprefix}&quot; + &quot;2&quot;</td>
 	<td>randomVIN2</td>
 </tr>
 <tr>

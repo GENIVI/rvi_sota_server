@@ -1,0 +1,5 @@
+= rvi_sota_server QA Toolkit
+
+This directory contains Selenium tests for the Web UI, and a Postman collection for exercising the APIs of Core, Device Registry, and Resolver. These tests are indended for human consumption, and QA verification of changes once they're in master but before they're deployed to stable; there are also unit tests and other automated tests in the codebase which run on CI before branches are merged.
+
+These tools are published as open source here, in the hope that they'll be useful for debugging, and so that they stay up to date with the codebase. If you find anything in the test suites that needs to be updated, pull requests are very welcome.
