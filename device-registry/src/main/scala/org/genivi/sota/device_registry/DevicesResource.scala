@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.device_registry
 
-import java.time.{Instant, OffsetDateTime}
+import java.time.OffsetDateTime
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.headers.Location
@@ -22,7 +22,7 @@ import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
-import org.genivi.sota.messaging.Messages.{DeviceActivated, DeviceCreated, DeviceDeleted, DeviceSeen}
+import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted}
 import org.genivi.sota.rest.Validation._
 import org.genivi.sota.unmarshalling.AkkaHttpUnmarshallingSupport._
 import slick.driver.MySQLDriver.api._
@@ -97,19 +97,6 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
   def getGroupsForDevice(uuid: Uuid): Route =
     complete(db.run(GroupMemberRepository.listGroupsForDevice(uuid)))
 
-  def updateLastSeen(uuid: Uuid): Route = {
-    val now = Instant.now()
-
-    val f = db.run(DeviceRepository.updateLastSeen(uuid, now))
-      .andThen {
-        case scala.util.Success((activated, ns)) =>
-          messageBus.publish(DeviceSeen(ns, uuid, now))
-          if (activated) messageBus.publish(DeviceActivated(ns, uuid, now))
-      }
-
-    complete(f)
-  }
-
   def updateInstalledSoftware(device: Uuid): Route = {
     entity(as[Seq[PackageId]]) { installedSoftware =>
       val f = db.run(InstalledPackages.setInstalled(device, installedSoftware.toSet))
@@ -164,9 +151,6 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
         (scope.delete & pathEnd) {
           deleteDevice(ns, uuid)
         } ~
-        (scope.post & path("ping")) {
-          updateLastSeen(uuid)
-        } ~
         (scope.get & pathEnd) {
           fetchDevice(uuid)
         } ~
@@ -188,9 +172,6 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
 
   def mydeviceRoutes: Route = namespaceExtractor { authedNs => // Don't use this as a namespace
     (pathPrefix("mydevice") & extractUuid) { uuid =>
-      (post & path("ping") & authedNs.oauthScope(s"ota-core.${uuid.show}.write")) {
-        updateLastSeen(uuid)
-      } ~
       (get & pathEnd & authedNs.oauthScopeReadonly(s"ota-core.${uuid.show}.read")) {
         fetchDevice(uuid)
       } ~

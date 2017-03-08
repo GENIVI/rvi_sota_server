@@ -33,7 +33,7 @@ import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import cats.syntax.show._
-import org.genivi.sota.messaging.Messages.BandwidthUsage
+import org.genivi.sota.messaging.Messages.{BandwidthUsage, DeviceSeen}
 
 class DeviceUpdatesResourceSpec extends FunSuite
   with ShouldMatchers
@@ -151,16 +151,19 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
   // Deprecated, see newer 'mydevice' test below
   test("sets device last seen when device asks for updates") {
+    system.eventStream.subscribe(testActor, classOf[DeviceSeen])
     val now = Instant.now().minusSeconds(10)
 
     Get(deviceUri) ~> service.route ~> check {
       status shouldBe StatusCodes.OK
       responseAs[List[UUID]] should be(empty)
-
-      val device = fakeDeviceRegistry.fetchMyDevice(deviceUuid).futureValue
-      device.lastSeen shouldBe defined
-      device.lastSeen.get.isAfter(now) shouldBe true
     }
+
+    expectMsgPF(10.seconds, s"device seen message is sent for $deviceUuid") {
+      case m@DeviceSeen(_, device, lastSeen)
+        if device == deviceUuid && lastSeen.isAfter(now) => m
+    }
+    system.eventStream.unsubscribe(testActor, classOf[DeviceSeen])
   }
 
   // Deprecated, see newer 'mydevice' test below
@@ -534,17 +537,21 @@ class DeviceUpdatesResourceSpec extends FunSuite
   }
 
   test("Device GET updates sets last-seen") {
+    system.eventStream.subscribe(testActor, classOf[DeviceSeen])
+
     val now = Instant.now().minusSeconds(10)
 
     val uri = Uri.Empty.withPath(mydeviceUri.path / deviceUuid.underlying.get / "updates")
     Get(uri) ~> service.route ~> check {
       status shouldBe StatusCodes.OK
       responseAs[List[UUID]] should be(empty)
-
-      val device = fakeDeviceRegistry.fetchMyDevice(deviceUuid).futureValue
-      device.lastSeen shouldBe defined
-      device.lastSeen.get.isAfter(now) shouldBe true
     }
+
+    expectMsgPF(10.seconds, s"device seen message is sent for $deviceUuid") {
+      case m@DeviceSeen(_, device, lastSeen)
+        if device == deviceUuid && lastSeen.isAfter(now) => m
+    }
+    system.eventStream.unsubscribe(testActor, classOf[DeviceSeen])
   }
 
   test("Device POST update report set an UpdateSpec status") {

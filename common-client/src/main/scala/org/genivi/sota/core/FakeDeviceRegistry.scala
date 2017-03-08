@@ -94,7 +94,9 @@ class FakeDeviceRegistry(namespace: Namespace)
       case None => FastFuture.failed(MissingDevice)
     }
 
-  override def updateLastSeen(uuid: Uuid, seenAt: Instant = Instant.now)
+  //This method only exists to facilitate testing, in production, this functionality
+  //is performed by message passing
+  def updateLastSeen(uuid: Uuid, seenAt: Instant = Instant.now)
   (implicit ec: ExecutionContext): Future[NoContent] = {
     devices.asScala.get(uuid).foreach { d =>
       devices.put(uuid, d.copy(lastSeen = Option(seenAt)))
