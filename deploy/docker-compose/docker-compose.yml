@@ -28,9 +28,9 @@ services:
     expose:
      - 8083
     environment:
-     HOST: 0.0.0.0
+     BIND_HOST: 0.0.0.0
      DEVICE_REGISTRY_DB_URL: "jdbc:mariadb://mysql:3306/sota_device_registry"
-     DEVICE_REGISTRY_DB_MIGRATE: 'true'
+     DB_MIGRATE: 'true'
      NATS_HOST: 'nats'
      NATS_PORT: '4222'
      DB_ALIVE_URL: "mysql:3306"
@@ -47,10 +47,11 @@ services:
       - nats
       - device-registry
     environment:
-      HOST: 0.0.0.0
+      BIND_HOST: 0.0.0.0
       RESOLVER_DB_URL: "jdbc:mariadb://mysql:3306/sota_resolver"
-      RESOLVER_DB_MIGRATE: 'true'
-      DEVICE_REGISTRY_API_URI: "http://device-registry:8083"
+      DB_MIGRATE: 'true'
+      DEVICE_REGISTRY_HOST: "device-registry"
+      DEVICE_REGISTRY_PORT: "8083"
       NATS_HOST: 'nats'
       NATS_PORT: '4222'
       PACKAGES_VERSION_FORMAT: ".+"
@@ -69,15 +70,17 @@ services:
       - device-registry
       - resolver
     environment:
-      HOST: 0.0.0.0
+      BIND_HOST: 0.0.0.0
       CORE_DB_URL: "jdbc:mariadb://mysql:3306/sota_core"
-      CORE_DB_MIGRATE: 'true'
       CORE_INTERACTION_PROTOCOL: 'none'
       DB_ALIVE_URL: "mysql:3306"
-      DEVICE_REGISTRY_API_URI: "http://device-registry:8083"
+      DB_MIGRATE: 'true'
+      DEVICE_REGISTRY_HOST: "device-registry"
+      DEVICE_REGISTRY_PORT: "8083"
       NATS_HOST: 'nats'
       NATS_PORT: '4222'
-      RESOLVER_API_URI: "http://resolver:8081"
+      SOTA_RESOLVER_HOST: "resolver"
+      SOTA_RESOLVER_PORT: "8081"
       PACKAGES_VERSION_FORMAT: ".+"
       AUTH_PROTOCOL: "none"
 
@@ -100,12 +103,15 @@ services:
     expose:
       - 9000
     environment:
-      CORE_API_URI: "http://core:8080"
-      DEVICE_REGISTRY_API_URI: "http://device-registry:8083"
       NATS_HOST: 'nats'
       NATS_PORT: '4222'
-      RESOLVER_API_URI: "http://resolver:8081"
       PLAY_CRYPTO_SECRET: "YM5B6o<ywKn4tTyA;tOZ<2xUEajF4DDi=O/PPm1Q^w2LqtKISd9oqYT6b>>C1gQa"
+      DEVICE_REGISTRY_HOST: "device-registry"
+      DEVICE_REGISTRY_PORT: "8083"
+      SOTA_CORE_HOST: "core"
+      SOTA_CORE_PORT: "8080"
+      SOTA_RESOLVER_HOST: "resolver"
+      SOTA_RESOLVER_PORT: "8081"
       LDAP_HOST: "ldapserver"
       LDAP_PORT: "389"
       LDAP_AUTHN_ID: "cn=admin,dc=genivi,dc=org"

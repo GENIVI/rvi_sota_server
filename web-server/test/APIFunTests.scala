@@ -55,7 +55,6 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   val testComponentDescription = "A radio component"
   val testComponentDescriptionAlt = "A satellite navigation component"
   val webserverHost = configuration.getString("test.webserver.host").get
-  //val webserverPort = 80 //this isn't likely to change so hardcode it instead of using an env var
   val webserverPort = port
 
   var testId    : Option[String] = None

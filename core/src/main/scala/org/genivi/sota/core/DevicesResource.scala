@@ -17,7 +17,7 @@ import eu.timepit.refined.string._
 import io.circe.generic.auto._
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.data._
-import org.genivi.sota.core.resolver.{ConnectivityClient, ExternalResolverClient}
+import org.genivi.sota.core.resolver.ConnectivityClient
 import org.genivi.sota.data.{Device, DeviceUpdateStatus, Namespace, Uuid}
 import org.genivi.sota.http.{AuthedNamespaceScope, ErrorHandler, Scopes}
 import org.genivi.sota.http.Errors.MissingEntity
@@ -43,7 +43,6 @@ case class DeviceSearchResult(
                         )
 
 class DevicesResource(db: Database, client: ConnectivityClient,
-                      resolverClient: ExternalResolverClient,
                       deviceRegistry: DeviceRegistry,
                       namespaceExtractor: Directive1[AuthedNamespaceScope])
                      (implicit system: ActorSystem, mat: ActorMaterializer) {

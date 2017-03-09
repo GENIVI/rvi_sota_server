@@ -48,10 +48,9 @@ class DeviceResourceSpec extends FunSuite
   val serverTransport = HttpTransport( rviUri )
   implicit val rviClient = new JsonRpcRviClient( serverTransport.requestTransport, system.dispatcher)
 
-  val fakeResolver = new FakeExternalResolver()
   val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
 
-  lazy val service = new DevicesResource(db, rviClient, fakeResolver, deviceRegistry, defaultNamespaceExtractor)
+  lazy val service = new DevicesResource(db, rviClient, deviceRegistry, defaultNamespaceExtractor)
 
   val BasePath = Path("/devices_info")
 
