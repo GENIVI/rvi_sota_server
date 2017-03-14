@@ -26,6 +26,15 @@ object Messages {
 
   val partitionPrefixSize = 256
 
+  final case class UriWithSimpleEncoding(uri: Uri)
+
+  object UriWithSimpleEncoding {
+    implicit val uriWithSimpleEncoding: Encoder[UriWithSimpleEncoding] =
+      Encoder[String].contramap(_.uri.toString)
+    implicit val uriWithSimpleDecoding: Decoder[UriWithSimpleEncoding] =
+      Decoder[String].map(Uri.apply).map(UriWithSimpleEncoding.apply)
+  }
+
   final case class DeviceSeen(
     namespace: Namespace,
     uuid: Uuid,
@@ -95,8 +104,9 @@ object Messages {
                                       device: Uuid,
                                       status: DeviceStatus) extends BusMessage
 
-  final case class CampaignLaunched(namespace: Namespace, updateId: Uuid, devices: Set[Uuid], pkgUri: Uri,
-                                    pkg: PackageId, pkgSize: Long, pkgChecksum: String) extends BusMessage
+  final case class CampaignLaunched(namespace: Namespace, updateId: Uuid, devices: Set[Uuid],
+                                    pkgUri: UriWithSimpleEncoding, pkg: PackageId,
+                                    pkgSize: Long, pkgChecksum: String) extends BusMessage
 
   implicit class StreamNameOp[T <: Class[_]](v: T) {
     def streamName: String = {

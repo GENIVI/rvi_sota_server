@@ -12,7 +12,7 @@ import org.genivi.sota.core.data.{Campaign, UpdateRequest}
 import org.genivi.sota.core.db.{Campaigns, Packages, UpdateSpecs}
 import org.genivi.sota.data.{Interval, Namespace, PackageId, Uuid}
 import org.genivi.sota.messaging.MessageBusPublisher
-import org.genivi.sota.messaging.Messages.CampaignLaunched
+import org.genivi.sota.messaging.Messages.{CampaignLaunched, UriWithSimpleEncoding}
 import org.slf4j.LoggerFactory
 import slick.driver.MySQLDriver.api._
 
@@ -47,7 +47,8 @@ object CampaignLauncher {
     import scala.async.Async._
     async {
       val pkg = await(db.run(Packages.byId(namespace, pkgId)))
-      val msg = CampaignLaunched(namespace, updateId, devices, pkg.uri, pkgId, pkg.size, pkg.checkSum)
+      val msg = CampaignLaunched(namespace, updateId, devices, UriWithSimpleEncoding(pkg.uri),
+                                 pkgId, pkg.size, pkg.checkSum)
       await(messageBus.publish(msg))
     }
   }
