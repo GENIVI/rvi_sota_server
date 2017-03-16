@@ -7,7 +7,7 @@ order: 4
 ---
 :icons: font
 
-SOTA employs a microservice architecture, allowing piecemeal replacement of parts, depending on your project's needs. Here we provide a brief explanation of each of the microservices that comprise SOTA, and how they fit together. Each microservice exposes its functionality through a REST API.
+SOTA employs a microservice architecture, delivering excellent security and stability while allowing piecemeal replacement of parts, depending on your project's needs. Here we provide a brief explanation of each of the microservices that comprise SOTA, and how they fit together. Each microservice exposes its functionality through a REST API.
 
 SOTA Core is what actually handles the distribution of software updates to vehicles. It manages per-vehicle download queues, creation and persistent storage of the state of OTA update campaigns, and distribution of software packages to vehicles.
 
@@ -21,26 +21,15 @@ In summary, the system looks a bit like this:
 
 image:../images/System-Architecture-Diagram.svg[System Architecture Diagram]
 
-RVI clients would interact directly with Core's RVI node (note: needs to be deployed separately), while HTTPS clients interact with Core directly. For the moment, however, setting up authentication is out of scope for this documentation; for more information we suggest link:https://github.com/genivi/rvi_sota_server/tree/master/common/src/main/scala/org/genivi/sota/http[looking at the code directly].
+RVI clients interact with their local RVI node (or RVI library), which then interacts with Core's RVI node. These nodes are entirely separate from RVI SOTA itself, and need to be deployed separately. We do provide link:../doc/deployment-with-dockercompose.html[docker containers] for quickly deploying and testing RVI nodes, however. HTTP clients interact with Core directly.
 
-An ER diagram of the databases for core, resolver, and device registry can be found link:../images/ER-Diagram.svg[here].
+For the moment, setting up authentication for HTTP clients is out of scope for this documentation; for more information we suggest link:https://github.com/genivi/rvi_sota_server/tree/master/common/src/main/scala/org/genivi/sota/http[looking at the code directly].
 
-== Context Diagrams
-
-RVI SOTA is designed with security in mind. You can read a lot more about our security processes on the link:../doc/contributing.html[contributing], link:../sec/whitelisted-interactions.html[whitelisted interactions], and link:../sec/security-threats-mitigations.html[security threats/mitigations] pages, but for a broad view of how the architectural design of the project helps keep it secure, you can take a look at these context diagrams.
-
-=== Level 0
-
-image:../images/Level-0-Context-Diagram.svg[Level 0 Context Diagram]
-
-=== Level 1 SOTA Server
-
-image:../images/Level-1-SOTA-Server-Context-Diagram.svg[Level 1 Context Diagram]
 
 == Requirements
 
-You can find a complete list of the link:../ref/requirements.html[software requirements here]
+You can find list of the requirements that drove the original iteration of rvi_sota_server link:../ref/requirements.html[here].
 
 == Dependencies
 
-You can find a complete list of link:../ref/dependencies.html[software dependencies here]
+You can find a complete list of software dependencies link:../ref/dependencies.html[here].

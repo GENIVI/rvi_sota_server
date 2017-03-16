@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://localhost:9000/" />
+<title>Updates</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">Updates</td></tr>
+</thead><tbody>
+<tr>
+	<td>click</td>
+	<td>//a[contains(@href, '#/updates')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>css=td</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/table/thead/tr/td[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/table/thead/tr/td[3]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/table/thead/tr/td[5]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//a[contains(@href, '#/packages')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=Create Campaign</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=priority</td>
+	<td>1</td>
+</tr>
+<tr>
+	<td>storeEval</td>
+	<td>var d= new Date(); var m=((d.getMonth()+1)&lt;10)?'0'+(d.getMonth()+1):(d.getMonth()+1); d.getFullYear()+&quot;-&quot;+m+&quot;-&quot;+d.getDate();</td>
+	<td>date</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=startAfterDate</td>
+	<td>${date}</td>
+</tr>
+<tr>
+	<td>store</td>
+	<td>javascript{(new Date().getHours()+&quot;:&quot;+new Date().getMinutes()+&quot;:&quot;+new Date().getSeconds())}</td>
+	<td>time</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=startAfterTime</td>
+	<td>${time}</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=endBeforeDate</td>
+	<td>${date}</td>
+</tr>
+<tr>
+	<td>store</td>
+	<td>javascript{((new Date().getHours() + 1)+&quot;:&quot;+new Date().getMinutes()+&quot;:&quot;+new Date().getSeconds())}</td>
+	<td>time</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=endBeforeTime</td>
+	<td>${time}</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button.btn.btn-secondary</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=signature</td>
+	<td>UpdateSignature</td>
+</tr>
+<tr>
+	<td>storeValue</td>
+	<td>name=updateId</td>
+	<td>updateId</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button.btn.btn-primary</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=Updates</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>css=tbody &gt; tr &gt; td</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/table/tbody/tr/td[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/table/tbody/tr/td[3]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/table/tbody/tr/td[4]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/table/tbody/tr/td[5]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/table/tbody/tr/td[6]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//a[contains(@href, '#/updates/${updateId}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyLocation</td>
+	<td>${localEnv}/#/updates/${updateId}</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//a[contains(@href, '#/vehicles')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=${randomVIN}</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//div[@id='panel1']/div</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='panel1']/div[2]/table/tbody/tr/td</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyText</td>
+	<td>link=packageA</td>
+	<td>${pA}</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//a[contains(@href, '#/vehicles')]</td>
+	<td></td>
+</tr>
+</tbody></table>
+</body>
+</html>

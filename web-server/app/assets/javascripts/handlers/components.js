@@ -47,8 +47,8 @@ define(function(require) {
           case 'get-vins-for-component':
             sendRequest.doGet('/api/v1/resolver/devices?component=' + payload.partNumber )
               .success(function(vehicles) {
-                var formattedVehicles = _.map(vehicles, function(vehicle) {
-                  return {vin: vehicle.vin};
+                var formattedVehicles = _.map(vehicles, function(vin) {
+                  return {vin: vin};
                 });
                 db.vinsForComponent.reset(formattedVehicles);
               });

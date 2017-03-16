@@ -1,0 +1,8 @@
+version: '2'
+services:
+
+  core:
+    volumes:
+      - ${SOTA_PACKAGE_DIR}:/opt/sota-core/packages
+    environment:
+      PACKAGE_STORAGE_PATH: "/opt/sota-core/packages/"

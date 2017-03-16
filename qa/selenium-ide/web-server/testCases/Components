@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://localhost:9000/" />
+<title>Components</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">Components</td></tr>
+</thead><tbody>
+<tr>
+	<td>click</td>
+	<td>//a[contains(@href, '#/components')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForCondition</td>
+	<td>selenium.isElementPresent(&quot;//button&quot;)</td>
+	<td>1000</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>css=td</td>
+	<td>Part Number</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/table/thead/tr/td[2]</td>
+	<td>Description</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>name=regex</td>
+	<td>Filter field</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=partNumber</td>
+	<td>${PartNumber}</td>
+</tr>
+<tr>
+	<td>sendKeys</td>
+	<td>id=description</td>
+	<td>${Descript}</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//button[@type='submit']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyText</td>
+	<td>//a[contains(@href, '#/components/${PartNumber}')]</td>
+	<td>${PartNumber}</td>
+</tr>
+<tr>
+	<td>sendKeys</td>
+	<td>name=regex</td>
+	<td>NotThePartNumber</td>
+</tr>
+<tr>
+	<td>verifyElementNotPresent</td>
+	<td>css=tbody &gt; tr &gt; td</td>
+	<td></td>
+</tr>
+<tr>
+	<td>sendKeys</td>
+	<td>name=regex</td>
+	<td>${KEY_BACKSPACE}${KEY_BACKSPACE}${KEY_BACKSPACE}${KEY_BACKSPACE}${KEY_BACKSPACE}${KEY_BACKSPACE}${KEY_BACKSPACE}${KEY_BACKSPACE}${KEY_BACKSPACE}${KEY_BACKSPACE}${KEY_BACKSPACE}${KEY_BACKSPACE}${KEY_BACKSPACE}${KEY_BACKSPACE}${KEY_BACKSPACE}${KEY_BACKSPACE}</td>
+</tr>
+<tr>
+	<td>sendKeys</td>
+	<td>name=regex</td>
+	<td>${PartNumber}</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>css=tbody &gt; tr &gt; td</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//a[contains(@href, '#/components/${PartNumber}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div/div/table/tbody/tr/td[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div/div/table/tbody/tr[2]/td[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div/div/table/tbody/tr[3]/td[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=div.panel-heading.pointer</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>css=div.panel-body</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>name=delete-component</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementNotPresent</td>
+	<td>css=tbody &gt; tr &gt; td</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForCondition</td>
+	<td>selenium.isElementPresent(&quot;//button&quot;)</td>
+	<td>1000</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=partNumber</td>
+	<td>${PartNumber}</td>
+</tr>
+<tr>
+	<td>sendKeys</td>
+	<td>id=description</td>
+	<td>${Descript}</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//button[@type='submit']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyText</td>
+	<td>//a[contains(@href, '#/components/${PartNumber}')]</td>
+	<td>${PartNumber}</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//a[contains(@href, '#/vehicles')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=${randomVIN}</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/div[2]/div/div/button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/table[3]/thead/tr/td</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>css=div.form-group</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=partNumber</td>
+	<td>${PartNumber}</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=div.form-group &gt; button.btn.btn-primary</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>link=${PartNumber}</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>css=tbody &gt; tr &gt; td</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=${PartNumber}</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyLocation</td>
+	<td>${localEnv}/#/components/${PartNumber}</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>css=div.panel-heading.pointer</td>
+	<td></td>
+</tr>
+<!--verify ${randomVIN} device is visible in the list-->
+</tbody></table>
+</body>
+</html>

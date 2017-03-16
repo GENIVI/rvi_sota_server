@@ -26,16 +26,15 @@ trait ResourceSpec extends
     with DatabaseSpec
     with DeviceGenerators
     with DeviceRequests
-    with GroupInfoGenerators
+    with GroupGenerators
     with GroupRequests
+    with PublicCredentialsRequests
     with PackageIdGenerators
     with Matchers
     with SimpleJsonGenerator
     with UuidGenerator {
 
   self: Suite =>
-
-  implicit val _db = db
 
   implicit val routeTimeout: RouteTestTimeout =
     RouteTestTimeout(10.second)

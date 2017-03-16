@@ -4,7 +4,7 @@ import java.util.UUID
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.ContentTypes._
-import akka.http.scaladsl.model.{HttpEntity, HttpResponse, StatusCodes, Uri}
+import akka.http.scaladsl.model.{HttpEntity, HttpResponse, Uri}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
 import cats.data.Xor
@@ -16,7 +16,7 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 
 
@@ -27,21 +27,8 @@ class ExternalResolverClientSpec extends PropSpec with Matchers with BeforeAndAf
 
   implicit val system = ActorSystem("test")
   implicit val materializer = ActorMaterializer()
-  implicit val excecutionCtx = ExecutionContext.Implicits.global
+  implicit val executionCtx = ExecutionContext.Implicits.global
   val client = new DefaultExternalResolverClient( Uri.Empty, Uri.Empty, Uri.Empty, Uri.Empty )
-
-  property("handles failed put requests") {
-    val error = new Throwable("ups")
-    ScalaFutures.whenReady( client.handlePutResponse( Future.failed( error ) ).failed ) { e =>
-      e shouldBe ExternalResolverRequestFailed( error )
-    }
-  }
-
-  property("handles unexpected status codes") {
-    ScalaFutures.whenReady( client.handlePutResponse( Future.successful( HttpResponse(StatusCodes.BadRequest) ) ).failed ) { e =>
-      e shouldBe a [ExternalResolverRequestFailed]
-    }
-  }
 
   val id0 = Uuid(Refined.unsafeApply(UUID.randomUUID().toString))
 

@@ -2,9 +2,10 @@ package org.genivi.sota.core.jsonrpc
 
 import io.circe._
 import io.circe.syntax._
-import org.genivi.sota.core.DefaultPatience
+import org.genivi.sota.DefaultPatience
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.concurrent.ScalaFutures
+
 import scala.concurrent.Future
 import scala.util.control.NoStackTrace
 

@@ -9,7 +9,6 @@ import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 import org.genivi.sota.core.data.Package
-import org.genivi.sota.core.db.Packages.LiftedPackageId
 import org.genivi.sota.http.Errors
 import org.genivi.sota.http.Errors.MissingEntity
 import org.genivi.sota.rest.GenericResponseEncoder
@@ -30,9 +29,9 @@ object BlacklistedPackageResponse {
 
 object BlacklistedPackages {
 
+  import org.genivi.sota.refined.PackageIdDatabaseConversions._
   import org.genivi.sota.refined.SlickRefined._
   import org.genivi.sota.db.SlickExtensions._
-  import Packages._
 
   type BlacklistedPkgRow = (UUID, Namespace, PackageId.Name, PackageId.Version, String, Instant)
 
@@ -207,8 +206,8 @@ object BlacklistedPackages {
     } yield found
   }
 
-  def impact(namespace: Namespace, impactedDevicesFn: Set[PackageId] => Future[Map[Uuid, Seq[PackageId]]])
-            (implicit db: Database, ec: ExecutionContext): Future[Map[Uuid, Seq[PackageId]]] = {
+  def impact(namespace: Namespace, impactedDevicesFn: Set[PackageId] => Future[Map[Uuid, Set[PackageId]]])
+            (implicit db: Database, ec: ExecutionContext): Future[Map[Uuid, Set[PackageId]]] = {
     val query =  active.filter(_.namespace === namespace).map(r => LiftedPackageId(r.pkgName, r.pkgVersion)).result
     db.run(query).map(_.toSet).flatMap(impactedDevicesFn)
   }

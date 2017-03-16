@@ -72,15 +72,15 @@ define(function(require) {
               });
           break;
           case 'list-components-on-vin':
-            sendRequest.doGet('/api/v1/resolver/devices/' + payload.vin + '/component')
+            sendRequest.doGet('/api/v1/resolver/devices/' + payload.id + '/component')
               .success(function(components) {
                 db.componentsOnVin.reset(components);
               });
           break;
           case 'add-component-to-vin':
-            sendRequest.doPut('/api/v1/devices/' + payload.vin + '/components/' + payload.partNumber)
+            sendRequest.doPut('/api/v1/resolver/devices/' + payload.id + '/component/' + payload.partNumber)
               .success(function() {
-                SotaDispatcher.dispatch({actionType: 'list-components-on-vin', vin: payload.vin});
+                SotaDispatcher.dispatch({actionType: 'list-components-on-vin', id: payload.id});
               });
           break;
           case 'sync-packages-for-vin':

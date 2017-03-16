@@ -9,8 +9,9 @@ import java.util.UUID
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.server.MalformedQueryParamRejection
-import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
+import akka.http.scaladsl.testkit.ScalatestRouteTest
 import eu.timepit.refined.api.Refined
+import org.genivi.sota.DefaultPatience
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.core.data.{Package => DataPackage}
 import org.genivi.sota.core.db.Packages
@@ -24,8 +25,6 @@ import scala.concurrent.Await
 import slick.driver.MySQLDriver.api._
 import org.genivi.sota.data.{Namespaces, PackageId}
 import org.genivi.sota.http.NamespaceDirectives
-
-import scala.concurrent.duration._
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.scalatest.concurrent.PatienceConfiguration
@@ -40,25 +39,21 @@ class PackageResourceWordSpec extends WordSpec
   with DatabaseSpec
   with PatienceConfiguration
   with DefaultPatience
-  with BeforeAndAfterAll {
+  with BeforeAndAfterAll with LongRequestTimeout {
 
   import io.circe.generic.auto._
   import CirceMarshallingSupport._
   import NamespaceDirectives._
 
   val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
-  val externalResolverClient = new FakeExternalResolver()
-
-  implicit val routeTimeout: RouteTestTimeout = RouteTestTimeout(20.second)
 
   lazy val messageBusPublisher = MessageBusPublisher.ignore
 
-  implicit val defaultPatience = PatienceConfig(5.seconds, 500.millis)
   implicit val connectivity = DefaultConnectivity
 
   lazy val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
 
-  lazy val service = new PackagesResource(externalResolverClient, updateService, db, messageBusPublisher,
+  lazy val service = new PackagesResource(updateService, db, messageBusPublisher,
                                           defaultNamespaceExtractor)
 
   val testPackagesParams = List(

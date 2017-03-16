@@ -29,11 +29,6 @@ object Packages {
   import org.genivi.sota.db.Operators._
   import org.genivi.sota.db.SlickExtensions._
 
-  case class LiftedPackageId(name: Rep[PackageId.Name], version: Rep[PackageId.Version])
-
-  implicit object LiftedPackageShape extends CaseClassShape(LiftedPackageId.tupled,
-    (p: (PackageId.Name, PackageId.Version)) => PackageId(p._1, p._2))
-
   /**
    * Slick mapping definition for the Package table
    * @see [[http://slick.typesafe.com/]]
@@ -149,4 +144,12 @@ object Packages {
       .result
       .failIfNotSingle(SotaCoreErrors.MissingPackage)
   }
+
+  def usage(ns: Namespace)(implicit ec: ExecutionContext): DBIO[Long] =
+    packages
+      .filter(_.namespace === ns)
+      .map(_.size)
+      .sum
+      .result
+      .map(_.getOrElse(0L))
 }

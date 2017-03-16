@@ -4,37 +4,52 @@
  */
 package org.genivi.sota.device_registry
 
+import java.time.OffsetDateTime
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 import akka.http.scaladsl.model.StatusCodes._
+import eu.timepit.refined.api.Refined
 import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.data._
+import org.genivi.sota.device_registry.common.PackageStat
+import org.genivi.sota.device_registry.daemon.DeviceSeenListener
+import org.genivi.sota.device_registry.db.DeviceRepository
 import org.genivi.sota.device_registry.db.InstalledPackages.{DevicesCount, InstalledPackage}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.genivi.sota.messaging.MessageBusPublisher
+import org.genivi.sota.messaging.Messages.DeviceSeen
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Gen
+import org.scalatest.concurrent.ScalaFutures
 
 
 /**
  * Spec for DeviceRepository REST actions
  */
-class DeviceResourceSpec extends ResourcePropSpec {
+class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
 
   import Device._
+  import GeneratorOps._
+
+  private val deviceNumber = DeviceRepository.defaultLimit + 10
+  private implicit val exec = system.dispatcher
+  private val publisher = DeviceSeenListener.action(MessageBusPublisher.ignore)(_)
 
   def isRecent(time: Option[Instant]): Boolean = time match {
     case Some(t) => t.isAfter(Instant.now.minus(3, ChronoUnit.MINUTES))
     case None => false
   }
 
+  private def sendDeviceSeen(uuid: Uuid, lastSeen: Instant = Instant.now()): Unit =
+      publisher(DeviceSeen(defaultNs, uuid, Instant.now())).futureValue
+
   property("GET, PUT, DELETE, and POST '/ping' request fails on non-existent device") {
     forAll { (uuid: Uuid, device: DeviceT, json: Json) =>
       fetchDevice(uuid)          ~> route ~> check { status shouldBe NotFound }
       updateDevice(uuid, device) ~> route ~> check { status shouldBe NotFound }
       deleteDevice(uuid)         ~> route ~> check { status shouldBe NotFound }
-      updateLastSeen(uuid)       ~> route ~> check { status shouldBe NotFound }
     }
   }
 
@@ -146,9 +161,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
 
       val uuid: Uuid = createDeviceOk(devicePre)
 
-      updateLastSeen(uuid) ~> route ~> check {
-        status shouldBe OK
-      }
+      sendDeviceSeen(uuid)
 
       fetchDevice(uuid) ~> route ~> check {
         val devicePost: Device = responseAs[Device]
@@ -156,7 +169,6 @@ class DeviceResourceSpec extends ResourcePropSpec {
         devicePost.lastSeen should not be None
         isRecent(devicePost.lastSeen) shouldBe true
       }
-
       deleteDeviceOk(uuid)
     }
   }
@@ -191,6 +203,48 @@ class DeviceResourceSpec extends ResourcePropSpec {
     }
   }
 
+  property("First POST request on 'ping' should update 'activatedAt' field for device.") {
+    forAll { (uuid: Uuid, devicePre: DeviceT) =>
+
+      val uuid: Uuid = createDeviceOk(devicePre)
+
+      sendDeviceSeen(uuid)
+
+      fetchDevice(uuid) ~> route ~> check {
+        val firstDevice = responseAs[Device]
+
+        val firstActivation = firstDevice.activatedAt
+        firstActivation should not be None
+        isRecent(firstActivation) shouldBe true
+
+        fetchDevice(uuid) ~> route ~> check {
+          val secondDevice = responseAs[Device]
+
+          secondDevice.activatedAt shouldBe firstActivation
+        }
+      }
+
+      deleteDeviceOk(uuid)
+    }
+  }
+
+  property("POST request on ping gets counted") {
+    forAll { (uuid: Uuid, devicePre: DeviceT) =>
+
+      val start = OffsetDateTime.now()
+      val uuid: Uuid = createDeviceOk(devicePre)
+      val end = start.plusHours(1)
+
+      sendDeviceSeen(uuid)
+
+      getActiveDeviceCount(start, end) ~> route ~> check {
+        responseAs[ActiveDeviceCount].deviceCount shouldBe 1
+      }
+
+      deleteDeviceOk(uuid)
+    }
+  }
+
   property("PUT request updates device.") {
     forAll(genConflictFreeDeviceTs(2)) { case Seq(d1: DeviceT, d2: DeviceT) =>
 
@@ -216,9 +270,7 @@ class DeviceResourceSpec extends ResourcePropSpec {
 
       val uuid: Uuid = createDeviceOk(d1)
 
-      updateLastSeen(uuid) ~> route ~> check {
-        status shouldBe OK
-      }
+      sendDeviceSeen(uuid)
 
       updateDevice(uuid, d2) ~> route ~> check {
         status shouldBe OK
@@ -287,6 +339,26 @@ class DeviceResourceSpec extends ResourcePropSpec {
     }
   }
 
+  property("Can filter list of installed packages on a device") {
+    val uuid = createDeviceOk(genDeviceT.generate)
+    val pkgs = List(PackageId(Refined.unsafeApply("foo"), Refined.unsafeApply("1.0.0")),
+      PackageId(Refined.unsafeApply("bar"), Refined.unsafeApply("1.0.0")))
+
+    installSoftware(uuid, pkgs.toSet) ~> route ~> check {
+      status shouldBe NoContent
+    }
+
+    listPackages(uuid, Some("foo")) ~> route ~> check {
+      status shouldBe OK
+      val response = responseAs[Seq[InstalledPackage]]
+      response.length shouldBe 1
+      response.head.packageId shouldEqual pkgs.head
+      response.head.device shouldBe uuid
+    }
+
+    deleteDeviceOk(uuid)
+  }
+
   property("Can get stats for a package") {
     val deviceNumber = 20
     val groupNumber = 5
@@ -309,5 +381,119 @@ class DeviceResourceSpec extends ResourcePropSpec {
       //convert to sets as order isn't important
       resp.groupIds shouldBe groupIds.toSet
     }
+
+    deviceIds.foreach(deleteDeviceOk(_))
+  }
+
+  property("can list devices with custom pagination limit") {
+    val limit = 30
+    val deviceTs = genConflictFreeDeviceTs(deviceNumber).sample.get
+    val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
+
+    searchDevice(defaultNs, "", limit = limit) ~> route ~> check {
+      status shouldBe OK
+      val result = responseAs[Seq[Device]]
+      result.length shouldBe limit
+    }
+    deviceIds.foreach(deleteDeviceOk(_))
+  }
+
+  property("can list devices with custom pagination limit and offset") {
+    val limit = 30
+    val offset = 10
+    val deviceTs = genConflictFreeDeviceTs(deviceNumber).sample.get
+    val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
+
+    searchDevice(defaultNs, "", offset = offset, limit = limit) ~> route ~> check {
+      status shouldBe OK
+      val devices = responseAs[Seq[Device]]
+      devices.length shouldBe limit
+      devices.zip(devices.tail).foreach { case (device1, device2) =>
+        device1.deviceName.underlying.compareTo(device2.deviceName.underlying) should be <= 0
+      }
+    }
+    deviceIds.foreach(deleteDeviceOk(_))
+  }
+
+  property("can list installed packages for all devices with custom pagination limit and offset") {
+    val limit = 30
+    val offset = 10
+
+    //This property is about the whole namespace so we need to clean the db
+    listDevices() ~> route ~> check {
+      status shouldBe OK
+      val devs = responseAs[Seq[Device]]
+      devs.map(_.uuid).foreach(deleteDeviceOk(_))
+    }
+
+    val deviceTs = genConflictFreeDeviceTs(deviceNumber).generate
+    val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
+
+    // the database is case-insensitve so when we need to take that in to account when sorting in scala
+    // furthermore PackageId is not lexicographically ordered so we just use pairs
+    def canonPkg(pkg: PackageId) =
+      (pkg.name.get.toLowerCase, pkg.version.get)
+
+    val commonPkg = genPackageId.generate
+
+    val allDevicesPackages = deviceIds.map {device =>
+      val pkgs = Gen.listOf(genPackageId).generate.toSet + commonPkg
+      installSoftwareOk(device, pkgs)
+      pkgs
+    }
+    val allPackages = allDevicesPackages.map(_.map(canonPkg)).toSet.flatten.toSeq.sorted
+
+    getInstalledForAllDevices(offset=offset, limit=limit) ~> route ~> check {
+      status shouldBe OK
+      val paginationResult = responseAs[PaginatedResult[PackageId]]
+      paginationResult.total shouldBe allPackages.length
+      paginationResult.limit shouldBe limit
+      paginationResult.offset shouldBe offset
+      val packages = paginationResult.values.map(canonPkg)
+      packages.length shouldBe scala.math.min(limit, allPackages.length)
+      packages shouldBe sorted
+      packages shouldBe allPackages.drop(offset).take(limit)
+    }
+
+    deviceIds.foreach(deleteDeviceOk(_))
+  }
+
+  property("Posting to affected packages returns affected devices") {
+    forAll { (device: DeviceT, p: PackageId) =>
+      val uuid = createDeviceOk(device)
+
+      installSoftwareOk(uuid, Set(p))
+
+      getAffected(Set(p)) ~> route ~> check {
+        status shouldBe OK
+        responseAs[Map[Uuid, Seq[PackageId]]] should contain(uuid -> Seq(p))
+      }
+
+      deleteDeviceOk(uuid)
+    }
+  }
+
+  property("Package stats correct reports number of installed instances") {
+    val devices = genConflictFreeDeviceTs(10).sample.get
+    val pkgName = genPackageIdName.sample.get
+    val pkgVersion = genConflictFreePackageIdVersion(2)
+
+    val uuids = devices.map(createDeviceOk(_))
+    uuids.zipWithIndex.foreach { case (uuid, i) =>
+      if(i % 2 == 0) {
+        installSoftwareOk(uuid, Set(PackageId(pkgName, pkgVersion.head)))
+      } else {
+        installSoftwareOk(uuid, Set(PackageId(pkgName, pkgVersion(1))))
+      }
+    }
+    getPackageStats(pkgName) ~> route ~> check {
+      status shouldBe OK
+      val r = responseAs[PaginatedResult[PackageStat]]
+      r.total shouldBe 2
+      r.values.contains(PackageStat(pkgVersion.head, 5)) shouldBe true
+      r.values.contains(PackageStat(pkgVersion(1), 5)) shouldBe true
+    }
+
+    uuids.foreach(deleteDeviceOk(_))
   }
 }

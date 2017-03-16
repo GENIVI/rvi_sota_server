@@ -69,8 +69,8 @@ object KafkaClient {
     }
   }
 
-  def commitableSource[T](config: Config)
-                         (implicit ml: MessageLike[T], system: ActorSystem)
+  def committableSource[T](config: Config)
+                          (implicit ml: MessageLike[T], system: ActorSystem)
   : Throwable Xor Source[CommittableMessage[Array[Byte], T], NotUsed] =
     buildSource(config) { (cfgSettings: ConsumerSettings[Array[Byte], T], subscriptions) =>
       Consumer.committableSource(cfgSettings, subscriptions)

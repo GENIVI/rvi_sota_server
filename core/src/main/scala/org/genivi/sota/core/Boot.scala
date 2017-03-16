@@ -13,60 +13,76 @@ import akka.http.scaladsl.server.{Directive0, Directive1, Route}
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import cats.data.Xor
-import com.typesafe.config.Config
+import com.advancedtelematic.libtuf.reposerver.ReposerverHttpClient
+import com.typesafe.config.ConfigFactory
 import org.genivi.sota.client.DeviceRegistryClient
-import org.genivi.sota.core.db.DatabaseConfig
+import org.genivi.sota.core.daemon.TreehubCommitListener
 import org.genivi.sota.core.resolver._
 import org.genivi.sota.core.rvi._
 import org.genivi.sota.core.storage.S3PackageStore
 import org.genivi.sota.core.transfer._
-import org.genivi.sota.db.BootMigrations
-import org.genivi.sota.http._
+import org.genivi.sota.core.user_profile._
+import org.genivi.sota.db.{BootMigrations, DatabaseConfig}
 import org.genivi.sota.http.LogDirectives._
+import org.genivi.sota.http._
+import org.genivi.sota.messaging.Messages.TreehubCommit
+import org.genivi.sota.messaging.daemon.MessageBusListenerActor.Subscribe
+import org.genivi.sota.messaging.kafka.MessageListener
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
-import slick.driver.MySQLDriver.api.Database
-
+import org.genivi.sota.monitoring.{DatabaseMetrics, MetricsSupport}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
-
+import slick.driver.MySQLDriver.api.Database
 
 trait RviBoot {
-  val settings: Settings
+  self: Settings =>
 
   implicit val system: ActorSystem
   implicit val materializer: ActorMaterializer
   implicit val exec: ExecutionContext
-  implicit lazy val rviConnectivity = new RviConnectivity(settings.rviEndpoint)
+  implicit lazy val rviConnectivity = new RviConnectivity(rviEndpoint)
 
   def resolverClient: ExternalResolverClient
 
   def deviceRegistryClient: DeviceRegistryClient
 
+  def tufClient: Option[ReposerverHttpClient]
+
   def messageBusPublisher: MessageBusPublisher
 
   def startSotaServices(db: Database): Route = {
-    val s3PackageStoreOpt = S3PackageStore.loadCredentials(settings.config).map { new S3PackageStore(_) }
+    val s3PackageStoreOpt = S3PackageStore.loadCredentials(config).map { new S3PackageStore(_) }
     val transferProtocolProps =
       TransferProtocolActor.props(db, rviConnectivity.client,
         PackageTransferActor.props(rviConnectivity.client, s3PackageStoreOpt), messageBusPublisher)
     val updateController = system.actorOf(UpdateController.props(transferProtocolProps ), "update-controller")
-    new rvi.SotaServices(updateController, resolverClient, deviceRegistryClient).route
+    new rvi.SotaServices(updateController, resolverClient).route
   }
 
   def rviRoutes(db: Database, notifier: UpdateNotifier, namespaceDirective: Directive1[AuthedNamespaceScope]): Route = {
-      new WebService(notifier, resolverClient,
-        deviceRegistryClient, db, namespaceDirective, messageBusPublisher).route ~
-      startSotaServices(db)
+    val updateService = new UpdateService(notifier, deviceRegistryClient)
+
+    tufClient.foreach { tuf =>
+      system.actorOf(MessageListener.props[TreehubCommit](config,
+        new TreehubCommitListener(db, updateService, tuf, messageBusPublisher).action
+      )) ! Subscribe
+    }
+
+    new WebService(updateService, resolverClient,
+      deviceRegistryClient, db, namespaceDirective, messageBusPublisher).route ~
+    startSotaServices(db)
   }
 
   def rviInteractionRoutes(db: Database, namespaceDirective: Directive1[AuthedNamespaceScope]): Future[Route] = {
-    SotaServices.register(settings.rviSotaUri) map { sotaServices =>
+    SotaServices.register(rviSotaUri) map { sotaServices =>
       rviRoutes(db, new RviUpdateNotifier(sotaServices), namespaceDirective)
     }
   }
 }
 
 trait HttpBoot {
+  self: Settings =>
+
   implicit val system: ActorSystem
   implicit val materializer: ActorMaterializer
   implicit val defaultConnectivity: Connectivity = DefaultConnectivity
@@ -76,25 +92,39 @@ trait HttpBoot {
 
   def deviceRegistryClient: DeviceRegistryClient
 
+  def userProfileClient: Option[UserProfileClient]
+
+  def tufClient: Option[ReposerverHttpClient]
+
   def messageBusPublisher: MessageBusPublisher
 
   def httpInteractionRoutes(db: Database,
                             tokenValidator: Directive0,
-                            namespaceDirective: Directive1[AuthedNamespaceScope],
-                            messageBus: MessageBusPublisher): Route = {
-    val webService = new WebService(DefaultUpdateNotifier, resolverClient, deviceRegistryClient, db,
+                            namespaceDirective: Directive1[AuthedNamespaceScope]): Route = {
+
+    val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistryClient)
+    val webService = new WebService(updateService, resolverClient, deviceRegistryClient, db,
       namespaceDirective, messageBusPublisher)
-    val vehicleService = new DeviceUpdatesResource(db, resolverClient, deviceRegistryClient,
-      namespaceDirective, messageBus)
+    val deviceService = new DeviceUpdatesResource(db, resolverClient, deviceRegistryClient,
+      userProfileClient, namespaceDirective, messageBusPublisher)
+
+    tufClient.foreach { tuf =>
+      system.actorOf(MessageListener.props[TreehubCommit](config,
+        new TreehubCommitListener(db, updateService, tuf, messageBusPublisher).action
+      )) ! Subscribe
+    }
 
     tokenValidator {
-      webService.route ~ vehicleService.route
+      webService.route ~ deviceService.route
     }
   }
 }
 
 
-class Settings(val config: Config) {
+trait Settings {
+
+  lazy val config = ConfigFactory.load()
+
   val host = config.getString("server.host")
   val port = config.getInt("server.port")
 
@@ -107,47 +137,66 @@ class Settings(val config: Config) {
   val deviceRegistryApi = Uri(config.getString("device_registry.devicesUri"))
   val deviceRegistryGroupApi = Uri(config.getString("device_registry.deviceGroupsUri"))
   val deviceRegistryMyApi = Uri(config.getString("device_registry.mydeviceUri"))
+  val deviceRegistryPackagesApi = Uri(config.getString("device_registry.packagesUri"))
+
+  val userProfileBaseUri =
+    if (config.getBoolean("user_profile.use")) Some(Uri(config.getString("user_profile.baseUri")))
+    else None
+  val userProfileApi =
+    if (config.getBoolean("user_profile.use")) Some(Uri(config.getString("user_profile.api")))
+    else None
 
   val rviSotaUri = Uri(config.getString("rvi.sotaServicesUri"))
   val rviEndpoint = Uri(config.getString("rvi.endpoint"))
+
+  val tufEndpoint =
+    if (config.getBoolean("tuf.use")) Some(Uri(config.getString("tuf.endpoint")))
+    else None
 }
 
+object Settings extends Settings
 
-object Boot extends App with DatabaseConfig with HttpBoot with RviBoot with BootMigrations {
+
+object Boot extends BootApp
+  with Settings
+  with VersionInfo
+  with DatabaseConfig
+  with HttpBoot
+  with RviBoot
+  with BootMigrations
+  with MetricsSupport
+  with DatabaseMetrics {
+
   import VersionDirectives._
 
-  implicit val system = ActorSystem("sota-core-service")
-  implicit val materializer = ActorMaterializer()
-  implicit val exec = system.dispatcher
-  implicit val log = Logging(system, "boot")
-  lazy val config = system.settings.config
-  val settings = new Settings(config)
-
-  lazy val version: String = {
-    val bi = org.genivi.sota.core.BuildInfo
-    bi.name + "/" + bi.version
-  }
-
   val resolverClient = new DefaultExternalResolverClient(
-    settings.resolverUri, settings.resolverResolveUri, settings.resolverPackagesUri, settings.resolverVehiclesUri
+    resolverUri, resolverResolveUri, resolverPackagesUri, resolverVehiclesUri
   )
 
   val deviceRegistryClient = new DeviceRegistryClient(
-    settings.deviceRegistryUri, settings.deviceRegistryApi,
-    settings.deviceRegistryGroupApi, settings.deviceRegistryMyApi
+    deviceRegistryUri, deviceRegistryApi,
+    deviceRegistryGroupApi, deviceRegistryMyApi,
+    deviceRegistryPackagesApi
   )
 
+  val userProfileClient = for {
+    baseUri <- userProfileBaseUri
+    api <- userProfileApi
+  } yield new UserProfileClient(baseUri, api)
+
   val messageBusPublisher: MessageBusPublisher =
-    MessageBus.publisher(system, system.settings.config) match {
+    MessageBus.publisher(system, config) match {
       case Xor.Right(c) => c
       case Xor.Left(err) =>
         log.error("Could not initialize message bus client", err)
         MessageBusPublisher.ignore
     }
 
+  val tufClient = tufEndpoint.map(uri => new ReposerverHttpClient(uri))
+
   val interactionProtocol = config.getString("core.interactionProtocol")
 
-  val healthResource = new HealthResource(db, org.genivi.sota.core.BuildInfo.toMap)
+  val healthResource = new HealthResource(db, versionMap)
 
   log.info(s"using interaction protocol '$interactionProtocol'")
 
@@ -164,25 +213,24 @@ object Boot extends App with DatabaseConfig with HttpBoot with RviBoot with Boot
 
     case _ =>
       FastFuture.successful {
-        httpInteractionRoutes(db, TokenValidator().fromConfig(), NamespaceDirectives.fromConfig(),
-                              messageBusPublisher) ~
+        httpInteractionRoutes(db, TokenValidator().fromConfig(), NamespaceDirectives.fromConfig()) ~
           healthResource.route
       }
   }
 
-  val startupF =
-    routes() map { r =>
+  val binding =
+    routes().flatMap { r =>
       val sealedRoutes = sotaLog(Route.seal(r))
 
       Http()
-        .bindAndHandle(sealedRoutes, settings.host, settings.port)
+        .bindAndHandle(sealedRoutes, host, port)
     }
 
-  startupF onComplete {
+  binding onComplete {
     case Success(services) =>
-      log.info(s"Server online at http://${settings.host}:${settings.port}")
+      log.info(s"Server online at http://${host}:${port}")
     case Failure(e) =>
-      log.error(e, "Unable to start")
+      log.error("Unable to start", e)
       sys.exit(-1)
   }
 

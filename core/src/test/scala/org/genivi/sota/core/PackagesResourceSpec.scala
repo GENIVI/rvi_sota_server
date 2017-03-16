@@ -16,10 +16,12 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.Uri.Path
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.stream.scaladsl.FileIO
+import akka.testkit.TestKitBase
 import akka.util.ByteString
 import cats.data.Xor
 import io.circe.Json
 import io.circe.generic.auto._
+import org.genivi.sota.DefaultPatience
 import org.genivi.sota.core.db.{BlacklistedPackages, Packages}
 import org.genivi.sota.core.resolver.DefaultConnectivity
 import org.genivi.sota.core.storage.PackageStorage.PackageStorageOp
@@ -28,8 +30,10 @@ import org.genivi.sota.core.transfer.DefaultUpdateNotifier
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 import org.genivi.sota.data.{Namespace, Namespaces, PackageId}
-import org.genivi.sota.messaging.MessageBusPublisher
+import org.genivi.sota.messaging.LocalMessageBus
+import org.genivi.sota.messaging.Messages.PackageStorageUsage
 
+import scala.concurrent.duration._
 import scala.concurrent.Future
 
 class PackagesResourceSpec extends FunSuite
@@ -40,18 +44,16 @@ class PackagesResourceSpec extends FunSuite
   with LongRequestTimeout
   with DefaultPatience
   with Generators
-{
+  with TestKitBase {
+
   import org.genivi.sota.http.NamespaceDirectives._
 
-  implicit val _db = db
-
   val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
-  val resolver = new FakeExternalResolver()
 
   implicit val connectivity = DefaultConnectivity
 
   lazy val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
-  val service = new PackagesResource(resolver, updateService, db, MessageBusPublisher.ignore, defaultNamespaceExtractor) {
+  val service = new PackagesResource(updateService, db, LocalMessageBus.publisher(system), defaultNamespaceExtractor) {
     override val packageStorageOp: PackageStorageOp = new LocalPackageStore().store _
   }
 
@@ -165,5 +167,17 @@ class PackagesResourceSpec extends FunSuite
       }
     }
   }
-}
 
+  test("publishes message to bus on create") {
+    val url = Uri.Empty.withPath(BasePath / "linux-lts" / "4.5.0")
+
+    system.eventStream.subscribe(testActor, classOf[PackageStorageUsage])
+
+    Put(url, multipartForm) ~> service.route ~> check {
+      status shouldBe StatusCodes.NoContent
+      expectMsgPF(10.seconds, "package usage greater than 0") {
+        case m @ PackageStorageUsage(_, _, usage) if usage > 0L => m
+      }
+    }
+  }
+}

@@ -4,7 +4,8 @@ import akka.event.Logging
 import akka.http.scaladsl.model.Uri
 import akka.testkit.TestKit
 import org.genivi.sota.core.{Generators, PackagesReader, RequiresRvi}
-import org.genivi.sota.core.data.{UpdateSpec, UpdateStatus}
+import org.genivi.sota.core.data.UpdateSpec
+import org.genivi.sota.data.UpdateStatus
 import org.genivi.sota.core.rvi.{RviConnectivity, RviUpdateNotifier, SotaServices}
 import java.time.Instant
 import org.genivi.sota.data._

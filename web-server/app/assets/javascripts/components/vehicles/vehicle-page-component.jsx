@@ -38,8 +38,8 @@ define(function(require) {
             <h2>Installed Firmware</h2>
             <FirmwareOnVin Firmware={db.firmwareOnVin} Vin={params.id}/>
             <h2>Installed Components</h2>
-            <ComponentsOnVin Components={db.componentsOnVin} Vin={params.id}/>
-            <AddComponent Vin={params.vin}/>
+            <ComponentsOnVin Components={db.componentsOnVin} Id={params.id}/>
+            <AddComponent Id={params.id}/>
             <ListOperationResultsForVin OperationResultsForVin={db.operationResultsForVin} Vin={params.vin}/>
             <h2>Package Updates</h2>
             <QueuedPackages Packages={db.packageQueueForVin} Id={params.id}/>

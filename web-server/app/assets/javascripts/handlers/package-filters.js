@@ -18,14 +18,14 @@ define(function(require) {
         });
     },
     addPackageFilter: function(payload) {
-      sendRequest.doPut('/api/v1/packages/' + payload.packageFilter.packageName +
+      sendRequest.doPut('/api/v1/resolver/packages/' + payload.packageFilter.packageName +
         '/' + payload.packageFilter.packageVersion +
         '/filter/' + payload.packageFilter.filterName)
         .success(_.bind(this.refreshPackageFilters, this, payload));
     },
     destroyPackageFilter: function(payload){
       var packageFilter = payload.packageFilter;
-      var deleteUrl = '/api/v1/packages' +
+      var deleteUrl = '/api/v1/resolver/packages' +
         '/' + packageFilter.packageName +
         '/' + packageFilter.packageVersion +
         '/filter/' + packageFilter.filterName;

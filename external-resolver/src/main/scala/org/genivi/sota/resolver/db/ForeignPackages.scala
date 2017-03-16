@@ -10,7 +10,7 @@ import java.time.Instant
 import org.genivi.sota.data.{PackageId, Uuid}
 import org.genivi.sota.db.Operators._
 import slick.driver.MySQLDriver.api._
-import org.genivi.sota.resolver.db.PackageIdDatabaseConversions._
+import org.genivi.sota.refined.PackageIdDatabaseConversions.LiftedPackageId
 
 import scala.concurrent.ExecutionContext
 
@@ -73,6 +73,10 @@ object ForeignPackages {
       .regexFilter(regexFilter)(_.name, _.version)
       .result.map(_.map(_.packageId))
   }
+
+  def listPackages: DBIO[Seq[InstalledForeignPackage]] =
+    foreignPackages
+      .result
 
   //scalastyle: off
   private def inSetQuery(ids: Set[PackageId]): Query[InstalledForeignPackageTable, InstalledForeignPackage, Seq] = {

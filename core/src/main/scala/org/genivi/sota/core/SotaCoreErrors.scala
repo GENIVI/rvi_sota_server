@@ -19,20 +19,30 @@ object SotaCoreErrors {
     val MissingPackage = ErrorCode("missing_package")
     val BlacklistedPackage = ErrorCode("blacklisted_package")
     val MissingImageForUpdate = ErrorCode("missing_image_to_queue")
+    val DeviceLimitReached = ErrorCode("device_limit_reached")
+    val DeviceNotActivated = ErrorCode("device_not_activated")
   }
 
-  val BlacklistedPackage = RawError(SotaCoreErrorCodes.BlacklistedPackage, StatusCodes.BadRequest,
+  import StatusCodes._
+
+  val BlacklistedPackage = RawError(SotaCoreErrorCodes.BlacklistedPackage, BadRequest,
     "package is blacklisted")
-  val CantLaunchCampaign = RawError(SotaCoreErrorCodes.CantLaunchCampaign, StatusCodes.BadRequest,
-                                    "campaign is not ready to be launched")
-  val CampaignLaunched = RawError(SotaCoreErrorCodes.CampaignLaunched, StatusCodes.Locked,
-                                  "campaign is already launched")
+  val CantLaunchCampaign = RawError(SotaCoreErrorCodes.CantLaunchCampaign, BadRequest,
+    "campaign is not ready to be launched")
+  val CampaignLaunched = RawError(SotaCoreErrorCodes.CampaignLaunched, Locked,
+    "campaign is already launched")
   val ConflictingCampaign = EntityAlreadyExists(classOf[Campaign])
   val MissingCampaign = MissingEntity(classOf[Campaign])
-  val MissingPackage = RawError(SotaCoreErrorCodes.MissingPackage, StatusCodes.NotFound, "package not found")
-  val MissingUpdateSpec = RawError(ErrorCodes.MissingEntity, StatusCodes.NotFound, "update spec not found")
-  val MissingUpdateRequest = RawError(ErrorCodes.MissingEntity, StatusCodes.NotFound, "update request not found")
-
-  val MissingImageForUpdate = RawError(SotaCoreErrorCodes.MissingImageForUpdate, StatusCodes.PreconditionFailed,
+  val MissingPackage = RawError(SotaCoreErrorCodes.MissingPackage, NotFound,
+    "package not found")
+  val MissingUpdateSpec = RawError(ErrorCodes.MissingEntity, NotFound,
+    "update spec not found")
+  val MissingUpdateRequest = RawError(ErrorCodes.MissingEntity, NotFound,
+    "update request not found")
+  val MissingImageForUpdate = RawError(SotaCoreErrorCodes.MissingImageForUpdate, PreconditionFailed,
     "image for update not found")
+  val DeviceLimitReached = RawError(SotaCoreErrorCodes.DeviceLimitReached, Forbidden,
+    "limit of free devices reached")
+  val DeviceNotActivated = RawError(SotaCoreErrorCodes.DeviceNotActivated, NotFound,
+    "device has not been activated")
 }

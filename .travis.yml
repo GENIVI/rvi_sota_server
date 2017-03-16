@@ -13,9 +13,9 @@ before_install:
   - docker run -d --name mariadb-sota -p 3307:3306 -v $(pwd)/entrypoint.d:/docker-entrypoint-initdb.d -e MYSQL_ROOT_PASSWORD=sota-test -e MYSQL_USER=sota_test -e MYSQL_PASSWORD=s0ta mariadb:10.1 --character-set-server=utf8 --collation-server=utf8_unicode_ci --max_connections=1000
 env:
   global:
-    - RESOLVER_TEST_DB_URL="jdbc:mariadb://localhost:3307/"
-    - CORE_TEST_DB_URL="jdbc:mariadb://localhost:3307/"
-    - DEVICE_REGISTRY_TEST_DB_URL="jdbc:mariadb://localhost:3307/"
+    - RESOLVER_DB_URL="jdbc:mariadb://localhost:3307/"
+    - CORE_DB_URL="jdbc:mariadb://localhost:3307/"
+    - DEVICE_REGISTRY_DB_URL="jdbc:mariadb://localhost:3307/"
 script:
   - ./sbt coverage sota-core/ut:test sota-resolver/ut:test sota-device_registry/ut:test sota-common/test coverageReport
 after_success:
