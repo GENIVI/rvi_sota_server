@@ -45,12 +45,14 @@ object Messages {
     uuid: Uuid,
     deviceName: DeviceName,
     deviceId: Option[DeviceId],
-    deviceType: DeviceType) extends BusMessage
+    deviceType: DeviceType,
+    timestamp: Instant = Instant.now()) extends BusMessage
 
   final case class DevicePublicCredentialsSet(
     namespace: Namespace,
     uuid: Uuid,
-    credentials: String) extends BusMessage
+    credentials: String,
+    timestamp: Instant = Instant.now()) extends BusMessage
 
   final case class DeviceActivated(
     namespace: Namespace,
@@ -59,14 +61,16 @@ object Messages {
 
   final case class DeviceDeleted(
     namespace: Namespace,
-    uuid: Uuid) extends BusMessage
+    uuid: Uuid,
+    timestamp: Instant = Instant.now()) extends BusMessage
 
   final case class PackageCreated(
     namespace: Namespace,
     packageId: PackageId,
     description: Option[String],
     vendor: Option[String],
-    signature: Option[String]) extends BusMessage
+    signature: Option[String],
+    timestamp: Instant = Instant.now()) extends BusMessage
 
   final case class TreehubCommit (
     ns: Namespace,
@@ -78,7 +82,8 @@ object Messages {
 
   final case class PackageBlacklisted(
     namespace: Namespace,
-    packageId: PackageId) extends BusMessage
+    packageId: PackageId,
+    timestamp: Instant = Instant.now()) extends BusMessage
 
   final case class ImageStorageUsage(namespace: Namespace, timestamp: Instant, byteCount: Long) extends BusMessage
 
@@ -94,7 +99,8 @@ object Messages {
     namespace: Namespace,
     device: Uuid,
     packageUuid: UUID,
-    status: String) extends BusMessage
+    status: String,
+    timestamp: Instant = Instant.now()) extends BusMessage
 
   final case class UserCreated(id: String) extends BusMessage
 
@@ -102,7 +108,8 @@ object Messages {
 
   final case class DeviceUpdateStatus(namespace: Namespace,
                                       device: Uuid,
-                                      status: DeviceStatus) extends BusMessage
+                                      status: DeviceStatus,
+                                      timestamp: Instant = Instant.now()) extends BusMessage
 
   final case class CampaignLaunched(namespace: Namespace, updateId: Uuid, devices: Set[Uuid],
                                     pkgUri: UriWithSimpleEncoding, pkg: PackageId,

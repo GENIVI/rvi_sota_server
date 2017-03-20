@@ -95,7 +95,7 @@ object DeviceUpdates {
     db.run(dbIO.transactionally).andThen {
       case scala.util.Success((spec, namespace)) =>
         messageBus.publish(Messages.UpdateSpec(namespace, device, spec.request.packageUuid,
-        spec.status.toString))
+        spec.status.toString, Instant.now()))
     }.map(_._1)
   }
 

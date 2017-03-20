@@ -4,6 +4,8 @@
   */
 package org.genivi.sota.device_registry
 
+import java.time.Instant
+
 import akka.http.scaladsl.marshalling.Marshaller._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive1, Route}
@@ -11,14 +13,16 @@ import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
 import io.circe.generic.auto._
 import java.util.Base64
+
 import org.genivi.sota.data.{DeviceT, Namespace, Uuid}
-import org.genivi.sota.device_registry.db.{PublicCredentialsRepository, DeviceRepository}
+import org.genivi.sota.device_registry.db.{DeviceRepository, PublicCredentialsRepository}
 import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.Messages.{DeviceCreated, DevicePublicCredentialsSet}
 import slick.driver.MySQLDriver.api._
+
 import scala.concurrent.{ExecutionContext, Future}
 
 object PublicCredentialsResource {
@@ -51,9 +55,9 @@ class PublicCredentialsResource(authNamespace: Directive1[AuthedNamespaceScope],
         for {
           (created, uuid) <- db.run(dbact.transactionally)
           _ <- if (created) {
-            messageBus.publish(DeviceCreated(ns, uuid, devT.deviceName, devT.deviceId, devT.deviceType))
+            messageBus.publish(DeviceCreated(ns, uuid, devT.deviceName, devT.deviceId, devT.deviceType, Instant.now()))
           } else {Future.successful(())}
-          _ <- messageBus.publish(DevicePublicCredentialsSet(ns, uuid, credentials))
+          _ <- messageBus.publish(DevicePublicCredentialsSet(ns, uuid, credentials, Instant.now()))
         } yield uuid
       }
       case (None, _) => FastFuture.failed(Errors.RequestNeedsDeviceId)
