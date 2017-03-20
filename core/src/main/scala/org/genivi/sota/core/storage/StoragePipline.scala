@@ -28,7 +28,8 @@ class StoragePipeline(updateService: UpdateService)
     for {
       usage <- db.run(Packages.create(pkg).andThen(Packages.usage(pkg.namespace)))
       _     <- AutoInstall.packageCreated(pkg.namespace, pkg.id, updateService)
-      _     <- bus.publishSafe(PackageCreated(pkg.namespace, pkg.id, pkg.description, pkg.vendor, pkg.signature))
+      _     <- bus.publishSafe(PackageCreated(pkg.namespace, pkg.id, pkg.description, pkg.vendor, pkg.signature,
+                                              Instant.now()))
       _     <- bus.publishSafe(PackageStorageUsage(pkg.namespace, Instant.now, usage))
     } yield ()
   }

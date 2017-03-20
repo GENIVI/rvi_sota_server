@@ -23,7 +23,7 @@ object DeviceUpdateStatusListener {
       } yield (device, status)
 
       db.run(f).flatMap { case (device, status) =>
-        messageBus.publish(DeviceUpdateStatus(device.namespace, device.uuid, status))
+        messageBus.publish(DeviceUpdateStatus(device.namespace, device.uuid, status, Instant.now()))
       }
   }
 

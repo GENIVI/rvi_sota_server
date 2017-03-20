@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.device_registry
 
-import java.time.OffsetDateTime
+import java.time.{Instant, OffsetDateTime}
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.headers.Location
@@ -68,7 +68,8 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
       .run(DeviceRepository.create(ns, device))
       .andThen {
         case scala.util.Success(uuid) =>
-          messageBus.publish(DeviceCreated(ns, uuid, device.deviceName, device.deviceId, device.deviceType))
+          messageBus.publish(DeviceCreated(ns, uuid, device.deviceName, device.deviceId, device.deviceType,
+                                           Instant.now()))
       }
 
     onSuccess(f) { uuid =>
@@ -89,7 +90,7 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
       .run(DeviceRepository.delete(ns, uuid))
       .andThen {
         case scala.util.Success(_) =>
-          messageBus.publish(DeviceDeleted(ns, uuid))
+          messageBus.publish(DeviceDeleted(ns, uuid, Instant.now()))
       }
     complete(f)
   }

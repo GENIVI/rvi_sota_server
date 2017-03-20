@@ -5,6 +5,8 @@
 
 package org.genivi.sota.core
 
+import java.time.Instant
+
 import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.http.ErrorHandler._
 import akka.actor.ActorSystem
@@ -38,7 +40,7 @@ class BlacklistResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
     entity(as[BlacklistedPackageRequest]) { req =>
       val f = for {
         bl <- BlacklistedPackages.create(namespace, req.packageId, req.comment)
-        _ <- messageBus.publishSafe(PackageBlacklisted(namespace, req.packageId))
+        _ <- messageBus.publishSafe(PackageBlacklisted(namespace, req.packageId, Instant.now()))
         _ <- db.run(UpdateSpecs.cancelAllUpdatesByStatus(UpdateStatus.Pending, namespace, req.packageId))
       } yield StatusCodes.Created
 
