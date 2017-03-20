@@ -22,7 +22,7 @@ import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
-import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted}
+import org.genivi.sota.messaging.Messages.DeviceCreated
 import org.genivi.sota.rest.Validation._
 import org.genivi.sota.unmarshalling.AkkaHttpUnmarshallingSupport._
 import slick.driver.MySQLDriver.api._
@@ -85,16 +85,6 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
   def updateDevice(ns: Namespace, uuid: Uuid, device: DeviceT): Route =
     complete(db.run(DeviceRepository.update(ns, uuid, device)))
 
-  def deleteDevice(ns: Namespace, uuid: Uuid): Route = {
-    val f = db
-      .run(DeviceRepository.delete(ns, uuid))
-      .andThen {
-        case scala.util.Success(_) =>
-          messageBus.publish(DeviceDeleted(ns, uuid, Instant.now()))
-      }
-    complete(f)
-  }
-
   def getGroupsForDevice(uuid: Uuid): Route =
     complete(db.run(GroupMemberRepository.listGroupsForDevice(uuid)))
 
@@ -148,9 +138,6 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
       deviceNamespaceAuthorizer { uuid =>
         (scope.put & entity(as[DeviceT]) & pathEnd) { device =>
           updateDevice(ns, uuid, device)
-        } ~
-        (scope.delete & pathEnd) {
-          deleteDevice(ns, uuid)
         } ~
         (scope.get & pathEnd) {
           fetchDevice(uuid)

@@ -23,8 +23,6 @@ class PublicCredentialsResourceSpec extends ResourcePropSpec {
       val uuid = updatePublicCredentialsOk(deviceId, creds)
 
       fetchPublicCredentialsOk(uuid) shouldBe creds
-
-      deleteDeviceOk(uuid)
     }
   }
 
@@ -46,8 +44,6 @@ class PublicCredentialsResourceSpec extends ResourcePropSpec {
         dev.deviceId   shouldBe devT.deviceId
         dev.deviceType shouldBe devT.deviceType
       }
-
-      deleteDeviceOk(uuid)
     }
   }
 
@@ -57,8 +53,6 @@ class PublicCredentialsResourceSpec extends ResourcePropSpec {
       updatePublicCredentialsOk(deviceId, creds2)
 
       fetchPublicCredentialsOk(uuid) shouldBe creds2
-
-      deleteDeviceOk(uuid)
     }
   }
 }
