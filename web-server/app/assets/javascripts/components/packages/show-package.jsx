@@ -97,14 +97,18 @@ define(function(require) {
           <AffectedVins AffectedVins={db.affectedVins} />
           <h2>Vehicles</h2>
           <VehiclesListPanel
-            Vehicles={db.vehiclesForPackage}
+            Vins={db.vehiclesForPackage}
             PollEventName="poll-vehicles-for-package"
             DispatchObject={{actionType: "get-vehicles-for-package", name: params.name, version: params.version}}
+            Vehicles={db.searchableVehicles}
+            VehiclesPollEventName="poll-vehicles-package-page"
+            VehiclesDispatchObject={{actionType: 'search-vehicles-by-regex', regex: ''}}
             Label="Vehicles with this package installed"/>
           <VehiclesListPanel
-            Vehicles={db.vehiclesQueuedForPackage}
+            Vins={db.vehiclesQueuedForPackage}
             PollEventName="poll-vehicles-for-package"
             DispatchObject={{actionType: "get-vehicles-queued-for-package", name: params.name, version: params.version}}
+            Vehicles={db.searchableVehicles}
             Label="Vehicles with this package queued for install"/>
         </div>
       );

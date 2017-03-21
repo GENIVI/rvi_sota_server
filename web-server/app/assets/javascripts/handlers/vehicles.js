@@ -51,7 +51,7 @@ define(function(require) {
             sendRequest.doGet('/api/v1/resolver/devices?packageName=' + payload.name + '&packageVersion=' + payload.version)
               .success(function(vehicles) {
                 var list = _.map(vehicles, function(vehicle) {
-                  return {id: vehicle};
+                  return {vin: vehicle};
                 });
                 db.vehiclesForPackage.reset(list);
               });

@@ -62,7 +62,7 @@ define(function(require) {
             sendRequest.doGet('/api/v1/packages/' + payload.name + "/" + payload.version + "/queued")
               .success(function(vehicles) {
                 var list = _.map(vehicles, function(vin) {
-                  return {id: vin};
+                  return {vin: vin};
                 });
                 db.vehiclesQueuedForPackage.reset(list);
               });

@@ -60,7 +60,7 @@ define(function(require) {
           <Errors />
           <br/>
           <VehiclesListPanel
-            VinsForComponent={db.vinsForComponent}
+            Vins={db.vinsForComponent}
             PollEventName="poll-vins-for-component"
             DispatchObject={{actionType: 'get-vins-for-component', partNumber: params.partNumber}}
             Vehicles={db.searchableVehicles}

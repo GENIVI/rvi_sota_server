@@ -12,23 +12,26 @@ define(function(require) {
     },
     mixins: [togglePanel],
     componentWillUnmount: function(){
-      this.props.VinsForComponent.removeWatch(this.props.PollEventName);
-      this.props.Vehicles.removeWatch(this.props.VehiclesPollEventName);
+      this.props.Vins.removeWatch(this.props.PollEventName);
+      if(this.props.VehiclesPollEventName)
+        this.props.Vehicles.removeWatch(this.props.VehiclesPollEventName);
     },
     componentWillMount: function(){
       this.refreshData();
-      this.props.VinsForComponent.addWatch(this.props.PollEventName, _.bind(this.forceUpdate, this, null));
-      this.props.Vehicles.addWatch(this.props.VehiclesPollEventName, _.bind(this.forceUpdate, this, null));
+      this.props.Vins.addWatch(this.props.PollEventName, _.bind(this.forceUpdate, this, null));
+      if(this.props.VehiclesPollEventName)
+        this.props.Vehicles.addWatch(this.props.VehiclesPollEventName, _.bind(this.forceUpdate, this, null));
     },
     refreshData: function() {
       SotaDispatcher.dispatch(this.props.DispatchObject);
-      SotaDispatcher.dispatch(this.props.VehiclesDispatchObject);
+      if(this.props.VehiclesDispatchObject)
+        SotaDispatcher.dispatch(this.props.VehiclesDispatchObject);
     },
     label: function() {return this.props.Label},
     panel: function() {
       var vehicles = [];
       if(!_.isUndefined(this.props.Vehicles.deref())) {
-        vehicles = _.map(this.props.VinsForComponent.deref(), function(vehicle) {
+        vehicles = _.map(this.props.Vins.deref(), function(vehicle) {
           var foundDevice = _.findWhere(this.props.Vehicles.deref(), {uuid: vehicle.vin});
           return (
             <li className='list-group-item' key={vehicle.vin}>
