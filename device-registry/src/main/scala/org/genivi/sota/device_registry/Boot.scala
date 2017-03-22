@@ -79,9 +79,8 @@ object Boot extends BootApp with Directives with BootMigrations
     (TraceId.withTraceId &
       logResponseMetrics("device-registry", TraceId.traceMetrics) &
       versionHeaders(version)) {
-      new DeviceRegistryRoutes(authNamespace, namespaceAuthorizer, messageBus).route ~
-      new HealthResource(db, versionMap).route
-    }
+      new DeviceRegistryRoutes(authNamespace, namespaceAuthorizer, messageBus).route
+    } ~ new HealthResource(db, versionMap).route
 
   val updateSpecListener =
     system.actorOf(MessageListener.props[UpdateSpec](system.settings.config,
