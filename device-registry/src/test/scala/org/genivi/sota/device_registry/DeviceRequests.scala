@@ -66,15 +66,6 @@ trait DeviceRequests { self: ResourceSpec =>
       responseAs[Uuid]
     }
 
-  def deleteDevice(uuid: Uuid): HttpRequest =
-    Delete(Resource.uri(api, uuid.show))
-
-  def deleteDeviceOk(uuid: Uuid)
-                    (implicit ec: ExecutionContext): Unit =
-    deleteDevice(uuid) ~> route ~> check {
-      status shouldBe OK
-    }
-
   def fetchSystemInfo(uuid: Uuid): HttpRequest =
     Get(Resource.uri(api, uuid.show, "system_info"))
 

@@ -59,11 +59,6 @@ object Messages {
     uuid: Uuid,
     at: Instant) extends BusMessage
 
-  final case class DeviceDeleted(
-    namespace: Namespace,
-    uuid: Uuid,
-    timestamp: Instant = Instant.now()) extends BusMessage
-
   final case class PackageCreated(
     namespace: Namespace,
     packageId: PackageId,
@@ -158,8 +153,6 @@ object Messages {
   implicit val deviceCreatedMessageLike = MessageLike[DeviceCreated](_.uuid.show)
 
   implicit val devicePublicCredentialsSetMessageLike = MessageLike[DevicePublicCredentialsSet](_.uuid.show)
-
-  implicit val deviceDeletedMessageLike = MessageLike[DeviceDeleted](_.uuid.show)
 
   implicit val deviceActivatedMessageLike = MessageLike[DeviceActivated](_.uuid.show)
 

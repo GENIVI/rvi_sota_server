@@ -56,18 +56,6 @@ Fields:
 | at       | A UTC timestamp of the time the device first connected
 |===
 
-// === DeviceDeleted
-
-// This message is sent when a device is deleted
-
-// Fields:
-
-// [%autoscale,cols="1,4"]
-// |===
-// | namespace | A string representing the namespace subscribed to
-// | uuid      | The uuid of the device in question
-// |===
-
 === PackageCreated
 
 This message is sent when a new package is uploaded

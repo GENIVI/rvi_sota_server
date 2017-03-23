@@ -70,7 +70,6 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
       val result = responseAs[Seq[Uuid]]
       result.length shouldBe deviceNumber
     }
-    deviceIds.foreach(deleteDeviceOk(_))
   }
 
   test("can list devices with custom pagination limit") {
@@ -88,7 +87,6 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
       val result = responseAs[Seq[Uuid]]
       result.length shouldBe limit
     }
-    deviceIds.foreach(deleteDeviceOk(_))
   }
 
   test("can list devices with custom pagination limit and offset") {
@@ -112,7 +110,6 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
       result.length shouldBe limit
       allDevices.slice(offset, offset + limit) shouldEqual result
     }
-    deviceIds.foreach(deleteDeviceOk(_))
   }
 
   test("Renaming groups") {
@@ -151,8 +148,6 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
       val devices = responseAs[Seq[Uuid]]
       devices.contains(deviceId) shouldBe true
     }
-
-    deleteDeviceOk(deviceId)
   }
 
   test("removing devices from groups") {
@@ -179,8 +174,6 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
       val devices = responseAs[Seq[Uuid]]
       devices.contains(deviceId) shouldBe false
     }
-
-    deleteDeviceOk(deviceId)
   }
 
 }

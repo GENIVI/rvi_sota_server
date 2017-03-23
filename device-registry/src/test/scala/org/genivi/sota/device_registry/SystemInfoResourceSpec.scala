@@ -30,8 +30,6 @@ class SystemInfoResourceSpec extends ResourcePropSpec {
 
         json shouldBe Json.obj()
       }
-
-      deleteDeviceOk(uuid)
     }
   }
 
@@ -49,8 +47,6 @@ class SystemInfoResourceSpec extends ResourcePropSpec {
         val json2: Json = responseAs[Json]
         json1 shouldBe removeIdNrs(json2)
       }
-
-      deleteDeviceOk(uuid)
     }
   }
 
@@ -71,8 +67,6 @@ class SystemInfoResourceSpec extends ResourcePropSpec {
         val json3: Json = responseAs[Json]
         json2 shouldBe removeIdNrs(json3)
       }
-
-      deleteDeviceOk(uuid)
     }
   }
 
@@ -89,8 +83,6 @@ class SystemInfoResourceSpec extends ResourcePropSpec {
         val json2: Json = responseAs[Json]
         json shouldBe removeIdNrs(json2)
       }
-
-      deleteDeviceOk(uuid)
     }
   }
 
@@ -129,8 +121,6 @@ class SystemInfoResourceSpec extends ResourcePropSpec {
         //same count
         countObjects(json) shouldBe idNrs.size
       }
-
-      deleteDeviceOk(uuid)
     }
   }
 }
