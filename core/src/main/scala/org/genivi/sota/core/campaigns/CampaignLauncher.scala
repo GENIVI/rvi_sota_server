@@ -4,7 +4,6 @@
   */
 package org.genivi.sota.core.campaigns
 
-import akka.actor.ActorSystem
 import cats.implicits._
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.UpdateService
@@ -42,7 +41,7 @@ object CampaignLauncher {
 
   def sendMsg(namespace: Namespace, devices: Set[Uuid], pkgId: PackageId, updateId: Uuid,
               messageBus: MessageBusPublisher)
-             (implicit db: Database, system: ActorSystem, ec: ExecutionContext)
+             (implicit db: Database, ec: ExecutionContext)
       : Future[Unit] = {
     import scala.async.Async._
     async {
@@ -55,7 +54,7 @@ object CampaignLauncher {
 
   def launch (deviceRegistry: DeviceRegistry, updateService: UpdateService, id: Campaign.Id, lc: LaunchCampaign,
               messageBus: MessageBusPublisher)
-             (implicit db: Database, system: ActorSystem, ec: ExecutionContext)
+             (implicit db: Database, ec: ExecutionContext)
       : Future[List[Uuid]] = {
     def updateUpdateRequest(ur: UpdateRequest): UpdateRequest = {
       ur.copy(periodOfValidity = Interval(lc.startDate.getOrElse(ur.periodOfValidity.start),
