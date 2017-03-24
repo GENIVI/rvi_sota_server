@@ -108,7 +108,8 @@ object Messages {
 
   final case class CampaignLaunched(namespace: Namespace, updateId: Uuid, devices: Set[Uuid],
                                     pkgUri: UriWithSimpleEncoding, pkg: PackageId,
-                                    pkgSize: Long, pkgChecksum: String) extends BusMessage
+                                    pkgSize: Long, pkgChecksum: String,
+                                    timestamp: Instant = Instant.now()) extends BusMessage
 
   implicit class StreamNameOp[T <: Class[_]](v: T) {
     def streamName: String = {
