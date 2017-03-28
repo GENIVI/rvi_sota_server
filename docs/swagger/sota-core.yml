@@ -223,7 +223,7 @@ paths:
         201:
           description: The new uuid of the created campaign
           schema:
-            $ref: '#/definitions/uuid'
+            $ref: '#/definitions/Strings/properties/uuid'
   /campaigns/{uuid}:
     get:
       description: 'Get a campaign from uuid'
@@ -756,34 +756,19 @@ paths:
           description: OK
 
 definitions:
-  uuid:
-    type: string
-    description: 32 lowercase hexadecimal digits, displayed in five groups separated by hyphens
-  namespace:
-    type: string
-    description: The namespace scope of the request. Default value is 'default'
-  DeviceId:
-    type: string
-    description: A 17-digit VIN. May contain only capital letters and digits. Cannot contain the letters I, O, or Q.
-  DeviceName:
-    type: string
-    description: Custom name for a device
-  DeviceType:
-    type: string
-    description: Valid values are "Vehicle" and "Other"
   Device:
     type: object
     properties:
       namespace:
-        $ref: '#/definitions/namespace'
+        $ref: '#/definitions/Strings/properties/namespace'
       deviceId:
-        $ref: '#/definitions/DeviceId'
+        $ref: '#/definitions/Strings/properties/DeviceId'
       id:
-        $ref: '#/definitions/uuid'
+        $ref: '#/definitions/Strings/properties/uuid'
       deviceName:
-        $ref: '#/definitions/DeviceName'
+        $ref: '#/definitions/Strings/properties/DeviceName'
       deviceType:
-        $ref: '#/definitions/DeviceType'
+        $ref: '#/definitions/Strings/properties/DeviceType'
       lastseen:
         type: string
         format: dateTime
@@ -792,7 +777,7 @@ definitions:
     type: object
     properties:
       namespace:
-        $ref: '#/definitions/namespace'
+        $ref: '#/definitions/Strings/properties/namespace'
       id:
         $ref: '#/definitions/packageId'
       uri:
@@ -839,7 +824,7 @@ definitions:
         type: string
         description: The UUID of the update
       namespace:
-        $ref: '#/definitions/namespace'
+        $ref: '#/definitions/Strings/properties/namespace'
       packageId:
         $ref: '#/definitions/packageId'
       creationTime:
@@ -915,9 +900,9 @@ definitions:
     type: object
     properties:
       id:
-        $ref: '#/definitions/uuid'
+        $ref: '#/definitions/Strings/properties/uuid'
       namespace:
-        $ref: '#/definitions/namespace'
+        $ref: '#/definitions/Strings/properties/namespace'
       packageId:
         $ref: '#/definitions/packageId'
       comment:
@@ -951,7 +936,7 @@ definitions:
     type: object
     properties:
       id:
-        $ref: '#/definitions/uuid'
+        $ref: '#/definitions/Strings/properties/uuid'
       launched:
         type: boolean
         description: Is this campaign launched
@@ -978,9 +963,9 @@ definitions:
     type: object
     properties:
       group:
-        $ref: '#/definitions/uuid'
+        $ref: '#/definitions/Strings/properties/uuid'
       updateRequest:
-        $ref: '#/definitions/uuid'
+        $ref: '#/definitions/Strings/properties/uuid'
   LaunchCampaign:
     type: object
     properties:
@@ -1010,15 +995,15 @@ definitions:
       groups:
         type: array
         items:
-          $ref: '#/definitions/uuid'
+          $ref: '#/definitions/Strings/properties/uuid'
         description: The uuids of the groups for the campaign
   CampaignStatistics:
     type: object
     properties:
       groupId:
-        $ref: '#/definitions/uuid'
+        $ref: '#/definitions/Strings/properties/uuid'
       updateId:
-        $ref: '#/definitions/uuid'
+        $ref: '#/definitions/Strings/properties/uuid'
       deviceCount:
         type: integer
         description: Number of devices in group
@@ -1040,4 +1025,23 @@ definitions:
     description: |
       This is a free-form JSON blob describing the hardware components of the client system. 
       The format expected by the server is the output of `lshw -json -sanitize`.
+  Strings:
+    type: object
+    description: Various string types referenced elsewhere in the spec.
+    properties:
+      uuid:
+        type: string
+        description: 32 lowercase hexadecimal digits, displayed in five groups separated by hyphens
+      namespace:
+        type: string
+        description: The namespace scope of the request. Default value is 'default'
+      DeviceId:
+        type: string
+        description: A 17-digit VIN. May contain only capital letters and digits. Cannot contain the letters I, O, or Q.
+      DeviceName:
+        type: string
+        description: Custom name for a device
+      DeviceType:
+        type: string
+        description: Valid values are "Vehicle" and "Other"
 
