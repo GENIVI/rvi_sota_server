@@ -31,7 +31,8 @@ class WebService(updateService: UpdateService,
   val devicesResource = new DevicesResource(db, connectivity.client, resolver, deviceRegistry, authNamespace)
   val packagesResource = new PackagesResource(updateService, db, messageBusPublisher, authNamespace)
   val autoInstallResource = new AutoInstallResource(db, deviceRegistry, authNamespace)
-  val updateRequestsResource = new UpdateRequestsResource(db, resolver, updateService, authNamespace)
+  val updateRequestsResource = new UpdateRequestsResource(db, resolver, updateService, authNamespace,
+                                                          messageBusPublisher)
   val historyResource = new HistoryResource(deviceRegistry, authNamespace)(db, system)
   val blacklistResource = new BlacklistResource(authNamespace, messageBusPublisher)(db, system)
   val impactResource = new ImpactResource(authNamespace, deviceRegistry)(db, system)

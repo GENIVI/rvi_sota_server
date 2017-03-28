@@ -11,6 +11,7 @@ import io.circe.generic.encoding.DerivedObjectEncoder
 import io.circe.{Decoder, Encoder}
 import io.circe.parser._
 import org.genivi.sota.data.DeviceStatus.DeviceStatus
+import org.genivi.sota.data.UpdateStatus.UpdateStatus
 import org.genivi.sota.marshalling.CirceInstances._
 import org.genivi.sota.data._
 import org.genivi.sota.data.UpdateType.UpdateType
@@ -94,7 +95,7 @@ object Messages {
     namespace: Namespace,
     device: Uuid,
     packageUuid: UUID,
-    status: String,
+    status: UpdateStatus,
     timestamp: Instant = Instant.now()) extends BusMessage
 
   final case class UserCreated(id: String) extends BusMessage

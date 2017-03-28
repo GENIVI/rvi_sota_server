@@ -6,7 +6,7 @@ package org.genivi.sota.core
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshaller._
-import akka.http.scaladsl.model.StatusCodes._
+import akka.http.scaladsl.model.StatusCodes.{NoContent, OK}
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server._
 import akka.stream.ActorMaterializer
@@ -16,7 +16,7 @@ import io.circe.Json
 import java.util.UUID
 
 import org.genivi.sota.common.DeviceRegistry
-import org.genivi.sota.core.db.{BlockedInstalls, OperationResults, UpdateSpecs}
+import org.genivi.sota.core.db._
 import org.genivi.sota.core.resolver.{Connectivity, DefaultConnectivity, ExternalResolverClient}
 import org.genivi.sota.core.user_profile.UserProfile
 import org.genivi.sota.core.rvi.{InstallReport, OperationResult, UpdateReport}
@@ -27,20 +27,20 @@ import java.time.temporal.ChronoUnit
 import org.genivi.sota.core.transfer.DeviceUpdates
 import org.genivi.sota.core.data.UpdateSpec
 import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, PackageDownloadProcess}
-import org.genivi.sota.data.{Namespace, PackageId, UpdateType, Uuid}
+import org.genivi.sota.data._
 import slick.driver.MySQLDriver.api.Database
 import cats.syntax.show.toShowOps
 import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
-import org.genivi.sota.messaging.MessageBusPublisher
+import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
 import org.genivi.sota.core.data.client.PendingUpdateRequest._
 import UpdateSpec._
 import org.genivi.sota.messaging.Messages.{BandwidthUsage, DeviceSeen}
 import org.genivi.sota.rest.ResponseConversions._
-import MessageBusPublisher._
 import org.genivi.sota.core.campaigns.CampaignLauncher
 
 import scala.concurrent.Future
 import scala.async.Async._
+import scala.util.Success
 
 class DeviceUpdatesResource(db: Database,
                             resolverClient: ExternalResolverClient,
@@ -135,9 +135,14 @@ class DeviceUpdatesResource(db: Database,
         }
 
       val f = userWithinLimitFuture
+        // sets UpdateSpec status to InFlight:
         .flatMap(_ => packageDownloadProcess.buildClientDownloadResponse(device, updateId))
-        .pipeToBus(messageBus) { case (pkg, _) =>
-          BandwidthUsage(UUID.randomUUID(), pkg.namespace, Instant.now, pkg.size, UpdateType.Package, pkg.id.show)
+        .andThen {
+          case Success((pkg, _)) =>
+            val now = Instant.now
+            messageBus.publish(BandwidthUsage(UUID.randomUUID(), pkg.namespace, now, pkg.size,
+              UpdateType.Package, pkg.id.show))
+            messageBus.publish(Messages.UpdateSpec(pkg.namespace, device, pkg.uuid, UpdateStatus.InFlight, now))
         }
 
       complete(f.map(_._2))
@@ -193,6 +198,7 @@ class DeviceUpdatesResource(db: Database,
     entity(as[PackageId]) { packageId =>
       val result = updateService.queueDeviceUpdate(ns, device, packageId).map { case (ur, us, updateTime) =>
         CampaignLauncher.sendMsg(ns, Set(device), packageId, Uuid.fromJava(ur.id), messageBus)
+        messageBus.publishSafe(Messages.UpdateSpec(ns, device, ur.packageUuid, UpdateStatus.Pending, updateTime))
         ur.toResponse((us.status, packageId, updateTime))
       }
       complete(result)
@@ -245,9 +251,14 @@ class DeviceUpdatesResource(db: Database,
   }
 
   /**
-    * The web app PUT the status of the given ([[UpdateSpec]], device) to [[UpdateStatus.Canceled]]
+    * The web app PUT the status of the given ([[UpdateSpec]], device) to
+    * [[org.genivi.sota.data.UpdateStatus.Canceled]]. Also sends out a [[Messages.UpdateSpec]].
     */
-  def cancelUpdate(device: Uuid, updateId: Refined[String, Uuid.Valid]): Route = {
+  def cancelUpdate(namespace: Namespace, device: Uuid, updateId: Refined[String, Uuid.Valid]): Route = {
+    db.run(UpdateRequests.byId(UUID.fromString(updateId.get))).map { updateRequest =>
+        messageBus.publishSafe(Messages.UpdateSpec(namespace, device, updateRequest.packageUuid, UpdateStatus.Canceled))
+    }
+
     val response = db.run(UpdateSpecs.cancelUpdate(device, updateId)).map(_ => StatusCodes.NoContent)
     complete(response)
   }
@@ -303,7 +314,7 @@ class DeviceUpdatesResource(db: Database,
           }
         } ~
         authDeviceNamespace(device) { ns =>
-          (extractRefinedUuid & path("cancelupdate")) { updateId => cancelUpdate(device, updateId) } ~
+          (extractRefinedUuid & path("cancelupdate")) { updateId => cancelUpdate(ns, device, updateId) } ~
           path("order") { setInstallOrder(device) } ~
           path("blocked") { setBlockedInstall(device) }
         }
@@ -336,7 +347,7 @@ class DeviceUpdatesResource(db: Database,
         scope.put {
           path("blocked") { setBlockedInstall(device) } ~
           path("order") { setInstallOrder(device) } ~
-          (extractRefinedUuid & path("cancelupdate")) { updateId => cancelUpdate(device, updateId) }
+          (extractRefinedUuid & path("cancelupdate")) { updateId => cancelUpdate(ns, device, updateId) }
         } ~
         scope.post {
           pathEnd { queueDeviceUpdate(ns, device) } ~

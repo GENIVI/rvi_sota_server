@@ -9,8 +9,8 @@ import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.UpdateService
 import org.genivi.sota.core.data.{Campaign, UpdateRequest}
 import org.genivi.sota.core.db.{Campaigns, Packages, UpdateSpecs}
-import org.genivi.sota.data.{Interval, Namespace, PackageId, Uuid}
-import org.genivi.sota.messaging.MessageBusPublisher
+import org.genivi.sota.data._
+import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
 import org.genivi.sota.messaging.Messages.{CampaignLaunched, UriWithSimpleEncoding}
 import org.slf4j.LoggerFactory
 import slick.driver.MySQLDriver.api._
@@ -18,21 +18,29 @@ import slick.driver.MySQLDriver.api._
 import scala.concurrent.{ExecutionContext, Future}
 
 object CampaignLauncher {
+
   import Campaign._
   import UpdateService._
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
-  def cancel(id: Campaign.Id)(implicit db: Database, ec: ExecutionContext): Future[Unit] = {
+  def cancel(id: Campaign.Id, messageBus: MessageBusPublisher)
+            (implicit db: Database, ec: ExecutionContext): Future[Unit] = {
     val dbIO = Campaigns.fetchGroups(id).flatMap { grps =>
       val cancelIO = grps.collect {
         case CampaignGroup(_, Some(ur)) =>
-                   UpdateSpecs.cancelAllUpdatesByRequest(ur)
+          UpdateSpecs.cancelAllUpdatesByRequest(ur).map(_ => ur)
       }
-      DBIO.sequence(cancelIO).map(_ => ())
+
+      DBIO.sequence(cancelIO)
     }
 
-    db.run(dbIO.transactionally)
+    val dbAct = dbIO.transactionally.flatMap{uuids => DBIO.sequence(uuids.map(UpdateSpecs.findPendingByRequest(_)))}
+    db.run(dbAct).flatMap { res =>
+      Future.traverse(res.flatten) { case (usr, namespace, packageUuid) =>
+        messageBus.publishSafe(Messages.UpdateSpec(namespace, usr.device, packageUuid, UpdateStatus.Canceled))
+      }
+    }.map(_ => ())
   }
 
   def resolve(devices: Seq[Uuid]): DependencyResolver = { pkg =>
@@ -66,12 +74,13 @@ object CampaignLauncher {
       )
     }
 
-    def launchGroup (ns: Namespace, pkgId: PackageId, campGrp: CampaignGroup): Future[Uuid] = {
+    def launchGroup(ns: Namespace, pkgId: PackageId, campGrp: CampaignGroup,
+                    messageBus: MessageBusPublisher): Future[Uuid] = {
       val groupId = campGrp.group
       for {
         updateRequest <- updateService.updateRequest(ns, pkgId).map(updateUpdateRequest)
         devices       <- deviceRegistry.fetchDevicesInGroup(ns, groupId)
-        _             <- updateService.queueUpdate(ns, updateRequest, resolve(devices))
+        _             <- updateService.queueUpdate(ns, updateRequest, resolve(devices), messageBus)
 
         uuid          = Uuid.fromJava(updateRequest.id)
         _             <- db.run(Campaigns.setUpdateUuid(id, groupId, uuid))
@@ -82,7 +91,7 @@ object CampaignLauncher {
     for {
       camp <- db.run(Campaigns.fetch(id))
       updateRefs <- camp.groups.toList.traverse(campGrp =>
-        launchGroup(camp.meta.namespace, camp.packageId.get, campGrp))
+        launchGroup(camp.meta.namespace, camp.packageId.get, campGrp, messageBus))
       _ <- db.run(Campaigns.setAsLaunch(id))
     } yield updateRefs
   }

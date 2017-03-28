@@ -32,7 +32,7 @@ class CampaignResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
   import system.dispatcher
 
   def cancel(id: Campaign.Id): Route = {
-    complete(CampaignLauncher.cancel(id))
+    complete(CampaignLauncher.cancel(id, messageBus))
   }
 
   def createCampaign(ns: Namespace, name: CreateCampaign): Route = {

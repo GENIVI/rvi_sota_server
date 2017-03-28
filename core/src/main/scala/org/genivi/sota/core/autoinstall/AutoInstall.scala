@@ -25,7 +25,7 @@ object AutoInstall {
     for {
       updateRequest <- updateService.updateRequest(ns, pkgId)
       devices <- db.run(AutoInstalls.listDevices(ns, pkgId.name))
-      _ <- updateService.queueUpdate(ns, updateRequest, resolve(devices))
+      _ <- updateService.queueUpdate(ns, updateRequest, resolve(devices), messageBus)
       _ <- CampaignLauncher.sendMsg(ns, devices.toSet, pkgId, Uuid.fromJava(updateRequest.id), messageBus)
     } yield ()
   }

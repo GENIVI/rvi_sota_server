@@ -20,7 +20,7 @@ import java.time.{Duration, Instant}
 import java.util.UUID
 
 import cats.data.Xor
-import org.genivi.sota.messaging.MessageBus
+import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture}
 import org.scalatest.prop.PropertyChecks
@@ -219,7 +219,8 @@ class PackageUpdateSpec extends PropSpec
     for {
       specs <- Future.sequence( generatedData.map {
                                  case (request, deps) =>
-                                   updateService.queueUpdate(defaultNs, request, _ => FastFuture.successful(deps))
+                                   updateService.queueUpdate(defaultNs, request, _ => FastFuture.successful(deps),
+                                   MessageBusPublisher.ignore)
                                })
     } yield specs.foldLeft(Set.empty[UpdateSpec])(_ union _)
 
