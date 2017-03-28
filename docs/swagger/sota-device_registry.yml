@@ -337,7 +337,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/ActiveDeviceCount'
-  /package_stats/{name}:
+  /device_packages/{name}:
     get:
       description: Get a count of devices on which the give package is installed, grouped by versions.
       parameters:
