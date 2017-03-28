@@ -187,7 +187,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/uuid'
+              $ref: '#/definitions/Strings/properties/uuid'
   /device_groups:
     get:
       description: Returns a list of all groups
@@ -249,7 +249,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/uuid'
+              $ref: '#/definitions/Strings/properties/uuid'
   /device_groups/{uuid}/count:
     get:
       description: return count of devices in group
@@ -367,43 +367,28 @@ paths:
               $ref: '#/definitions/PackageStat'
 
 definitions:
-  uuid:
-    type: string
-    description: 32 lowercase hexadecimal digits, displayed in five groups separated by hyphens
-  DeviceId:
-    type: string
-    description: A 17-digit VIN. May contain only capital letters and digits. Cannot contain the letters I, O, or Q.
-  DeviceName:
-    type: string
-    description: Custom name for a device
-  DeviceType:
-    type: string
-    description: Valid values are "Vehicle" and "Other"
-  namespace:
-    type: string
-    description: The namespace scope of the request. Default value is 'default'
   DeviceT:
     type: object
     properties:
       deviceName:
-        $ref: '#/definitions/DeviceName'
+        $ref: '#/definitions/Strings/properties/DeviceName'
       deviceId:
-        $ref: '#/definitions/DeviceId'
+        $ref: '#/definitions/Strings/properties/DeviceId'
       deviceType:
-        $ref: '#/definitions/DeviceType'
+        $ref: '#/definitions/Strings/properties/DeviceType'
   Device:
     type: object
     properties:
       namespace:
-        $ref: '#/definitions/namespace'
+        $ref: '#/definitions/Strings/properties/namespace'
       deviceId:
-        $ref: '#/definitions/DeviceId'
+        $ref: '#/definitions/Strings/properties/DeviceId'
       id:
-        $ref: '#/definitions/uuid'
+        $ref: '#/definitions/Strings/properties/uuid'
       deviceName:
-        $ref: '#/definitions/DeviceName'
+        $ref: '#/definitions/Strings/properties/DeviceName'
       deviceType:
-        $ref: '#/definitions/DeviceType'
+        $ref: '#/definitions/Strings/properties/DeviceType'
       lastseen:
         type: string
         format: dateTime
@@ -423,9 +408,9 @@ definitions:
     type: object
     properties:
       device1:
-        $ref: '#/definitions/uuid'
+        $ref: '#/definitions/Strings/properties/uuid'
       device2:
-        $ref: '#/definitions/uuid'
+        $ref: '#/definitions/Strings/properties/uuid'
       groupName:
         type: string
         description: a group name between 1 and 100 characters long
@@ -442,7 +427,7 @@ definitions:
     type: object
     properties:
       device:
-        $ref: '#/definitions/uuid'
+        $ref: '#/definitions/Strings/properties/uuid'
       packageId:
         $ref: '#/definitions/PackageId'
       lastModified:
@@ -459,7 +444,7 @@ definitions:
         description: a set containing all the group ids that have this package installed
         type: array
         items:
-          $ref: '#/definitions/uuid'
+          $ref: '#/definitions/Strings/properties/uuid'
   ActiveDeviceCount:
     type: object
     properties:
@@ -474,3 +459,22 @@ definitions:
         type: string
       installedCount:
         type: integer
+  Strings:
+    type: object
+    description: Various string types referenced elsewhere in the spec.
+    properties:
+      uuid:
+        type: string
+        description: 32 lowercase hexadecimal digits, displayed in five groups separated by hyphens
+      DeviceId:
+        type: string
+        description: A 17-digit VIN. May contain only capital letters and digits. Cannot contain the letters I, O, or Q.
+      DeviceName:
+        type: string
+        description: Custom name for a device
+      DeviceType:
+        type: string
+        description: Valid values are "Vehicle" and "Other"
+      namespace:
+        type: string
+        description: The namespace scope of the request. Default value is 'default'

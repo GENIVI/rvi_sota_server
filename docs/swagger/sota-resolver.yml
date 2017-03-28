@@ -26,7 +26,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/uuid'
+              $ref: '#/definitions/Strings/properties/uuid'
   /devices/{uuid}/package:
     get:
       description: Return a list of packages installed on the device.
@@ -438,17 +438,11 @@ paths:
 
 
 definitions:
-  uuid:
-    type: string
-    description: 32 lowercase hexadecimal digits, displayed in five groups separated by hyphens
-  namespace:
-    type: string
-    description: The namespace scope of the request. Default value is 'default'
   resolverPackage:
     type: object
     properties:
       namespace:
-        $ref: '#/definitions/namespace'
+        $ref: '#/definitions/Strings/properties/namespace'
       id:
         $ref: '#/definitions/packageId'
       description:
@@ -470,7 +464,7 @@ definitions:
     type: object
     properties:
       namespace:
-        $ref: '#/definitions/namespace'
+        $ref: '#/definitions/Strings/properties/namespace'
       partNumber:
         type: string
         description: A part number uniquely identifying the component.
@@ -485,7 +479,7 @@ definitions:
     type: object
     properties:
       namespace:
-        $ref: '#/definitions/namespace'
+        $ref: '#/definitions/Strings/properties/namespace'
       name:
         type: string
         description: The filter's name.
@@ -497,7 +491,7 @@ definitions:
     description: An association between a package and a filter.
     properties:
       namespace:
-        $ref: '#/definitions/namespace'
+        $ref: '#/definitions/Strings/properties/namespace'
       packageName:
         type: string
       packageVersion:
@@ -521,4 +515,14 @@ definitions:
       lastModified:
         type: string
         format: dateTime
+  Strings:
+    type: object
+    description: Various string types referenced elsewhere in the spec.
+    properties:
+      uuid:
+        type: string
+        description: 32 lowercase hexadecimal digits, displayed in five groups separated by hyphens
+      namespace:
+        type: string
+        description: The namespace scope of the request. Default value is 'default'
 
