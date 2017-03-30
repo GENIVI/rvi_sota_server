@@ -134,7 +134,9 @@ object InstalledPackages {
     val limit = mlimit.getOrElse[Long](defaultLimit)
     val query = installedPackages
       .filter(_.name === name)
-      .groupBy(_.version)
+      .join(DeviceRepository.devices).on(_.device === _.uuid)
+      .filter(_._2.namespace === ns)
+      .groupBy(_._1.version)
       .map { case (version, installedPkg) => (version, installedPkg.length) }
       .drop(0) //workaround for slick issue: https://github.com/slick/slick/issues/1355
 
