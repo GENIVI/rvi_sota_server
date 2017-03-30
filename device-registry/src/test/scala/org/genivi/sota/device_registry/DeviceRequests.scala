@@ -107,8 +107,8 @@ trait DeviceRequests { self: ResourceSpec =>
     Get(Resource.uri("device_packages").withQuery(Query("offset" -> offset.toString, "limit" -> limit.toString)))
 
   def getAffected(pkgs: Set[PackageId]): HttpRequest =
-    Post(Resource.uri("packages", "affected"), pkgs)
+    Post(Resource.uri("device_packages", "affected"), pkgs)
 
   def getPackageStats(name: PackageId.Name): HttpRequest =
-    Get(Resource.uri("package_stats", name.get))
+    Get(Resource.uri("device_packages", name.get))
 }

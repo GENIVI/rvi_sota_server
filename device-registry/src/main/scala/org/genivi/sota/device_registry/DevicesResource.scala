@@ -174,14 +174,12 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
     pathPrefix("device_packages") {
       (pathEnd & scope.get) {
         getDistinctPackages(authedNs)
-      }
-    } ~
-    (path("packages" / "affected") & scope.post) {
-      findAffected(authedNs)
-    } ~
-    pathPrefix("package_stats") {
-      (scope.get & refinedPackageName & pathEnd) { name =>
+      } ~
+      (refinedPackageName & pathEnd & scope.get) { name =>
         getPackageStats(authedNs, name)
+      } ~
+      (path("affected") & scope.post) {
+        findAffected(authedNs)
       }
     }
   }

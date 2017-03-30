@@ -46,7 +46,6 @@ class Application @Inject() (ws: WSClient,
   def apiByPath(path: String) : String = path.split("/").toList match {
     case "resolver" :: _ => resolverApiUri
     case "packages" :: "affected" :: _ => deviceRegistryApiUri
-    case "package_stats" :: _ => deviceRegistryApiUri
     case "packages" :: _ => coreApiUri
     case "update_requests" :: _ => coreApiUri
     case "device_updates" :: _ => coreApiUri
@@ -55,6 +54,7 @@ class Application @Inject() (ws: WSClient,
     case "devices" :: _ => deviceRegistryApiUri
     case "device_groups" :: _ => deviceRegistryApiUri
     case "device_count" :: _ => deviceRegistryApiUri
+    case "device_packages" :: _ => deviceRegistryApiUri
     case _ => resolverApiUri
   }
 
