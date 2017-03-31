@@ -150,7 +150,7 @@ trait Settings {
   val rviEndpoint = Uri(config.getString("rvi.endpoint"))
 
   val tufEndpoint =
-    if (config.getBoolean("tuf.use")) Some(Uri(config.getString("tuf.endpoint")))
+    if (config.getBoolean("tuf.use")) Some(Uri(config.getString("tuf.uri")))
     else None
 }
 

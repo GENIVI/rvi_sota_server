@@ -1,6 +1,6 @@
 "Value","Default","Description"
 "PACKAGES_VERSION_FORMAT","""""""^\d+\.\d+\.\d+$""""""","A regular expression that package version numbers will be validated against."
-"LDAP_HOST","“localhost”","The hostname of an LDAP server."
+"LDAP_HOST","localhost","The hostname of an LDAP server."
 "LDAP_PORT",8389,"The port the LDAP service is running on."
 "LDAP_AUTHN_ID","uid=sota,ou=users,dc=genivi,dc=org",
 "LDAP_PASSWORD","“s0ta”",
@@ -11,7 +11,19 @@
 "AUTHN_BASE_DN","ou=users,dc=genivi,dc=org",
 "AUTHN_SEARCH_FILTER","""uid=%s""",
 "LDAP_INMEMORY_ENABLE","null","If set to true, will run an in-memory LDAP server with a few hard-coded users, for easy testing."
+CORE_TEST_DB_URL,"""jdbc:mariadb://localhost:3306/sota_core""",The URL of the Core test database.
+CORE_TEST_DB_USER,“sota”,Username with access to the Core test database.
+CORE_TEST_DB_PASSWORD,“s0ta”,Password for Core test database user.
 "CORE_API_URI","""http://localhost:8080""","Core’s URI."
 "RESOLVER_API_URI","""http://localhost:8081""","Resolver’s URI."
 "DEVICE_REGISTRY_API_URI","""http://localhost:8083""","Device Registry’s URI."
+"SOTA_CORE_PORT",8080,"Port of the Core."
+"SOTA_CORE_HOST","localhost","Location of the Core."
+"SOTA_CORE_API_URI",,"Uri of the Core."
+"SOTA_RESOLVER_PORT",8081,"Port of the Resolver."
+"SOTA_RESOLVER_HOST","localhost","Location of the Resolver."
+"SOTA_RESOLVER_API_URI",,"Uri of the Resolver."
+"DEVICE_REGISTRY_PORT",8083,"Port of the Device Registry."
+"DEVICE_REGISTRY_HOST","localhost","Location of the Device Registry."
+"DEVICE_REGISTRY_API_URI",,"Uri of the Device Registry."
 "DOCKER_IP","“localhost”","If you are using docker-machine, set this to your docker-machine IP."

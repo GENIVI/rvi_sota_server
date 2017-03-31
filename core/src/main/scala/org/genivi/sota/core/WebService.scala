@@ -28,7 +28,7 @@ class WebService(updateService: UpdateService,
 
   import org.genivi.sota.http.ErrorHandler._
 
-  val devicesResource = new DevicesResource(db, connectivity.client, resolver, deviceRegistry, authNamespace)
+  val devicesResource = new DevicesResource(db, connectivity.client, deviceRegistry, authNamespace)
   val packagesResource = new PackagesResource(updateService, db, messageBusPublisher, authNamespace)
   val autoInstallResource = new AutoInstallResource(db, deviceRegistry, authNamespace)
   val updateRequestsResource = new UpdateRequestsResource(db, resolver, updateService, authNamespace,
