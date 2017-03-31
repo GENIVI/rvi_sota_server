@@ -42,6 +42,12 @@ class BlacklistResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
         bl <- BlacklistedPackages.create(namespace, req.packageId, req.comment)
         _ <- messageBus.publishSafe(PackageBlacklisted(namespace, req.packageId, Instant.now()))
         _ <- db.run(UpdateSpecs.cancelAllUpdatesByStatus(UpdateStatus.Pending, namespace, req.packageId))
+        _ <- db.run(UpdateSpecs.findByPackageId(namespace, req.packageId)).map { res =>
+          res.map {
+            case (usr, packageUuid) => messageBus.publish(UpdateSpec(namespace, usr.device, packageUuid,
+              UpdateStatus.Canceled))
+          }
+        }
       } yield StatusCodes.Created
 
       complete(f)

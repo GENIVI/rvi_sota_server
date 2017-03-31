@@ -30,7 +30,7 @@ import java.time.Duration
 
 import org.genivi.sota.core.transfer.DeviceUpdates
 import org.genivi.sota.data.{UpdateStatus, Uuid}
-import org.genivi.sota.messaging.MessageBusPublisher
+import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
 
 import scala.collection.immutable.Queue
 import scala.concurrent.duration.FiniteDuration
@@ -155,47 +155,47 @@ class TransferProtocolActor(db: Database,
               updates: MiniUpdateSpec,
               pending: Queue[Package],
               inProgress: (ActorRef, Package),
-              done: Set[Package]) : Receive = {
+              done: Set[Package]) : Receive =
+    inProgress match { case (inprActor, inprPkg) => {
 
-    case akka.actor.Terminated(ref) =>
-      // TODO: Handle actors terminated on errors (e.g. file exception in PackageTransferActor)
-      val (oldActor, oldPkg) = inProgress
-      assert(oldActor == ref) // TODO debug code
-      log.debug(s"Package for update $updates uploaded.")
+      case akka.actor.Terminated(ref) =>
+        // TODO: Handle actors terminated on errors (e.g. file exception in PackageTransferActor)
+        assert(inprActor == ref) // TODO debug code
+        log.debug(s"Package for update $updates uploaded.")
 
-      if (pending.isEmpty) {
-        log.debug( s"All packages uploaded." )
-        context.setReceiveTimeout(installTimeout)
-        context.system.eventStream.publish( UpdateEvents.PackagesTransferred( updates ) )
-      } else {
-        val nextInProgress = startPackageUpload(services)(updates, pending.head)
-        val finishedPackageTransfers = done + oldPkg
-        context become running(services, updates, pending.tail, nextInProgress, finishedPackageTransfers)
-      }
+        if (pending.isEmpty) {
+          log.debug(s"All packages uploaded.")
+          context.setReceiveTimeout(installTimeout)
+          context.system.eventStream.publish(UpdateEvents.PackagesTransferred(updates))
+        } else {
+          val nextInProgress = startPackageUpload(services)(updates, pending.head)
+          val finishedPackageTransfers = done + inprPkg
+          context become running(services, updates, pending.tail, nextInProgress, finishedPackageTransfers)
+        }
 
-    case x @ ChunksReceived(_, updateId, _) =>
-      assert(updates.requestId == updateId) // TODO debug code
-      val (inprActor, inprPkg) = inProgress
-      inprActor ! x
+      case x@ChunksReceived(_, updateId, _) =>
+        assert(updates.requestId == updateId) // TODO debug code
+        inprActor ! x
 
-    case r @ InstallReport(device, update) =>
-      context.system.eventStream.publish( UpdateEvents.InstallReportReceived(r) )
-      log.debug(s"Install report received from $device: ${update.update_id} installed with ${update.operation_results}")
-      assert(updates.requestId == update.update_id) // TODO debug code
-      DeviceUpdates.reportInstall(device, update, messageBus)(dispatcher, db)
-      rviClient.sendMessage(services.getpackages, io.circe.Json.Null, ttl())
+      case r@InstallReport(device, update) =>
+        context.system.eventStream.publish(UpdateEvents.InstallReportReceived(r))
+        log.debug(
+          s"Install report received from $device: ${update.update_id} installed with ${update.operation_results}")
+        assert(updates.requestId == update.update_id) // TODO debug code
+        DeviceUpdates.reportInstall(device, update, messageBus)(dispatcher, db)
+        rviClient.sendMessage(services.getpackages, io.circe.Json.Null, ttl())
 
-    case ReceiveTimeout =>
-      abortUpdate(services, updates)
-
-    case UploadAborted =>
-      abortUpdate(services, updates)
+      case ReceiveTimeout | UploadAborted =>
+        abortUpdate(services, updates, inprPkg)
+    }
   }
   // scalastyle:on
 
-  def abortUpdate (services: ClientServices, x: MiniUpdateSpec): Unit = {
+  def abortUpdate (services: ClientServices, x: MiniUpdateSpec, pkg: Package): Unit = {
     rviClient.sendMessage(services.abort, io.circe.Json.Null, ttl())
     db.run( UpdateSpecs.setStatus(x.device, x.requestId, UpdateStatus.Canceled) )
+    messageBus.publish(Messages.UpdateSpec(pkg.namespace, x.device, pkg.uuid,
+      UpdateStatus.Canceled, Instant.now))
     context.stop(self)
   }
 

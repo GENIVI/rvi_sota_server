@@ -235,7 +235,6 @@ object UpdateSpecs {
       val createHistoriesIO = InstallHistories.logAll(updateSpecsQuery, success = false)
 
       val cancelIO = updateSpecsQuery.map(_.status).update(UpdateStatus.Canceled)
-
       createHistoriesIO.andThen(cancelIO).transactionally
     }
   }
@@ -252,6 +251,27 @@ object UpdateSpecs {
                          pkg.name === packageId.name &&
                          pkg.version === packageId.version)
 
+
+  def findByPackageId(namespace: Namespace, packageId: PackageId): DBIO[Seq[(UpdateSpecRow, UUID)]] = {
+    val q = for {
+      us <- updateSpecs
+      ur <- updateRequests if ur.id === us.requestId
+      pkg <- Packages.packages if pkg.uuid === ur.packageUuid && pkg.name === packageId.name &&
+              pkg.version === packageId.version && pkg.namespace === namespace
+    } yield (us, pkg.uuid)
+
+    q.result
+  }
+
+  def findPendingByRequest(updateRequest: Uuid): DBIO[Seq[(UpdateSpecRow, Namespace, UUID)]] = {
+    val q = for {
+      us <- updateSpecs if us.status === UpdateStatus.Pending && us.requestId === updateRequest.toJava
+      ur <- updateRequests if ur.id === us.requestId
+      pkg <- Packages.packages
+    } yield (us, pkg.namespace, pkg.uuid)
+
+    q.result
+  }
 
   /**
     * The [[UpdateSpec]]-s (excluding dependencies but including status) for the given [[UpdateRequest]].
