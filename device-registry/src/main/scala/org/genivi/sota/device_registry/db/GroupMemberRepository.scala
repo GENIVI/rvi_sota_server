@@ -5,14 +5,15 @@
 package org.genivi.sota.device_registry.db
 
 import org.genivi.sota.data.Uuid
-import org.genivi.sota.db.SlickExtensions._
+import org.genivi.sota.db.SlickExtensions
+import SlickExtensions._
 import org.genivi.sota.device_registry.common.Errors
 import slick.driver.MySQLDriver.api._
 import slick.lifted.Tag
 
 import scala.concurrent.ExecutionContext
 
-object GroupMemberRepository {
+object GroupMemberRepository extends SlickExtensions {
 
   import org.genivi.sota.db.SlickAnyVal._
 
@@ -33,8 +34,6 @@ object GroupMemberRepository {
   // scalastyle:on
 
   val groupMembers = TableQuery[GroupMembersTable]
-
-  val defaultLimit = 50
 
   //this method assumes that groupId and deviceId belong to the same namespace
   def addGroupMember(groupId: Uuid, deviceId: Uuid)(implicit ec: ExecutionContext): DBIO[Int] =
@@ -61,7 +60,7 @@ object GroupMemberRepository {
       case _ =>
         groupMembers
           .filter(_.groupId === groupId)
-          .paginate(offset.getOrElse(0), limit.getOrElse(defaultLimit))
+          .defaultPaginate(offset, limit)
           .map(_.deviceUuid)
           .result
     }

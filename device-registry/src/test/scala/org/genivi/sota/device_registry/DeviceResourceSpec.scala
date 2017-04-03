@@ -13,9 +13,10 @@ import eu.timepit.refined.api.Refined
 import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.data._
+import org.genivi.sota.db.SlickExtensions
 import org.genivi.sota.device_registry.common.PackageStat
 import org.genivi.sota.device_registry.daemon.DeviceSeenListener
-import org.genivi.sota.device_registry.db.DeviceRepository
+import org.genivi.sota.device_registry.db.InstalledPackages
 import org.genivi.sota.device_registry.db.InstalledPackages.{DevicesCount, InstalledPackage}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
@@ -28,12 +29,12 @@ import org.scalatest.concurrent.ScalaFutures
 /**
  * Spec for DeviceRepository REST actions
  */
-class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
+class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures with SlickExtensions {
 
   import Device._
   import GeneratorOps._
 
-  private val deviceNumber = DeviceRepository.defaultLimit + 10
+  private val deviceNumber = defaultLimit + 10
   private implicit val exec = system.dispatcher
   private val publisher = DeviceSeenListener.action(MessageBusPublisher.ignore)(_)
 
@@ -365,6 +366,33 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
     }
   }
 
+  property("can list devices by group ID") {
+    val limit = 30
+    val offset = 10
+    val deviceNumber = 50
+    val deviceTs = genConflictFreeDeviceTs(deviceNumber).sample.get
+    val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
+    val group = genGroupName.sample.get
+    val groupId = createGroupOk(group)
+
+    deviceIds.foreach { id => addDeviceToGroupOk(groupId, id) }
+
+    // test that we get back all the devices
+    fetchByGroupId(defaultNs, groupId, offset = 0, limit = deviceNumber) ~> route ~> check {
+      status shouldBe OK
+      val devices = responseAs[Seq[Device]]
+      devices.length shouldBe deviceNumber
+      devices.map(_.uuid).toSet shouldBe deviceIds.toSet
+    }
+
+    // test that the limit works
+    fetchByGroupId(defaultNs, groupId, offset = offset, limit = limit) ~> route ~> check {
+      status shouldBe OK
+      val devices = responseAs[Seq[Device]]
+      devices.length shouldBe limit
+    }
+  }
+
   property("can list installed packages for all devices with custom pagination limit and offset") {
 
     val limit = 30
@@ -380,15 +408,16 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
 
     val commonPkg = genPackageId.generate
 
-    val beforePkgs = getInstalledForAllDevices(0, Int.MaxValue) ~> route ~> check {
-      responseAs[PaginatedResult[PackageId]].values.map(canonPkg)
-    }
+    // get packages directly through the DB without pagination
+    val beforePkgsAction = InstalledPackages.getInstalledForAllDevices(defaultNs)
+    val beforePkgs = db.run(beforePkgsAction).futureValue.map(canonPkg)
 
     val allDevicesPackages = deviceIds.map {device =>
       val pkgs = Gen.listOf(genPackageId).generate.toSet + commonPkg
       installSoftwareOk(device, pkgs)
       pkgs
     }
+
     val allPackages =
       (allDevicesPackages.map(_.map(canonPkg)).toSet.flatten ++ beforePkgs.toSet)
         .toSeq.sorted

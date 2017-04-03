@@ -51,6 +51,10 @@ trait DeviceRequests { self: ResourceSpec =>
   def fetchByDeviceId(namespace: Namespace, deviceId: Device.DeviceId): HttpRequest =
     Get(Resource.uri(api).withQuery(Query("namespace" -> namespace.get, "deviceId" -> deviceId.show)))
 
+  def fetchByGroupId(namespace: Namespace, groupId: Uuid, offset: Long = 0, limit: Long = 50): HttpRequest =
+    Get(Resource.uri(api).withQuery(Query("namespace" -> namespace.get, "groupId" -> groupId.show,
+                                          "offset" -> offset.toString, "limit" -> limit.toString)))
+
   def updateDevice(uuid: Uuid, device: DeviceT)
                   (implicit ec: ExecutionContext): HttpRequest =
     Put(Resource.uri(api, uuid.show), device)

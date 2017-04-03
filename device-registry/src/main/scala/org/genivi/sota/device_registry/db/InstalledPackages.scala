@@ -15,11 +15,12 @@ import org.genivi.sota.db.Operators.regex
 import org.genivi.sota.device_registry.common.PackageStat
 import org.genivi.sota.refined.PackageIdDatabaseConversions._
 import org.genivi.sota.refined.SlickRefined._
+import org.genivi.sota.db.SlickExtensions
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
 
-object InstalledPackages {
+object InstalledPackages extends SlickExtensions {
 
   import org.genivi.sota.db.SlickExtensions._
 
@@ -49,8 +50,6 @@ object InstalledPackages {
 
     def * = (device, name, version, lastModified) <> (fromTuple, toTuple)
   }
-
-  val defaultLimit = 50
 
   private val installedPackages = TableQuery[InstalledPackageTable]
 
@@ -92,16 +91,22 @@ object InstalledPackages {
         .result
     } yield DevicesCount(devices, groups.toSet)
 
-  def getInstalledForAllDevices(ns: Namespace, moffset: Option[Long], mlimit: Option[Long])
-                               (implicit ec: ExecutionContext): DBIO[PaginatedResult[PackageId]] = {
-    val offset = moffset.getOrElse[Long](0)
-    val limit = mlimit.getOrElse[Long](defaultLimit)
-    val query = DeviceRepository
+  private def installedForAllDevicesQuery(ns: Namespace): Query[(Rep[PackageId.Name], Rep[PackageId.Version]),
+                                                        (PackageId.Name, PackageId.Version), Seq] =
+    DeviceRepository
       .devices.filter(_.namespace === ns)
       .join(installedPackages).on(_.uuid === _.device)
       .map(r => (r._2.name, r._2.version))
       .distinct
 
+  def getInstalledForAllDevices(ns: Namespace)(implicit ec: ExecutionContext): DBIO[Seq[PackageId]] =
+    installedForAllDevicesQuery(ns).result.map(_.map {case (name, version) => PackageId(name, version)})
+
+  def getInstalledForAllDevices(ns: Namespace, moffset: Option[Long], mlimit: Option[Long])
+                               (implicit ec: ExecutionContext): DBIO[PaginatedResult[PackageId]] = {
+    val offset = moffset.getOrElse[Long](0)
+    val limit = mlimit.getOrElse[Long](defaultLimit).min(maxLimit)
+    val query = installedForAllDevicesQuery(ns)
     val pagedquery = query.paginateAndSort(identity, offset, limit)
     val pkgResult = pagedquery.result.map(_.map {case (name, version) => PackageId(name, version)})
 
