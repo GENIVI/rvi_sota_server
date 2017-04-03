@@ -112,6 +112,14 @@ object Messages {
                                     pkgSize: Long, pkgChecksum: String,
                                     timestamp: Instant = Instant.now()) extends BusMessage
 
+  final case class DeltaRequest(id: Uuid, namespace: Namespace, from: String, to: String,
+                                timestamp: Instant = Instant.now) extends BusMessage
+
+  final case class GeneratedDelta(id: Uuid, namespace: Namespace, from: String, to: String, summary: OstreeSummary,
+                                  uri: Uri, size: Long) extends BusMessage
+
+  final case class GeneratingDeltaFailed(id: Uuid, namespace: Namespace, from: String, to: String) extends BusMessage
+
   implicit class StreamNameOp[T <: Class[_]](v: T) {
     def streamName: String = {
       v.getSimpleName.filterNot(c => List('$').contains(c))
@@ -179,4 +187,10 @@ object Messages {
   implicit val deviceStatusMessageLike = MessageLike[DeviceUpdateStatus](_.device.show)
 
   implicit val campaignLaunchedMessageLike = MessageLike[CampaignLaunched](_.updateId.show)
+
+  implicit val deltaGenerationRequestMessageLike = MessageLike[DeltaRequest](_.id.show)
+
+  implicit val deltaGeneratedMessageLike = MessageLike[GeneratedDelta](_.id.show)
+
+  implicit val deltaGenerationFailedMessageLike = MessageLike[GeneratingDeltaFailed](_.id.show)
 }

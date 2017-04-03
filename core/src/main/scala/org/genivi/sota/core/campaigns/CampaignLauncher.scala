@@ -11,7 +11,7 @@ import org.genivi.sota.core.data.{Campaign, UpdateRequest}
 import org.genivi.sota.core.db.{Campaigns, Packages, UpdateSpecs}
 import org.genivi.sota.data._
 import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
-import org.genivi.sota.messaging.Messages.{CampaignLaunched, UriWithSimpleEncoding}
+import org.genivi.sota.messaging.Messages.{CampaignLaunched, DeltaRequest, UriWithSimpleEncoding}
 import org.slf4j.LoggerFactory
 import slick.driver.MySQLDriver.api._
 
@@ -60,10 +60,10 @@ object CampaignLauncher {
     }
   }
 
-  def launch (deviceRegistry: DeviceRegistry, updateService: UpdateService, id: Campaign.Id, lc: LaunchCampaign,
+  def launch(deviceRegistry: DeviceRegistry, updateService: UpdateService, id: Campaign.Id, lc: LaunchCampaignRequest,
               messageBus: MessageBusPublisher)
              (implicit db: Database, ec: ExecutionContext)
-      : Future[List[Uuid]] = {
+      : Future[Unit] = {
     def updateUpdateRequest(ur: UpdateRequest): UpdateRequest = {
       ur.copy(periodOfValidity = Interval(lc.startDate.getOrElse(ur.periodOfValidity.start),
                                           lc.endDate.getOrElse(ur.periodOfValidity.end)),
@@ -90,9 +90,25 @@ object CampaignLauncher {
 
     for {
       camp <- db.run(Campaigns.fetch(id))
-      updateRefs <- camp.groups.toList.traverse(campGrp =>
-        launchGroup(camp.meta.namespace, camp.packageId.get, campGrp, messageBus))
-      _ <- db.run(Campaigns.setAsLaunch(id))
-    } yield updateRefs
+      _    <- camp.groups.toList.traverse(campGrp =>
+                launchGroup(camp.meta.namespace, camp.packageId.get, campGrp, messageBus))
+      _    <- db.run(Campaigns.setAsLaunch(id))
+    } yield ()
+  }
+
+  def generateDeltaRequest(id: Campaign.Id, lc: LaunchCampaignRequest, messageBus: MessageBusPublisher)
+                          (implicit db: Database, ec: ExecutionContext) : Future[Unit] = {
+    import MessageBusPublisher._
+
+    val f = for {
+      campaign <- Campaigns.fetch(id)
+      _        <- Campaigns.createLaunchCampaignRequest(id, lc)
+      _        <- Campaigns.setAsInPreparation(id)
+    } yield {
+      DeltaRequest(id.underlying, campaign.meta.namespace, campaign.meta.deltaFrom.get.version.get,
+        campaign.packageId.get.version.get)
+    }
+
+    db.run(f.transactionally).pipeToBus(messageBus)(identity).map(_ => ())
   }
 }

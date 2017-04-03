@@ -6,21 +6,21 @@ package org.genivi.sota.core.data
 
 import cats.Show
 import cats.data.Xor
-import eu.timepit.refined.string._
 import io.circe._
 import java.time.Instant
 import java.util.UUID
-import org.genivi.sota.core.SotaCoreErrors
-import org.genivi.sota.data.{Namespace, PackageId, Uuid}
-import slick.driver.MySQLDriver.api._
 
+import org.genivi.sota.core.SotaCoreErrors
+import org.genivi.sota.data._
+import slick.driver.MySQLDriver.api._
 import Campaign._
+import org.genivi.sota.core.data.CampaignStatus.Status
 
 case class Campaign (meta: CampaignMeta, packageId: Option[PackageId], groups: Seq[CampaignGroup]) {
   def canLaunch(): Throwable Xor Unit = {
-    if (!meta.packageUuid.isDefined || groups.size < 1) {
+    if (meta.packageUuid.isEmpty || groups.size < 1) {
       Xor.Left(SotaCoreErrors.CantLaunchCampaign)
-    } else if (meta.launched) {
+    } else if (meta.status != CampaignStatus.Draft) {
       Xor.Left(SotaCoreErrors.CampaignLaunched)
     } else {
       Xor.Right(())
@@ -31,20 +31,28 @@ case class Campaign (meta: CampaignMeta, packageId: Option[PackageId], groups: S
 sealed case class CampaignStatistics(groupId: Uuid, updateId: Uuid, deviceCount: Int, updatedDevices: Int,
                                      successfulUpdates: Int, failedUpdates: Int, cancelledUpdates: Int)
 
+object CampaignStatus extends CirceEnum with SlickEnum {
+  type Status = Value
+
+  val Draft, InPreparation, Active = Value
+}
+
 object Campaign {
   case class CampaignMeta(
     id: Id,
     namespace: Namespace,
     name : String,
-    launched: Boolean = false,
+    status: Status = CampaignStatus.Draft,
     packageUuid: Option[Uuid] = None,
-    createdAt: Instant
+    createdAt: Instant,
+    deltaFrom: Option[PackageId] = None,
+    size: Option[Long] = None
   )
   case class CreateCampaign(name: String)
   case class SetCampaignGroups(groups: Seq[Uuid])
   case class CampaignGroup(group: Uuid, updateRequest: Option[Uuid])
 
-  case class LaunchCampaign(
+  case class LaunchCampaignRequest(
     startDate: Option[Instant] = None,
     endDate: Option[Instant] = None,
     priority: Option[Int] = None,
@@ -57,7 +65,7 @@ object Campaign {
         if(sd.isBefore(ed)) {
           Xor.Right(())
         } else {
-          Xor.Left("The LaunchCampaign object is not valid because the start date is not before end date.")
+          Xor.Left("The LaunchCampaignRequest object is not valid because the start date is not before end date.")
         }
       case _ => Xor.Right(())
     }

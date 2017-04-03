@@ -128,7 +128,7 @@ trait Generators {
     groups <- Gen.nonEmptyContainerOf[List, Uuid](Uuid.generate())
   } yield SetCampaignGroups(groups)
 
-  val LaunchCampaignGen: Gen[LaunchCampaign] = for {
+  val LaunchCampaignGen: Gen[LaunchCampaignRequest] = for {
     inter      <- IntervalGen
     startDate  <- Gen.option(inter.start)
     endDate    <- Gen.option(inter.end)
@@ -136,7 +136,7 @@ trait Generators {
     sig        <- Gen.option(Gen.alphaStr)
     desc       <- Gen.option(Gen.alphaStr)
     reqConfirm <- Gen.option(arbitrary[Boolean])
-  } yield LaunchCampaign(startDate, endDate, prio, sig, desc, reqConfirm)
+  } yield LaunchCampaignRequest(startDate, endDate, prio, sig, desc, reqConfirm)
 }
 
 object Generators extends Generators
