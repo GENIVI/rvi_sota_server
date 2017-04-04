@@ -13,7 +13,6 @@ import org.genivi.sota.data.{Namespace, PackageId, UpdateStatus, Uuid}
 import org.genivi.sota.db.SlickExtensions
 import java.time.Instant
 
-import cats.syntax.show.toShowOps
 import org.genivi.sota.http.Errors.MissingEntity
 import slick.driver.MySQLDriver.api._
 
@@ -126,18 +125,6 @@ object UpdateSpecs {
   }
 
   /**
-    * Look up by (UpdateRequest.UUID, Device.UUID) tuple.
-    *
-    * @param arg: Sequence of tuples (UpdateRequest.UUID, Device.UUID)
-    */
-  private def inSeq(arg: Seq[(UUID, Uuid)]): Query[UpdateSpecTable, UpdateSpecRow, Seq] = {
-    updateSpecs.filter { r =>
-      (r.requestId.mappedTo[String] ++ r.device.mappedTo[String])
-        .inSet(arg.map { case (req, device) => req.toString + device.show })
-    }
-  }
-
-  /**
     * Lookup by PK in [[UpdateSpecTable]] table.
     * Note: A tuple is returned instead of an [[UpdateSpec]] instance because
     * the later would require joining [[RequiredPackageTable]] to populate the `dependencies` of that instance.
@@ -221,22 +208,19 @@ object UpdateSpecs {
 
   private def cancelAllUpdatesBy(updateSpecFilter: UpdateSpecTable => Rep[Boolean],
                                  packageFilter: Packages.PackageTable => Rep[Boolean])
-                        (implicit ec: ExecutionContext): DBIO[Int] = {
-    val updateRequestIdsQuery = for {
-      us <- updateSpecs if updateSpecFilter(us)
-      ur <- updateRequests if ur.id === us.requestId
+                                (implicit ec: ExecutionContext): DBIO[Int] = {
+    // need to make sure to have the single table updateSpecs (filtered) for update, not a join
+    // (see http://slick.lightbend.com/doc/3.2.0/queries.html#deleting)
+    val updateRequestIdQuery = for {
+      ur <- updateRequests
       pkg <- Packages.packages if pkg.uuid === ur.packageUuid && packageFilter(pkg)
-    } yield (us.requestId, us.device)
+    } yield ur.id
 
-    // Slick does not allow us to use `in` instead of `inSet`, so we need to use DBIO instead of updateRequestIdsQuery
-    updateRequestIdsQuery.result.flatMap { ids =>
-      val updateSpecsQuery = inSeq(ids)
+    val updateSpecsQuery = updateSpecs.withFilter(us => updateSpecFilter(us) && (us.requestId in updateRequestIdQuery))
 
-      val createHistoriesIO = InstallHistories.logAll(updateSpecsQuery, success = false)
-
-      val cancelIO = updateSpecsQuery.map(_.status).update(UpdateStatus.Canceled)
-      createHistoriesIO.andThen(cancelIO).transactionally
-    }
+    val createHistoriesIO = InstallHistories.logAll(updateSpecsQuery, success = false)
+    val cancelIO = updateSpecsQuery.map(_.status).update(UpdateStatus.Canceled)
+    createHistoriesIO.andThen(cancelIO).transactionally
   }
 
   def cancelAllUpdatesByRequest(updateRequest: Uuid)
