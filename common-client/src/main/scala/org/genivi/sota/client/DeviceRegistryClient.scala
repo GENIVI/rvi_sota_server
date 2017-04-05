@@ -86,11 +86,15 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri, 
     execHttp[NoContent](HttpRequest(method = PUT, uri = baseUri.withPath(mydeviceUri.path / device.show / "packages"),
       entity = HttpEntity(ContentTypes.`application/json`, packages.asJson.noSpaces)))
 
-  override def affectedDevices(namespace: Namespace, packageIds: Set[PackageId])
+  override def affectedDevices(ns: Namespace, packageIds: Set[PackageId])
                               (implicit ec: ExecutionContext): Future[Map[Uuid, Set[PackageId]]] = {
-    execHttp[Map[Uuid, Set[PackageId]]](HttpRequest(method = POST,
-      uri = baseUri.withPath(packagesUri.path / "affected"),
-      entity = HttpEntity(ContentTypes.`application/json`, packageIds.asJson.noSpaces)))
+    execHttp[Map[Uuid, Set[PackageId]]](
+      HttpRequest(
+        method = POST,
+        uri = baseUri.withPath(packagesUri.path / "affected"),
+        entity = HttpEntity(ContentTypes.`application/json`, packageIds.asJson.noSpaces))
+      .withHeaders(nsHeader(ns))
+    )
   }
 
   private def execHttp[T](httpRequest: HttpRequest)
