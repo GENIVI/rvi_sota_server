@@ -38,8 +38,15 @@ object MessageBusPublisher {
     lazy private val _logger = LoggerFactory.getLogger(this.getClass)
 
     override def publish[T](msg: T)(implicit ex: ExecutionContext, messageLike: MessageLike[T]): Future[Unit] = {
-      _logger.info(s"Ignoring message publish to bus")
+      _logger.debug(s"Ignoring message publish to bus")
       Future.successful(())
+    }
+
+    // also overriding this so that we don't get two log entries for the same message
+    override def publishSafe[T](msg: T)
+                               (implicit ec: ExecutionContext, messageLike: MessageLike[T]): Future[Try[Unit]] = {
+      _logger.debug(s"Ignoring publishing ${messageLike.streamName} - ${messageLike.id(msg)}")
+      Future { Success(Try(())) }
     }
   }
 

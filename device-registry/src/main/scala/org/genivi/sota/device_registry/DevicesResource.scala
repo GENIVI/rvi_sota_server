@@ -51,16 +51,19 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
   def searchDevice(ns: Namespace): Route =
     parameters(('regex.as[String Refined Regex].?,
                 'deviceId.as[String].?, // TODO: Use refined
+                'groupId.as[String Refined Uuid.Valid].?,
                 'offset.as[Long].?,
                 'limit.as[Long].?)) {
-      case (Some(re), None, offset, limit) =>
+      case (Some(re), None, None, offset, limit) =>
         complete(db.run(DeviceRepository.search(ns, re, offset, limit)))
-      case (None, Some(deviceId), _, _) =>
+      case (None, Some(deviceId), None, _, _) =>
         complete(db.run(DeviceRepository.findByDeviceId(ns, DeviceId(deviceId))))
-      case (None, None, offset, limit) =>
+      case (None, None, Some(groupId), offset, limit) =>
+        complete(db.run(DeviceRepository.findByGroupId(ns, Uuid(groupId), offset, limit)))
+      case (None, None, None, offset, limit) =>
         complete(db.run(DeviceRepository.list(ns, offset, limit)))
       case _ =>
-        complete((BadRequest, "'regex' and 'deviceId' parameters cannot be used together!"))
+        complete((BadRequest, "'regex', 'deviceId' and/or 'groupId' parameters cannot be used together!"))
     }
 
   def createDevice(ns: Namespace, device: DeviceT): Route = {

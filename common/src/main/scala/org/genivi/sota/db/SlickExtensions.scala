@@ -28,6 +28,27 @@ import scala.util.{Failure, Success}
   * @see {@link http://slick.typesafe.com/docs/}
   */
 
+trait SlickExtensions {
+  val defaultLimit = 50
+  val maxLimit = defaultLimit
+
+  implicit class DbioPaginateExtensions[E, U, A](action: Query[E, U, Seq]) {
+
+    def paginate(offset: Long, limit: Long): Query[E, U, Seq] =
+      action.drop(offset).take(limit.min(maxLimit))
+
+    def defaultPaginate(offset: Option[Long], limit: Option[Long]): Query[E, U, Seq] =
+      action.paginate(offset.getOrElse(0), limit.getOrElse(defaultLimit))
+
+    def paginateAndSort[T <% slick.lifted.Ordered](fn: E => T, offset: Long, limit: Long): Query[E, U, Seq] =
+      action.sortBy(fn).paginate(offset, limit)
+
+    def defaultPaginateAndSort[T <% slick.lifted.Ordered]
+    (fn: E => T, offset: Option[Long], limit: Option[Long]): Query[E, U, Seq] =
+      action.sortBy(fn).defaultPaginate(offset, limit)
+  }
+}
+
 object SlickExtensions {
   implicit val UriColumnType = MappedColumnType.base[Uri, String](_.toString(), Uri.apply)
 
@@ -55,20 +76,6 @@ object SlickExtensions {
 
   implicit def uuidToJava(refined: Refined[String, Uuid]): Rep[UUID] =
     UUID.fromString(refined.get).bind
-
-  implicit class DbioPaginateExtensions[E, U, A](action: Query[E, U, Seq]) {
-    def paginateAndSort[T <% slick.lifted.Ordered](fn: E => T, offset: Long, limit: Long): Query[E, U, Seq] = {
-      action
-        .sortBy(fn)
-        .drop(offset)
-        .take(limit)
-    }
-    def paginate(offset: Long, limit: Long): Query[E, U, Seq] = {
-      action
-        .drop(offset)
-        .take(limit)
-    }
-  }
 
   implicit class DbioActionExtensions[T](action: DBIO[T]) {
     def handleIntegrityErrors(error: Throwable)(implicit ec: ExecutionContext): DBIO[T] = {

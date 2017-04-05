@@ -11,6 +11,7 @@ import eu.timepit.refined.string.Regex
 import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
 import org.genivi.sota.data.DeviceStatus.DeviceStatus
 import org.genivi.sota.db.Operators.regex
+import org.genivi.sota.db.SlickExtensions
 import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.refined.SlickRefined._
@@ -18,7 +19,7 @@ import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
 
-object DeviceRepository {
+object DeviceRepository extends SlickExtensions {
 
   import Device._
   import org.genivi.sota.db.SlickAnyVal._
@@ -44,8 +45,6 @@ object DeviceRepository {
   // scalastyle:on
   val devices = TableQuery[DeviceTable]
 
-  val defaultLimit = 50
-
   def list(ns: Namespace, offset: Option[Long], limit: Option[Long]): DBIO[Seq[Device]] = {
     val filteredDevices = devices.filter(_.namespace === ns)
     (offset, limit) match {
@@ -55,7 +54,7 @@ object DeviceRepository {
           .result
       case _ =>
         filteredDevices
-          .paginateAndSort(_.deviceName, offset.getOrElse(0), limit.getOrElse(defaultLimit))
+          .defaultPaginateAndSort(_.deviceName, offset, limit)
           .result
     }
   }
@@ -98,6 +97,15 @@ object DeviceRepository {
       .filter(d => d.namespace === ns && d.deviceId === deviceId)
       .result
 
+  def findByGroupId(ns: Namespace, groupId: Uuid, offset: Option[Long], limit: Option[Long]): DBIO[Seq[Device]] = {
+    val q = for {
+      gm <- GroupMemberRepository.groupMembers if gm.groupId === groupId
+      d <- devices if d.namespace === ns && gm.deviceUuid === d.uuid
+    } yield d
+
+    q.defaultPaginate(offset, limit).result
+  }
+
   def search(ns: Namespace, re: String Refined Regex, offset: Option[Long], limit: Option[Long]): DBIO[Seq[Device]] = {
     val filteredDevices = devices.filter(d => d.namespace === ns && regex(d.deviceName, re))
     (offset, limit) match {
@@ -107,7 +115,7 @@ object DeviceRepository {
           .result
       case _ =>
         filteredDevices
-          .paginateAndSort(_.deviceName, offset.getOrElse(0), limit.getOrElse(defaultLimit))
+          .defaultPaginateAndSort(_.deviceName, offset, limit)
           .result
     }
   }
