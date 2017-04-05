@@ -86,7 +86,7 @@ class DeviceUpdatesResource(db: Database,
   def updateInstalledPackages(id: Uuid): Route = {
     (entity(as[List[PackageId]]) & extractLog) { (ids, log) =>
       val f = DeviceUpdates
-        .update(id, ids, resolverClient)
+        .update(id, ids, deviceRegistry)
         .flatMap { _ =>
           //ignore failures here as the actual work has been done in update()
           sendDeviceSeen(id)
