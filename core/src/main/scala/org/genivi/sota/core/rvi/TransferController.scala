@@ -193,9 +193,11 @@ class TransferProtocolActor(db: Database,
 
   def abortUpdate (services: ClientServices, x: MiniUpdateSpec, pkg: Package): Unit = {
     rviClient.sendMessage(services.abort, io.circe.Json.Null, ttl())
-    db.run( UpdateSpecs.setStatus(x.device, x.requestId, UpdateStatus.Canceled) )
-    messageBus.publish(Messages.UpdateSpec(pkg.namespace, x.device, pkg.uuid,
-      UpdateStatus.Canceled, Instant.now))
+    db.run( UpdateSpecs.setStatus(x.device, x.requestId, UpdateStatus.Canceled) ).filter(_ > 0).map { _ =>
+      // only send if updated in the DB
+      messageBus.publish(Messages.UpdateSpec(pkg.namespace, x.device, pkg.uuid, UpdateStatus.Canceled, Instant.now))
+    }
+
     context.stop(self)
   }
 

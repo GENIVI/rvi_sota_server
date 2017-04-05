@@ -238,7 +238,7 @@ class DeviceUpdatesResource(db: Database,
   def setBlockedInstall(device: Uuid): Route = {
     val resp = db.run(BlockedInstalls.persist(device))
       .map(_ => NoContent)
-      complete(resp)
+    complete(resp)
   }
 
   /**
@@ -247,7 +247,7 @@ class DeviceUpdatesResource(db: Database,
   def deleteBlockedInstall(device: Uuid): Route = {
     val resp = db.run(BlockedInstalls.delete(device))
       .map(_ => NoContent)
-      complete(resp)
+    complete(resp)
   }
 
   /**
@@ -255,11 +255,14 @@ class DeviceUpdatesResource(db: Database,
     * [[org.genivi.sota.data.UpdateStatus.Canceled]]. Also sends out a [[Messages.UpdateSpec]].
     */
   def cancelUpdate(namespace: Namespace, device: Uuid, updateId: Refined[String, Uuid.Valid]): Route = {
-    db.run(UpdateRequests.byId(UUID.fromString(updateId.get))).map { updateRequest =>
+    val response = db.run(UpdateSpecs.cancelUpdate(device, updateId)).map {_ =>
+      db.run(UpdateRequests.byId(UUID.fromString(updateId.get))).map { updateRequest =>
         messageBus.publishSafe(Messages.UpdateSpec(namespace, device, updateRequest.packageUuid, UpdateStatus.Canceled))
+      }
+
+      StatusCodes.NoContent
     }
 
-    val response = db.run(UpdateSpecs.cancelUpdate(device, updateId)).map(_ => StatusCodes.NoContent)
     complete(response)
   }
 

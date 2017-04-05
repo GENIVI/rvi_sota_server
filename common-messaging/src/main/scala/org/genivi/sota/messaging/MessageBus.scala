@@ -34,7 +34,7 @@ trait MessageBusPublisher {
 }
 
 object MessageBusPublisher {
-  def ignore = new MessageBusPublisher {
+  def ignore: MessageBusPublisher = new MessageBusPublisher {
     lazy private val _logger = LoggerFactory.getLogger(this.getClass)
 
     override def publish[T](msg: T)(implicit ex: ExecutionContext, messageLike: MessageLike[T]): Future[Unit] = {
