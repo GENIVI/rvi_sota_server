@@ -9,11 +9,15 @@ import akka.http.scaladsl.model.{HttpRequest, StatusCodes, Uri}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import cats.implicits._
 import org.genivi.sota.DefaultPatience
-import org.genivi.sota.data.{Namespaces, PackageId, Uuid}
+import org.genivi.sota.core.data.Package
+import org.genivi.sota.core.resolver.DefaultConnectivity
+import org.genivi.sota.core.transfer.DefaultUpdateNotifier
+import org.genivi.sota.data.{Namespace, Namespaces, PackageId, Uuid}
 import org.genivi.sota.data.DeviceGenerators._
 import org.genivi.sota.data.GeneratorOps._
 import org.genivi.sota.http.NamespaceDirectives.defaultNamespaceExtractor
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.genivi.sota.messaging.MessageBusPublisher
 import org.scalatest.{FunSuite, ShouldMatchers}
 import org.scalatest.concurrent.ScalaFutures
 
@@ -29,8 +33,12 @@ class AutoInstallResourceSpec extends FunSuite
 
   val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
 
+  implicit val messageBus = MessageBusPublisher.ignore
+  implicit val connectivity = DefaultConnectivity
+  val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
   val service = new AutoInstallResource(db, deviceRegistry, defaultNamespaceExtractor).route
   private val autoinstallPath = "/auto_install"
+  val ns = Namespace("default")
 
   def autoinstallUrl(pathSuffixes: String*): Uri = {
     Uri.Empty.withPath(pathSuffixes.foldLeft(Path(autoinstallPath))(_/_))
@@ -79,6 +87,33 @@ class AutoInstallResourceSpec extends FunSuite
     removeDevice(pkgName, device) ~> service ~> check {
       status shouldBe StatusCodes.OK
     }
+  }
+
+  def uploadPackage(pkgName: PackageId.Name): PackageId = {
+    import org.genivi.sota.core.storage.StoragePipeline
+
+    val pkgVersion = PackageVersionGen.generate
+    val pkgId = PackageId(pkgName, pkgVersion)
+    val pkg = Package(ns, Uuid.generate().toJava, pkgId, Uri(), 0, "", None, None, None)
+    new StoragePipeline(updateService).storePackage(pkg).futureValue
+    pkgId
+  }
+
+  def howManyUpdateRequestsFor(pkgId: PackageId): Int = {
+    import org.genivi.sota.core.db.{Packages, UpdateRequests}
+    import org.genivi.sota.refined.SlickRefined._
+    import slick.driver.MySQLDriver.api._
+
+    val pkgQ = Packages.packages
+      .filter(_.name === pkgId.name)
+      .filter(_.version === pkgId.version)
+      .map(_.uuid)
+
+    val q = UpdateRequests.all
+      .join(pkgQ).on(_.packageUuid === _)
+      .map(_._1)
+
+    db.run(q.length.result).futureValue
   }
 
   test("add device shows up in listed") {
@@ -161,6 +196,24 @@ class AutoInstallResourceSpec extends FunSuite
       pkgs should contain(pkgName1)
       pkgs should contain(pkgName2)
     }
+  }
 
+  test("uploading package creates update request for auto_install device") {
+    val device = createDevice()
+    val pkgName = PackageNameGen.generate
+
+    addDeviceOk(pkgName, device)
+    val pkgId = uploadPackage(pkgName)
+
+    howManyUpdateRequestsFor(pkgId) shouldBe 1
+  }
+
+  test("uploading package doesn't create update request for other device") {
+    val device = createDevice()
+    val pkgName = PackageNameGen.generate
+
+    val pkgId = uploadPackage(pkgName)
+
+    howManyUpdateRequestsFor(pkgId) shouldBe 0
   }
 }
