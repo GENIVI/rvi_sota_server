@@ -18,9 +18,8 @@ import eu.timepit.refined.string.Regex
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
-
 import org.genivi.sota.common.DeviceRegistry
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.data._
 import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.http.NamespaceDirectives.nsHeader
 import org.genivi.sota.marshalling.CirceMarshallingSupport
@@ -42,15 +41,20 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri, 
 
   private val http = Http()
 
+  // TODO: change return type to Future[PaginatedResult[Device]]]
   override def searchDevice(ns: Namespace, re: String Refined Regex)
-                           (implicit ec: ExecutionContext): Future[Seq[Device]] =
-    execHttp[Seq[Device]](HttpRequest(uri = baseUri.withPath(devicesUri.path)
+                           (implicit ec: ExecutionContext): Future[Seq[Device]] = {
+
+    val pr = execHttp[PaginatedResult[Device]](HttpRequest(uri = baseUri.withPath(devicesUri.path)
       .withQuery(Query("regex" -> re.get)))
       .withHeaders(nsHeader(ns)))
       .recover { case t =>
         log.error(t, "Could not contact device registry")
-        Seq.empty[Device]
+        PaginatedResult[Device](0, 0, 0, Seq.empty[Device])
       }
+
+    pr.map(_.values)
+  }
 
   override def fetchDevice(ns: Namespace, uuid: Uuid)
                           (implicit ec: ExecutionContext): Future[Device] =

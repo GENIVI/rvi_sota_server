@@ -46,7 +46,7 @@ class UpdateServiceSpec extends PropSpec
   override def beforeAll() : Unit = {
     super.beforeAll()
     val dbio = DBIO.sequence(packages.map(Packages.create)).transactionally
-    Await.ready(db.run(dbio), 50.seconds)
+    Await.ready(db.run(dbio), 2.minutes)
   }
 
   import Generators._
@@ -91,8 +91,9 @@ class UpdateServiceSpec extends PropSpec
 
     forAll(updateRequestGen(availablePackageIdGen), resolverGen) { (request, resolverConf) =>
       val (missingPackages, resolver) = resolverConf
-      whenReady(service.queueUpdate(defaultNs, request, resolver, messageBus).failed.mapTo[PackagesNotFound]) { failure =>
-        failure.packageIds.toSet.union(missingPackages.toSet) should contain theSameElementsAs missingPackages
+      whenReady(service.queueUpdate(defaultNs, request, resolver, messageBus).failed.mapTo[PackagesNotFound]) {
+        failure =>
+                failure.packageIds.toSet.union(missingPackages.toSet) should contain theSameElementsAs missingPackages
       }
     }
   }

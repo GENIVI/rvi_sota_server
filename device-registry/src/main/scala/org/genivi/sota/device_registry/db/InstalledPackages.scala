@@ -102,16 +102,12 @@ object InstalledPackages extends SlickExtensions {
   def getInstalledForAllDevices(ns: Namespace)(implicit ec: ExecutionContext): DBIO[Seq[PackageId]] =
     installedForAllDevicesQuery(ns).result.map(_.map {case (name, version) => PackageId(name, version)})
 
-  def getInstalledForAllDevices(ns: Namespace, moffset: Option[Long], mlimit: Option[Long])
+  def getInstalledForAllDevices(ns: Namespace, offset: Option[Long], limit: Option[Long])
                                (implicit ec: ExecutionContext): DBIO[PaginatedResult[PackageId]] = {
-    val offset = moffset.getOrElse[Long](0)
-    val limit = mlimit.getOrElse[Long](defaultLimit).min(maxLimit)
-    val query = installedForAllDevicesQuery(ns)
-    val pagedquery = query.paginateAndSort(identity, offset, limit)
-    val pkgResult = pagedquery.result.map(_.map {case (name, version) => PackageId(name, version)})
-
-    query.length.result.zip(pkgResult).map{ case (total, values) =>
-      PaginatedResult(total=total, limit=limit, offset=offset, values=values)
+    val query = installedForAllDevicesQuery(ns).paginatedResult(identity, offset, limit)
+    query.map { nameVersionResult =>
+      PaginatedResult(nameVersionResult.total, nameVersionResult.limit, nameVersionResult.offset,
+                      nameVersionResult.values.map(nameVersion => PackageId(nameVersion._1, nameVersion._2)))
     }
   }
 

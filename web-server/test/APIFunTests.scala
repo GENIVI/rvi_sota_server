@@ -23,7 +23,7 @@ import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
 import io.circe.parser._
-import org.genivi.sota.data.Device
+import org.genivi.sota.data.{Device, PaginatedResult}
 import org.genivi.sota.marshalling.CirceInstances._
 import org.genivi.sota.data.Device._
 import cats.syntax.show.toShowOps
@@ -193,10 +193,10 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   "test searching devices" taggedAs APITests in {
     val response = makeRequest(s"devices?namespace=$testNamespace&regex=" + testVin, GET)
     response.status mustBe OK
-    val jsonResponse = decode[List[Device]](response.body)
+    val jsonResponse = decode[PaginatedResult[Device]](response.body)
     jsonResponse.toOption match {
-      case Some(resp) => resp.length mustBe 1
-        resp.headOption.map(_.uuid.show) mustEqual testId
+      case Some(resp) => resp.values.length mustBe 1
+        resp.values.headOption.map(_.uuid.show) mustEqual testId
       case None => fail(s"JSON parse error: $jsonResponse body: ${response.body}")
     }
   }

@@ -12,7 +12,7 @@ import java.time.Instant
 
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Uuid
-import org.genivi.sota.data.Namespace
+import org.genivi.sota.data.{Namespace, PaginatedResult}
 import org.genivi.sota.http.Errors
 import slick.ast.{Node, TypedType}
 import slick.driver.MySQLDriver.api._
@@ -46,6 +46,17 @@ trait SlickExtensions {
     def defaultPaginateAndSort[T <% slick.lifted.Ordered]
     (fn: E => T, offset: Option[Long], limit: Option[Long]): Query[E, U, Seq] =
       action.sortBy(fn).defaultPaginate(offset, limit)
+
+    def paginatedResult[T <% slick.lifted.Ordered](fn: E => T, offset: Option[Long], limit: Option[Long])
+                                                  (implicit ec: ExecutionContext):  DBIO[PaginatedResult[U]] = {
+      val o = offset.getOrElse(0L)
+      val l = limit.getOrElse[Long](defaultLimit).min(maxLimit)
+
+      action.length.result.zip(action.paginateAndSort(fn, o, l).result).map {
+        case (total, values) => PaginatedResult(total=total, limit=l, offset=o, values=values)
+      }
+    }
+
   }
 }
 
