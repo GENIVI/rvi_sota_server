@@ -22,8 +22,9 @@ import org.genivi.sota.core.transfer.DefaultUpdateNotifier
 import org.genivi.sota.data._
 import org.genivi.sota.http.NamespaceDirectives.defaultNamespaceExtractor
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.genivi.sota.messaging.Commit.Commit
 import org.genivi.sota.messaging.MessageBusPublisher
-import org.genivi.sota.messaging.Messages.{GeneratedDelta, GeneratingDeltaFailed}
+import org.genivi.sota.messaging.Messages.{DeltaGenerationFailed, GeneratedDelta}
 import org.scalacheck.Gen
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
@@ -383,8 +384,8 @@ class CampaignResourceSpec extends FunSuite
     val campaign = createCampaignWithStaticDeltaOk()
 
     async {
-      val fromCommit = "c62ede9bdc7b53f7497e98af4381f95fde24667fc829aea8d933b70afedb7a0a"
-      val toCommit = "c62ede9bdc7b53f7497e98af4381f95fde24667fc829aea8d933b70afedb7a0b"
+      val fromCommit: Commit = Refined.unsafeApply("c62ede9bdc7b53f7497e98af4381f95fde24667fc829aea8d933b70afedb7a0a")
+      val toCommit: Commit = Refined.unsafeApply("c62ede9bdc7b53f7497e98af4381f95fde24667fc829aea8d933b70afedb7a0b")
       val size = 100
       await(new DeltaListener(deviceRegistry, updateService, messageBus)
         .generatedDeltaAction(GeneratedDelta(campaign.meta.id.underlying, Namespaces.defaultNs, fromCommit, toCommit,
@@ -399,11 +400,8 @@ class CampaignResourceSpec extends FunSuite
     val campaign = createCampaignWithStaticDeltaOk()
 
     async {
-      val fromCommit = "c62ede9bdc7b53f7497e98af4381f95fde24667fc829aea8d933b70afedb7a0a"
-      val toCommit = "c62ede9bdc7b53f7497e98af4381f95fde24667fc829aea8d933b70afedb7a0b"
-      await(new DeltaListener(deviceRegistry, updateService, messageBus)
-        .deltaGenerationFailedAction(GeneratingDeltaFailed(campaign.meta.id.underlying, Namespaces.defaultNs,
-                                                           fromCommit, toCommit)))
+      val failedMsg = DeltaGenerationFailed(campaign.meta.id.underlying, Namespaces.defaultNs, None)
+      await(new DeltaListener(deviceRegistry, updateService, messageBus).deltaGenerationFailedAction(failedMsg))
       val camp = fetchCampaignOk(campaign.meta.id)
       camp.meta.status shouldBe CampaignStatus.Draft
       camp.meta.size shouldBe None

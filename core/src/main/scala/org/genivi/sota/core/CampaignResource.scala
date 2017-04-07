@@ -95,8 +95,8 @@ class CampaignResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
 
   def toggleDelta(id: Campaign.Id): Route = {
     val sha256size = 64
-    parameters(('deltaFromName.as[String Refined PackageId.ValidName].?,
-      'deltaFromVersion.as[String Refined PackageId.ValidVersion].?)) {
+    parameters(('deltaFromName.as[PackageId.Name].?,
+      'deltaFromVersion.as[PackageId.Version].?)) {
       case (Some(name), Some(version)) =>
         if (version.get.length != sha256size || !version.get.matches("-?[0-9a-fA-F]+")) {
           complete(BadRequest -> "delta from version must be a valid ostree hash")

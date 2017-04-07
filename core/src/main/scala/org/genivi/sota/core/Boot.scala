@@ -25,7 +25,7 @@ import org.genivi.sota.core.user_profile._
 import org.genivi.sota.db.{BootMigrations, DatabaseConfig}
 import org.genivi.sota.http.LogDirectives._
 import org.genivi.sota.http._
-import org.genivi.sota.messaging.Messages.{GeneratedDelta, GeneratingDeltaFailed, TreehubCommit}
+import org.genivi.sota.messaging.Messages.{GeneratedDelta, DeltaGenerationFailed, TreehubCommit}
 import org.genivi.sota.messaging.daemon.MessageBusListenerActor.Subscribe
 import org.genivi.sota.messaging.kafka.MessageListener
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
@@ -119,7 +119,7 @@ trait HttpBoot {
 
     system.actorOf(MessageListener.props[GeneratedDelta](config, deltaListener.generatedDeltaAction)) ! Subscribe
 
-    system.actorOf(MessageListener.props[GeneratingDeltaFailed](config,
+    system.actorOf(MessageListener.props[DeltaGenerationFailed](config,
       deltaListener.deltaGenerationFailedAction)) ! Subscribe
 
     tokenValidator {

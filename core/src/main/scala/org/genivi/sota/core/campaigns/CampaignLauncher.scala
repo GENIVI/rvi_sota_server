@@ -10,6 +10,7 @@ import org.genivi.sota.core.UpdateService
 import org.genivi.sota.core.data.{Campaign, UpdateRequest}
 import org.genivi.sota.core.db.{Campaigns, Packages, UpdateSpecs}
 import org.genivi.sota.data._
+import org.genivi.sota.messaging.Commit.ValidCommit
 import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
 import org.genivi.sota.messaging.Messages.{CampaignLaunched, DeltaRequest, UriWithSimpleEncoding}
 import org.slf4j.LoggerFactory
@@ -96,17 +97,33 @@ object CampaignLauncher {
     } yield ()
   }
 
+  /**
+    * This method assumes that the target campaign's deltaFrom is not `None`
+    */
   def generateDeltaRequest(id: Campaign.Id, lc: LaunchCampaignRequest, messageBus: MessageBusPublisher)
                           (implicit db: Database, ec: ExecutionContext) : Future[Unit] = {
     import MessageBusPublisher._
+    import eu.timepit.refined._
+    import org.genivi.sota.messaging.Commit._
+    import Messages._
+
+    def getCommits(from: PackageId.Version, to: PackageId.Version): DBIO[(Commit, Commit)] =
+      refineV[ValidCommit](from.get) match {
+        case Left(_) => DBIO.failed(new IllegalArgumentException(s"Delta from version is not a valid commit hash"))
+        case Right(deltaFromVersion) => refineV[ValidCommit](to.get) match {
+          case Left(_) => DBIO.failed(new IllegalArgumentException(s"campaign target version is not a valid " +
+            s"commit hash"))
+          case Right(targetVersion) => DBIO.successful((deltaFromVersion, targetVersion))
+        }
+      }
 
     val f = for {
-      campaign <- Campaigns.fetch(id)
-      _        <- Campaigns.createLaunchCampaignRequest(id, lc)
-      _        <- Campaigns.setAsInPreparation(id)
+      campaign   <- Campaigns.fetch(id)
+      (from, to) <- getCommits(campaign.meta.deltaFrom.get.version, campaign.packageId.get.version)
+      _          <- Campaigns.createLaunchCampaignRequest(id, lc)
+      _          <- Campaigns.setAsInPreparation(id)
     } yield {
-      DeltaRequest(id.underlying, campaign.meta.namespace, campaign.meta.deltaFrom.get.version.get,
-        campaign.packageId.get.version.get)
+      DeltaRequest(id.underlying, campaign.meta.namespace, from, to)
     }
 
     db.run(f.transactionally).pipeToBus(messageBus)(identity).map(_ => ())
