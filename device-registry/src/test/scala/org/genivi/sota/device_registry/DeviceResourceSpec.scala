@@ -345,8 +345,8 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures with SlickEx
 
     searchDevice(defaultNs, "", limit = limit) ~> route ~> check {
       status shouldBe OK
-      val result = responseAs[Seq[Device]]
-      result.length shouldBe limit
+      val result = responseAs[PaginatedResult[Device]]
+      result.values.length shouldBe limit
     }
   }
 
@@ -358,9 +358,9 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures with SlickEx
 
     searchDevice(defaultNs, "", offset = offset, limit = limit) ~> route ~> check {
       status shouldBe OK
-      val devices = responseAs[Seq[Device]]
-      devices.length shouldBe limit
-      devices.zip(devices.tail).foreach { case (device1, device2) =>
+      val devices = responseAs[PaginatedResult[Device]]
+      devices.values.length shouldBe limit
+      devices.values.zip(devices.values.tail).foreach { case (device1, device2) =>
         device1.deviceName.underlying.compareTo(device2.deviceName.underlying) should be <= 0
       }
     }
@@ -380,16 +380,16 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures with SlickEx
     // test that we get back all the devices
     fetchByGroupId(defaultNs, groupId, offset = 0, limit = deviceNumber) ~> route ~> check {
       status shouldBe OK
-      val devices = responseAs[Seq[Device]]
-      devices.length shouldBe deviceNumber
-      devices.map(_.uuid).toSet shouldBe deviceIds.toSet
+      val devices = responseAs[PaginatedResult[Device]]
+      devices.total shouldBe deviceNumber
+      devices.values.map(_.uuid).toSet shouldBe deviceIds.toSet
     }
 
     // test that the limit works
     fetchByGroupId(defaultNs, groupId, offset = offset, limit = limit) ~> route ~> check {
       status shouldBe OK
-      val devices = responseAs[Seq[Device]]
-      devices.length shouldBe limit
+      val devices = responseAs[PaginatedResult[Device]]
+      devices.values.length shouldBe limit
     }
   }
 

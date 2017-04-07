@@ -8,7 +8,7 @@ import java.time.Instant
 
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
-import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
+import org.genivi.sota.data._
 import org.genivi.sota.data.DeviceStatus.DeviceStatus
 import org.genivi.sota.db.Operators.regex
 import org.genivi.sota.db.SlickExtensions
@@ -97,27 +97,23 @@ object DeviceRepository extends SlickExtensions {
       .filter(d => d.namespace === ns && d.deviceId === deviceId)
       .result
 
-  def findByGroupId(ns: Namespace, groupId: Uuid, offset: Option[Long], limit: Option[Long]): DBIO[Seq[Device]] = {
-    val q = for {
-      gm <- GroupMemberRepository.groupMembers if gm.groupId === groupId
-      d <- devices if d.namespace === ns && gm.deviceUuid === d.uuid
-    } yield d
-
-    q.defaultPaginate(offset, limit).result
-  }
-
-  def search(ns: Namespace, re: String Refined Regex, offset: Option[Long], limit: Option[Long]): DBIO[Seq[Device]] = {
-    val filteredDevices = devices.filter(d => d.namespace === ns && regex(d.deviceName, re))
-    (offset, limit) match {
-      case (None, None) =>
-        filteredDevices
-          .sortBy(_.deviceName)
-          .result
-      case _ =>
-        filteredDevices
-          .defaultPaginateAndSort(_.deviceName, offset, limit)
-          .result
+  def search(ns: Namespace, regEx: Option[String Refined Regex], groupId: Option[Uuid],
+             offset: Option[Long], limit: Option[Long])
+            (implicit ec: ExecutionContext):  DBIO[PaginatedResult[Device]] = {
+    val byNamespace = devices.filter(d => d.namespace === ns)
+    val byOptionalRegex = regEx match {
+      case Some(re) => byNamespace.filter(d => regex(d.deviceName, re))
+      case None => byNamespace
     }
+    val byOptionalGroupId = groupId match {
+        case Some(gid) => for {
+          gm <- GroupMemberRepository.groupMembers if gm.groupId === gid
+          d <- byOptionalRegex if d.namespace === ns && gm.deviceUuid === d.uuid
+        } yield d
+        case None => byOptionalRegex
+      }
+
+    byOptionalGroupId.paginatedResult(_.deviceName, offset, limit)
   }
 
   def update(ns: Namespace, uuid: Uuid, device: DeviceT)(implicit ec: ExecutionContext): DBIO[Unit] = {
