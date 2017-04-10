@@ -16,7 +16,7 @@ import cats.data.Xor
 import com.advancedtelematic.libtuf.reposerver.ReposerverHttpClient
 import com.typesafe.config.ConfigFactory
 import org.genivi.sota.client.DeviceRegistryClient
-import org.genivi.sota.core.daemon.TreehubCommitListener
+import org.genivi.sota.core.daemon.{DeltaListener, TreehubCommitListener}
 import org.genivi.sota.core.resolver._
 import org.genivi.sota.core.rvi._
 import org.genivi.sota.core.storage.S3PackageStore
@@ -25,14 +25,15 @@ import org.genivi.sota.core.user_profile._
 import org.genivi.sota.db.{BootMigrations, DatabaseConfig}
 import org.genivi.sota.http.LogDirectives._
 import org.genivi.sota.http._
-import org.genivi.sota.messaging.Messages.TreehubCommit
+import org.genivi.sota.messaging.Messages.{GeneratedDelta, DeltaGenerationFailed, TreehubCommit}
 import org.genivi.sota.messaging.daemon.MessageBusListenerActor.Subscribe
 import org.genivi.sota.messaging.kafka.MessageListener
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
 import org.genivi.sota.monitoring.{DatabaseMetrics, MetricsSupport}
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
-import slick.driver.MySQLDriver.api.Database
+import slick.driver.MySQLDriver.api._
 
 trait RviBoot {
   self: Settings =>
@@ -113,6 +114,13 @@ trait HttpBoot {
         new TreehubCommitListener(db, updateService, tuf, messageBusPublisher).action
       )) ! Subscribe
     }
+
+    val deltaListener = new DeltaListener(deviceRegistryClient, updateService, messageBusPublisher)(db)
+
+    system.actorOf(MessageListener.props[GeneratedDelta](config, deltaListener.generatedDeltaAction)) ! Subscribe
+
+    system.actorOf(MessageListener.props[DeltaGenerationFailed](config,
+      deltaListener.deltaGenerationFailedAction)) ! Subscribe
 
     tokenValidator {
       webService.route ~ deviceService.route

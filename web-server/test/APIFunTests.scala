@@ -73,22 +73,10 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   case class Uri(uri: String)
   case class Package(namespace: String, id: PackageId, uri: Uri, size: Long, checkSum: String, description: String,
                      vendor: String)
-  case class PackageResolver(id: PackageId, description: String, vendor: String)
   case class DeviceT(deviceName: String, deviceId: Option[String] = None, deviceType: String)
   case class FilterJson(namespace: String, name: String, expression: String)
   case class FilterPackageJson(filterName : String, packageName : String, packageVersion : String)
   case class ComponentJson(namespace: String, partNumber : String, description : String)
-  case class UpdateRequest(namespace: String, id: String, packageId: PackageId, creationTime: String,
-                           periodOfValidity: String, priority: Int, signature: String, description: String,
-                           requestConfirmation: Boolean)
-  import UpdateStatus._
-  case class UpdateSpec(request: UpdateRequest, device: String, status: UpdateStatus, dependencies: Set[Package])
-  object UpdateSpec {
-    import io.circe.generic.semiauto._
-    //circe fails to generate a decoder for UpdateStatus automatically, so we define one manually
-    implicit val updateStatusDecoder : Decoder[UpdateStatus] = Decoder[String].map(UpdateStatus.withName)
-    implicit val decoderInstace = deriveDecoder[UpdateSpec]
-  }
 
   def getLoginCookie : Seq[Cookie] = {
     val response = await(wsClient.url("http://" + webserverHost + s":$webserverPort/authenticate")

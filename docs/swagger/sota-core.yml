@@ -348,6 +348,28 @@ paths:
             type: array
             items:
               $ref: '#/definitions/CampaignStatistics'
+  /campaigns/{uuid}/delta:
+    put:
+      description: 'set the package id that a static delta should be generated from'
+      parameters:
+      - name: uuid
+        in: path
+        description: The campaign uuid for which a static delta should be generated
+        required: true
+        type: string
+      - name: deltaFromName
+        in: query
+        description: The name of the package to generate the delta from
+        required: false
+        type: string
+      - name: deltaFromVersion
+        in: query
+        description: The version of the package to generate the delta from
+        required: false
+        type: string
+      responses:
+        200:
+          description: OK
   /update_requests:
     get:
       description: 'List all update campaigns'
@@ -870,8 +892,6 @@ definitions:
           - Canceled
           - Failed
           - Finished
-  installReport:
-    type: object
   operationResult:
     type: object
     properties:
@@ -937,9 +957,15 @@ definitions:
     properties:
       id:
         $ref: '#/definitions/Strings/properties/uuid'
-      launched:
-        type: boolean
-        description: Is this campaign launched
+      status:
+        type: string
+        enum:
+          - Draft
+          - InPreparation
+          - Active
+          - Failed
+          - Finished
+        description: The campaign status, 'InPreparation' indicates the static delta generation is in progress
       name:
         type: string
         description: The name of the campaign
@@ -953,6 +979,12 @@ definitions:
         type: string
         format: dateTime
         description: The time the package was uploaded to core
+      deltaFrom:
+        $ref: '#/definitions/packageId'
+      size:
+        type: integer
+        format: int64
+        description: The size of the static delta
   CampaignCreate:
     type: object
     properties:
