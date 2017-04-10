@@ -1,6 +1,7 @@
 package org.genivi.sota.core.daemon
 
 import akka.Done
+import cats.data.Xor
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.UpdateService
 import org.genivi.sota.core.campaigns.CampaignLauncher
@@ -19,18 +20,25 @@ class DeltaListener(deviceRegistry: DeviceRegistry, updateService: UpdateService
 
   private val log = LoggerFactory.getLogger(this.getClass)
 
+  /**
+    * this method only returns a DBIO so it can be used inside a for comprehension involving slick calls
+    */
   private def validateMessage(campaign: Campaign, from: Commit, to: Commit)
                              (implicit ec: ExecutionContext): DBIO[Done] = {
-    //this method only returns a DBIO so it can be used inside a for comprehension involving slick calls
-    if (campaign.meta.deltaFrom.isEmpty) {
-      DBIO.failed(new IllegalArgumentException("Received GeneratedDelta message for campaign without static delta"))
-    } else if (!campaign.meta.deltaFrom.get.version.get.equalsIgnoreCase(from.get)) {
-      DBIO.failed(
-        new IllegalArgumentException("Received GeneratedDelta message for campaign with differing from version"))
-    } else if (campaign.meta.packageUuid.isEmpty) {
-      DBIO.failed(new IllegalArgumentException("Received GeneratedDelta message for campaign without a target version"))
-    } else {
-      Packages.byUuid(campaign.meta.packageUuid.get.toJava).flatMap { pkg =>
+    import org.genivi.sota.data.Uuid
+    val meta = campaign.meta
+    val preCheck: Xor[String, Uuid] = for {
+      deltaFrom <- Xor.fromEither(meta.deltaFrom.toRight("Received GeneratedDelta message for campaign without static" +
+                                                         " delta"))
+      _ <- if (deltaFrom.version.get.equalsIgnoreCase(from.get)) Xor.Right(Unit)
+      else Xor.Left("Received GeneratedDelta message for campaign with differing from version")
+      pkg <- Xor.fromEither(meta.packageUuid.toRight("Received GeneratedDelta message for campaign without a " +
+                                                     "target version"))
+    } yield pkg
+
+    preCheck match {
+      case Xor.Left(err) => DBIO.failed(new IllegalArgumentException(err))
+      case Xor.Right(_) => Packages.byUuid(campaign.meta.packageUuid.get.toJava).flatMap { pkg =>
         if (pkg.id.version.get.equalsIgnoreCase(to.get)) {
           DBIO.successful(Done)
         } else {
