@@ -17,7 +17,10 @@ import org.genivi.sota.data.{DeviceGenerators, PackageId, UpdateStatus}
 import org.scalatest.{FunSuite, ShouldMatchers}
 import org.scalatest.concurrent.ScalaFutures
 import org.genivi.sota.http.NamespaceDirectives._
-import org.genivi.sota.messaging.MessageBusPublisher
+import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
+import org.genivi.sota.messaging.Messages.MessageLike
+
+import scala.concurrent.{ExecutionContext, Future}
 
 class BlacklistResourceSpec extends FunSuite
   with ScalatestRouteTest
@@ -223,6 +226,46 @@ class BlacklistResourceSpec extends FunSuite
     val updatedSpec = db.run(UpdateSpecs.findBy(otherSpec)).futureValue
 
     updatedSpec.status shouldBe UpdateStatus.Finished
+  }
+
+  test("blacklisting a canceled package doesn't send an UpdateSpec") {
+    class CountingMessageBusPublisher extends MessageBusPublisher {
+      var counter = 0
+
+      // only counts UpdateSpecs
+      override def publish[T](msg: T)(implicit ex: ExecutionContext, messageLike: MessageLike[T]): Future[Unit] = {
+        msg match {
+          case _ : Messages.UpdateSpec => counter += 1
+          case _ =>
+        }
+
+        Future.successful(())
+      }
+    }
+
+    val messageBusPublisher = new CountingMessageBusPublisher()
+    val route = new BlacklistResource(defaultNamespaceExtractor, messageBusPublisher).route
+
+    val dbIO = for {
+      (pkg, device, us) <- createUpdateSpecAction()
+      otherDevice = DeviceGenerators.genDevice.sample.get
+      otherSpec = UpdateSpec.default(us.request, otherDevice.uuid).copy(status = UpdateStatus.Canceled)
+      _ <- UpdateSpecs.persist(otherSpec)
+    } yield (pkg, otherSpec)
+
+    val (pkg, otherSpec) = db.run(dbIO).futureValue
+
+    val blacklistReq = BlacklistedPackageRequest(pkg.id, Some("Some comment"))
+
+    Post(blacklistPath, blacklistReq) ~> route ~> check {
+      status shouldBe StatusCodes.Created
+    }
+
+    messageBusPublisher.counter shouldBe(0)
+
+    val updatedSpec = db.run(UpdateSpecs.findBy(otherSpec)).futureValue
+
+    updatedSpec.status shouldBe UpdateStatus.Canceled
   }
 
   test("blacklisting a queued package creates failed history item") {
