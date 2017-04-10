@@ -116,8 +116,8 @@ object Messages {
   final case class DeltaRequest(id: Uuid, namespace: Namespace, from: Commit, to: Commit,
                                 timestamp: Instant = Instant.now) extends BusMessage
 
-  final case class GeneratedDelta(id: Uuid, namespace: Namespace, from: Commit, to: Commit, summary: OstreeSummary,
-                                  uri: Uri, size: Long) extends BusMessage
+  final case class GeneratedDelta(id: Uuid, namespace: Namespace, from: Commit, to: Commit, uri: Uri, size: Long)
+    extends BusMessage
 
   final case class DeltaGenerationFailed(id: Uuid, namespace: Namespace, error: Option[Json] = None) extends BusMessage
 

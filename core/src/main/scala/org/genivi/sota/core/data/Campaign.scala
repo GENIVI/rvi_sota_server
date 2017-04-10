@@ -20,7 +20,7 @@ case class Campaign (meta: CampaignMeta, packageId: Option[PackageId], groups: S
   def canLaunch(): Throwable Xor Unit = {
     if (meta.packageUuid.isEmpty || groups.size < 1) {
       Xor.Left(SotaCoreErrors.CantLaunchCampaign)
-    } else if (meta.status != CampaignStatus.Draft) {
+    } else if (meta.status != CampaignStatus.Draft && meta.status != CampaignStatus.InPreparation) {
       Xor.Left(SotaCoreErrors.CampaignLaunched)
     } else {
       Xor.Right(())

@@ -22,22 +22,22 @@ class DeltaListener(deviceRegistry: DeviceRegistry, updateService: UpdateService
   private def validateMessage(campaign: Campaign, from: Commit, to: Commit)
                              (implicit ec: ExecutionContext): DBIO[Done] = {
     //this method only returns a DBIO so it can be used inside a for comprehension involving slick calls
-    if(campaign.meta.deltaFrom.isEmpty) {
+    if (campaign.meta.deltaFrom.isEmpty) {
       DBIO.failed(new IllegalArgumentException("Received GeneratedDelta message for campaign without static delta"))
-    } else if(campaign.meta.deltaFrom.get.version.get.equalsIgnoreCase(from.get)) {
+    } else if (!campaign.meta.deltaFrom.get.version.get.equalsIgnoreCase(from.get)) {
       DBIO.failed(
         new IllegalArgumentException("Received GeneratedDelta message for campaign with differing from version"))
-    } else if(campaign.meta.packageUuid.isEmpty) {
+    } else if (campaign.meta.packageUuid.isEmpty) {
       DBIO.failed(new IllegalArgumentException("Received GeneratedDelta message for campaign without a target version"))
     } else {
-        Packages.byUuid(campaign.meta.packageUuid.get.toJava).flatMap { pkg =>
-          if (pkg.id.version.get.equalsIgnoreCase(to.get)) {
-            DBIO.failed(new IllegalArgumentException(s"Version in GeneratedDelta message ($to) doesn't match version " +
-              s"in campaign (${pkg.id.version})"))
-          } else {
-            DBIO.failed(new IllegalArgumentException(s"Failed to read package for campaign"))
-          }
+      Packages.byUuid(campaign.meta.packageUuid.get.toJava).flatMap { pkg =>
+        if (pkg.id.version.get.equalsIgnoreCase(to.get)) {
+          DBIO.successful(Done)
+        } else {
+          DBIO.failed(new IllegalArgumentException(s"Version in GeneratedDelta message ($to) doesn't match version " +
+            s"in campaign (${pkg.id.version})"))
         }
+      }
     }
   }
 

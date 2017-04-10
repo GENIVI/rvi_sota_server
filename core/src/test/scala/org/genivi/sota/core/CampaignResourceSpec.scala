@@ -29,8 +29,6 @@ import org.scalacheck.Gen
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 
-import scala.async.Async._
-
 class CampaignResourceSpec extends FunSuite
     with ScalatestRouteTest
     with DatabaseSpec
@@ -383,29 +381,24 @@ class CampaignResourceSpec extends FunSuite
   test("campaign with static delta changes state to active after delta generation succeeds") {
     val campaign = createCampaignWithStaticDeltaOk()
 
-    async {
-      val fromCommit: Commit = Refined.unsafeApply("c62ede9bdc7b53f7497e98af4381f95fde24667fc829aea8d933b70afedb7a0a")
-      val toCommit: Commit = Refined.unsafeApply("c62ede9bdc7b53f7497e98af4381f95fde24667fc829aea8d933b70afedb7a0b")
-      val size = 100
-      await(new DeltaListener(deviceRegistry, updateService, messageBus)
-        .generatedDeltaAction(GeneratedDelta(campaign.meta.id.underlying, Namespaces.defaultNs, fromCommit, toCommit,
-                                             OstreeSummary(Array.emptyByteArray), Uri(), size)))
-      val camp = fetchCampaignOk(campaign.meta.id)
-      camp.meta.status shouldBe CampaignStatus.Active
-      camp.meta.size shouldBe size
-    }
+    val fromCommit: Commit = Refined.unsafeApply("c62ede9bdc7b53f7497e98af4381f95fde24667fc829aea8d933b70afedb7a0a")
+    val toCommit: Commit = Refined.unsafeApply("c62ede9bdc7b53f7497e98af4381f95fde24667fc829aea8d933b70afedb7a0b")
+    val size = 100
+    val msg = GeneratedDelta(campaign.meta.id.underlying, Namespaces.defaultNs, fromCommit, toCommit, Uri(), size)
+    new DeltaListener(deviceRegistry, updateService, messageBus).generatedDeltaAction(msg).futureValue
+    val camp = fetchCampaignOk(campaign.meta.id)
+    camp.meta.status shouldBe CampaignStatus.Active
+    camp.meta.size shouldEqual Some(size)
   }
 
   test("campaign with static delta changes state to draft after delta generation fails") {
     val campaign = createCampaignWithStaticDeltaOk()
 
-    async {
-      val failedMsg = DeltaGenerationFailed(campaign.meta.id.underlying, Namespaces.defaultNs, None)
-      await(new DeltaListener(deviceRegistry, updateService, messageBus).deltaGenerationFailedAction(failedMsg))
-      val camp = fetchCampaignOk(campaign.meta.id)
-      camp.meta.status shouldBe CampaignStatus.Draft
-      camp.meta.size shouldBe None
-    }
+    val failedMsg = DeltaGenerationFailed(campaign.meta.id.underlying, Namespaces.defaultNs, None)
+    new DeltaListener(deviceRegistry, updateService, messageBus).deltaGenerationFailedAction(failedMsg).futureValue
+    val camp = fetchCampaignOk(campaign.meta.id)
+    camp.meta.status shouldBe CampaignStatus.Draft
+    camp.meta.size shouldBe None
   }
 
   test("trying to create a static delta from the same commit fails") {
@@ -414,4 +407,5 @@ class CampaignResourceSpec extends FunSuite
     setDeltaFrom(campaign.meta.id, Some(createRandomTreehubPackage(campaign.packageId.get.version.get)),
                  StatusCodes.BadRequest)
   }
+
 }
