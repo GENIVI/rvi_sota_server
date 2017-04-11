@@ -12,7 +12,6 @@ import akka.kafka.ConsumerMessage.CommittableOffsetBatch
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 import akka.testkit.TestKit
-import cats.data.Xor
 import org.genivi.sota.data.{Namespace, Uuid}
 import org.genivi.sota.messaging.Messages.DeviceSeen
 import org.genivi.sota.messaging.kafka.KafkaClient
@@ -36,8 +35,8 @@ class KafkaClientSpec extends TestKit(ActorSystem("KafkaClientSpec"))
   override implicit def patienceConfig = PatienceConfig(timeout = Span(30, Seconds), interval = Span(500, Millis))
 
   val publisher = KafkaClient.publisher(system, system.settings.config) match {
-    case Xor.Right(p) => p
-    case Xor.Left(ex) => throw ex
+    case Right(p) => p
+    case Left(ex) => throw ex
   }
 
   test("can send an event to bus") {
@@ -50,8 +49,8 @@ class KafkaClientSpec extends TestKit(ActorSystem("KafkaClientSpec"))
     val testMsg = DeviceSeen(Namespace("ns"), Uuid.generate(), Instant.now)
 
     val source = KafkaClient.source[DeviceSeen](system, system.settings.config) match {
-      case Xor.Right(s) => s
-      case Xor.Left(ex) => throw ex
+      case Right(s) => s
+      case Left(ex) => throw ex
     }
 
     val msgFuture = source.groupedWithin(10, 5.seconds).runWith(Sink.head)
@@ -68,8 +67,8 @@ class KafkaClientSpec extends TestKit(ActorSystem("KafkaClientSpec"))
     val testMsg = DeviceSeen(Namespace("ns"), Uuid.generate(), Instant.now)
 
     val source = KafkaClient.committableSource[DeviceSeen](system.settings.config) match {
-      case Xor.Right(s) => s
-      case Xor.Left(ex) => throw ex
+      case Right(s) => s
+      case Left(ex) => throw ex
     }
 
     val msgFuture = source

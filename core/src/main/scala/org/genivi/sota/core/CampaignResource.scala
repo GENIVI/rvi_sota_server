@@ -8,8 +8,6 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive1, Route}
-import cats.data.Xor
-import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.campaigns.{CampaignLauncher, CampaignStats}
@@ -52,7 +50,7 @@ class CampaignResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
 
   def launch(id: Campaign.Id, lc: LaunchCampaignRequest): Route = {
     lc.isValid() match {
-      case Xor.Right(()) =>
+      case Right(()) =>
         val r = async {
           val campaign = await(db.run(Campaigns.fetch(id)))
           campaign.meta.deltaFrom match {
@@ -61,7 +59,7 @@ class CampaignResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
           }
         }
         complete(NoContent -> r)
-      case Xor.Left(err) => complete(Conflict -> err)
+      case Left(err) => complete(Conflict -> err)
     }
   }
 

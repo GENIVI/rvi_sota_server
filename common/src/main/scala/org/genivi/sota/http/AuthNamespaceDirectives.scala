@@ -3,7 +3,7 @@ package org.genivi.sota.http
 import akka.http.scaladsl.model.headers.OAuth2BearerToken
 import akka.http.scaladsl.server.{AuthorizationFailedRejection, Directive0, Directive1, Directives, Rejection}
 import akka.http.scaladsl.server.Directives._
-import cats.data.Xor
+import cats.syntax.either._
 import com.advancedtelematic.akka.http.jwt.InvalidScopeRejection
 import com.advancedtelematic.jws.CompactSerialization
 import com.advancedtelematic.jwt.{JsonWebToken, Scope, Subject}
@@ -70,7 +70,7 @@ object NsFromToken {
   }
 
   def parseToken[T: NsFromToken](serializedToken: String)
-    (implicit decoder: Decoder[T]): Xor[String, T] =
+    (implicit decoder: Decoder[T]): Either[String, T] =
     for {
       serialized <- CompactSerialization.parse(serializedToken)
       token      <- decode[T](serialized.encodedPayload.stringData()).leftMap(_.getMessage)
@@ -105,20 +105,20 @@ object AuthNamespaceDirectives {
           NsFromToken.parseToken[T](serializedToken).flatMap{ token =>
             val authedNs = nsFromToken.toNamespaceScope(token)
             ns0 match {
-              case Some(ns) if ns == authedNs.namespace => Xor.right(authedNs)
+              case Some(ns) if ns == authedNs.namespace => Right(authedNs)
               case Some(ns) if authedNs.hasScope(AuthedNamespaceScope.namespacePrefix + ns) =>
-                Xor.right(AuthedNamespaceScope(ns, authedNs.scope))
-              case Some(ns) => Xor.Left("The oauth token does not accept the given namespace")
-              case None => Xor.right(authedNs)
+                Right(AuthedNamespaceScope(ns, authedNs.scope))
+              case Some(ns) => Left("The oauth token does not accept the given namespace")
+              case None => Right(authedNs)
             }
           }
 
-        case _ => Xor.Left("No oauth token provided to extract namespace")
+        case _ => Left("No oauth token provided to extract namespace")
     }
 
     maybeNamespace match {
-      case Xor.Right(t) => provide(t)
-      case Xor.Left(msg) =>
+      case Right(t) => provide(t)
+      case Left(msg) =>
         extractLog flatMap { l =>
           l.info(s"Could not extract namespace: $msg")
           reject(badNamespaceRejection(msg))

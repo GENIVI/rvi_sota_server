@@ -86,7 +86,7 @@ object SotaBuild extends Build {
 
   lazy val commonTest = Project(id = "sota-common-test", base = file("common-test"))
     .settings(basicSettings ++ compilerSettings ++ lintOptions)
-    .settings(libraryDependencies ++= Seq (Dependencies.Cats, Dependencies.Refined, Dependencies.Generex))
+    .settings(libraryDependencies ++= Seq (Dependencies.Cats, Dependencies.Refined, Dependencies.Generex, Dependencies.ScalaCheck(Compile)))
     .settings(libraryDependencies += Dependencies.ScalaTest(Provided))
     .dependsOn(commonData)
     .settings(Publish.settings)
@@ -123,7 +123,7 @@ object SotaBuild extends Build {
 
   lazy val core = Project(id = "sota-core", base = file("core"))
     .settings( commonSettings ++ Migrations.settings ++ lintOptions ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Scalaz :+ Dependencies.Flyway :+ Dependencies.AmazonS3 :+ Dependencies.LibTuf :+ Dependencies.LibAts,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Flyway :+ Dependencies.AmazonS3 :+ Dependencies.LibTuf :+ Dependencies.LibAts,
       testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RequiresRvi", "-l", "IntegrationTest"),
       testOptions in IntegrationTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RequiresRvi", "-n", "IntegrationTest"),
       parallelExecution in Test := true,
@@ -152,7 +152,6 @@ object SotaBuild extends Build {
       parallelExecution := false,
       parallelExecution in IntegrationTests := false,
       parallelExecution in BrowserTests := false,
-      resolvers += "scalaz-bintray"  at "http://dl.bintray.com/scalaz/releases",
       dockerExposedPorts := Seq(9000),
       libraryDependencies ++= Seq (
         "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % "test", // https://github.com/playframework/scalatestplus-play
@@ -224,9 +223,9 @@ object Dependencies {
 
   val AkkaHttpVersion = "10.0.3"
 
-  val CirceVersion = "0.4.1"
+  val CirceVersion = "0.7.0"
 
-  val AkkaHttpCirceVersion = "1.7.0"
+  val AkkaHttpCirceVersion = "1.12.0"
 
   val LogbackVersion = "1.1.3"
 
@@ -234,11 +233,11 @@ object Dependencies {
 
   val AWSVersion = "1.11.15"
 
-  val JsonWebSecurityVersion = "0.3.1"
+  val JsonWebSecurityVersion = "0.4.2"
 
   val libTufV = "0.0.1-53-ge577c3e"
 
-  val libAtsV = "0.0.1-8-gad81bff"
+  val libAtsV = "0.0.1-39-g688e0b6"
 
   val AkkaHttp = "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion
 
@@ -272,21 +271,20 @@ object Dependencies {
     "io.circe" %% "circe-core" % CirceVersion,
     "io.circe" %% "circe-generic" % CirceVersion,
     "io.circe" %% "circe-parser" % CirceVersion,
-    "io.circe" %% "circe-java8" % CirceVersion
+    "io.circe" %% "circe-java8" % CirceVersion,
+    "io.circe" %% "circe-shapes" % CirceVersion
   )
 
   lazy val Refined = "eu.timepit" %% "refined" % "0.3.1"
 
-  lazy val Scalaz = "org.scalaz" %% "scalaz-core" % "7.1.3"
-  lazy val Cats   = "org.spire-math" %% "cats" % "0.3.0"
+  lazy val Cats   = "org.typelevel" %% "cats-core" % "0.9.0"
 
   def ScalaTest(conf: Configuration = Test) = "org.scalatest" %% "scalatest" % "2.2.4" % conf
-
-  lazy val ScalaCheck = "org.scalacheck" %% "scalacheck" % "1.12.4" % "test"
+  def ScalaCheck(conf: Configuration = Test) = "org.scalacheck" %% "scalacheck" % "1.12.4" % conf
 
   lazy val Flyway = "org.flywaydb" % "flyway-core" % "4.0.3"
 
-  lazy val TestFrameworks = Seq(ScalaTest(), ScalaCheck)
+  lazy val TestFrameworks = Seq(ScalaTest(), ScalaCheck())
 
   lazy val TypesafeConfig = "com.typesafe" % "config" % "1.3.0"
 

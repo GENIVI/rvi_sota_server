@@ -1,7 +1,7 @@
 package org.genivi.sota.resolver.test.random
 
 import akka.http.scaladsl.model.{HttpRequest, StatusCode, StatusCodes}
-import cats.state.{State, StateT}
+import cats.data.{State, StateT}
 import org.genivi.sota.data._
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.filters.Filter
@@ -471,7 +471,7 @@ object Command extends CommandUtils with InvalidCommandUtils {
       cmds0 match {
         case Nil            => (s0, acc.reverse)
         case (cmd :: cmds1) =>
-          val (s1, r) = semCommand(cmd).run(s0).run
+          val (s1, r) = semCommand(cmd).run(s0).value
           go(cmds1, s1, r :: acc)
       }
 
@@ -504,7 +504,7 @@ object Command extends CommandUtils with InvalidCommandUtils {
   // scalastyle:off magic.number
   def genCommand(implicit ec: ExecutionContext): StateT[Gen, RawStore, Command] =
     for {
-      s     <- StateT.stateTMonadState[Gen, RawStore].get
+      s     <- StateT.get[Gen, RawStore].get
       vehs  <- Store.numberOfVehicles
       pkgs  <- Store.numberOfPackages
       filts <- Store.numberOfFilters
@@ -560,7 +560,7 @@ object Command extends CommandUtils with InvalidCommandUtils {
         (50, xlateToInvalidCommand(cmd0))
       ))
 
-      _   <- StateT.stateTMonadState(monGen).set(semCommand(cmd).runS(s).run)
+      _   <- StateT.set(semCommand(cmd).runS(s).value)(monGen)
     } yield cmd
   // scalastyle:on
 

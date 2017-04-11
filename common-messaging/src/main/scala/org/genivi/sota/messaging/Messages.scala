@@ -4,7 +4,6 @@ import java.time.Instant
 import java.util.UUID
 
 import akka.http.scaladsl.model.Uri
-import cats.data.Xor
 import cats.syntax.show._
 import io.circe.generic.decoding.DerivedDecoder
 import io.circe.generic.encoding.DerivedObjectEncoder
@@ -152,7 +151,7 @@ object Messages {
 
     def partitionKey(v: T): String = id(v).take(partitionPrefixSize)
 
-    def parse(json: String): io.circe.Error Xor T = decode[T](json)
+    def parse(json: String): io.circe.Error Either T = decode[T](json)
 
     implicit val encoder: Encoder[T]
 

@@ -7,7 +7,6 @@ import akka.http.scaladsl.model.ContentTypes._
 import akka.http.scaladsl.model.{HttpEntity, HttpResponse, Uri}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
-import cats.data.Xor
 import eu.timepit.refined.api.Refined
 import io.circe.jawn._
 import org.genivi.sota.data.{PackageId, Uuid}
@@ -38,7 +37,7 @@ class ExternalResolverClientSpec extends PropSpec with Matchers with BeforeAndAf
     Map(id0 -> Set(PackageId(Refined.unsafeApply("rust"), Refined.unsafeApply("23.5.2"))))
 
   property("parse the external resolver's response") {
-    decode[Map[Uuid, Set[PackageId]]](s) shouldBe Xor.Right(m)
+    decode[Map[Uuid, Set[PackageId]]](s) shouldBe Right(m)
   }
 
   val resp: HttpResponse = HttpResponse(entity = HttpEntity(`application/json`, s))

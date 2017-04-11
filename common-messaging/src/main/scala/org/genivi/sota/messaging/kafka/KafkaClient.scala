@@ -12,7 +12,7 @@ import akka.kafka.scaladsl.Consumer
 import akka.kafka.scaladsl.Consumer.Control
 import akka.kafka.{ConsumerSettings, ProducerSettings, Subscription, Subscriptions}
 import akka.stream.scaladsl.Source
-import cats.data.Xor
+import cats.syntax.either._
 import com.typesafe.config.{Config, ConfigException}
 import io.circe.syntax._
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -26,7 +26,7 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
 
 object KafkaClient {
 
-  def publisher(system: ActorSystem, config: Config): Throwable Xor MessageBusPublisher =
+  def publisher(system: ActorSystem, config: Config): Throwable Either MessageBusPublisher =
     for {
       cfg <- config.configAt("messaging.kafka")
       topicNameFn <- topic(cfg)
@@ -58,11 +58,11 @@ object KafkaClient {
     }
 
   def source[T](system: ActorSystem, config: Config)
-               (implicit ml: MessageLike[T]): Throwable Xor Source[T, NotUsed] =
+               (implicit ml: MessageLike[T]): Throwable Either Source[T, NotUsed] =
     plainSource(config)(ml, system)
 
   private def plainSource[T](config: Config)
-                            (implicit ml: MessageLike[T], system: ActorSystem): Throwable Xor Source[T, NotUsed] = {
+                            (implicit ml: MessageLike[T], system: ActorSystem): Throwable Either Source[T, NotUsed] = {
     buildSource(config) { (cfgSettings: ConsumerSettings[Array[Byte], T], subscriptions) =>
       val settings = cfgSettings.withProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true")
       Consumer.plainSource(settings, subscriptions).map(_.value())
@@ -71,13 +71,13 @@ object KafkaClient {
 
   def committableSource[T](config: Config)
                           (implicit ml: MessageLike[T], system: ActorSystem)
-  : Throwable Xor Source[CommittableMessage[Array[Byte], T], NotUsed] =
+  : Throwable Either Source[CommittableMessage[Array[Byte], T], NotUsed] =
     buildSource(config) { (cfgSettings: ConsumerSettings[Array[Byte], T], subscriptions) =>
       Consumer.committableSource(cfgSettings, subscriptions)
     }
 
   private def consumerSettings[T](system: ActorSystem, config: Config)
-                                 (implicit ml: MessageLike[T]): Throwable Xor ConsumerSettings[Array[Byte], T] =
+                                 (implicit ml: MessageLike[T]): Throwable Either ConsumerSettings[Array[Byte], T] =
     for {
       host <- config.readString("host")
       topicFn <- topic(config)
@@ -92,7 +92,7 @@ object KafkaClient {
 
   private def buildSource[T, M](config: Config)
                                (consumerFn: (ConsumerSettings[Array[Byte], M], Subscription) => Source[T, Control])
-                               (implicit system: ActorSystem, ml: MessageLike[M]): Throwable Xor Source[T, NotUsed] =
+                               (implicit system: ActorSystem, ml: MessageLike[M]): Throwable Either Source[T, NotUsed] =
     for {
       cfg <- config.configAt("messaging.kafka")
       cfgSettings <- consumerSettings(system, cfg)
@@ -102,13 +102,13 @@ object KafkaClient {
       consumerFn(cfgSettings, subscription).mapMaterializedValue { _ => NotUsed }
     }
 
-  private[this] def topic(config: Config): ConfigException Xor (String => String) =
+  private[this] def topic(config: Config): ConfigException Either (String => String) =
     config.readString("topicSuffix").map { suffix =>
       (streamName: String) => streamName + "-" + suffix
     }
 
   private[this] def producer(config: Config)
-                            (implicit system: ActorSystem): ConfigException Xor KafkaProducer[Array[Byte], String] =
+                            (implicit system: ActorSystem): ConfigException Either KafkaProducer[Array[Byte], String] =
     config.readString("host").map { host =>
       ProducerSettings(system, new ByteArraySerializer, new StringSerializer)
         .withBootstrapServers(host)

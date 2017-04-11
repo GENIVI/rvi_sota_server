@@ -5,12 +5,9 @@
 
 import java.io.File
 import java.security.InvalidParameterException
-import java.util.UUID
 
 import org.asynchttpclient.AsyncHttpClient
 import org.asynchttpclient.request.body.multipart.FilePart
-import java.time.Instant
-import java.time.temporal.ChronoUnit
 
 import org.scalatest.Tag
 import org.scalatestplus.play._
@@ -18,15 +15,13 @@ import play.api.Configuration
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.mvc.{Cookie, Cookies}
 import play.api.test.Helpers._
-import io.circe._
 import io.circe.generic.auto._
-import io.circe.parser._
 import io.circe.syntax._
 import io.circe.parser._
 import org.genivi.sota.data.{Device, PaginatedResult}
 import org.genivi.sota.marshalling.CirceInstances._
-import org.genivi.sota.data.Device._
 import cats.syntax.show.toShowOps
+import cats.syntax.either._
 
 object APITests extends Tag("APITests")
 

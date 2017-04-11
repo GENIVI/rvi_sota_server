@@ -8,7 +8,6 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import akka.stream.ActorMaterializer
-import cats.data.Xor
 import org.genivi.sota.data.{Namespace, Uuid}
 import org.genivi.sota.db.{BootMigrations, DatabaseConfig}
 import org.genivi.sota.device_registry.daemon.{DeviceSeenListener, DeviceUpdateStatusListener}
@@ -69,8 +68,8 @@ object Boot extends BootApp with Directives with BootMigrations
 
   lazy val messageBus =
     MessageBus.publisher(system, config) match {
-      case Xor.Right(v) => v
-      case Xor.Left(error) =>
+      case Right(v) => v
+      case Left(error) =>
         log.error("Could not initialize message bus publisher", error)
         MessageBusPublisher.ignore
     }
