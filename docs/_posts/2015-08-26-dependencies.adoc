@@ -37,207 +37,177 @@ date: 2015-08-26 14:18:26
 [[sota-server]]
 == SOTA Server
 
-[[java-scala-libraries]]
 === Java / Scala Libraries
 
-[#wraptable,cols="3,2,1,2",options="header",]
-|=======================================================================
-|Group |Artefact |Version |License
-|com.github.nscala-time |nscala-time_2.11 |2.0.0 |Apache
-
-|com.sksamuel.scapegoat |scalac-scapegoat-plugin_2.11 |1.0.0 |Apache
-License, Version 2.0
-
-|com.sksamuel.scapegoat |scalac-scapegoat-plugin_2.11 |1.0.0 |Apache
-License, Version 2.0
-
-|com.typesafe.netty |netty-http-pipelining |1.1.4 |Apache License,
-Version 2.0
-
-|io.spray |spray-json_2.11 |1.3.1 |Apache License, Version 2.0
-
-|joda-time |joda-time |2.7 |Apache License, Version 2.0
-
-|joda-time |joda-time |2.8.1 |Apache License, Version 2.0
-
-|org.joda |joda-convert |1.2 |Apache License, Version 2.0
-
-|org.joda |joda-convert |1.7 |Apache License, Version 2.0
-
-|com.sksamuel.scapegoat |scalac-scapegoat-plugin_2.11 |1.0.0 |Apache
-License, Version 2.0
-
-|com.sksamuel.scapegoat |scalac-scapegoat-plugin_2.11 |1.0.0 |Apache
-License, Version 2.0
-
-|com.typesafe |config |1.2.1 |Apache License, Version 2.0
-
-|com.typesafe.akka |akka-actor_2.11 |2.3.12 |Apache License, Version 2.0
-
-|com.typesafe.akka |akka-http-core-experimental_2.11 |1 |Apache License,
-Version 2.0
-
-|com.typesafe.akka |akka-http-experimental_2.11 |1 |Apache License,
-Version 2.0
-
-|com.typesafe.akka |akka-http-spray-json-experimental_2.11 |1 |Apache
-License, Version 2.0
-
-|com.typesafe.akka |akka-parsing-experimental_2.11 |1 |Apache License,
-Version 2.0
-
-|com.typesafe.akka |akka-slf4j_2.11 |2.3.12 |Apache License, Version 2.0
-
-|com.typesafe.akka |akka-stream-experimental_2.11 |1 |Apache License,
-Version 2.0
-
-|io.spray |spray-json_2.11 |1.3.1 |Apache License, Version 2.0
-
-|org.scaldi |scaldi_2.11 |0.4 |Apache License, Version 2.0
-
-|org.scaldi |scaldi_2.11 |0.4 |Apache License, Version 2.0
-
-|org.scaldi |scaldi_2.11 |0.4 |Apache License, Version 2.0
-
-|org.scaldi |scaldi_2.11 |0.4 |Apache License, Version 2.0
-
-|com.typesafe |config |1.2.1 |Apache License, Version 2.0
-
-|com.typesafe |config |1.3.0 |Apache License, Version 2.0
-
-|com.typesafe.akka |akka-actor_2.11 |2.3.12 |Apache License, Version 2.0
-
-|com.typesafe.akka |akka-actor_2.11 |2.3.11 |Apache License, Version 2.0
-
-|com.typesafe.akka |akka-http-core-experimental_2.11 |1 |Apache License,
-Version 2.0
-
-|com.typesafe.akka |akka-http-experimental_2.11 |1 |Apache License,
-Version 2.0
-
-|com.typesafe.akka |akka-http-spray-json-experimental_2.11 |1 |Apache
-License, Version 2.0
-
-|com.typesafe.akka |akka-parsing-experimental_2.11 |1 |Apache License,
-Version 2.0
-
-|com.typesafe.akka |akka-slf4j_2.11 |2.3.12 |Apache License, Version 2.0
-
-|com.typesafe.akka |akka-slf4j_2.11 |2.3.11 |Apache License, Version 2.0
-
-|com.typesafe.akka |akka-stream-experimental_2.11 |1 |Apache License,
-Version 2.0
-
-|io.netty |netty |3.10.3.Final |Apache License, Version 2.0
-
-|com.typesafe.play |build-link |2.4.2 |Apache License, Version 2.0
-
-|com.typesafe.play |play_2.11 |2.4.2 |Apache License, Version 2.0
-
-|com.typesafe.play |play-datacommons_2.11 |2.4.2 |Apache License,
-Version 2.0
-
-|com.typesafe.play |play-exceptions |2.4.2 |Apache License, Version 2.0
-
-|com.typesafe.play |play-functional_2.11 |2.4.2 |Apache License, Version
-2.0
-
-|com.typesafe.play |play-iteratees_2.11 |2.4.2 |Apache License, Version
-2.0
-
-|com.typesafe.play |play-json_2.11 |2.4.2 |Apache License, Version 2.0
-
-|com.typesafe.play |play-netty-server_2.11 |2.4.2 |Apache License,
-Version 2.0
-
-|com.typesafe.play |play-netty-utils |2.4.2 |Apache License, Version 2.0
-
-|com.typesafe.play |play-server_2.11 |2.4.2 |Apache License, Version 2.0
-
-|com.typesafe.play |twirl-api_2.11 |1.1.1 |Apache License, Version 2.0
-
-|org.scala-stm |scala-stm_2.11 |0.7 |BSD
-
-|org.scala-lang |scala-reflect |2.11.7 |BSD 3-Clause
-
-|org.scala-lang |scala-reflect |2.11.7 |BSD 3-Clause
-
-|org.scala-lang |scala-reflect |2.11.7 |BSD 3-Clause
-
-|org.scala-lang.modules |scala-parser-combinators_2.11 |1.0.1 |BSD
-3-clause
-
-|org.scala-lang.modules |scala-xml_2.11 |1.0.4 |BSD 3-Clause
-
-|org.scala-lang.modules |scala-xml_2.11 |1.0.4 |BSD 3-clause
-
-|org.scala-lang.modules |scala-xml_2.11 |1.0.4 |BSD 3-clause
-
-|org.reactivestreams |reactive-streams |1.0.0 |CC0
-
-|org.reactivestreams |reactive-streams |1.0.0 |CC0
-
-|org.javassist |javassist |3.18.2-GA |MPL 1.1
-
-|org.javassist |javassist |3.18.2-GA |MPL 1.1
-
-|org.javassist |javassist |3.19.0-GA |MPL 1.1
-
-|aopalliance |aopalliance |1 |Public Domain
-
-|com.zaxxer |HikariCP |2.3.8 |The Apache Software License, Version 2.0
-
-|com.zaxxer |HikariCP |2.3.8 |The Apache Software License, Version 2.0
-
-|javax.inject |javax.inject |1 |The Apache Software License, Version 2.0
-
-|xerces |xercesImpl |2.11.0 |The Apache Software License, Version 2.0
-
-|xml-apis |xml-apis |1.4.01 |The Apache Software License, Version 2.0
-
-|mysql |mysql-connector-java |5.1.12 |The GNU General Public License,
-Version 2
-
-|mysql |mysql-connector-java |5.1.12 |The GNU General Public License,
-Version 2
-
-|com.typesafe.slick |slick_2.11 |3.0.0 |Two-clause BSD-style license
-
-|com.typesafe.slick |slick_2.11 |3.0.0 |Two-clause BSD-style license
-
-|ch.qos.logback |logback-classic |1.1.3 |
-
-|ch.qos.logback |logback-core |1.1.3 |
-
-|com.fasterxml.jackson.core |jackson-annotations |2.5.4 |
-
-|com.fasterxml.jackson.core |jackson-core |2.5.4 |
-
-|com.fasterxml.jackson.core |jackson-databind |2.5.4 |
-
-|com.fasterxml.jackson.datatype |jackson-datatype-jdk8 |2.5.4 |
-
-|com.fasterxml.jackson.datatype |jackson-datatype-jsr310 |2.5.4 |
-
-|com.google.guava |guava |16.0.1 |
-
-|com.google.inject |guice |4 |
-
-|com.google.inject.extensions |guice-assistedinject |4 |
-
-|commons-codec |commons-codec |1.1 |
-
-|javax.transaction |jta |1.1 |
-
-|No license specified | | |
-
-|org.apache.commons |commons-lang3 |3.4 |
-
-|org.slf4j |jcl-over-slf4j |1.7.12 |
-
-|org.slf4j |jul-to-slf4j |1.7.12 |
-
-|org.slf4j |slf4j-api |1.7.10 |
-
-|org.slf4j |slf4j-api |1.7.12 |
-|=======================================================================
+[#wraptable,cols="3,2,1,2",format="csv",options="header",]
+|====
+Group,Artefact,Version,License
+javax.transaction,jta,1.1,<No license specified>
+com.chuusai,shapeless_2.11,2.3.0,Apache 2
+com.sksamuel.scapegoat,scalac-scapegoat-plugin_2.11,1.0.0,Apache 2
+com.typesafe.netty,netty-reactive-streams,1.0.5,Apache 2
+com.typesafe.netty,netty-reactive-streams-http,1.0.5,Apache 2
+joda-time,joda-time,2.8.1,Apache 2
+joda-time,joda-time,2.9.2,Apache 2
+org.joda,joda-convert,1.8.1,Apache 2
+org.typelevel,macro-compat_2.11,1.1.1,Apache 2
+io.circe,circe-core_2.11,0.4.1,Apache 2.0
+io.circe,circe-generic_2.11,0.4.1,Apache 2.0
+io.circe,circe-java8_2.11,0.4.1,Apache 2.0
+io.circe,circe-jawn_2.11,0.4.1,Apache 2.0
+io.circe,circe-numbers_2.11,0.4.1,Apache 2.0
+io.circe,circe-parser_2.11,0.4.1,Apache 2.0
+com.github.inthenow,bricks-macros_2.11,0.0.1,Apache License
+com.github.inthenow,bricks-platform_2.11,0.0.1,Apache License
+org.apache.httpcomponents,httpclient,4.0.1,Apache License
+org.apache.httpcomponents,httpcore,4.0.1,Apache License
+org.typelevel,catalysts-macros_2.11,0.0.2,Apache License
+org.typelevel,catalysts-platform_2.11,0.0.2,Apache License
+com.typesafe.akka,akka-stream-kafka_2.11,0.12,Apache License 2.0
+io.dropwizard.metrics,metrics-core,3.1.2,Apache License 2.0
+io.dropwizard.metrics,metrics-jvm,3.1.2,Apache License 2.0
+org.asynchttpclient,async-http-client,2.0.2,Apache License 2.0
+org.asynchttpclient,netty-codec-dns,2.0.2,Apache License 2.0
+org.asynchttpclient,netty-resolver,2.0.2,Apache License 2.0
+org.asynchttpclient,netty-resolver-dns,2.0.2,Apache License 2.0
+org.scaldi,scaldi_2.11,0.4,"Apache License, ASL Version 2.0"
+com.amazonaws,aws-java-sdk-core,1.11.15,"Apache License, Version 2.0"
+com.amazonaws,aws-java-sdk-kms,1.11.15,"Apache License, Version 2.0"
+com.amazonaws,aws-java-sdk-s3,1.11.15,"Apache License, Version 2.0"
+commons-codec,commons-codec,1.1,"Apache License, Version 2.0"
+com.typesafe.akka,akka-actor_2.11,2.4.10,"Apache License, Version 2.0"
+com.typesafe.akka,akka-actor_2.11,2.4.7,"Apache License, Version 2.0"
+com.typesafe.akka,akka-actor_2.11,2.4.8,"Apache License, Version 2.0"
+com.typesafe.akka,akka-http-core_2.11,2.4.7,"Apache License, Version 2.0"
+com.typesafe.akka,akka-http-core_2.11,2.4.8,"Apache License, Version 2.0"
+com.typesafe.akka,akka-http-experimental_2.11,2.4.7,"Apache License, Version 2.0"
+com.typesafe.akka,akka-http-experimental_2.11,2.4.8,"Apache License, Version 2.0"
+com.typesafe.akka,akka-parsing_2.11,2.4.7,"Apache License, Version 2.0"
+com.typesafe.akka,akka-parsing_2.11,2.4.8,"Apache License, Version 2.0"
+com.typesafe.akka,akka-slf4j_2.11,2.4.7,"Apache License, Version 2.0"
+com.typesafe.akka,akka-stream_2.11,2.4.10,"Apache License, Version 2.0"
+com.typesafe.akka,akka-stream_2.11,2.4.7,"Apache License, Version 2.0"
+com.typesafe.akka,akka-stream_2.11,2.4.8,"Apache License, Version 2.0"
+com.typesafe,config,1.2.1,"Apache License, Version 2.0"
+com.typesafe,config,1.3.0,"Apache License, Version 2.0"
+com.typesafe,ssl-config-akka_2.11,0.2.1,"Apache License, Version 2.0"
+com.typesafe,ssl-config-core_2.11,0.2.1,"Apache License, Version 2.0"
+io.netty,netty-buffer,4.0.36.Final,"Apache License, Version 2.0"
+io.netty,netty-codec,4.0.36.Final,"Apache License, Version 2.0"
+io.netty,netty-codec-http,4.0.36.Final,"Apache License, Version 2.0"
+io.netty,netty-common,4.0.36.Final,"Apache License, Version 2.0"
+io.netty,netty-handler,4.0.36.Final,"Apache License, Version 2.0"
+io.netty,netty-transport,4.0.36.Final,"Apache License, Version 2.0"
+io.netty,netty-transport-native-epoll,4.0.36.Final,"Apache License, Version 2.0"
+jp.t2v,play2-auth_2.11,0.14.2,"Apache License, Version 2.0"
+jp.t2v,stackable-controller_2.11,0.5.1,"Apache License, Version 2.0"
+org.apache.commons,commons-lang3,3.4,"Apache License, Version 2.0"
+org.apache.httpcomponents,httpclient,4.5.2,"Apache License, Version 2.0"
+org.apache.httpcomponents,httpcore,4.4.4,"Apache License, Version 2.0"
+org.flywaydb,flyway-core,4.0.3,"Apache License, Version 2.0"
+org.webjars,bootstrap,3.3.4,"Apache License, Version 2.0"
+com.typesafe.play,build-link,2.5.3,Apache-2.0
+com.typesafe.play,play_2.11,2.5.3,Apache-2.0
+com.typesafe.play,play-cache_2.11,2.5.3,Apache-2.0
+com.typesafe.play,play-datacommons_2.11,2.5.3,Apache-2.0
+com.typesafe.play,play-exceptions,2.5.3,Apache-2.0
+com.typesafe.play,play-functional_2.11,2.5.3,Apache-2.0
+com.typesafe.play,play-iteratees_2.11,2.5.3,Apache-2.0
+com.typesafe.play,play-json_2.11,2.5.3,Apache-2.0
+com.typesafe.play,play-logback_2.11,2.5.3,Apache-2.0
+com.typesafe.play,play-netty-server_2.11,2.5.3,Apache-2.0
+com.typesafe.play,play-netty-utils,2.5.3,Apache-2.0
+com.typesafe.play,play-server_2.11,2.5.3,Apache-2.0
+com.typesafe.play,play-streams_2.11,2.5.3,Apache-2.0
+com.typesafe.play,play-ws_2.11,2.5.3,Apache-2.0
+com.typesafe.play,twirl-api_2.11,1.1.1,Apache-2.0
+de.heikoseeberger,akka-http-circe_2.11,1.7.0,Apache-2.0
+de.heikoseeberger,akka-http-circe_2.11,1.8.0,Apache-2.0
+dk.brics.automaton,automaton,1.11-8,BSD
+org.scala-sbt,test-interface,1,BSD
+org.scala-stm,scala-stm_2.11,0.7,BSD
+org.scala-lang.modules,scala-java8-compat_2.11,0.7.0,BSD 3-clause
+org.scala-lang.modules,scala-parser-combinators_2.11,1.0.4,BSD 3-clause
+org.scala-lang.modules,scala-parser-combinators_2.11,1.0.4,BSD 3-clause
+org.scala-lang.modules,scala-xml_2.11,1.0.4,BSD 3-clause
+org.scala-lang,scala-compiler,2.11.7,BSD 3-Clause
+org.scala-lang,scala-reflect,2.11.8,BSD 3-Clause
+org.scala-lang.modules,scala-pickling_2.11,0.10.1,BSD-like
+org.scalacheck,scalacheck_2.11,1.12.5,BSD-style
+org.scalaz,scalaz-core_2.11,7.1.3,BSD-style
+org.reactivestreams,reactive-streams,1.0.0,CC0
+ch.qos.logback,logback-classic,1.1.3,Eclipse Public License - v 1.0
+ch.qos.logback,logback-classic,1.1.4,Eclipse Public License - v 1.0
+ch.qos.logback,logback-core,1.1.3,Eclipse Public License - v 1.0
+ch.qos.logback,logback-core,1.1.4,Eclipse Public License - v 1.0
+com.unboundid,unboundid-ldapsdk,3.1.1,GNU General Public License version 2 (GPLv2)
+org.webjars.bower,flux,2.0.2,https
+org.mindrot,jbcrypt,0.3m,ISC/BSD License
+org.mariadb.jdbc,mariadb-java-client,1.4.4,LGPL-2.1
+eu.timepit,refined_2.11,0.3.1,MIT
+org.spire-math,algebra_2.11,0.3.1,MIT
+org.spire-math,algebra-laws_2.11,0.3.1,MIT
+org.spire-math,algebra-macros_2.11,0.3.1,MIT
+org.spire-math,algebra-std_2.11,0.3.1,MIT
+org.spire-math,cats_2.11,0.3.0,MIT
+org.spire-math,cats-core_2.11,0.3.0,MIT
+org.spire-math,cats-free_2.11,0.3.0,MIT
+org.spire-math,cats-jvm_2.11,0.3.0,MIT
+org.spire-math,cats-laws_2.11,0.3.0,MIT
+org.spire-math,cats-macros_2.11,0.3.0,MIT
+org.spire-math,cats-state_2.11,0.3.0,MIT
+org.spire-math,jawn-parser_2.11,0.8.4,MIT
+org.typelevel,cats_2.11,0.4.0,MIT
+org.typelevel,cats-core_2.11,0.4.1,MIT
+org.typelevel,cats-jvm_2.11,0.4.0,MIT
+org.typelevel,cats-laws_2.11,0.4.0,MIT
+org.typelevel,cats-macros_2.11,0.4.1,MIT
+org.typelevel,discipline_2.11,0.4,MIT
+org.typelevel,machinist_2.11,0.4.1,MIT
+org.webjars.bower,backbone,1.2.1,MIT
+org.webjars.bower,react,0.13.3,MIT
+org.webjars.bower,react-router,0.13.3,MIT
+org.webjars.bower,underscore,1.8.3,MIT
+org.webjars,webjars-locator,0.27,MIT
+org.webjars,webjars-locator-core,0.27,MIT
+com.github.tyagihas,java_nats,0.6.1,MIT License
+org.slf4j,jcl-over-slf4j,1.7.16,MIT License
+org.slf4j,jul-to-slf4j,1.7.16,MIT License
+org.slf4j,slf4j-api,1.7.10,MIT License
+org.slf4j,slf4j-api,1.7.16,MIT License
+org.slf4j,slf4j-api,1.7.21,MIT License
+org.webjars,jquery,1.11.1,MIT License
+org.webjars,webjars-play_2.11,2.4.0-1,MIT License
+org.javassist,javassist,3.19.0-GA,MPL 1.1
+org.javassist,javassist,3.20.0-GA,MPL 1.1
+org.webjars,requirejs,2.1.15,New BSD
+aopalliance,aopalliance,1,Public Domain
+com.fasterxml.jackson.core,jackson-annotations,2.6.0,"The Apache Software License, Version 2.0"
+com.fasterxml.jackson.core,jackson-annotations,2.7.1,"The Apache Software License, Version 2.0"
+com.fasterxml.jackson.core,jackson-core,2.6.6,"The Apache Software License, Version 2.0"
+com.fasterxml.jackson.core,jackson-core,2.7.1,"The Apache Software License, Version 2.0"
+com.fasterxml.jackson.core,jackson-databind,2.6.6,"The Apache Software License, Version 2.0"
+com.fasterxml.jackson.core,jackson-databind,2.7.1,"The Apache Software License, Version 2.0"
+com.fasterxml.jackson.dataformat,jackson-dataformat-cbor,2.6.6,"The Apache Software License, Version 2.0"
+com.fasterxml.jackson.datatype,jackson-datatype-jdk8,2.7.1,"The Apache Software License, Version 2.0"
+com.fasterxml.jackson.datatype,jackson-datatype-jsr310,2.7.1,"The Apache Software License, Version 2.0"
+com.github.mifmif,generex,1.0.0,"The Apache Software License, Version 2.0"
+com.google.guava,guava,18,"The Apache Software License, Version 2.0"
+com.google.inject.extensions,guice-assistedinject,4,"The Apache Software License, Version 2.0"
+com.google.inject,guice,4,"The Apache Software License, Version 2.0"
+com.zaxxer,HikariCP-java6,2.3.7,"The Apache Software License, Version 2.0"
+javax.inject,javax.inject,1,"The Apache Software License, Version 2.0"
+net.jpountz.lz4,lz4,1.3.0,"The Apache Software License, Version 2.0"
+net.sf.ehcache,ehcache-core,2.6.11,"The Apache Software License, Version 2.0"
+oauth.signpost,signpost-commonshttp4,1.2.1.2,"The Apache Software License, Version 2.0"
+oauth.signpost,signpost-core,1.2.1.2,"The Apache Software License, Version 2.0"
+org.apache.commons,commons-compress,1.9,"The Apache Software License, Version 2.0"
+org.apache.kafka,kafka-clients,0.10.0.1,"The Apache Software License, Version 2.0"
+org.xerial.snappy,snappy-java,1.1.2.6,"The Apache Software License, Version 2.0"
+xerces,xercesImpl,2.11.0,"The Apache Software License, Version 2.0"
+xml-apis,xml-apis,1.4.01,"The Apache Software License, Version 2.0"
+com.github.tyagihas,scala_nats_2.11,0.2.1,The MIT License
+com.github.mpilquist,simulacrum_2.11,0.7.0,Three-clause BSD-style
+com.typesafe.slick,slick_2.11,3.1.1,Two-clause BSD-style license
+com.typesafe.slick,slick-hikaricp_2.11,3.1.1,Two-clause BSD-style license
+|====

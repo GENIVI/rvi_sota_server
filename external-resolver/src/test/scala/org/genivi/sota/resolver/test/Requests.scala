@@ -128,10 +128,6 @@ trait PackageRequestsHttp {
                 (implicit ec: ExecutionContext): HttpRequest =
     Put(Resource.uri("packages", name, version), Package.Metadata(namespace, desc, vendor))
 
-  def getAffected(namespace: Namespace, ids: Set[PackageId])
-                 (implicit ec: ExecutionContext): HttpRequest =
-    Post(Resource.uri("packages", "affected").withQuery(Query("namespace" -> namespace.get)), ids)
-
   def getPackageStats(namespace: Namespace, name: PackageId.Name)
                  (implicit ec: ExecutionContext): HttpRequest =
     Get(Resource.uri("package_stats", name.get))

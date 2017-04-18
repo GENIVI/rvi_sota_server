@@ -1,0 +1,2993 @@
+{
+	"variables": [],
+	"info": {
+		"name": "00-CompleteSystemTest",
+		"_postman_id": "1be02a7f-f2a6-d059-e765-0148a6a4ce10",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "01DeviceRegistry_01-Devices",
+			"description": "Folder for devices",
+			"item": [
+				{
+					"name": "GET /devices",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//WarmUp// tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Empty Body\"] = responseBody.has(\"\");",
+									"",
+									"postman.setEnvironmentVariable(\"TestNum\", 0);",
+									"",
+									"postman.clearEnvironmentVariable(\"qa_device_A_uuid\");",
+									"",
+									"postman.clearEnvironmentVariable(\"qa_device_B_uuid\");",
+									"",
+									"postman.clearEnvironmentVariable(\"qa_device_C_uuid\");",
+									"",
+									"postman.clearEnvironmentVariable(\"qa_device_B_name\");",
+									"",
+									"postman.clearEnvironmentVariable(\"qa_device_C_name\");",
+									"",
+									"postman.clearEnvironmentVariable(\"groupID\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/devices?namespace={{namespace}}",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Get a list of all the devices in a particular namespace in the device registry."
+					},
+					"response": []
+				},
+				{
+					"name": "POST /devices (device_A)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Successful POST request\"] = responseCode.code === 201 || responseCode.code === 202;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"",
+									"postman.setEnvironmentVariable(\"qa_device_A_uuid\", response);",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/devices?namespace={{namespace}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"deviceName\": \"{{device_name}}{{$randomInt}}\",\n  \"deviceId\": \"{{$timestamp}}\",\n  \"deviceType\": \"Vehicle\"\n}\n"
+						},
+						"description": "Register a new device with a name and an ID, get back its UUID"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /devices/{uuid} (device_A)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"",
+									"tests[\"namespace in Response\"] = response.namespace == environment.namespace;",
+									"",
+									"tests[\"id in Response\"] = response.uuid == environment.qa_device_A_uuid;",
+									"",
+									"tests[\"lastSeen in Response\"] = response.lastSeen === null;",
+									"",
+									"tests[\"device type in Response\"] = response.deviceType == \"Vehicle\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/devices/{{qa_device_A_uuid}}",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Get the device object for a single device"
+					},
+					"response": []
+				},
+				{
+					"name": "DEL /devices/{uuid} (device_A)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"postman.clearEnvironmentVariable(\"qa_device_A_uuid\");",
+									"",
+									"tests[\"Body is correct\"] = responseBody === \"{}\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/devices/{{qa_device_A_uuid}}",
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Delete a device"
+					},
+					"response": []
+				},
+				{
+					"name": "POST /devices (device_B)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Successful POST request\"] = responseCode.code === 201 || responseCode.code === 202;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"",
+									"postman.setEnvironmentVariable(\"qa_device_B_uuid\", response);",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/devices?namespace={{namespace}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"deviceName\": \"{{device_name}}{{$randomInt}}\",\n  \"deviceId\": \"{{$timestamp}}\",\n  \"deviceType\": \"Vehicle\"\n}"
+						},
+						"description": "Register a new device with a name and an ID, get back its UUID"
+					},
+					"response": []
+				},
+				{
+					"name": "POST /devices/{uuid}/ping (device_B)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Successful POST request\"] = responseCode.code === 200 || responseCode.code === 201 || responseCode.code === 202;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"",
+									"tests[\"lastSeen in Response\"] = response.lastSeen !== null;",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/devices/{{qa_device_B_uuid}}/ping",
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Update the last seen time for a device"
+					},
+					"response": []
+				},
+				{
+					"name": "POST /devices/{uuid}/system_info (device_B)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Successful POST request\"] = responseCode.code === 201 || responseCode.code === 202;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/devices/{{qa_device_B_uuid}}/system_info",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"description": "Create the system info for the 2nd device. \n"
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /devices/{uuid}/system_info (device_B)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/devices/{{qa_device_B_uuid}}/system_info",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  {\n    \"name\": \"nano\",\n    \"version\": \"2.2.4-1\"\n  }\n]"
+						},
+						"description": "Update the system info for the 2nd device. \n"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /devices/{uuid}/system_info (device_B)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Correct package\"] = responseBody.has(\"nano\");",
+									"",
+									"tests[\"Correct version\"] = responseBody.has(\"2.2.4-1\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/devices/{{qa_device_B_uuid}}/system_info",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Get the system info for the 2nd device. \n"
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /mydevice/{uuid}/packages",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 204\"] = responseCode.code === 204;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/mydevice/{{qa_device_B_uuid}}/packages",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  {\n    \"name\": \"nano\",\n    \"version\": \"2.2.6\"\n  }\n]"
+						},
+						"description": "Mark a list of packages as installed on a device. Note that this does not install anything. It only updates device registry's database of installed packages. This endpoint is for ingesting the list of installed packages sent from the in-vehicle client."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /devices/{uuid}/packages (device_B)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Correct package\"] = responseBody.has(\"nano\");",
+									"",
+									"tests[\"Correct version\"] = responseBody.has(\"2.2.6\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/devices/{{qa_device_B_uuid}}/packages",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Return a list of packages installed on the device."
+					},
+					"response": []
+				},
+				{
+					"name": "POST /devices (device_C)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Successful POST request\"] = responseCode.code === 201 || responseCode.code === 202;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"",
+									"postman.setEnvironmentVariable(\"qa_device_C_uuid\", response);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/devices?namespace={{namespace}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"deviceName\": \"{{device_name}}{{$randomInt}}\",\n  \"deviceId\": \"{{$timestamp}}\",\n  \"deviceType\": \"Vehicle\"\n}\n"
+						},
+						"description": "Register a new device with a name and an ID, get back its UUID"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /devices/{uuid} (device_B)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"",
+									"tests[\"namespace in Response\"] = response.namespace == environment.namespace;",
+									"",
+									"postman.setEnvironmentVariable(\"qa_device_B_name\", response.deviceName);",
+									"",
+									"tests[\"lastSeen in Response\"] = response.lastSeen !== null;",
+									"",
+									"tests[\"deviceType in Response\"] = response.deviceType == \"Vehicle\";",
+									"",
+									"tests[\"activatedAt in Response\"] = response.activatedAt !== null;",
+									"",
+									"tests[\"deviceStatus in Response\"] = response.deviceStatus == \"NotSeen\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/devices/{{qa_device_B_uuid}}",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Get the device object for a single device"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /devices/{uuid} (device_C)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"",
+									"tests[\"namespace in Response\"] = response.namespace == environment.namespace;",
+									"",
+									"postman.setEnvironmentVariable(\"qa_device_C_name\", response.deviceName);",
+									"",
+									"tests[\"lastSeen in Response\"] = response.lastSeen !== null;",
+									"",
+									"tests[\"deviceType in Response\"] = response.deviceType == \"Vehicle\";",
+									"",
+									"tests[\"activatedAt in Response\"] = response.activatedAt !== null;",
+									"",
+									"tests[\"deviceStatus in Response\"] = response.deviceStatus == \"NotSeen\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/devices/{{qa_device_C_uuid}}",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Get the device object for a single device"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "01DeviceRegistry_02-Groups",
+			"description": "",
+			"item": [
+				{
+					"name": "POST /device_groups",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Successful POST request\"] = responseCode.code === 201 || responseCode.code === 202;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/device_groups?groupName=coolGroup",
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Create a group for a namespace/groupName entry"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /device_groups",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Content-Type is present\"] = postman.getResponseHeader(\"Content-Type\");",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"",
+									"postman.setEnvironmentVariable(\"groupID\", jsonData[0].id);",
+									"",
+									"postman.setEnvironmentVariable(\"groupName\", jsonData[0].groupName);",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/device_groups",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Returns a list of all groups"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /devices/{uuid}/groups (empty)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body is Empty\"] = responseBody!==null && responseBody.length===2;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/devices/{{qa_device_C_uuid}}/groups",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Retrieve the group memberships for a device - Should be empty"
+					},
+					"response": []
+				},
+				{
+					"name": "POST /device_groups/{groupId}/devices/{deviceId} (device_B)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Successful POST request\"] = responseCode.code === 200 || responseCode.code === 201 || responseCode.code === 202;",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(\"1\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/device_groups/{{groupID}}/devices/{{qa_device_B_uuid}}",
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "add device B to a group"
+					},
+					"response": []
+				},
+				{
+					"name": "POST /device_groups/{groupId}/devices/{deviceId} (device_C) ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Successful POST request\"] = responseCode.code === 200 || responseCode.code === 201 || responseCode.code === 202;",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(\"1\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/device_groups/{{groupID}}/devices/{{qa_device_C_uuid}}",
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "add device_C to a group"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /devices/{uuid}/groups",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"",
+									"tests[\"Contains New Group\"] = response[0] === environment.groupID;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/devices/{{qa_device_C_uuid}}/groups",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Retrieve the group memberships for a device"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /device_groups/{groupId}/devices",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"",
+									"tests[\"Body is correct\"] = jsonData[0] === environment.qa_device_C_uuid;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/device_groups/{{groupID}}/devices",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "return a list of device uuids in group"
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /device_groups/{groupId}/rename",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/device_groups/{{groupID}}/rename?groupName={{renamedGroup}}",
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Rename a group"
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /device_groups/{groupId}/devices/{deviceId}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body is correct\"] = responseBody === \"{}\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/device_groups/{{groupID}}/devices/{{qa_device_C_uuid}}",
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "remove a device from a group"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /device_groups/{uuid}/count",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(\"1\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/device_groups/{{groupID}}/count",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "return count of devices in group"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /devices/{uuid}/groups (coolGroupMember)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"",
+									"tests[\"Body is correct\"] = jsonData[0] === environment.groupID;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/devices/{{qa_device_B_uuid}}/groups",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Retrieve the group memberships for a device - Should still be a memeber of coolGroup"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /devices/{uuid}/groups (empty post-test)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body is Empty\"] = responseBody!==null && responseBody.length===2;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/devices/{{qa_device_C_uuid}}/groups",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Retrieve the group memberships for a device - Should be empty"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "01DeviceRegistry_03-Count",
+			"description": "",
+			"item": [
+				{
+					"name": "GET /device_count/{name}/{version}/",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body contains deviceCount\"] = responseBody.has(\"deviceCount\");",
+									"",
+									"tests[\"Body contains groupIds\"] = responseBody.has(\"groupIds\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/device_count/{{package_name}}/{{package_version_B}}",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "returns count of groups and devices with the given package installed"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /active_device_count",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"postman.clearEnvironmentVariable(\"isoTime\");",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"",
+									"tests[\"Single Device Noted\"] = jsonData.deviceCount === 1;"
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"postman.setEnvironmentVariable('isoTime',(new Date()).toISOString());"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{deviceRegistryAddress}}/api/v1/active_device_count?start=2017-02-01T16:50:27.000Z&end={{isoTime}}",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "returns count of devices active during the given time interval (for an implicitely given namespace)\n"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "02Core_01-Devices",
+			"description": "",
+			"item": [
+				{
+					"name": "GET /devices",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"var R0 = 0;",
+									"var R1 = 1;",
+									"",
+									"if (response[1].deviceName == environment.qa_device_C_name) {",
+									"    var R0 = 1;",
+									"    var R1 = 0;",
+									"}",
+									"    ",
+									"tests[\"D1 - namespace in Response\"] = response[R1].namespace == environment.namespace;",
+									"",
+									"tests[\"D1 - id in Response\"] = response[R1].uuid == environment.qa_device_B_uuid;",
+									"",
+									"tests[\"D1 - deviceName in Response\"] = response[R1].deviceName == environment.qa_device_B_name;",
+									"",
+									"tests[\"D1 - deviceId in Response\"] = response[R1].activatedAt !== null;",
+									"",
+									"tests[\"D1 - deviceType in Response\"] = response[R1].deviceType == \"Vehicle\";",
+									"",
+									"tests[\"D2 - lastSeen in Response\"] = response[R1].lastSeen !== null;",
+									"",
+									"tests[\"D2 - namespace in Response\"] = response[R0].namespace == environment.namespace;",
+									"",
+									"tests[\"D2 - id in Response\"] = response[R0].uuid == environment.qa_device_C_uuid;",
+									"",
+									"tests[\"D2 - deviceName in Response\"] = response[R0].deviceName == environment.qa_device_C_name;",
+									"",
+									"tests[\"D2 - deviceId in Response\"] = response[R0].activatedAt !== null;",
+									"",
+									"tests[\"deviceType in Response\"] = response[R0].deviceType == \"Vehicle\";",
+									"",
+									"tests[\"lastSeen in Response\"] = response[R0].lastSeen !== null;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/devices?",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Get a list of all the devices in the corePort database."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "02Core_02-Packages",
+			"description": "Tests involved with adding packages to and finding packages in the system.",
+			"item": [
+				{
+					"name": "GET /packages",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Body is Empty\"] = responseBody.has(\"\");",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/packages",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Returns a list of all the software packages and their versions in the corePort database."
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /packages/{name}/{version}  (package 'A')",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 600ms\"] = responseTime < 600;",
+									"",
+									"tests[\"Status code is 204\"] = responseCode.code === 204;",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/packages/{{package_name}}/{{package_version_A}}?description={{package_description}}&vendor={{package_vendor}}&signature={{package_signature}}",
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"enabled": true,
+									"src": "/etc/newman/README.md"
+								}
+							]
+						},
+						"description": "Adds a binary package to the system. This specific call adds PackageA, with a bunch of pre-specified parameters like Name, Version, Vendor etc."
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /packages/{name}/{version} (package 'B')",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 600ms\"] = responseTime < 600;",
+									"",
+									"tests[\"Status code is 204\"] = responseCode.code === 204;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/packages/{{package_name}}/{{package_version_B}}?description={{package_description}}&vendor={{package_vendor}}&signature={{package_signature}}",
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"enabled": true,
+									"src": "/etc/newman/README.md"
+								}
+							]
+						},
+						"description": "Adds a binary package to the system. This specific call adds PackageB, with a bunch of pre-specified parameters like Name, Version, Vendor etc."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /packages/{name}/{version} (package 'A')",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"",
+									"tests[\"Returned correct package, version\"] = response.id.name === 'TestPackage001' && response.id.version === \"0.1.0\";",
+									"",
+									"tests[\"Returned correct Status, vendor, description and Sig\"] = response.isBlackListed === false && response.vendor === \"VendorA\" && response.description === \"A test package used to verify a number of events\";",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/packages/{{package_name}}/{{package_version_A}}",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Returns the package object of a specific package. Package object is an array containing the Namespace, ID, size, description, vendor etc.\n\nSaves Package Object to be used later as packageId"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /packages/{name}/{version} (package 'B')",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"",
+									"tests[\"Returned correct package, version\"] = response.id.name === 'TestPackage001' && response.id.version === \"0.1.2\";",
+									"",
+									"tests[\"Returned correct Status, vendor, description and Sig\"] = response.isBlackListed === false && response.vendor === \"VendorA\" && response.description === \"A test package used to verify a number of events\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/packages/{{package_name}}/{{package_version_B}}",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Returns the package object of a specific package. Package object is an array containing the Namespace, ID, size, description, vendor etc."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /packages/{name}/{version}/queued_devices (empty)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Body is Empty\"] = responseBody.has(\"\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/packages/{{package_name}}/{{package_version}}/queued_devices",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Should be empty at this point."
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /auto_install/{pkgName}/{uuid}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Body is Empty\"] = responseBody.has(\"\");",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/auto_install/{{package_name}}/{{qa_device_C_uuid}}",
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Add a device uuid to be automatically updated for this package."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /auto_install/{pkgName}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"",
+									"tests[\"Reference correct device\"] = jsonData[0] === environment.qa_device_C_uuid;",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/auto_install/{{package_name}}",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Return a list of device uuids that will update automatically for that package."
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /auto_install/{pkgName}/{uuid}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Body is correct\"] = responseBody === \"{}\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/auto_install/{{package_name}}/{{qa_device_C_uuid}}",
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Remove a device from being automatically updated for this package."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /auto_install/{pkgName} verify",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Body is Empty\"] = responseBody.has(\"\");",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/auto_install/{{package_name}}",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Verify the device is not in the response"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "02Core_03-Campaigns",
+			"description": "",
+			"item": [
+				{
+					"name": "GET /campaigns",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body is empty\"] = responseBody.has(\"\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/campaigns",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "List all campaigns"
+					},
+					"response": []
+				},
+				{
+					"name": "POST /campaigns",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Successful POST request\"] = responseCode.code === 201 || responseCode.code === 202;",
+									"",
+									"postman.setEnvironmentVariable(\"campaignId\", JSON.parse(responseBody));"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/campaigns",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\" : \"postman-campaign\"\n}"
+						},
+						"description": "\nCreate a new campaign"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /campaigns/{uuid}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"Contains correct ID\"] = jsonData.meta.id === environment.campaignId;",
+									"",
+									"tests[\"Contains correct status\"] = jsonData.meta.launched === false;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/campaigns/{{campaignId}}",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Get a campaign from uuid"
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /campaigns/{uuid}/package",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body is correct\"] = responseBody === \"{}\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/campaigns/{{campaignId}}/package",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\":\"{{package_name}}\",\n  \"version\":\"{{package_version_A}}\"\n}"
+						},
+						"description": "Set the package for the campaign"
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /campaigns/{uuid}/name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body is correct\"] = responseBody === \"{}\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/campaigns/{{campaignId}}/name",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\":\"renamedCampaignName\"\n}"
+						},
+						"description": "Set the name for the campaign"
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /campaigns/{uuid}/groups",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body is correct\"] = responseBody === \"{}\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/campaigns/{{campaignId}}/groups",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"groups\":[\n    \"{{groupID}}\"\n    ]\n}"
+						},
+						"description": "Set the group for the campaign"
+					},
+					"response": []
+				},
+				{
+					"name": "POST /campaigns/{uuid}/launch",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Successful POST request\"] = responseCode.code === 200 || responseCode.code === 201 || responseCode.code === 202;",
+									"",
+									"postman.setEnvironmentVariable(\"CampaignUpdateId\", JSON.parse(responseBody));"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/campaigns/{{campaignId}}/launch",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"startDate\": \"2020-01-01T12:30:00.000Z\",\n  \"endDate\": \"2020-01-02T12:30:00.000Z\",\n  \"priority\": 0,\n  \"signature\": \"Signature?\",\n  \"description\": \"Test Campaign\",\n  \"requestConfirmation\": true\n}"
+						},
+						"description": "Launch the campaign"
+					},
+					"response": []
+				},
+				{
+					"name": "VERIFY",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"Contains correct ID\"] = jsonData.meta.id === environment.campaignId;",
+									"",
+									"tests[\"Contains correct status\"] = jsonData.meta.launched === true;",
+									"",
+									"tests[\"Contains correct status\"] = jsonData.meta.launched === true;",
+									"",
+									"tests[\"Contains correct status\"] = jsonData.meta.launched === true;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/campaigns/{{campaignId}}",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Get a campaign from uuid"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /campaigns/{uuid}/statistics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"Correct updateId\"] = jsonData[0].updateId === environment.CampaignUpdateId;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/campaigns/{{campaignId}}/statistics",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Get statistics on the progress of the campaign\n"
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /campaigns/{uuid}/cancel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body is correct\"] = responseBody === \"{}\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/campaigns/{{campaignId}}/cancel",
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Cancel all updates of the campaign"
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /campaigns/{uuid}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body is correct\"] = responseBody === \"{}\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/campaigns/{{campaignId}}",
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Delete the Campaign"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /history",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/history?uuid={{qa_device_B_uuid}}",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Get the package install history of a device."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "02Core_04-Updates",
+			"description": "Tests involved with queueing and triggering updates.",
+			"item": [
+				{
+					"name": "GET /update_requests",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Response is not null\"] = responseBody !== null;",
+									"",
+									"tests[\"Body contains id field\"] = responseBody.has(\"id\");",
+									"",
+									"tests[\"Body contains namespace field\"] = responseBody.has(\"namespace\");",
+									"",
+									"tests[\"Body contains packageUuid field\"] = responseBody.has(\"packageUuid\");",
+									"",
+									"tests[\"Body contains creationTime field\"] = responseBody.has(\"creationTime\");",
+									"",
+									"tests[\"Body contains periodOfValidity field\"] = responseBody.has(\"periodOfValidity\");",
+									"",
+									"tests[\"Body contains priority field\"] = responseBody.has(\"priority\");",
+									"",
+									"tests[\"Body contains signature field\"] = responseBody.has(\"signature\");",
+									"",
+									"tests[\"Body contains description field\"] = responseBody.has(\"description\");",
+									"",
+									"tests[\"Body contains requestConfirmation field\"] = responseBody.has(\"requestConfirmation\");",
+									"",
+									"tests[\"Body contains installPosition field\"] = responseBody.has(\"installPos\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/update_requests",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "List all update campaigns\n"
+					},
+					"response": []
+				},
+				{
+					"name": "POST /device_updates/{uuid} (device_C)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"queuedUpdateId_A\", response.requestId);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/device_updates/{{qa_device_C_uuid}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"{{package_name}}\",\n  \"version\": \"{{package_version_A}}\"\n}"
+						},
+						"description": "Create an Update using package 'A' for Device 'C'."
+					},
+					"response": []
+				},
+				{
+					"name": "POST /device_updates/{uuid} (device_C) versionB",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"queuedUpdateId_B\", response.requestId);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/device_updates/{{qa_device_C_uuid}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"{{package_name}}\",\n  \"version\": \"{{package_version_B}}\"\n}"
+						},
+						"description": "Create an Update using package 'B' for Device 'C'."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /device_updates/{uuid}/queued",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body contains object/s\"] = responseBody !== \"{}\";",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"",
+									"tests[\"Correct update order\"] = response[0].requestId === environment.queuedUpdateId_A && response[1].requestId === environment.queuedUpdateId_B;",
+									"//postman.setEnvironmentVariable(\"queuedUpdateId_A\", response[0].requestId);",
+									"//postman.setEnvironmentVariable(\"queuedUpdateId_B\", response[1].requestId);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/device_updates/{{qa_device_C_uuid}}/queued",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Get a list of the updates queued for a device.\n"
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /device_updates/{uuid}/order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/device_updates/{{qa_device_C_uuid}}/order",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"0\":\"{{queuedUpdateId_B}}\",\"1\":\"{{queuedUpdateId_A}}\"\n}"
+						},
+						"description": "Set the install order for a vehicle's queued packages.\n"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /device_updates/{uuid}/queued copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body contains object/s\"] = responseBody !== \"{}\";",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"",
+									"tests[\"Correct update order after change\"] = response[1].requestId === environment.queuedUpdateId_A && response[0].requestId === environment.queuedUpdateId_B;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/device_updates/{{qa_device_C_uuid}}/queued",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Get a list of the updates queued for a device.\n"
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /device_updates/{uuid}/blocked",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 204\"] = responseCode.code === 204;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/device_updates/{{qa_device_C_uuid}}/blocked",
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Put a block on the update queue for the given device.\n"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /device_updates/{uuid}/blocked",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"Body contains content\"] = responseBody.has(\"blockedAt\") && jsonData.blockedAt !== \"\" && jsonData.id !== \"\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/device_updates/{{qa_device_C_uuid}}/blocked",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Get whether the update queue for the given device is blocked.\n"
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /device_updates/{uuid}/blocked",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 204\"] = responseCode.code === 204;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/device_updates/{{qa_device_C_uuid}}/blocked",
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Delete a block on the update queue for the given device.\n"
+					},
+					"response": []
+				},
+				{
+					"name": "POST /device_updates/{uuid}/sync",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Successful POST request\"] = responseCode.code === 201 || responseCode.code === 204;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/device_updates/{{qa_device_C_uuid}}/sync",
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "todo"
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /device_updates/{uuid}/{updateId}/cancelupdate",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 204\"] = responseCode.code === 204;",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/device_updates/{{qa_device_C_uuid}}/{{queuedUpdateId_A}}/cancelupdate",
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Cancel a currently pending update\n"
+					},
+					"response": []
+				},
+				{
+					"name": "POST /mydevice/{uuid}/updates/{updateId}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Successful POST request\"] = responseCode.code === 200 || responseCode.code === 201 || responseCode.code === 202;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/mydevice/{{qa_device_C_uuid}}/updates/{{queuedUpdateId_B}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  {\n    \"updateId\": \"{{queuedUpdateId_B}}\",\n    \"resultCode\": 0,\n    \"resultText\": \"string\",\n    \"receivedAt\": \"{{LastSeen}}\"\n  }\n]"
+						},
+						"description": "Report on the status of an update. This is used by the device client.\n"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /device_updates/{uuid}/results",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/device_updates/{{qa_device_C_uuid}}/results",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Get a list of results for all updates for a given DeviceId.\n"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /device_updates/{uuid}/{updateId}/results",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/device_updates/{{qa_device_C_uuid}}/{{queuedUpdateId_B}}/results",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Get a list of results for a given update.\n"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /mydevice/{uuid}/updates",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"var response = JSON.parse(responseBody);",
+									"",
+									"tests[\"Response contains created update\"] = response[0].requestId === environment.queuedUpdateId_B;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/mydevice/{{qa_device_C_uuid}}/updates",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Get a list of the updates queued for a device, and update the last seen time for that device. This is called by the client."
+					},
+					"response": []
+				},
+				{
+					"name": "GET /mydevice/{uuid}/updates/{updateId}/download",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/mydevice/{{qa_device_C_uuid}}/updates/{{queuedUpdateId_B}}/download",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Download a package binary. This is called by the client device.\n"
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /mydevice/{uuid}/installed",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/mydevice/{{qa_device_C_uuid}}/installed",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  {\n    \"name\": \"nano\",\n    \"version\": \"2.2.4\"\n  },\n  {\n    \"name\": \"nano\",\n    \"version\": \"2.2.6\"\n  }\n]"
+						},
+						"description": "Update the list of installed packages on a device. Note that this does not do any communication with the client or install any packages; it simply updates the database with the information that the package is installed.\n"
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /mydevice/{uuid}/system_info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/mydevice/{{qa_device_C_uuid}}/system_info",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"description": "Update the system info for a device\n"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "02Core_05-Blacklist",
+			"description": "",
+			"item": [
+				{
+					"name": "GET /blacklist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body is empty array\"] = responseBody === \"[]\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/blacklist",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Get a list of blacklisted packages"
+					},
+					"response": []
+				},
+				{
+					"name": "POST /blacklist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Successful POST request\"] = responseCode.code === 201 || responseCode.code === 202;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/blacklist",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"packageId\": {\n    \"name\": \"{{package_name}}\",\n    \"version\": \"{{package_version_A}}\"\n  },\n  \"comment\": \"string\"\n}"
+						},
+						"description": "Create a blacklist item"
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /blacklist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(\"OK\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/blacklist",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"packageId\": {\n    \"name\": \"{{package_name}}\",\n    \"version\": \"{{package_version_A}}\"\n  },\n  \"comment\": \"Update was successful\"\n}"
+						},
+						"description": "Update a blacklist item"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /blacklist/{package_name}/{package_version}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(\"Update was successful\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/blacklist/{{package_name}}/{{package_version_A}}",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Get a blacklist item"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /blacklist/{package_name}/{package_version}/preview",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(\"affected_device_count\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/blacklist/{{package_name}}/{{package_version}}/preview",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Get the count of affected devices if a blacklist item was created for this package\n"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /impact/blacklist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/impact/blacklist",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Current impact analysis for blacklisted packages\n"
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /update_requests/{uuid}/cancel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(\"0\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/update_requests/{{queuedUpdateId_B}}/cancel",
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Cancel all pending devices of this update request\n"
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /blacklist/{package_name}/{package_version}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(\"OK\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{coreAddress}}/api/v1/blacklist/{{package_name}}/{{package_version_A}}",
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Delete a blacklist item\n"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "03Resolver_01-Devices",
+			"description": "Resolver interactions with Devices",
+			"item": [
+				{
+					"name": "GET /resolver/devices",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body contains uuid of qa_devices\"] = responseBody.has(environment.qa_device_C_uuid);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{resolverAddress}}/api/v1/resolver/devices",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Get a list of all the device uuids known to resolver"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /resolver/devices/{uuid}/package",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(\"nano\") && responseBody.has(\"2.2.4\");",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{resolverAddress}}/api/v1/resolver/devices/{{qa_device_C_uuid}}/package",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": "Return a list of packages installed on the device.\r\n"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "03Resolver_02-Components",
+			"description": "Resolver interations with Components",
+			"item": [
+				{
+					"name": "GET /resolver/components",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body is correct\"] = responseBody === \"[]\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{resolverAddress}}/api/v1/resolver/components",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Return a list of Components"
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /resolver/components/{partNumber}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(environment.partNumber);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{resolverAddress}}/api/v1/resolver/components/{{partNumber}}",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"namespace\": \"{{namespace}}\",\n  \"partNumber\": \"{{partNumber}}\",\n  \"description\": \"A generic part description.\"\n}"
+						},
+						"description": "Add a component to the system"
+					},
+					"response": []
+				},
+				{
+					"name": "DEL /resolver/components/{partNumber}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body is correct\"] = responseBody === \"1\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{resolverAddress}}/api/v1/resolver/components/{{partNumber}}",
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Delete a component from the system"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "03Resolver_03-Resolve",
+			"description": "Resolver interactions",
+			"item": [
+				{
+					"name": "GET /resolver/resolve",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{resolverAddress}}/api/v1/resolver/resolve?namespace={{namespace}}&package_name={{package_name}}&package_version={{package_version_B}}",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": "Resolve a package into a list of vehicles it should be installed on."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "03Resolver_04-Filters",
+			"description": "Validate Resolver interactions",
+			"item": [
+				{
+					"name": "GET /resolver/filters",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body is correct\"] = responseBody === \"[]\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{resolverAddress}}/api/v1/resolver/filters",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"namespace\": \"{{default}}\",\n  \"name\": \"testFilter\",\n  \"expression\": \"has_package \\\"\\\" \\\"\\\"\"\n}"
+						},
+						"description": "Get a list of filters in the system"
+					},
+					"response": []
+				},
+				{
+					"name": "POST /resolver/validate/filter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body is correct\"] = responseBody === \"\\\"OK\\\"\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{resolverAddress}}/api/v1/resolver/validate/filter",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"namespace\": \"{{default}}\",\n  \"name\": \"testFilter\",\n  \"expression\": \"has_package \\\"\\\" \\\"\\\"\"\n}"
+						},
+						"description": "Validate a filter"
+					},
+					"response": []
+				},
+				{
+					"name": "POST /resolver/filters",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Successful POST request\"] = responseCode.code === 201 || responseCode.code === 200;",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{resolverAddress}}/api/v1/resolver/filters",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"namespace\": \"{{default}}\",\n  \"name\": \"{{filterName}}\",\n  \"expression\": \"has_package \\\"\\\" \\\"\\\"\"\n}"
+						},
+						"description": "Create a filter"
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /resolver/filter/{filterName}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(environment.filterName);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{resolverAddress}}/api/v1/resolver/filters/{{filterName}}",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"namespace\": \"{{default}}\",\n  \"name\": \"{{filterName}}\",\n  \"expression\": \"has_component \\\"{{partNumber}}\\\"\"\n}"
+						},
+						"description": "Modify a filter"
+					},
+					"response": []
+				},
+				{
+					"name": "DEL /resolver/filters/{filterName}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{resolverAddress}}/api/v1/resolver/filters/{{filterName}}",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"namespace\": \"{{default}}\",\n  \"name\": \"testFilter\",\n  \"expression\": \"has_package \\\"\\\" \\\"\\\"\"\n}"
+						},
+						"description": "Delete a filter from the system"
+					},
+					"response": []
+				},
+				{
+					"name": "GET /resolver/filters (Verify)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Response time is less than 200ms\"] = responseTime < 200;",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body is correct\"] = responseBody === \"[]\";"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "http://{{resolverAddress}}/api/v1/resolver/filters",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"namespace\": \"{{default}}\",\n  \"name\": \"testFilter\",\n  \"expression\": \"has_package \\\"\\\" \\\"\\\"\"\n}"
+						},
+						"description": "Verify Filter was deleted"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

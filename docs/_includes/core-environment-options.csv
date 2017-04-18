@@ -1,0 +1,28 @@
+Value,Default,Description
+AKKA_HTTP_REQUEST_TIMEOUT,15 minutes,"HTTP request timeout."
+AKKA_HTTP_IDLE_TIMEOUT,15 minutes,"HTTP idle timeout."
+HOST,“0.0.0.0”,Hosts Core should listen on.
+PORT,8080,Port number Core should run on.
+CORE_INTERACTION_PROTOCOL,“http”,Interaction protocol for clients. May be “http” or “rvi”.
+DEFAULT_NAMESPACE,“default”,"Default namespace to use, if not otherwise specified."
+CORE_AWS_ACCESS_KEY,null,"AWS access key for package storage. If undefined, packages will be stored locally on Core."
+CORE_AWS_SECRET_KEY,null,"AWS secret key for package storage. If undefined, packages will be stored locally on Core."
+CORE_AWS_BUCKET_ID,null,"AWS S3 bucket ID for package storage. If undefined, packages will be stored locally on Core."
+RVI_URI,"""http://127.0.0.1:8801""","URI for the RVI server node, if RVI is in use."
+SOTA_SERVICES_URI,,"URI to register with RVI for SOTA services. Should normally be the rvi endpoint at Core’s ip and port, e.g. “http://core:8080/rvi”."
+RESOLVER_API_URI,"""http://localhost:8081""",Location and port of the Resolver.
+DEVICE_REGISTRY_API_URI,"""http://localhost:8083""",Location and port of the Device Registry.
+PACKAGE_STORAGE_PATH,“/tmp/”,"A path on Core to store uploaded packages, if S3 storage is not in use."
+PACKAGES_VERSION_FORMAT,"""""""^\d+\.\d+\.\d+$""""""",A regular expression that package version numbers will be validated against.
+CORE_DB_URL,"""jdbc:mariadb://localhost:3306/sota_core""",The URL of the Core database.
+CORE_DB_USER,“sota”,Username with access to the Core database.
+CORE_DB_PASSWORD,“s0ta”,Password for Core database user.
+DB_NUM_THREADS,10,
+DB_QUEUE_SIZE,1000,
+DB_CONNECTION_TIMEOUT,1s,
+DB_VALIDATION_TIMEOUT,1s,
+CORE_DB_MIGRATE,FALSE,"When set to true, runs database migrations on startup."
+AUTH_PROTOCOL,“oauth.accesstoken”,"The protocol to use for authentication. OAuth will require some integration work; “none” will disable authentication for devices. (If RVI is enabled, authentication is handled through RVI.)"
+AUTH_VERIFICATION,“local”,"If Oauth is being used for authentication, defines how tokens should be verified. Currently, valid options are “none”, “local”, and “auth-plus”. An Oauth implementation would require defining a new validation method."
+JWT_SECRET,,A secret for JSON Web Tokens.
+SCOPES_DOMAIN,empty string,Config option for a future feature. Currently unused.

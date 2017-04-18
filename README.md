@@ -32,6 +32,8 @@ This can be done with the following:
     CREATE DATABASE sota_resolver_test;
     CREATE DATABASE sota_core;
     CREATE DATABASE sota_core_test;
+    CREATE DATABASE sota_device_registry;
+    CREATE DATABASE sota_device_registry_test;
     GRANT ALL PRIVILEGES ON \`sota\_core%\`.* TO 'sota_test'@'%';
     GRANT ALL PRIVILEGES ON \`sota\_resolver%\`.* TO 'sota_test'@'%';
     GRANT ALL PRIVILEGES ON \`sota\_device\_registry%\`.* TO 'sota_test'@'%';

@@ -14,6 +14,8 @@ import scala.concurrent.ExecutionContext
 
 object GroupMemberRepository {
 
+  import org.genivi.sota.db.SlickAnyVal._
+
   final case class GroupMember(groupId: Uuid, deviceUuid: Uuid)
 
   // scalastyle:off
@@ -32,6 +34,8 @@ object GroupMemberRepository {
 
   val groupMembers = TableQuery[GroupMembersTable]
 
+  val defaultLimit = 50
+
   //this method assumes that groupId and deviceId belong to the same namespace
   def addGroupMember(groupId: Uuid, deviceId: Uuid)(implicit ec: ExecutionContext): DBIO[Int] =
     (groupMembers += GroupMember(groupId, deviceId))
@@ -44,19 +48,27 @@ object GroupMemberRepository {
     groupMembers
       .filter(r => r.groupId === groupId && r.deviceUuid === deviceId)
       .delete
-      .handleSingleUpdateError(Errors.MissingGroupInfo)
+      .handleSingleUpdateError(Errors.MissingGroup)
 
-  def listDevicesInGroup(groupId: Uuid)(implicit ec: ExecutionContext): DBIO[Seq[Uuid]] =
-    groupMembers
-      .filter(_.groupId === groupId)
-      .map(_.deviceUuid)
-      .result
+  def listDevicesInGroup(groupId: Uuid, offset: Option[Long] = None, limit: Option[Long] = None)
+                        (implicit ec: ExecutionContext): DBIO[Seq[Uuid]] = {
+    (offset, limit) match {
+      case (None, None) =>
+        groupMembers
+          .filter(_.groupId === groupId)
+          .map(_.deviceUuid)
+          .result
+      case _ =>
+        groupMembers
+          .filter(_.groupId === groupId)
+          .paginate(offset.getOrElse(0), limit.getOrElse(defaultLimit))
+          .map(_.deviceUuid)
+          .result
+    }
+  }
 
   def countDevicesInGroup(groupId: Uuid)(implicit ec: ExecutionContext): DBIO[Int] =
-    GroupInfoRepository
-      .getGroupInfoById(groupId)
-      .flatMap(_ => listDevicesInGroup(groupId))
-      .map(_.size)
+    listDevicesInGroup(groupId).map(_.size)
 
   def listGroupsForDevice(device: Uuid)(implicit ec: ExecutionContext): DBIO[Seq[Uuid]] =
     DeviceRepository.findByUuid(device).flatMap { _ =>

@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://localhost:9000/" />
+<title>Filters</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">Filters</td></tr>
+</thead><tbody>
+<tr>
+	<td>click</td>
+	<td>//a[contains(@href, '#/filters')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//button</td>
+	<td>New Filter</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>name=regex</td>
+	<td>Filter field</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>css=td</td>
+	<td>Name</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/table/thead/tr/td[2]</td>
+	<td>Expression</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=name</td>
+	<td>TestFilter</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=expression</td>
+	<td>vin_matches &quot;${randomVIN}&quot;</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//button[@type='submit']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//a[contains(@href, '#/filters/TestFilter')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//tbody/tr/td[2]</td>
+	<td>vin_matches &quot;${randomVIN}&quot;</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//a[contains(@href, '#/filters/TestFilter')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>css=td</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div/div/table/tbody/tr/td[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div/div/table/tbody/tr[2]/td</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div/div/table/tbody/tr[2]/td[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div/div/table/tbody/tr[3]/td</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div/div/table/tbody/tr[3]/td[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyText</td>
+	<td>//div[@id='app']/div/div/div/div/div/table/tbody/tr[3]/td[2]</td>
+	<td>vin_matches &quot;${randomVIN}&quot;</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>name=expression</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>css=li[name=&quot;packageA-0.0.1&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=li[name=&quot;packageA-0.0.1&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div[3]/div/li</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=expression</td>
+	<td>vin_matches &quot;${randomVIN2}&quot;</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button.btn.btn-primary</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyText</td>
+	<td>//div[@id='app']/div/div/div/div/div/table/tbody/tr[3]/td[2]</td>
+	<td>vin_matches &quot;${randomVIN2}&quot;</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>name=delete-filter</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementNotPresent</td>
+	<td>//a[contains(@href, '#/filters/TestFilter')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=name</td>
+	<td>TestFilter</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=expression</td>
+	<td>has_component &quot;${PartNumber}&quot;</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//button[@type='submit']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//a[contains(@href, '#/filters/TestFilter')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=li[name=&quot;packageA-0.0.1&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//a[contains(@href, '#/packages')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=packageA</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>css=li[name=&quot;TestFilter&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=li[name=&quot;TestFilter&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementNotPresent</td>
+	<td>xpath=(//li[@name='TestFilter'])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=li[name=&quot;TestFilter&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>css=li[name=&quot;TestFilter&quot;]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//div[@id='panel1']/div</td>
+	<td></td>
+</tr>
+<tr>
+	<td>storeText</td>
+	<td>css=ul.list-group. &gt; li.list-group-item</td>
+	<td>affected</td>
+</tr>
+<tr>
+	<td>echo</td>
+	<td>${uuid}</td>
+	<td></td>
+</tr>
+<tr>
+	<td>echo</td>
+	<td>${affected}</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyEval</td>
+	<td>storedVars['affected']==storedVars['uuid']</td>
+	<td>true</td>
+</tr>
+</tbody></table>
+</body>
+</html>

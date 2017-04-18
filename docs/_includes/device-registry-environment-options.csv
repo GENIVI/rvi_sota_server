@@ -1,0 +1,15 @@
+Value,Default,Description
+AUTH_PROTOCOL,oauth.idtoken,"The protocol to use for authentication. OAuth will require some integration work; “none” will disable authentication for devices. (If RVI is enabled, authentication is handled through RVI.)"
+SCOPES_DOMAIN,“”,Config option for a future feature. Currently unused.
+HOST,localhost,Hosts device registry should listen on.
+PORT,8083,Port number device registry should run on.
+DEFAULT_NAMESPACE,default,"Default namespace to use, if not otherwise specified."
+DEVICE_REGISTRY_DB_URL,jdbc:mariadb://localhost:3306/sota_device_registry,The URL of the device registry database.
+DEVICE_REGISTRY_DB_USER,sota,Username with access to the device registry database.
+DEVICE_REGISTRY_DB_PASSWORD,s0ta,Password for device registry database user.
+DB_NUM_THREADS,20,
+DB_QUEUE_SIZE,1000,
+DB_CONNECTION_TIMEOUT,1s,
+DB_VALIDATION_TIMEOUT,1s,
+DEVICE_REGISTRY_DB_MIGRATE,FALSE,"When set to true, runs database migrations on startup."
+PACKAGES_VERSION_FORMAT,"""""""^\d+\.\d+\.\d+$""""""",A regular expression that package version numbers will be validated against.

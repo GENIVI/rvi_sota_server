@@ -13,7 +13,6 @@ import akka.http.scaladsl.testkit.RouteTestTimeout
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.http.scaladsl.unmarshalling.Unmarshaller._
 import io.circe.generic.auto._
-import org.genivi.sota.core.data.DeviceStatus
 import org.genivi.sota.core.jsonrpc.HttpTransport
 import org.genivi.sota.core.rvi._
 import org.genivi.sota.data._
@@ -57,8 +56,6 @@ class DeviceResourceSpec extends FunSuite
   val BasePath = Path("/devices_info")
 
   implicit val patience = PatienceConfig(timeout = Span(5, Seconds), interval = Span(500, Millis))
-
-  implicit val _db = db
 
   def resourceUri( pathSuffix : String ) : Uri = {
     Uri.Empty.withPath(BasePath / pathSuffix)

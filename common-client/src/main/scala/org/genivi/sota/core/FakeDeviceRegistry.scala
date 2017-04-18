@@ -17,6 +17,7 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.Json
 import org.genivi.sota.common.DeviceRegistry
+import org.genivi.sota.client.NoContent
 import org.genivi.sota.data.Device._
 import org.genivi.sota.data._
 import org.genivi.sota.device_registry.common.Errors._
@@ -33,7 +34,8 @@ class FakeDeviceRegistry(namespace: Namespace)
 
   private val devices =  new ConcurrentHashMap[Uuid, Device]()
   private val systemInfo = new ConcurrentHashMap[Uuid, Json]()
-  private val groups = new ConcurrentHashMap[Uuid, Seq[Uuid]]
+  private val groups = new ConcurrentHashMap[Uuid, Seq[Uuid]]()
+  private val installedPackages = new ConcurrentHashMap[Uuid, Set[PackageId]]()
 
   override def searchDevice
   (ns: Namespace, re: String Refined Regex)
@@ -92,22 +94,24 @@ class FakeDeviceRegistry(namespace: Namespace)
       case None => FastFuture.failed(MissingDevice)
     }
 
-  override def updateLastSeen(uuid: Uuid, seenAt: Instant = Instant.now)
-  (implicit ec: ExecutionContext): Future[Unit] = {
+  //This method only exists to facilitate testing, in production, this functionality
+  //is performed by message passing
+  def updateLastSeen(uuid: Uuid, seenAt: Instant = Instant.now)
+  (implicit ec: ExecutionContext): Future[NoContent] = {
     devices.asScala.get(uuid).foreach { d =>
       devices.put(uuid, d.copy(lastSeen = Option(seenAt)))
     }
 
-    FastFuture.successful(())
+    FastFuture.successful(NoContent())
   }
 
   override def updateSystemInfo
   (uuid: Uuid, json: Json)
-  (implicit ec: ExecutionContext): Future[Unit] = {
+  (implicit ec: ExecutionContext): Future[NoContent] = {
     devices.asScala.get(uuid) match {
       case Some(_) =>
         systemInfo.put(uuid, json)
-        FastFuture.successful(())
+        FastFuture.successful(NoContent())
       case None =>
         FastFuture.failed(MissingDevice)
     }
@@ -130,7 +134,16 @@ class FakeDeviceRegistry(namespace: Namespace)
     groups.put(group, devices)
   }
 
-  def setInstalledPackages
-    (device: Uuid, packages: Seq[PackageId])(implicit ec: ExecutionContext) : Future[Unit] =
-      FastFuture.successful(Unit)
+  def setInstalledPackages(device: Uuid, packages: Seq[PackageId])
+                          (implicit ec: ExecutionContext): Future[NoContent] = {
+    installedPackages.put(device, packages.toSet)
+    FastFuture.successful(NoContent())
+  }
+
+  def affectedDevices(namespace: Namespace, packages: Set[PackageId])
+                     (implicit ec: ExecutionContext): Future[Map[Uuid, Set[PackageId]]] = {
+    Future.successful(installedPackages.asScala.map {
+      case (device, pkgs) => (device, pkgs.intersect(packages))
+    }.filter(_._2.nonEmpty).toMap)
+  }
 }

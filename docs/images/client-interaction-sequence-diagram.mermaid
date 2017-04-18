@@ -1,0 +1,25 @@
+sequenceDiagram
+Participant Server
+Participant Client
+Participant SLM
+Client->>Server: Check for updates
+Note over Client, Server: GET /mydevice/{uuid}/updates
+Server->>Client: 200 OK
+Note over Client, Server: List of UpdateIDs in body
+Client->>SLM: UpdateAvailable(UpdateID)
+activate SLM
+SLM->>SLM: 
+Note right of SLM: User prompt
+SLM->>Client: StartDownload(UpdateID)
+deactivate SLM
+Client->>Server: GET /mydevice/{uuid}/updates/{UpdateID}/download
+Server->>Client: 200 OK
+Note over Client, Server: Update binary in body
+Client->>SLM: DownloadComplete(UpdateID)
+activate SLM
+SLM->>SLM: 
+Note right of SLM: install update
+SLM->>Client: SendUpdateReport(UpdateReport)
+deactivate SLM
+Client->>Server: POST /updates/{UpdateId}
+Note over Client, Server: UpdateReport in body

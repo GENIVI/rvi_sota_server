@@ -7,7 +7,14 @@ package org.genivi.sota.device_registry.db
 
 import java.time.Instant
 
-import org.genivi.sota.data.{Namespace, PackageId, Uuid}
+import eu.timepit.refined.api.Refined
+import eu.timepit.refined.string.Regex
+import org.genivi.sota.data.PackageId.Name
+import org.genivi.sota.data.{Namespace, PackageId, PaginatedResult, Uuid}
+import org.genivi.sota.db.Operators.regex
+import org.genivi.sota.device_registry.common.PackageStat
+import org.genivi.sota.refined.PackageIdDatabaseConversions._
+import org.genivi.sota.refined.SlickRefined._
 import slick.driver.MySQLDriver.api._
 
 import scala.concurrent.ExecutionContext
@@ -15,7 +22,6 @@ import scala.concurrent.ExecutionContext
 object InstalledPackages {
 
   import org.genivi.sota.db.SlickExtensions._
-  import org.genivi.sota.refined.SlickRefined._
 
   type InstalledPkgRow = (Uuid, PackageId.Name, PackageId.Version, Instant)
 
@@ -44,6 +50,8 @@ object InstalledPackages {
     def * = (device, name, version, lastModified) <> (fromTuple, toTuple)
   }
 
+  val defaultLimit = 50
+
   private val installedPackages = TableQuery[InstalledPackageTable]
 
   def setInstalled(device: Uuid, packages: Set[PackageId])
@@ -53,10 +61,17 @@ object InstalledPackages {
       installedPackages ++= packages.map(InstalledPackage(device, _, Instant.now()))
     ).transactionally
 
-  def installedOn(device: Uuid)(implicit ec: ExecutionContext): DBIO[Seq[InstalledPackage]] =
-    installedPackages
-      .filter(_.device === device)
-      .result
+  def installedOn(device: Uuid, regexOpt: Option[String Refined Regex])
+                 (implicit ec: ExecutionContext): DBIO[Seq[InstalledPackage]] =
+    regexOpt match {
+      case Some(re) => installedPackages
+        .filter(_.device === device)
+        .filter(row => regex(row.name.mappedTo[String] ++ "-" ++ row.version.mappedTo[String], re))
+        .result
+      case None => installedPackages
+        .filter(_.device === device)
+        .result
+    }
 
   def getDevicesCount(pkg: PackageId, ns: Namespace)(implicit ec: ExecutionContext): DBIO[DevicesCount] =
     for {
@@ -76,4 +91,59 @@ object InstalledPackages {
         .distinct
         .result
     } yield DevicesCount(devices, groups.toSet)
+
+  def getInstalledForAllDevices(ns: Namespace, moffset: Option[Long], mlimit: Option[Long])
+                               (implicit ec: ExecutionContext): DBIO[PaginatedResult[PackageId]] = {
+    val offset = moffset.getOrElse[Long](0)
+    val limit = mlimit.getOrElse[Long](defaultLimit)
+    val query = DeviceRepository
+      .devices.filter(_.namespace === ns)
+      .join(installedPackages).on(_.uuid === _.device)
+      .map(r => (r._2.name, r._2.version))
+      .distinct
+
+    val pagedquery = query.paginateAndSort(identity, offset, limit)
+    val pkgResult = pagedquery.result.map(_.map {case (name, version) => PackageId(name, version)})
+
+    query.length.result.zip(pkgResult).map{ case (total, values) =>
+      PaginatedResult(total=total, limit=limit, offset=offset, values=values)
+    }
+  }
+
+  protected[db] def inSetQuery(ids: Set[PackageId]): Query[InstalledPackageTable, _, Seq] = {
+    installedPackages.filter { pkg =>
+      (pkg.name.mappedTo[String] ++ pkg.version.mappedTo[String]).inSet(ids.map(id => id.name.get + id.version.get))
+    }
+  }
+
+  //this isn't paginated as it's only intended to be called by core, hence it also not being in swagger
+  def allInstalledPackagesById(namespace: Namespace, ids: Set[PackageId])
+                              (implicit db: Database, ec: ExecutionContext): DBIO[Seq[(Uuid, PackageId)]] = {
+    inSetQuery(ids)
+      .join(DeviceRepository.devices)
+      .on(_.device === _.uuid)
+      .filter(_._2.namespace === namespace)
+      .map(r => (r._1.device, LiftedPackageId(r._1.name, r._1.version)))
+      .result
+  }
+
+  def listAllWithPackageByName(ns: Namespace, name: Name, moffset: Option[Long], mlimit: Option[Long])
+                              (implicit ec: ExecutionContext)
+    : DBIO[PaginatedResult[PackageStat]] = {
+    val offset = moffset.getOrElse[Long](0)
+    val limit = mlimit.getOrElse[Long](defaultLimit)
+    val query = installedPackages
+      .filter(_.name === name)
+      .groupBy(_.version)
+      .map { case (version, installedPkg) => (version, installedPkg.length) }
+      .drop(0) //workaround for slick issue: https://github.com/slick/slick/issues/1355
+
+    val pagedquery = query.paginate(offset, limit)
+    val pkgResult = pagedquery.result.map(_.map { case (version, count) => PackageStat(version, count) })
+
+    query.length.result.zip(pkgResult).map { case (total, values) =>
+      PaginatedResult(total = total, limit = limit, offset = offset, values = values)
+    }
+  }
+
 }

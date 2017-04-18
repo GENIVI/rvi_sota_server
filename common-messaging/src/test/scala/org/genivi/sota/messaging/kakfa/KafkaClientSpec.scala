@@ -67,7 +67,7 @@ class KafkaClientSpec extends TestKit(ActorSystem("KafkaClientSpec"))
   test("can send-receive and commit events from bus") {
     val testMsg = DeviceSeen(Namespace("ns"), Uuid.generate(), Instant.now)
 
-    val source = KafkaClient.commitableSource[DeviceSeen](system.settings.config) match {
+    val source = KafkaClient.committableSource[DeviceSeen](system.settings.config) match {
       case Xor.Right(s) => s
       case Xor.Left(ex) => throw ex
     }

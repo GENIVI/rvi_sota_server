@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://ota-plus-web.gw.prod01.advancedtelematic.com/" />
+<title>New Test</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">New Test</td></tr>
+</thead><tbody>
+<!--Get 16 random VIN characters (alphanumeric capitals excluding Q, I, and O)-->
+<tr>
+	<td>storeEval</td>
+	<td>(function() {var VIN = ''; var chars = '01234567890ABCDEFGHJKLMNPRSTUVWXYZ'.split( '' ); for (var i = 0 ; i &lt; 16; i++ ) VIN +=&nbsp;&nbsp;chars[ Math.floor( Math.random() * chars.length ) ];return VIN;})</td>
+	<td>randomVINprefix</td>
+</tr>
+<tr>
+	<td>echo</td>
+	<td>${randomVINprefix}</td>
+	<td></td>
+</tr>
+<!--...now make it 17 digits, and it's good to go-->
+<tr>
+	<td>storeEval</td>
+	<td>&quot;${randomVINprefix}&quot; + &quot;1&quot;</td>
+	<td>randomVIN</td>
+</tr>
+<tr>
+	<td>storeEval</td>
+	<td>&quot;${randomVINprefix}&quot; + &quot;2&quot;</td>
+	<td>randomVIN2</td>
+</tr>
+<tr>
+	<td>echo</td>
+	<td>${randomVIN}</td>
+	<td></td>
+</tr>
+<tr>
+	<td>echo</td>
+	<td>${randomVIN2}</td>
+	<td></td>
+</tr>
+<!--And we should make some Variables for future use...-->
+<tr>
+	<td>store</td>
+	<td>AwesomeDescriptionGoesHere</td>
+	<td>Descript</td>
+</tr>
+<tr>
+	<td>store</td>
+	<td>SomePart01</td>
+	<td>PartNumber</td>
+</tr>
+<tr>
+	<td>store</td>
+	<td>genivi</td>
+	<td>username</td>
+</tr>
+<tr>
+	<td>store</td>
+	<td>genivirocks!</td>
+	<td>password</td>
+</tr>
+<tr>
+	<td>store</td>
+	<td> </td>
+	<td>Clear</td>
+</tr>
+<tr>
+	<td>store</td>
+	<td>packageA</td>
+	<td>pA</td>
+</tr>
+<tr>
+	<td>store</td>
+	<td>0.0.1</td>
+	<td>ver</td>
+</tr>
+<!--Date/TIme-->
+<tr>
+	<td>storeEval</td>
+	<td>var d= new Date(); var m=((d.getMonth()+1)&lt;10)?'0'+(d.getMonth()+1):(d.getMonth()+1); d.getFullYear()+&quot;-&quot;+m+&quot;-&quot;+d.getDate();</td>
+	<td>date</td>
+</tr>
+<tr>
+	<td>storeEval</td>
+	<td>var d=new Date(); var s=((d.getSeconds()+1)&lt;10)?'0'+(d.getSeconds()+1):(d.getSeconds()+1);s;</td>
+	<td>seconds</td>
+</tr>
+<tr>
+	<td>storeEval</td>
+	<td>var d=new Date(); var m=((d.getMinutes()+1)&lt;10)?'0'+(d.getMinutes()+1):(d.getMinutes()+1);m;</td>
+	<td>minutes</td>
+</tr>
+<tr>
+	<td>storeEval</td>
+	<td>var d=new Date(); var h=((d.getHours()+1)&lt;10)?'0'+(d.getHours()+1):(d.getHours()+1);h;</td>
+	<td>hours</td>
+</tr>
+<tr>
+	<td>storeEval</td>
+	<td>var d=new Date(); var h=((d.getHours()+1)&lt;10)?'0'+(d.getHours()+1):(d.getHours()+1);h;</td>
+	<td>UTC_hour_start</td>
+</tr>
+<tr>
+	<td>storeEval</td>
+	<td>var d=new Date(); var h=((d.getHours()+1)&lt;10)?'0'+(d.getHours()+1):(d.getHours()+1);h+1;</td>
+	<td>UTC_hour_finish</td>
+</tr>
+<tr>
+	<td>storeEval</td>
+	<td>var d=new Date(); var h=((d.getHours()+1)&lt;10)?'0'+(d.getHours()+1):(d.getHours()+1);h+1;</td>
+	<td>BER_hour_start</td>
+</tr>
+<tr>
+	<td>storeEval</td>
+	<td>var d=new Date(); var h=((d.getHours()+1)&lt;10)?'0'+(d.getHours()+1):(d.getHours()+1);h+2;</td>
+	<td>BER_hour_finish</td>
+</tr>
+<tr>
+	<td>store</td>
+	<td>${hours}:${minutes}:${seconds}</td>
+	<td>current_time</td>
+</tr>
+<tr>
+	<td>store</td>
+	<td>${UTC_hour_start}:${minutes}:${seconds}</td>
+	<td>UTC_time</td>
+</tr>
+<tr>
+	<td>store</td>
+	<td>${UTC_hour_finish}:${minutes}:${seconds}</td>
+	<td>UTC_time2</td>
+</tr>
+<tr>
+	<td>store</td>
+	<td>${BER_hour_start}:${minutes}:${seconds}</td>
+	<td>BER_time</td>
+</tr>
+<tr>
+	<td>store</td>
+	<td>${BER_hour_finish}:${minutes}:${seconds}</td>
+	<td>BER_time2</td>
+</tr>
+<tr>
+	<td>echo</td>
+	<td>${current_time}</td>
+	<td></td>
+</tr>
+</tbody></table>
+</body>
+</html>

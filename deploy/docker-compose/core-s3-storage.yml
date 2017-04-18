@@ -1,0 +1,8 @@
+version: '2'
+services:
+
+  core:
+    environment:
+      CORE_AWS_ACCESS_KEY: ${CORE_AWS_ACCESS_KEY}
+      CORE_AWS_SECRET_KEY: ${CORE_AWS_SECRET_KEY}
+      CORE_AWS_BUCKET_ID: ${CORE_AWS_BUCKET_ID}

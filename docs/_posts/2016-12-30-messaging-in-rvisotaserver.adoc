@@ -1,0 +1,138 @@
+---
+layout: page
+title: "Messaging in rvi_sota_server"
+category: dev
+order: 6
+date: 2016-12-30 13:59:16
+---
+
+Communication between rvi_sota_server's microservices happens over a message bus. Any of the microservices can publish messages to the bus, and other microservices can subscribe to the messages they are interested in. For example, Resolver keeps a database of packages, and thus needs to know when a new package is created. When a package is uploaded via Core's PUT /packages endpoint, Core publishes a PackageCreated message, so that Resolver can remain consistent.
+
+External services could also consume messages, to extend the system. For example, to produce an audit log, one could create a service that consumes the relevant message types. Messages would also be useful for specialized UIs or monitoring dashboards.
+
+The messaging system can use either link:https://nats.io/[NATS] or link:https://kafka.apache.org/[Kafka] as a back-end, configurable at runtime. For a NATS backend, set the `NATS_HOST` and `NATS_PORT` environment variables; for Kafka, set `KAFKA_HOST` and `KAFKA_PORT`. We recommend using Kafka for production deployments. NATS is supported because it is significantly easier to get up and running for testing and development, but unlike Kafka, it has no machanism for guaranteeing that messages have been received, and thus should not be considered safe for production.
+
+The messaging logic is stored in `common-messaging`. Clients of the message bus can be either producers or consumers. A producer may have many consumers, but a consumer may only subscribe to a single producer, and each producer produces only one message type. The current message types are enumerated and described below:
+
+=== DeviceSeen
+
+This message is sent each time a device connects; for example, when it checks for new updates or sends a report on what software is installed on the device. It also gets sent upon registration.
+
+Fields:
+
+[%autoscale,cols="1,4"]
+|===
+| namespace | A string representing the namespace subscribed to
+| uuid      | The uuid of the device in question
+| lastSeen  | A UTC timestamp of the time the device was seen
+|===
+
+
+=== DeviceCreated
+
+This message is sent when a new device is created.
+
+Fields:
+
+[%autoscale,cols="1,4"]
+|===
+| namespace | A string representing the namespace subscribed to
+| uuid      | The uuid of the device in question
+| deviceName| The user-friendly name of the device
+| deviceId  | The Vin of the device or other id
+| deviceType| Type of the device. Valid device types are `Vehicle` and `Other`.
+|===
+
+=== DeviceActivated
+
+This message is sent the first time a device connects
+
+Fields:
+
+[%autoscale,cols="1,4"]
+|===
+| namespace| A string representing the namespace subscribed to
+| uuid     | The uuid of the device in question
+| at       | A UTC timestamp of the time the device first connected
+|===
+
+// === DeviceDeleted
+
+// This message is sent when a device is deleted
+
+// Fields:
+
+// [%autoscale,cols="1,4"]
+// |===
+// | namespace | A string representing the namespace subscribed to
+// | uuid      | The uuid of the device in question
+// |===
+
+=== PackageCreated
+
+This message is sent when a new package is uploaded
+to OTA+
+
+Fields:
+
+[%autoscale,cols="1,4"]
+|===
+| namespace  | A string representing the namespace subscribed to
+| packageId  | An object containing the package name and package version
+| description| An optional string describing the package
+| vendor     | An optional string containing the vendor's name
+| signature  | An optional string containing the digital signature of the package
+|===
+
+=== PackageBlacklisted
+
+This message is sent when a package is blacklisted
+
+Fields:
+
+[%autoscale,cols="1,4"]
+|===
+| namespace  | A string representing the namespace subscribed to
+| packageId  | An object containing the package name and package version
+|===
+
+=== ImageStorageUsage
+
+This message is sent when an OSTree image is pushed.
+
+Fields:
+
+[%autoscale,cols="1,4"]
+|===
+| namespace | A string representing the namespace subscribed to
+| timestamp | A UTC timestamp of when the image was pushed
+| byteCount | The size, in bytes, of the image
+|===
+
+=== PackageStorageUsage
+
+This message is sent when a package is uploaded.
+
+Fields:
+
+[%autoscale,cols="1,4"]
+|===
+| namespace | A string representing the namespace subscribed to
+| timestamp | A UTC timestamp of when the image was pushed
+| byteCount | The size, in bytes, of the package
+|===
+
+=== UpdateSpec
+
+This message is sent when the status of a package update on a particular device changes.
+
+Fields:
+
+[%autoscale,cols="1,4"]
+|===
+| namespace   | A string representing the namespace subscribed to
+| device      | The uuid of the device in question
+| packageUuid | The uuid of the package in question
+| status      | A string containing the status of the update of the package on the device. Valid values are `Pending`, `InFlight`, `Canceled`, `Failed` and `Finished`.
+|===
+

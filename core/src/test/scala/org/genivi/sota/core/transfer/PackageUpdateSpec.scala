@@ -184,7 +184,7 @@ trait SotaCore {
                                   messageBus)
     val updateController = system.actorOf( UpdateController.props(transferProtocolProps ), "update-controller")
     val client = new FakeExternalResolver()
-    new SotaServices(updateController, client, deviceRegistry).route
+    new SotaServices(updateController, client).route
   }
 
 }
@@ -210,9 +210,6 @@ class PackageUpdateSpec extends PropSpec
 
   def init(services: ServerServices,
            generatedData: Map[UpdateRequest, UpdateService.DeviceToPackageIds]): Future[Set[UpdateSpec]] = {
-
-    implicit val _db = db
-
     val notifier = new RviUpdateNotifier(services)
     val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
     val updateService = new UpdateService(notifier, deviceRegistry)(system, connectivity, exec)

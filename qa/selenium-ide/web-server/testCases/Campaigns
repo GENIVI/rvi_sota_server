@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://localhost:9000/" />
+<title>Campaigns</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">Campaigns</td></tr>
+</thead><tbody>
+<tr>
+	<td>click</td>
+	<td>//a[contains(@href, '#/packages')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//a[contains(@href, '#/packages/${pA}/${ver}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//button[@name='new-campaign']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//h3</td>
+	<td>Create Install Campaign</td>
+</tr>
+<tr>
+	<td>verifyElementNotPresent</td>
+	<td>css=div.panel-body</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//div[@id='panel1']/div/h4</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>css=div.panel-body</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>name=requestConfirmation</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=priority</td>
+	<td>1</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=startAfterDate</td>
+	<td>${date}</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=startAfterTime</td>
+	<td>${BER_time}</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=endBeforeDate</td>
+	<td>${date}</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=endBeforeTime</td>
+	<td>${BER_time2}</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button.btn.btn-secondary</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>name=updateId</td>
+	<td></td>
+</tr>
+<tr>
+	<td>storeValue</td>
+	<td>name=updateId</td>
+	<td>myVar</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=signature</td>
+	<td>UpdateSignature</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=button.btn.btn-primary</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyText</td>
+	<td>//div[@id='app']/div/div/div/div/div/h1/span[2]</td>
+	<td>${myVar}</td>
+</tr>
+<tr>
+	<td>verifyText</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/table/tbody/tr/td[2]</td>
+	<td>${myVar}</td>
+</tr>
+<tr>
+	<td>verifyText</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/table/tbody/tr[2]/td[2]</td>
+	<td>genivi</td>
+</tr>
+<tr>
+	<td>verifyText</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/table/tbody/tr[3]/td[2]</td>
+	<td>${packageA_uuid}</td>
+</tr>
+<tr>
+	<td>verifyText</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/table/tbody/tr[4]/td[2]</td>
+	<td>${date}T${hours}*</td>
+</tr>
+<tr>
+	<td>verifyText</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/table/tbody/tr[5]/td[2]</td>
+	<td>${date}T${UTC_time}Z/${date}T${UTC_time2}Z</td>
+</tr>
+<tr>
+	<td>verifyText</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/table/tbody/tr[6]/td[2]</td>
+	<td>1</td>
+</tr>
+<tr>
+	<td>verifyText</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/table/tbody/tr[7]/td[2]</td>
+	<td>UpdateSignature</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/table/tbody/tr[8]/td</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyText</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/table/tbody/tr[9]/td[2]</td>
+	<td>false</td>
+</tr>
+<tr>
+	<td>verifyText</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/table/tbody/tr[10]/td[2]</td>
+	<td>0</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div[3]/div[2]/div/table/tbody/tr/td</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div[3]/div[2]/div/table/tbody/tr/td[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div[3]/div[2]/div/table/tbody/tr[2]/td</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div[3]/div[2]/div/table/tbody/tr[2]/td[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div[3]/div[2]/div/table/tbody/tr[3]/td</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div[3]/div[2]/div/table/tbody/tr[3]/td[2]</td>
+	<td></td>
+</tr>
+</tbody></table>
+</body>
+</html>

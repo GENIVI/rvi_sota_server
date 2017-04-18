@@ -7,9 +7,9 @@ package org.genivi.sota.resolver.db
 import java.util.UUID
 
 import org.genivi.sota.data.{Namespace, PackageId}
+import org.genivi.sota.refined.PackageIdDatabaseConversions.LiftedPackageId
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
-import org.genivi.sota.resolver.db.PackageIdDatabaseConversions.LiftedPackageId
 import org.genivi.sota.resolver.filters.{Filter, FilterRepository}
 import slick.driver.MySQLDriver.api._
 

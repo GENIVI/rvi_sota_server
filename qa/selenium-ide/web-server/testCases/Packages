@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://localhost:9000/" />
+<title>Packages</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">Packages</td></tr>
+</thead><tbody>
+<tr>
+	<td>click</td>
+	<td>//a[contains(@href, '#/packages')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForCondition</td>
+	<td>selenium.isElementPresent(&quot;//button&quot;)</td>
+	<td>1000</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=name</td>
+	<td>packageA</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=version</td>
+	<td>0.0.1</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=description</td>
+	<td>${Descript}</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=vendor</td>
+	<td>BobTheVendor</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=signature</td>
+	<td>SignHerePlease</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=file</td>
+	<td>~/Downloads/nano_2.2.4-1_amd64.deb</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//button[@type='submit']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForCondition</td>
+	<td>selenium.isElementPresent(&quot;//button[@name='new-campaign']&quot;)</td>
+	<td>30000</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>css=td</td>
+	<td>${pA}</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/table/tbody/tr/td[2]</td>
+	<td>isNOTBlackListed</td>
+</tr>
+<tr>
+	<td>verifyText</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/table/tbody/tr[4]/td[2]</td>
+	<td>${pA}-${ver}</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/table/tbody/tr[5]/td[2]</td>
+	<td>uri</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/table/tbody/tr[3]/td[2]</td>
+	<td>uuid</td>
+</tr>
+<tr>
+	<td>storeText</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/table/tbody/tr[3]/td[2]</td>
+	<td>packageA_uuid</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/table/tbody/tr[6]/td[2]</td>
+	<td>size</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/table/tbody/tr[7]/td[2]</td>
+	<td>checksum</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/table/tbody/tr[8]/td[2]</td>
+	<td>${descript}</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/table/tbody/tr[9]/td[2]</td>
+	<td>${vendor}</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/table/tbody/tr[10]/td[2]</td>
+	<td>${signature}</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div[2]/div/table/tbody/tr[11]/td[2]</td>
+	<td>creationTime</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>css=div.col-md-6</td>
+	<td>Current Filters</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='app']/div/div/div/div[3]/div[2]</td>
+	<td>Add Filters</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>css=div.panel-heading.pointer</td>
+	<td>Affected Devices Panel</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>css=h4.panel-title</td>
+	<td>Affected Devices List</td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>xpath=(//div[@id='panel1']/div)[2]</td>
+	<td>Vehicles with this package installed Panel</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>xpath=(//div[@id='panel1']/div/h4)[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>//div[@id='panel1']/div[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>xpath=(//div[@id='panel1']/div)[3]</td>
+	<td>Vehicles with this package queued for install panel</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>xpath=(//div[@id='panel1']/div/h4)[3]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementPresent</td>
+	<td>xpath=(//div[@id='panel1']/div[2])[2]</td>
+	<td></td>
+</tr>
+</tbody></table>
+</body>
+</html>

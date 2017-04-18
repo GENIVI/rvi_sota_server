@@ -44,7 +44,7 @@ define(function(require) {
         this.setState({postStatus: ""});
 
         var expression = serializeForm(this.refs.form);
-        var payload = _.extend({name: this.props.Filter.deref().name}, expression);
+        var payload = _.extend({name: this.props.Filter.deref().name, namespace: "default"}, expression);
         SotaDispatcher.dispatch({
             actionType: 'edit-filter',
             filter: payload

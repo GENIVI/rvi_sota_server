@@ -16,7 +16,7 @@ import java.nio.file.{Paths, StandardOpenOption}
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
-import org.genivi.sota.core.data.{Package, UpdateStatus}
+import org.genivi.sota.core.data.Package
 import akka.actor._
 import akka.http.scaladsl.model.Uri
 import akka.stream.ActorMaterializer
@@ -29,7 +29,7 @@ import java.time.Instant
 import java.time.Duration
 
 import org.genivi.sota.core.transfer.DeviceUpdates
-import org.genivi.sota.data.Uuid
+import org.genivi.sota.data.{UpdateStatus, Uuid}
 import org.genivi.sota.messaging.MessageBusPublisher
 
 import scala.collection.immutable.Queue
@@ -383,7 +383,7 @@ class PackageTransferActor(updateId: UUID,
    */
   def downloadingRemotePackage(): Receive = {
     if(isLocalFile(pckg.uri)) {
-      self ! (new URI(pckg.uri.toString()))
+      self ! new URI(pckg.uri.toString())
     } else {
       s3PackageStore
         .retrieveFile(packageUri = pckg.uri)

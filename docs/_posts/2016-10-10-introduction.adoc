@@ -12,12 +12,14 @@ A SOTA server isn't very useful unless it has clients to talk to. We provide a l
 
 == Understanding the reference client
 
-The SOTA client is, in a nutshell, a middleman. It receives update notifications from Core, and downloads the update packages. It then passes them to a software loading manager for installation. (For a reference implementation of a software loading manager, see https://github.com/GENIVI/genivi_swm[the GENIVI SWM]). Once the software loading manager is finished, it sends a report on the install, which the SOTA client passes back to Core.
+The SOTA client is, in a nutshell, a middleman. It receives update notifications from Core, and downloads the update packages. It then passes them to a software loading manager (SLM) for installation. (For a reference implementation of an SLM, see https://github.com/GENIVI/genivi_swm[the GENIVI SWM]). Once the software loading manager is finished, it sends a report on the install, which the SOTA client passes back to Core.
 
 It does all this through a command/event infrastructure: it broadcasts events, and listens for commands. For more detail, see the link:../cli/client-commands-and-events-reference.html[SOTA client command and event reference].
 
-A flow for the installation of a single update might look like this (HTTP transport, RVI disabled):
+A flow for the installation of a single update might look like this:
 
-Client polls core for update -> Event: UpdatesReceived -> Client downloads update -> Event: DownloadComplete -> Software manager installs update -> SWM sends command to client: SendUpdateReport -> Client reports the status of the install back to the server
+.Update flow (HTTP transport, RVI disabled)
+image::../images/client-interaction-sequence-diagram.mermaid.svg[]
+
 
 The reference client can communicate with SOTA Core in two ways, configurable on client startup. If you want to use RVI nodes, you can enable RVI communication and disable HTTP communication. If you prefer to let the client communicate with SOTA Core directly over HTTP/HTTPS, it can also do that. See link:../cli/client-startup-and-configuration.html[Client Startup and Configuration] for detailed configuration information.

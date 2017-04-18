@@ -15,6 +15,7 @@ import org.genivi.sota.marshalling.CirceMarshallingSupport
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
+import org.genivi.sota.DefaultPatience
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 import org.genivi.sota.data.{Interval, Namespaces}

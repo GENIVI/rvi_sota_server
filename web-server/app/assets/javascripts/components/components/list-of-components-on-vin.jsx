@@ -12,7 +12,7 @@ define(function(require) {
       this.props.Components.removeWatch("poll-components-on-vin");
     },
     componentWillMount: function(){
-      SotaDispatcher.dispatch({actionType: 'list-components-on-vin', vin: this.props.Vin});
+      SotaDispatcher.dispatch({actionType: 'list-components-on-vin', id: this.props.Id});
       this.props.Components.addWatch("poll-components-on-vin", _.bind(this.forceUpdate, this, null));
     },
     render: function() {

@@ -38,9 +38,6 @@ class SystemInfoResource(authNamespace: Directive1[AuthedNamespaceScope],
 
   def createSystemInfo(uuid: Uuid, data: Json): Route = {
     val f = db.run(SystemInfoRepository.create(uuid, data))
-    f.onSuccess { case _ =>
-      UpdateMemberships.forDevice(uuid, data)
-    }
     complete(Created -> f)
   }
 
@@ -64,7 +61,7 @@ class SystemInfoResource(authNamespace: Directive1[AuthedNamespaceScope],
       }
     }
 
-  def mydeviceRoutes: Route = authNamespace { authedNs =>
+  def mydeviceRoutes: Route = authNamespace { authedNs => // don't use this as a namespace
     (pathPrefix("mydevice") & extractUuid) { uuid =>
       (put & path("system_info") & authedNs.oauthScope(s"ota-core.{uuid.show}.write")) {
         entity(as[Json]) { body => updateSystemInfo(uuid, body) }

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="ats:test-description:tst-18" content="User can return a list of all devices stored">
+<meta name="ats:test-jira-url:tst-18" content="https://advancedtelematic.atlassian.net/browse/TST-18">
+<link rel="selenium.base" href="http://localhost:9000/" />
+<title>Vehicles</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">Vehicles</td></tr>
+</thead><tbody>
+<tr>
+	<td>click</td>
+	<td>//a[contains(@href, '#/vehicles')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForCondition</td>
+	<td>selenium.isElementPresent(&quot;//button&quot;)</td>
+	<td>1000</td>
+</tr>
+<tr>
+	<td>verifyElementNotPresent</td>
+	<td>link=${randomVIN}</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyElementNotPresent</td>
+	<td>link=${randomVIN2}</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>sendKeys</td>
+	<td>name=deviceName</td>
+	<td>${randomVIN}</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//button[@type='submit']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForCondition</td>
+	<td>selenium.isElementPresent(&quot;link=${randomVIN}&quot;)</td>
+	<td>1000</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=deviceName</td>
+	<td>${randomVIN2}</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//button[@type='submit']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForCondition</td>
+	<td>selenium.isElementPresent(&quot;link=${randomVIN2}&quot;)</td>
+	<td>1000</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=deviceName</td>
+	<td>${randomVIN}</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//button[@type='submit']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>verifyText</td>
+	<td>css=div.col-md-12 &gt; div</td>
+	<td>deviceId or deviceName is already in use</td>
+</tr>
+</tbody></table>
+</body>
+</html>

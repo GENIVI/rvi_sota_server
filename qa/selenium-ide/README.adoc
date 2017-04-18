@@ -1,0 +1,12 @@
+== Selenium tests for web UI
+
+These are Selenium tests for the Web UI. They assume that the web UI is running on link:http://localhost:9000[].
+
+To run the suite, you'll need https://www.mozilla.org/firefox/new/[Firefox] and link:https://addons.mozilla.org/en-US/firefox/addon/selenium-ide/[Selenium IDE].
+
+. Install prerequisites.
+. Install Selenium IDE.
+. Launch it from the *Tools* menu inside Firefox.
+. Select *File* -> *Open test suite...* from the Selenium IDE menu bar, and open `web-server/rvi_sota_server_UI`.
+. Run the test suite.
+

@@ -1,0 +1,37 @@
+---
+layout: page
+title: "Application configuration options"
+category: dev
+date: 2017-02-24 15:59:31
+order: 4
+---
+
+SOTA Server has a number of configuration options that can be set using environment variables. In general, the defaults are sane options for running a local development instance. The link:../doc/deployment-with-dockercompose.html[docker-compose files] also set a number of these environment variables to values which are sane defaults for a Docker-based local setup.
+
+== Core configuration options
+
+[options="header",]
+,===
+include::../_includes/core-environment-options.csv[]
+,===
+
+== Resolver configuration options
+
+[options="header",]
+,===
+include::../_includes/resolver-environment-options.csv[]
+,===
+
+== Device Registry configuration options
+
+[options="header",]
+,===
+include::../_includes/device-registry-environment-options.csv[]
+,===
+
+== Web server configuration options
+
+[options="header",]
+,===
+include::../_includes/web-environment-options.csv[]
+,===

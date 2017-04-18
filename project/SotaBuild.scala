@@ -30,7 +30,7 @@ object SotaBuild extends Build {
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += "Sonatype Nexus Repository Manager" at "http://nexus.advancedtelematic.com:8081/content/repositories/releases",
     resolvers += "version99 Empty loggers" at "http://version99.qos.ch",
-    libraryDependencies ++= Dependencies.TestFrameworks,
+    libraryDependencies ++= Dependencies.TestFrameworks :+ Dependencies.Async,
 
     testOptions in Test ++= Seq(
       Tests.Argument(TestFrameworks.ScalaTest, "-u", "target/test-reports"),
@@ -52,7 +52,6 @@ object SotaBuild extends Build {
   lazy val lintOptions = Seq(
     scalacOptions in Compile ++= Seq(
       "-Ywarn-unused-import",
-      "-Xfatal-warnings",
       "-Xlint:-missing-interpolator",
       "-Ywarn-dead-code",
       "-Yno-adapted-args"
@@ -76,7 +75,7 @@ object SotaBuild extends Build {
   // the sub-projects
   lazy val common = Project(id = "sota-common", base = file("common"))
     .settings(basicSettings ++ compilerSettings ++ lintOptions)
-    .settings(libraryDependencies ++= Dependencies.JsonWebSecurity ++ Dependencies.Rest :+ Dependencies.AkkaHttpCirceJson :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
+    .settings(libraryDependencies ++= Dependencies.JsonWebSecurity ++ Dependencies.Rest ++ Dependencies.DropwizardMetrics :+ Dependencies.AkkaHttpCirceJson :+ Dependencies.Refined :+ Dependencies.CommonsCodec)
     .dependsOn(commonData)
     .settings(Publish.settings)
 
@@ -88,13 +87,14 @@ object SotaBuild extends Build {
   lazy val commonTest = Project(id = "sota-common-test", base = file("common-test"))
     .settings(basicSettings ++ compilerSettings ++ lintOptions)
     .settings(libraryDependencies ++= Seq (Dependencies.Cats, Dependencies.Refined, Dependencies.Generex))
+    .settings(libraryDependencies += Dependencies.ScalaTest(Provided))
     .dependsOn(commonData)
     .settings(Publish.settings)
 
   lazy val commonDbTest = Project(id = "sota-common-db-test", base = file("common-db-test"))
     .settings(basicSettings ++ compilerSettings ++ lintOptions)
-    .settings(libraryDependencies ++= Dependencies.Slick :+ Dependencies.Flyway :+ Dependencies.ScalaTestLib)
-    .dependsOn(commonData, commonTest)
+    .settings(libraryDependencies ++= Dependencies.Database)
+    .settings(libraryDependencies += Dependencies.ScalaTest(Provided))
     .settings(Publish.settings)
 
   lazy val externalResolver = Project(id = "sota-resolver", base = file("external-resolver"))
@@ -123,7 +123,7 @@ object SotaBuild extends Build {
 
   lazy val core = Project(id = "sota-core", base = file("core"))
     .settings( commonSettings ++ Migrations.settings ++ lintOptions ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Scalaz :+ Dependencies.Flyway :+ Dependencies.AmazonS3,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Scalaz :+ Dependencies.Flyway :+ Dependencies.AmazonS3 :+ Dependencies.LibTuf :+ Dependencies.LibAts,
       testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RequiresRvi", "-l", "IntegrationTest"),
       testOptions in IntegrationTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RequiresRvi", "-n", "IntegrationTest"),
       parallelExecution in Test := true,
@@ -168,7 +168,7 @@ object SotaBuild extends Build {
         "com.unboundid" % "unboundid-ldapsdk" % "3.1.1",
         ws,
         play.sbt.Play.autoImport.cache
-      ) ++ Dependencies.Database ++ Dependencies.Play2Auth
+      ) ++ Dependencies.Slick ++ Dependencies.Play2Auth
     ))
     .dependsOn(common, commonData)
     .enablePlugins(PlayScala, SbtWeb, BuildInfoPlugin)
@@ -195,6 +195,7 @@ object SotaBuild extends Build {
     .dependsOn(common, commonData, commonMessaging, commonTest % "test", commonDbTest % "test")
     .enablePlugins(Packaging.plugins :+ BuildInfoPlugin :_*)
     .settings(Publish.settings)
+    .settings(mainClass in Compile := Some("org.genivi.sota.device_registry.Boot"))
 
   lazy val commonClient = Project(id = "sota-common-client", base = file("common-client"))
     .settings(basicSettings ++ compilerSettings ++ lintOptions)
@@ -211,15 +212,17 @@ object SotaBuild extends Build {
   lazy val sota = Project(id = "sota", base = file("."))
     .settings( basicSettings )
     .settings( Versioning.settings )
-    .settings(Release.settings(common, commonData, commonTest, core, externalResolver, deviceRegistry, commonClient, commonMessaging))
-    .aggregate(common, commonData, commonTest, core, externalResolver, webServer, deviceRegistry, commonClient, commonMessaging)
+    .settings(Release.settings(common, commonData, commonTest, commonDbTest, core, externalResolver, deviceRegistry, commonClient, commonMessaging))
+    .aggregate(common, commonData, commonTest, commonDbTest, core, externalResolver, webServer, deviceRegistry, commonClient, commonMessaging)
     .enablePlugins(Versioning.Plugin)
     .settings(Publish.disable)
 }
 
 object Dependencies {
 
-  val AkkaVersion = "2.4.7"
+  val AkkaVersion = "2.4.17"
+
+  val AkkaHttpVersion = "10.0.3"
 
   val CirceVersion = "0.4.1"
 
@@ -233,13 +236,17 @@ object Dependencies {
 
   val JsonWebSecurityVersion = "0.3.1"
 
-  val AkkaHttp = "com.typesafe.akka" %% "akka-http-experimental" % AkkaVersion
+  val libTufV = "0.0.1-53-ge577c3e"
+
+  val libAtsV = "0.0.1-8-gad81bff"
+
+  val AkkaHttp = "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion
 
   val AkkaStream = "com.typesafe.akka" %% "akka-stream" % AkkaVersion
 
   val AkkaStreamTestKit = "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % "test"
 
-  val AkkaHttpTestKit = "com.typesafe.akka" %% "akka-http-testkit" % AkkaVersion % "test"
+  val AkkaHttpTestKit = "com.typesafe.akka" %% "akka-http-testkit" % AkkaHttpVersion % "test"
 
   val AkkaTestKit = "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % "test"
 
@@ -248,6 +255,8 @@ object Dependencies {
   val AkkaSlf4j = "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion
 
   val Generex = "com.github.mifmif" % "generex" % "1.0.0"
+
+  val Async = "org.scala-lang.modules" %% "scala-async" % "0.9.6"
 
   val Logback = Seq(
     "ch.qos.logback" % "logback-classic" % LogbackVersion,
@@ -271,19 +280,17 @@ object Dependencies {
   lazy val Scalaz = "org.scalaz" %% "scalaz-core" % "7.1.3"
   lazy val Cats   = "org.spire-math" %% "cats" % "0.3.0"
 
-  lazy val ScalaTestLib = "org.scalatest" %% "scalatest" % "2.2.4"
-
-  lazy val ScalaTest = ScalaTestLib % "test"
+  def ScalaTest(conf: Configuration = Test) = "org.scalatest" %% "scalatest" % "2.2.4" % conf
 
   lazy val ScalaCheck = "org.scalacheck" %% "scalacheck" % "1.12.4" % "test"
 
   lazy val Flyway = "org.flywaydb" % "flyway-core" % "4.0.3"
 
-  lazy val TestFrameworks = Seq( ScalaTest, ScalaCheck )
+  lazy val TestFrameworks = Seq(ScalaTest(), ScalaCheck)
 
   lazy val TypesafeConfig = "com.typesafe" % "config" % "1.3.0"
 
-  lazy val Database = Seq (
+  lazy val Slick = Seq (
     "com.typesafe.slick" %% "slick" % "3.1.1",
     "com.typesafe.slick" %% "slick-hikaricp" % "3.1.1",
     "org.mariadb.jdbc" % "mariadb-java-client" % "1.4.4"
@@ -294,13 +301,19 @@ object Dependencies {
     "jp.t2v" %% "play2-auth-test"   % Play2AuthVersion % "test"
   )
 
-  lazy val Slick = Database ++ Seq(Flyway)
+  lazy val Database = Slick ++ Seq(Flyway)
 
   lazy val ParserCombinators = "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
 
   lazy val CommonsCodec = "commons-codec" % "commons-codec" % "1.10"
 
-  lazy val Rest = Akka ++ Slick
+  lazy val DropwizardMetrics = Seq(
+    "io.dropwizard.metrics" % "metrics-core" % "3.1.2",
+    "io.dropwizard.metrics" % "metrics-jvm" % "3.1.2"
+  )
+
+
+  lazy val Rest = Akka ++ Database
 
   lazy val AmazonS3 = "com.amazonaws" % "aws-java-sdk-s3" % AWSVersion
 
@@ -313,4 +326,9 @@ object Dependencies {
   lazy val Nats = "com.github.tyagihas" % "scala_nats_2.11" % "0.2.1" exclude("org.slf4j", "slf4j-simple")
 
   lazy val Kafka = "com.typesafe.akka" %% "akka-stream-kafka" % "0.12"
+
+  lazy val LibTuf = "com.advancedtelematic" %% "libtuf" % libTufV
+
+  lazy val LibAts = "com.advancedtelematic" %% "libats" % libAtsV
+
 }
