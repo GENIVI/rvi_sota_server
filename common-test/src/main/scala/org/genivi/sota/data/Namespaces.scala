@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.data
 
-import org.scalacheck.Gen
+import org.scalacheck.{Arbitrary, Gen}
 
 trait Namespaces {
 
@@ -18,6 +18,8 @@ trait Namespaces {
     // TODO: for now, just use simple identifiers
     Gen.identifier.map(Namespace.apply)
   }
+
+  implicit val arbitraryNamespace: Arbitrary[Namespace] = Arbitrary(NamespaceGen)
 
   val defaultNs: Namespace = Namespace("default")
 }

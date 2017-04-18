@@ -6,20 +6,26 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.RouteTestTimeout
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import java.io.File
+import java.util.UUID
 
 import org.genivi.sota.core.data.Package
+import org.genivi.sota.core.PackagesResource.CopyRequest
 import org.genivi.sota.core.resolver.DefaultConnectivity
 import org.genivi.sota.core.transfer.DefaultUpdateNotifier
-import org.genivi.sota.data.Namespaces
+import org.genivi.sota.data.{Namespace, Namespaces}
 import org.genivi.sota.http.NamespaceDirectives
 import org.genivi.sota.messaging.MessageBusPublisher
+import org.scalacheck.Gen.choose
+import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Matchers, PropSpec}
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import io.circe.generic.auto._
+import org.scalacheck.Gen
 
 import scala.concurrent.duration._
-
 
 /**
  * Spec tests for package upload to Core
@@ -30,7 +36,8 @@ class PackageUploadSpec extends PropSpec
   with Matchers
   with Generators
   with ScalatestRouteTest
-  with ScalaFutures {
+  with ScalaFutures
+  with Namespaces {
 
   import NamespaceDirectives._
 
@@ -49,6 +56,8 @@ class PackageUploadSpec extends PropSpec
     val resource = new PackagesResource(updateService, db, messageBusPublisher, defaultNamespaceExtractor)
   }
 
+  import Service.resource.route
+
   def toBodyPart(name : String)(x: String) = BodyPart.Strict(name, HttpEntity( x ) )
 
   private[this] def mkRequest( pckg: Package ) : HttpRequest = {
@@ -66,7 +75,7 @@ class PackageUploadSpec extends PropSpec
 
   property("Package can be uploaded using PUT request")  {
     forAll { (pckg: Package) =>
-      mkRequest(pckg) ~> Service.resource.route ~> check {
+      mkRequest(pckg) ~> route ~> check {
         status shouldBe StatusCodes.NoContent
       }
     }
@@ -74,12 +83,48 @@ class PackageUploadSpec extends PropSpec
 
   property("Upsert") {
     forAll { (pckg: Package) =>
-      mkRequest( pckg ) ~> Service.resource.route ~> check {
+      mkRequest( pckg ) ~> route ~> check {
         status shouldBe StatusCodes.NoContent
       }
 
-      mkRequest( pckg ) ~> Service.resource.route ~> check {
+      mkRequest( pckg ) ~> route ~> check {
         status shouldBe StatusCodes.NoContent
+      }
+    }
+  }
+
+  property("Copy package to other users") {
+    val pckg = PackageGen.sample.get
+
+    // upload original package
+    mkRequest(pckg) ~> route ~> check {
+      status shouldBe StatusCodes.NoContent
+    }
+
+    // UUID gets determined by server on upload, need to get it
+    val uuid: UUID = Get(Uri(path = PackagesPath / pckg.id.name.get / pckg.id.version.get )) ~> route ~> check {
+      status shouldBe StatusCodes.OK
+      responseAs[Package].uuid
+    }
+
+    val targetNamespaces = Gen.containerOfN[List, Namespace](100, arbitrary[Namespace]).sample.get
+
+    val copyRequest = CopyRequest(uuid, targetNamespaces)
+
+    val max = 5
+    forAll(choose(1, max)) { _ =>
+      Put(Uri(path = Path / "super" / "packages" / "copy"), copyRequest) ~> route ~> check {
+        status shouldBe StatusCodes.NoContent
+        responseEntity.isKnownEmpty() shouldBe true
+      }
+    }
+
+    for (target <- targetNamespaces) {
+      Get(Uri(path = PackagesPath)).withHeaders(nsHeader(target)) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+
+        // package should only exist once in each namespace
+        responseAs[Seq[Package]].groupBy(_.id).get(pckg.id).get.length shouldBe 1
       }
     }
   }
