@@ -1,6 +1,6 @@
 package org.genivi.sota.resolver.test.random
 
-import cats.state.StateT
+import cats.data.StateT
 import eu.timepit.refined.api.{Refined, Validate}
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.filters.Filter
@@ -316,43 +316,43 @@ object Store {
 
   def pickVehicle: StateT[Gen, RawStore, Uuid] =
     for {
-      s    <- StateT.stateTMonadState[Gen, RawStore].get
+      s    <- StateT.get[Gen, RawStore].get
       vehs =  s.devices.keys
     } yield pick(vehs)
 
   def pickPackage: StateT[Gen, RawStore, Package] =
     for {
-      s    <- StateT.stateTMonadState[Gen, RawStore].get
+      s    <- StateT.get[Gen, RawStore].get
       pkgs =  s.packages.keys
     } yield pick(pkgs)
 
   def pickFilter: StateT[Gen, RawStore, Filter] =
     for {
-      s     <- StateT.stateTMonadState[Gen, RawStore].get
+      s     <- StateT.get[Gen, RawStore].get
       filts =  s.filters
     } yield pick(filts)
 
   def pickUnusedFilter: StateT[Gen, RawStore, Filter] =
     for {
-      s     <- StateT.stateTMonadState[Gen, RawStore].get
+      s     <- StateT.get[Gen, RawStore].get
       uflts =  s.filtersUnused
     } yield pick(uflts)
 
   def pickComponent: StateT[Gen, RawStore, Component] =
     for {
-      s    <- StateT.stateTMonadState[Gen, RawStore].get
+      s    <- StateT.get[Gen, RawStore].get
       comps =  s.components
     } yield pick(comps)
 
   def pickUnusedComponent: StateT[Gen, RawStore, Component] =
     for {
-      s    <- StateT.stateTMonadState[Gen, RawStore].get
+      s    <- StateT.get[Gen, RawStore].get
       comps = s.componentsUnused
     } yield pick(comps)
 
   def pickVehicleWithComponent: StateT[Gen, RawStore, (Uuid, Component)] =
     for {
-      s    <- StateT.stateTMonadState[Gen, RawStore].get
+      s    <- StateT.get[Gen, RawStore].get
       vcs   = s.vehiclesWithSomeComponent
     } yield {
       val (veh, comps) = pick(vcs)
@@ -361,7 +361,7 @@ object Store {
 
   def pickVehicleComponentPairToInstall: StateT[Gen, RawStore, (Uuid, Component)] =
     for {
-      s     <- StateT.stateTMonadState[Gen, RawStore].get
+      s     <- StateT.get[Gen, RawStore].get
       pairs  = s.vehicleComponentPairsToInstall
     } yield {
       pick(pairs)
@@ -369,7 +369,7 @@ object Store {
 
   def pickVehicleWithPackage: StateT[Gen, RawStore, (Uuid, Package)] =
     for {
-      s    <- StateT.stateTMonadState[Gen, RawStore].get
+      s    <- StateT.get[Gen, RawStore].get
       vps   = s.vehiclesWithSomePackage
     } yield {
       val (veh, paks) = pick(vps)
@@ -378,7 +378,7 @@ object Store {
 
   def pickPackageWithFilter: StateT[Gen, RawStore, (Package, Filter)] =
     for {
-      s    <- StateT.stateTMonadState[Gen, RawStore].get
+      s    <- StateT.get[Gen, RawStore].get
       pfs   = s.packagesWithSomeFilter
     } yield {
       val (veh, fs) = pick(pfs)
@@ -387,54 +387,54 @@ object Store {
 
   def pickPackageFilterPairToInstall: StateT[Gen, RawStore, (Package, Filter)] =
     for {
-      s     <- StateT.stateTMonadState[Gen, RawStore].get
+      s     <- StateT.get[Gen, RawStore].get
       pairs  = s.packageFilterPairsToInstall
     } yield {
       pick(pairs)
     }
 
   def numberOfVehicles: StateT[Gen, RawStore, Int] =
-    StateT.stateTMonadState[Gen, RawStore].get map
+    StateT.get[Gen, RawStore].get map
       (_.devices.keys.size)
 
   def numberOfPackages: StateT[Gen, RawStore, Int] =
-    StateT.stateTMonadState[Gen, RawStore].get map
+    StateT.get[Gen, RawStore].get map
       (_.packages.keys.size)
 
   def numberOfFilters: StateT[Gen, RawStore, Int] =
-    StateT.stateTMonadState[Gen, RawStore].get map
+    StateT.get[Gen, RawStore].get map
       (_.filters.size)
 
   def numberOfUnusedFilters: StateT[Gen, RawStore, Int] =
-    StateT.stateTMonadState[Gen, RawStore].get map
+    StateT.get[Gen, RawStore].get map
       (_.filtersUnused.size)
 
   def numberOfComponents: StateT[Gen, RawStore, Int] =
-    StateT.stateTMonadState[Gen, RawStore].get map
+    StateT.get[Gen, RawStore].get map
       (_.components.size)
 
   def numberOfUnusedComponents: StateT[Gen, RawStore, Int] =
-    StateT.stateTMonadState[Gen, RawStore].get map
+    StateT.get[Gen, RawStore].get map
       (_.componentsUnused.size)
 
   def numberOfVehiclesWithSomePackage: StateT[Gen, RawStore, Int] =
-    StateT.stateTMonadState[Gen, RawStore].get map
+    StateT.get[Gen, RawStore].get map
       (_.vehiclesWithSomePackage.size)
 
   def numberOfVehiclesWithSomeComponent: StateT[Gen, RawStore, Int] =
-    StateT.stateTMonadState[Gen, RawStore].get map
+    StateT.get[Gen, RawStore].get map
       (_.vehiclesWithSomeComponent.size)
 
   def numberOfPackagesWithSomeFilter: StateT[Gen, RawStore, Int] =
-    StateT.stateTMonadState[Gen, RawStore].get map
+    StateT.get[Gen, RawStore].get map
       (_.packagesWithSomeFilter.size)
 
   def numberOfVehicleComponentPairsToInstall: StateT[Gen, RawStore, Int] =
-    StateT.stateTMonadState[Gen, RawStore].get map
+    StateT.get[Gen, RawStore].get map
       (_.vehicleComponentPairsToInstall.size)
 
   def numberOfPackageFilterPairsToInstall: StateT[Gen, RawStore, Int] =
-    StateT.stateTMonadState[Gen, RawStore].get map
+    StateT.get[Gen, RawStore].get map
       (_.packageFilterPairsToInstall.size)
 }
 // scalastyle:on

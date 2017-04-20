@@ -72,9 +72,9 @@ final case class InstalledPackages(device: Uuid, installed_software: Json )
 class SotaServices(updateController: ActorRef, resolverClient: ExternalResolverClient)
                   (implicit system: ActorSystem, mat: ActorMaterializer) {
   import Directives._
-  import io.circe.generic.auto._
   import org.genivi.sota.core.jsonrpc.JsonRpcDirectives._
   import system.dispatcher
+  import io.circe.generic.auto._
 
   val log = Logging( system, "org.genivi.sota.core.SotaServices" )
 
@@ -116,6 +116,7 @@ object SotaServices {
     import record._
     import syntax.singleton._
     import io.circe._
+    import io.circe.shapes._
     import io.circe.generic.auto._
 
     implicit val uriEncoder : Encoder[Uri] = Encoder[String].contramap[Uri]( _.toString() )

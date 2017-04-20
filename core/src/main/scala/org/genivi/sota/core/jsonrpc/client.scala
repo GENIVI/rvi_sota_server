@@ -8,6 +8,7 @@ import io.circe.Decoder
 
 import scala.language.dynamics
 import scala.util.control.NoStackTrace
+import cats.syntax.either._
 
 /**
  * Encoder/decoder for JSON-RPC requests and responses.
@@ -15,9 +16,7 @@ import scala.util.control.NoStackTrace
 // scalastyle:off
 object client extends Dynamic {
 // scalastyle:on
-  import cats.data.Xor
-  import scala.concurrent.ExecutionContext
-  import scala.concurrent.Future
+  import scala.concurrent.{ExecutionContext, Future}
 
   type Method = String
 
@@ -45,18 +44,18 @@ object client extends Dynamic {
   import io.circe._
   import io.circe.syntax._
 
-  private[jsonrpc] def responseDecoder[A](implicit da: Decoder[A]): Decoder[ErrorResponse Xor Response[A]] =
+  private[jsonrpc] def responseDecoder[A](implicit da: Decoder[A]): Decoder[ErrorResponse Either Response[A]] =
     Decoder.instance { c =>
       val ed = Decoder[ErrorResponse]
       val rd = Decoder[Response[A]]
       for {
         version <- c.get[String]("jsonrpc")
-        _       <- if (version == "2.0") { Xor.right(version) }
-                   else { Xor.Left(DecodingFailure(s"Illegal version: $version", c.history)) }
+        _       <- if (version == "2.0") { Right(version) }
+                   else { Left(DecodingFailure(s"Illegal version: $version", c.history)) }
         res     <- (c.downField("error").success, c.downField("result").success) match {
-          case (Some(_), None) => ed(c).map(Xor.left)
-          case (None, Some(_)) => rd(c).map(Xor.right)
-          case _ => Xor.left(DecodingFailure("Either the result member or error member MUST be included.", c.history))
+          case (Some(_), None) => ed(c).map(Left.apply)
+          case (None, Some(_)) => rd(c).map(Right.apply)
+          case _ => Left(DecodingFailure("Either the result member or error member MUST be included.", c.history))
         }
       } yield res
 
@@ -78,21 +77,20 @@ object client extends Dynamic {
   }
 
   final case class Request(method: String, params: Json, id: Int) {
-
-    import shapeless._
-    import syntax.singleton._
-    import io.circe.generic.auto._
-
     def run[A](transport: Json => Future[Json])(implicit decoder: Decoder[A], exec: ExecutionContext): Future[A] = {
-      val request = ('jsonrpc ->> "2.0") :: ('method ->> method) :: ('params ->> params) :: ('id ->> id) :: HNil
+      val request =
+        Json.obj(
+          "jsonrpc" -> "2.0".asJson,
+          "method" -> method.asJson,
+          "params" -> params,
+          "id" -> id.asJson)
       for {
-        json     <- transport(request.asJson)
+        json     <- transport(request)
         response <- extractResponse[A](json)
         _        <- if( response.id != id ) { Future.failed( IdMismatchException(id, response.id) ) }
                     else { Future.successful(response) }
       } yield response.result
     }
-
   }
 
   final case class Notification(method: String, params: Json) {

@@ -6,7 +6,6 @@ package org.genivi.sota.marshalling
 
 import akka.http.scaladsl.model.Uri
 import cats.Show
-import cats.data.Xor
 import cats.syntax.show.toShowOps
 import eu.timepit.refined.api.{Refined, Validate}
 import eu.timepit.refined.refineV
@@ -52,11 +51,11 @@ trait CirceInstances {
   }
 
   implicit val uriDecoder : Decoder[Uri] = Decoder.instance { c =>
-    c.focus.asObject match {
-      case None      => Xor.left(DecodingFailure("Uri", c.history))
-      case Some(obj) => obj.toMap.get("uri").flatMap(_.asString) match {
-        case None      => Xor.left(DecodingFailure("Uri", c.history))
-        case Some(uri) => Xor.right(Uri(uri))
+    c.focus match {
+      case None      => Left(DecodingFailure("Uri", c.history))
+      case Some(obj) => obj.hcursor.downField("uri").focus.flatMap(_.asString) match {
+        case None      => Left(DecodingFailure("Uri", c.history))
+        case Some(uri) => Right(Uri(uri))
       }
     }
   }
@@ -79,8 +78,8 @@ trait CirceInstances {
     Encoder.instance[Instant]( x =>  Json.fromString( x.toString) )
 
   implicit val dateTimeDecoder : Decoder[Instant] = Decoder.instance { c =>
-    c.focus.asString match {
-      case None       => Xor.left(DecodingFailure("DataTime", c.history))
+    c.focus.flatMap(_.asString) match {
+      case None       => Left(DecodingFailure("DataTime", c.history))
       case Some(date) =>
         tryParser(date, DecodingFailure("DateTime", c.history))
     }
@@ -95,15 +94,15 @@ trait CirceInstances {
     * 2016-06-10T09:47:33.465789+00
     * 2011-12-03T10:15:30+01:00[Europe/Paris]
     */
-  private def tryParser(input: String, error: DecodingFailure): Xor[DecodingFailure, Instant] = {
+  private def tryParser(input: String, error: DecodingFailure): Either[DecodingFailure, Instant] = {
     try {
       val fmt = DateTimeFormatter.ISO_OFFSET_DATE_TIME
       val nst = Instant.from(fmt.parse(input))
-      Xor.right(nst)
+      Right(nst)
     }
     catch {
       case t: DateTimeParseException =>
-        Xor.left(error)
+        Left(error)
     }
   }
 

@@ -19,7 +19,6 @@ import org.genivi.sota.data._
 import java.time.{Duration, Instant}
 import java.util.UUID
 
-import cats.data.Xor
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture}
@@ -133,6 +132,7 @@ object SotaClient {
     import shapeless._
     import record._
     import syntax.singleton._
+    import io.circe.shapes._
 
     implicit val uriEncoder : Encoder[Uri] = Encoder[String].contramap[Uri]( _.toString() )
 
@@ -173,8 +173,8 @@ trait SotaCore {
 
   lazy val messageBus =
     MessageBus.publisher(system, system.settings.config) match {
-      case Xor.Right(v) => v
-      case Xor.Left(error) => throw error
+      case Right(v) => v
+      case Left(error) => throw error
     }
 
   def sotaRviServices() : Route = {
@@ -253,7 +253,7 @@ class PackageUpdateSpec extends PropSpec
       val serviceUri = Uri.from(scheme="http", host=getLocalHostAddr, port=8088)
       system.eventStream.subscribe(probe.ref, classOf[UpdateEvents.InstallReportReceived])
       val resultFuture = for {
-        address        <- bindServices(serviceUri, startClient = true)
+        _              <- bindServices(serviceUri, startClient = true)
         serverServices <- SotaServices.register( serviceUri.withPath(Uri.Path / "rvi") )
         updateSpecs    <- init( serverServices, requests )
       } yield updateSpecs

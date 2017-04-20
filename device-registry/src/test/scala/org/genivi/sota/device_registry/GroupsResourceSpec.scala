@@ -1,6 +1,7 @@
 package org.genivi.sota.device_registry
 
 import akka.http.scaladsl.model.StatusCodes._
+import cats.syntax.either._
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser._

@@ -12,7 +12,6 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive0, Directive1, Route}
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
-import cats.data.Xor
 import com.advancedtelematic.libtuf.reposerver.ReposerverHttpClient
 import com.typesafe.config.ConfigFactory
 import org.genivi.sota.client.DeviceRegistryClient
@@ -194,8 +193,8 @@ object Boot extends BootApp
 
   val messageBusPublisher: MessageBusPublisher =
     MessageBus.publisher(system, config) match {
-      case Xor.Right(c) => c
-      case Xor.Left(err) =>
+      case Right(c) => c
+      case Left(err) =>
         log.error("Could not initialize message bus client", err)
         MessageBusPublisher.ignore
     }

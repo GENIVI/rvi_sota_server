@@ -5,7 +5,7 @@
 package org.genivi.sota.device_registry.db
 
 import cats.data.State
-import cats.std.list._
+import cats.instances.list._
 import cats.syntax.traverse._
 import io.circe.Json
 import io.circe.jawn._
@@ -48,7 +48,7 @@ object SystemInfoRepository extends SlickJsonHelper {
   )
   private def addUniqueIdsSIM(j: Json): State[Int, Json] = j.arrayOrObject(
     State.pure(j),
-    _.traverseU(addUniqueIdsSIM).map(Json.fromValues),
+    _.toList.traverseU(addUniqueIdsSIM).map(Json.fromValues),
     _.toList.traverseU {
       case (other, value) => addUniqueIdsSIM(value).map(other -> _)
     }.flatMap(xs => State{ nr => (nr+1, Json.fromFields(("id-nr" -> Json.fromString(s"$nr")) :: xs))})

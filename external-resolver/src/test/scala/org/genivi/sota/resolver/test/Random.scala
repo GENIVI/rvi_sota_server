@@ -3,9 +3,8 @@ package org.genivi.sota.resolver.test
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import akka.http.scaladsl.server.Route
-import cats.state.State
+import cats.data.State
 import org.genivi.sota.data.{PackageId, Uuid}
-import org.genivi.sota.resolver.test.random.Misc._
 import org.genivi.sota.resolver.test.random._
 import Session._
 import org.genivi.sota.resolver.components.Component
@@ -62,7 +61,7 @@ class Random extends ResourcePropSpec {
       }
 
     State.modify { s0 =>
-      val (s1, sems)  = semSession(sesh).run(s0).run
+      val (s1, sems)  = semSession(sesh).run(s0).value
       val _           = go(sems)
       s1.withQrySems(sems)
     }
@@ -85,7 +84,7 @@ class Random extends ResourcePropSpec {
     do {
       forAll { sesh: Session =>
         accCoverage = accCoverage.merge(sesh.coverageInfo)
-        s = runSession(sesh).runS(s).run
+        s = runSession(sesh).runS(s).value
         Store.validStore.isValid(s) shouldBe true
       }
     } while (!accCoverage.fullCoverage)

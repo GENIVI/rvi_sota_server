@@ -7,6 +7,7 @@ package org.genivi.sota.core.rvi
 import io.circe._
 import org.genivi.sota.core.resolver.ConnectivityClient
 import java.time.Instant
+import io.circe.shapes._
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
