@@ -21,6 +21,10 @@ object Scopes {
   lazy val packages_str = apiDomain + "packages"
   def packages(ns: AuthedNamespaceScope) = new ScopeDirectives(ns, packages_str)
 
+  // super user having access to the packages of all users
+  lazy val packages_super_str = apiDomain + "packages_super"
+  def packages_super(ns: AuthedNamespaceScope) = new ScopeDirectives(ns, packages_super_str)
+
   lazy val resolver_str = apiDomain + "resolver"
   def resolver(ns: AuthedNamespaceScope) = new ScopeDirectives(ns, resolver_str)
 

@@ -152,4 +152,15 @@ object Packages {
       .sum
       .result
       .map(_.getOrElse(0L))
+
+  // find package corresponding to uuid and return namespaces it is stored under
+  def packageNamespaces(packageUuid: UUID): DBIO[Seq[Namespace]] = {
+    val query = for {
+      byUuid <- packages if byUuid.uuid === packageUuid
+      byNameAndVersion <- packages if byNameAndVersion.name === byUuid.name &&
+                                      byNameAndVersion.version === byUuid.version
+    } yield byNameAndVersion.namespace
+
+    query.result
+  }
 }
