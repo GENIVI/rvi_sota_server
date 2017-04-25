@@ -146,6 +146,7 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures with SlickEx
 
         devicePost.lastSeen should not be None
         isRecent(devicePost.lastSeen) shouldBe true
+        devicePost.deviceStatus should not be DeviceStatus.NotSeen
       }
     }
   }
