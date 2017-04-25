@@ -14,12 +14,22 @@ services:
       MYSQL_DATABASES: "sota_resolver sota_resolver_test sota_resolver% sota_core sota_core_test sota_core% sota_device_registry% sota_device_registry sota_device_registry_test"
     command: ["--character-set-server=utf8", "--collation-server=utf8_unicode_ci", "--max-connections=1000"]
 
-  nats:
-    image: nats:0.8.1
+  zookeeper:
+    image: wurstmeister/zookeeper
     ports:
-      - '4222:4222'
-    expose:
-      - '4222'
+      - '2181:2181'
+
+  kafka:
+    image: wurstmeister/kafka
+    ports:
+      - '9092:9092'
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ADVERTISED_PORT: "9092"
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
   device-registry:
     image: advancedtelematic/sota-device_registry
@@ -27,12 +37,16 @@ services:
      - 8083:8083
     expose:
      - 8083
+    depends_on:
+      - mysql
+      - kafka
     environment:
      BIND_HOST: 0.0.0.0
      DEVICE_REGISTRY_DB_URL: "jdbc:mariadb://mysql:3306/sota_device_registry"
      DB_MIGRATE: 'true'
-     NATS_HOST: 'nats'
-     NATS_PORT: '4222'
+     KAFKA_HOST: "kafka:9092"
+     KAFKA_TOPIC_SUFFIX: "sota"
+     MESSAGING_MODE: "kafka"
      DB_ALIVE_URL: "mysql:3306"
      AUTH_PROTOCOL: "none"
 
@@ -44,7 +58,7 @@ services:
       - 8081
     depends_on:
       - mysql
-      - nats
+      - kafka
       - device-registry
     environment:
       BIND_HOST: 0.0.0.0
@@ -52,8 +66,9 @@ services:
       DB_MIGRATE: 'true'
       DEVICE_REGISTRY_HOST: "device-registry"
       DEVICE_REGISTRY_PORT: "8083"
-      NATS_HOST: 'nats'
-      NATS_PORT: '4222'
+      KAFKA_HOST: "kafka:9092"
+      KAFKA_TOPIC_SUFFIX: "sota"
+      MESSAGING_MODE: "kafka"
       PACKAGES_VERSION_FORMAT: ".+"
       DB_ALIVE_URL: "mysql:3306"
       AUTH_PROTOCOL: "none"
@@ -66,7 +81,7 @@ services:
       - 8080
     depends_on:
       - mysql
-      - nats
+      - kafka
       - device-registry
       - resolver
     environment:
@@ -77,8 +92,9 @@ services:
       DB_MIGRATE: 'true'
       DEVICE_REGISTRY_HOST: "device-registry"
       DEVICE_REGISTRY_PORT: "8083"
-      NATS_HOST: 'nats'
-      NATS_PORT: '4222'
+      KAFKA_HOST: 'kafka:9092'
+      KAFKA_TOPIC_SUFFIX: 'sota'
+      MESSAGING_MODE: 'kafka'
       SOTA_RESOLVER_HOST: "resolver"
       SOTA_RESOLVER_PORT: "8081"
       PACKAGES_VERSION_FORMAT: ".+"
@@ -94,7 +110,7 @@ services:
     image: advancedtelematic/sota-webserver
     depends_on:
       - device-registry
-      - nats
+      - kafka
       - resolver
       - core
       - ldapserver
@@ -103,8 +119,9 @@ services:
     expose:
       - 9000
     environment:
-      NATS_HOST: 'nats'
-      NATS_PORT: '4222'
+      KAFKA_HOST: "kafka:9092"
+      KAFKA_TOPIC_SUFFIX: "sota"
+      MESSAGING_MODE: "kafka"
       PLAY_CRYPTO_SECRET: "YM5B6o<ywKn4tTyA;tOZ<2xUEajF4DDi=O/PPm1Q^w2LqtKISd9oqYT6b>>C1gQa"
       DEVICE_REGISTRY_HOST: "device-registry"
       DEVICE_REGISTRY_PORT: "8083"
