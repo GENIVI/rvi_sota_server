@@ -776,6 +776,29 @@ paths:
       responses:
         200:
           description: OK
+  /super/packages/copy:
+    put:
+      description: Copy an uploaded package from one account to a list of other accounts.
+      parameters:
+        - name: packageCopy
+          in: body
+          description: A JSON object with the package to copy and a list of accounts to copy it to.
+          required: true
+          schema: 
+            type: object
+            properties:
+              packageUuid: 
+                type: string
+                description: The uuid of an existing package.
+              namespaces:
+                type: array
+                items:
+                  type: string
+                description: An array of the namespaces to copy the package to.
+      responses:
+        200:
+          description: OK
+
 
 definitions:
   Device:
