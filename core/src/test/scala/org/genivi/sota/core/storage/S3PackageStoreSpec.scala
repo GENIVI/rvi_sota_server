@@ -4,12 +4,15 @@
  */
 package org.genivi.sota.core.storage
 
+import java.io.{File, IOException}
+import java.nio.file.Files
+
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.common.StrictForm
-import akka.http.scaladsl.model.{HttpEntity, HttpRequest, Uri}
+import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.FileIO
+import akka.stream.scaladsl.{FileIO, Source}
 import akka.testkit.TestKit
 import akka.util.ByteString
 import org.genivi.sota.core.IntegrationTest
@@ -87,6 +90,19 @@ class S3PackageStoreSpec extends TestKit(ActorSystem("LocalPackageStoreSpec"))
     whenReady(f) { case (file, localContents) =>
         file.exists() shouldBe true
         localContents shouldBe fileData.entity.data
+    }
+  }
+
+  test("removes the temporary file on error", IntegrationTest) {
+    val packageId = PackageIdGenerators.genPackageId.sample.get
+    val tempFile = File.createTempFile(fileData.filename.get, ".tmp")
+    Files.exists(tempFile.toPath) shouldBe true
+    val crashingSource = Source.failed(new IOException("expected exception"))
+    val f = s3.storeAndRemove(packageId, tempFile, crashingSource)
+
+    whenReady(f.failed) { ex =>
+      ex shouldBe an[IOException]
+      Files.exists(tempFile.toPath) shouldBe false
     }
   }
 }

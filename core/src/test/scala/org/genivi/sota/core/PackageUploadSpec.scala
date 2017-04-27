@@ -15,7 +15,6 @@ import org.genivi.sota.core.transfer.DefaultUpdateNotifier
 import org.genivi.sota.data.{Namespace, Namespaces}
 import org.genivi.sota.http.NamespaceDirectives
 import org.genivi.sota.messaging.MessageBusPublisher
-import org.scalacheck.Gen.choose
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.PropertyChecks
@@ -111,8 +110,7 @@ class PackageUploadSpec extends PropSpec
 
     val copyRequest = CopyRequest(uuid, targetNamespaces)
 
-    val max = 5
-    forAll(choose(1, max)) { _ =>
+    for (_ <- 1 to 4) {
       Put(Uri(path = Path / "super" / "packages" / "copy"), copyRequest) ~> route ~> check {
         status shouldBe StatusCodes.NoContent
         responseEntity.isKnownEmpty() shouldBe true

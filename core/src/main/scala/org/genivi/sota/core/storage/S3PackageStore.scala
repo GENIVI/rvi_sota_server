@@ -42,27 +42,31 @@ class S3PackageStore(credentials: S3Credentials)
     client
   }
 
-  override def store(packageId: PackageId,
-                     filename: String, fileData: Source[ByteString, Any]): Future[(Uri, PackageSize, DigestResult)] = {
-    val tempFile = File.createTempFile(filename, ".tmp")
-
+  def storeAndRemove(packageId: PackageId,
+                     file: File, fileData: Source[ByteString, Any]): Future[(Uri, PackageSize, DigestResult)] = {
     // The s3 sdk requires us to specify the file size if using a stream
     // so we always need to cache the file into the filesystem before uploading
-    val sink = FileIO.toPath(tempFile.toPath)
+    val sink = FileIO.toPath(file.toPath)
       .mapMaterializedValue {
         _.flatMap { result =>
           if(result.wasSuccessful) {
-            upload(tempFile, filename, fileData)
-              .andThen { case _ =>
-                Try(tempFile.delete())
-              }
-          } else
+            upload(file, file.getName, fileData)
+          } else {
             Future.failed(result.getError)
+          }
         }
       }
 
     writePackage(packageId, fileData, sink)
+      .andThen { case _ =>
+        log.debug(s"removing temp file ${file.getAbsolutePath}")
+        Try(file.delete())
+      }
   }
+
+  override def store(packageId: PackageId, filename: String, fileData: Source[ByteString, Any]):
+                                                                          Future[(Uri, PackageSize, DigestResult)] =
+    storeAndRemove(packageId, File.createTempFile(filename, ".tmp"), fileData)
 
   protected def signedUri(packageId: PackageId, uri: Uri): Future[Uri] = {
     val expire = java.util.Date.from(Instant.now.plus(PUBLIC_URL_EXPIRE_TIME))
