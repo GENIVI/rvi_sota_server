@@ -52,11 +52,14 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
     parameters(('regex.as[String Refined Regex].?,
                 'deviceId.as[String].?, // TODO: Use refined
                 'groupId.as[String Refined Uuid.Valid].?,
+                'ungrouped?false,
                 'offset.as[Long].?,
                 'limit.as[Long].?)) {
-      case (re, None, groupId, offset, limit) =>
+      case (re, None, groupId, false, offset, limit) =>
         complete(db.run(DeviceRepository.search(ns, re, groupId.map(Uuid(_)), offset, limit)))
-      case (None, Some(deviceId), None, _, _) =>
+      case (re, None, None, true, offset, limit) =>
+        complete(db.run(DeviceRepository.searchUngrouped(ns, re, offset, limit)))
+      case (None, Some(deviceId), None, false, _, _) =>
         complete(db.run(DeviceRepository.findByDeviceId(ns, DeviceId(deviceId))))
       case _ =>
         complete((BadRequest, "'regex' and 'deviceId' parameters cannot be used together!"))
