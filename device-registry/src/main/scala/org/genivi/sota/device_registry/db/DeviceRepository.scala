@@ -108,12 +108,25 @@ object DeviceRepository extends SlickExtensions {
     val byOptionalGroupId = groupId match {
         case Some(gid) => for {
           gm <- GroupMemberRepository.groupMembers if gm.groupId === gid
-          d <- byOptionalRegex if d.namespace === ns && gm.deviceUuid === d.uuid
+          d <- byOptionalRegex if gm.deviceUuid === d.uuid
         } yield d
         case None => byOptionalRegex
       }
 
     byOptionalGroupId.paginatedResult(_.deviceName, offset, limit)
+  }
+
+  def searchUngrouped(ns: Namespace, regEx: Option[String Refined Regex], offset: Option[Long], limit: Option[Long])
+                     (implicit ec: ExecutionContext):  DBIO[PaginatedResult[Device]] = {
+    val byNamespace = devices.filter(_.namespace === ns)
+    val byOptionalRegex = regEx match {
+      case Some(re) => byNamespace.filter(d => regex(d.deviceName, re))
+      case None => byNamespace
+    }
+    val grouped = GroupMemberRepository.groupMembers.map(_.deviceUuid)
+    val byUngrouped = byOptionalRegex.filterNot(_.uuid in grouped)
+
+    byUngrouped.paginatedResult(_.deviceName, offset, limit)
   }
 
   def update(ns: Namespace, uuid: Uuid, device: DeviceT)(implicit ec: ExecutionContext): DBIO[Unit] = {

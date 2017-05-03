@@ -35,6 +35,11 @@ paths:
         required: false
         type: integer
         format: int64
+      - name: ungrouped
+        description: indicates to search for devices not belonging to a group (default is "false")
+        in: query
+        required: false
+        type: boolean
       - name: limit
         description: the maximum amount of devices to return, after the offset
         in: query

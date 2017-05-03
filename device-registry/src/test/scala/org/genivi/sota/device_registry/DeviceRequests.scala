@@ -45,14 +45,18 @@ trait DeviceRequests { self: ResourceSpec =>
   def listDevices(): HttpRequest =
     Get(Resource.uri(api))
 
-  def searchDevice(namespace: Namespace, regex: String, offset: Long = 0, limit: Long = 50): HttpRequest =
+  def searchDevice(regex: String, offset: Long = 0, limit: Long = 50): HttpRequest =
     Get(Resource.uri(api).withQuery(Query("regex" -> regex, "offset" -> offset.toString, "limit" -> limit.toString)))
 
-  def fetchByDeviceId(namespace: Namespace, deviceId: Device.DeviceId): HttpRequest =
-    Get(Resource.uri(api).withQuery(Query("namespace" -> namespace.get, "deviceId" -> deviceId.show)))
+  def fetchByDeviceId(deviceId: Device.DeviceId): HttpRequest =
+    Get(Resource.uri(api).withQuery(Query("deviceId" -> deviceId.show)))
 
-  def fetchByGroupId(namespace: Namespace, groupId: Uuid, offset: Long = 0, limit: Long = 50): HttpRequest =
-    Get(Resource.uri(api).withQuery(Query("namespace" -> namespace.get, "groupId" -> groupId.show,
+  def fetchByGroupId(groupId: Uuid, offset: Long = 0, limit: Long = 50): HttpRequest =
+    Get(Resource.uri(api).withQuery(Query("groupId" -> groupId.show,
+                                          "offset" -> offset.toString, "limit" -> limit.toString)))
+
+  def fetchUngrouped(offset: Long = 0, limit: Long = 50): HttpRequest =
+    Get(Resource.uri(api).withQuery(Query("ungrouped" -> "true",
                                           "offset" -> offset.toString, "limit" -> limit.toString)))
 
   def updateDevice(uuid: Uuid, device: DeviceT)

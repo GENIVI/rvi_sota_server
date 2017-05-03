@@ -71,7 +71,7 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures with SlickEx
     forAll { (deviceId: DeviceId, devicePre: DeviceT) =>
 
       val uuid: Uuid = createDeviceOk(devicePre.copy(deviceId = Some(deviceId)))
-      fetchByDeviceId(defaultNs, deviceId) ~> route ~> check {
+      fetchByDeviceId(deviceId) ~> route ~> check {
         status shouldBe OK
         val devicePost1: Device = responseAs[Seq[Device]].head
         fetchDevice(uuid) ~> route ~> check {
@@ -94,7 +94,7 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures with SlickEx
 
         d1.deviceId match {
           case Some(deviceId) =>
-            fetchByDeviceId(defaultNs, deviceId) ~> route ~> check {
+            fetchByDeviceId(deviceId) ~> route ~> check {
               status match {
                 case OK => responseAs[Seq[Device]].headOption match {
                   case Some(_) => updateStatus shouldBe Conflict
@@ -344,7 +344,7 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures with SlickEx
     val deviceTs = genConflictFreeDeviceTs(deviceNumber).sample.get
     val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
 
-    searchDevice(defaultNs, "", limit = limit) ~> route ~> check {
+    searchDevice("", limit = limit) ~> route ~> check {
       status shouldBe OK
       val result = responseAs[PaginatedResult[Device]]
       result.values.length shouldBe limit
@@ -357,7 +357,7 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures with SlickEx
     val deviceTs = genConflictFreeDeviceTs(deviceNumber).sample.get
     val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
 
-    searchDevice(defaultNs, "", offset = offset, limit = limit) ~> route ~> check {
+    searchDevice("", offset = offset, limit = limit) ~> route ~> check {
       status shouldBe OK
       val devices = responseAs[PaginatedResult[Device]]
       devices.values.length shouldBe limit
@@ -379,7 +379,7 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures with SlickEx
     deviceIds.foreach { id => addDeviceToGroupOk(groupId, id) }
 
     // test that we get back all the devices
-    fetchByGroupId(defaultNs, groupId, offset = 0, limit = deviceNumber) ~> route ~> check {
+    fetchByGroupId(groupId, offset = 0, limit = deviceNumber) ~> route ~> check {
       status shouldBe OK
       val devices = responseAs[PaginatedResult[Device]]
       devices.total shouldBe deviceNumber
@@ -387,11 +387,35 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures with SlickEx
     }
 
     // test that the limit works
-    fetchByGroupId(defaultNs, groupId, offset = offset, limit = limit) ~> route ~> check {
+    fetchByGroupId(groupId, offset = offset, limit = limit) ~> route ~> check {
       status shouldBe OK
       val devices = responseAs[PaginatedResult[Device]]
       devices.values.length shouldBe limit
     }
+  }
+
+  property("can list ungrouped devices") {
+    val deviceNumber = 50
+    val deviceTs = genConflictFreeDeviceTs(deviceNumber).sample.get
+    val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
+
+    val beforeGrouping = fetchUngrouped(offset = 0, limit = deviceNumber) ~> route ~> check {
+      status shouldBe OK
+      responseAs[PaginatedResult[Device]]
+    }
+
+    // add devices to group and check that we get less ungrouped devices
+    val group = genGroupName.sample.get
+    val groupId = createGroupOk(group)
+
+    deviceIds.foreach { id => addDeviceToGroupOk(groupId, id) }
+
+    val afterGrouping = fetchUngrouped(offset = 0, limit = deviceNumber) ~> route ~> check {
+      status shouldBe OK
+      responseAs[PaginatedResult[Device]]
+    }
+
+    beforeGrouping.total shouldBe afterGrouping.total + deviceNumber
   }
 
   property("can list installed packages for all devices with custom pagination limit and offset") {
