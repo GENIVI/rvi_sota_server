@@ -45,9 +45,21 @@ paths:
         200:
           description: OK
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Device'
+            type: object
+            properties:
+              total:
+                type: int64
+                description: The total number of results returnable
+              limit:
+                type: int64
+                description: The maximum number of results to be returned, after the offset
+              offset:
+                type: int64
+                description: The offset at which to begin returning results
+              values:
+                type: array
+                items:
+                  $ref: '#/definitions/Device'
     post:
       description: 'Register a new device with a name and an ID, get back its UUID'
       parameters:
@@ -244,8 +256,8 @@ paths:
         type: integer
         format: int64
       responses:
-        201:
-          description: Created
+        200:
+          description: A list of the device uuids in the group
           schema:
             type: array
             items:
@@ -297,6 +309,7 @@ paths:
       responses:
         200:
           description: OK
+
   /device_count/{name}/{version}/:
     get:
       description: returns count of groups and devices with the given package installed
@@ -339,7 +352,7 @@ paths:
             $ref: '#/definitions/ActiveDeviceCount'
   /device_packages/{name}:
     get:
-      description: Get a count of devices on which the give package is installed, grouped by versions.
+      description: Get a count of devices on which the given package is installed, grouped by versions.
       parameters:
       - name: name
         in: path
@@ -362,9 +375,21 @@ paths:
         200:
           description: A map of package versions to count.
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/PackageStat'
+            type: object
+            properties:
+              total:
+                type: int64
+                description: The total number of results returnable
+              limit:
+                type: int64
+                description: The maximum number of results to be returned, after the offset
+              offset:
+                type: int64
+                description: The offset at which to begin returning results
+              values:
+                type: array
+                items:
+                  $ref: '#/definitions/PackageStat'
 
 definitions:
   DeviceT:
@@ -453,7 +478,7 @@ definitions:
         description: count of active devices (in a given interval)
   PackageStat:
     type: object
-    description: An association between a package and a filter.
+    description: A count of how many devices have a particular version of a package installed
     properties:
       packageVersion:
         type: string
