@@ -12,7 +12,7 @@ import io.circe.jawn._
 import org.genivi.sota.data.{Uuid, Namespace}
 import org.genivi.sota.device_registry.common.{Errors, SlickJsonHelper}
 import org.genivi.sota.db.SlickExtensions._
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}

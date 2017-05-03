@@ -15,7 +15,7 @@ import org.genivi.sota.db.SlickExtensions
 import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.refined.SlickRefined._
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.ExecutionContext
 
@@ -185,7 +185,8 @@ object DeviceRepository extends SlickExtensions {
       .filter(_.namespace === ns)
       .map(_.activatedAt.getOrElse(start.minusSeconds(36000)))
       .filter(activatedAt => activatedAt >= start && activatedAt < end)
-      .countDistinct
+      .distinct
+      .length
       .result
   }
 

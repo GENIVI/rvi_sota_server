@@ -14,7 +14,7 @@ import org.genivi.sota.core.db.Packages
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.Messages._
 import scala.concurrent.{Future, ExecutionContext}
-import slick.driver.MySQLDriver.api.Database
+import slick.jdbc.MySQLProfile.api.Database
 
 class StoragePipeline(updateService: UpdateService)
                      (implicit ec: ExecutionContext, db: Database,

@@ -9,7 +9,7 @@ import java.time.Instant
 
 import org.genivi.sota.data.{PackageId, Uuid}
 import org.genivi.sota.db.Operators._
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 import org.genivi.sota.refined.PackageIdDatabaseConversions.LiftedPackageId
 
 import scala.concurrent.ExecutionContext

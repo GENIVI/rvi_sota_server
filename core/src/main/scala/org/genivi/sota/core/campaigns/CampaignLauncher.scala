@@ -14,7 +14,7 @@ import org.genivi.sota.messaging.Commit.ValidCommit
 import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
 import org.genivi.sota.messaging.Messages.{CampaignLaunched, DeltaRequest, UriWithSimpleEncoding}
 import org.slf4j.LoggerFactory
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 

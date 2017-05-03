@@ -8,7 +8,7 @@ import org.genivi.sota.messaging.Messages.{DeviceActivated, DeviceSeen}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 object DeviceSeenListener {
 

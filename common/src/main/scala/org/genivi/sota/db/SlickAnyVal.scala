@@ -7,7 +7,7 @@ package org.genivi.sota.db
 
 import java.util.UUID
 import shapeless.{::, Generic, HNil}
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 import scala.reflect.ClassTag
 
 object SlickAnyVal {

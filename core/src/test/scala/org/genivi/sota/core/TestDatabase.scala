@@ -12,7 +12,7 @@ import org.genivi.sota.http.NamespaceDirectives
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 object NamespaceSpec {
   import eu.timepit.refined.auto._

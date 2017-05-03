@@ -12,7 +12,7 @@ import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.db.DeviceRepository
 
 import scala.concurrent.{ExecutionContext, Future}
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 
 object ComponentRepository {

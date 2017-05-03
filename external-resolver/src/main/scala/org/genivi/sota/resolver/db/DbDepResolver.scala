@@ -18,8 +18,8 @@ import org.genivi.sota.resolver.components.Component.PartNumber
 import org.genivi.sota.resolver.filters.{And, Filter, FilterAST, True}
 import org.genivi.sota.resolver.resolve.ResolveFunctions
 import scala.concurrent.{ExecutionContext, Future}
-import slick.backend.DatabasePublisher
-import slick.driver.MySQLDriver.api._
+import slick.basic.DatabasePublisher
+import slick.jdbc.MySQLProfile.api._
 import slick.jdbc.GetResult
 
 

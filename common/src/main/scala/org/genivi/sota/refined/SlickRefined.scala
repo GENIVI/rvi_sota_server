@@ -5,7 +5,7 @@
 package org.genivi.sota.refined
 
 import eu.timepit.refined.api.{Validate, Refined}
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 /**
   * Map refined types to their underlaying types when interacting with

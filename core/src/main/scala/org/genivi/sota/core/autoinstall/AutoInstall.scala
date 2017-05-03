@@ -11,7 +11,7 @@ import org.genivi.sota.core.db.AutoInstalls
 import org.genivi.sota.core.UpdateService
 import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 import org.genivi.sota.messaging.MessageBusPublisher
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 

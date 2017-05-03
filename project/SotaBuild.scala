@@ -99,7 +99,7 @@ object SotaBuild extends Build {
 
   lazy val externalResolver = Project(id = "sota-resolver", base = file("external-resolver"))
     .settings( commonSettings ++ Migrations.settings ++ lintOptions ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.AkkaStream :+ Dependencies.AkkaStreamTestKit :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.ParserCombinators :+ Dependencies.Flyway,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.AkkaStream :+ Dependencies.AkkaStreamTestKit :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.ParserCombinators,
       testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RandomTest"),
       testOptions in RandomTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RandomTest"),
       parallelExecution in Test := true,
@@ -123,7 +123,7 @@ object SotaBuild extends Build {
 
   lazy val core = Project(id = "sota-core", base = file("core"))
     .settings( commonSettings ++ Migrations.settings ++ lintOptions ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Flyway :+ Dependencies.AmazonS3 :+ Dependencies.LibTuf :+ Dependencies.LibAts,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.AmazonS3 :+ Dependencies.LibTuf :+ Dependencies.LibAts,
       testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RequiresRvi", "-l", "IntegrationTest"),
       testOptions in IntegrationTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RequiresRvi", "-n", "IntegrationTest"),
       parallelExecution in Test := true,
@@ -179,7 +179,7 @@ object SotaBuild extends Build {
 
   lazy val deviceRegistry = Project(id = "sota-device_registry", base = file("device-registry"))
     .settings(commonSettings ++ Migrations.settings ++ lintOptions ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Refined :+ Dependencies.Flyway,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Refined,
       parallelExecution in Test := true,
       dockerExposedPorts := Seq(8083),
       flywayUrl := sys.env.get("DEVICE_REGISTRY_DB_URL").orElse(sys.props.get("device-registry.db.url")).getOrElse("jdbc:mysql://localhost:3306/sota_device_registry"),
@@ -289,8 +289,8 @@ object Dependencies {
   lazy val TypesafeConfig = "com.typesafe" % "config" % "1.3.0"
 
   lazy val Slick = Seq (
-    "com.typesafe.slick" %% "slick" % "3.1.1",
-    "com.typesafe.slick" %% "slick-hikaricp" % "3.1.1",
+    "com.typesafe.slick" %% "slick" % "3.2.0",
+    "com.typesafe.slick" %% "slick-hikaricp" % "3.2.0",
     "org.mariadb.jdbc" % "mariadb-java-client" % "1.4.4"
   )
 

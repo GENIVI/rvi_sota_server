@@ -16,7 +16,7 @@ import org.genivi.sota.device_registry.common.PackageStat
 import org.genivi.sota.refined.PackageIdDatabaseConversions._
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.db.SlickExtensions
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.ExecutionContext
 
@@ -79,7 +79,8 @@ object InstalledPackages extends SlickExtensions {
         .join(DeviceRepository.devices).on(_.device === _.uuid)
         .filter(_._2.namespace === ns)
         .map(_._1.device)
-        .countDistinct
+        .distinct
+        .length
         .result
       groups <- installedPackages
         .filter(p => p.name === pkg.name && p.version === pkg.version)

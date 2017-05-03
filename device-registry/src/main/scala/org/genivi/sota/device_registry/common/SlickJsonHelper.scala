@@ -4,7 +4,7 @@
   */
 package org.genivi.sota.device_registry.common
 
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 import io.circe.Json
 import io.circe.jawn._
 

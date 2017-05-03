@@ -9,7 +9,7 @@ import org.genivi.sota.core.data.Campaign.CampaignGroup
 import org.genivi.sota.core.data.{Campaign, CampaignStatistics}
 import org.genivi.sota.core.db.Campaigns
 import org.genivi.sota.data.{UpdateStatus, Uuid}
-import slick.driver.MySQLDriver.api.Database
+import slick.jdbc.MySQLProfile.api.Database
 
 import scala.concurrent.{ExecutionContext, Future}
 

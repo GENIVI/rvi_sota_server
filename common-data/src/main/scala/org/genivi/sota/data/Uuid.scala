@@ -5,7 +5,7 @@ import cats.syntax.show._
 import eu.timepit.refined._
 import eu.timepit.refined.api.Refined
 import java.util.UUID
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 
 final case class Uuid(underlying: String Refined Uuid.Valid) extends AnyVal {

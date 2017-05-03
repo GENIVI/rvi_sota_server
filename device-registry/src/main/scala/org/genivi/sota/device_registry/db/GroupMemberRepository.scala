@@ -8,7 +8,7 @@ import org.genivi.sota.data.{PaginatedResult, Uuid}
 import org.genivi.sota.db.SlickExtensions
 import SlickExtensions._
 import org.genivi.sota.device_registry.common.Errors
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 import slick.lifted.Tag
 
 import scala.concurrent.ExecutionContext

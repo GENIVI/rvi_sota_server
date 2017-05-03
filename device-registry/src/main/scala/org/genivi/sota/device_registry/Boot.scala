@@ -20,7 +20,7 @@ import org.genivi.sota.messaging.kafka.MessageListener
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
 import org.genivi.sota.monitoring.{DatabaseMetrics, MetricsSupport}
 import org.genivi.sota.rest.SotaRejectionHandler.rejectionHandler
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try

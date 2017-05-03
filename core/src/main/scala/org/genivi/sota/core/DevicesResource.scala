@@ -26,7 +26,7 @@ import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
-import slick.driver.MySQLDriver.api.Database
+import slick.jdbc.MySQLProfile.api.Database
 import Device._
 import org.genivi.sota.data.DeviceStatus.DeviceStatus
 

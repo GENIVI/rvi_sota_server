@@ -13,7 +13,7 @@ import org.genivi.sota.core.db.InstallHistories
 import org.genivi.sota.data.{DeviceDirectives, Uuid}
 import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.marshalling.CirceMarshallingSupport
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 
 class HistoryResource(val deviceRegistry: DeviceRegistry, namespaceExtractor: Directive1[AuthedNamespaceScope])

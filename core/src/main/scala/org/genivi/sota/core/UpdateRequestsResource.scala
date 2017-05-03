@@ -18,7 +18,7 @@ import org.genivi.sota.data.{Namespace, UpdateStatus, Uuid}
 import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
-import slick.driver.MySQLDriver.api.Database
+import slick.jdbc.MySQLProfile.api.Database
 
 import scala.concurrent.Future
 

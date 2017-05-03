@@ -9,7 +9,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.server.{Directive1, Directives, Route}
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 import Directives._
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.http.{AuthedNamespaceScope, ErrorHandler, Scopes}
