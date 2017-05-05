@@ -53,14 +53,17 @@ paths:
             type: object
             properties:
               total:
-                type: int64
                 description: The total number of results returnable
+                type: integer
+                format: int64
               limit:
-                type: int64
                 description: The maximum number of results to be returned, after the offset
+                type: integer
+                format: int64
               offset:
-                type: int64
                 description: The offset at which to begin returning results
+                type: integer
+                format: int64
               values:
                 type: array
                 items:
@@ -383,14 +386,17 @@ paths:
             type: object
             properties:
               total:
-                type: int64
                 description: The total number of results returnable
+                type: integer
+                format: int64
               limit:
-                type: int64
                 description: The maximum number of results to be returned, after the offset
+                type: integer
+                format: int64
               offset:
-                type: int64
                 description: The offset at which to begin returning results
+                type: integer
+                format: int64
               values:
                 type: array
                 items:
