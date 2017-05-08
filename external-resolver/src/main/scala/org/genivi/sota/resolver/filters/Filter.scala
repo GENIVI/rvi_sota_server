@@ -15,7 +15,7 @@ case class Filter(
   expression: Filter.Expression
 ) {
   def samePK(that: Filter): Boolean = { (namespace == that.namespace) && (name == that.name) }
-  override def toString(): String = { s"Filter(${name.get}, ${expression.get})" }
+  override def toString(): String = { s"Filter(${name.value}, ${expression.value})" }
 }
 
 object Filter {

@@ -31,7 +31,7 @@ object RegexGenerators {
   }
 
   def genStrFromRegex(regex: String Refined Regex): String =
-    new Generex(regex.get).random()
+    new Generex(regex.value).random()
 
   implicit lazy val arbRegex: Arbitrary[String Refined Regex] = Arbitrary(genRegex)
 

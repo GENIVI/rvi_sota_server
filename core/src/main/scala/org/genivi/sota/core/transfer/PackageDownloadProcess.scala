@@ -38,7 +38,7 @@ class PackageDownloadProcess(db: Database, packageRetrieval: PackageRetrievalOp)
                                  (implicit ec: ExecutionContext): Future[(Package, HttpResponse)] = {
     val dbIO = for {
       pkg <- findForDownload(updateRequestId)
-      _ <- UpdateSpecs.setStatus(device, UUID.fromString(updateRequestId.get), UpdateStatus.InFlight)
+      _ <- UpdateSpecs.setStatus(device, UUID.fromString(updateRequestId.value), UpdateStatus.InFlight)
     } yield pkg
 
     for {

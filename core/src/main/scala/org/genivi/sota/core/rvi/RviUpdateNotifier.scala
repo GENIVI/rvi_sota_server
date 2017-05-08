@@ -28,7 +28,7 @@ class RviUpdateNotifier(services: ServerServices) extends UpdateNotifier {
     }
 
     val expirationDate: Instant = update.request.periodOfValidity.end
-    connectivity.client.sendMessage(s"genivi.org/device/${device.underlying.get}/sota/notify",
+    connectivity.client.sendMessage(s"genivi.org/device/${device.underlying.value}/sota/notify",
                                     UpdateNotification(toPackageUpdate(update), services), expirationDate)
   }
 

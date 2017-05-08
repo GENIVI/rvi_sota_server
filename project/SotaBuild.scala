@@ -167,7 +167,7 @@ object SotaBuild extends Build {
         "com.unboundid" % "unboundid-ldapsdk" % "3.1.1",
         ws,
         play.sbt.Play.autoImport.cache
-      ) ++ Dependencies.Slick ++ Dependencies.Play2Auth
+      ) ++ Dependencies.Play2Auth
     ))
     .dependsOn(common, commonData)
     .enablePlugins(PlayScala, SbtWeb, BuildInfoPlugin)
@@ -225,7 +225,7 @@ object Dependencies {
 
   val CirceVersion = "0.7.0"
 
-  val AkkaHttpCirceVersion = "1.12.0"
+  val AkkaHttpCirceVersion = "1.15.0"
 
   val LogbackVersion = "1.1.3"
 
@@ -233,11 +233,11 @@ object Dependencies {
 
   val AWSVersion = "1.11.15"
 
-  val JsonWebSecurityVersion = "0.4.2"
+  val JsonWebSecurityVersion = "0.4.5"
 
-  val libTufV = "0.0.1-79-gb9515d0"
+  val libTufV = "0.0.1-87-g30bc9ff"
 
-  val libAtsV = "0.0.1-39-g688e0b6"
+  val libAtsV = "0.0.1-57-g00399d9"
 
   val AkkaHttp = "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion
 
@@ -275,7 +275,7 @@ object Dependencies {
     "io.circe" %% "circe-shapes" % CirceVersion
   )
 
-  lazy val Refined = "eu.timepit" %% "refined" % "0.3.1"
+  lazy val Refined = "eu.timepit" %% "refined" % "0.8.0"
 
   lazy val Cats   = "org.typelevel" %% "cats-core" % "0.9.0"
 

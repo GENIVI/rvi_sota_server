@@ -60,7 +60,7 @@ class DeviceResourceSpec extends FunSuite
     Uri.Empty.withPath(BasePath / pathSuffix)
   }
 
-  def deviceUri(device: Uuid)  = Uri.Empty.withPath( BasePath / device.underlying.get )
+  def deviceUri(device: Uuid)  = Uri.Empty.withPath( BasePath / device.underlying.value )
 
   test("returns vehicle status even if Vin is in device registry but not local db") {
     val device1 = genDeviceT.sample.get.copy(deviceId = Some(genDeviceId.sample.get))

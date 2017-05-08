@@ -155,7 +155,8 @@ class DeviceUpdatesResource(db: Database,
   def reportUpdateResult(device: Uuid, updateId: Uuid): Route = {
     entity(as[List[OperationResult]]) { results =>
       val responseF = DeviceUpdates
-        .buildReportInstallResponse(device, UpdateReport(updateId.toJava, results), messageBus)
+        .buildReportInstallResponse(device, UpdateReport(updateId.toJava, results),
+                                    messageBus)
       complete(responseF)
     }
   }
@@ -256,7 +257,7 @@ class DeviceUpdatesResource(db: Database,
     */
   def cancelUpdate(namespace: Namespace, device: Uuid, updateId: Refined[String, Uuid.Valid]): Route = {
     val response = db.run(UpdateSpecs.cancelUpdate(device, updateId)).map {_ =>
-      db.run(UpdateRequests.byId(UUID.fromString(updateId.get))).map { updateRequest =>
+      db.run(UpdateRequests.byId(UUID.fromString(updateId.value))).map { updateRequest =>
         messageBus.publishSafe(Messages.UpdateSpec(namespace, device, updateRequest.packageUuid, UpdateStatus.Canceled))
       }
 

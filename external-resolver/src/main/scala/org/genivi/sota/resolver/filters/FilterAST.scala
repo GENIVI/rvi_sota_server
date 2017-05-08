@@ -71,7 +71,7 @@ object FilterAST extends StandardTokenParsers with PackratParsers with ImplicitC
     }
 
   def parseValidFilter(input: Filter.Expression): FilterAST =
-    parseFilter(input.get) match {
+    parseFilter(input.value) match {
       case Right(f) => f
 
       // The very definition of being a valid filter expression is that it parses.
@@ -80,9 +80,9 @@ object FilterAST extends StandardTokenParsers with PackratParsers with ImplicitC
 
   def ppFilter(f: FilterAST): String =
     f match {
-      case VinMatches(s)    => s"""vin_matches "${s.get}""""
-      case HasPackage(s, t) => s"""has_package "${s.get}" "${t.get}""""
-      case HasComponent(s)  => s"""has_component "${s.get}""""
+      case VinMatches(s)    => s"""vin_matches "${s.value}""""
+      case HasPackage(s, t) => s"""has_package "${s.value}" "${t.value}""""
+      case HasComponent(s)  => s"""has_component "${s.value}""""
       case Not(f)           => s"NOT (${ppFilter(f)})"
       case And(l, r)        => s"(${ppFilter(l)}) AND (${ppFilter(r)})"
       case Or (l, r)        => s"(${ppFilter(l)}) OR (${ppFilter(r)})"
@@ -94,10 +94,10 @@ object FilterAST extends StandardTokenParsers with PackratParsers with ImplicitC
   // scalastyle:off cyclomatic.complexity
   def query(f: FilterAST): ((Device.DeviceId, (Seq[PackageId], Seq[Component.PartNumber]))) => Boolean =
   { case a@((v: Device.DeviceId, (ps: Seq[PackageId], cs: Seq[Component.PartNumber]))) => f match {
-      case VinMatches(re)       => re.get.r.findAllIn(v.show).nonEmpty
-      case HasPackage(re1, re2) => ps.exists(p => re1.get.r.findAllIn(p.name   .get).nonEmpty &&
-                                                  re2.get.r.findAllIn(p.version.get).nonEmpty)
-      case HasComponent(re)     => cs.exists(part => re.get.r.findAllIn(part.get).nonEmpty)
+      case VinMatches(re)       => re.value.r.findAllIn(v.show).nonEmpty
+      case HasPackage(re1, re2) => ps.exists(p => re1.value.r.findAllIn(p.name.value).nonEmpty &&
+                                                  re2.value.r.findAllIn(p.version.value).nonEmpty)
+      case HasComponent(re)     => cs.exists(part => re.value.r.findAllIn(part.value).nonEmpty)
       case Not(f)               => !query(f)(a)
       case And(l, r)            => query(l)(a) && query(r)(a)
       case Or (l, r)            => query(l)(a) || query(r)(a)

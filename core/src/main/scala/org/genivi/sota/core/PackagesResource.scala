@@ -75,7 +75,7 @@ class PackagesResource(updateService: UpdateService,
     */
   def searchPackage(ns: Namespace): Route = {
     parameters('regex.as[String Refined Regex].?) { (regex: Option[String Refined Regex]) =>
-      val query = Packages.searchByRegexWithBlacklist(ns, regex.map(_.get))
+      val query = Packages.searchByRegexWithBlacklist(ns, regex.map(_.value))
 
       val result = db.run(query).map(_.toResponse)
 

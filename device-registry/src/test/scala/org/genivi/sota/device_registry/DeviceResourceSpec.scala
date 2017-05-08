@@ -23,8 +23,8 @@ import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.Messages.DeviceSeen
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Gen
-import org.scalatest.concurrent.ScalaFutures
-
+import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
+import org.scalatest.time.{Millis, Seconds, Span}
 
 /**
  * Spec for DeviceRepository REST actions
@@ -37,6 +37,9 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures with SlickEx
   private val deviceNumber = defaultLimit + 10
   private implicit val exec = system.dispatcher
   private val publisher = DeviceSeenListener.action(MessageBusPublisher.ignore)(_)
+
+  implicit override val patienceConfig
+    = PatienceConfig(timeout = Span(5, Seconds), interval = Span(15, Millis))
 
   def isRecent(time: Option[Instant]): Boolean = time match {
     case Some(t) => t.isAfter(Instant.now.minus(3, ChronoUnit.MINUTES))
@@ -429,7 +432,7 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures with SlickEx
     // the database is case-insensitve so when we need to take that in to account when sorting in scala
     // furthermore PackageId is not lexicographically ordered so we just use pairs
     def canonPkg(pkg: PackageId) =
-      (pkg.name.get.toLowerCase, pkg.version.get)
+      (pkg.name.value.toLowerCase, pkg.version.value)
 
     val commonPkg = genPackageId.generate
 

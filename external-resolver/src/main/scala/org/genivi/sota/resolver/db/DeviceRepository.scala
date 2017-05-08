@@ -236,7 +236,7 @@ object DeviceRepository {
              deviceRegistry: DeviceRegistry)
             (implicit db: Database, ec: ExecutionContext, mat: ActorMaterializer): Future[Seq[Uuid]] = {
     def toRegex[T](r: Refined[String, T]): Refined[String, Regex] =
-      refineV[Regex](r.get).right.getOrElse(Refined.unsafeApply(".*"))
+      refineV[Regex](r.value).right.getOrElse(Refined.unsafeApply(".*"))
 
     val vins = re.fold[FilterAST](True)(VinMatches)
 

@@ -46,7 +46,7 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri, 
                            (implicit ec: ExecutionContext): Future[Seq[Device]] = {
 
     val pr = execHttp[PaginatedResult[Device]](HttpRequest(uri = baseUri.withPath(devicesUri.path)
-      .withQuery(Query("regex" -> re.get)))
+      .withQuery(Query("regex" -> re.value)))
       .withHeaders(nsHeader(ns)))
       .recover { case t =>
         log.error(t, "Could not contact device registry")

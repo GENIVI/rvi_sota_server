@@ -108,9 +108,9 @@ object CampaignLauncher {
     import Messages._
 
     def getCommits(from: PackageId.Version, to: PackageId.Version): DBIO[(Commit, Commit)] =
-      refineV[ValidCommit](from.get) match {
+      refineV[ValidCommit](from.value) match {
         case Left(_) => DBIO.failed(new IllegalArgumentException(s"Delta from version is not a valid commit hash"))
-        case Right(deltaFromVersion) => refineV[ValidCommit](to.get) match {
+        case Right(deltaFromVersion) => refineV[ValidCommit](to.value) match {
           case Left(_) => DBIO.failed(new IllegalArgumentException(s"campaign target version is not a valid " +
             s"commit hash"))
           case Right(targetVersion) => DBIO.successful((deltaFromVersion, targetVersion))

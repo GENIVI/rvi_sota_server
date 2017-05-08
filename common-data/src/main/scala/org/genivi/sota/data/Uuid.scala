@@ -8,20 +8,20 @@ import java.util.UUID
 import slick.jdbc.MySQLProfile.api._
 
 
-final case class Uuid(underlying: String Refined Uuid.Valid) extends AnyVal {
-  def toJava = UUID.fromString(underlying.get)
+final case class Uuid(underlying: String Refined Uuid.Valid) {
+  def toJava: UUID = UUID.fromString(underlying.value)
 }
 
 object Uuid {
   type Valid = eu.timepit.refined.string.Uuid
 
   implicit val showUuid = new Show[Uuid] {
-    def show(uuid: Uuid) = uuid.underlying.get
+    def show(uuid: Uuid) = uuid.underlying.value
   }
 
   implicit val UuidOrdering: Ordering[Uuid] = new Ordering[Uuid] {
     override def compare(uuid1: Uuid, uuid2: Uuid): Int =
-      uuid1.underlying.get compare uuid2.underlying.get
+      uuid1.underlying.value compare uuid2.underlying.value
   }
 
   def generate(): Uuid = Uuid(refineV[Valid](UUID.randomUUID.toString).right.get)

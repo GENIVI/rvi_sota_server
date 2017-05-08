@@ -69,7 +69,7 @@ class PackageUploadSpec extends PropSpec
         ).filter(_.isDefined).map(_.get)
     val form = Multipart.FormData( parts: _* )
 
-    Put( Uri( path = PackagesPath / pckg.id.name.get / pckg.id.version.get ), form )
+    Put( Uri( path = PackagesPath / pckg.id.name.value / pckg.id.version.value ), form )
   }
 
   property("Package can be uploaded using PUT request")  {
@@ -101,7 +101,7 @@ class PackageUploadSpec extends PropSpec
     }
 
     // UUID gets determined by server on upload, need to get it
-    val uuid: UUID = Get(Uri(path = PackagesPath / pckg.id.name.get / pckg.id.version.get )) ~> route ~> check {
+    val uuid: UUID = Get(Uri(path = PackagesPath / pckg.id.name.value / pckg.id.version.value )) ~> route ~> check {
       status shouldBe StatusCodes.OK
       responseAs[Package].uuid
     }

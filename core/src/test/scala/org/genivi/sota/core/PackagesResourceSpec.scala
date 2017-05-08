@@ -78,7 +78,7 @@ class PackagesResourceSpec extends FunSuite
 
       Get("/packages") ~> service.route ~> check {
         val dataPackage = responseAs[List[DataPackage]].headOption
-        dataPackage.map(_.id.name.get) should contain("linux-lts")
+        dataPackage.map(_.id.name.value) should contain("linux-lts")
 
         whenReady(readFile(dataPackage.get.uri)) { contents =>
           contents shouldBe ByteString("Some Text")
@@ -155,7 +155,7 @@ class PackagesResourceSpec extends FunSuite
     } yield pkg
 
     whenReady(dbF) { pkg =>
-      Get(s"/packages/${pkg.id.name.get}/${pkg.id.version.get}") ~> service.route ~> check {
+      Get(s"/packages/${pkg.id.name.value}/${pkg.id.version.value}") ~> service.route ~> check {
         status shouldBe StatusCodes.OK
 
         val responseP = responseAs[Json]

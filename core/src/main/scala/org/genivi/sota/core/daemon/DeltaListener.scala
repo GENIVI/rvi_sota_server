@@ -30,7 +30,7 @@ class DeltaListener(deviceRegistry: DeviceRegistry, updateService: UpdateService
     val meta = campaign.meta
     val preCheck: Either[String, Uuid] = for {
       deltaFrom <- meta.deltaFrom.toRight("Received GeneratedDelta message for campaign without static delta")
-      _ <- if (deltaFrom.version.get.equalsIgnoreCase(from.get)) Right(Unit)
+      _ <- if (deltaFrom.version.value.equalsIgnoreCase(from.value)) Right(Unit)
       else Left("Received GeneratedDelta message for campaign with differing from version")
       pkg <- meta.packageUuid.toRight("Received GeneratedDelta message for campaign without a target version")
     } yield pkg
@@ -38,7 +38,7 @@ class DeltaListener(deviceRegistry: DeviceRegistry, updateService: UpdateService
     preCheck match {
       case Left(err) => DBIO.failed(new IllegalArgumentException(err))
       case Right(_) => Packages.byUuid(campaign.meta.packageUuid.get.toJava).flatMap { pkg =>
-        if (pkg.id.version.get.equalsIgnoreCase(to.get)) {
+        if (pkg.id.version.value.equalsIgnoreCase(to.value)) {
           DBIO.successful(Done)
         } else {
           DBIO.failed(new IllegalArgumentException(s"Version in GeneratedDelta message ($to) doesn't match version " +

@@ -114,7 +114,7 @@ object InstalledPackages extends SlickExtensions {
 
   protected[db] def inSetQuery(ids: Set[PackageId]): Query[InstalledPackageTable, _, Seq] = {
     installedPackages.filter { pkg =>
-      (pkg.name.mappedTo[String] ++ pkg.version.mappedTo[String]).inSet(ids.map(id => id.name.get + id.version.get))
+      (pkg.name.mappedTo[String] ++ pkg.version.mappedTo[String]).inSet(ids.map(id => id.name.value + id.version.value))
     }
   }
 

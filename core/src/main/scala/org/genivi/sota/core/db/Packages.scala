@@ -117,7 +117,7 @@ object Packages {
 
     packages.filter(x =>
       x.namespace === ns &&
-      (x.name.mappedTo[String] ++ x.version.mappedTo[String] inSet ids.map( id => id.name.get + id.version.get))
+      (x.name.mappedTo[String] ++ x.version.mappedTo[String] inSet ids.map( id => id.name.value + id.version.value))
     ).result
   }
 

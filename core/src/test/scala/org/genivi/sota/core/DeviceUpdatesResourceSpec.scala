@@ -65,7 +65,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
     val registry = new FakeDeviceRegistry(Namespaces.defaultNs)
     val device = genDeviceT.sample.get
     val id = Await.result(registry.createDevice(device), 1.seconds)
-    (registry, Uri.Empty.withPath(baseUri.path / id.underlying.get), id)
+    (registry, Uri.Empty.withPath(baseUri.path / id.underlying.value), id)
   }
 
   def createDeviceAndUpdateSpec(installPos: Int = 0, withMillis: Long = -1)
@@ -113,7 +113,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
   test("GET to download file returns the file contents") {
     whenReady(createUpdateSpec()) { case (packageModel, device, updateSpec) =>
       val url =
-        Uri.Empty.withPath(baseUri.path / device.uuid.underlying.get / updateSpec.request.id.toString / "download")
+        Uri.Empty.withPath(baseUri.path / device.uuid.underlying.value / updateSpec.request.id.toString / "download")
 
       Get(url) ~> service.route ~> check {
         status shouldBe StatusCodes.OK
@@ -126,7 +126,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
   // Deprecated, see newer 'mydevice' test below
   test("GET returns 404 if there is no package with the given id") {
     val uuid = arbitrary[Uuid].sample.get
-    val url = Uri.Empty.withPath(deviceUri.path / uuid.underlying.get / "download")
+    val url = Uri.Empty.withPath(deviceUri.path / uuid.underlying.value / "download")
 
     Get(url) ~> service.route ~> check {
       status shouldBe StatusCodes.NotFound
@@ -223,7 +223,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
     whenReady(f) { case (packageModel, device, updateSpec) =>
       val url =
-        Uri.Empty.withPath(baseUri.path / device.uuid.underlying.get / updateSpec.request.id.toString / "download")
+        Uri.Empty.withPath(baseUri.path / device.uuid.underlying.value / updateSpec.request.id.toString / "download")
       Get(url) ~> service.route ~> check {
         status shouldBe StatusCodes.Found
         header("Location").map(_.value()) should contain("https://some-fake-place")
@@ -235,7 +235,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
   test("POST queues a package for update to a specific vehicle") {
     whenReady(db.run(createDeviceAndUpdateSpec())) { case (packageModel, devUuid, updateSpec) =>
       val now = Instant.now
-      val url = Uri.Empty.withPath(baseUri.path / devUuid.underlying.get)
+      val url = Uri.Empty.withPath(baseUri.path / devUuid.underlying.value)
 
       Post(url, packageModel.id) ~> service.route ~> check {
         status shouldBe StatusCodes.OK
@@ -253,7 +253,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
     } yield (p, d, us)
 
     whenReady(f) { case (packageModel, devUuid, updateSpec) =>
-      val url = baseUri.withPath(baseUri.path / devUuid.underlying.get / "queued")
+      val url = baseUri.withPath(baseUri.path / devUuid.underlying.value / "queued")
 
       Get(url) ~> service.route ~> check {
         status shouldBe StatusCodes.OK
@@ -267,7 +267,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
   test("queue items includes update status") {
     whenReady(db.run(createDeviceAndUpdateSpec())) { case (packageModel, devUuid, updateSpec) =>
-      val url = baseUri.withPath(baseUri.path / devUuid.underlying.get / "queued")
+      val url = baseUri.withPath(baseUri.path / devUuid.underlying.value / "queued")
 
       Get(url) ~> service.route ~> check {
         status shouldBe StatusCodes.OK
@@ -286,7 +286,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
     } yield (d, us)
 
     whenReady(f) { case (devUuid, us) =>
-      val url = baseUri.withPath(baseUri.path / devUuid.underlying.get / "queued")
+      val url = baseUri.withPath(baseUri.path / devUuid.underlying.value / "queued")
 
       Get(url) ~> service.route ~> check {
         status shouldBe StatusCodes.OK
@@ -306,7 +306,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
     } yield (pkg, devUuid, us)
 
     whenReady(db.run(f)) { case (pkg, devUuid, us) =>
-      val url = baseUri.withPath(baseUri.path / devUuid.underlying.get / "queued")
+      val url = baseUri.withPath(baseUri.path / devUuid.underlying.value / "queued")
 
       Get(url) ~> service.route ~> check {
         status shouldBe StatusCodes.OK
@@ -344,7 +344,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
     Post(url) ~> service.route ~> check {
       status shouldBe StatusCodes.NoContent
 
-      val service = s"genivi.org/device/${deviceUuid.underlying.get}/sota/getpackages"
+      val service = s"genivi.org/device/${deviceUuid.underlying.value}/sota/getpackages"
 
       connectivity.sentMessages should contain(service -> Json.Null)
     }
@@ -357,8 +357,8 @@ class DeviceUpdatesResourceSpec extends FunSuite
     } yield (devUuid, spec0.request.id, spec1.request.id)
 
     whenReady(db.run(dbio)) { case (devUuid, spec0, spec1) =>
-      val url = Uri.Empty.withPath(baseUri.path / devUuid.underlying.get / "order")
-      val deviceUrl = Uri.Empty.withPath(baseUri.path / devUuid.underlying.get)
+      val url = Uri.Empty.withPath(baseUri.path / devUuid.underlying.value / "order")
+      val deviceUrl = Uri.Empty.withPath(baseUri.path / devUuid.underlying.value)
       val req = Map(0 -> spec1, 1 -> spec0)
 
       Put(url, req) ~> service.route ~> check {
@@ -377,7 +377,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
   test("can cancel pending updates") {
     whenReady(db.run(createDeviceAndUpdateSpec())) { case (_, devUuid, updateSpec) =>
       val url =
-        Uri.Empty.withPath(baseUri.path / devUuid.underlying.get / updateSpec.request.id.toString / "cancelupdate")
+        Uri.Empty.withPath(baseUri.path / devUuid.underlying.value / updateSpec.request.id.toString / "cancelupdate")
       Put(url) ~> service.route ~> check {
         status shouldBe StatusCodes.NoContent
 
@@ -447,7 +447,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
       }
 
       // Check zero packages are returned for install
-      val url = baseUri.withPath(baseUri.path / device.uuid.underlying.get / "queued")
+      val url = baseUri.withPath(baseUri.path / device.uuid.underlying.value / "queued")
       Get(url) ~> service.route ~> check {
         status shouldBe StatusCodes.OK
         val parsedResponse = responseAs[List[PendingUpdateRequest]]
@@ -474,7 +474,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
   test("Device PUT installed packages are forwarded to external resolver") {
     val packageIds = Gen.listOf(genPackageId).sample.get
-    val uri = Uri.Empty.withPath(mydeviceUri.path / deviceUuid.underlying.get / "installed")
+    val uri = Uri.Empty.withPath(mydeviceUri.path / deviceUuid.underlying.value / "installed")
 
     Put(uri, packageIds) ~> service.route ~> check {
       status shouldBe StatusCodes.OK
@@ -489,7 +489,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
     import SimpleJsonGenerator._
 
     val newSystemInfo = simpleJsonGen.sample.get
-    val uri = Uri.Empty.withPath(mydeviceUri.path / deviceUuid.underlying.get / "system_info")
+    val uri = Uri.Empty.withPath(mydeviceUri.path / deviceUuid.underlying.value / "system_info")
 
     Put(uri, newSystemInfo) ~> service.route ~> check {
       status shouldBe StatusCodes.OK
@@ -502,7 +502,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
   test("Device GET download returns the file contents") {
     whenReady(createUpdateSpec()) { case (packageModel, device, updateSpec) =>
       val url =
-        Uri.Empty.withPath(mydeviceUri.path / device.uuid.underlying.get / "updates" / updateSpec.request.id.toString / "download")
+        Uri.Empty.withPath(mydeviceUri.path / device.uuid.underlying.value / "updates" / updateSpec.request.id.toString / "download")
 
       Get(url) ~> service.route ~> check {
         status shouldBe StatusCodes.OK
@@ -514,7 +514,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
   test("Device GET download returns 404 if there is no update with the given id") {
     val uuid = arbitrary[Uuid].sample.get
-    val url = Uri.Empty.withPath(mydeviceUri.path / deviceUuid.underlying.get / "updates" / uuid.underlying.get / "download")
+    val url = Uri.Empty.withPath(mydeviceUri.path / deviceUuid.underlying.value / "updates" / uuid.underlying.value / "download")
 
     Get(url) ~> service.route ~> check {
       status shouldBe StatusCodes.NotFound
@@ -524,7 +524,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
   test("Device GET updates returns a list of PendingUpdateResponse") {
     whenReady(createUpdateSpec()) { case (pkg, device, updateSpec) =>
-      val uri = Uri.Empty.withPath(mydeviceUri.path / device.uuid.underlying.get / "updates")
+      val uri = Uri.Empty.withPath(mydeviceUri.path / device.uuid.underlying.value / "updates")
 
       Get(uri) ~> service.route ~> check {
         status shouldBe StatusCodes.OK
@@ -541,7 +541,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
     val now = Instant.now().minusSeconds(10)
 
-    val uri = Uri.Empty.withPath(mydeviceUri.path / deviceUuid.underlying.get / "updates")
+    val uri = Uri.Empty.withPath(mydeviceUri.path / deviceUuid.underlying.value / "updates")
     Get(uri) ~> service.route ~> check {
       status shouldBe StatusCodes.OK
       responseAs[List[UUID]] should be(empty)
@@ -578,7 +578,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
   test("Device GET an update returns 404 if update does not exist") {
     val fakeUpdateRequestUuid = UUID.randomUUID()
-    val url = Uri.Empty.withPath(mydeviceUri.path / deviceUuid.underlying.get / "updates" / fakeUpdateRequestUuid.toString)
+    val url = Uri.Empty.withPath(mydeviceUri.path / deviceUuid.underlying.value / "updates" / fakeUpdateRequestUuid.toString)
     val result = OperationResult(id, 1, "some result")
 
     Post(url, List(result)) ~> service.route ~> check {
@@ -604,7 +604,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
     whenReady(f) { case (packageModel, device, updateSpec) =>
       val url =
-        Uri.Empty.withPath(mydeviceUri.path / device.uuid.underlying.get / "updates" / updateSpec.request.id.toString / "download")
+        Uri.Empty.withPath(mydeviceUri.path / device.uuid.underlying.value / "updates" / updateSpec.request.id.toString / "download")
       Get(url) ~> service.route ~> check {
         status shouldBe StatusCodes.Found
         header("Location").map(_.value()) should contain("https://some-fake-place")
@@ -634,7 +634,7 @@ class DeviceUpdatesResourceSpec extends FunSuite
 
     whenReady(createUpdateSpec()) { case (packageModel, device, updateSpec) =>
       val url =
-        Uri.Empty.withPath(mydeviceUri.path / device.uuid.underlying.get / "updates" / updateSpec.request.id.toString / "download")
+        Uri.Empty.withPath(mydeviceUri.path / device.uuid.underlying.value / "updates" / updateSpec.request.id.toString / "download")
 
       Get(url) ~> service.route ~> check {
         status shouldBe StatusCodes.OK

@@ -46,7 +46,7 @@ class DeviceResourcePropSpec extends ResourcePropSpec
       val id = deviceRegistry.createDevice(device.toResponse).futureValue
 
       val (installedBefore, update) = state
-      installedBefore.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
+      installedBefore.foreach( p => addPackageOK(p.id.name.value, p.id.version.value, p.description, p.vendor) )
       Put( Resource.uri(devices, id.show, "packages"),
           InstalledSoftware(update.map(_.id), Set())) ~> route ~> check {
         status shouldBe StatusCodes.NoContent
@@ -65,7 +65,7 @@ class DeviceResourcePropSpec extends ResourcePropSpec
       val id = deviceRegistry.createDevice(device.toResponse).futureValue
 
       val (availablePackages, update) = state
-      availablePackages.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
+      availablePackages.foreach( p => addPackageOK(p.id.name.value, p.id.version.value, p.description, p.vendor) )
       Put( Resource.uri(devices, id.show, "packages"),
           InstalledSoftware(update.map(_.id), Set())) ~> route ~> check {
         status shouldBe StatusCodes.NoContent
@@ -119,7 +119,7 @@ class DeviceResourcePropSpec extends ResourcePropSpec
         InstalledSoftware(Set(packageId), Set())) ~> route ~> check {
         status shouldBe StatusCodes.NoContent
 
-        val partialPackageName = packageId.name.get.headOption.map(_.toString).getOrElse(".*")
+        val partialPackageName = packageId.name.value.headOption.map(_.toString).getOrElse(".*")
 
         val query = Uri.Query("regex" -> partialPackageName)
 

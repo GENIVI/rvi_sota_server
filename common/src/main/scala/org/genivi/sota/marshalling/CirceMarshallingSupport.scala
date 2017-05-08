@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.marshalling
 
-import de.heikoseeberger.akkahttpcirce.CirceSupport
+import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
 
 
-object CirceMarshallingSupport extends CirceSupport with CirceInstances
+object CirceMarshallingSupport extends FailFastCirceSupport with CirceInstances

@@ -107,8 +107,8 @@ class DefaultExternalResolverClient(baseUri : Uri, resolveUri: Uri, packagesUri:
     val resolvePath = resolveUri
       .withPath(resolveUri.path)
       .withQuery(Query(
-        "package_name" -> packageId.name.get,
-        "package_version" -> packageId.version.get
+        "package_name" -> packageId.name.value,
+        "package_version" -> packageId.version.value
       ))
 
     val httpRequest = HttpRequest(uri = resolvePath)
