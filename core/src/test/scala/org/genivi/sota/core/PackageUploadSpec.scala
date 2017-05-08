@@ -106,7 +106,7 @@ class PackageUploadSpec extends PropSpec
       responseAs[Package].uuid
     }
 
-    val targetNamespaces = Gen.containerOfN[List, Namespace](100, arbitrary[Namespace]).sample.get
+    val targetNamespaces = Gen.containerOfN[List, Namespace](50, arbitrary[Namespace]).sample.get
 
     val copyRequest = CopyRequest(uuid, targetNamespaces)
 

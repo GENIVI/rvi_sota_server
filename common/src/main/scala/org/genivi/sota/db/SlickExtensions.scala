@@ -44,19 +44,22 @@ trait SlickExtensions {
       action.sortBy(fn).paginate(offset, limit)
 
     def defaultPaginateAndSort[T <% slick.lifted.Ordered]
-    (fn: E => T, offset: Option[Long], limit: Option[Long]): Query[E, U, Seq] =
+        (fn: E => T, offset: Option[Long], limit: Option[Long]): Query[E, U, Seq] =
       action.sortBy(fn).defaultPaginate(offset, limit)
 
-    def paginatedResult[T <% slick.lifted.Ordered](fn: E => T, offset: Option[Long], limit: Option[Long])
-                                                  (implicit ec: ExecutionContext):  DBIO[PaginatedResult[U]] = {
+    def paginatedResult(offset: Option[Long], limit: Option[Long])
+                       (implicit ec: ExecutionContext):  DBIO[PaginatedResult[U]] = {
       val o = offset.getOrElse(0L)
       val l = limit.getOrElse[Long](defaultLimit).min(maxLimit)
 
-      action.length.result.zip(action.paginateAndSort(fn, o, l).result).map {
+      action.length.result.zip(action.paginate(o, l).result).map {
         case (total, values) => PaginatedResult(total=total, limit=l, offset=o, values=values)
       }
     }
 
+    def paginatedResult[T <% slick.lifted.Ordered](fn: E => T, offset: Option[Long], limit: Option[Long])
+                                                  (implicit ec: ExecutionContext):  DBIO[PaginatedResult[U]] =
+      action.sortBy(fn).paginatedResult(offset, limit)
   }
 }
 
