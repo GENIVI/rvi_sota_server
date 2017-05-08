@@ -5,7 +5,7 @@ import cats.syntax.either._
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser._
-import org.genivi.sota.data.{Group, Uuid}
+import org.genivi.sota.data.{Group, PaginatedResult, Uuid}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Gen
@@ -54,25 +54,6 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
     }
   }
 
-  test("can list all devices in a group by not providing an offset or limit") {
-    val defaultPaginationLimit = 50
-    val deviceNumber = defaultPaginationLimit + 10
-
-    val groupName = genGroupName.sample.get
-    val groupId = createGroupOk(groupName)
-
-    val deviceTs = genConflictFreeDeviceTs(deviceNumber).sample.get
-    val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
-
-    deviceIds.foreach(deviceId => addDeviceToGroupOk(groupId, deviceId))
-
-    listDevicesInGroup(groupId) ~> route ~> check {
-      status shouldBe OK
-      val result = responseAs[Seq[Uuid]]
-      result.length shouldBe deviceNumber
-    }
-  }
-
   test("can list devices with custom pagination limit") {
     val deviceNumber = 50
     val group = genGroupInfo.sample.get
@@ -85,8 +66,8 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
 
     listDevicesInGroup(groupId, limit = Some(limit)) ~> route ~> check {
       status shouldBe OK
-      val result = responseAs[Seq[Uuid]]
-      result.length shouldBe limit
+      val result = responseAs[PaginatedResult[Uuid]]
+      result.values.length shouldBe limit
     }
   }
 
@@ -102,14 +83,14 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
     deviceIds.foreach(deviceId => addDeviceToGroupOk(groupId, deviceId))
 
     val allDevices = listDevicesInGroup(groupId, limit = Some(deviceNumber)) ~> route ~> check {
-      responseAs[Seq[Uuid]]
+      responseAs[PaginatedResult[Uuid]].values
     }
 
     listDevicesInGroup(groupId, offset = Some(offset), limit = Some(limit)) ~> route ~> check {
       status shouldBe OK
-      val result = responseAs[Seq[Uuid]]
-      result.length shouldBe limit
-      allDevices.slice(offset, offset + limit) shouldEqual result
+      val result = responseAs[PaginatedResult[Uuid]]
+      result.values.length shouldBe limit
+      allDevices.slice(offset, offset + limit) shouldEqual result.values
     }
   }
 
@@ -146,8 +127,8 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
 
     listDevicesInGroup(groupId) ~> route ~> check {
       status shouldBe OK
-      val devices = responseAs[Seq[Uuid]]
-      devices.contains(deviceId) shouldBe true
+      val devices = responseAs[PaginatedResult[Uuid]]
+      devices.values.contains(deviceId) shouldBe true
     }
   }
 
@@ -162,8 +143,8 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
 
     listDevicesInGroup(groupId) ~> route ~> check {
       status shouldBe OK
-      val devices = responseAs[Seq[Uuid]]
-      devices.contains(deviceId) shouldBe true
+      val devices = responseAs[PaginatedResult[Uuid]]
+      devices.values.contains(deviceId) shouldBe true
     }
 
     removeDeviceFromGroup(groupId, deviceId) ~> route ~> check {
@@ -172,8 +153,8 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
 
     listDevicesInGroup(groupId) ~> route ~> check {
       status shouldBe OK
-      val devices = responseAs[Seq[Uuid]]
-      devices.contains(deviceId) shouldBe false
+      val devices = responseAs[PaginatedResult[Uuid]]
+      devices.values.contains(deviceId) shouldBe false
     }
   }
 

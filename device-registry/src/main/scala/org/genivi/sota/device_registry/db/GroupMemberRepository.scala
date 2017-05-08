@@ -4,7 +4,7 @@
   */
 package org.genivi.sota.device_registry.db
 
-import org.genivi.sota.data.Uuid
+import org.genivi.sota.data.{PaginatedResult, Uuid}
 import org.genivi.sota.db.SlickExtensions
 import SlickExtensions._
 import org.genivi.sota.device_registry.common.Errors
@@ -50,24 +50,15 @@ object GroupMemberRepository extends SlickExtensions {
       .handleSingleUpdateError(Errors.MissingGroup)
 
   def listDevicesInGroup(groupId: Uuid, offset: Option[Long] = None, limit: Option[Long] = None)
-                        (implicit ec: ExecutionContext): DBIO[Seq[Uuid]] = {
-    (offset, limit) match {
-      case (None, None) =>
-        groupMembers
-          .filter(_.groupId === groupId)
-          .map(_.deviceUuid)
-          .result
-      case _ =>
-        groupMembers
-          .filter(_.groupId === groupId)
-          .defaultPaginate(offset, limit)
-          .map(_.deviceUuid)
-          .result
-    }
+                        (implicit ec: ExecutionContext): DBIO[PaginatedResult[Uuid]] = {
+    groupMembers
+      .filter(_.groupId === groupId)
+      .map(_.deviceUuid)
+      .paginatedResult(offset, limit)
   }
 
-  def countDevicesInGroup(groupId: Uuid)(implicit ec: ExecutionContext): DBIO[Int] =
-    listDevicesInGroup(groupId).map(_.size)
+  def countDevicesInGroup(groupId: Uuid)(implicit ec: ExecutionContext): DBIO[Long] =
+    listDevicesInGroup(groupId).map(_.total)
 
   def listGroupsForDevice(device: Uuid)(implicit ec: ExecutionContext): DBIO[Seq[Uuid]] =
     DeviceRepository.findByUuid(device).flatMap { _ =>
