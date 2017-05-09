@@ -102,7 +102,7 @@ class AutoInstallResourceSpec extends FunSuite
   def howManyUpdateRequestsFor(pkgId: PackageId): Int = {
     import org.genivi.sota.core.db.{Packages, UpdateRequests}
     import org.genivi.sota.refined.SlickRefined._
-    import slick.driver.MySQLDriver.api._
+    import slick.jdbc.MySQLProfile.api._
 
     val pkgQ = Packages.packages
       .filter(_.name === pkgId.name)

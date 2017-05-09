@@ -7,7 +7,7 @@ import org.genivi.sota.core.campaigns.CampaignLauncher
 import org.genivi.sota.core.db.{Campaigns, Packages}
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.Messages.{DeltaGenerationFailed, GeneratedDelta}
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 import org.genivi.sota.core.data.Campaign
 import org.slf4j.LoggerFactory
 import org.genivi.sota.messaging.Commit.Commit

@@ -5,7 +5,7 @@
 
 package org.genivi.sota.data
 
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 trait SlickEnum {
   self: Enumeration =>

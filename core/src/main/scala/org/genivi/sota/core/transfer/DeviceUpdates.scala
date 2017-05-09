@@ -18,7 +18,7 @@ import org.genivi.sota.db.SlickExtensions
 import org.genivi.sota.http.Errors.MissingEntity
 import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
 import slick.dbio.DBIO
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 import org.genivi.sota.refined.PackageIdDatabaseConversions._
 import org.genivi.sota.data.UpdateStatus.UpdateStatus
 import org.genivi.sota.common.DeviceRegistry
@@ -172,7 +172,7 @@ object DeviceUpdates {
       pkg.namespace === namespace && pkg.name === packageId.name && pkg.version === packageId.version
     } yield us.device
 
-    query.countDistinct.result
+    query.distinct.length.result
   }
 
   /**

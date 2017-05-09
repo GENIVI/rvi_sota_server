@@ -13,7 +13,7 @@ import org.genivi.sota.core.resolver.{Connectivity, ExternalResolverClient}
 import org.genivi.sota.http.AuthedNamespaceScope
 
 import scala.concurrent.ExecutionContext
-import slick.driver.MySQLDriver.api.Database
+import slick.jdbc.MySQLProfile.api.Database
 import org.genivi.sota.messaging.MessageBusPublisher
 
 class WebService(updateService: UpdateService,

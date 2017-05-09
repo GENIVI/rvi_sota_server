@@ -4,7 +4,7 @@ import java.time.Instant
 
 import org.genivi.sota.data.{Device, DeviceUpdateStatus, Uuid}
 import org.genivi.sota.data.DeviceSearchCommon._
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 import org.genivi.sota.core.db.UpdateSpecs._
 
 import scala.concurrent.{ExecutionContext, Future}

@@ -24,7 +24,7 @@ import org.genivi.sota.resolver.common.InstalledSoftware
 import org.genivi.sota.resolver.common.RefinementDirectives.{refinedPackageId, refinedPartNumber}
 import org.genivi.sota.resolver.components.Component
 import org.genivi.sota.resolver.db.{DeviceRepository, ForeignPackages}
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}

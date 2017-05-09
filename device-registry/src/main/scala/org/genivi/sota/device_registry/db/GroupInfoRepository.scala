@@ -9,7 +9,7 @@ import org.genivi.sota.data.{Group, Namespace, Uuid}
 import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.device_registry.common.{Errors, SlickJsonHelper}
 import org.genivi.sota.refined.SlickRefined._
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.ExecutionContext
 

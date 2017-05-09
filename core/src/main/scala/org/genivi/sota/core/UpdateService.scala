@@ -25,7 +25,7 @@ import scala.collection.immutable.ListSet
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
 import slick.dbio.DBIO
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 case class PackagesNotFound(packageIds: (PackageId)*)
                            (implicit show: Show[PackageId])

@@ -18,7 +18,7 @@ import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
 
 import scala.concurrent.ExecutionContext
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 
 class DeviceUpdatesSpec extends FunSuite

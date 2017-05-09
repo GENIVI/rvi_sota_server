@@ -11,7 +11,7 @@ import org.genivi.sota.core.data.OperationResult
 import org.genivi.sota.data.{Namespace, Uuid}
 
 import scala.concurrent.ExecutionContext
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 import java.time.Instant
 
 /**

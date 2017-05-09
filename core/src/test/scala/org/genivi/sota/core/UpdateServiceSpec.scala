@@ -14,7 +14,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.SpanSugar._
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{Await, Future}
 import scala.util.Random

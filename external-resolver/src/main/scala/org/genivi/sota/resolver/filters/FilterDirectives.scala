@@ -22,7 +22,7 @@ import org.genivi.sota.resolver.db.PackageFilterRepository
 import org.genivi.sota.rest.Validation._
 
 import scala.concurrent.ExecutionContext
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 
 /**

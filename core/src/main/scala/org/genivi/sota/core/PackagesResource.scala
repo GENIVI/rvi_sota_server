@@ -35,7 +35,7 @@ import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.rest.ResponseConversions._
 import org.genivi.sota.rest.Validation._
 import scala.concurrent.Future
-import slick.driver.MySQLDriver.api.Database
+import slick.jdbc.MySQLProfile.api.Database
 
 object PackagesResource {
 

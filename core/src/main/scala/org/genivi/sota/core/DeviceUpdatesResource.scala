@@ -28,7 +28,7 @@ import org.genivi.sota.core.transfer.DeviceUpdates
 import org.genivi.sota.core.data.UpdateSpec
 import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, PackageDownloadProcess}
 import org.genivi.sota.data._
-import slick.driver.MySQLDriver.api.Database
+import slick.jdbc.MySQLProfile.api.Database
 import cats.syntax.show.toShowOps
 import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.messaging.{MessageBusPublisher, Messages}

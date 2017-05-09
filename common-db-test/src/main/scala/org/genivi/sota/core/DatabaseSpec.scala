@@ -9,7 +9,7 @@ import java.util.TimeZone
 import com.typesafe.config.{Config, ConfigFactory}
 import org.flywaydb.core.Flyway
 import org.scalatest.{BeforeAndAfterAll, Suite}
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.collection.JavaConverters._
 

@@ -35,7 +35,7 @@ import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
 import scala.collection.immutable.Queue
 import scala.concurrent.duration.FiniteDuration
 import scala.math.BigDecimal.RoundingMode
-import slick.driver.MySQLDriver.api.Database
+import slick.jdbc.MySQLProfile.api.Database
 
 import scala.util.Try
 

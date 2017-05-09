@@ -15,7 +15,7 @@ import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 import org.genivi.sota.refined.SlickRefined._
 
 import scala.concurrent.ExecutionContext
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 object Campaigns {
   import org.genivi.sota.db.SlickExtensions._

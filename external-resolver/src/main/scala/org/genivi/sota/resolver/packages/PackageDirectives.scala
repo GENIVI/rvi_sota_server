@@ -25,7 +25,7 @@ import org.genivi.sota.rest.ResponseConversions._
 import org.genivi.sota.resolver.db.PackageFilterResponse._
 
 import scala.concurrent.ExecutionContext
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 
 class PackageDirectives(namespaceExtractor: Directive1[AuthedNamespaceScope], deviceRegistryClient: DeviceRegistry)

@@ -14,7 +14,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directive1, Route}
 import org.genivi.sota.core.db.{BlacklistedPackageRequest, BlacklistedPackages, UpdateSpecs}
 import org.genivi.sota.data.{Namespace, PackageId, UpdateStatus}
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.generic.auto._
 import org.genivi.sota.messaging.MessageBusPublisher

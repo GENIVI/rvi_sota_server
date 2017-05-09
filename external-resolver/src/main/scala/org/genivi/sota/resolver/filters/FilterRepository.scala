@@ -13,7 +13,7 @@ import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.db.PackageFilterRepository
 
 import scala.concurrent.ExecutionContext
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 
 object FilterRepository {

@@ -25,7 +25,7 @@ import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.Messages.DeviceCreated
 import org.genivi.sota.rest.Validation._
 import org.genivi.sota.unmarshalling.AkkaHttpUnmarshallingSupport._
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.ExecutionContext
 

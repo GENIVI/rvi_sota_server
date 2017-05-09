@@ -12,7 +12,7 @@ import org.genivi.sota.core.db.UpdateSpecs.{UpdateSpecRow, UpdateSpecTable}
 import org.genivi.sota.data.{Namespace, PackageId, UpdateStatus, Uuid}
 import org.genivi.sota.http.Errors
 import shapeless._
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.ExecutionContext
 

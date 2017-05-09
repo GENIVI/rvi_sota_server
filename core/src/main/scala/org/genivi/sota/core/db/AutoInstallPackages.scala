@@ -7,7 +7,7 @@ package org.genivi.sota.core.db
 import org.genivi.sota.core.data.AutoInstall
 import org.genivi.sota.data.{Namespace, PackageId, Uuid}
 import scala.concurrent.ExecutionContext
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 object AutoInstalls {
   import org.genivi.sota.refined.SlickRefined._
@@ -47,7 +47,19 @@ object AutoInstalls {
 
   def addDevice(ns: Namespace, pkgName: PackageId.Name, dev: Uuid)
                (implicit ec: ExecutionContext): DBIO[Unit]
-    = all.insertOrUpdate(AutoInstall(ns, pkgName, dev)).map(_ => ())
+    //This code is a workaround for a bug in Slick's insertOrUpdate() See Slick Issue #1728
+    = all
+    .filter(_.namespace === ns)
+    .filter(_.pkgName === pkgName)
+    .filter(_.device === dev)
+    .result
+    .flatMap { result =>
+      if(result.isEmpty) {
+        (all += AutoInstall(ns, pkgName, dev)).map(_ => ())
+      } else {
+        DBIO.successful(())
+      }
+    }.transactionally
 
   def removeDevice(ns: Namespace, pkgName: PackageId.Name, dev: Uuid)
                   (implicit ec: ExecutionContext): DBIO[Unit]

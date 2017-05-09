@@ -18,7 +18,7 @@ import org.genivi.sota.core.storage.PackageStorage.PackageRetrievalOp
 import org.genivi.sota.data.{UpdateStatus, Uuid}
 import org.genivi.sota.db.SlickExtensions
 import org.genivi.sota.refined.SlickRefined._
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 

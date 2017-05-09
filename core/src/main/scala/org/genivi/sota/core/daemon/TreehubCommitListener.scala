@@ -23,7 +23,7 @@ import org.genivi.sota.messaging.Messages._
 import org.slf4j.LoggerFactory
 import scala.concurrent.{Future, ExecutionContext}
 import scala.util.Try
-import slick.driver.MySQLDriver.api.Database
+import slick.jdbc.MySQLProfile.api.Database
 
 class TreehubCommitListener(db: Database,
                             updateService: UpdateService,

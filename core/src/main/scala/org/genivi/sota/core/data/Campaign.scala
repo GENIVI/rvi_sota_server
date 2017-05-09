@@ -11,7 +11,7 @@ import java.util.UUID
 
 import org.genivi.sota.core.SotaCoreErrors
 import org.genivi.sota.data._
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 import Campaign._
 import org.genivi.sota.core.data.CampaignStatus.Status
 
