@@ -88,7 +88,9 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
     complete(db.run(DeviceRepository.update(ns, uuid, device)))
 
   def getGroupsForDevice(uuid: Uuid): Route =
-    complete(db.run(GroupMemberRepository.listGroupsForDevice(uuid)))
+    parameters(('offset.as[Long].?, 'limit.as[Long].?)) { (offset, limit) =>
+      complete(db.run(GroupMemberRepository.listGroupsForDevice(uuid, offset, limit)))
+    }
 
   def updateInstalledSoftware(device: Uuid): Route = {
     entity(as[Seq[PackageId]]) { installedSoftware =>
@@ -101,8 +103,8 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
     complete(db.run(InstalledPackages.getDevicesCount(pkg, ns)))
 
   def listPackagesOnDevice(device: Uuid): Route =
-    parameters('regex.as[String Refined Regex].?) { regex =>
-      complete(db.run(InstalledPackages.installedOn(device, regex)))
+    parameters(('regex.as[String Refined Regex].?, 'offset.as[Long].?, 'limit.as[Long].?)) { (regex, offset, limit) =>
+      complete(db.run(InstalledPackages.installedOn(device, regex, offset, limit)))
     }
 
   def getActiveDeviceCount(ns: Namespace): Route =

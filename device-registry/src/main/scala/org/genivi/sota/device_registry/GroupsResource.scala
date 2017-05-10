@@ -31,7 +31,9 @@ class GroupsResource(namespaceExtractor: Directive1[AuthedNamespaceScope], devic
   }
 
   def listGroups(ns: Namespace): Route =
-    complete(db.run(GroupInfoRepository.list(ns)))
+    parameters(('offset.as[Long].?, 'limit.as[Long].?)) { (offset, limit) =>
+      complete(db.run(GroupInfoRepository.list(ns, offset, limit)))
+    }
 
   def createGroup(id: Uuid,
                   groupName: Name,

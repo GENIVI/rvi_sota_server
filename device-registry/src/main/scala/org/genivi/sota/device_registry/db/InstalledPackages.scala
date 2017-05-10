@@ -60,16 +60,16 @@ object InstalledPackages extends SlickExtensions {
       installedPackages ++= packages.map(InstalledPackage(device, _, Instant.now()))
     ).transactionally
 
-  def installedOn(device: Uuid, regexOpt: Option[String Refined Regex])
-                 (implicit ec: ExecutionContext): DBIO[Seq[InstalledPackage]] =
+  def installedOn(device: Uuid, regexOpt: Option[String Refined Regex], offset: Option[Long], limit: Option[Long])
+                 (implicit ec: ExecutionContext): DBIO[PaginatedResult[InstalledPackage]] =
     regexOpt match {
       case Some(re) => installedPackages
         .filter(_.device === device)
         .filter(row => regex(row.name.mappedTo[String] ++ "-" ++ row.version.mappedTo[String], re))
-        .result
+        .paginatedResult(offset, limit)
       case None => installedPackages
         .filter(_.device === device)
-        .result
+        .paginatedResult(offset, limit)
     }
 
   def getDevicesCount(pkg: PackageId, ns: Namespace)(implicit ec: ExecutionContext): DBIO[DevicesCount] =
@@ -120,14 +120,13 @@ object InstalledPackages extends SlickExtensions {
 
   //this isn't paginated as it's only intended to be called by core, hence it also not being in swagger
   def allInstalledPackagesById(namespace: Namespace, ids: Set[PackageId])
-                              (implicit db: Database, ec: ExecutionContext): DBIO[Seq[(Uuid, PackageId)]] = {
+                              (implicit db: Database, ec: ExecutionContext): DBIO[Seq[(Uuid, PackageId)]] =
     inSetQuery(ids)
       .join(DeviceRepository.devices)
       .on(_.device === _.uuid)
       .filter(_._2.namespace === namespace)
       .map(r => (r._1.device, LiftedPackageId(r._1.name, r._1.version)))
       .result
-  }
 
   def listAllWithPackageByName(ns: Namespace, name: Name, moffset: Option[Long], mlimit: Option[Long])
                               (implicit ec: ExecutionContext)

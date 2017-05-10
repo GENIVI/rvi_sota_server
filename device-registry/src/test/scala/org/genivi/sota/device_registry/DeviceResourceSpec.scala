@@ -289,10 +289,10 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures with SlickEx
 
       listPackages(uuid) ~> route ~> check {
         status shouldBe OK
-        val response = responseAs[Seq[InstalledPackage]]
-        response.length shouldBe 1
-        response.head.packageId shouldEqual pkg
-        response.head.device shouldBe uuid
+        val response = responseAs[PaginatedResult[InstalledPackage]]
+        response.total shouldBe 1
+        response.values.head.packageId shouldEqual pkg
+        response.values.head.device shouldBe uuid
       }
     }
   }
@@ -308,10 +308,10 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures with SlickEx
 
     listPackages(uuid, Some("foo")) ~> route ~> check {
       status shouldBe OK
-      val response = responseAs[Seq[InstalledPackage]]
-      response.length shouldBe 1
-      response.head.packageId shouldEqual pkgs.head
-      response.head.device shouldBe uuid
+      val response = responseAs[PaginatedResult[InstalledPackage]]
+      response.total shouldBe 1
+      response.values.head.packageId shouldEqual pkgs.head
+      response.values.head.device shouldBe uuid
     }
   }
 

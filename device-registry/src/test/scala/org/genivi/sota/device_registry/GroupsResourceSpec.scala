@@ -46,9 +46,9 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
 
     listGroups() ~> route ~> check {
       status shouldBe OK
-      val responseGroups = responseAs[Set[Group]]
-      responseGroups.size shouldBe groupNames.size
-      responseGroups.foreach { group =>
+      val responseGroups = responseAs[PaginatedResult[Group]]
+      responseGroups.total shouldBe groupNames.size
+      responseGroups.values.foreach { group =>
         groupNames.count(name => name == group.groupName) shouldBe 1
       }
     }
@@ -105,8 +105,8 @@ class GroupsResourceSpec extends FunSuite with ResourceSpec {
 
     listGroups() ~> route ~> check {
       status shouldBe OK
-      val groups = responseAs[Seq[Group]]
-      groups.count(e => e.id.equals(groupId) && e.groupName.equals(newGroupName)) shouldBe 1
+      val groups = responseAs[PaginatedResult[Group]]
+      groups.values.count(e => e.id.equals(groupId) && e.groupName.equals(newGroupName)) shouldBe 1
     }
   }
 
