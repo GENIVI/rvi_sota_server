@@ -81,11 +81,11 @@ object CampaignLauncher {
       for {
         updateRequest <- updateService.updateRequest(ns, pkgId).map(updateUpdateRequest)
         devices       <- deviceRegistry.fetchDevicesInGroup(ns, groupId)
-        _             <- updateService.queueUpdate(ns, updateRequest, resolve(devices), messageBus)
+        _             <- updateService.queueUpdate(ns, updateRequest, resolve(devices.values), messageBus)
 
         uuid          = Uuid.fromJava(updateRequest.id)
         _             <- db.run(Campaigns.setUpdateUuid(id, groupId, uuid))
-        _             <- sendMsg(ns, devices.toSet, pkgId, uuid, messageBus)
+        _             <- sendMsg(ns, devices.values.toSet, pkgId, uuid, messageBus)
       } yield uuid
     }
 

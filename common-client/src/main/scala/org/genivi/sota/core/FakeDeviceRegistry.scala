@@ -77,10 +77,10 @@ class FakeDeviceRegistry(namespace: Namespace)
   }
 
   override def fetchDevicesInGroup(ns: Namespace, uuid: Uuid)
-                                  (implicit ec: ExecutionContext): Future[Seq[Uuid]] = {
+                                  (implicit ec: ExecutionContext): Future[PaginatedResult[Uuid]] = {
     groups.asScala.get(uuid) match {
-      case Some(ds) => FastFuture.successful(ds)
-      case None => FastFuture.successful(Seq())
+      case Some(ds) => FastFuture.successful(PaginatedResult(ds.length, 1000, 0, ds))
+      case None => FastFuture.successful(PaginatedResult(0, 1000, 0, Seq.empty))
     }
   }
 
