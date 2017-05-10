@@ -7,9 +7,8 @@ package org.genivi.sota.common
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.Json
-
 import org.genivi.sota.client.NoContent
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.data._
 
 import scala.concurrent.{ExecutionContext, Future}
 import Device._
@@ -36,7 +35,7 @@ trait DeviceRegistry {
 
   def fetchDevicesInGroup
     (namespace: Namespace, uuid: Uuid)
-    (implicit ec: ExecutionContext): Future[Seq[Uuid]]
+    (implicit ec: ExecutionContext): Future[PaginatedResult[Uuid]]
 
   def fetchByDeviceId
     (ns: Namespace, deviceId: DeviceId)

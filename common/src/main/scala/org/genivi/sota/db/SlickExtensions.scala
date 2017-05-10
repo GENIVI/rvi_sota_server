@@ -30,7 +30,7 @@ import scala.util.{Failure, Success}
 
 trait SlickExtensions {
   val defaultLimit = 50
-  val maxLimit = defaultLimit
+  val maxLimit = 1000
 
   implicit class DbioPaginateExtensions[E, U, A](action: Query[E, U, Seq]) {
 

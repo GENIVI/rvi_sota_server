@@ -66,9 +66,12 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri, 
     execHttp[Device](HttpRequest(uri = baseUri.withPath(mydeviceUri.path / uuid.show)))
 
   override def fetchDevicesInGroup(ns: Namespace, uuid: Uuid)
-                                  (implicit ec: ExecutionContext): Future[Seq[Uuid]] =
-    execHttp[Seq[Uuid]](HttpRequest(uri = baseUri.withPath(deviceGroupsUri.path / uuid.show / "devices"))
-                          .withHeaders(nsHeader(ns)))
+                                  (implicit ec: ExecutionContext): Future[PaginatedResult[Uuid]] = {
+    val path = deviceGroupsUri.path / uuid.show / "devices"
+    val query = Query("limit" -> 1000.toString)
+    execHttp[PaginatedResult[Uuid]](HttpRequest(uri = baseUri.withPath(path).withQuery(query))
+      .withHeaders(nsHeader(ns)))
+  }
 
   override def fetchByDeviceId(ns: Namespace, deviceId: DeviceId)
                               (implicit ec: ExecutionContext): Future[Device] =
