@@ -56,6 +56,7 @@ object SotaBuild extends Build {
       "-Ywarn-dead-code",
       "-Yno-adapted-args"
     ),
+    scalacOptions in (Compile, console) ~= (_.filterNot(_ == "-Ywarn-unused-import")),
     scalacOptions in (Compile, doc) ++= Seq(
       "-no-link-warnings"
     )
@@ -235,7 +236,7 @@ object Dependencies {
 
   val JsonWebSecurityVersion = "0.4.5"
 
-  val libTufV = "0.0.1-87-g30bc9ff"
+  val libTufV = "0.0.1-93-gcfeb997"
 
   val libAtsV = "0.0.1-57-g00399d9"
 
