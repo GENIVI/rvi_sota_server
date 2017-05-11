@@ -46,7 +46,7 @@ class FakeDeviceRegistry(namespace: Namespace)
         .values()
         .asScala
         .filter(_.deviceId.isDefined)
-        .filter(d => re.get.r.findFirstIn(d.deviceId.map(_.show).getOrElse("")).isDefined)
+        .filter(d => re.value.r.findFirstIn(d.deviceId.map(_.show).getOrElse("")).isDefined)
         .toSeq
     )
   }

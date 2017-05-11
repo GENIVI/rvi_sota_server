@@ -19,21 +19,21 @@ trait GroupRequests {
                         (implicit ec: ExecutionContext): HttpRequest =
     (offset, limit) match {
       case (None, None) =>
-        Get(Resource.uri("device_groups", groupId.underlying.get, "devices"))
+        Get(Resource.uri("device_groups", groupId.underlying.value, "devices"))
       case _ =>
-        Get(Resource.uri("device_groups", groupId.underlying.get, "devices")
+        Get(Resource.uri("device_groups", groupId.underlying.value, "devices")
           .withQuery(Query("offset" -> offset.getOrElse(0).toString,
             "limit" -> limit.getOrElse(50).toString)))
     }
 
   def countDevicesInGroup(groupId: Uuid)(implicit ec: ExecutionContext): HttpRequest =
-    Get(Resource.uri("device_groups", groupId.underlying.get, "count"))
+    Get(Resource.uri("device_groups", groupId.underlying.value, "count"))
 
   def listGroups(): HttpRequest = Get(Resource.uri(groupsApi))
 
   def createGroup(groupName: Name)
                      (implicit ec: ExecutionContext): HttpRequest =
-    Post(Resource.uri(groupsApi).withQuery(Query("groupName" -> groupName.get)))
+    Post(Resource.uri(groupsApi).withQuery(Query("groupName" -> groupName.value)))
 
   def createGroupOk(groupName: Name)
                  (implicit ec: ExecutionContext): Uuid =
@@ -43,7 +43,7 @@ trait GroupRequests {
     }
 
   def addDeviceToGroup(groupId: Uuid, deviceId: Uuid)(implicit ec: ExecutionContext): HttpRequest =
-    Post(Resource.uri(groupsApi, groupId.underlying.get, "devices", deviceId.underlying.get))
+    Post(Resource.uri(groupsApi, groupId.underlying.value, "devices", deviceId.underlying.value))
 
   def addDeviceToGroupOk(groupId: Uuid, deviceId: Uuid)(implicit ec: ExecutionContext): Unit =
     addDeviceToGroup(groupId, deviceId) ~> route ~> check {
@@ -51,9 +51,9 @@ trait GroupRequests {
     }
 
   def removeDeviceFromGroup(groupId: Uuid, deviceId: Uuid)(implicit ec: ExecutionContext): HttpRequest =
-    Delete(Resource.uri(groupsApi, groupId.underlying.get, "devices", deviceId.underlying.get))
+    Delete(Resource.uri(groupsApi, groupId.underlying.value, "devices", deviceId.underlying.value))
 
   def renameGroup(id: Uuid, newGroupName: Name)(implicit ec: ExecutionContext): HttpRequest = {
-    Put(Resource.uri(groupsApi, id.underlying.get, "rename").withQuery(Query("groupName" -> newGroupName.get)))
+    Put(Resource.uri(groupsApi, id.underlying.value, "rename").withQuery(Query("groupName" -> newGroupName.value)))
   }
 }

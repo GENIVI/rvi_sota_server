@@ -29,7 +29,7 @@ trait SlickRefined {
 
   object Unwrap {
     implicit val unwrapRefined: Unwrap[Refined] = new Unwrap[Refined] {
-      override def apply[T, P]( value: Refined[T, P] ): T = value.get
+      override def apply[T, P]( value: Refined[T, P] ): T = value.value
     }
   }
 

@@ -106,7 +106,7 @@ trait DeviceRequests { self: ResourceSpec =>
 
 
   def getStatsForPackage(pkg: PackageId)(implicit ec: ExecutionContext): HttpRequest =
-    Get(Resource.uri("device_count", pkg.name.get, pkg.version.get))
+    Get(Resource.uri("device_count", pkg.name.value, pkg.version.value))
 
   def getActiveDeviceCount(start: OffsetDateTime, end: OffsetDateTime): HttpRequest =
     Get(Resource.uri("active_device_count").withQuery(Query("start" -> start.show, "end" -> end.show)))
@@ -118,5 +118,5 @@ trait DeviceRequests { self: ResourceSpec =>
     Post(Resource.uri("device_packages", "affected"), pkgs)
 
   def getPackageStats(name: PackageId.Name): HttpRequest =
-    Get(Resource.uri("device_packages", name.get))
+    Get(Resource.uri("device_packages", name.value))
 }

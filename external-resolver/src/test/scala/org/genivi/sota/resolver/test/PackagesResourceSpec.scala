@@ -20,7 +20,7 @@ class PackagesResourcePropSpec extends ResourcePropSpec with PackageGenerators {
 
   property("create a new resource on PUT request") {
     forAll { (p: Package) =>
-      addPackage(p.namespace, p.id.name.get, p.id.version.get, p.description, p.vendor) ~> route ~> check {
+      addPackage(p.namespace, p.id.name.value, p.id.version.value, p.description, p.vendor) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[PackageResponse] shouldBe PackageResponse(p.id, p.description, p.vendor)
       }
@@ -29,7 +29,7 @@ class PackagesResourcePropSpec extends ResourcePropSpec with PackageGenerators {
 
   property("not accept empty package names") {
     forAll { (p: Package) =>
-      addPackage(p.namespace, "", p.id.version.get, p.description, p.vendor) ~> route ~> check {
+      addPackage(p.namespace, "", p.id.version.value, p.description, p.vendor) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
       }
     }
@@ -37,7 +37,7 @@ class PackagesResourcePropSpec extends ResourcePropSpec with PackageGenerators {
 
   property("not accept empty package version") {
     forAll { (p: Package) =>
-      addPackage(p.namespace, p.id.name.get, "", p.description, p.vendor) ~> route ~> check {
+      addPackage(p.namespace, p.id.name.value, "", p.description, p.vendor) ~> route ~> check {
         status shouldBe StatusCodes.NotFound
       }
     }
@@ -47,7 +47,7 @@ class PackagesResourcePropSpec extends ResourcePropSpec with PackageGenerators {
   property("not accept bad package versions") {
 
     forAll { (p: Package, version: String) =>
-      addPackage(p.namespace, p.id.name.get, version + ".0", p.description, p.vendor) ~> route ~> check {
+      addPackage(p.namespace, p.id.name.value, version + ".0", p.description, p.vendor) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity
 
@@ -59,10 +59,10 @@ class PackagesResourcePropSpec extends ResourcePropSpec with PackageGenerators {
 
   property("PUTting the same package twice should update it") {
     forAll { (p: Package) =>
-      addPackage(p.namespace, p.id.name.get, p.id.version.get, p.description, p.vendor) ~> route ~> check {
+      addPackage(p.namespace, p.id.name.value, p.id.version.value, p.description, p.vendor) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
-      addPackage(p.namespace, p.id.name.get, p.id.version.get, p.description, p.vendor) ~> route ~> check {
+      addPackage(p.namespace, p.id.name.value, p.id.version.value, p.description, p.vendor) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
     }
@@ -87,10 +87,10 @@ class PackagesResourceWordSpec extends ResourceWordSpec with Namespaces {
     val pkg = PackageResponse(PackageId(Refined.unsafeApply("apa"), Refined.unsafeApply("1.0.0")), None, None)
 
     "GET /packages/:pkgName/:pkgVersion should return the package or fail" in {
-      addPackage(defaultNs, pkg.id.name.get, pkg.id.version.get, None, None) ~> route ~> check {
+      addPackage(defaultNs, pkg.id.name.value, pkg.id.version.value, None, None) ~> route ~> check {
         status shouldBe StatusCodes.OK
       }
-      Get(Resource.uri("packages", pkg.id.name.get, pkg.id.version.get)) ~> route ~> check {
+      Get(Resource.uri("packages", pkg.id.name.value, pkg.id.version.value)) ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[PackageResponse] shouldBe pkg
       }

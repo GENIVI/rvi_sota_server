@@ -89,7 +89,7 @@ object SlickExtensions {
   implicit def mappedColumnExtensions(c: Rep[_]) : MappedExtensionMethods = new MappedExtensionMethods(c.toNode)
 
   implicit def uuidToJava(refined: Refined[String, Uuid]): Rep[UUID] =
-    UUID.fromString(refined.get).bind
+    UUID.fromString(refined.value).bind
 
   implicit class DbioActionExtensions[T](action: DBIO[T]) {
     def handleIntegrityErrors(error: Throwable)(implicit ec: ExecutionContext): DBIO[T] = {

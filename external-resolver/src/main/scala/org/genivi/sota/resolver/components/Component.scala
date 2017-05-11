@@ -14,7 +14,7 @@ case class Component(
   description: String
 ) {
   def samePK(that: Component): Boolean = { (namespace == that.namespace) && (partNumber == that.partNumber) }
-  override def toString: String = { s"Component(${partNumber.get}, $description)" }
+  override def toString: String = { s"Component(${partNumber.value}, $description)" }
 }
 
 object Component {
@@ -34,7 +34,7 @@ object Component {
 
   implicit val PartNumberOrdering: Ordering[Component.PartNumber] = new Ordering[Component.PartNumber] {
     override def compare(part1: Component.PartNumber, part2: Component.PartNumber): Int =
-      part1.get compare part2.get
+      part1.value compare part2.value
   }
 
 }

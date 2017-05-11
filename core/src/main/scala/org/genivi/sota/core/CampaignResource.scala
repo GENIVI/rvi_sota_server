@@ -96,7 +96,7 @@ class CampaignResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
     parameters(('deltaFromName.as[PackageId.Name].?,
       'deltaFromVersion.as[PackageId.Version].?)) {
       case (Some(name), Some(version)) =>
-        if (version.get.length != sha256size || !version.get.matches("-?[0-9a-fA-F]+")) {
+        if (version.value.length != sha256size || !version.value.matches("-?[0-9a-fA-F]+")) {
           complete(BadRequest -> "delta from version must be a valid ostree hash")
         } else {
           complete(db.run(Campaigns.setDeltaFrom(id, Some(PackageId(name, version)))))

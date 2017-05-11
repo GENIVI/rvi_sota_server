@@ -130,7 +130,7 @@ object UpdateSpecs {
     * the later would require joining [[RequiredPackageTable]] to populate the `dependencies` of that instance.
     */
   def findBy(device: Uuid, requestId: Refined[String, Uuid.Valid]): DBIO[UpdateSpecRow] = {
-    queryBy(device, UUID.fromString(requestId.get)).result.head
+    queryBy(device, UUID.fromString(requestId.value)).result.head
   }
 
   case class UpdateSpecPackages(miniUpdateSpec: MiniUpdateSpec, packages: Queue[Package])

@@ -97,11 +97,11 @@ trait FilterGenerators {
           (3, SemanticVin.genVinRegex.map(VinMatches(_))),
           (if (pkgs.isEmpty) 0 else 1,
               Gen.choose(0, pkgs.length - 1)
-                  .map(i => HasPackage(Refined.unsafeApply(pkgs(i).id.name.get),
-                    Refined.unsafeApply(pkgs(i).id.version.get)))),
+                  .map(i => HasPackage(Refined.unsafeApply(pkgs(i).id.name.value),
+                    Refined.unsafeApply(pkgs(i).id.version.value)))),
           (if (comps.isEmpty) 0 else 1,
               Gen.choose(0, comps.length - 1)
-                  .map(i => HasComponent(Refined.unsafeApply(comps(i).partNumber.get))))
+                  .map(i => HasComponent(Refined.unsafeApply(comps(i).partNumber.value))))
         )
       } yield leaf
 

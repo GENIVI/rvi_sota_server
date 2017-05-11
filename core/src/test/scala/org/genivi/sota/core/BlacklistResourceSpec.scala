@@ -39,7 +39,7 @@ class BlacklistResourceSpec extends FunSuite
   private val blacklistPath = "/blacklist"
 
   def blacklistUrl(pkg: PackageId): Uri =
-    Uri.Empty.withPath(Path("/blacklist") / pkg.name.get / pkg.version.get)
+    Uri.Empty.withPath(Path("/blacklist") / pkg.name.value / pkg.version.value)
 
   def createBlacklist(): data.Package = {
     val pkg = PackageGen.sample.get
@@ -99,7 +99,7 @@ class BlacklistResourceSpec extends FunSuite
   test("blacklist for a specific package can be retrieved") {
     val pkg = createBlacklist()
 
-    Get(s"/blacklist/${pkg.id.name.get}/${pkg.id.version.get}") ~> serviceRoute ~> check {
+    Get(s"/blacklist/${pkg.id.name.value}/${pkg.id.version.value}") ~> serviceRoute ~> check {
       val r = responseAs[BlacklistedPackageResponse]
       r.packageId shouldBe pkg.id
       r.comment shouldBe "Some comment"

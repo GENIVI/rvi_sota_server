@@ -180,7 +180,7 @@ class CampaignResourceSpec extends FunSuite
   def setDeltaFrom(id: Campaign.Id, pkg: Option[PackageId], expectedCode: StatusCode): Unit = {
     val query = pkg match {
       case Some(p) =>
-        Query("deltaFromName" -> p.name.get, "deltaFromVersion" -> p.version.get)
+        Query("deltaFromName" -> p.name.value, "deltaFromVersion" -> p.version.value)
       case None =>
         Query()
     }
@@ -404,7 +404,7 @@ class CampaignResourceSpec extends FunSuite
   test("trying to create a static delta from the same commit fails") {
     val campaign = createCampaignWithStaticDeltaOk(false)
 
-    setDeltaFrom(campaign.meta.id, Some(createRandomTreehubPackage(campaign.packageId.get.version.get)),
+    setDeltaFrom(campaign.meta.id, Some(createRandomTreehubPackage(campaign.packageId.get.version.value)),
                  StatusCodes.BadRequest)
   }
 

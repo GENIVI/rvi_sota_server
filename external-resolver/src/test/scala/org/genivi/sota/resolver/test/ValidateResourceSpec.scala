@@ -35,7 +35,7 @@ class ValidateResourceSpec extends ResourceWordSpec with Namespaces {
 
     "reject filters with bad filter expressions" in {
       validateFilter(
-        filter.copy(expression = Refined.unsafeApply(filter.expression.get + " AND ?"))
+        filter.copy(expression = Refined.unsafeApply(filter.expression.value + " AND ?"))
       ) ~> route ~> check {
         status shouldBe StatusCodes.BadRequest
         responseAs[ErrorRepresentation].code shouldBe ErrorCodes.InvalidEntity

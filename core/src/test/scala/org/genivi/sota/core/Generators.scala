@@ -47,7 +47,7 @@ trait Generators {
     cs      <- Gen.nonEmptyContainerOf[List, Char](Gen.alphaChar)
     desc    <- Gen.option(Gen.alphaStr)
     vendor  <- Gen.option(Gen.alphaStr)
-  } yield Package(defaultNs, uuid, id, Uri(path = Uri.Path / "tmp" / s"${id.name.get}-${id.version.get}.rpm"),
+  } yield Package(defaultNs, uuid, id, Uri(path = Uri.Path / "tmp" / s"${id.name.value}-${id.version.value}.rpm"),
                   size, cs.mkString, desc, vendor, None)
 
   implicit val arbitrayPackage: Arbitrary[Package] = Arbitrary( PackageGen )
@@ -80,7 +80,7 @@ trait Generators {
   } yield r.toMap
 
   def generatePackageData( template: Package ) : Package = {
-    val path = Files.createTempFile(s"${template.id.name.get}-${template.id.version.get}", ".rpm" )
+    val path = Files.createTempFile(s"${template.id.name.value}-${template.id.version.value}", ".rpm" )
     path.toFile().deleteOnExit();
     val in = Files.newByteChannel(Paths.get("/dev/urandom"), StandardOpenOption.READ)
     val out = Files.newByteChannel(path, StandardOpenOption.WRITE)

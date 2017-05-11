@@ -107,7 +107,7 @@ class FiltersResourcePropSpec extends ResourcePropSpec with FilterGenerators {
   property("Posting random filters should work") {
 
     forAll { filter: Filter =>
-      addFilterOK(filter.name.get, filter.expression.get)
+      addFilterOK(filter.name.value, filter.expression.value)
     }
   }
 

@@ -5,6 +5,8 @@
 
 package org.genivi.sota.core
 
+import java.util.UUID
+
 import akka.http.scaladsl.model.{HttpRequest, StatusCodes, Uri}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import cats.implicits._
@@ -51,11 +53,11 @@ class AutoInstallResourceSpec extends FunSuite
   }
 
   def addDevice(pkgName: PackageId.Name, device: Uuid): HttpRequest = {
-    Put(autoinstallUrl(pkgName.get, device.show))
+    Put(autoinstallUrl(pkgName.value, device.show))
   }
 
   def listDevices(pkgName: PackageId.Name): HttpRequest = {
-    Get(autoinstallUrl(pkgName.get))
+    Get(autoinstallUrl(pkgName.value))
   }
 
   def listPackages(device: Uuid): HttpRequest = {
@@ -63,11 +65,11 @@ class AutoInstallResourceSpec extends FunSuite
   }
 
   def removeAll(pkgName: PackageId.Name): HttpRequest = {
-    Delete(autoinstallUrl(pkgName.get))
+    Delete(autoinstallUrl(pkgName.value))
   }
 
   def removeDevice(pkgName: PackageId.Name, dev: Uuid): HttpRequest = {
-    Delete(autoinstallUrl(pkgName.get, dev.show))
+    Delete(autoinstallUrl(pkgName.value, dev.show))
   }
 
 
@@ -94,7 +96,7 @@ class AutoInstallResourceSpec extends FunSuite
 
     val pkgVersion = PackageVersionGen.generate
     val pkgId = PackageId(pkgName, pkgVersion)
-    val pkg = Package(ns, Uuid.generate().toJava, pkgId, Uri(), 0, "", None, None, None)
+    val pkg = Package(ns, UUID.randomUUID(), pkgId, Uri(), 0, "", None, None, None)
     new StoragePipeline(updateService).storePackage(pkg).futureValue
     pkgId
   }
