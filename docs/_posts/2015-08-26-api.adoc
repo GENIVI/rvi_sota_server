@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "API"
-category: dev
+categories: [dev]
 date: 2015-08-26 10:30:27
 order: 1
 ---

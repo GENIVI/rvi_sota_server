@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Messaging in rvi_sota_server"
-category: dev
+categories: [dev]
 order: 6
 date: 2016-12-30 13:59:16
 ---

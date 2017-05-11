@@ -1,3 +1,53 @@
-<h4><img src="{{ site.baseurl }}/images/icon-logo.png"> <a class="brand" href="{{ site.baseurl }}/">{{ site.title }}</a> / 
-    {% if site.subtitle %}{{ site.subtitle }}{% endif %}
-</h4>
+
+      <nav class="top-bar navbar navbar-default navbar-fixed-top text-spacing-md" id="header-navbar">
+        <div class="top-bar container-fluid header-wrapper">
+          <div class="top-bar navbar-header">
+            <button class="navbar-toggle collapsed menu-selector-btn header-collapse-trigger" type="button" data-toggle="collapse" data-target="#navbar-menu" aria-expanded="false" aria-controls="navbar-menu">
+              <span class="sr-only">toggle</span>
+              <span class="icon-bar top-bar"></span>
+              <span class="icon-bar middle-bar"></span>
+              <span class="icon-bar bottom-bar"></span>
+            </button>
+            <a class="top-bar navbar-brand" href="{{ site.baseurl }}/index.html"><img class="top-bar unfolded-header" src="{{ site.baseurl }}/images/icon-logo.png" alt="rvi_sota_server"></a>
+
+          </div>
+          <ul class="top-bar nav navbar-nav navbar-right visible-md visible-lg visible-sm">
+            <li class="top-bar visible-sm visible-md visible-lg">
+              <a class="top-bar ats-garage-btn" href="https://advancedtelematic.com/" target="_blank">Developed by ATS
+              </a>
+            </li>
+          </ul>
+          <div class="top-bar navbar-collapse collapse header-collapse-nav" id="navbar-menu">
+            <div class="top-bar container center-nav-container">
+              <div class="btn-container visible-xs">
+                <a class="ico-arrow-top-right btn-small text-center uppercase" href="https://app.atsgarage.com/login" target="_blank">Start Now</a>
+              </div>
+              <div class="btn-container visible-xs">
+                <a class="inverted btn-small text-center uppercase" href="https://app.atsgarage.com/login" target="_blank">Login</a>
+              </div>
+              <ul class="top-bar nav nav-list navbar-nav">
+	            {% for header_link in site.header_links %}
+	                <li class="top-bar {% if forloop.last %}docs{% endif %}"><a href="{{ header_link[1] }}">{{ header_link[0] }}</a></li>
+	            {% endfor %}
+
+                <li class="visible-xs second-menu separator"></li>
+                <li class="second-menu visible-xs clearfix">
+                  <ul class="column">
+                    <li><a href="http://atsgarage.com/en/privacy-policy.html" target="_blank">Privacy Policy</a></li>
+                    <li><a href="http://atsgarage.com/en/terms-conditions.html" target="_blank">Terms of Use</a></li>
+                    <li><a href="http://atsgarage.com/en/imprint.html" target="_blank">Imprint</a></li>
+                  </ul>
+                  <ul class="column">
+                    <li><a href="https://github.com/advancedtelematic" target="_blank">Github</a></li>
+                    <li><a href="https://twitter.com/ats_news" target="_blank">Twitter</a></li>
+                  </ul>
+                </li>
+                <li class="second-menu small-logo visible-xs">
+                  <img src="http://advancedtelematic.com/images/ats_small_logo_white.svg" alt="ATS Advanced Telematic Systems">
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </nav>
+    
