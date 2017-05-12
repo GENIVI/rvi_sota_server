@@ -137,6 +137,18 @@ paths:
         description: the vehicle uuid.
         required: true
         type: string
+      - name: offset
+        description: the offset into the list of packages
+        in: query
+        required: false
+        type: integer
+        format: int64
+      - name: limit
+        description: the maximum amount of packages to return, after the offset
+        in: query
+        required: false
+        type: integer
+        format: int64
       responses:
         200:
           description: A list of all packages installed on the device
@@ -201,6 +213,18 @@ paths:
         in: path
         required: true
         type: string
+      - name: offset
+        description: the offset into the list of devices
+        in: query
+        required: false
+        type: integer
+        format: int64
+      - name: limit
+        description: the maximum amount of devices to return, after the offset
+        in: query
+        required: false
+        type: integer
+        format: int64
       responses:
         200:
           description: OK

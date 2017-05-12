@@ -5,7 +5,8 @@
 package org.genivi.sota.device_registry.db
 
 import org.genivi.sota.data.Group._
-import org.genivi.sota.data.{Group, Namespace, Uuid}
+import org.genivi.sota.data.{Group, Namespace, PaginatedResult, Uuid}
+import org.genivi.sota.db.SlickExtensions
 import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.device_registry.common.{Errors, SlickJsonHelper}
 import org.genivi.sota.refined.SlickRefined._
@@ -13,7 +14,7 @@ import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.ExecutionContext
 
-object GroupInfoRepository extends SlickJsonHelper {
+object GroupInfoRepository extends SlickJsonHelper with SlickExtensions {
 
   // scalastyle:off
   class GroupInfoTable(tag: Tag) extends Table[Group] (tag, "DeviceGroup") {
@@ -28,10 +29,11 @@ object GroupInfoRepository extends SlickJsonHelper {
 
   val groupInfos = TableQuery[GroupInfoTable]
 
-  def list(namespace: Namespace)(implicit ec: ExecutionContext): DBIO[Seq[Group]] =
+  def list(namespace: Namespace, offset:Option[Long], limit: Option[Long])
+          (implicit ec: ExecutionContext): DBIO[PaginatedResult[Group]] =
     groupInfos
       .filter(g => g.namespace === namespace)
-      .result
+      .paginatedResult(offset, limit)
 
   protected def findByName(groupName: Name, namespace: Namespace) =
     groupInfos.filter(r => r.groupName === groupName && r.namespace === namespace)

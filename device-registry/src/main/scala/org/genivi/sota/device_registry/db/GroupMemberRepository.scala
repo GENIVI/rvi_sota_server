@@ -60,12 +60,13 @@ object GroupMemberRepository extends SlickExtensions {
   def countDevicesInGroup(groupId: Uuid)(implicit ec: ExecutionContext): DBIO[Long] =
     listDevicesInGroup(groupId).map(_.total)
 
-  def listGroupsForDevice(device: Uuid)(implicit ec: ExecutionContext): DBIO[Seq[Uuid]] =
+  def listGroupsForDevice(device: Uuid, offset: Option[Long], limit: Option[Long])
+                         (implicit ec: ExecutionContext): DBIO[PaginatedResult[Uuid]] =
     DeviceRepository.findByUuid(device).flatMap { _ =>
       groupMembers
         .filter(_.deviceUuid === device)
         .map(_.groupId)
-        .result
+        .paginatedResult(offset, limit)
     }
 
   def removeDeviceFromAllGroups(deviceUuid: Uuid)(implicit ec: ExecutionContext): DBIO[Int] =
