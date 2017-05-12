@@ -1,0 +1,227 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "",
+        "title": ""
+    },
+    "definitions": {
+        "Credentials": {
+            "required": [
+                "username",
+                "password"
+            ],
+            "type": "object",
+            "properties": {
+                "username": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "Uri": {
+            "required": [
+                "uri'"
+            ],
+            "type": "object",
+            "properties": {
+                "uri'": {
+                    "type": "string"
+                }
+            }
+        },
+        "Package": {
+            "required": [
+                "id",
+                "uri",
+                "size",
+                "checkSum",
+                "description",
+                "vendor"
+            ],
+            "type": "object",
+            "properties": {
+                "vendor": {
+                    "type": "string"
+                },
+                "size": {
+                    "maximum": 9223372036854775807,
+                    "minimum": -9223372036854775808,
+                    "type": "integer"
+                },
+                "checkSum": {
+                    "type": "string"
+                },
+                "uri": {
+                    "$ref": "#/definitions/Uri"
+                },
+                "id": {
+                    "$ref": "#/definitions/Id"
+                },
+                "description": {
+                    "type": "string"
+                }
+            }
+        },
+        "Id": {
+            "required": [
+                "name",
+                "version"
+            ],
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "NoContent": {
+            "type": "string",
+            "enum": [
+                "NoContent"
+            ]
+        },
+        "Vehicle": {
+            "required": [
+                "vin"
+            ],
+            "type": "object",
+            "properties": {
+                "vin": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "paths": {
+        "/api/v1/authenticate": {
+            "post": {
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Invalid `body`"
+                    },
+                    "201": {
+                        "schema": {
+                            "$ref": "#/definitions/NoContent"
+                        },
+                        "description": ""
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Credentials"
+                        },
+                        "in": "body",
+                        "name": "body"
+                    }
+                ]
+            }
+        },
+        "/api/v1/packages/{name}/{version}": {
+            "put": {
+                "responses": {
+                    "404": {
+                        "description": "`name` or `version` not found"
+                    },
+                    "200": {
+                        "schema": {
+                            "$ref": "#/definitions/NoContent"
+                        },
+                        "description": ""
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "required": true,
+                        "in": "path",
+                        "name": "name",
+                        "type": "string"
+                    },
+                    {
+                        "required": true,
+                        "in": "path",
+                        "name": "version",
+                        "type": "string"
+                    }
+                ]
+            }
+        },
+        "/api/v1/vehicles/{vin}": {
+            "put": {
+                "responses": {
+                    "404": {
+                        "description": "`vin` not found"
+                    },
+                    "200": {
+                        "schema": {
+                            "$ref": "#/definitions/NoContent"
+                        },
+                        "description": ""
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "required": true,
+                        "in": "path",
+                        "name": "vin",
+                        "type": "string"
+                    }
+                ]
+            }
+        },
+        "/api/v1/vehicles": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "schema": {
+                            "items": {
+                                "$ref": "#/definitions/Vehicle"
+                            },
+                            "type": "array"
+                        },
+                        "description": ""
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ]
+            }
+        },
+        "/api/v1/packages": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "schema": {
+                            "items": {
+                                "$ref": "#/definitions/Package"
+                            },
+                            "type": "array"
+                        },
+                        "description": ""
+                    }
+                },
+                "produces": [
+                    "application/json"
+                ]
+            }
+        }
+    }
+}
