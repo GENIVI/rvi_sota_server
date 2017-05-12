@@ -27,33 +27,12 @@ $nav-bg-color: rgba(0, 0, 0, 0.675);
     font-family:icons; src:url(/rvi_sota_server/fonts/icons/icomoon.ttf) 
 }
 
-@font-face { 
-    font-family: akkurat;
-    src: url(/rvi_sota_server/fonts/Akkurat-Regular/AkkuratStd.eot?#iefix) format("embedded-opentype"),
-        url(/rvi_sota_server/fonts/Akkurat-Regular/AkkuratStd.otf) format("opentype"),
-        url(/rvi_sota_server/fonts/Akkurat-Regular/AkkuratStd.woff) format("woff"),
-        url(/rvi_sota_server/fonts/Akkurat-Regular/AkkuratStd.ttf) format("truetype"),
-        url(/rvi_sota_server/fonts/Akkurat-Regular/AkkuratStd.svg#AkkuratStd) format("svg");
-    font-weight: 400;
-    font-style: normal
-}
-@font-face {
-    font-family: akkurat;
-    src: url(/rvi_sota_server/fonts/Akkurat-Bold/Akkurat-Bold.eot?#iefix) format("embedded-opentype"),
-        url(/rvi_sota_server/fonts/Akkurat-Bold/Akkurat-Bold.otf) format("opentype"),
-        url(/rvi_sota_server/fonts/Akkurat-Bold/Akkurat-Bold.woff) format("woff"),
-        url(/rvi_sota_server/fonts/Akkurat-Bold/Akkurat-Bold.ttf) format("truetype"),
-        url(/rvi_sota_server/fonts/Akkurat-Bold/Akkurat-Bold.svg#AkkuratStd) format("svg");
-    font-weight: 700;
-    font-style: normal;
-}
-
 html {
     height: 100%;
 }
 
 body {
-    font-family: akkurat, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 14.4px;
     position: relative;
 }
