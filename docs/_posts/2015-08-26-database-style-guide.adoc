@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Database Style Guide"
-category: dev
+categories: [dev]
 date: 2015-08-26 10:40:49
 order: 6
 ---

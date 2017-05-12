@@ -1,9 +1,9 @@
 ---
 layout: page
-title: "Deployment with docker-compose"
-category: doc
+title: "Deploying with docker-compose"
+categories: [doc]
 date: 2016-05-18 11:23:27
-order: 2
+order: 1
 ---
 :icons: font
 

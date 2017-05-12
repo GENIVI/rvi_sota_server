@@ -1,7 +1,4 @@
-The YAML files in this directory follow the https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md[OpenAPI 2.0 Spec]. Although the spec doesn't officially include or support YAML, YAML is isomorphic to JSON and is easily convertible. For human readability, the canonical source versions of these will be YAML, and JSON versions generated as artifacts when the docs are built.
+The YAML files in this directory follow the https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md[OpenAPI 2.0 Spec]. Although the spec doesn't officially include or support YAML, YAML is isomorphic to JSON and is easily convertible, and the swagger UI supports it. So, for human readability, the canonical source versions of these will be YAML.
 
-If you make a change in any API endpoint, it's your responsibility to make sure the YAML file gets updated accordingly. When you make the change, you can quickly validate that you've got everything right with the http://editor.swagger.io/[online Swagger editor].
+If you make a change in any API endpoint or data structure, it's your responsibility to make sure the YAML file gets updated accordingly. When you make the change, you can quickly validate that you've got everything right with the http://editor.swagger.io/[online Swagger editor].
 
-YAML to JSON conversion can be done with this ruby command:
-
-	ruby -ryaml -rjson -e 'puts JSON.pretty_generate(YAML.load(ARGF))' < sota-core.yml > sota-core.json

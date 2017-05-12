@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Building the SOTA Client"
-category: cli
+categories: [cli]
 order: 2
 date: 2016-10-27 17:06:02
 ---

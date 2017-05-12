@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Admin GUI Guide"
-category: doc
+categories: [doc]
 date: 2015-08-26 10:40:49
 order: 3
 ---

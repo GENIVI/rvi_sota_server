@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Use Cases"
-category: ref
+categories: [ref]
 date: 2015-08-26 14:13:12
 order: 5
 ---
