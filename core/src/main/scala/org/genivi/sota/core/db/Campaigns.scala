@@ -110,6 +110,7 @@ object Campaigns {
   def delete(id: Campaign.Id)
             (implicit ec: ExecutionContext): DBIO[Unit] = {
     val dbIO = for {
+      _ <- launchCampaignRequests.filter(_.campaign === id).delete
       _ <- campaignsMeta.filter(_.id === id).delete
       _ <- campaignsGroups.filter(_.campaign === id).delete
     } yield ()
