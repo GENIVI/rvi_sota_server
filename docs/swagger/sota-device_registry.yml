@@ -153,9 +153,24 @@ paths:
         200:
           description: A list of all packages installed on the device
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/InstalledPackage'
+            type: object
+            properties:
+              total:
+                description: The total number of results returnable
+                type: integer
+                format: int64
+              limit:
+                description: The maximum number of results to be returned, after the offset
+                type: integer
+                format: int64
+              offset:
+                description: The offset at which to begin returning results
+                type: integer
+                format: int64
+              values:
+                type: array
+                items:
+                  $ref: '#/definitions/InstalledPackage'
   /devices/{uuid}/system_info:
     post:
       description: Create the system info for a device
@@ -229,9 +244,24 @@ paths:
         200:
           description: OK
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Strings/properties/uuid'
+            type: object
+            properties:
+              total:
+                description: The total number of results returnable
+                type: integer
+                format: int64
+              limit:
+                description: The maximum number of results to be returned, after the offset
+                type: integer
+                format: int64
+              offset:
+                description: The offset at which to begin returning results
+                type: integer
+                format: int64
+              values:
+                type: array
+                items:
+                  $ref: '#/definitions/Strings/properties/uuid'
   /device_groups:
     get:
       description: Returns a list of all groups
@@ -291,9 +321,24 @@ paths:
         200:
           description: A list of the device uuids in the group
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Strings/properties/uuid'
+            type: object
+            properties:
+              total:
+                description: The total number of results returnable
+                type: integer
+                format: int64
+              limit:
+                description: The maximum number of results to be returned, after the offset
+                type: integer
+                format: int64
+              offset:
+                description: The offset at which to begin returning results
+                type: integer
+                format: int64
+              values:
+                type: array
+                items:
+                  $ref: '#/definitions/Strings/properties/uuid'
   /device_groups/{uuid}/count:
     get:
       description: return count of devices in group
@@ -341,7 +386,6 @@ paths:
       responses:
         200:
           description: OK
-
   /device_count/{name}/{version}/:
     get:
       description: returns count of groups and devices with the given package installed
