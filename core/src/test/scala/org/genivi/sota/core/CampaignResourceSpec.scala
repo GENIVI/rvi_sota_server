@@ -236,8 +236,16 @@ class CampaignResourceSpec extends FunSuite
     val camps = getCampaignsOk()
 
     camps.map(_.id) shouldNot contain(id)
-
   }
+
+  test("can delete a static delta campaign") {
+    val campaign = createCampaignWithStaticDeltaOk()
+    removeCampaign(campaign.meta.id, StatusCodes.OK)
+    val camps = getCampaignsOk()
+
+    camps.map(_.id) shouldNot contain(campaign.meta.id)
+  }
+
 
   test("can rename campaign") {
     val campName = CreateCampaignGen.sample.get
