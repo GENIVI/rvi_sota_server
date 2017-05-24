@@ -117,9 +117,6 @@ trait CirceInstances {
   import io.circe._
 
   // TODO generalize to refined and showable value class decoder/encoder
-  implicit val deviceNameEncoder: Encoder[Device.DeviceName] = Encoder[String].contramap(_.show)
-  implicit val deviceNameDecoder: Decoder[Device.DeviceName] = Decoder[String].map(Device.DeviceName)
-
   implicit val deviceIdEncoder: Encoder[Device.DeviceId] = Encoder[String].contramap(_.show)
   implicit val deviceIdDecoder: Decoder[Device.DeviceId] = Decoder[String].map(Device.DeviceId)
 

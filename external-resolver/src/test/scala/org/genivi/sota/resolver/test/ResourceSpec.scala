@@ -9,8 +9,8 @@ import java.time.Instant
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import eu.timepit.refined.api.Refined
 import org.genivi.sota.core.{DatabaseSpec, FakeDeviceRegistry}
-import org.genivi.sota.data.Device.DeviceName
 import org.genivi.sota.data.{Device, Namespaces, Uuid}
 import org.genivi.sota.http.NamespaceDirectives
 import org.genivi.sota.resolver.Routing
@@ -65,7 +65,7 @@ class FakeDeviceRegistryRoutes(deviceRegistry: FakeDeviceRegistry) {
     (put & entity(as[Uuid])) { uuid =>
       deviceRegistry.addDevice(Device(Namespaces.defaultNs,
                                       uuid,
-                                      DeviceName(s"name-${uuid.show}"),
+                                      Refined.unsafeApply(s"name-${uuid.show}"),
                                       Option(DeviceId(uuid.show)),
                                      createdAt = Instant.now()))
       complete(StatusCodes.OK -> "")
