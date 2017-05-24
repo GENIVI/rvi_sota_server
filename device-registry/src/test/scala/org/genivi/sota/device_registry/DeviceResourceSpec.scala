@@ -23,7 +23,7 @@ import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.Messages.DeviceSeen
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Gen
-import org.scalatest.concurrent.{PatienceConfiguration, ScalaFutures}
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
 
 /**
@@ -365,7 +365,7 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures with SlickEx
       val devices = responseAs[PaginatedResult[Device]]
       devices.values.length shouldBe limit
       devices.values.zip(devices.values.tail).foreach { case (device1, device2) =>
-        device1.deviceName.underlying.compareTo(device2.deviceName.underlying) should be <= 0
+        device1.deviceName.value.compareTo(device2.deviceName.value) should be <= 0
       }
     }
   }

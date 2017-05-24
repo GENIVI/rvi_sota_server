@@ -160,13 +160,11 @@ class DeviceResourcePropSpec extends ResourcePropSpec
  */
 class DevicesResourceWordSpec extends ResourceWordSpec with Namespaces {
 
-  import Device._
-
   val devices = "devices"
 
   val uuid = Uuid(Refined.unsafeApply("1f22860a-3ea2-491f-9042-37c98c2d51cd"))
 
-  deviceRegistry.addDevice(Device(Namespaces.defaultNs, uuid, DeviceName("name"), createdAt = Instant.now()))
+  deviceRegistry.addDevice(Device(Namespaces.defaultNs, uuid, Refined.unsafeApply("name"), createdAt = Instant.now()))
 
   "Vin resource" should {
     "install a package on a VIN on PUT request to /vehicles/:vin/package/:packageName/:packageVersion" in {

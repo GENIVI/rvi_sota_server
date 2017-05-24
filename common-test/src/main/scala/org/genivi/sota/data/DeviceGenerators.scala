@@ -4,6 +4,7 @@
  */
 package org.genivi.sota.data
 
+import eu.timepit.refined.api.Refined
 import org.scalacheck.{Arbitrary, Gen}
 import java.time.Instant
 
@@ -17,7 +18,7 @@ trait DeviceGenerators {
     //use a minimum length for DeviceName to reduce possibility of naming conflicts
     size <- Gen.choose(10, 100)
     name <- Gen.containerOfN[Seq, Char](size, Gen.alphaNumChar)
-  } yield DeviceName(name.mkString)
+  } yield Refined.unsafeApply(name.mkString)
 
   val genDeviceId: Gen[DeviceId] = for {
     size <- Gen.choose(10, 100)

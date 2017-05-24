@@ -4,7 +4,7 @@ package org.genivi.sota.resolver.test
 import akka.http.scaladsl.model.StatusCodes
 import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
-import org.genivi.sota.data.Device.{DeviceId, DeviceName}
+import org.genivi.sota.data.Device.DeviceId
 import org.genivi.sota.data.{Device, DeviceT, PackageId, Uuid}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.rest.{ErrorCodes, ErrorRepresentation}
@@ -25,7 +25,7 @@ class ResolveResourceSpec extends ResourceWordSpec with ScalaFutures {
   lazy val testDevices: Seq[(DeviceT, Uuid)] = {
     Future.sequence {
       (0 to 4).map { i =>
-        val d = DeviceT(DeviceName(s"Name $i"),
+        val d = DeviceT(Refined.unsafeApply(s"Name $i"),
           Some(DeviceId(s"${i}0RES0LVEV1N12345")))
 
         deviceRegistry.createDevice(d).map((d, _))
