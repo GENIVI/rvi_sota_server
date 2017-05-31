@@ -13,8 +13,6 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.BiFunction
 
-import com.advancedtelematic.libtuf.data.TufDataType
-
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
 

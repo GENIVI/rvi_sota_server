@@ -236,9 +236,9 @@ object Dependencies {
 
   val JsonWebSecurityVersion = "0.4.5"
 
-  val libTufV = "0.0.1-109-g894a68d-SNAPSHOT"
+  val libTufV = "0.0.1-112-g09ba67d"
 
-  val libAtsV = "0.0.1-63-g8dcff8c"
+  val libAtsV = "0.0.1-67-g052b15d"
 
   val AkkaHttp = "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion
 
