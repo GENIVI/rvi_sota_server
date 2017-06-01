@@ -12,7 +12,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive0, Directive1, Route}
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
-import com.advancedtelematic.libtuf.reposerver.ReposerverHttpClient
+import com.advancedtelematic.libtuf.reposerver.{ReposerverClient, ReposerverHttpClient}
 import com.typesafe.config.ConfigFactory
 import org.genivi.sota.client.DeviceRegistryClient
 import org.genivi.sota.core.daemon.{DeltaListener, TreehubCommitListener}
@@ -24,7 +24,7 @@ import org.genivi.sota.core.user_profile._
 import org.genivi.sota.db.{BootMigrations, DatabaseConfig}
 import org.genivi.sota.http.LogDirectives._
 import org.genivi.sota.http._
-import org.genivi.sota.messaging.Messages.{GeneratedDelta, DeltaGenerationFailed, TreehubCommit}
+import org.genivi.sota.messaging.Messages.{DeltaGenerationFailed, GeneratedDelta, TreehubCommit}
 import org.genivi.sota.messaging.daemon.MessageBusListenerActor.Subscribe
 import org.genivi.sota.messaging.kafka.MessageListener
 import org.genivi.sota.messaging.{MessageBus, MessageBusPublisher}
@@ -46,8 +46,6 @@ trait RviBoot {
 
   def deviceRegistryClient: DeviceRegistryClient
 
-  def tufClient: Option[ReposerverHttpClient]
-
   def messageBusPublisher: MessageBusPublisher
 
   def startSotaServices(db: Database): Route = {
@@ -62,20 +60,16 @@ trait RviBoot {
   def rviRoutes(db: Database, notifier: UpdateNotifier, namespaceDirective: Directive1[AuthedNamespaceScope]): Route = {
     val updateService = new UpdateService(notifier, deviceRegistryClient)
 
-    tufClient.foreach { tuf =>
-      system.actorOf(MessageListener.props[TreehubCommit](config,
-        new TreehubCommitListener(db, updateService, tuf, messageBusPublisher).action
-      )) ! Subscribe
-    }
-
     new WebService(updateService, resolverClient,
       deviceRegistryClient, db, namespaceDirective, messageBusPublisher).route ~
     startSotaServices(db)
   }
 
-  def rviInteractionRoutes(db: Database, namespaceDirective: Directive1[AuthedNamespaceScope]): Future[Route] = {
-    SotaServices.register(rviSotaUri) map { sotaServices =>
-      rviRoutes(db, new RviUpdateNotifier(sotaServices), namespaceDirective)
+  def rviInteraction(db: Database,
+                     namespaceDirective: Directive1[AuthedNamespaceScope]): Future[(Route, UpdateNotifier)] = {
+    SotaServices.register(rviSotaUri).map { sotaServices =>
+      val updateNotifier = new RviUpdateNotifier(sotaServices)
+      (rviRoutes(db, updateNotifier, namespaceDirective), updateNotifier)
     }
   }
 }
@@ -94,39 +88,63 @@ trait HttpBoot {
 
   def userProfileClient: Option[UserProfileClient]
 
-  def tufClient: Option[ReposerverHttpClient]
-
   def messageBusPublisher: MessageBusPublisher
 
   def httpInteractionRoutes(db: Database,
                             tokenValidator: Directive0,
-                            namespaceDirective: Directive1[AuthedNamespaceScope]): Route = {
+                            namespaceDirective: Directive1[AuthedNamespaceScope]): (Route, UpdateNotifier) = {
 
     val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistryClient)
     val webService = new WebService(updateService, resolverClient, deviceRegistryClient, db,
       namespaceDirective, messageBusPublisher)
+
     val deviceService = new DeviceUpdatesResource(db, resolverClient, deviceRegistryClient,
       userProfileClient, namespaceDirective, messageBusPublisher)
 
-    tufClient.foreach { tuf =>
-      system.actorOf(MessageListener.props[TreehubCommit](config,
-        new TreehubCommitListener(db, updateService, tuf, messageBusPublisher).action
-      )) ! Subscribe
-    }
-
-    val deltaListener = new DeltaListener(deviceRegistryClient, updateService, messageBusPublisher)(db)
-
-    system.actorOf(MessageListener.props[GeneratedDelta](config, deltaListener.generatedDeltaAction)) ! Subscribe
-
-    system.actorOf(MessageListener.props[DeltaGenerationFailed](config,
-      deltaListener.deltaGenerationFailedAction)) ! Subscribe
-
-    tokenValidator {
+    val routes = tokenValidator {
       webService.route ~ deviceService.route
     }
+
+    (routes, DefaultUpdateNotifier)
   }
 }
 
+// TODO: Should be moved to separate process
+trait AsyncListeners {
+  self: Settings ⇒
+
+  implicit val system: ActorSystem
+  implicit val exec: ExecutionContext
+  implicit val defaultConnectivity: Connectivity
+  implicit val materializer: ActorMaterializer
+
+  def deviceRegistryClient: DeviceRegistryClient
+
+  def messageBusPublisher: MessageBusPublisher
+
+  def startTreehubCommitListener(db: Database, notifier: UpdateNotifier, tufClient: ReposerverClient): Unit = {
+    val updateService = new UpdateService(notifier, deviceRegistryClient)
+
+    val listenerFn = new TreehubCommitListener(db, updateService, tufClient, messageBusPublisher).action(_)
+    val listener = system.actorOf(MessageListener.props[TreehubCommit](config, listenerFn))
+
+    listener ! Subscribe
+  }
+
+  def startDeltaListeners(db: Database, notifier: UpdateNotifier): Unit = {
+    val updateService = new UpdateService(notifier, deviceRegistryClient)
+
+    val deltaListener = new DeltaListener(deviceRegistryClient, updateService, messageBusPublisher)(db)
+
+    val generatedDeltaListener = system.actorOf(MessageListener.props[GeneratedDelta](config,
+      deltaListener.generatedDeltaAction))
+    generatedDeltaListener ! Subscribe
+
+    val failedListener = system.actorOf(MessageListener.props[DeltaGenerationFailed](config,
+      deltaListener.deltaGenerationFailedAction))
+    failedListener ! Subscribe
+  }
+}
 
 trait Settings {
 
@@ -159,6 +177,8 @@ trait Settings {
   val tufEndpoint =
     if (config.getBoolean("tuf.use")) Some(Uri(config.getString("tuf.uri")))
     else None
+
+  val startAsyncListeners = Try(config.getBoolean("core.startAsyncListeners")).getOrElse(true)
 }
 
 object Settings extends Settings
@@ -170,6 +190,7 @@ object Boot extends BootApp
   with DatabaseConfig
   with HttpBoot
   with RviBoot
+  with AsyncListeners
   with BootMigrations
   with MetricsSupport
   with DatabaseMetrics {
@@ -214,28 +235,34 @@ object Boot extends BootApp
       versionHeaders(version)
   }
 
-  def routes(): Future[Route] = interactionProtocol match {
+  def routes(): Future[(Route, UpdateNotifier)] = interactionProtocol match {
     case "rvi" =>
-      rviInteractionRoutes(db, NamespaceDirectives.fromConfig()).map(_ ~ healthResource.route)
+      rviInteraction(db, NamespaceDirectives.fromConfig())
 
     case _ =>
       FastFuture.successful {
-        httpInteractionRoutes(db, TokenValidator().fromConfig(), NamespaceDirectives.fromConfig()) ~
-          healthResource.route
+        httpInteractionRoutes(db, TokenValidator().fromConfig(), NamespaceDirectives.fromConfig())
       }
   }
 
   val binding =
-    routes().flatMap { r =>
-      val sealedRoutes = sotaLog(Route.seal(r))
+    routes().flatMap { case (routes, updateNotifier) =>
+      val fullRoutes = routes ~ healthResource.route
+      val sealedRoutes = sotaLog(Route.seal(fullRoutes))
 
-      Http()
-        .bindAndHandle(sealedRoutes, host, port)
+      if (startAsyncListeners) {
+        if (tufClient.isDefined)
+          startTreehubCommitListener(db, updateNotifier, tufClient.get)
+
+        startDeltaListeners(db, updateNotifier)
+      }
+
+      Http().bindAndHandle(sealedRoutes, host, port)
     }
 
   binding onComplete {
-    case Success(services) =>
-      log.info(s"Server online at http://${host}:${port}")
+    case Success(_) =>
+      log.info(s"Server online at http://$host:$port")
     case Failure(e) =>
       log.error("Unable to start", e)
       sys.exit(-1)
