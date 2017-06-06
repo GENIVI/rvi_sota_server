@@ -18,21 +18,9 @@ class MessageBusListenerActor[M](source: Source[M, NotUsed])(implicit messageLik
   implicit val materializer = ActorMaterializer()
   implicit val ec = context.dispatcher
 
-  override def postRestart(reason: Throwable): Unit = trySubscribeDelayed()
-
-  private def subscribed: Receive = {
-    log.info(s"Subscribed to ${messageLike.streamName}")
-
-    {
-      case Failure(ex) =>
-        log.error(ex, "Source/Listener died, subscribing again")
-        trySubscribeDelayed()
-        context become idle
-      case Done =>
-        log.info("Source finished, subscribing again")
-        trySubscribeDelayed()
-        context become idle
-    }
+  override def postRestart(reason: Throwable): Unit = {
+    log.error(reason, "Listener died, subscribing again")
+    trySubscribeDelayed()
   }
 
   private def subscribe(): Unit = {
@@ -44,18 +32,24 @@ class MessageBusListenerActor[M](source: Source[M, NotUsed])(implicit messageLik
 
     source.runWith(sink).pipeTo(self)
 
-    context become subscribed
+    log.info(s"Subscribed to ${messageLike.streamName}")
   }
 
-  private def idle: Receive = {
+  override def receive: Receive = {
+    case Failure(ex) =>
+      log.error(ex, "Source/Listener died, subscribing again")
+      trySubscribeDelayed()
+
+    case Done =>
+      log.info("Source finished, subscribing again")
+      trySubscribeDelayed()
+
     case Subscribe =>
       Try(subscribe()).failed.foreach { ex =>
         log.error(ex, "Could not subscribe, trying again")
         trySubscribeDelayed()
       }
   }
-
-  override def receive: Receive = idle
 
   private def trySubscribeDelayed(delay: FiniteDuration = 5.seconds): Unit = {
     context.system.scheduler.scheduleOnce(delay, self, Subscribe)
