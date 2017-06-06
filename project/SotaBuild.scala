@@ -324,7 +324,7 @@ object Dependencies {
 
   lazy val Nats = "com.github.tyagihas" % "scala_nats_2.11" % "0.2.1" exclude("org.slf4j", "slf4j-simple")
 
-  lazy val Kafka = "com.typesafe.akka" %% "akka-stream-kafka" % "0.12"
+  lazy val Kafka = "com.typesafe.akka" %% "akka-stream-kafka" % "0.16"
 
   lazy val LibTuf = "com.advancedtelematic" %% "libtuf" % libTufV
 
