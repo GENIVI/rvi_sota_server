@@ -16,7 +16,11 @@ import akka.util.ByteString
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
 import io.circe.generic.auto._
+import java.time.Instant
 import java.util.UUID
+
+import akka.http.scaladsl.model.StatusCodes.NoContent
+
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.core.data.PackageResponse._
 import org.genivi.sota.core.db._
@@ -31,7 +35,7 @@ import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.rest.ResponseConversions._
 import org.genivi.sota.rest.Validation._
 import scala.concurrent.Future
-import slick.driver.MySQLDriver.api.Database
+import slick.jdbc.MySQLProfile.api.Database
 
 object PackagesResource {
 
@@ -45,6 +49,7 @@ object PackagesResource {
   val extractPackageId: Directive1[PackageId] =
     (extractPackageName & refined[PackageId.ValidVersion](Slash ~ Segment)).as(PackageId.apply _)
 
+  case class CopyRequest(packageUuid: UUID, namespaces: Seq[Namespace])
 }
 
 class PackagesResource(updateService: UpdateService,
@@ -70,7 +75,7 @@ class PackagesResource(updateService: UpdateService,
     */
   def searchPackage(ns: Namespace): Route = {
     parameters('regex.as[String Refined Regex].?) { (regex: Option[String Refined Regex]) =>
-      val query = Packages.searchByRegexWithBlacklist(ns, regex.map(_.get))
+      val query = Packages.searchByRegexWithBlacklist(ns, regex.map(_.value))
 
       val result = db.run(query).map(_.toResponse)
 
@@ -143,8 +148,7 @@ class PackagesResource(updateService: UpdateService,
     complete(db.run(UpdateSpecs.getDevicesQueuedForPackage(ns, pid)))
   }
 
-
-  val route = (ErrorHandler.handleErrors & namespaceExtractor) { ns =>
+  val packages_route = (ErrorHandler.handleErrors & namespaceExtractor) { ns =>
     val scope = Scopes.packages(ns)
     pathPrefix("packages") {
       (scope.get & pathEnd) {
@@ -170,4 +174,28 @@ class PackagesResource(updateService: UpdateService,
       }
     }
   }
+
+  // requires super user privilege
+  val packages_super_route = (ErrorHandler.handleErrors & namespaceExtractor) { ns =>
+    val scope = Scopes.packages_super(ns)
+    (scope.put & path("super" / "packages" / "copy")) {
+      entity(as[CopyRequest]) { copyRequest =>
+        val now = Instant.now
+        val res = for {
+          pkg <- db.run(Packages.byUuid(copyRequest.packageUuid))
+          previousNamespaces <- db.run(Packages.packageNamespaces(copyRequest.packageUuid))
+          // remove namespaces the package is already stored under to make the operation idempotent
+          newNamespaces = copyRequest.namespaces diff previousNamespaces
+          _ <- Future.sequence(newNamespaces.map { namespace =>
+            storagePipeline.storePackage(pkg.copy(namespace = namespace, uuid = UUID.randomUUID, createdAt = now))
+                              })
+        } yield ()
+
+        complete(res.map(_ => NoContent))
+      }
+    }
+  }
+
+  val route = packages_route ~ packages_super_route
+
 }

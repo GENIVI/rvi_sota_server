@@ -22,7 +22,7 @@ import org.scalatest.ShouldMatchers
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.Await
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 import org.genivi.sota.data.{Namespaces, PackageId}
 import org.genivi.sota.http.NamespaceDirectives
 import org.genivi.sota.data.Namespace

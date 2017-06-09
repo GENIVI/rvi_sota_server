@@ -6,6 +6,7 @@ package org.genivi.sota.device_registry
 
 import akka.http.scaladsl.model.{HttpRequest, StatusCodes}
 import cats.syntax.show._
+import eu.timepit.refined.api.Refined
 import io.circe.generic.auto._
 import java.util.Base64
 import org.genivi.sota.device_registry.PublicCredentialsResource.FetchPublicCredentials
@@ -35,7 +36,7 @@ trait PublicCredentialsRequests {self: ResourceSpec =>
   }
 
   def updatePublicCredentials(device: DeviceId, creds: Array[Byte])(implicit ec: ExecutionContext): HttpRequest = {
-    val devT = DeviceT(DeviceName(device.underlying), Some(device), credentials = Some(base64Encoder.encodeToString(creds)))
+    val devT = DeviceT(Refined.unsafeApply(device.underlying), Some(device), credentials = Some(base64Encoder.encodeToString(creds)))
     Put(Resource.uri(credentialsApi), devT)
   }
 

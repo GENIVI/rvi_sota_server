@@ -42,9 +42,9 @@ object Types {
  */
 class Resolver(_path: Types.Path, _packageExtension: Types.FileExtension, _checksumExtension: Types.FileExtension)
     extends Types.Resolver {
-  val path = Paths.get(_path.get)
-  val packageExtension = _packageExtension.get
-  val checksumExtension = _checksumExtension.get
+  val path = Paths.get(_path.value)
+  val packageExtension = _packageExtension.value
+  val checksumExtension = _checksumExtension.value
 
   def apply(packageIdentifier: String): Either[String, (File, Types.Checksum)] = for {
     packageFile <- packageFile(packageIdentifier).right

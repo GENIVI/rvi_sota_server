@@ -8,7 +8,7 @@ import java.util.UUID
 
 import org.genivi.sota.core.data.UpdateRequest
 import org.genivi.sota.data.Namespace
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 import java.time.Instant
 
 import org.genivi.sota.core.SotaCoreErrors

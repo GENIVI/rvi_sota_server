@@ -11,7 +11,7 @@ import akka.stream.ActorMaterializer
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.http.AuthedNamespaceScope
 import org.genivi.sota.http.ErrorHandler
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.ExecutionContext
 

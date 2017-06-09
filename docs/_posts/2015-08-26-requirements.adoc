@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Requirements"
-category: ref
+categories: [ref]
 date: 2015-08-26 14:12:21
 order: 4
 ---

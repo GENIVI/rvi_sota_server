@@ -35,6 +35,11 @@ paths:
         required: false
         type: integer
         format: int64
+      - name: ungrouped
+        description: indicates to search for devices not belonging to a group (default is "false")
+        in: query
+        required: false
+        type: boolean
       - name: limit
         description: the maximum amount of devices to return, after the offset
         in: query
@@ -45,9 +50,24 @@ paths:
         200:
           description: OK
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Device'
+            type: object
+            properties:
+              total:
+                description: The total number of results returnable
+                type: integer
+                format: int64
+              limit:
+                description: The maximum number of results to be returned, after the offset
+                type: integer
+                format: int64
+              offset:
+                description: The offset at which to begin returning results
+                type: integer
+                format: int64
+              values:
+                type: array
+                items:
+                  $ref: '#/definitions/Device'
     post:
       description: 'Register a new device with a name and an ID, get back its UUID'
       parameters:
@@ -117,13 +137,40 @@ paths:
         description: the vehicle uuid.
         required: true
         type: string
+      - name: offset
+        description: the offset into the list of packages
+        in: query
+        required: false
+        type: integer
+        format: int64
+      - name: limit
+        description: the maximum amount of packages to return, after the offset
+        in: query
+        required: false
+        type: integer
+        format: int64
       responses:
         200:
           description: A list of all packages installed on the device
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/InstalledPackage'
+            type: object
+            properties:
+              total:
+                description: The total number of results returnable
+                type: integer
+                format: int64
+              limit:
+                description: The maximum number of results to be returned, after the offset
+                type: integer
+                format: int64
+              offset:
+                description: The offset at which to begin returning results
+                type: integer
+                format: int64
+              values:
+                type: array
+                items:
+                  $ref: '#/definitions/InstalledPackage'
   /devices/{uuid}/system_info:
     post:
       description: Create the system info for a device
@@ -181,13 +228,40 @@ paths:
         in: path
         required: true
         type: string
+      - name: offset
+        description: the offset into the list of devices
+        in: query
+        required: false
+        type: integer
+        format: int64
+      - name: limit
+        description: the maximum amount of devices to return, after the offset
+        in: query
+        required: false
+        type: integer
+        format: int64
       responses:
         200:
           description: OK
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/uuid'
+            type: object
+            properties:
+              total:
+                description: The total number of results returnable
+                type: integer
+                format: int64
+              limit:
+                description: The maximum number of results to be returned, after the offset
+                type: integer
+                format: int64
+              offset:
+                description: The offset at which to begin returning results
+                type: integer
+                format: int64
+              values:
+                type: array
+                items:
+                  $ref: '#/definitions/Strings/properties/uuid'
   /device_groups:
     get:
       description: Returns a list of all groups
@@ -244,12 +318,27 @@ paths:
         type: integer
         format: int64
       responses:
-        201:
-          description: Created
+        200:
+          description: A list of the device uuids in the group
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/uuid'
+            type: object
+            properties:
+              total:
+                description: The total number of results returnable
+                type: integer
+                format: int64
+              limit:
+                description: The maximum number of results to be returned, after the offset
+                type: integer
+                format: int64
+              offset:
+                description: The offset at which to begin returning results
+                type: integer
+                format: int64
+              values:
+                type: array
+                items:
+                  $ref: '#/definitions/Strings/properties/uuid'
   /device_groups/{uuid}/count:
     get:
       description: return count of devices in group
@@ -337,9 +426,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/ActiveDeviceCount'
-  /package_stats/{name}:
+  /device_packages/{name}:
     get:
-      description: Get a count of devices on which the give package is installed, grouped by versions.
+      description: Get a count of devices on which the given package is installed, grouped by versions.
       parameters:
       - name: name
         in: path
@@ -362,48 +451,48 @@ paths:
         200:
           description: A map of package versions to count.
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/PackageStat'
+            type: object
+            properties:
+              total:
+                description: The total number of results returnable
+                type: integer
+                format: int64
+              limit:
+                description: The maximum number of results to be returned, after the offset
+                type: integer
+                format: int64
+              offset:
+                description: The offset at which to begin returning results
+                type: integer
+                format: int64
+              values:
+                type: array
+                items:
+                  $ref: '#/definitions/PackageStat'
 
 definitions:
-  uuid:
-    type: string
-    description: 32 lowercase hexadecimal digits, displayed in five groups separated by hyphens
-  DeviceId:
-    type: string
-    description: A 17-digit VIN. May contain only capital letters and digits. Cannot contain the letters I, O, or Q.
-  DeviceName:
-    type: string
-    description: Custom name for a device
-  DeviceType:
-    type: string
-    description: Valid values are "Vehicle" and "Other"
-  namespace:
-    type: string
-    description: The namespace scope of the request. Default value is 'default'
   DeviceT:
     type: object
     properties:
       deviceName:
-        $ref: '#/definitions/DeviceName'
+        $ref: '#/definitions/Strings/properties/DeviceName'
       deviceId:
-        $ref: '#/definitions/DeviceId'
+        $ref: '#/definitions/Strings/properties/DeviceId'
       deviceType:
-        $ref: '#/definitions/DeviceType'
+        $ref: '#/definitions/Strings/properties/DeviceType'
   Device:
     type: object
     properties:
       namespace:
-        $ref: '#/definitions/namespace'
+        $ref: '#/definitions/Strings/properties/namespace'
       deviceId:
-        $ref: '#/definitions/DeviceId'
+        $ref: '#/definitions/Strings/properties/DeviceId'
       id:
-        $ref: '#/definitions/uuid'
+        $ref: '#/definitions/Strings/properties/uuid'
       deviceName:
-        $ref: '#/definitions/DeviceName'
+        $ref: '#/definitions/Strings/properties/DeviceName'
       deviceType:
-        $ref: '#/definitions/DeviceType'
+        $ref: '#/definitions/Strings/properties/DeviceType'
       lastseen:
         type: string
         format: dateTime
@@ -423,9 +512,9 @@ definitions:
     type: object
     properties:
       device1:
-        $ref: '#/definitions/uuid'
+        $ref: '#/definitions/Strings/properties/uuid'
       device2:
-        $ref: '#/definitions/uuid'
+        $ref: '#/definitions/Strings/properties/uuid'
       groupName:
         type: string
         description: a group name between 1 and 100 characters long
@@ -442,7 +531,7 @@ definitions:
     type: object
     properties:
       device:
-        $ref: '#/definitions/uuid'
+        $ref: '#/definitions/Strings/properties/uuid'
       packageId:
         $ref: '#/definitions/PackageId'
       lastModified:
@@ -459,7 +548,7 @@ definitions:
         description: a set containing all the group ids that have this package installed
         type: array
         items:
-          $ref: '#/definitions/uuid'
+          $ref: '#/definitions/Strings/properties/uuid'
   ActiveDeviceCount:
     type: object
     properties:
@@ -468,9 +557,28 @@ definitions:
         description: count of active devices (in a given interval)
   PackageStat:
     type: object
-    description: An association between a package and a filter.
+    description: A count of how many devices have a particular version of a package installed
     properties:
       packageVersion:
         type: string
       installedCount:
         type: integer
+  Strings:
+    type: object
+    description: Various string types referenced elsewhere in the spec.
+    properties:
+      uuid:
+        type: string
+        description: 32 lowercase hexadecimal digits, displayed in five groups separated by hyphens
+      DeviceId:
+        type: string
+        description: A 17-digit VIN. May contain only capital letters and digits. Cannot contain the letters I, O, or Q.
+      DeviceName:
+        type: string
+        description: Custom name for a device
+      DeviceType:
+        type: string
+        description: Valid values are "Vehicle" and "Other"
+      namespace:
+        type: string
+        description: The namespace scope of the request. Default value is 'default'

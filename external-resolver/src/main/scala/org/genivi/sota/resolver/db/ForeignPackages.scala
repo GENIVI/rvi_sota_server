@@ -9,7 +9,7 @@ import java.time.Instant
 
 import org.genivi.sota.data.{PackageId, Uuid}
 import org.genivi.sota.db.Operators._
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 import org.genivi.sota.refined.PackageIdDatabaseConversions.LiftedPackageId
 
 import scala.concurrent.ExecutionContext
@@ -82,7 +82,8 @@ object ForeignPackages {
   private def inSetQuery(ids: Set[PackageId]): Query[InstalledForeignPackageTable, InstalledForeignPackage, Seq] = {
     foreignPackages
       .filter { pkg =>
-        (pkg.name.mappedTo[String] ++ pkg.version.mappedTo[String]).inSet(ids.map(id => id.name.get + id.version.get))
+        (pkg.name.mappedTo[String] ++ pkg.version.mappedTo[String])
+          .inSet(ids.map(id => id.name.value + id.version.value))
       }
   }
   //scalastyle: on

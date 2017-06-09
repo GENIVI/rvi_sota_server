@@ -1,14 +1,14 @@
 package org.genivi.sota.resolver.test.random
 
 import akka.http.scaladsl.model.StatusCodes
-import cats.state.{State, StateT}
+import cats.data.{State, StateT}
 import org.genivi.sota.resolver.resolve.ResolveFunctions
 import org.genivi.sota.resolver.filters.{And, FilterAST, True}
 import org.genivi.sota.resolver.filters.Filter
 import FilterAST._
 import org.genivi.sota.resolver.test._
 import org.scalacheck.Gen
-import Misc.{function0Instance, lift, monGen}
+import Misc.{lift, monGen}
 import org.genivi.sota.data.Device.DeviceId
 import org.genivi.sota.data.{Device, PackageId, Uuid}
 
@@ -51,7 +51,7 @@ object Query extends
       qrs0 match {
         case Nil          => (s0, acc.reverse)
         case (qr :: qrs1) =>
-          val (s1, r) = semQuery(qr).run(s0).run
+          val (s1, r) = semQuery(qr).run(s0).value
           go(qrs1, s1, r :: acc)
       }
 
@@ -138,7 +138,7 @@ object Query extends
   // scalastyle:off magic.number
   def genQuery: StateT[Gen, RawStore, Query] =
     for {
-      s    <- StateT.stateTMonadState[Gen, RawStore].get
+      s    <- StateT.get[Gen, RawStore].get
       vehs <- Store.numberOfVehicles
       pkgs <- Store.numberOfPackages
       cmps <- Store.numberOfComponents

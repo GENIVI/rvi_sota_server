@@ -1,6 +1,6 @@
 package org.genivi.sota.resolver.test.random
 
-import cats.state.{State, StateT}
+import cats.data.{State, StateT}
 import org.scalacheck.{Arbitrary, Gen, Shrink}
 import Shrink.shrink
 import Command._

@@ -20,6 +20,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FunSuite, ShouldMatchers}
 import org.genivi.sota.data.{Interval, Namespaces}
 import org.genivi.sota.http.NamespaceDirectives
+import org.genivi.sota.messaging.MessageBusPublisher
 
 import scala.concurrent.Future
 
@@ -41,13 +42,15 @@ class UpdateRequestResourceSpec extends FunSuite
   val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
 
   implicit val rviClient = new ConnectivityClient {
-    override def sendMessage[A](service: String, message: A, expirationDate: Instant)(implicit encoder: Encoder[A]): Future[Int] = ???
+    override def sendMessage[A](service: String, message: A, expirationDate: Instant)
+                               (implicit encoder: Encoder[A]): Future[Int] = ???
   }
 
   implicit val connectivity = DefaultConnectivity
 
   val updateService = new UpdateService(DefaultUpdateNotifier, deviceRegistry)
-  val serve = new UpdateRequestsResource(db, resolver, updateService, defaultNamespaceExtractor)
+  val messageBus = MessageBusPublisher.ignore
+  val serve = new UpdateRequestsResource(db, resolver, updateService, defaultNamespaceExtractor, messageBus)
 
   test("accepts new updates with a Client specific format") {
     val now = Instant.now

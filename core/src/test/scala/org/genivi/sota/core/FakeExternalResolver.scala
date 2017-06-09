@@ -1,7 +1,6 @@
 package org.genivi.sota.core
 
 import akka.actor.ActorSystem
-import akka.event.Logging
 import akka.stream.ActorMaterializer
 import io.circe.Json
 import org.genivi.sota.core.resolver.ExternalResolverClient
@@ -13,18 +12,15 @@ class FakeExternalResolver()(implicit system: ActorSystem, mat: ActorMaterialize
   extends ExternalResolverClient
 {
   import org.genivi.sota.marshalling.CirceInstances._
+  import cats.syntax.either._
 
   private val installedPackages = scala.collection.mutable.Queue.empty[PackageId]
 
-  private val logger = Logging.getLogger(system, this)
-
   override def setInstalledPackages(device: Uuid, json: Json): Future[Unit] = {
     val ids = json
-      .cursor
+      .hcursor
       .downField("packages")
-      .map(_.as[List[PackageId]].getOrElse(List.empty))
-      .toSeq
-      .flatten
+      .as[List[PackageId]].getOrElse(List.empty)
 
     installedPackages.enqueue(ids:_*)
     Future.successful(())
@@ -33,6 +29,4 @@ class FakeExternalResolver()(implicit system: ActorSystem, mat: ActorMaterialize
   override def resolve(namespace: Namespace, packageId: PackageId): Future[Map[Uuid, Set[PackageId]]] = {
     Future.successful(Map.empty)
   }
-
-  def isInstalled(packageId: PackageId): Boolean = installedPackages.contains(packageId)
 }

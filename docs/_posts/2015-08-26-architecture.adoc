@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "SOTA Architecture"
-category: dev
+categories: [dev]
 date: 2015-08-26 14:14:23
 order: 4
 ---

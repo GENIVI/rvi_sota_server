@@ -22,10 +22,10 @@ import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
-import org.genivi.sota.messaging.Messages.{DeviceCreated, DeviceDeleted}
+import org.genivi.sota.messaging.Messages.DeviceCreated
 import org.genivi.sota.rest.Validation._
 import org.genivi.sota.unmarshalling.AkkaHttpUnmarshallingSupport._
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.ExecutionContext
 
@@ -51,14 +51,16 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
   def searchDevice(ns: Namespace): Route =
     parameters(('regex.as[String Refined Regex].?,
                 'deviceId.as[String].?, // TODO: Use refined
+                'groupId.as[String Refined Uuid.Valid].?,
+                'ungrouped?false,
                 'offset.as[Long].?,
                 'limit.as[Long].?)) {
-      case (Some(re), None, offset, limit) =>
-        complete(db.run(DeviceRepository.search(ns, re, offset, limit)))
-      case (None, Some(deviceId), _, _) =>
+      case (re, None, groupId, false, offset, limit) =>
+        complete(db.run(DeviceRepository.search(ns, re, groupId.map(Uuid(_)), offset, limit)))
+      case (re, None, None, true, offset, limit) =>
+        complete(db.run(DeviceRepository.searchUngrouped(ns, re, offset, limit)))
+      case (None, Some(deviceId), None, false, _, _) =>
         complete(db.run(DeviceRepository.findByDeviceId(ns, DeviceId(deviceId))))
-      case (None, None, offset, limit) =>
-        complete(db.run(DeviceRepository.list(ns, offset, limit)))
       case _ =>
         complete((BadRequest, "'regex' and 'deviceId' parameters cannot be used together!"))
     }
@@ -85,18 +87,10 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
   def updateDevice(ns: Namespace, uuid: Uuid, device: DeviceT): Route =
     complete(db.run(DeviceRepository.update(ns, uuid, device)))
 
-  def deleteDevice(ns: Namespace, uuid: Uuid): Route = {
-    val f = db
-      .run(DeviceRepository.delete(ns, uuid))
-      .andThen {
-        case scala.util.Success(_) =>
-          messageBus.publish(DeviceDeleted(ns, uuid, Instant.now()))
-      }
-    complete(f)
-  }
-
   def getGroupsForDevice(uuid: Uuid): Route =
-    complete(db.run(GroupMemberRepository.listGroupsForDevice(uuid)))
+    parameters(('offset.as[Long].?, 'limit.as[Long].?)) { (offset, limit) =>
+      complete(db.run(GroupMemberRepository.listGroupsForDevice(uuid, offset, limit)))
+    }
 
   def updateInstalledSoftware(device: Uuid): Route = {
     entity(as[Seq[PackageId]]) { installedSoftware =>
@@ -109,8 +103,8 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
     complete(db.run(InstalledPackages.getDevicesCount(pkg, ns)))
 
   def listPackagesOnDevice(device: Uuid): Route =
-    parameters('regex.as[String Refined Regex].?) { regex =>
-      complete(db.run(InstalledPackages.installedOn(device, regex)))
+    parameters(('regex.as[String Refined Regex].?, 'offset.as[Long].?, 'limit.as[Long].?)) { (regex, offset, limit) =>
+      complete(db.run(InstalledPackages.installedOn(device, regex, offset, limit)))
     }
 
   def getActiveDeviceCount(ns: Namespace): Route =
@@ -149,9 +143,6 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
         (scope.put & entity(as[DeviceT]) & pathEnd) { device =>
           updateDevice(ns, uuid, device)
         } ~
-        (scope.delete & pathEnd) {
-          deleteDevice(ns, uuid)
-        } ~
         (scope.get & pathEnd) {
           fetchDevice(uuid)
         } ~
@@ -187,14 +178,12 @@ class DevicesResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
     pathPrefix("device_packages") {
       (pathEnd & scope.get) {
         getDistinctPackages(authedNs)
-      }
-    } ~
-    (path("packages" / "affected") & scope.post) {
-      findAffected(authedNs)
-    } ~
-    pathPrefix("package_stats") {
-      (scope.get & refinedPackageName & pathEnd) { name =>
+      } ~
+      (refinedPackageName & pathEnd & scope.get) { name =>
         getPackageStats(authedNs, name)
+      } ~
+      (path("affected") & scope.post) {
+        findAffected(authedNs)
       }
     }
   }

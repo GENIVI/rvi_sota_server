@@ -23,8 +23,8 @@ define(function(require) {
         switch(payload.actionType) {
           case 'get-vehicles':
             sendRequest.doGet('/api/v1/devices')
-              .success(function(vehicles) {
-                db.vehicles.reset(vehicles);
+              .success(function(result) {
+                db.vehicles.reset(result.values);
               });
           break;
           case 'create-vehicle':
@@ -34,8 +34,8 @@ define(function(require) {
             var query = payload.regex ? '?regex=' + payload.regex : '';
 
             sendRequest.doGet('/api/v1/devices' + query)
-              .success(function(vehicles) {
-                db.searchableVehicles.reset(vehicles);
+              .success(function(result) {
+                db.searchableVehicles.reset(result.values);
               });
           break;
           case 'fetch-affected-vins':

@@ -7,6 +7,7 @@ package org.genivi.sota.core
 
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
+import java.util.function.BiFunction
 
 import akka.actor.ActorSystem
 import akka.event.Logging
@@ -45,7 +46,7 @@ class FakeDeviceRegistry(namespace: Namespace)
         .values()
         .asScala
         .filter(_.deviceId.isDefined)
-        .filter(d => re.get.r.findFirstIn(d.deviceId.map(_.show).getOrElse("")).isDefined)
+        .filter(d => re.value.r.findFirstIn(d.deviceId.map(_.show).getOrElse("")).isDefined)
         .toSeq
     )
   }
@@ -76,10 +77,10 @@ class FakeDeviceRegistry(namespace: Namespace)
   }
 
   override def fetchDevicesInGroup(ns: Namespace, uuid: Uuid)
-                                  (implicit ec: ExecutionContext): Future[Seq[Uuid]] = {
+                                  (implicit ec: ExecutionContext): Future[PaginatedResult[Uuid]] = {
     groups.asScala.get(uuid) match {
-      case Some(ds) => FastFuture.successful(ds)
-      case None => FastFuture.successful(Seq())
+      case Some(ds) => FastFuture.successful(PaginatedResult(ds.length, 1000, 0, ds))
+      case None => FastFuture.successful(PaginatedResult(0, 1000, 0, Seq.empty))
     }
   }
 
@@ -136,9 +137,25 @@ class FakeDeviceRegistry(namespace: Namespace)
 
   def setInstalledPackages(device: Uuid, packages: Seq[PackageId])
                           (implicit ec: ExecutionContext): Future[NoContent] = {
-    installedPackages.put(device, packages.toSet)
+    installedPackages.compute(device, new BiFunction[Uuid, Set[PackageId], Set[PackageId]] {
+      override def apply(t: Uuid, u: Set[PackageId]) = u match {
+        case null => packages.toSet
+        case others => others ++ packages
+      }
+    })
+
     FastFuture.successful(NoContent())
   }
+
+  def setInstalledPackagesForDevices(data: Seq[(Uuid, Set[PackageId])])
+                                    (implicit ec: ExecutionContext) : Future[NoContent] = {
+    Future
+      .sequence { data.map { case (uuid, pkgs) => setInstalledPackages(uuid, pkgs.toSeq) } }
+      .map(_ => NoContent())
+  }
+
+  def isInstalled(uuid: Uuid, packageId: PackageId): Boolean =
+    installedPackages.getOrDefault(uuid, Set.empty).contains(packageId)
 
   def affectedDevices(namespace: Namespace, packages: Set[PackageId])
                      (implicit ec: ExecutionContext): Future[Map[Uuid, Set[PackageId]]] = {

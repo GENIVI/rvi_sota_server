@@ -12,12 +12,9 @@ docker run -v $(pwd):/site advancedtelematic/jekyll-asciidoc
 # clone repo
 git clone -b gh-pages git@github.com:advancedtelematic/rvi_sota_server.git 
 
-# cp _site to gh-pages branch
+# cp _site to gh-pages branch and move into subdir
 cp -r _site/* rvi_sota_server/
-
-# generate json
-cd rvi_sota_server/swagger/
-docker run -v $(pwd):/site --entrypoint=/bin/bash advancedtelematic/jekyll-asciidoc ./mkjson.sh
+cd rvi_sota_server/
 
 # commit and push
 git add -A :/

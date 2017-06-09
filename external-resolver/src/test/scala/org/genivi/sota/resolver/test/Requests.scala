@@ -43,7 +43,7 @@ trait VehicleRequestsHttp {
     Get(Resource.uri("devices"))
 
   def listVehiclesHaving(cmp: Component): HttpRequest =
-    listVehiclesHaving(cmp.partNumber.get)
+    listVehiclesHaving(cmp.partNumber.value)
 
   def listVehiclesHaving(partNumber: String): HttpRequest =
     Get(Resource.uri("devices").withQuery(Query("component" -> partNumber)))
@@ -54,13 +54,13 @@ trait VehicleRequestsHttp {
   }
 
   def installPackage(device: Uuid, pkg: Package): HttpRequest =
-    installPackage(device, pkg.id.name.get, pkg.id.version.get)
+    installPackage(device, pkg.id.name.value, pkg.id.version.value)
 
   def installPackage(device: Uuid, pname: String, pversion: String): HttpRequest =
     Put(Resource.uri("devices", device.show, "package", pname, pversion))
 
   def uninstallPackage(device: Uuid, pkg: Package): HttpRequest =
-    uninstallPackage(device, pkg.id.name.get, pkg.id.version.get)
+    uninstallPackage(device, pkg.id.name.value, pkg.id.version.value)
 
   def uninstallPackage(device: Uuid, pname: String, pversion: String): HttpRequest =
     Delete(Resource.uri("devices", device.show, "package", pname, pversion))
@@ -75,7 +75,7 @@ trait VehicleRequestsHttp {
     Get(Resource.uri("devices", vin, "component"))
 
   private def path(device: Uuid, part: Component.PartNumber): Uri =
-    Resource.uri("devices", device.show, "component", part.get)
+    Resource.uri("devices", device.show, "component", part.value)
 
   def installComponent(veh: Uuid, cmpn: Component): HttpRequest =
     installComponent(veh, cmpn.partNumber)
@@ -122,7 +122,7 @@ trait PackageRequestsHttp {
 
   def addPackage(pkg: Package)
                 (implicit ec: ExecutionContext): HttpRequest =
-    addPackage(pkg.namespace, pkg.id.name.get, pkg.id.version.get, pkg.description, pkg.vendor)
+    addPackage(pkg.namespace, pkg.id.name.value, pkg.id.version.value, pkg.description, pkg.vendor)
 
   def addPackage(namespace: Namespace, name: String, version: String, desc: Option[String], vendor: Option[String])
                 (implicit ec: ExecutionContext): HttpRequest =
@@ -130,7 +130,7 @@ trait PackageRequestsHttp {
 
   def getPackageStats(namespace: Namespace, name: PackageId.Name)
                  (implicit ec: ExecutionContext): HttpRequest =
-    Get(Resource.uri("package_stats", name.get))
+    Get(Resource.uri("package_stats", name.value))
 }
 
 trait PackageRequests extends
@@ -176,17 +176,17 @@ trait ComponentRequestsHttp {
 
   def addComponent(part: Component.PartNumber, desc: String)
                   (implicit ec: ExecutionContext): HttpRequest =
-    Put(Resource.uri("components", part.get), Component.DescriptionWrapper(desc))
+    Put(Resource.uri("components", part.value), Component.DescriptionWrapper(desc))
 
   def deleteComponent(cmpn: Component): HttpRequest =
     deleteComponent(cmpn.partNumber)
 
   def deleteComponent(part: Component.PartNumber): HttpRequest =
-    Delete(Resource.uri("components", part.get))
+    Delete(Resource.uri("components", part.value))
 
   def updateComponent(cmp: Component)
                      (implicit ec: ExecutionContext): HttpRequest =
-    updateComponent(cmp.partNumber.get, cmp.description)
+    updateComponent(cmp.partNumber.value, cmp.description)
 
   def updateComponent(partNumber: String, description: String)
                      (implicit ec: ExecutionContext): HttpRequest =
@@ -221,7 +221,7 @@ trait FilterRequestsHttp extends Namespaces {
 
   def updateFilter(filt: Filter)
                   (implicit ec: ExecutionContext): HttpRequest =
-    updateFilter(filt.name.get, filt.expression.get)
+    updateFilter(filt.name.value, filt.expression.value)
 
   def updateFilter(name: String, expr: String)
                   (implicit ec: ExecutionContext): HttpRequest =
@@ -231,7 +231,7 @@ trait FilterRequestsHttp extends Namespaces {
     Get(Resource.uri("filters"))
 
   def deleteFilter(filt: Filter): HttpRequest =
-    deleteFilter(filt.name.get)
+    deleteFilter(filt.name.value)
 
   def deleteFilter(name: String): HttpRequest =
     Delete(Resource.uri("filters", name))
@@ -273,7 +273,7 @@ trait FilterRequests extends FilterRequestsHttp with Matchers {
 trait PackageFilterRequestsHttp {
 
   def addPackageFilter2(pid: PackageId, fname: Filter.Name): HttpRequest = {
-    Put(Resource.uri("packages", pid.name.get, pid.version.get, "filter", fname.get))
+    Put(Resource.uri("packages", pid.name.value, pid.version.value, "filter", fname.value))
   }
 
   def addPackageFilter(pname: String, pversion: String, fname: String): HttpRequest =
@@ -283,19 +283,19 @@ trait PackageFilterRequestsHttp {
     Get(Resource.uri("packages", "filter"))
 
   def listPackagesForFilter(flt: Filter): HttpRequest =
-    listPackagesForFilter(flt.name.get)
+    listPackagesForFilter(flt.name.value)
 
   def listPackagesForFilter(fname: String): HttpRequest =
     Get(Resource.uri("filters", fname, "package"))
 
   def listFiltersForPackage(pak: Package): HttpRequest =
-    listFiltersForPackage(pak.id.name.get, pak.id.version.get)
+    listFiltersForPackage(pak.id.name.value, pak.id.version.value)
 
   def listFiltersForPackage(pname: String, pversion: String): HttpRequest =
     Get(Resource.uri("packages", pname, pversion, "filter"))
 
   def deletePackageFilter(pkg: Package, filt: Filter): HttpRequest =
-    deletePackageFilter(pkg.id.name.get, pkg.id.version.get, filt.name.get)
+    deletePackageFilter(pkg.id.name.value, pkg.id.version.value, filt.name.value)
 
   def deletePackageFilter(pname: String, pversion: String, fname: String): HttpRequest =
     Delete(Resource.uri("packages", pname, pversion, "filter", fname))
@@ -326,7 +326,7 @@ trait PackageFilterRequests extends
 trait ResolveRequestsHttp {
 
   def resolve2(namespace: Namespace, id: PackageId): HttpRequest =
-    resolve(namespace, id.name.get, id.version.get)
+    resolve(namespace, id.name.value, id.version.value)
 
   def resolve(pnamespace: Namespace, pname: String, pversion: String): HttpRequest =
     Get(Resource.uri("resolve").withQuery(Query(

@@ -14,8 +14,8 @@ object implicits {
   import cats.{Eq, Show}
   import eu.timepit.refined.api.Refined
 
-  implicit def refinedEq[T, P](implicit ev: Eq[T]) : Eq[T Refined P] = Eq.instance((a, b) => ev.eqv( a.get, b.get))
+  implicit def refinedEq[T, P](implicit ev: Eq[T]) : Eq[T Refined P] = Eq.instance((a, b) => ev.eqv( a.value, b.value))
 
-  implicit def refinedShow[T, P](implicit ev: Show[T]) : Show[T Refined P] = Show.show( x => ev.show(x.get) )
+  implicit def refinedShow[T, P](implicit ev: Show[T]) : Show[T Refined P] = Show.show( x => ev.show(x.value) )
 
 }

@@ -4,7 +4,7 @@
  */
 package org.genivi.sota.db
 
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 /**
  * Define how to open a database connection.  This information is read out of

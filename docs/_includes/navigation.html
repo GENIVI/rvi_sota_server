@@ -1,16 +1,38 @@
-<ul class="nav nav-list">
-    <li><a href="{{ site.baseurl }}/">Home</a></li>
-    {% for section in site.sections %}
-        {% assign attr = section[0] %}
-        {% assign label = section[1] %}
-
-        {% for page in site.categories[attr] %}
-            {% if forloop.first %}
-                <li class="nav-header">{{ label }}</li>
-            {% endif %}
-            <li data-order="{{ page.order }}"><a href="{{ site.baseurl }}{{ page.url }}">{{ page.title }}</a></li>
-        {% endfor %}
+<ul class="nav nav-tabs nav-justified" data-tabs="tabs">
+    {% for tab in site.navigation_tabs %}
+    {% assign tab_title = tab[0] %}
+    {% assign tab_id = tab[1] %}
+    {% assign topics = tab[2] %}
+    <li {% if topics contains page.categories[0] %} class="active" {% endif %}{% if page.layout == "default" %}{% if forloop.first %} class="active"{% endif %}{% endif %}><a data-toggle="tab" href="#{{ tab_id }}">{{ tab_title }}</a></li>
     {% endfor %}
-<!-- List additional links. It is recommended to add a divider
-    e.g. <li class="divider"></li> first to break up the content. -->
 </ul>
+
+<div class="tab-content">
+
+    {% for tab in site.navigation_tabs %}
+    {% assign tab_title = tab[0] %}
+    {% assign tab_id = tab[1] %}
+    {% assign topics = tab[2] %}
+
+    <div id="{{ tab_id }}" class="tab-pane fade in {% if topics contains page.categories[0] %} active {% endif %}{% if page.layout == "default" %}{% if forloop.first %} active {% endif %}{% endif %}">
+
+        <ul class="nav nav-list">
+        {% for topic in topics %}
+            {% for section in site.sections %}
+                {% if topic == section[0] %}
+                    {% assign sorted_pages = site.categories[topic] | sort:"order" %}
+                    {% for p in sorted_pages %}
+                            {% if forloop.first %}
+                                <li class="nav-header nav-section-title">{{ section[1] }}</li>
+                            {% endif %}
+                        <li><a class="nav-link {% if p.path == page.path %} active {% endif %}" href="{{  site.baseurl }}{{ p.url }}">{{ p.title }}</a></li>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+        </ul>
+
+    </div>
+    {% endfor %}
+</div>
+

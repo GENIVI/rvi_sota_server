@@ -5,12 +5,9 @@
 
 import java.io.File
 import java.security.InvalidParameterException
-import java.util.UUID
 
 import org.asynchttpclient.AsyncHttpClient
 import org.asynchttpclient.request.body.multipart.FilePart
-import java.time.Instant
-import java.time.temporal.ChronoUnit
 
 import org.scalatest.Tag
 import org.scalatestplus.play._
@@ -18,15 +15,13 @@ import play.api.Configuration
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.mvc.{Cookie, Cookies}
 import play.api.test.Helpers._
-import io.circe._
 import io.circe.generic.auto._
-import io.circe.parser._
 import io.circe.syntax._
 import io.circe.parser._
-import org.genivi.sota.data.Device
+import org.genivi.sota.data.{Device, PaginatedResult}
 import org.genivi.sota.marshalling.CirceInstances._
-import org.genivi.sota.data.Device._
 import cats.syntax.show.toShowOps
+import cats.syntax.either._
 
 object APITests extends Tag("APITests")
 
@@ -55,7 +50,6 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   val testComponentDescription = "A radio component"
   val testComponentDescriptionAlt = "A satellite navigation component"
   val webserverHost = configuration.getString("test.webserver.host").get
-  //val webserverPort = 80 //this isn't likely to change so hardcode it instead of using an env var
   val webserverPort = port
 
   var testId    : Option[String] = None
@@ -74,22 +68,10 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   case class Uri(uri: String)
   case class Package(namespace: String, id: PackageId, uri: Uri, size: Long, checkSum: String, description: String,
                      vendor: String)
-  case class PackageResolver(id: PackageId, description: String, vendor: String)
   case class DeviceT(deviceName: String, deviceId: Option[String] = None, deviceType: String)
   case class FilterJson(namespace: String, name: String, expression: String)
   case class FilterPackageJson(filterName : String, packageName : String, packageVersion : String)
   case class ComponentJson(namespace: String, partNumber : String, description : String)
-  case class UpdateRequest(namespace: String, id: String, packageId: PackageId, creationTime: String,
-                           periodOfValidity: String, priority: Int, signature: String, description: String,
-                           requestConfirmation: Boolean)
-  import UpdateStatus._
-  case class UpdateSpec(request: UpdateRequest, device: String, status: UpdateStatus, dependencies: Set[Package])
-  object UpdateSpec {
-    import io.circe.generic.semiauto._
-    //circe fails to generate a decoder for UpdateStatus automatically, so we define one manually
-    implicit val updateStatusDecoder : Decoder[UpdateStatus] = Decoder[String].map(UpdateStatus.withName)
-    implicit val decoderInstace = deriveDecoder[UpdateSpec]
-  }
 
   def getLoginCookie : Seq[Cookie] = {
     val response = await(wsClient.url("http://" + webserverHost + s":$webserverPort/authenticate")
@@ -194,10 +176,10 @@ class APIFunTests extends PlaySpec with OneServerPerSuite {
   "test searching devices" taggedAs APITests in {
     val response = makeRequest(s"devices?namespace=$testNamespace&regex=" + testVin, GET)
     response.status mustBe OK
-    val jsonResponse = decode[List[Device]](response.body)
+    val jsonResponse = decode[PaginatedResult[Device]](response.body)
     jsonResponse.toOption match {
-      case Some(resp) => resp.length mustBe 1
-        resp.headOption.map(_.uuid.show) mustEqual testId
+      case Some(resp) => resp.values.length mustBe 1
+        resp.values.headOption.map(_.uuid.show) mustEqual testId
       case None => fail(s"JSON parse error: $jsonResponse body: ${response.body}")
     }
   }

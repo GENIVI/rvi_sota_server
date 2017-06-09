@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Messaging in rvi_sota_server"
-category: dev
+categories: [dev]
 order: 6
 date: 2016-12-30 13:59:16
 ---
@@ -55,18 +55,6 @@ Fields:
 | uuid     | The uuid of the device in question
 | at       | A UTC timestamp of the time the device first connected
 |===
-
-// === DeviceDeleted
-
-// This message is sent when a device is deleted
-
-// Fields:
-
-// [%autoscale,cols="1,4"]
-// |===
-// | namespace | A string representing the namespace subscribed to
-// | uuid      | The uuid of the device in question
-// |===
 
 === PackageCreated
 

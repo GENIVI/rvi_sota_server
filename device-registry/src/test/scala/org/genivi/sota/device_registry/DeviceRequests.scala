@@ -45,11 +45,19 @@ trait DeviceRequests { self: ResourceSpec =>
   def listDevices(): HttpRequest =
     Get(Resource.uri(api))
 
-  def searchDevice(namespace: Namespace, regex: String, offset: Long = 0, limit: Long = 50): HttpRequest =
+  def searchDevice(regex: String, offset: Long = 0, limit: Long = 50): HttpRequest =
     Get(Resource.uri(api).withQuery(Query("regex" -> regex, "offset" -> offset.toString, "limit" -> limit.toString)))
 
-  def fetchByDeviceId(namespace: Namespace, deviceId: Device.DeviceId): HttpRequest =
-    Get(Resource.uri(api).withQuery(Query("namespace" -> namespace.get, "deviceId" -> deviceId.show)))
+  def fetchByDeviceId(deviceId: Device.DeviceId): HttpRequest =
+    Get(Resource.uri(api).withQuery(Query("deviceId" -> deviceId.show)))
+
+  def fetchByGroupId(groupId: Uuid, offset: Long = 0, limit: Long = 50): HttpRequest =
+    Get(Resource.uri(api).withQuery(Query("groupId" -> groupId.show,
+                                          "offset" -> offset.toString, "limit" -> limit.toString)))
+
+  def fetchUngrouped(offset: Long = 0, limit: Long = 50): HttpRequest =
+    Get(Resource.uri(api).withQuery(Query("ungrouped" -> "true",
+                                          "offset" -> offset.toString, "limit" -> limit.toString)))
 
   def updateDevice(uuid: Uuid, device: DeviceT)
                   (implicit ec: ExecutionContext): HttpRequest =
@@ -64,15 +72,6 @@ trait DeviceRequests { self: ResourceSpec =>
     createDevice(device) ~> route ~> check {
       status shouldBe Created
       responseAs[Uuid]
-    }
-
-  def deleteDevice(uuid: Uuid): HttpRequest =
-    Delete(Resource.uri(api, uuid.show))
-
-  def deleteDeviceOk(uuid: Uuid)
-                    (implicit ec: ExecutionContext): Unit =
-    deleteDevice(uuid) ~> route ~> check {
-      status shouldBe OK
     }
 
   def fetchSystemInfo(uuid: Uuid): HttpRequest =
@@ -107,7 +106,7 @@ trait DeviceRequests { self: ResourceSpec =>
 
 
   def getStatsForPackage(pkg: PackageId)(implicit ec: ExecutionContext): HttpRequest =
-    Get(Resource.uri("device_count", pkg.name.get, pkg.version.get))
+    Get(Resource.uri("device_count", pkg.name.value, pkg.version.value))
 
   def getActiveDeviceCount(start: OffsetDateTime, end: OffsetDateTime): HttpRequest =
     Get(Resource.uri("active_device_count").withQuery(Query("start" -> start.show, "end" -> end.show)))
@@ -116,8 +115,8 @@ trait DeviceRequests { self: ResourceSpec =>
     Get(Resource.uri("device_packages").withQuery(Query("offset" -> offset.toString, "limit" -> limit.toString)))
 
   def getAffected(pkgs: Set[PackageId]): HttpRequest =
-    Post(Resource.uri("packages", "affected"), pkgs)
+    Post(Resource.uri("device_packages", "affected"), pkgs)
 
   def getPackageStats(name: PackageId.Name): HttpRequest =
-    Get(Resource.uri("package_stats", name.get))
+    Get(Resource.uri("device_packages", name.value))
 }

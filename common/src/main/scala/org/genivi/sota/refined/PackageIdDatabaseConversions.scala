@@ -2,7 +2,7 @@ package org.genivi.sota.refined
 
 import org.genivi.sota.data.PackageId
 import slick.lifted.{CaseClassShape, Rep}
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 import org.genivi.sota.refined.SlickRefined._
 
 object PackageIdDatabaseConversions {

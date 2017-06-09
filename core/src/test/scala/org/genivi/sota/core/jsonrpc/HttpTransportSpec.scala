@@ -1,17 +1,11 @@
 package org.genivi.sota.core.jsonrpc
 
 import akka.http.scaladsl.marshalling.ToEntityMarshaller
-import akka.http.scaladsl.model.ContentTypes
-import akka.http.scaladsl.model.HttpEntity
-import akka.http.scaladsl.model.HttpResponse
-import akka.http.scaladsl.model.StatusCode
-import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.model.Uri
+import akka.http.scaladsl.model._
+import akka.http.scaladsl.unmarshalling.Unmarshaller.NoContentException
 import io.circe._
-import org.genivi.sota.marshalling.CirceMarshallingSupport
-import org.scalacheck.Arbitrary
-import org.scalacheck.Gen
-import CirceMarshallingSupport._
+import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.concurrent.ScalaFutures._
 
 /**
@@ -40,7 +34,11 @@ class HttpTransportSpec extends JsonRpcSpecBase {
       val resFuture = transport.handleRequestResult(
         HttpResponse(statusCode, entity = HttpEntity( ContentTypes.`application/json`, entity )))
       whenReady(resFuture.failed){ res =>
-        res shouldBe a [ParsingFailure]
+        if(entity.isEmpty) {
+          res shouldBe NoContentException
+        } else {
+          res shouldBe a[ParsingFailure]
+        }
       }
     }
   }

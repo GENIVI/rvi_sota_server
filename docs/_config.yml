@@ -22,9 +22,26 @@ sections: [
     ['doc', 'Getting Started'],
     ['dev', 'Developers'],
     ['cli', 'Client Documentation'],
-    ['sec', 'Security Approach'],
     ['ref', 'Reference']
     #['post', 'Posts']
+]
+
+# This creates navigation tabs. First element in the array is the name of the tab,
+# second is the id of the tab's div, third is the list of sections that should
+# appear in the tab
+# 
+# Note that any sections which aren't assigned to any navigation tab will not show 
+# up in navigation anywhere
+navigation_tabs: [
+    ['GENIVI SOTA', 'genivi', ['doc', 'dev', 'cli', 'ref']]
+]
+
+header_links: [
+    ['Server src (stable)', 'https://github.com/genivi/rvi_sota_server'],
+    ['Server src (dev)', 'https://github.com/advancedtelematic/rvi_sota_server'],
+    ['Client src (stable)', 'https://github.com/genivi/rvi_sota_client'],
+    ['Client src (dev)', 'https://github.com/advancedtelematic/rvi_sota_client'],
+    ['Docs', 'http://advancedtelematic.github.io/rvi_sota_server/']
 ]
 
 # Keep as an empty string if served up at the root. If served up at a specific

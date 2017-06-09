@@ -46,7 +46,7 @@ class DeviceResourcePropSpec extends ResourcePropSpec
       val id = deviceRegistry.createDevice(device.toResponse).futureValue
 
       val (installedBefore, update) = state
-      installedBefore.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
+      installedBefore.foreach( p => addPackageOK(p.id.name.value, p.id.version.value, p.description, p.vendor) )
       Put( Resource.uri(devices, id.show, "packages"),
           InstalledSoftware(update.map(_.id), Set())) ~> route ~> check {
         status shouldBe StatusCodes.NoContent
@@ -65,7 +65,7 @@ class DeviceResourcePropSpec extends ResourcePropSpec
       val id = deviceRegistry.createDevice(device.toResponse).futureValue
 
       val (availablePackages, update) = state
-      availablePackages.foreach( p => addPackageOK(p.id.name.get, p.id.version.get, p.description, p.vendor) )
+      availablePackages.foreach( p => addPackageOK(p.id.name.value, p.id.version.value, p.description, p.vendor) )
       Put( Resource.uri(devices, id.show, "packages"),
           InstalledSoftware(update.map(_.id), Set())) ~> route ~> check {
         status shouldBe StatusCodes.NoContent
@@ -119,7 +119,7 @@ class DeviceResourcePropSpec extends ResourcePropSpec
         InstalledSoftware(Set(packageId), Set())) ~> route ~> check {
         status shouldBe StatusCodes.NoContent
 
-        val partialPackageName = packageId.name.get.headOption.map(_.toString).getOrElse(".*")
+        val partialPackageName = packageId.name.value.headOption.map(_.toString).getOrElse(".*")
 
         val query = Uri.Query("regex" -> partialPackageName)
 
@@ -160,13 +160,11 @@ class DeviceResourcePropSpec extends ResourcePropSpec
  */
 class DevicesResourceWordSpec extends ResourceWordSpec with Namespaces {
 
-  import Device._
-
   val devices = "devices"
 
   val uuid = Uuid(Refined.unsafeApply("1f22860a-3ea2-491f-9042-37c98c2d51cd"))
 
-  deviceRegistry.addDevice(Device(Namespaces.defaultNs, uuid, DeviceName("name"), createdAt = Instant.now()))
+  deviceRegistry.addDevice(Device(Namespaces.defaultNs, uuid, Refined.unsafeApply("name"), createdAt = Instant.now()))
 
   "Vin resource" should {
     "install a package on a VIN on PUT request to /vehicles/:vin/package/:packageName/:packageVersion" in {

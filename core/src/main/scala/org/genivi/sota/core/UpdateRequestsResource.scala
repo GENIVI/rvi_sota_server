@@ -14,15 +14,16 @@ import org.genivi.sota.core.data._
 import org.genivi.sota.core.data.client._
 import org.genivi.sota.core.db.{Packages, UpdateRequests, UpdateSpecs}
 import org.genivi.sota.core.resolver.ExternalResolverClient
-import org.genivi.sota.data.{Namespace, Uuid}
+import org.genivi.sota.data.{Namespace, UpdateStatus, Uuid}
 import org.genivi.sota.http.{AuthedNamespaceScope, Scopes}
 import org.genivi.sota.marshalling.CirceMarshallingSupport
-import slick.driver.MySQLDriver.api.Database
+import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
+import slick.jdbc.MySQLProfile.api.Database
 
 import scala.concurrent.Future
 
 class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, updateService: UpdateService,
-                             namespaceExtractor: Directive1[AuthedNamespaceScope])
+                             namespaceExtractor: Directive1[AuthedNamespaceScope], messageBus: MessageBusPublisher)
                             (implicit system: ActorSystem, mat: ActorMaterializer) {
 
   import CirceMarshallingSupport._
@@ -68,12 +69,17 @@ class UpdateRequestsResource(db: Database, resolver: ExternalResolverClient, upd
     import org.genivi.sota.rest.ResponseConversions._
 
     clientUpdateRequest(ns) { case (creq: ClientUpdateRequest, req: UpdateRequest) =>
-      val resultF = updateService.queueUpdate(ns, req, pkg => resolver.resolve(ns, pkg.id))
+      val resultF = updateService.queueUpdate(ns, req, pkg => resolver.resolve(ns, pkg.id), messageBus)
       complete(resultF.map (_ => (StatusCodes.Created, req.toResponse(creq.packageId))))
     }
   }
 
   def cancelUpdate(updateRequestId: Uuid): Route = {
+    db.run(UpdateSpecs.findPendingByRequest(updateRequestId)).map { res =>
+      res.map { case (usr, namespace, packageUuid) =>
+          messageBus.publishSafe(Messages.UpdateSpec(namespace, usr.device, packageUuid, UpdateStatus.Canceled))
+      }
+    }
     complete(db.run(UpdateSpecs.cancelAllUpdatesByRequest(updateRequestId)))
   }
 

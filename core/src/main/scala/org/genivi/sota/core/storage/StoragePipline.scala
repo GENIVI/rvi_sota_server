@@ -14,7 +14,7 @@ import org.genivi.sota.core.db.Packages
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.Messages._
 import scala.concurrent.{Future, ExecutionContext}
-import slick.driver.MySQLDriver.api.Database
+import slick.jdbc.MySQLProfile.api.Database
 
 class StoragePipeline(updateService: UpdateService)
                      (implicit ec: ExecutionContext, db: Database,
@@ -27,7 +27,7 @@ class StoragePipeline(updateService: UpdateService)
 
     for {
       usage <- db.run(Packages.create(pkg).andThen(Packages.usage(pkg.namespace)))
-      _     <- AutoInstall.packageCreated(pkg.namespace, pkg.id, updateService)
+      _     <- AutoInstall.packageCreated(pkg.namespace, pkg.id, updateService, bus)
       _     <- bus.publishSafe(PackageCreated(pkg.namespace, pkg.id, pkg.description, pkg.vendor, pkg.signature,
                                               Instant.now()))
       _     <- bus.publishSafe(PackageStorageUsage(pkg.namespace, Instant.now, usage))

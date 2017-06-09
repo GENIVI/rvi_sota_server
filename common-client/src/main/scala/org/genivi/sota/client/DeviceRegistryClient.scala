@@ -18,9 +18,8 @@ import eu.timepit.refined.string.Regex
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
-
 import org.genivi.sota.common.DeviceRegistry
-import org.genivi.sota.data.{Device, Namespace, PackageId, Uuid}
+import org.genivi.sota.data._
 import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.http.NamespaceDirectives.nsHeader
 import org.genivi.sota.marshalling.CirceMarshallingSupport
@@ -42,15 +41,20 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri, 
 
   private val http = Http()
 
+  // TODO: change return type to Future[PaginatedResult[Device]]]
   override def searchDevice(ns: Namespace, re: String Refined Regex)
-                           (implicit ec: ExecutionContext): Future[Seq[Device]] =
-    execHttp[Seq[Device]](HttpRequest(uri = baseUri.withPath(devicesUri.path)
-      .withQuery(Query("regex" -> re.get)))
+                           (implicit ec: ExecutionContext): Future[Seq[Device]] = {
+
+    val pr = execHttp[PaginatedResult[Device]](HttpRequest(uri = baseUri.withPath(devicesUri.path)
+      .withQuery(Query("regex" -> re.value)))
       .withHeaders(nsHeader(ns)))
       .recover { case t =>
         log.error(t, "Could not contact device registry")
-        Seq.empty[Device]
+        PaginatedResult[Device](0, 0, 0, Seq.empty[Device])
       }
+
+    pr.map(_.values)
+  }
 
   override def fetchDevice(ns: Namespace, uuid: Uuid)
                           (implicit ec: ExecutionContext): Future[Device] =
@@ -62,9 +66,12 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri, 
     execHttp[Device](HttpRequest(uri = baseUri.withPath(mydeviceUri.path / uuid.show)))
 
   override def fetchDevicesInGroup(ns: Namespace, uuid: Uuid)
-                                  (implicit ec: ExecutionContext): Future[Seq[Uuid]] =
-    execHttp[Seq[Uuid]](HttpRequest(uri = baseUri.withPath(deviceGroupsUri.path / uuid.show / "devices"))
-                          .withHeaders(nsHeader(ns)))
+                                  (implicit ec: ExecutionContext): Future[PaginatedResult[Uuid]] = {
+    val path = deviceGroupsUri.path / uuid.show / "devices"
+    val query = Query("limit" -> 1000.toString)
+    execHttp[PaginatedResult[Uuid]](HttpRequest(uri = baseUri.withPath(path).withQuery(query))
+      .withHeaders(nsHeader(ns)))
+  }
 
   override def fetchByDeviceId(ns: Namespace, deviceId: DeviceId)
                               (implicit ec: ExecutionContext): Future[Device] =
@@ -86,11 +93,15 @@ class DeviceRegistryClient(baseUri: Uri, devicesUri: Uri, deviceGroupsUri: Uri, 
     execHttp[NoContent](HttpRequest(method = PUT, uri = baseUri.withPath(mydeviceUri.path / device.show / "packages"),
       entity = HttpEntity(ContentTypes.`application/json`, packages.asJson.noSpaces)))
 
-  override def affectedDevices(namespace: Namespace, packageIds: Set[PackageId])
+  override def affectedDevices(ns: Namespace, packageIds: Set[PackageId])
                               (implicit ec: ExecutionContext): Future[Map[Uuid, Set[PackageId]]] = {
-    execHttp[Map[Uuid, Set[PackageId]]](HttpRequest(method = POST,
-      uri = baseUri.withPath(packagesUri.path / "affected"),
-      entity = HttpEntity(ContentTypes.`application/json`, packageIds.asJson.noSpaces)))
+    execHttp[Map[Uuid, Set[PackageId]]](
+      HttpRequest(
+        method = POST,
+        uri = baseUri.withPath(packagesUri.path / "affected"),
+        entity = HttpEntity(ContentTypes.`application/json`, packageIds.asJson.noSpaces))
+      .withHeaders(nsHeader(ns))
+    )
   }
 
   private def execHttp[T](httpRequest: HttpRequest)

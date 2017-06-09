@@ -13,9 +13,10 @@ import eu.timepit.refined.api.Refined
 import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.data._
+import org.genivi.sota.db.SlickExtensions
 import org.genivi.sota.device_registry.common.PackageStat
 import org.genivi.sota.device_registry.daemon.DeviceSeenListener
-import org.genivi.sota.device_registry.db.DeviceRepository
+import org.genivi.sota.device_registry.db.InstalledPackages
 import org.genivi.sota.device_registry.db.InstalledPackages.{DevicesCount, InstalledPackage}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
@@ -23,19 +24,22 @@ import org.genivi.sota.messaging.Messages.DeviceSeen
 import org.scalacheck.Arbitrary._
 import org.scalacheck.Gen
 import org.scalatest.concurrent.ScalaFutures
-
+import org.scalatest.time.{Millis, Seconds, Span}
 
 /**
  * Spec for DeviceRepository REST actions
  */
-class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
+class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures with SlickExtensions {
 
   import Device._
   import GeneratorOps._
 
-  private val deviceNumber = DeviceRepository.defaultLimit + 10
+  private val deviceNumber = defaultLimit + 10
   private implicit val exec = system.dispatcher
   private val publisher = DeviceSeenListener.action(MessageBusPublisher.ignore)(_)
+
+  implicit override val patienceConfig
+    = PatienceConfig(timeout = Span(5, Seconds), interval = Span(15, Millis))
 
   def isRecent(time: Option[Instant]): Boolean = time match {
     case Some(t) => t.isAfter(Instant.now.minus(3, ChronoUnit.MINUTES))
@@ -49,7 +53,6 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
     forAll { (uuid: Uuid, device: DeviceT, json: Json) =>
       fetchDevice(uuid)          ~> route ~> check { status shouldBe NotFound }
       updateDevice(uuid, device) ~> route ~> check { status shouldBe NotFound }
-      deleteDevice(uuid)         ~> route ~> check { status shouldBe NotFound }
     }
   }
 
@@ -64,8 +67,6 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
         devicePost.deviceType shouldBe devicePre.deviceType
         devicePost.lastSeen shouldBe None
       }
-
-      deleteDeviceOk(uuid)
     }
   }
 
@@ -73,7 +74,7 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
     forAll { (deviceId: DeviceId, devicePre: DeviceT) =>
 
       val uuid: Uuid = createDeviceOk(devicePre.copy(deviceId = Some(deviceId)))
-      fetchByDeviceId(defaultNs, deviceId) ~> route ~> check {
+      fetchByDeviceId(deviceId) ~> route ~> check {
         status shouldBe OK
         val devicePost1: Device = responseAs[Seq[Device]].head
         fetchDevice(uuid) ~> route ~> check {
@@ -83,7 +84,6 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
           devicePost1 shouldBe devicePost2
         }
       }
-      deleteDeviceOk(uuid)
     }
   }
 
@@ -97,7 +97,7 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
 
         d1.deviceId match {
           case Some(deviceId) =>
-            fetchByDeviceId(defaultNs, deviceId) ~> route ~> check {
+            fetchByDeviceId(deviceId) ~> route ~> check {
               status match {
                 case OK => responseAs[Seq[Device]].headOption match {
                   case Some(_) => updateStatus shouldBe Conflict
@@ -119,8 +119,6 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
           case None => updateStatus shouldBe OK
         }
       }
-
-      deleteDeviceOk(uuid)
     }
   }
 
@@ -135,23 +133,6 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
         devicePost.uuid shouldBe uuid
         devicePost.deviceId shouldBe devicePre.deviceId
         devicePost.deviceType shouldBe devicePre.deviceType
-      }
-
-      deleteDeviceOk(uuid)
-    }
-  }
-
-  property("DELETE request after POST succeds and deletes device.") {
-    forAll { (device: DeviceT) =>
-
-      val uuid: Uuid = createDeviceOk(device)
-
-      deleteDevice(uuid) ~> route ~> check {
-        status shouldBe OK
-      }
-
-      fetchDevice(uuid) ~> route ~> check {
-        status shouldBe NotFound
       }
     }
   }
@@ -168,8 +149,8 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
 
         devicePost.lastSeen should not be None
         isRecent(devicePost.lastSeen) shouldBe true
+        devicePost.deviceStatus should not be DeviceStatus.NotSeen
       }
-      deleteDeviceOk(uuid)
     }
   }
 
@@ -182,8 +163,6 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
       createDevice(d2.copy(deviceName = name)) ~> route ~> check {
         status shouldBe Conflict
       }
-
-      deleteDeviceOk(uuid)
     }
   }
 
@@ -195,11 +174,9 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
       createDevice(d2.copy(deviceId = d1.deviceId)) ~> route ~> check {
         d1.deviceId match {
           case Some(deviceId) => status shouldBe Conflict
-          case None => deleteDeviceOk(responseAs[Uuid])
+          case None => status shouldBe Created
         }
       }
-
-      deleteDeviceOk(uuid)
     }
   }
 
@@ -223,8 +200,6 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
           secondDevice.activatedAt shouldBe firstActivation
         }
       }
-
-      deleteDeviceOk(uuid)
     }
   }
 
@@ -240,8 +215,6 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
       getActiveDeviceCount(start, end) ~> route ~> check {
         responseAs[ActiveDeviceCount].deviceCount shouldBe 1
       }
-
-      deleteDeviceOk(uuid)
     }
   }
 
@@ -260,8 +233,6 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
           updatedDevice.lastSeen shouldBe None
         }
       }
-
-      deleteDeviceOk(uuid)
     }
   }
 
@@ -280,8 +251,6 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
           updatedDevice.lastSeen shouldBe defined
         }
       }
-
-      deleteDeviceOk(uuid)
     }
   }
 
@@ -294,9 +263,6 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
       updateDevice(uuid1, d1.copy(deviceName = d2.deviceName)) ~> route ~> check {
         status shouldBe Conflict
       }
-
-      deleteDeviceOk(uuid1)
-      deleteDeviceOk(uuid2)
     }
   }
 
@@ -313,9 +279,6 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
           case None => ()
         }
       }
-
-      deleteDeviceOk(uuid1)
-      deleteDeviceOk(uuid2)
     }
   }
 
@@ -329,13 +292,11 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
 
       listPackages(uuid) ~> route ~> check {
         status shouldBe OK
-        val response = responseAs[Seq[InstalledPackage]]
-        response.length shouldBe 1
-        response.head.packageId shouldEqual pkg
-        response.head.device shouldBe uuid
+        val response = responseAs[PaginatedResult[InstalledPackage]]
+        response.total shouldBe 1
+        response.values.head.packageId shouldEqual pkg
+        response.values.head.device shouldBe uuid
       }
-
-      deleteDeviceOk(uuid)
     }
   }
 
@@ -350,13 +311,11 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
 
     listPackages(uuid, Some("foo")) ~> route ~> check {
       status shouldBe OK
-      val response = responseAs[Seq[InstalledPackage]]
-      response.length shouldBe 1
-      response.head.packageId shouldEqual pkgs.head
-      response.head.device shouldBe uuid
+      val response = responseAs[PaginatedResult[InstalledPackage]]
+      response.total shouldBe 1
+      response.values.head.packageId shouldEqual pkgs.head
+      response.values.head.device shouldBe uuid
     }
-
-    deleteDeviceOk(uuid)
   }
 
   property("Can get stats for a package") {
@@ -381,8 +340,6 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
       //convert to sets as order isn't important
       resp.groupIds shouldBe groupIds.toSet
     }
-
-    deviceIds.foreach(deleteDeviceOk(_))
   }
 
   property("can list devices with custom pagination limit") {
@@ -390,12 +347,11 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
     val deviceTs = genConflictFreeDeviceTs(deviceNumber).sample.get
     val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
 
-    searchDevice(defaultNs, "", limit = limit) ~> route ~> check {
+    searchDevice("", limit = limit) ~> route ~> check {
       status shouldBe OK
-      val result = responseAs[Seq[Device]]
-      result.length shouldBe limit
+      val result = responseAs[PaginatedResult[Device]]
+      result.values.length shouldBe limit
     }
-    deviceIds.foreach(deleteDeviceOk(_))
   }
 
   property("can list devices with custom pagination limit and offset") {
@@ -404,27 +360,71 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
     val deviceTs = genConflictFreeDeviceTs(deviceNumber).sample.get
     val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
 
-    searchDevice(defaultNs, "", offset = offset, limit = limit) ~> route ~> check {
+    searchDevice("", offset = offset, limit = limit) ~> route ~> check {
       status shouldBe OK
-      val devices = responseAs[Seq[Device]]
-      devices.length shouldBe limit
-      devices.zip(devices.tail).foreach { case (device1, device2) =>
-        device1.deviceName.underlying.compareTo(device2.deviceName.underlying) should be <= 0
+      val devices = responseAs[PaginatedResult[Device]]
+      devices.values.length shouldBe limit
+      devices.values.zip(devices.values.tail).foreach { case (device1, device2) =>
+        device1.deviceName.value.compareTo(device2.deviceName.value) should be <= 0
       }
     }
-    deviceIds.foreach(deleteDeviceOk(_))
+  }
+
+  property("can list devices by group ID") {
+    val limit = 30
+    val offset = 10
+    val deviceNumber = 50
+    val deviceTs = genConflictFreeDeviceTs(deviceNumber).sample.get
+    val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
+    val group = genGroupName.sample.get
+    val groupId = createGroupOk(group)
+
+    deviceIds.foreach { id => addDeviceToGroupOk(groupId, id) }
+
+    // test that we get back all the devices
+    fetchByGroupId(groupId, offset = 0, limit = deviceNumber) ~> route ~> check {
+      status shouldBe OK
+      val devices = responseAs[PaginatedResult[Device]]
+      devices.total shouldBe deviceNumber
+      devices.values.map(_.uuid).toSet shouldBe deviceIds.toSet
+    }
+
+    // test that the limit works
+    fetchByGroupId(groupId, offset = offset, limit = limit) ~> route ~> check {
+      status shouldBe OK
+      val devices = responseAs[PaginatedResult[Device]]
+      devices.values.length shouldBe limit
+    }
+  }
+
+  property("can list ungrouped devices") {
+    val deviceNumber = 50
+    val deviceTs = genConflictFreeDeviceTs(deviceNumber).sample.get
+    val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
+
+    val beforeGrouping = fetchUngrouped(offset = 0, limit = deviceNumber) ~> route ~> check {
+      status shouldBe OK
+      responseAs[PaginatedResult[Device]]
+    }
+
+    // add devices to group and check that we get less ungrouped devices
+    val group = genGroupName.sample.get
+    val groupId = createGroupOk(group)
+
+    deviceIds.foreach { id => addDeviceToGroupOk(groupId, id) }
+
+    val afterGrouping = fetchUngrouped(offset = 0, limit = deviceNumber) ~> route ~> check {
+      status shouldBe OK
+      responseAs[PaginatedResult[Device]]
+    }
+
+    beforeGrouping.total shouldBe afterGrouping.total + deviceNumber
   }
 
   property("can list installed packages for all devices with custom pagination limit and offset") {
+
     val limit = 30
     val offset = 10
-
-    //This property is about the whole namespace so we need to clean the db
-    listDevices() ~> route ~> check {
-      status shouldBe OK
-      val devs = responseAs[Seq[Device]]
-      devs.map(_.uuid).foreach(deleteDeviceOk(_))
-    }
 
     val deviceTs = genConflictFreeDeviceTs(deviceNumber).generate
     val deviceIds: Seq[Uuid] = deviceTs.map(createDeviceOk(_))
@@ -432,16 +432,23 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
     // the database is case-insensitve so when we need to take that in to account when sorting in scala
     // furthermore PackageId is not lexicographically ordered so we just use pairs
     def canonPkg(pkg: PackageId) =
-      (pkg.name.get.toLowerCase, pkg.version.get)
+      (pkg.name.value.toLowerCase, pkg.version.value)
 
     val commonPkg = genPackageId.generate
+
+    // get packages directly through the DB without pagination
+    val beforePkgsAction = InstalledPackages.getInstalledForAllDevices(defaultNs)
+    val beforePkgs = db.run(beforePkgsAction).futureValue.map(canonPkg)
 
     val allDevicesPackages = deviceIds.map {device =>
       val pkgs = Gen.listOf(genPackageId).generate.toSet + commonPkg
       installSoftwareOk(device, pkgs)
       pkgs
     }
-    val allPackages = allDevicesPackages.map(_.map(canonPkg)).toSet.flatten.toSeq.sorted
+
+    val allPackages =
+      (allDevicesPackages.map(_.map(canonPkg)).toSet.flatten ++ beforePkgs.toSet)
+        .toSeq.sorted
 
     getInstalledForAllDevices(offset=offset, limit=limit) ~> route ~> check {
       status shouldBe OK
@@ -454,8 +461,6 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
       packages shouldBe sorted
       packages shouldBe allPackages.drop(offset).take(limit)
     }
-
-    deviceIds.foreach(deleteDeviceOk(_))
   }
 
   property("Posting to affected packages returns affected devices") {
@@ -468,8 +473,6 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
         status shouldBe OK
         responseAs[Map[Uuid, Seq[PackageId]]] should contain(uuid -> Seq(p))
       }
-
-      deleteDeviceOk(uuid)
     }
   }
 
@@ -493,7 +496,5 @@ class DeviceResourceSpec extends ResourcePropSpec with ScalaFutures {
       r.values.contains(PackageStat(pkgVersion.head, 5)) shouldBe true
       r.values.contains(PackageStat(pkgVersion(1), 5)) shouldBe true
     }
-
-    uuids.foreach(deleteDeviceOk(_))
   }
 }

@@ -4,6 +4,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import cats.syntax.either._
 import com.advancedtelematic.jws.{CompactSerialization, JwsPayload}
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{Matchers, PropSpec}

@@ -18,7 +18,7 @@ import org.genivi.sota.http.Scopes
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 
 import scala.concurrent.ExecutionContext
-import slick.driver.MySQLDriver.api.Database
+import slick.jdbc.MySQLProfile.api.Database
 
 class AutoInstallResource
   (db: Database, val deviceRegistry: DeviceRegistry, namespaceExtractor: Directive1[AuthedNamespaceScope])

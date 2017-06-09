@@ -8,12 +8,13 @@ import org.genivi.sota.core.db.{BlacklistedPackages, Packages, UpdateSpecs}
 import org.genivi.sota.core.resolver.DefaultConnectivity
 import org.genivi.sota.core.transfer.{DefaultUpdateNotifier, DeviceUpdates}
 import org.genivi.sota.data._
+import org.genivi.sota.messaging.MessageBusPublisher
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.time.SpanSugar._
 import org.scalatest.{BeforeAndAfterAll, Matchers, PropSpec}
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{Await, Future}
 import scala.util.Random
@@ -45,7 +46,7 @@ class UpdateServiceSpec extends PropSpec
   override def beforeAll() : Unit = {
     super.beforeAll()
     val dbio = DBIO.sequence(packages.map(Packages.create)).transactionally
-    Await.ready(db.run(dbio), 50.seconds)
+    Await.ready(db.run(dbio), 2.minutes)
   }
 
   import Generators._
@@ -62,10 +63,12 @@ class UpdateServiceSpec extends PropSpec
 
   implicit override val generatorDrivenConfig = PropertyCheckConfig(minSuccessful = 20)
 
+  lazy val messageBus = MessageBusPublisher.ignore
+
   property("decline if package not found") {
     forAll(updateRequestGen(Gen.uuid)) { (request: UpdateRequest) =>
-      whenReady( service.queueUpdate(defaultNs, request, _ => FastFuture.successful( Map.empty ) ).failed ) { e =>
-        e shouldBe SotaCoreErrors.MissingPackage
+      whenReady( service.queueUpdate(defaultNs, request, _ => FastFuture.successful( Map.empty ), messageBus).failed ) {
+        e => e shouldBe SotaCoreErrors.MissingPackage
       }
     }
   }
@@ -88,8 +91,9 @@ class UpdateServiceSpec extends PropSpec
 
     forAll(updateRequestGen(availablePackageIdGen), resolverGen) { (request, resolverConf) =>
       val (missingPackages, resolver) = resolverConf
-      whenReady(service.queueUpdate(defaultNs, request, resolver).failed.mapTo[PackagesNotFound]) { failure =>
-        failure.packageIds.toSet.union(missingPackages.toSet) should contain theSameElementsAs missingPackages
+      whenReady(service.queueUpdate(defaultNs, request, resolver, messageBus).failed.mapTo[PackagesNotFound]) {
+        failure =>
+                failure.packageIds.toSet.union(missingPackages.toSet) should contain theSameElementsAs missingPackages
       }
     }
   }
@@ -97,7 +101,7 @@ class UpdateServiceSpec extends PropSpec
   property("upload spec per device") {
     forAll(updateRequestGen(availablePackageIdGen), dependenciesGen(packages)) { (req, deps) =>
       val queueF = for {
-        specs <- service.queueUpdate(defaultNs, req, _ => Future.successful(deps))
+        specs <- service.queueUpdate(defaultNs, req, _ => Future.successful(deps), messageBus)
         _ <- db.run(UpdateSpecs.listUpdatesById(Uuid.fromJava(req.id)))
       } yield specs
 
@@ -134,7 +138,7 @@ class UpdateServiceSpec extends PropSpec
     val f = for {
       packageM <- db.run(Packages.create(newPackage))
       _ <- BlacklistedPackages.create(packageM.namespace, packageM.id)
-      _ <- service.queueUpdate(defaultNs, req, _ => Future.successful(Map.empty))
+      _ <- service.queueUpdate(defaultNs, req, _ => Future.successful(Map.empty), messageBus)
     } yield packageM
 
     val e = f.failed.futureValue
@@ -166,7 +170,7 @@ class UpdateServiceSpec extends PropSpec
       packageM <- db.run(Packages.create(newPackage))
       _ <- db.run(Packages.create(dependency))
       _ <- BlacklistedPackages.create(dependency.namespace, dependency.id)
-      _ <- service.queueUpdate(defaultNs, req, _ => Future.successful(fakeDependency))
+      _ <- service.queueUpdate(defaultNs, req, _ => Future.successful(fakeDependency), messageBus)
     } yield packageM
 
     val throwableF = f.failed.futureValue

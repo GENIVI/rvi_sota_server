@@ -2,11 +2,10 @@ package org.genivi.sota.device_registry.daemon
 
 import java.time.Instant
 
-import org.genivi.sota.data.UpdateStatus
 import org.genivi.sota.device_registry.db.DeviceRepository
 import org.genivi.sota.messaging.MessageBusPublisher
 import org.genivi.sota.messaging.Messages.{DeviceUpdateStatus, UpdateSpec}
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -18,7 +17,7 @@ object DeviceUpdateStatusListener {
     (msg: UpdateSpec) =>
       val f = for {
         device <- DeviceRepository.findByUuid(msg.device)
-        status = currentDeviceStatus(device.lastSeen, Seq((Instant.now(), UpdateStatus.withName(msg.status))))
+        status = currentDeviceStatus(device.lastSeen, Seq((Instant.now(), msg.status)))
         _      <- DeviceRepository.setDeviceStatus(device.uuid, status)
       } yield (device, status)
 

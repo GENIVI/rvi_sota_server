@@ -8,6 +8,7 @@ import java.time.{Instant, OffsetDateTime}
 
 import cats.Show
 import cats.syntax.show._
+import eu.timepit.refined.api.{Refined, Validate}
 import org.genivi.sota.data.Device._
 import org.genivi.sota.data.DeviceStatus._
 
@@ -45,10 +46,12 @@ object Device {
     def show(deviceId: DeviceId) = deviceId.underlying
   }
 
-  final case class DeviceName(underlying: String) extends AnyVal
-  implicit val showDeviceName = new Show[DeviceName] {
-    def show(name: DeviceName) = name.underlying
-  }
+  case class ValidDeviceName()
+  type DeviceName = Refined[String, ValidDeviceName]
+  implicit val validDeviceName: Validate.Plain[String, ValidDeviceName] =
+    Validate.fromPredicate (name => name.size < 200,
+                            name => s"$name is not a valid DeviceName since it is longer than 200 characters",
+                            ValidDeviceName())
 
   type DeviceType = DeviceType.DeviceType
 
@@ -57,8 +60,8 @@ object Device {
     // Moved this from SlickEnum, because this should **NOT** be used
     // It's difficult to read this when reading from the database and the Id is not stable when we add/remove
     // values from the enum
-    import slick.driver.MySQLDriver.MappedJdbcType
-    import slick.driver.MySQLDriver.api._
+    import slick.jdbc.MySQLProfile.MappedJdbcType
+    import slick.jdbc.MySQLProfile.api._
 
     implicit val enumMapper = MappedJdbcType.base[Value, Int](_.id, this.apply)
 

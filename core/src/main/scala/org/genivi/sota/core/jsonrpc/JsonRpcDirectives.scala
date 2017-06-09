@@ -7,9 +7,10 @@ package org.genivi.sota.core.jsonrpc
 import akka.http.scaladsl.server._
 import io.circe.DecodingFailure
 import io.circe._
+import cats.syntax.either._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
-import scala.concurrent.ExecutionContext
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 
 /**

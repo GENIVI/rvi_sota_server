@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Contributing"
-category: dev
+categories: [dev]
 date: 2015-08-26 10:41:08
 order: 1
 ---

@@ -4,10 +4,14 @@
   */
 package org.genivi.sota.core.autoinstall
 
+import akka.Done
+import akka.http.scaladsl.util.FastFuture
+import org.genivi.sota.core.campaigns.CampaignLauncher
 import org.genivi.sota.core.db.AutoInstalls
 import org.genivi.sota.core.UpdateService
 import org.genivi.sota.data.{Namespace, PackageId, Uuid}
-import slick.driver.MySQLDriver.api._
+import org.genivi.sota.messaging.MessageBusPublisher
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -18,12 +22,15 @@ object AutoInstall {
     Future.successful(devices.map(_ -> Set(pkg.id)).toMap)
   }
 
-  def packageCreated(ns: Namespace, pkgId: PackageId, updateService: UpdateService)
-                    (implicit db: Database, ec: ExecutionContext): Future[Unit] = {
-    for {
-      updateRequest <- updateService.updateRequest(ns, pkgId)
-      devices <- db.run(AutoInstalls.listDevices(ns, pkgId.name))
-      _ <- updateService.queueUpdate(ns, updateRequest, resolve(devices))
-    } yield ()
+  def packageCreated(ns: Namespace, pkgId: PackageId, updateService: UpdateService, messageBus: MessageBusPublisher)
+                    (implicit db: Database, ec: ExecutionContext): Future[Done] = {
+    db.run(AutoInstalls.listDevices(ns, pkgId.name)).flatMap {
+      case Nil => FastFuture.successful(Done)
+      case devices => for {
+        updateRequest <- updateService.updateRequest(ns, pkgId)
+        _ <- updateService.queueUpdate(ns, updateRequest, resolve(devices), messageBus)
+        _ <- CampaignLauncher.sendMsg(ns, devices.toSet, pkgId, Uuid.fromJava(updateRequest.id), messageBus)
+      } yield Done
+    }
   }
 }

@@ -10,7 +10,7 @@ import org.genivi.sota.data.{Namespace, PackageId}
 import org.genivi.sota.refined.SlickRefined._
 import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.db.Package.Metadata
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.ExecutionContext
 
@@ -98,7 +98,7 @@ object PackageRepository {
           (implicit ec: ExecutionContext): DBIO[Set[Package]] = {
     packages.filter( x =>
       x.namespace === namespace &&
-      (x.name.mappedTo[String] ++ x.version.mappedTo[String] inSet ids.map(id => id.name.get + id.version.get))
+      (x.name.mappedTo[String] ++ x.version.mappedTo[String] inSet ids.map(id => id.name.value + id.version.value))
     ).result.map( _.toSet )
   }
 
@@ -117,7 +117,7 @@ object PackageRepository {
 
   protected[db] def inSetQuery(ids: Set[PackageId]): Query[PackageTable, Package, Seq] = {
     packages.filter { pkg =>
-      (pkg.name.mappedTo[String] ++ pkg.version.mappedTo[String]).inSet(ids.map(id => id.name.get + id.version.get))
+      (pkg.name.mappedTo[String] ++ pkg.version.mappedTo[String]).inSet(ids.map(id => id.name.value + id.version.value))
     }
   }
 

@@ -12,7 +12,7 @@ import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.db.DeviceRepository
 
 import scala.concurrent.{ExecutionContext, Future}
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 
 object ComponentRepository {
@@ -83,6 +83,6 @@ object ComponentRepository {
     components.filter(_.namespace === namespace).result
 
   def searchByRegex(namespace: Namespace, re: Refined[String, Regex]): DBIO[Seq[Component]] =
-    components.filter(i => i.namespace === namespace && regex(i.partNumber, re.get)).result
+    components.filter(i => i.namespace === namespace && regex(i.partNumber, re.value)).result
 
 }

@@ -9,21 +9,19 @@ import java.util.UUID
 
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import cats.Show
-import io.circe.Json
-import io.circe.syntax._
 import org.genivi.sota.core.data._
 import org.genivi.sota.core.db.UpdateSpecs._
 import org.genivi.sota.core.db._
-import org.genivi.sota.core.resolver.ExternalResolverClient
 import org.genivi.sota.core.rvi.UpdateReport
 import org.genivi.sota.data.{Namespace, PackageId, UpdateStatus, Uuid}
 import org.genivi.sota.db.SlickExtensions
 import org.genivi.sota.http.Errors.MissingEntity
 import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
 import slick.dbio.DBIO
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 import org.genivi.sota.refined.PackageIdDatabaseConversions._
 import org.genivi.sota.data.UpdateStatus.UpdateStatus
+import org.genivi.sota.common.DeviceRegistry
 import shapeless.{::, HNil}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -31,7 +29,6 @@ import scala.util.control.NoStackTrace
 
 object DeviceUpdates {
   import SlickExtensions._
-  import org.genivi.sota.marshalling.CirceInstances._
   import org.genivi.sota.refined.SlickRefined._
 
   case class SetOrderFailed(msg: String) extends Exception(msg) with NoStackTrace
@@ -41,11 +38,9 @@ object DeviceUpdates {
     */
   def update(device: Uuid,
              packageIds: List[PackageId],
-             resolverClient: ExternalResolverClient)
+             deviceRegistryClient: DeviceRegistry)
             (implicit ec: ExecutionContext): Future[Unit] = {
-    // TODO: core should be able to send this instead!
-    val j = Json.obj("packages" -> packageIds.asJson, "firmware" -> Json.arr())
-    resolverClient.setInstalledPackages(device, j)
+    deviceRegistryClient.setInstalledPackages(device, packageIds).map(_ => ())
   }
 
   def buildReportInstallResponse(device: Uuid, updateReport: UpdateReport,
@@ -94,8 +89,7 @@ object DeviceUpdates {
 
     db.run(dbIO.transactionally).andThen {
       case scala.util.Success((spec, namespace)) =>
-        messageBus.publish(Messages.UpdateSpec(namespace, device, spec.request.packageUuid,
-        spec.status.toString, Instant.now()))
+        messageBus.publish(Messages.UpdateSpec(namespace, device, spec.request.packageUuid, spec.status, Instant.now))
     }.map(_._1)
   }
 
@@ -178,7 +172,7 @@ object DeviceUpdates {
       pkg.namespace === namespace && pkg.name === packageId.name && pkg.version === packageId.version
     } yield us.device
 
-    query.countDistinct.result
+    query.distinct.length.result
   }
 
   /**

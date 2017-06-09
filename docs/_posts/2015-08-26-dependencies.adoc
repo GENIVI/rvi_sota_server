@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Dependencies"
-category: ref
+categories: [ref]
 date: 2015-08-26 14:18:26
 ---
 :icons: font

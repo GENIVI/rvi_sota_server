@@ -8,17 +8,18 @@ import java.time.Instant
 
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Regex
-import org.genivi.sota.data.{Device, DeviceT, Namespace, Uuid}
+import org.genivi.sota.data._
 import org.genivi.sota.data.DeviceStatus.DeviceStatus
 import org.genivi.sota.db.Operators.regex
+import org.genivi.sota.db.SlickExtensions
 import org.genivi.sota.db.SlickExtensions._
 import org.genivi.sota.device_registry.common.Errors
 import org.genivi.sota.refined.SlickRefined._
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.ExecutionContext
 
-object DeviceRepository {
+object DeviceRepository extends SlickExtensions {
 
   import Device._
   import org.genivi.sota.db.SlickAnyVal._
@@ -44,8 +45,6 @@ object DeviceRepository {
   // scalastyle:on
   val devices = TableQuery[DeviceTable]
 
-  val defaultLimit = 50
-
   def list(ns: Namespace, offset: Option[Long], limit: Option[Long]): DBIO[Seq[Device]] = {
     val filteredDevices = devices.filter(_.namespace === ns)
     (offset, limit) match {
@@ -55,7 +54,7 @@ object DeviceRepository {
           .result
       case _ =>
         filteredDevices
-          .paginateAndSort(_.deviceName, offset.getOrElse(0), limit.getOrElse(defaultLimit))
+          .defaultPaginateAndSort(_.deviceName, offset, limit)
           .result
     }
   }
@@ -98,18 +97,36 @@ object DeviceRepository {
       .filter(d => d.namespace === ns && d.deviceId === deviceId)
       .result
 
-  def search(ns: Namespace, re: String Refined Regex, offset: Option[Long], limit: Option[Long]): DBIO[Seq[Device]] = {
-    val filteredDevices = devices.filter(d => d.namespace === ns && regex(d.deviceName, re))
-    (offset, limit) match {
-      case (None, None) =>
-        filteredDevices
-          .sortBy(_.deviceName)
-          .result
-      case _ =>
-        filteredDevices
-          .paginateAndSort(_.deviceName, offset.getOrElse(0), limit.getOrElse(defaultLimit))
-          .result
+  def search(ns: Namespace, regEx: Option[String Refined Regex], groupId: Option[Uuid],
+             offset: Option[Long], limit: Option[Long])
+            (implicit ec: ExecutionContext):  DBIO[PaginatedResult[Device]] = {
+    val byNamespace = devices.filter(d => d.namespace === ns)
+    val byOptionalRegex = regEx match {
+      case Some(re) => byNamespace.filter(d => regex(d.deviceName, re))
+      case None => byNamespace
     }
+    val byOptionalGroupId = groupId match {
+        case Some(gid) => for {
+          gm <- GroupMemberRepository.groupMembers if gm.groupId === gid
+          d <- byOptionalRegex if gm.deviceUuid === d.uuid
+        } yield d
+        case None => byOptionalRegex
+      }
+
+    byOptionalGroupId.paginatedResult(_.deviceName, offset, limit)
+  }
+
+  def searchUngrouped(ns: Namespace, regEx: Option[String Refined Regex], offset: Option[Long], limit: Option[Long])
+                     (implicit ec: ExecutionContext):  DBIO[PaginatedResult[Device]] = {
+    val byNamespace = devices.filter(_.namespace === ns)
+    val byOptionalRegex = regEx match {
+      case Some(re) => byNamespace.filter(d => regex(d.deviceName, re))
+      case None => byNamespace
+    }
+    val grouped = GroupMemberRepository.groupMembers.map(_.deviceUuid)
+    val byUngrouped = byOptionalRegex.filterNot(_.uuid in grouped)
+
+    byUngrouped.paginatedResult(_.deviceName, offset, limit)
   }
 
   def update(ns: Namespace, uuid: Uuid, device: DeviceT)(implicit ec: ExecutionContext): DBIO[Unit] = {
@@ -168,7 +185,8 @@ object DeviceRepository {
       .filter(_.namespace === ns)
       .map(_.activatedAt.getOrElse(start.minusSeconds(36000)))
       .filter(activatedAt => activatedAt >= start && activatedAt < end)
-      .countDistinct
+      .distinct
+      .length
       .result
   }
 

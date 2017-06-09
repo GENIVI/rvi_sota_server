@@ -19,12 +19,13 @@ import java.time.Instant
 import java.util.UUID
 
 import org.genivi.sota.core.db.UpdateSpecs.UpdateSpecRow
+import org.genivi.sota.messaging.{MessageBusPublisher, Messages}
 
 import scala.collection.immutable.ListSet
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
 import slick.dbio.DBIO
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 case class PackagesNotFound(packageIds: (PackageId)*)
                            (implicit show: Show[PackageId])
@@ -123,9 +124,10 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
     *   <li>Persist in DB all of the above</li>
     * </ul>
     */
-  def queueUpdate(namespace: Namespace, request: UpdateRequest, resolver: DependencyResolver )
+  def queueUpdate(namespace: Namespace, request: UpdateRequest, resolver: DependencyResolver,
+                  messageBus: MessageBusPublisher)
                  (implicit db: Database, ec: ExecutionContext): Future[Set[UpdateSpec]] = {
-    for {
+    val us = for {
       pckg           <- loadPackage(request.packageUuid)
       vinsToDeps     <- resolver(pckg)
       requirements    = allRequiredPackages(vinsToDeps)
@@ -136,6 +138,15 @@ class UpdateService(notifier: UpdateNotifier, deviceRegistry: DeviceRegistry)
       _              <- persistRequest(request, updateSpecs)
       _              <- Future.successful(notifier.notify(updateSpecs.toSeq))
     } yield updateSpecs
+
+    us.foreach { updateSpecs =>
+      updateSpecs.foreach { updateSpec =>
+        messageBus.publishSafe(Messages.UpdateSpec(namespace, updateSpec.device,
+          updateSpec.request.packageUuid, updateSpec.status, updateSpec.updateTime))
+      }
+    }
+
+    us
   }
 
   def allRequiredPackages(deviceToDeps: Map[Uuid, Set[PackageId]]): Set[PackageId] = {

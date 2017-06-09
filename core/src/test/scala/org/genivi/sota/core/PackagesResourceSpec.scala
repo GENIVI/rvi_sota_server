@@ -8,7 +8,6 @@ package org.genivi.sota.core
 import java.io.File
 import java.net.URI
 
-import org.genivi.sota.data.PackageId._
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
 import io.circe.generic.auto._
 import org.genivi.sota.core.data.{Package => DataPackage}
@@ -18,7 +17,6 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.stream.scaladsl.FileIO
 import akka.testkit.TestKitBase
 import akka.util.ByteString
-import cats.data.Xor
 import io.circe.Json
 import io.circe.generic.auto._
 import org.genivi.sota.DefaultPatience
@@ -80,7 +78,7 @@ class PackagesResourceSpec extends FunSuite
 
       Get("/packages") ~> service.route ~> check {
         val dataPackage = responseAs[List[DataPackage]].headOption
-        dataPackage.map(_.id.name.get) should contain("linux-lts")
+        dataPackage.map(_.id.name.value) should contain("linux-lts")
 
         whenReady(readFile(dataPackage.get.uri)) { contents =>
           contents shouldBe ByteString("Some Text")
@@ -117,10 +115,10 @@ class PackagesResourceSpec extends FunSuite
 
         val responseP = responseAs[List[Json]]
           .find { j =>
-            j.cursor.downField("id").get.as[PackageId] === Xor.right(pkg.id)
+            j.hcursor.downField("id").as[PackageId] === Right(pkg.id)
           }
           .map { pp =>
-            pp.cursor.downField("isBlackListed").get.as[Boolean].toOption.get
+            pp.hcursor.downField("isBlackListed").as[Boolean].right.get
           }
 
         responseP should contain(true)
@@ -138,10 +136,10 @@ class PackagesResourceSpec extends FunSuite
 
         val responseP = responseAs[List[Json]]
           .find { j =>
-            j.cursor.downField("id").get.as[PackageId] === Xor.right(pkg.id)
+            j.hcursor.downField("id").as[PackageId] === Right(pkg.id)
           }
           .map { pp =>
-            pp.cursor.downField("isBlackListed").get.as[Boolean].toOption.get
+            pp.hcursor.downField("isBlackListed").as[Boolean].right.get
           }
 
         responseP should contain(false)
@@ -157,11 +155,11 @@ class PackagesResourceSpec extends FunSuite
     } yield pkg
 
     whenReady(dbF) { pkg =>
-      Get(s"/packages/${pkg.id.name.get}/${pkg.id.version.get}") ~> service.route ~> check {
+      Get(s"/packages/${pkg.id.name.value}/${pkg.id.version.value}") ~> service.route ~> check {
         status shouldBe StatusCodes.OK
 
         val responseP = responseAs[Json]
-          .cursor.downField("isBlackListed").get.as[Boolean].toOption.get
+          .hcursor.downField("isBlackListed").as[Boolean].right.get
 
         responseP shouldBe true
       }

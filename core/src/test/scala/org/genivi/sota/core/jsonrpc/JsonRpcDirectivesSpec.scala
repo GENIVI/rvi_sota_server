@@ -3,6 +3,7 @@ package org.genivi.sota.core.jsonrpc
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 import io.circe.Json
 import io.circe.generic.auto._
+import io.circe.shapes._
 import org.genivi.sota.marshalling.CirceMarshallingSupport
 import CirceMarshallingSupport._
 import org.scalacheck.Gen

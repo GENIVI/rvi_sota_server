@@ -12,11 +12,11 @@ import java.time.Instant
 
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.Uuid
-import org.genivi.sota.data.Namespace
+import org.genivi.sota.data.{Namespace, PaginatedResult}
 import org.genivi.sota.http.Errors
 import slick.ast.{Node, TypedType}
-import slick.driver.MySQLDriver.api._
-import slick.lifted.{AbstractTable, Rep}
+import slick.jdbc.MySQLProfile.api._
+import slick.lifted.Rep
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -27,6 +27,41 @@ import scala.util.{Failure, Success}
   *
   * @see {@link http://slick.typesafe.com/docs/}
   */
+
+trait SlickExtensions {
+  val defaultLimit = 50
+  val maxLimit = 1000
+
+  implicit class DbioPaginateExtensions[E, U, A](action: Query[E, U, Seq]) {
+
+    def paginate(offset: Long, limit: Long): Query[E, U, Seq] =
+      action.drop(offset).take(limit.min(maxLimit))
+
+    def defaultPaginate(offset: Option[Long], limit: Option[Long]): Query[E, U, Seq] =
+      action.paginate(offset.getOrElse(0), limit.getOrElse(defaultLimit))
+
+    def paginateAndSort[T <% slick.lifted.Ordered](fn: E => T, offset: Long, limit: Long): Query[E, U, Seq] =
+      action.sortBy(fn).paginate(offset, limit)
+
+    def defaultPaginateAndSort[T <% slick.lifted.Ordered]
+        (fn: E => T, offset: Option[Long], limit: Option[Long]): Query[E, U, Seq] =
+      action.sortBy(fn).defaultPaginate(offset, limit)
+
+    def paginatedResult(offset: Option[Long], limit: Option[Long])
+                       (implicit ec: ExecutionContext):  DBIO[PaginatedResult[U]] = {
+      val o = offset.getOrElse(0L)
+      val l = limit.getOrElse[Long](defaultLimit).min(maxLimit)
+
+      action.length.result.zip(action.paginate(o, l).result).map {
+        case (total, values) => PaginatedResult(total=total, limit=l, offset=o, values=values)
+      }
+    }
+
+    def paginatedResult[T <% slick.lifted.Ordered](fn: E => T, offset: Option[Long], limit: Option[Long])
+                                                  (implicit ec: ExecutionContext):  DBIO[PaginatedResult[U]] =
+      action.sortBy(fn).paginatedResult(offset, limit)
+  }
+}
 
 object SlickExtensions {
   implicit val UriColumnType = MappedColumnType.base[Uri, String](_.toString(), Uri.apply)
@@ -54,21 +89,7 @@ object SlickExtensions {
   implicit def mappedColumnExtensions(c: Rep[_]) : MappedExtensionMethods = new MappedExtensionMethods(c.toNode)
 
   implicit def uuidToJava(refined: Refined[String, Uuid]): Rep[UUID] =
-    UUID.fromString(refined.get).bind
-
-  implicit class DbioPaginateExtensions[E, U, A](action: Query[E, U, Seq]) {
-    def paginateAndSort[T <% slick.lifted.Ordered](fn: E => T, offset: Long, limit: Long): Query[E, U, Seq] = {
-      action
-        .sortBy(fn)
-        .drop(offset)
-        .take(limit)
-    }
-    def paginate(offset: Long, limit: Long): Query[E, U, Seq] = {
-      action
-        .drop(offset)
-        .take(limit)
-    }
-  }
+    UUID.fromString(refined.value).bind
 
   implicit class DbioActionExtensions[T](action: DBIO[T]) {
     def handleIntegrityErrors(error: Throwable)(implicit ec: ExecutionContext): DBIO[T] = {
@@ -116,34 +137,6 @@ object SlickExtensions {
       }
 
       DBIOOps(dbio).failIfNone(t)
-    }
-  }
-
-  implicit class InsertOrUpdateWithKeyOps[Q <: AbstractTable[_], E](tableQuery: TableQuery[Q])
-                                                                   (implicit ev: E =:= Q#TableElementType) {
-
-    def insertOrUpdateWithKey(element: E,
-                              primaryKeyQuery: TableQuery[Q] => Query[Q, E, Seq],
-                              onUpdate: E => E
-                             )(implicit ec: ExecutionContext): DBIO[E] = {
-
-      val findQuery = primaryKeyQuery(tableQuery)
-
-      def update(v: E): DBIO[E] = {
-        val updated = onUpdate(v)
-        findQuery.update(updated).map(_ => updated)
-      }
-
-      val io = findQuery.result.flatMap { res =>
-        if(res.isEmpty)
-          (tableQuery += element).map(_ => element)
-        else if(res.size == 1)
-          update(res.head)
-        else
-          DBIO.failed(new Exception("Too many elements found to update. primaryKeyQuery must define a unique key"))
-      }
-
-      io.transactionally
     }
   }
 }

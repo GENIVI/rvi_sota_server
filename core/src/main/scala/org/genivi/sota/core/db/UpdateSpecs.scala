@@ -13,9 +13,8 @@ import org.genivi.sota.data.{Namespace, PackageId, UpdateStatus, Uuid}
 import org.genivi.sota.db.SlickExtensions
 import java.time.Instant
 
-import cats.syntax.show.toShowOps
 import org.genivi.sota.http.Errors.MissingEntity
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.collection.immutable.Queue
 import scala.concurrent.ExecutionContext
@@ -34,7 +33,7 @@ object UpdateSpecs {
   import UpdateStatus._
   import org.genivi.sota.refined.SlickRefined._
 
-  implicit val UpdateStatusColumn = MappedColumnType.base[UpdateStatus, String](_.value.toString, UpdateStatus.withName)
+  implicit val UpdateStatusColumn = MappedColumnType.base[UpdateStatus, String](_.toString, UpdateStatus.withName)
 
   case class UpdateSpecRow(requestId: UUID, device: Uuid, status: UpdateStatus, installPos: Int,
                            createdAt: Instant, updatedAt: Instant) {
@@ -126,24 +125,12 @@ object UpdateSpecs {
   }
 
   /**
-    * Look up by (UpdateRequest.UUID, Device.UUID) tuple.
-    *
-    * @param arg: Sequence of tuples (UpdateRequest.UUID, Device.UUID)
-    */
-  private def inSeq(arg: Seq[(UUID, Uuid)]): Query[UpdateSpecTable, UpdateSpecRow, Seq] = {
-    updateSpecs.filter { r =>
-      (r.requestId.mappedTo[String] ++ r.device.mappedTo[String])
-        .inSet(arg.map { case (req, device) => req.toString + device.show })
-    }
-  }
-
-  /**
     * Lookup by PK in [[UpdateSpecTable]] table.
     * Note: A tuple is returned instead of an [[UpdateSpec]] instance because
     * the later would require joining [[RequiredPackageTable]] to populate the `dependencies` of that instance.
     */
   def findBy(device: Uuid, requestId: Refined[String, Uuid.Valid]): DBIO[UpdateSpecRow] = {
-    queryBy(device, UUID.fromString(requestId.get)).result.head
+    queryBy(device, UUID.fromString(requestId.value)).result.head
   }
 
   case class UpdateSpecPackages(miniUpdateSpec: MiniUpdateSpec, packages: Queue[Package])
@@ -221,23 +208,19 @@ object UpdateSpecs {
 
   private def cancelAllUpdatesBy(updateSpecFilter: UpdateSpecTable => Rep[Boolean],
                                  packageFilter: Packages.PackageTable => Rep[Boolean])
-                        (implicit ec: ExecutionContext): DBIO[Int] = {
-    val updateRequestIdsQuery = for {
-      us <- updateSpecs if updateSpecFilter(us)
-      ur <- updateRequests if ur.id === us.requestId
+                                (implicit ec: ExecutionContext): DBIO[Int] = {
+    // need to make sure to have the single table updateSpecs (filtered) for update, not a join
+    // (see http://slick.lightbend.com/doc/3.2.0/queries.html#deleting)
+    val updateRequestIdQuery = for {
+      ur <- updateRequests
       pkg <- Packages.packages if pkg.uuid === ur.packageUuid && packageFilter(pkg)
-    } yield (us.requestId, us.device)
+    } yield ur.id
 
-    // Slick does not allow us to use `in` instead of `inSet`, so we need to use DBIO instead of updateRequestIdsQuery
-    updateRequestIdsQuery.result.flatMap { ids =>
-      val updateSpecsQuery = inSeq(ids)
+    val updateSpecsQuery = updateSpecs.withFilter(us => updateSpecFilter(us) && (us.requestId in updateRequestIdQuery))
 
-      val createHistoriesIO = InstallHistories.logAll(updateSpecsQuery, success = false)
-
-      val cancelIO = updateSpecsQuery.map(_.status).update(UpdateStatus.Canceled)
-
-      createHistoriesIO.andThen(cancelIO).transactionally
-    }
+    val createHistoriesIO = InstallHistories.logAll(updateSpecsQuery, success = false)
+    val cancelIO = updateSpecsQuery.map(_.status).update(UpdateStatus.Canceled)
+    createHistoriesIO.andThen(cancelIO).transactionally
   }
 
   def cancelAllUpdatesByRequest(updateRequest: Uuid)
@@ -252,6 +235,27 @@ object UpdateSpecs {
                          pkg.name === packageId.name &&
                          pkg.version === packageId.version)
 
+
+  def findByPackageId(namespace: Namespace, packageId: PackageId): DBIO[Seq[(UpdateSpecRow, UUID)]] = {
+    val q = for {
+      us <- updateSpecs
+      ur <- updateRequests if ur.id === us.requestId
+      pkg <- Packages.packages if pkg.uuid === ur.packageUuid && pkg.name === packageId.name &&
+              pkg.version === packageId.version && pkg.namespace === namespace
+    } yield (us, pkg.uuid)
+
+    q.result
+  }
+
+  def findPendingByRequest(updateRequest: Uuid): DBIO[Seq[(UpdateSpecRow, Namespace, UUID)]] = {
+    val q = for {
+      us <- updateSpecs if us.status === UpdateStatus.Pending && us.requestId === updateRequest.toJava
+      ur <- updateRequests if ur.id === us.requestId
+      pkg <- Packages.packages
+    } yield (us, pkg.namespace, pkg.uuid)
+
+    q.result
+  }
 
   /**
     * The [[UpdateSpec]]-s (excluding dependencies but including status) for the given [[UpdateRequest]].

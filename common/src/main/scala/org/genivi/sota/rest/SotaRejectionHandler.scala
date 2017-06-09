@@ -7,7 +7,7 @@ package org.genivi.sota.rest
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server._
-import de.heikoseeberger.akkahttpcirce.CirceSupport._
+import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.generic.auto._
 import org.genivi.sota.marshalling.RefinementError
 import org.genivi.sota.marshalling.DeserializationException

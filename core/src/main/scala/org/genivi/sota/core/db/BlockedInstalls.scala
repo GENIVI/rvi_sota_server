@@ -10,7 +10,7 @@ import org.genivi.sota.refined.SlickRefined._
 import java.time.Instant
 
 import scala.concurrent.ExecutionContext
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 
 object BlockedInstalls {

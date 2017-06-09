@@ -8,8 +8,8 @@ import java.lang.management.ManagementFactory
 import javax.management.{JMX, ObjectName}
 
 import akka.http.scaladsl.server.Directives
-import com.zaxxer.hikari.pool.HikariPoolMBean
-import slick.driver.MySQLDriver.api._
+import com.zaxxer.hikari.HikariPoolMXBean
+import slick.jdbc.MySQLProfile.api._
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
@@ -23,7 +23,7 @@ class HealthResource(db: Database, versionRepr: Map[String, Any] = Map.empty)
   private lazy val mBeanServer = ManagementFactory.getPlatformMBeanServer
   // TODO: Use proper db name after upgrading slick (https://github.com/slick/slick/issues/1326)
   private lazy val poolName = new ObjectName("com.zaxxer.hikari:type=Pool (database)")
-  private lazy val poolProxy = JMX.newMXBeanProxy(mBeanServer, poolName, classOf[HikariPoolMBean])
+  private lazy val poolProxy = JMX.newMXBeanProxy(mBeanServer, poolName, classOf[HikariPoolMXBean])
 
   val metricRegistry = MetricsSupport.metricRegistry
 

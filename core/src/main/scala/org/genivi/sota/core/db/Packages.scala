@@ -12,7 +12,7 @@ import org.genivi.sota.core.SotaCoreErrors
 import org.genivi.sota.core.data.Package
 import org.genivi.sota.data.Namespace
 import org.genivi.sota.data.PackageId
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.ExecutionContext
 
@@ -117,7 +117,7 @@ object Packages {
 
     packages.filter(x =>
       x.namespace === ns &&
-      (x.name.mappedTo[String] ++ x.version.mappedTo[String] inSet ids.map( id => id.name.get + id.version.get))
+      (x.name.mappedTo[String] ++ x.version.mappedTo[String] inSet ids.map( id => id.name.value + id.version.value))
     ).result
   }
 
@@ -152,4 +152,15 @@ object Packages {
       .sum
       .result
       .map(_.getOrElse(0L))
+
+  // find package corresponding to uuid and return namespaces it is stored under
+  def packageNamespaces(packageUuid: UUID): DBIO[Seq[Namespace]] = {
+    val query = for {
+      byUuid <- packages if byUuid.uuid === packageUuid
+      byNameAndVersion <- packages if byNameAndVersion.name === byUuid.name &&
+                                      byNameAndVersion.version === byUuid.version
+    } yield byNameAndVersion.namespace
+
+    query.result
+  }
 }

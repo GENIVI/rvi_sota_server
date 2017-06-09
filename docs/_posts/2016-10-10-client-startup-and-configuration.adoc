@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Client Startup and Configuration"
-category: cli
+categories: [cli]
 date: 2016-10-10 15:23:30
 order: 2
 ---

@@ -18,12 +18,17 @@ class MessageBusListenerActor[M](source: Source[M, NotUsed])(implicit messageLik
   implicit val materializer = ActorMaterializer()
   implicit val ec = context.dispatcher
 
-  override def postRestart(reason: Throwable): Unit = trySubscribeDelayed()
+  override def postRestart(reason: Throwable): Unit = {
+    log.error(reason, "Source/Listener restarted, subscribing again")
+    trySubscribeDelayed()
+  }
 
   private def subscribed: Receive = {
     log.info(s"Subscribed to ${messageLike.streamName}")
 
     {
+      case Subscribe =>
+        log.warning("Already subscribed not subscribing again")
       case Failure(ex) =>
         log.error(ex, "Source/Listener died, subscribing again")
         trySubscribeDelayed()

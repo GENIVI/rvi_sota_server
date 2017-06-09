@@ -11,7 +11,7 @@ import org.genivi.sota.core.data.OperationResult
 import org.genivi.sota.data.{Namespace, Uuid}
 
 import scala.concurrent.ExecutionContext
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 import java.time.Instant
 
 /**
@@ -60,7 +60,7 @@ object OperationResults {
    * All [[OperationResult]]-s for the given [[UpdateRequest]]
    */
   def byId(id: Refined[String, Uuid.Valid])(implicit ec: ExecutionContext): DBIO[Seq[OperationResult]] =
-    all.filter(r => r.updateId === UUID.fromString(id.get)).result
+    all.filter(r => r.updateId === UUID.fromString(id.value)).result
 
   /**
     * All [[OperationResult]]-s for the given device.
@@ -73,7 +73,7 @@ object OperationResults {
     */
   def byDeviceIdAndId(device: Uuid, id: Refined[String, Uuid.Valid])
                      (implicit ec: ExecutionContext): DBIO[Seq[OperationResult]] =
-      all.filter(r => r.device === device && r.updateId === UUID.fromString(id.get)).result
+      all.filter(r => r.device === device && r.updateId === UUID.fromString(id.value)).result
 
   /**
    * Add a new package update. Package updated specify a specific package at a

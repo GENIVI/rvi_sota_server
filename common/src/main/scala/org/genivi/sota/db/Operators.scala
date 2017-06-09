@@ -5,7 +5,7 @@
 
 package org.genivi.sota.db
 
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 /**
   * Some database operators are shared between the core and the

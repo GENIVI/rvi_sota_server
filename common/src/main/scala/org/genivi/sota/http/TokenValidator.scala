@@ -14,7 +14,7 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.server.{AuthorizationFailedRejection, Directive0, Directives}
 import akka.http.scaladsl.util.FastFuture
 import akka.stream.ActorMaterializer
-import cats.data.Xor
+import cats.syntax.either._
 import com.advancedtelematic.akka.http.jwt.JwtDirectives
 import com.advancedtelematic.json.signature.JcaSupport
 import com.advancedtelematic.jwa.HS256
@@ -95,8 +95,8 @@ class TokenValidator(implicit system: ActorSystem, mat: ActorMaterializer) {
     import JwtDirectives._
     import JcaSupport._
 
-    val verifier: String Xor Jws.JwsVerifier = for {
-      secret <- Xor
+    val verifier: String Either Jws.JwsVerifier = for {
+      secret <- Either
                  .catchOnly[ConfigException] {config.getString("auth.token.secret")}
                  .leftMap(_.getMessage)
                  .map[SecretKey](x => new SecretKeySpec(Base64.decodeBase64(x), "HMAC"))

@@ -11,9 +11,9 @@ import com.typesafe.config.ConfigFactory
 
 case class PackageId(name   : PackageId.Name,
                      version: PackageId.Version) {
-  override def toString(): String = s"PackageId(${name.get}, ${version.get})"
+  override def toString(): String = s"PackageId(${name.value}, ${version.value})"
 
-  def mkString: String = s"${name.get}-${version.get}"
+  def mkString: String = s"${name.value}-${version.value}"
 }
 
 /**
@@ -64,11 +64,11 @@ object PackageId {
     */
   implicit val PackageIdOrdering: Ordering[PackageId] = new Ordering[PackageId] {
     override def compare(id1: PackageId, id2: PackageId): Int =
-      id1.name.get + id1.version.get compare id2.name.get + id2.version.get
+      id1.name.value + id1.version.value compare id2.name.value + id2.version.value
   }
 
   implicit val showInstance: Show[PackageId] =
-    Show.show(id => s"${id.name.get}-${id.version.get}")
+    Show.show(id => s"${id.name.value}-${id.version.value}")
 
   implicit val eqInstance: Eq[PackageId] =
     Eq.fromUniversalEquals[PackageId]

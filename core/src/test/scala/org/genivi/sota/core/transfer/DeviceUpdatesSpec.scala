@@ -18,7 +18,7 @@ import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
 
 import scala.concurrent.ExecutionContext
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 
 class DeviceUpdatesSpec extends FunSuite
@@ -46,11 +46,11 @@ class DeviceUpdatesSpec extends FunSuite
     whenReady(deviceRegistry.createDevice(device)) { id =>
       val resolverClient = new FakeExternalResolver
       val packageIds = Gen.listOf(PackageIdGen).sample.get
-      val f = update(id, packageIds, resolverClient)
+      val f = update(id, packageIds, deviceRegistry)
 
       whenReady(f) { _ =>
-        forAll(packageIds) { id =>
-          resolverClient.isInstalled(id) shouldBe true
+        forAll(packageIds) { p =>
+          deviceRegistry.isInstalled(id, p) shouldBe true
         }
       }
     }

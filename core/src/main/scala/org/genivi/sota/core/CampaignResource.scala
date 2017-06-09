@@ -8,19 +8,20 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Directive1, Route}
-import cats.data.Xor
 import io.circe.generic.auto._
 import org.genivi.sota.common.DeviceRegistry
 import org.genivi.sota.core.campaigns.{CampaignLauncher, CampaignStats}
 import org.genivi.sota.core.data.Campaign
 import org.genivi.sota.core.db.Campaigns
 import org.genivi.sota.data.{Namespace, PackageId}
-import org.genivi.sota.http.{AuthedNamespaceScope, ErrorHandler, Scopes}
 import org.genivi.sota.http.UuidDirectives._
+import org.genivi.sota.http.{AuthedNamespaceScope, ErrorHandler, Scopes}
 import org.genivi.sota.marshalling.CirceMarshallingSupport._
+import org.genivi.sota.marshalling.RefinedMarshallingSupport._
 import org.genivi.sota.messaging.MessageBusPublisher
-import slick.driver.MySQLDriver.api.Database
+import slick.jdbc.MySQLProfile.api.Database
 
+import scala.async.Async._
 import scala.concurrent.Future
 
 class CampaignResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
@@ -32,7 +33,7 @@ class CampaignResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
   import system.dispatcher
 
   def cancel(id: Campaign.Id): Route = {
-    complete(CampaignLauncher.cancel(id))
+    complete(CampaignLauncher.cancel(id, messageBus))
   }
 
   def createCampaign(ns: Namespace, name: CreateCampaign): Route = {
@@ -47,10 +48,18 @@ class CampaignResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
     complete(db.run(Campaigns.fetch(id)))
   }
 
-  def launch(id: Campaign.Id, lc: LaunchCampaign): Route = {
-    lc.isValid match {
-      case Xor.Right(()) => complete(CampaignLauncher.launch(deviceRegistry, updateService, id, lc, messageBus))
-      case Xor.Left(err) => complete(Conflict -> err)
+  def launch(id: Campaign.Id, lc: LaunchCampaignRequest): Route = {
+    lc.isValid() match {
+      case Right(()) =>
+        val r = async {
+          val campaign = await(db.run(Campaigns.fetch(id)))
+          campaign.meta.deltaFrom match {
+            case Some(_) => await(CampaignLauncher.generateDeltaRequest(id, lc, messageBus))
+            case None => await(CampaignLauncher.launch(deviceRegistry, updateService, id, lc, messageBus))
+          }
+        }
+        complete(NoContent -> r)
+      case Left(err) => complete(Conflict -> err)
     }
   }
 
@@ -80,6 +89,23 @@ class CampaignResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
 
   def getCampaignStats(id: Campaign.Id): Route = {
     complete(CampaignStats.get(id, updateService))
+  }
+
+  def toggleDelta(id: Campaign.Id): Route = {
+    val sha256size = 64
+    parameters(('deltaFromName.as[PackageId.Name].?,
+      'deltaFromVersion.as[PackageId.Version].?)) {
+      case (Some(name), Some(version)) =>
+        if (version.value.length != sha256size || !version.value.matches("-?[0-9a-fA-F]+")) {
+          complete(BadRequest -> "delta from version must be a valid ostree hash")
+        } else {
+          complete(db.run(Campaigns.setDeltaFrom(id, Some(PackageId(name, version)))))
+        }
+      case (None, None) =>
+        complete(db.run(Campaigns.setDeltaFrom(id, None)))
+      case _ =>
+        complete(BadRequest -> "Missing either 'deltaFromName' or 'deltaFromVersion'")
+    }
   }
 
   val extractId: Directive1[Campaign.Id] =
@@ -113,10 +139,12 @@ class CampaignResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
             setAsDraft(id)
           } ~
           (path("launch") & scope.post) {
-            entity(as[LaunchCampaign]) { launchCampaign =>
+            entity(as[LaunchCampaignRequest]) { launchCampaign =>
               launch(id, launchCampaign)
-            } ~ {
-              launch(id, LaunchCampaign())
+            } ~ pathEnd {
+              //need pathEnd above, as otherwise launch will be called unconditionally, which
+              //results in launch being called twice if a LaunchCampaignRequest is also given.
+              launch(id, LaunchCampaignRequest())
             }
           } ~
           (path("groups") & scope.put & entity(as[SetCampaignGroups])) { groups =>
@@ -130,6 +158,9 @@ class CampaignResource(namespaceExtractor: Directive1[AuthedNamespaceScope],
           } ~
           (path("statistics") & scope.get) {
             getCampaignStats(id)
+          } ~
+          (path("delta") & scope.put) {
+            toggleDelta(id)
           }
         }
       }

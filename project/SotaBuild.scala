@@ -56,6 +56,7 @@ object SotaBuild extends Build {
       "-Ywarn-dead-code",
       "-Yno-adapted-args"
     ),
+    scalacOptions in (Compile, console) ~= (_.filterNot(_ == "-Ywarn-unused-import")),
     scalacOptions in (Compile, doc) ++= Seq(
       "-no-link-warnings"
     )
@@ -86,7 +87,7 @@ object SotaBuild extends Build {
 
   lazy val commonTest = Project(id = "sota-common-test", base = file("common-test"))
     .settings(basicSettings ++ compilerSettings ++ lintOptions)
-    .settings(libraryDependencies ++= Seq (Dependencies.Cats, Dependencies.Refined, Dependencies.Generex))
+    .settings(libraryDependencies ++= Seq (Dependencies.Cats, Dependencies.Refined, Dependencies.Generex, Dependencies.ScalaCheck(Compile)))
     .settings(libraryDependencies += Dependencies.ScalaTest(Provided))
     .dependsOn(commonData)
     .settings(Publish.settings)
@@ -99,7 +100,7 @@ object SotaBuild extends Build {
 
   lazy val externalResolver = Project(id = "sota-resolver", base = file("external-resolver"))
     .settings( commonSettings ++ Migrations.settings ++ lintOptions ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.AkkaStream :+ Dependencies.AkkaStreamTestKit :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.ParserCombinators :+ Dependencies.Flyway,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.AkkaStream :+ Dependencies.AkkaStreamTestKit :+ Dependencies.Cats :+ Dependencies.Refined :+ Dependencies.ParserCombinators,
       testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RandomTest"),
       testOptions in RandomTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RandomTest"),
       parallelExecution in Test := true,
@@ -123,7 +124,7 @@ object SotaBuild extends Build {
 
   lazy val core = Project(id = "sota-core", base = file("core"))
     .settings( commonSettings ++ Migrations.settings ++ lintOptions ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Scalaz :+ Dependencies.Flyway :+ Dependencies.AmazonS3 :+ Dependencies.LibTuf :+ Dependencies.LibAts,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.AmazonS3 :+ Dependencies.LibTuf :+ Dependencies.LibAts,
       testOptions in UnitTests += Tests.Argument(TestFrameworks.ScalaTest, "-l", "RequiresRvi", "-l", "IntegrationTest"),
       testOptions in IntegrationTests += Tests.Argument(TestFrameworks.ScalaTest, "-n", "RequiresRvi", "-n", "IntegrationTest"),
       parallelExecution in Test := true,
@@ -152,7 +153,6 @@ object SotaBuild extends Build {
       parallelExecution := false,
       parallelExecution in IntegrationTests := false,
       parallelExecution in BrowserTests := false,
-      resolvers += "scalaz-bintray"  at "http://dl.bintray.com/scalaz/releases",
       dockerExposedPorts := Seq(9000),
       libraryDependencies ++= Seq (
         "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % "test", // https://github.com/playframework/scalatestplus-play
@@ -168,7 +168,7 @@ object SotaBuild extends Build {
         "com.unboundid" % "unboundid-ldapsdk" % "3.1.1",
         ws,
         play.sbt.Play.autoImport.cache
-      ) ++ Dependencies.Slick ++ Dependencies.Play2Auth
+      ) ++ Dependencies.Play2Auth
     ))
     .dependsOn(common, commonData)
     .enablePlugins(PlayScala, SbtWeb, BuildInfoPlugin)
@@ -180,7 +180,7 @@ object SotaBuild extends Build {
 
   lazy val deviceRegistry = Project(id = "sota-device_registry", base = file("device-registry"))
     .settings(commonSettings ++ Migrations.settings ++ lintOptions ++ Seq(
-      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Refined :+ Dependencies.Flyway,
+      libraryDependencies ++= Dependencies.Rest ++ Dependencies.Circe :+ Dependencies.Refined,
       parallelExecution in Test := true,
       dockerExposedPorts := Seq(8083),
       flywayUrl := sys.env.get("DEVICE_REGISTRY_DB_URL").orElse(sys.props.get("device-registry.db.url")).getOrElse("jdbc:mysql://localhost:3306/sota_device_registry"),
@@ -224,9 +224,9 @@ object Dependencies {
 
   val AkkaHttpVersion = "10.0.3"
 
-  val CirceVersion = "0.4.1"
+  val CirceVersion = "0.7.0"
 
-  val AkkaHttpCirceVersion = "1.7.0"
+  val AkkaHttpCirceVersion = "1.15.0"
 
   val LogbackVersion = "1.1.3"
 
@@ -234,11 +234,11 @@ object Dependencies {
 
   val AWSVersion = "1.11.15"
 
-  val JsonWebSecurityVersion = "0.3.1"
+  val JsonWebSecurityVersion = "0.4.5"
 
-  val libTufV = "0.0.1-53-ge577c3e"
+  val libTufV = "0.0.1-113-gf110d11"
 
-  val libAtsV = "0.0.1-8-gad81bff"
+  val libAtsV = "0.0.1-67-g052b15d"
 
   val AkkaHttp = "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion
 
@@ -272,27 +272,26 @@ object Dependencies {
     "io.circe" %% "circe-core" % CirceVersion,
     "io.circe" %% "circe-generic" % CirceVersion,
     "io.circe" %% "circe-parser" % CirceVersion,
-    "io.circe" %% "circe-java8" % CirceVersion
+    "io.circe" %% "circe-java8" % CirceVersion,
+    "io.circe" %% "circe-shapes" % CirceVersion
   )
 
-  lazy val Refined = "eu.timepit" %% "refined" % "0.3.1"
+  lazy val Refined = "eu.timepit" %% "refined" % "0.8.0"
 
-  lazy val Scalaz = "org.scalaz" %% "scalaz-core" % "7.1.3"
-  lazy val Cats   = "org.spire-math" %% "cats" % "0.3.0"
+  lazy val Cats   = "org.typelevel" %% "cats-core" % "0.9.0"
 
   def ScalaTest(conf: Configuration = Test) = "org.scalatest" %% "scalatest" % "2.2.4" % conf
-
-  lazy val ScalaCheck = "org.scalacheck" %% "scalacheck" % "1.12.4" % "test"
+  def ScalaCheck(conf: Configuration = Test) = "org.scalacheck" %% "scalacheck" % "1.12.4" % conf
 
   lazy val Flyway = "org.flywaydb" % "flyway-core" % "4.0.3"
 
-  lazy val TestFrameworks = Seq(ScalaTest(), ScalaCheck)
+  lazy val TestFrameworks = Seq(ScalaTest(), ScalaCheck())
 
   lazy val TypesafeConfig = "com.typesafe" % "config" % "1.3.0"
 
   lazy val Slick = Seq (
-    "com.typesafe.slick" %% "slick" % "3.1.1",
-    "com.typesafe.slick" %% "slick-hikaricp" % "3.1.1",
+    "com.typesafe.slick" %% "slick" % "3.2.0",
+    "com.typesafe.slick" %% "slick-hikaricp" % "3.2.0",
     "org.mariadb.jdbc" % "mariadb-java-client" % "1.4.4"
   )
 
@@ -325,7 +324,7 @@ object Dependencies {
 
   lazy val Nats = "com.github.tyagihas" % "scala_nats_2.11" % "0.2.1" exclude("org.slf4j", "slf4j-simple")
 
-  lazy val Kafka = "com.typesafe.akka" %% "akka-stream-kafka" % "0.12"
+  lazy val Kafka = "com.typesafe.akka" %% "akka-stream-kafka" % "0.16"
 
   lazy val LibTuf = "com.advancedtelematic" %% "libtuf" % libTufV
 

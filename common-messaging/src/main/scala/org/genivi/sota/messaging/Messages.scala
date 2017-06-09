@@ -4,16 +4,17 @@ import java.time.Instant
 import java.util.UUID
 
 import akka.http.scaladsl.model.Uri
-import cats.data.Xor
 import cats.syntax.show._
 import io.circe.generic.decoding.DerivedDecoder
 import io.circe.generic.encoding.DerivedObjectEncoder
-import io.circe.{Decoder, Encoder}
+import io.circe.{Decoder, Encoder, Json}
 import io.circe.parser._
 import org.genivi.sota.data.DeviceStatus.DeviceStatus
+import org.genivi.sota.data.UpdateStatus.UpdateStatus
 import org.genivi.sota.marshalling.CirceInstances._
 import org.genivi.sota.data._
 import org.genivi.sota.data.UpdateType.UpdateType
+import org.genivi.sota.messaging.Commit.Commit
 import shapeless.Lazy
 
 import scala.reflect.ClassTag
@@ -59,11 +60,6 @@ object Messages {
     uuid: Uuid,
     at: Instant) extends BusMessage
 
-  final case class DeviceDeleted(
-    namespace: Namespace,
-    uuid: Uuid,
-    timestamp: Instant = Instant.now()) extends BusMessage
-
   final case class PackageCreated(
     namespace: Namespace,
     packageId: PackageId,
@@ -99,7 +95,7 @@ object Messages {
     namespace: Namespace,
     device: Uuid,
     packageUuid: UUID,
-    status: String,
+    status: UpdateStatus,
     timestamp: Instant = Instant.now()) extends BusMessage
 
   final case class UserCreated(id: String) extends BusMessage
@@ -113,7 +109,16 @@ object Messages {
 
   final case class CampaignLaunched(namespace: Namespace, updateId: Uuid, devices: Set[Uuid],
                                     pkgUri: UriWithSimpleEncoding, pkg: PackageId,
-                                    pkgSize: Long, pkgChecksum: String) extends BusMessage
+                                    pkgSize: Long, pkgChecksum: String,
+                                    timestamp: Instant = Instant.now()) extends BusMessage
+
+  final case class DeltaRequest(id: Uuid, namespace: Namespace, from: Commit, to: Commit,
+                                timestamp: Instant = Instant.now) extends BusMessage
+
+  final case class GeneratedDelta(id: Uuid, namespace: Namespace, from: Commit, to: Commit, uri: Uri, size: Long)
+    extends BusMessage
+
+  final case class DeltaGenerationFailed(id: Uuid, namespace: Namespace, error: Option[Json] = None) extends BusMessage
 
   implicit class StreamNameOp[T <: Class[_]](v: T) {
     def streamName: String = {
@@ -146,7 +151,7 @@ object Messages {
 
     def partitionKey(v: T): String = id(v).take(partitionPrefixSize)
 
-    def parse(json: String): io.circe.Error Xor T = decode[T](json)
+    def parse(json: String): io.circe.Error Either T = decode[T](json)
 
     implicit val encoder: Encoder[T]
 
@@ -158,8 +163,6 @@ object Messages {
   implicit val deviceCreatedMessageLike = MessageLike[DeviceCreated](_.uuid.show)
 
   implicit val devicePublicCredentialsSetMessageLike = MessageLike[DevicePublicCredentialsSet](_.uuid.show)
-
-  implicit val deviceDeletedMessageLike = MessageLike[DeviceDeleted](_.uuid.show)
 
   implicit val deviceActivatedMessageLike = MessageLike[DeviceActivated](_.uuid.show)
 
@@ -184,4 +187,10 @@ object Messages {
   implicit val deviceStatusMessageLike = MessageLike[DeviceUpdateStatus](_.device.show)
 
   implicit val campaignLaunchedMessageLike = MessageLike[CampaignLaunched](_.updateId.show)
+
+  implicit val deltaGenerationRequestMessageLike = MessageLike[DeltaRequest](_.id.show)
+
+  implicit val deltaGeneratedMessageLike = MessageLike[GeneratedDelta](_.id.show)
+
+  implicit val deltaGenerationFailedMessageLike = MessageLike[DeltaGenerationFailed](_.id.show)
 }

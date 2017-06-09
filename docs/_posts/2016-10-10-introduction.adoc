@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Introduction"
-category: cli
+categories: [cli]
 date: 2016-10-10 15:27:15
 order: 1
 ---

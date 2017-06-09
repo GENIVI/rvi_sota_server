@@ -1,10 +1,11 @@
 Value,Default,Description
 AUTH_PROTOCOL,oauth.idtoken,"The protocol to use for authentication. OAuth will require some integration work; “none” will disable authentication for devices. (If RVI is enabled, authentication is handled through RVI.)"
-JWT_SECRET,,
+JWT_SECRET,,A secret for JSON Web Tokens.
 SCOPES_DOMAIN,“”,Config option for a future feature. Currently unused.
-DEVICE_REGISTRY_API_URI,http://localhost:8083,The location of the device registry api.
-HOST,localhost,Host to listen for connections on.
-PORT,8081,Port to listen on.
+DEVICE_REGISTRY_PORT,8083,Port of the Device Registry.
+DEVICE_REGISTRY_HOST,"localhost",Location of the Device Registry.
+BIND_HOST,localhost,Host to listen for connections on.
+BIND_PORT,8081,Port to listen on.
 DEFAULT_NAMESPACE,default,"Default namespace to use, if not otherwise specified."
 RESOLVER_DB_URL,jdbc:mariadb://localhost:3306/sota_resolver,The URL of the resolver database.
 RESOLVER_DB_USER,sota,Username with access to the resolver database.

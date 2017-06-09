@@ -48,10 +48,9 @@ class DeviceResourceSpec extends FunSuite
   val serverTransport = HttpTransport( rviUri )
   implicit val rviClient = new JsonRpcRviClient( serverTransport.requestTransport, system.dispatcher)
 
-  val fakeResolver = new FakeExternalResolver()
   val deviceRegistry = new FakeDeviceRegistry(Namespaces.defaultNs)
 
-  lazy val service = new DevicesResource(db, rviClient, fakeResolver, deviceRegistry, defaultNamespaceExtractor)
+  lazy val service = new DevicesResource(db, rviClient, deviceRegistry, defaultNamespaceExtractor)
 
   val BasePath = Path("/devices_info")
 
@@ -61,7 +60,7 @@ class DeviceResourceSpec extends FunSuite
     Uri.Empty.withPath(BasePath / pathSuffix)
   }
 
-  def deviceUri(device: Uuid)  = Uri.Empty.withPath( BasePath / device.underlying.get )
+  def deviceUri(device: Uuid)  = Uri.Empty.withPath( BasePath / device.underlying.value )
 
   test("returns vehicle status even if Vin is in device registry but not local db") {
     val device1 = genDeviceT.sample.get.copy(deviceId = Some(genDeviceId.sample.get))

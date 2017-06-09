@@ -18,7 +18,7 @@ import org.genivi.sota.resolver.common.Errors
 import org.genivi.sota.resolver.components.{Component, ComponentRepository}
 import org.genivi.sota.resolver.filters._
 import org.genivi.sota.resolver.firmware.Firmware
-import slick.driver.MySQLDriver.api._
+import slick.jdbc.MySQLProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -107,10 +107,21 @@ object DeviceRepository {
 
   def installPackage(namespace: Namespace, device: Uuid, pkgId: PackageId)
                     (implicit ec: ExecutionContext): DBIO[Unit] =
-    for {
+    (for {
       pkg <- PackageRepository.exists(namespace, pkgId)
-      _ <- installedPackages.insertOrUpdate((device, pkg.uuid))
-    } yield ()
+      _ <- installedPackages //This code is a workaround for a bug in Slick's insertOrUpdate() See Slick Issue #1728
+        .filter(_.device === device)
+        .filter(_.packageUuid === pkg.uuid)
+        .result
+        .flatMap { result =>
+          if(result.isEmpty) {
+            (installedPackages += ((device, pkg.uuid))).map(_ => ())
+          } else {
+            DBIO.successful(())
+          }
+        }
+
+    } yield ()).transactionally
 
   def uninstallPackage(namespace: Namespace, device: Uuid, pkgId: PackageId)
                       (implicit ec: ExecutionContext): DBIO[Unit] =
@@ -225,7 +236,7 @@ object DeviceRepository {
              deviceRegistry: DeviceRegistry)
             (implicit db: Database, ec: ExecutionContext, mat: ActorMaterializer): Future[Seq[Uuid]] = {
     def toRegex[T](r: Refined[String, T]): Refined[String, Regex] =
-      refineV[Regex](r.get).right.getOrElse(Refined.unsafeApply(".*"))
+      refineV[Regex](r.value).right.getOrElse(Refined.unsafeApply(".*"))
 
     val vins = re.fold[FilterAST](True)(VinMatches)
 
